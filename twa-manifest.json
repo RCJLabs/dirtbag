@@ -1,0 +1,40 @@
+{
+  "packageId": "io.github.rcjlabs.dirtbag",
+  "host": "dirtbag.rcjlabs.com",
+  "name": "Dirtbag",
+  "launcherName": "Dirtbag",
+  "display": "standalone",
+  "orientation": "portrait",
+  "themeColor": "#0f172a",
+  "themeColorDark": "#0f172a",
+  "navigationColor": "#0f172a",
+  "navigationColorDark": "#0f172a",
+  "navigationDividerColor": "#0f172a",
+  "navigationDividerColorDark": "#0f172a",
+  "backgroundColor": "#191919",
+  "enableNotifications": false,
+  "startUrl": "/index.html",
+  "iconUrl": "https://dirtbag.rcjlabs.com/icons/icon-512.png",
+  "maskableIconUrl": "https://dirtbag.rcjlabs.com/icons/icon-512-maskable.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "dirtbag"
+  },
+  "appVersionName": "0.668.0",
+  "appVersionCode": 668,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://dirtbag.rcjlabs.com/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://dirtbag.rcjlabs.com/",
+  "minSdkVersion": 23,
+  "orientationLockEnabled": true
+}
