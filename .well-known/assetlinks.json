@@ -5,7 +5,7 @@
       "namespace": "android_app",
       "package_name": "io.github.rcjlabs.dirtbag",
       "sha256_cert_fingerprints": [
-        "09:ED:A6:27:D2:20:93:44:E6:8C:50:45:F9:D9:FB:E9:1B:E5:CE:11:94:FC:76:5C:7F:A2:5D:3B:70:72:43:06"
+        "REPLACE_WITH_SHA256_FROM_PLAY_CONSOLE_APP_SIGNING"
       ]
     }
   }
