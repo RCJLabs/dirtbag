@@ -1,7 +1,7 @@
 // Dirtbag service worker — the whole game is one self-contained index.html (all sprites base64-inlined),
 // so offline support is simple: cache the shell + icons + manifest, serve cache-first, and fall back to
 // the network. Bump CACHE on every deploy so a new build replaces the old one cleanly.
-const CACHE = 'dirtbag-v0670';
+const CACHE = 'dirtbag-v07540';
 const SHELL = [
   './',
   './index.html',
