@@ -1,0 +1,86 @@
+# .github/workflows/build-twa.yml
+# Builds a signed Android App Bundle (.aab) for the Dirtbag TWA in the cloud.
+# Run it manually from the repo's "Actions" tab -> "Build TWA (AAB)" -> "Run workflow".
+name: Build TWA (AAB)
+
+on:
+  workflow_dispatch:
+    inputs:
+      versionName:
+        description: 'Version name to show in Play (e.g. 0.821.0)'
+        required: true
+        default: '0.821.0'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo (has twa-manifest.json, manifest.webmanifest, icons/)
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up JDK 17 (Bubblewrap needs 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Bubblewrap CLI
+        run: npm install -g @bubblewrap/cli
+
+      - name: Point Bubblewrap at the runner's JDK + SDK (so it doesn't download them)
+        run: |
+          mkdir -p ~/.bubblewrap
+          printf '{ "jdkPath": "%s", "androidSdkPath": "%s" }\n' "$JAVA_HOME" "$ANDROID_SDK_ROOT" > ~/.bubblewrap/config.json
+          cat ~/.bubblewrap/config.json
+
+      - name: Restore the signing keystore from a secret
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android.keystore
+
+      - name: Bump version (code auto-derived from time so it always increases)
+        run: |
+          VC=$(( ($(date +%s) - 1700000000) / 60 ))
+          python3 - "$VC" "${{ github.event.inputs.versionName }}" <<'PY'
+          import json, sys
+          vc, vn = int(sys.argv[1]), sys.argv[2]
+          m = json.load(open('twa-manifest.json'))
+          m['appVersionCode'] = vc
+          m['appVersionName'] = vn
+          json.dump(m, open('twa-manifest.json', 'w'), indent=2)
+          print(f"versionCode={vc}  versionName={vn}")
+          PY
+
+      - name: Generate the Android project (fetches icons from the live site)
+        run: bubblewrap update --skipVersionUpgrade
+
+      - name: Accept Android SDK licenses
+        run: yes | sdkmanager --licenses || true
+
+      - name: Build the release bundle
+        run: |
+          chmod +x ./gradlew
+          ./gradlew bundleRelease --no-daemon
+
+      - name: Sign the .aab with your upload key
+        run: |
+          jarsigner -keystore android.keystore \
+            -storepass "${{ secrets.KEYSTORE_PASSWORD }}" \
+            -keypass "${{ secrets.KEY_PASSWORD }}" \
+            -signedjar dirtbag-release.aab \
+            app/build/outputs/bundle/release/app-release.aab \
+            dirtbag
+          echo "Signed bundle:"; ls -la dirtbag-release.aab
+
+      - name: Upload the .aab so you can download it
+        uses: actions/upload-artifact@v4
+        with:
+          name: dirtbag-aab
+          path: dirtbag-release.aab
+
