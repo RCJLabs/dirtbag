@@ -42,7 +42,12 @@ jobs:
           java-version: '17'
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          # The default list still asks for the legacy "tools" package, which Google removed from
+          # the SDK repository on 15 Sep 2026; sdkmanager then fails the job. Gradle fetches the
+          # platform and build-tools it needs by itself.
+          packages: platform-tools
 
       - name: Install the pinned Bubblewrap
         run: npm ci --prefix twa
