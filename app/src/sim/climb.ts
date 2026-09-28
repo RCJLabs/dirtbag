@@ -9,9 +9,11 @@
 //   load     hold to charge, let go inside the band.
 // Pump, afternoon sun and thin skin shrink the window when the crux starts.
 
-import { PUMPED, ROUTES, type BetaDef, type CruxDef, type RouteDef, type Verb } from './content/routes';
-import { CLIMB } from './dials';
+import { margin, pumpFactor, windowFactor } from './climber';
+import { PUMPED, type BetaDef, type CruxDef, type RouteDef, type Verb } from './content/routes';
+import { BODY, CLIMB } from './dials';
 import type { GameState, GoResult } from './types';
+import { conditions } from './weather';
 
 export type Phase = 'climb' | 'crux' | 'fall' | 'lowered' | 'sent';
 
@@ -44,7 +46,12 @@ export interface FallRun {
 
 export interface Attempt {
   route: string;
+  // The route itself travels with the go, so a go never looks anything up.
+  def: RouteDef;
   pick: Record<string, string>;
+  // Fixed at the tie-in: each crux's window scale (your skills against its grade, the rock,
+  // your hunger), and how fast you pump (your endurance against the route).
+  mods: { crux: Record<string, number>; pump: number };
   // Moves climbed, fractional.
   pos: number;
   pump: number;
@@ -60,6 +67,8 @@ export interface Attempt {
   // The climb panel's current line and how long it stays up.
   msg: { text: string; t: number } | null;
   hi: number;
+  // The beta you tried this go, crux by crux, in order.
+  tried: string[];
   t: number;
 }
 
@@ -80,11 +89,7 @@ export const STEP = 1 / 60;
 
 const clamp = (v: number, lo: number, hi: number) => (v < lo ? lo : v > hi ? hi : v);
 
-export function routeOf(att: Attempt): RouteDef {
-  const r = ROUTES[att.route];
-  if (!r) throw new Error(`unknown route ${att.route}`);
-  return r;
-}
+export const routeOf = (att: Attempt): RouteDef => att.def;
 
 export function betaOf(r: RouteDef, id: string): BetaDef {
   const b = r.beta[id];
@@ -99,41 +104,64 @@ function cruxOf(r: RouteDef, id: string): CruxDef {
 }
 
 // The beta each crux will use: your pick, or the obvious sequence.
-export function picks(s: GameState, routeId: string): Record<string, string> {
-  const r = ROUTES[routeId];
+export function picks(s: GameState, r: RouteDef): Record<string, string> {
   const out: Record<string, string> = {};
-  for (const c of r?.cruxes ?? []) out[c.id] = s.routes[routeId]?.pick[c.id] ?? c.beta[0] ?? '';
+  for (const c of r.cruxes) out[c.id] = s.routes[r.id]?.pick[c.id] ?? c.beta[0] ?? '';
   return out;
 }
 
+// What the day does to every window: the rock's conditions and the sun (outdoors only),
+// and hunger.
+export function dayFactor(s: GameState, r: RouteDef): { windows: number; grease: boolean } {
+  const weak = s.fed < BODY.weakBelow ? 1 - (0.3 * (BODY.weakBelow - s.fed)) / BODY.weakBelow : 1;
+  if (r.place === 'gym') return { windows: weak, grease: false };
+  const c = conditions(s.seed, s.day);
+  const grease = s.min >= c.greaseFrom;
+  return { windows: c.windows * (grease ? CLIMB.greaseFactor : 1) * weak, grease };
+}
+
+// A beta's scale for you, today: your skills in its style against the route's grade, and
+// the day. It's what the beta sheet shows as bars and what the go uses.
+export function betaScale(s: GameState, r: RouteDef, beta: string): number {
+  const b = r.beta[beta];
+  if (!b) return 1;
+  return windowFactor(margin(s.climber.skills, b.style, r.grade)) * dayFactor(s, r).windows;
+}
+
 // Called after the 'go' action has charged the go's costs.
-export function startAttempt(s: GameState, routeId: string): Attempt {
+export function startAttempt(s: GameState, r: RouteDef): Attempt {
+  const pick = picks(s, r);
+  const crux: Record<string, number> = {};
+  for (const c of r.cruxes) crux[c.id] = betaScale(s, r, pick[c.id] ?? '');
   return {
-    route: routeId,
-    pick: picks(s, routeId),
+    route: r.id,
+    def: r,
+    pick,
+    mods: { crux, pump: pumpFactor(s.climber.skills, r.grade) },
     pos: 0,
     pump: 0,
     hold: false,
     phase: 'climb',
     done: [],
-    grease: s.min >= CLIMB.greaseFrom,
+    grease: dayFactor(s, r).grease,
     skinAtStart: s.skin,
     skin: 0,
     crux: null,
     fall: null,
     msg: null,
     hi: 0,
+    tried: [],
     t: 0,
   };
 }
 
-// The window a beta gets right now.
-export function cruxWindow(b: BetaDef, att: Attempt): number {
+// The window a beta gets right now, at this crux.
+export function cruxWindow(b: BetaDef, att: Attempt, crux: string): number {
   const skinNow = att.skinAtStart - att.skin;
   return (
     b.w *
+    (att.mods.crux[crux] ?? 1) *
     (1 - (CLIMB.pumpShrink * att.pump) / 100) *
-    (att.grease ? CLIMB.greaseFactor : 1) *
     (b.crimpy && skinNow < CLIMB.thinSkinBelow ? CLIMB.thinSkinFactor : 1)
   );
 }
@@ -149,6 +177,7 @@ function copy(a: Attempt): Attempt {
   return {
     ...a,
     done: [...a.done],
+    tried: [...a.tried],
     crux: a.crux && { ...a.crux },
     fall: a.fall && { ...a.fall },
     msg: a.msg && { ...a.msg },
@@ -171,7 +200,7 @@ function startCrux(a: Attempt, r: RouteDef, c: CruxDef, ev: AttemptEvent[]): voi
     id: c.id,
     beta: id,
     verb: b.verb,
-    w: cruxWindow(b, a),
+    w: cruxWindow(b, a, c.id),
     t: 0,
     m: 0,
     c: 0.5,
@@ -180,6 +209,7 @@ function startCrux(a: Attempt, r: RouteDef, c: CruxDef, ev: AttemptEvent[]): voi
     miss: 0,
   };
   if (b.skin) a.skin += b.skin;
+  a.tried.push(id);
   ev.push({ k: 'crux', crux: c.id });
 }
 
@@ -196,19 +226,21 @@ function clear(a: Attempt, r: RouteDef, ev: AttemptEvent[]): void {
 
 function fall(a: Attempt, r: RouteDef, text: string | undefined, ev: AttemptEvent[]): void {
   const line = text ?? 'You come off.';
-  const clipped = r.bolts.filter((b) => b < a.pos - CLIMB.clipPast);
-  const last = clipped.length ? clipped[clipped.length - 1]! : null;
-  const over = last === null ? a.pos : a.pos - last;
   const move = Math.min(r.moves, Math.floor(a.pos) + 1);
-  a.fall = {
-    crux: a.crux?.id ?? null,
-    move,
-    text: line,
-    ft: Math.round((2 * over * r.heightFt) / r.moves + CLIMB.slackFt),
-    from: a.pos,
-    to: last === null ? 0 : Math.max(0, last - over - CLIMB.lowerMargin),
-    t: 0,
-  };
+  let ft: number;
+  let to: number;
+  if (r.disc === 'boulder') {
+    // No rope: you drop to the pads from wherever you were.
+    ft = Math.max(1, Math.round((a.pos * r.heightFt) / r.moves));
+    to = 0;
+  } else {
+    const clipped = r.bolts.filter((b) => b < a.pos - CLIMB.clipPast);
+    const last = clipped.length ? clipped[clipped.length - 1]! : null;
+    const over = last === null ? a.pos : a.pos - last;
+    ft = Math.round((2 * over * r.heightFt) / r.moves + CLIMB.slackFt);
+    to = last === null ? 0 : Math.max(0, last - over - CLIMB.lowerMargin);
+  }
+  a.fall = { crux: a.crux?.id ?? null, move, text: line, ft, from: a.pos, to, t: 0 };
   a.hi = Math.max(a.hi, move);
   a.phase = 'fall';
   a.hold = false;
@@ -281,7 +313,7 @@ export function stepAttempt(att: Attempt, dt: number = STEP): Step {
   if (a.phase === 'climb') {
     if (a.hold) {
       a.pos += CLIMB.climbRate * dt;
-      a.pump += CLIMB.pumpClimb * dt;
+      a.pump += CLIMB.pumpClimb * a.mods.pump * dt;
       for (const c of r.cruxes) {
         if (!a.done.includes(c.id) && a.pos >= c.from) {
           a.pos = c.from;
@@ -330,5 +362,11 @@ export function stepAttempt(att: Attempt, dt: number = STEP): Step {
 }
 
 export function goResult(att: Attempt): GoResult {
-  return { sent: att.phase === 'sent', hi: att.hi, fellAt: att.fall?.crux ?? null, skin: att.skin };
+  return {
+    sent: att.phase === 'sent',
+    hi: att.hi,
+    fellAt: att.fall?.crux ?? null,
+    tried: [...att.tried],
+    skin: att.skin,
+  };
 }

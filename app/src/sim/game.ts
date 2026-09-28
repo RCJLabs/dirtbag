@@ -2,16 +2,21 @@
 // money and body only move here, and only because of an action. Nothing ticks while you
 // stand still. The UI stages the events; it never edits the state itself.
 
-import { holds, unmet } from './cond';
-import { ACTS, road, TEXT_VALUES } from './content/places';
-import { TALK } from './content/people';
-import { ROUTES, STYLE_NAME } from './content/routes';
+import { gains, gradeOf, STARTS, type GoSummary } from './climber';
+import { headroom, holds, unmet } from './cond';
+import { routeById, routesAt } from './content/gym';
+import { ACTS, PLACES, road, TEXT_VALUES } from './content/places';
+import { PEOPLE, TALK } from './content/people';
+import { SEND_NAME, gradeLabel, type RouteDef } from './content/routes';
 import { BODY, CLIMB, DAY, MONEY } from './dials';
-import { fill, money } from './format';
-import type { Action, Delta, GameEvent, GameState, Result, RouteLog, Style } from './types';
+import { money } from './format';
+import { whereIs } from './presence';
+import type { Action, Delta, GameEvent, GameState, Result, RouteLog, SendStyle, Skills } from './types';
+import { conditions } from './weather';
 
 // The message log keeps this many lines; older ones fall off the front.
 export const LOG_MAX = 200;
+export const NAME_MAX = 16;
 
 export function newGame(seed: string): GameState {
   return {
@@ -21,10 +26,13 @@ export function newGame(seed: string): GameState {
     cash: MONEY.start,
     energy: BODY.startEnergy,
     skin: BODY.startSkin,
+    fed: BODY.startFed,
     at: 'lot',
     x: null,
     today: [],
+    climber: { name: '', start: 'allrounder', skills: { ...STARTS.allrounder!.skills } },
     routes: {},
+    people: {},
     log: [],
   };
 }
@@ -47,21 +55,49 @@ export function emptyLog(): RouteLog {
 // fails loudly if anything non-JSON sneaks in.
 const clone = (s: GameState): GameState => JSON.parse(JSON.stringify(s)) as GameState;
 const clamp100 = (v: number) => Math.max(0, Math.min(100, v));
+const round2 = (v: number) => Math.round(v * 100) / 100;
 
 function logOf(s: GameState, route: string): RouteLog {
   return (s.routes[route] ??= emptyLog());
 }
 
-// Queries the UI shares with the rules, so a button can never offer what act() refuses.
-export function goBlocked(s: GameState): string | null {
-  if (s.min >= CLIMB.darkFrom) return 'Too dark to climb';
+export const routeOfId = (s: GameState, id: string): RouteDef | undefined => routeById(s.seed, id);
+
+// ---- queries the UI shares with the rules, so a button never offers what act() refuses ----
+
+// What one go on this line costs you.
+export function goCost(r: RouteDef): Required<Pick<Delta, 'min' | 'energy' | 'fed' | 'skin'>> {
+  const kind = r.place === 'gym' ? 'gym' : r.disc;
+  const c = CLIMB.go[kind];
+  const skin = Math.round(CLIMB.skin[r.type] * (r.place === 'gym' ? 1 : CLIMB.rockSkin));
+  return { min: c.min, energy: -c.energy, fed: -c.fed, skin: -skin };
+}
+
+export const restCost = (r: RouteDef): number => CLIMB.restMin[r.disc];
+
+// Who'd belay you on a rope here, now.
+export function belayer(s: GameState): string | null {
+  for (const who of ['hazel', 'sage']) if (whereIs(s.seed, who, s.day, s.min) === s.at) return who;
+  return null;
+}
+
+export function goBlocked(s: GameState, r: RouteDef): string | null {
+  if (r.place === 'gym') {
+    if (s.min >= 22 * 60) return 'Send City is closed';
+    if (!s.today.includes('pass')) return 'Buy a day pass at the desk first';
+  } else {
+    if (!conditions(s.seed, s.day).open) return 'The rock is soaked';
+    if (s.min >= CLIMB.darkFrom) return 'Too dark to climb';
+    if (r.disc === 'sport' && !belayer(s)) return 'Nobody here to belay you';
+  }
+  if (s.fed <= 0) return "You're running on empty";
   if (s.energy < CLIMB.minEnergy) return 'Too tired to try';
   if (s.skin < CLIMB.minSkin) return 'Your skin is done for today';
   return null;
 }
 
 export function knowsBeta(s: GameState, route: string, crux: string, beta: string): boolean {
-  const c = ROUTES[route]?.cruxes.find((x) => x.id === crux);
+  const c = routeOfId(s, route)?.cruxes.find((x) => x.id === crux);
   if (!c || !c.beta.includes(beta)) return false;
   return c.beta[0] === beta || !!s.routes[route]?.known.includes(beta);
 }
@@ -74,14 +110,38 @@ export function goesToday(s: GameState): number {
   return Object.values(s.routes).reduce((n, r) => n + r.goesToday, 0);
 }
 
+interface Lesson {
+  r: RouteDef;
+  crux: string;
+  beta: string;
+}
+
+// What someone could show you here: on the line you've been working (most goes) first,
+// then the easiest one you haven't sent.
+export function lessonAt(s: GameState): Lesson | null {
+  const open: Lesson[] = [];
+  for (const r of routesAt(s.seed, s.at, s.day)) {
+    const c = r.cruxes.find((x) => x.beta.slice(1).some((b) => !s.routes[r.id]?.known.includes(b)));
+    const b = c?.beta.slice(1).find((x) => !s.routes[r.id]?.known.includes(x));
+    if (c && b) open.push({ r, crux: c.id, beta: b });
+  }
+  const goes = (l: Lesson) => s.routes[l.r.id]?.goes ?? 0;
+  const sent = (l: Lesson) => (s.routes[l.r.id]?.sent ? 1 : 0);
+  open.sort((a, b) => goes(b) - goes(a) || sent(a) - sent(b) || a.r.grade - b.r.grade);
+  return open[0] ?? null;
+}
+
 export function act(s0: GameState, a: Action): Result {
   const s = clone(s0);
   const events: GameEvent[] = [];
   const refuse = (why: string): Result => ({ state: s0, events: [{ k: 'refused', why }] });
-  const line = (text: string) => {
-    events.push({ k: 'line', text });
+  const note = (text: string) => {
     s.log.push({ day: s.day, min: s.min, text });
     if (s.log.length > LOG_MAX) s.log.splice(0, s.log.length - LOG_MAX);
+  };
+  const line = (text: string) => {
+    events.push({ k: 'line', text });
+    note(text);
   };
   const spend = (d: Delta) => {
     const was = s.cash;
@@ -89,49 +149,109 @@ export function act(s0: GameState, a: Action): Result {
     s.cash += d.cash ?? 0;
     s.energy = clamp100(s.energy + (d.energy ?? 0));
     s.skin = clamp100(s.skin + (d.skin ?? 0));
+    s.fed = clamp100(s.fed + (d.fed ?? 0));
     if (was >= 0 && s.cash < 0) line(`You're $${-s.cash} in the hole. It goes on the card.`);
+  };
+  const train = (t: Partial<Skills>) => {
+    for (const [k, v] of Object.entries(t) as [keyof Skills, number][])
+      s.climber.skills[k] = round2(s.climber.skills[k] + v);
+  };
+  const sleep = () => {
+    const ended = s.day;
+    const hungry = s.fed < BODY.hungryBelow;
+    const rough = headroom(s) < MONEY.vanSpot;
+    if (!rough) s.cash -= MONEY.vanSpot;
+    s.day += 1;
+    s.min = DAY.wakeMin;
+    const rest = (rough ? BODY.roughEnergy : BODY.sleepEnergy) - (hungry ? BODY.hungryNight : 0);
+    s.energy = clamp100(s.energy + rest);
+    s.skin = clamp100(s.skin + BODY.sleepSkin);
+    s.fed = clamp100(s.fed - BODY.nightFed);
+    s.today = [];
+    for (const r of Object.values(s.routes)) {
+      r.goesToday = 0;
+      r.sentToday = false;
+    }
+    s.at = 'lot';
+    s.x = null;
+    if (rough) line("The card won't take the van spot. You sleep in the pullout. It's cold.");
+    else
+      line(
+        s.cash < 0
+          ? `Van spot, ${TEXT_VALUES.spot}. You're $${-s.cash} in the hole.`
+          : `Van spot, ${TEXT_VALUES.spot}. Morning comes anyway.`,
+      );
+    if (hungry) line('You went to bed hungry, and it shows.');
+    if (ended % 7 === 0) {
+      const bills = MONEY.registration + MONEY.insurance;
+      s.cash -= bills;
+      line(`Registration and insurance: $${bills}. The week's bills don't care about your card.`);
+    }
   };
   const runAct = (id: string): string | null => {
     const d = ACTS[id];
     if (!d) return 'Nothing to do there.';
+    if (id.split('.')[0] !== s.at) return "You're not there.";
     const why = unmet(s, d.needs);
     if (why) return why;
     if (d.sleep) {
-      // Sleep carries its own debt line, so it doesn't go through spend().
-      s.cash += d.cost.cash ?? 0;
-      s.day += 1;
-      s.min = DAY.wakeMin;
-      s.energy = clamp100(s.energy + BODY.sleepEnergy);
-      s.skin = clamp100(s.skin + BODY.sleepSkin);
-      s.today = [];
-      for (const r of Object.values(s.routes)) {
-        r.goesToday = 0;
-        r.sentToday = false;
-      }
-      s.at = 'lot';
-      s.x = null;
-      const spot = TEXT_VALUES.spot;
-      line(
-        s.cash < 0
-          ? `Van spot, ${spot}. You're $${-s.cash} in the hole.`
-          : `Van spot, ${spot}. Morning comes anyway.`,
-      );
+      sleep();
       return null;
     }
     spend(d.cost);
+    for (const f of d.sets ?? []) if (!s.today.includes(f)) s.today.push(f);
+    if (d.trains) train(d.trains);
     if (d.says) line(d.says);
     return null;
   };
-  const learn = (route: string, beta: string, how: 'fall' | 'told', text: string) => {
+  // A day climbing together, watching or belaying, counts once toward the bond.
+  const climbedWith = (who: string) => {
+    const p = (s.people[who] ??= { bond: 0, last: 0 });
+    if (p.last === s.day) return;
+    p.bond += 1;
+    p.last = s.day;
+  };
+  const learn = (route: string, beta: string, how: 'fall' | 'told' | 'watched', text: string) => {
     const L = logOf(s, route);
     if (L.known.includes(beta)) return;
     L.known.push(beta);
-    if (how === 'told') L.told.push(beta);
+    if (how !== 'fall') L.told.push(beta);
     events.push({ k: 'learned', route, beta, how, text });
-    if (text) s.log.push({ day: s.day, min: s.min, text });
+    if (text) note(text);
+  };
+  const watch = (who: string) => {
+    const name = PEOPLE[who]?.name ?? who;
+    const lesson = lessonAt(s);
+    if (!lesson) {
+      line(`${name} shrugs. "You know everything I'd tell you here."`);
+      return;
+    }
+    const { r, crux, beta } = lesson;
+    const c = r.cruxes.find((x) => x.id === crux)!;
+    const b = r.beta[beta]!;
+    spend({ min: 20 });
+    learn(
+      r.id,
+      beta,
+      'watched',
+      `${name} climbs ${r.name}. At ${c.name.replace(/^The /, 'the ')}: ${b.short}. New beta: ${b.name.toLowerCase()}.`,
+    );
+    events.push({ k: 'line', text: `New beta on ${r.name}: ${b.name.toLowerCase()}.` });
+    climbedWith(who);
+    if (!s.today.includes(who)) s.today.push(who);
   };
 
   switch (a.t) {
+    case 'create': {
+      if (s.climber.name) return refuse('You already are who you are.');
+      const name = a.name.trim().slice(0, NAME_MAX).trim();
+      const start = STARTS[a.start];
+      if (!name) return refuse('You need a name.');
+      if (!start) return refuse('Pick how you climb.');
+      s.climber = { name, start: a.start, skills: { ...start.skills } };
+      break;
+    }
+
     case 'act': {
       const why = runAct(a.act);
       if (why) return refuse(why);
@@ -139,10 +259,18 @@ export function act(s0: GameState, a: Action): Result {
     }
 
     case 'say': {
-      const node = TALK[a.talk]?.nodes[a.node];
+      const talk = TALK[a.talk];
+      const node = talk?.nodes[a.node];
       const opt = node?.opts[a.opt];
-      if (!opt || (opt.when && !holds(s, opt.when))) return refuse('They have nothing to say to that.');
+      if (!talk || !opt || (opt.when && !holds(s, opt.when)))
+        return refuse('They have nothing to say to that.');
       const fx = opt.fx ?? {};
+      // You can finish a sentence with someone who's just left, but they won't do anything
+      // for you: a conversation can straddle the hour they head off.
+      if (Object.keys(fx).length && whereIs(s.seed, talk.who, s.day, s.min) !== s.at)
+        return refuse("They're not here.");
+      // Talking to someone is meeting them.
+      s.people[talk.who] ??= { bond: 0, last: 0 };
       if (fx.act) {
         const why = runAct(fx.act);
         if (why) return refuse(why);
@@ -153,6 +281,7 @@ export function act(s0: GameState, a: Action): Result {
         const [route, beta] = fx.learn.split('/');
         if (route && beta) learn(route, beta, 'told', '');
       }
+      if (fx.watch) watch(talk.who);
       if (fx.line) line(fx.line);
       events.push({ k: 'talk', node: opt.next ?? null });
       break;
@@ -160,11 +289,15 @@ export function act(s0: GameState, a: Action): Result {
 
     case 'travel': {
       const r = road(s.at, a.to);
-      if (!r) return refuse("There's no road there.");
-      spend({ min: r.min, cash: -r.cash, energy: -BODY.driveEnergy });
+      if (!r || !PLACES[a.to]) return refuse("There's no road there.");
+      // A maxed-out card never strands you: you drive on what's in the tank.
+      const declined = r.cash > 0 && headroom(s) < r.cash;
+      spend({ min: r.min, cash: declined ? 0 : -r.cash, energy: r.min >= 30 ? -BODY.driveEnergy : 0 });
       s.at = a.to;
       s.x = null;
-      line(fill(r.says, { cash: money(r.cash) }));
+      if (declined) line("The card's declined at the pump. You make it on fumes.");
+      else if (r.cash >= 12) line(`Gas, ${money(r.cash)}. The van starts on the second try.`);
+      else if (r.cash > 0) line(`Gas, ${money(r.cash)}.`);
       break;
     }
 
@@ -179,43 +312,44 @@ export function act(s0: GameState, a: Action): Result {
     }
 
     case 'go': {
-      const r = ROUTES[a.route];
-      if (!r || !r.cruxes.length) return refuse(r?.blurb ?? 'Not a route.');
-      const why = goBlocked(s);
+      const r = routeOfId(s, a.route);
+      if (!r || r.place !== s.at) return refuse("That line isn't here.");
+      const why = goBlocked(s, r);
       if (why) return refuse(`${why}.`);
-      spend({ min: CLIMB.goMin, energy: -CLIMB.goEnergy, skin: -CLIMB.goSkin });
+      spend(goCost(r));
       const L = logOf(s, a.route);
       L.goes += 1;
       L.goesToday += 1;
-      // Same test startAttempt() uses, after the go's time is on the clock.
-      if (s.min >= CLIMB.greaseFrom && !s.today.includes('grease')) {
+      const who = r.disc === 'sport' ? belayer(s) : null;
+      if (who) climbedWith(who);
+      if (r.place !== 'gym' && s.min >= conditions(s.seed, s.day).greaseFrom && !s.today.includes('grease')) {
         s.today.push('grease');
         line("Sun's on the wall. Everything feels greasy.");
       }
       break;
     }
 
-    case 'rest':
-      spend({ min: CLIMB.restMin });
+    case 'rest': {
+      const r = routeOfId(s, a.route);
+      if (!r) return refuse('Not a route.');
+      spend({ min: restCost(r) });
       break;
+    }
 
     case 'done': {
-      const r = ROUTES[a.route];
+      const r = routeOfId(s, a.route);
       if (!r) return refuse('Not a route.');
       const L = logOf(s, a.route);
       const res = a.result;
+      const lap = L.sent !== null;
       s.skin = clamp100(s.skin - Math.max(0, res.skin));
       L.hi = Math.max(L.hi, Math.min(r.moves, Math.max(0, Math.floor(res.hi))));
       if (res.sent) {
-        const style: Style = L.goes === 1 ? (L.told.length ? 'flash' : 'onsight') : 'redpoint';
+        const style: SendStyle = L.goes === 1 ? (L.told.length ? 'flash' : 'onsight') : 'redpoint';
         L.sent ??= { day: s.day, go: L.goes, style };
         L.sentToday = true;
         events.push({ k: 'sent', route: a.route, style, go: L.goes });
-        s.log.push({
-          day: s.day,
-          min: s.min,
-          text: `${STYLE_NAME[style]}: ${r.name}, ${r.grade}, on go ${L.goes}.`,
-        });
+        note(`${SEND_NAME[style]}: ${r.name}, ${gradeLabel(r)}, on go ${L.goes}.`);
       } else if (res.fellAt) {
         const crux = r.cruxes.find((c) => c.id === res.fellAt);
         if (!crux) return refuse('No such crux.');
@@ -226,6 +360,25 @@ export function act(s0: GameState, a: Action): Result {
           if (u && falls >= u.falls) learn(a.route, id, 'fall', u.line);
         }
       }
+      // What the go taught you: the route's style, and the sequences you tried.
+      const before = gradeOf(s.climber.skills);
+      const styles = res.tried.map((b) => r.beta[b]?.style).filter((x): x is NonNullable<typeof x> => !!x);
+      const go: GoSummary = {
+        grade: r.grade,
+        sent: res.sent,
+        progress: res.hi / r.moves,
+        type: r.type,
+        styles,
+      };
+      const got = gains(s.climber.skills, go);
+      for (const k of Object.keys(got) as (keyof Skills)[]) {
+        const gym = r.place === 'gym' && (k === 'technique' || k === 'endurance') ? CLIMB.gymSpecialty : 1;
+        got[k] = round2(got[k]! * CLIMB.learn * (lap ? CLIMB.repeatLearn : 1) * gym);
+      }
+      train(got);
+      const after = gradeOf(s.climber.skills);
+      events.push({ k: 'skills', gains: got, grade: after > before ? after : null });
+      if (after > before) line(`Something clicks. You're climbing V${after} now.`);
       break;
     }
   }

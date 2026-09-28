@@ -44,9 +44,10 @@ export function costLabel(d: Delta, moneyWord = ''): string {
   return parts.join(' · ');
 }
 
-// What an act does to your body. "+15 energy", "−25 energy · −8 skin".
+// What an act does to your body. "+15 energy", "−25 energy · −8 skin", "+50 food".
 export function bodyNote(d: Delta): string {
   const parts: string[] = [];
+  if (d.fed) parts.push(signed(d.fed, 'food'));
   if (d.energy) parts.push(signed(d.energy, 'energy'));
   if (d.skin) parts.push(signed(d.skin, 'skin'));
   return parts.join(' · ');

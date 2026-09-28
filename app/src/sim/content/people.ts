@@ -1,7 +1,8 @@
-// People and what they say. A conversation picks its opening node from `start` (the first
-// entry whose condition holds), then follows the options. Options can cost time, teach
-// beta, set a daily flag, run an act, or add a line; `next` continues the conversation.
-// Text may use {goes} (goes today, all routes) with {goes|go|goes} for the plural.
+// People, where they are, and what they say. A conversation picks its opening node from
+// `start` (the first entry whose condition holds), then follows the options. Options can
+// cost time, teach beta, set a daily flag, run an act, add a line, or have them show you a
+// line (`watch`); `next` continues the conversation. Text may use {goes} (goes today, all
+// routes) with {goes|go|goes} for the plural, and {name}, your name.
 
 import type { Cond } from '../cond';
 import type { Delta } from '../types';
@@ -12,6 +13,8 @@ export interface TalkFx {
   today?: string;
   act?: string;
   line?: string;
+  // They climb a line you're working, and you watch their beta.
+  watch?: true;
 }
 
 export interface TalkOpt {
@@ -33,8 +36,16 @@ export interface TalkDef {
   nodes: Record<string, TalkNode>;
 }
 
-export const PEOPLE: Record<string, { name: string }> = {
+export interface PersonDef {
+  name: string;
+  // Beta they know, and will show you, at these places.
+  shows?: string[];
+}
+
+export const PEOPLE: Record<string, PersonDef> = {
   hazel: { name: 'Hazel' },
+  // v0.956's Sage: technical, and the partner whose perk was beta.
+  sage: { name: 'Sage', shows: ['road', 'gym'] },
 };
 
 const SIT: TalkOpt[] = [
@@ -49,6 +60,7 @@ export const TALK: Record<string, TalkDef> = {
       { when: { night: true, sentToday: 'pump' }, node: 'night-sent' },
       { when: { night: true, wentToday: 'pump' }, node: 'night-goes' },
       { when: { night: true }, node: 'night' },
+      { when: { sky: 'rain' }, node: 'rain' },
       { when: { knows: 'pump/B2' }, node: 'known' },
       { node: 'morning' },
     ],
@@ -56,6 +68,10 @@ export const TALK: Record<string, TalkDef> = {
       'night-sent': { text: 'You sent it. Now you need a new one.', opts: SIT },
       'night-goes': { text: "{goes} {goes|go|goes} today. How's the skin?", opts: SIT },
       night: { text: "Fire's warm. Sit.", opts: SIT },
+      rain: {
+        text: "Rock's soaked. Gym, or a nap. I'm doing the nap.",
+        opts: [{ label: 'Fair enough' }],
+      },
       known: { text: "Heel on the lip. Trust the pinch. That's all I've got.", opts: [{ label: 'Thanks' }] },
       morning: {
         text: "You're staring at The Pump again. I can tell from here.",
@@ -88,7 +104,30 @@ export const TALK: Record<string, TalkDef> = {
     nodes: {
       sent: { text: "That's the one. Lower off, I'm hungry.", opts: [{ label: 'OK' }] },
       goes: { text: 'Clean catch. Rest up, go again.', opts: [{ label: 'OK' }] },
-      start: { text: "Rope's flaked. Go look at it.", opts: [{ label: 'OK' }] },
+      start: { text: "Rope's flaked. I'll belay whatever you want to get on.", opts: [{ label: 'OK' }] },
+    },
+  },
+  sage: {
+    who: 'sage',
+    start: [
+      { when: { notMet: 'sage' }, node: 'meet' },
+      { when: { today: 'sage' }, node: 'done' },
+      { node: 'again' },
+    ],
+    nodes: {
+      meet: {
+        text: "You're the one Hazel says keeps staring at The Pump. I'm Sage. I climb slow and I read everything first.",
+        opts: [
+          { label: 'Show me something', primary: true, fx: { watch: true } },
+          { label: 'Just saying hi', next: 'hi' },
+        ],
+      },
+      hi: { text: "Hi. Come find me when you're stuck on something.", opts: [{ label: 'Will do' }] },
+      again: {
+        text: "Stuck on something, {name}? Point at it and I'll show you how I'd go.",
+        opts: [{ label: 'Show me the beta', primary: true, fx: { watch: true } }, { label: 'Not now' }],
+      },
+      done: { text: "That's all you get from me today. Go climb.", opts: [{ label: 'Fair' }] },
     },
   },
 };
@@ -98,4 +137,5 @@ export const THINGS: Record<string, { day: string; night?: string; nightAct?: st
   scout: { day: 'Scout thumps his tail twice and goes back to sleep.' },
   'hazel-van': { day: "Hazel's van. Curtains still shut.", night: "Hazel's van. The lantern's on." },
   fire: { day: 'Coals and a coffee pot. Hazel got up first.', nightAct: 'lot.sit' },
+  desk: { day: "The kid at the desk doesn't look up. A sign says: DAY PASS, NO REFUNDS, NO CAMPUS." },
 };

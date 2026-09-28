@@ -1,6 +1,23 @@
 // The shape of a game in progress. Everything here is plain JSON: it is the save file.
 // Ids are strings looked up in content/, so adding a place or a route never touches a type.
 
+export interface Skills {
+  power: number;
+  fingers: number;
+  endurance: number;
+  technique: number;
+  head: number;
+}
+export type SkillId = keyof Skills;
+
+export interface Climber {
+  // Empty until you've made your climber on the first screen.
+  name: string;
+  // Which of the four starts you picked.
+  start: string;
+  skills: Skills;
+}
+
 export interface GameState {
   seed: string;
   day: number;
@@ -10,14 +27,19 @@ export interface GameState {
   cash: number;
   energy: number; // 0..100
   skin: number; // 0..100
+  // How fed you are, 0..100: v0.956's hunger meter. At 0 you can't climb or work.
+  fed: number;
   // The place you and the van are at.
   at: string;
   // Where you stand in that place's scene, so a reload puts you back on the same spot.
   // Null means where you'd arrive: by the van.
   x: number | null;
-  // Flags that last until you sleep ("had Hazel's coffee").
+  // Flags that last until you sleep ("had Hazel's coffee", "worked a shift").
   today: string[];
+  climber: Climber;
   routes: Record<string, RouteLog>;
+  // The people you climb with, by id.
+  people: Record<string, PersonLog>;
   // The message log: every line the game has told you, newest last.
   log: LogLine[];
 }
@@ -25,7 +47,7 @@ export interface GameState {
 export interface RouteLog {
   // Beta you've learned beyond each crux's obvious sequence.
   known: string[];
-  // Of those, the ones someone told you. A first-go send with any of these is a flash.
+  // Of those, the ones someone showed or told you. A first-go send with any is a flash.
   told: string[];
   // Crux id -> the beta you'll use there.
   pick: Record<string, string>;
@@ -39,12 +61,19 @@ export interface RouteLog {
   sentToday: boolean;
 }
 
-export type Style = 'onsight' | 'flash' | 'redpoint';
+export interface PersonLog {
+  // How well you know each other, from days climbed together (one a day at most).
+  bond: number;
+  // The last day you climbed together.
+  last: number;
+}
+
+export type SendStyle = 'onsight' | 'flash' | 'redpoint';
 
 export interface SendRecord {
   day: number;
   go: number;
-  style: Style;
+  style: SendStyle;
 }
 
 export interface LogLine {
@@ -59,9 +88,11 @@ export interface Delta {
   cash?: number;
   energy?: number;
   skin?: number;
+  fed?: number;
 }
 
 export type Action =
+  | { t: 'create'; name: string; start: string }
   | { t: 'act'; act: string }
   | { t: 'say'; talk: string; node: string; opt: number }
   | { t: 'travel'; to: string }
@@ -78,6 +109,8 @@ export interface GoResult {
   hi: number;
   // The crux you came off, or null if you were pumped off between cruxes.
   fellAt: string | null;
+  // The beta you tried, crux by crux, in order: what the go practised.
+  tried: string[];
   // Extra skin the beta cost on the way (crimpy sequences).
   skin: number;
 }
@@ -86,8 +119,10 @@ export type GameEvent =
   // A line for the toast lane. Every one is also written to the log.
   | { k: 'line'; text: string }
   // New beta, with the line that tells you how you saw it.
-  | { k: 'learned'; route: string; beta: string; how: 'fall' | 'told'; text: string }
-  | { k: 'sent'; route: string; style: Style; go: number }
+  | { k: 'learned'; route: string; beta: string; how: 'fall' | 'told' | 'watched'; text: string }
+  | { k: 'sent'; route: string; style: SendStyle; go: number }
+  // What a go taught you, and your grade if it moved.
+  | { k: 'skills'; gains: Partial<Skills>; grade: number | null }
   // A conversation moves to another node, or ends (null).
   | { k: 'talk'; node: string | null }
   // The action wasn't allowed; `why` says so in the game's voice.

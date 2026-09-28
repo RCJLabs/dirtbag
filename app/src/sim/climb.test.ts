@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   attemptInput,
   cruxWindow,
+  dayFactor,
   goResult,
   resting,
   startAttempt,
@@ -10,12 +11,32 @@ import {
   type Attempt,
   type AttemptEvent,
 } from './climb';
+import { needFor } from './climber';
 import { PUMPED, ROUTES } from './content/routes';
-import { CLIMB } from './dials';
+import { BODY, CLIMB } from './dials';
 import { act, newGame } from './game';
 import type { GameState } from './types';
 
 const pump = ROUTES.pump!;
+const warm = ROUTES.warm!;
+
+// A climber whose skills sit exactly at The Pump's grade in every style, at the crag on a
+// prime morning: skills and pump rate factor out, so these tests see the mechanics alone.
+const fit = needFor(pump.grade);
+function atCrag(min = 9 * 60): GameState {
+  return {
+    ...newGame('t'),
+    at: 'road',
+    min,
+    climber: {
+      name: 'Test',
+      start: 'allrounder',
+      skills: { power: fit, fingers: fit, endurance: fit, technique: fit, head: fit },
+    },
+  };
+}
+// The day's scale on every window: prime rock, before the sun.
+const DAY1 = 1.1;
 
 // A careful climber: rests on the ledge until the pump is nearly gone, and plays each verb
 // by reading the meter the way the e2e bot reads it off the screen.
@@ -74,7 +95,7 @@ function replay(att: Attempt, script: [number, boolean][], max = 60 * 90): Attem
   return att;
 }
 
-function tiedIn(s: GameState = newGame('t'), picks: Record<string, string> = {}): Attempt {
+function tiedIn(s: GameState = atCrag(), picks: Record<string, string> = {}): Attempt {
   let st = s;
   for (const [crux, beta] of Object.entries(picks)) {
     st = {
@@ -83,8 +104,9 @@ function tiedIn(s: GameState = newGame('t'), picks: Record<string, string> = {})
     };
     st = act(st, { t: 'pick', route: 'pump', crux, beta }).state;
   }
-  st = act(st, { t: 'go', route: 'pump' }).state;
-  return startAttempt(st, 'pump');
+  const r = act(st, { t: 'go', route: 'pump' });
+  if (r.events.some((e) => e.k === 'refused')) throw new Error(JSON.stringify(r.events));
+  return startAttempt(r.state, pump);
 }
 
 const emptyKnown = () => ({
@@ -102,23 +124,27 @@ const emptyKnown = () => ({
 describe('a go on The Pump', () => {
   it('a careful climber sends with either beta, and needs the rest to do it', () => {
     for (const picks of [{}, { A: 'A2', B: 'B2' }] as Record<string, string>[]) {
-      const { att, events } = run(tiedIn(newGame('t'), picks), careful());
+      const { att, events } = run(tiedIn(atCrag(), picks), careful());
       expect(att.phase).toBe('sent');
       expect(events.filter((e) => e.k === 'cleared').map((e) => (e as { crux: string }).crux)).toEqual([
         'A',
         'B',
       ]);
-      expect(goResult(att)).toMatchObject({ sent: true, hi: 24 });
+      expect(goResult(att)).toMatchObject({
+        sent: true,
+        hi: 24,
+        tried: ['A' + (picks.A ? '2' : '1'), picks.B ?? 'B1'],
+      });
     }
     // The same climber who never shakes out redlines before the top.
     const noRest = (a: Attempt, i: number) => (a.phase === 'crux' ? careful()(a, i) : true);
-    const { att } = run(tiedIn(newGame('t'), { B: 'B2' }), noRest);
+    const { att } = run(tiedIn(atCrag(), { B: 'B2' }), noRest);
     expect(att.phase).toBe('lowered');
     expect(att.fall?.text).toBe(PUMPED);
   });
 
   it('replays exactly from its inputs', () => {
-    const start = tiedIn(newGame('t'), { A: 'A2' });
+    const start = tiedIn(atCrag(), { A: 'A2' });
     const live = run(start, careful());
     expect(replay(start, live.script)).toEqual(live.att);
   });
@@ -126,7 +152,7 @@ describe('a go on The Pump', () => {
   it('carries a held finger into a tension move, but a throw waits for a fresh press', () => {
     const hold = (a: Attempt) => a.phase === 'climb' || a.phase === 'crux';
     const crux = (picks: Record<string, string>) => {
-      let a = attemptInput(tiedIn(newGame('t'), picks), true).att;
+      let a = attemptInput(tiedIn(atCrag(), picks), true).att;
       while (a.phase === 'climb') a = stepAttempt(a).att;
       return a;
     };
@@ -141,17 +167,37 @@ describe('a go on The Pump', () => {
     expect(a.hold).toBe(false);
   });
 
-  it('shrinks windows for pump, afternoon sun and thin skin on crimps', () => {
+  it('shrinks windows for pump and thin skin on crimps', () => {
     const b = pump.beta.A1!;
     const fresh = tiedIn();
-    expect(cruxWindow(b, fresh)).toBeCloseTo(b.w);
-    expect(cruxWindow(b, { ...fresh, pump: 100 })).toBeCloseTo(b.w * (1 - CLIMB.pumpShrink));
-    expect(cruxWindow(b, { ...fresh, grease: true })).toBeCloseTo(b.w * CLIMB.greaseFactor);
-    expect(cruxWindow(b, { ...fresh, skinAtStart: CLIMB.thinSkinBelow - 1 })).toBeCloseTo(
-      b.w * CLIMB.thinSkinFactor,
+    expect(cruxWindow(b, fresh, 'A')).toBeCloseTo(b.w * DAY1);
+    expect(cruxWindow(b, { ...fresh, pump: 100 }, 'A')).toBeCloseTo(b.w * DAY1 * (1 - CLIMB.pumpShrink));
+    expect(cruxWindow(b, { ...fresh, skinAtStart: CLIMB.thinSkinBelow - 1 }, 'A')).toBeCloseTo(
+      b.w * DAY1 * CLIMB.thinSkinFactor,
     );
     // Thin skin doesn't touch a non-crimpy sequence.
-    expect(cruxWindow(pump.beta.B2!, { ...fresh, skinAtStart: 5 })).toBeCloseTo(pump.beta.B2!.w);
+    expect(cruxWindow(pump.beta.B2!, { ...fresh, skinAtStart: 5 }, 'B')).toBeCloseTo(pump.beta.B2!.w * DAY1);
+  });
+
+  it('fixes the day at the tie-in: the sun, the weather and your hunger', () => {
+    expect(tiedIn().mods).toEqual({ crux: { A: DAY1, B: DAY1 }, pump: 1 });
+    const sunny = tiedIn(atCrag(15 * 60));
+    expect(sunny.grease).toBe(true);
+    expect(sunny.mods.crux.A).toBeCloseTo(DAY1 * CLIMB.greaseFactor);
+    // Hungry, down to 70% at empty.
+    expect(dayFactor({ ...atCrag(), fed: 0 }, pump).windows).toBeCloseTo(DAY1 * 0.7);
+    expect(dayFactor({ ...atCrag(), fed: BODY.weakBelow }, pump).windows).toBeCloseTo(DAY1);
+    // Plastic doesn't care about the weather.
+    expect(dayFactor({ ...atCrag(), at: 'gym' }, { ...warm, place: 'gym' }).windows).toBe(1);
+  });
+
+  it('works to your skills: a weaker climber gets narrower windows and pumps faster', () => {
+    const weak = tiedIn({
+      ...atCrag(),
+      climber: { ...atCrag().climber, skills: newGame('t').climber.skills },
+    });
+    expect(weak.mods.crux.A!).toBeLessThan(DAY1);
+    expect(weak.mods.pump).toBeGreaterThan(1);
   });
 
   it('judges a throw on release: short, long, or held too long', () => {
@@ -189,6 +235,13 @@ describe('a go on The Pump', () => {
     const off = tap(tap(atTiming(0.1)));
     expect(off.phase).toBe('fall');
     expect(off.fall?.text).toBe(pump.beta.A2!.lines.fall);
+  });
+
+  it('drops you to the pads off a boulder, from wherever you were', () => {
+    let a = startAttempt(act(atCrag(), { t: 'go', route: 'warm' }).state, warm);
+    a = stepAttempt({ ...a, pos: 3.2, pump: 99.95, hold: true }).att;
+    expect(a.phase).toBe('fall');
+    expect(a.fall).toMatchObject({ to: 0, ft: Math.round((a.fall!.from * warm.heightFt) / warm.moves) });
   });
 
   it('catches a fall on the last clip, then lowers you below it', () => {

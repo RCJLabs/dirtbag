@@ -5,10 +5,11 @@
 // Changing the shape of GameState means: bump SAVE_VERSION, register MIGRATIONS[old] that
 // turns an old state into the new shape, and add a test that loads a real old save.
 
+import { STARTS } from './climber';
 import { PLACES } from './content/places';
-import type { GameState, LogLine, RouteLog, SendRecord } from './types';
+import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -19,10 +20,27 @@ export interface SaveFile {
   state: GameState;
 }
 
-// MIGRATIONS[n] turns a version-n state into version n+1. Empty until the shape first
-// changes; the loader and its tests already run the chain.
+// MIGRATIONS[n] turns a version-n state into version n+1. Each one is history: it writes
+// the values the new shape started with, as literals, so retuning a dial later never
+// changes what an old save loads as.
 export type Migration = (state: unknown) => unknown;
-export const MIGRATIONS: Record<number, Migration> = {};
+export const MIGRATIONS: Record<number, Migration> = {
+  // v1 (R0) -> v2 (R1): hunger, a climber with v0.956's skills, and the people you've met.
+  // The name stays empty, so the game asks who you are before it goes on.
+  1: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return {
+      ...x,
+      fed: 80,
+      climber: {
+        name: '',
+        start: 'allrounder',
+        skills: { power: 8, fingers: 8, endurance: 8, technique: 8, head: 8 },
+      },
+      people: {},
+    };
+  },
+};
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
 
@@ -83,9 +101,13 @@ export function validate(x: unknown): string[] {
   need(isInt(x.cash), 'cash');
   need(isNum(x.energy) && x.energy >= 0 && x.energy <= 100, 'energy');
   need(isNum(x.skin) && x.skin >= 0 && x.skin <= 100, 'skin');
+  need(isNum(x.fed) && x.fed >= 0 && x.fed <= 100, 'fed');
   need(typeof x.at === 'string' && x.at in PLACES, 'at');
   need(x.x === null || isNum(x.x), 'x');
   need(isStrs(x.today), 'today');
+  err.push(...validateClimber(x.climber).map((e) => `climber.${e}`));
+  if (!isObj(x.people)) err.push('people');
+  else for (const [id, p] of Object.entries(x.people)) need(isPerson(p), `people.${id}`);
   if (!isObj(x.routes)) err.push('routes');
   else
     for (const [id, r] of Object.entries(x.routes))
@@ -94,6 +116,22 @@ export function validate(x: unknown): string[] {
   else x.log.forEach((l, i) => need(isLogLine(l), `log[${i}]`));
   return err;
 }
+
+function validateClimber(x: unknown): string[] {
+  if (!isObj(x)) return ['not an object'];
+  const err: string[] = [];
+  if (typeof x.name !== 'string') err.push('name');
+  if (typeof x.start !== 'string' || !(x.start in STARTS)) err.push('start');
+  const k = x.skills;
+  if (!isObj(k)) err.push('skills');
+  else
+    for (const id of ['power', 'fingers', 'endurance', 'technique', 'head'])
+      if (!isNum(k[id]) || (k[id] as number) < 0) err.push(`skills.${id}`);
+  return err;
+}
+
+const isPerson = (x: unknown): x is PersonLog =>
+  isObj(x) && isInt(x.bond) && x.bond >= 0 && isInt(x.last) && x.last >= 0;
 
 function validateRoute(x: unknown): string[] {
   if (!isObj(x)) return ['not an object'];

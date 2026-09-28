@@ -2,6 +2,8 @@
 // These are the feel slice's values: placeholders that played well, not balance. Phase 6
 // retunes them against the bots in R2.
 
+import type { Style } from './climber';
+
 export const DAY = {
   // The first morning starts at 7:40. Hazel is already at the fire with the coffee.
   firstMin: 7 * 60 + 40,
@@ -21,34 +23,68 @@ export const MONEY = {
   start: 41,
   // A night at the Lot. It goes on the card if you can't cover it.
   vanSpot: 18,
+  // Send City's day pass. v0.956 charged $5 a go; a pass lets you keep trying.
+  dayPass: 14,
+  // How far the card goes. Past it, gas and the van spot are declined: you drive nowhere
+  // and sleep rough. Bills still land. No game over: v0.956's hard wipe is gone.
+  cardLimit: 150,
+  // Every seventh night, v0.956's weekly bills.
+  registration: 45,
+  insurance: 25,
 };
 
 export const BODY = {
   startEnergy: 78,
   startSkin: 64,
+  // v0.956's hunger meter, as "fed": 80 to start, 15 gone overnight.
+  startFed: 80,
+  nightFed: 15,
+  // Go to bed under this and you sleep badly: less energy back.
+  hungryBelow: 20,
+  hungryNight: 15,
+  // A night in the pullout when the card won't cover the van spot.
+  roughEnergy: 35,
+  // Under this, every window shrinks, down to 70% at zero. Zero stops climbing and work.
+  weakBelow: 35,
   // A night's sleep gives most of your energy back but only a fifth of your skin, so two
   // hard days in a row are a real decision.
   sleepEnergy: 55,
   sleepSkin: 22,
-  // Driving is tiring in a small way. It keeps a drive from being free.
+  // A long drive is tiring in a small way. Hops across town aren't.
   driveEnergy: 3,
 };
 
 export const CLIMB = {
-  // One go: tying in, climbing, lowering. 25 minutes keeps a crag day to a handful of goes.
-  goMin: 25,
-  goEnergy: 10,
-  goSkin: 8,
+  // What one go costs, by kind. A sport go is tying in, climbing and lowering off; a
+  // boulder go is a few minutes on the pads. v0.956 charged 18 energy and 2 hours for a
+  // crag go; goes here are played in real time, so each costs less and a day holds more.
+  go: {
+    sport: { min: 25, energy: 10, fed: 6 },
+    boulder: { min: 10, energy: 6, fed: 4 },
+    gym: { min: 8, energy: 5, fed: 3 },
+  } as Record<'sport' | 'boulder' | 'gym', { min: number; energy: number; fed: number }>,
+  // Skin per go by the route's style: v0.956's table at 0.6x for the shorter goes, and
+  // 1.35x on real rock.
+  skin: { crimp: 7, crack: 9, endurance: 6, power: 5, dyno: 4, technical: 3 } as Record<Style, number>,
+  rockSkin: 1.35,
   // Between goes. Long enough that "one more" costs daylight.
-  restMin: 20,
+  restMin: { sport: 20, boulder: 10 } as Record<'sport' | 'boulder', number>,
+  // What a go teaches, against v0.956's formula. Its goes cost two hours and its first week
+  // was already too fast (V3 inside it, docs/audit/climbing.md §5.3); goes here are shorter
+  // and more of them fit in a day, so each teaches 60% as much.
+  learn: 0.6,
+  // A go on a line you've already sent teaches this share again: laps are mileage, not
+  // progress. It stands in for v0.956's staleness.
+  repeatLearn: 0.3,
+  // Send City's specialty, as in v0.956: technique and endurance come a little faster.
+  gymSpecialty: 1.2,
   // Below these you can't tie in at all.
   minEnergy: 10,
   minSkin: 12,
   // Too dark to climb from 7 PM.
   darkFrom: 19 * 60,
-  // Sun hits the wall at 2 PM and every window shrinks by a fifth. It makes the morning
-  // worth driving out for.
-  greaseFrom: 14 * 60,
+  // Once the sun is on the wall (when depends on the day's weather) every window shrinks
+  // by a fifth. It makes the morning worth driving out for.
   greaseFactor: 0.8,
   // Moves per second while you hold. About a move and a half: fast enough that pump, not
   // boredom, is what makes you let go.

@@ -117,6 +117,45 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 - **The app shell:** manifest, service worker with a hashed precache, install; resume mid-day after a reload; settings (reduced motion, text size).
 - **Creation:** a name and a quick start.
 
+**Plan (28 Sep 2026), from the audit and the v0.956 bundle.** Numbers are v0.956's unless marked as a deviation. Every deviation is logged here and, where it touches the spec, in the Unreal repo's `concepts/2D-SPEC-LOG.md`.
+
+- **Your climber:**
+  - v0.956's five skills and grade curve: grade = floor((−8 + √(64 + 9.6·average)) / 4.8).
+  - Its four starts: Boulderer 12/10/4/5/6, Rope Gun 5/5/13/5/11, Technician 5/9/5/13/7 and All-Rounder 8s (power/fingers/endurance/technique/head). Plus a name.
+  - Each beta has a style (crimp, power, endurance, technical, dyno, crack). The style's 65/35 skill mix, against the crux's grade, sets the window: about half as wide two grades over your head, and at most 1.4× below it.
+  - Endurance sets the pump rate.
+  - Every go earns skill through v0.956's XP formula and its diminishing curve: the route's style takes 60%, the beta you tried 40%.
+  - *Deviation:* goes here are shorter than v0.956's two hours, so each teaches 60% as much, and a lap of a line you've sent teaches 30% of that. The lap discount stands in for v0.956's staleness until R2 ports it.
+- **Places:**
+  - The Lot.
+  - Roadside Crag with v0.956's own lines. Three boulders: Warm Boulder V2, The Dyno V3, Crimpfest V4. Four sport routes: Roadside Warmup 5.11b, Roadside Route 5.11d, The Pump 5.12a, Local Testpiece 5.12b.
+  - Send City: a side-view gym, with six problems (V0–V5) that change each week from the seed, styled and named from v0.956's lists.
+  - *Deviation:* v0.956 drew a problem's name and style separately, so "Dyno Lunge" could be a crimp problem. Here each name belongs to the style it describes.
+  - The Diner, for food, as in v0.956.
+  - The Coffee Shop, with 3-hour shifts at $28, and coffee.
+- **The Pump becomes the first week's project.** It's a V4-equivalent. The first outdoor send is a V2 boulder or the 5.11b.
+- **Sage**, v0.956's technical, beta-sharing partner, turns up at the gym or the crag on some days. Climbing with Sage lets you watch a go: the third way to earn beta, after falling and asking.
+- **Body:**
+  - Fed, which is v0.956's hunger: −15 a night, −3 to −6 a go, −8 a shift. Under 35 your windows shrink, down to 70% at 0, and at 0 you can't climb. Work never needs food, so there's always a way back.
+  - You eat at the Diner or cook at the van.
+  - Energy and skin as now; sleep brings them back.
+- **Money:**
+  - $18 a night at the Lot, plus registration ($45) and insurance ($25) every seventh night.
+  - *Deviation:* no game over. What you can't cover goes on the card, up to a $150 limit. Past it, purchases are declined and you sleep rough in the pullout with less energy back. The van still runs on fumes, so you're never stranded. Bills land regardless.
+- **Conditions:**
+  - The first season is fall, the send season.
+  - Each day's weather is drawn from v0.956's weights (prime, fair, hot, rain) by the seeded generator, with a three-day forecast.
+  - Rain closes the crag, which makes it a gym day. Hot days grease the wall from noon. Prime days widen the windows.
+- **Deviations from the feel slice:**
+  - The diner shift moves to the Coffee Shop, where v0.956 had it.
+  - The gym sells a day pass ($14) rather than charging v0.956's $5 a go.
+- **Shell:**
+  - A name-and-start screen.
+  - Settings (reduced motion, text size), kept outside the save so starting over doesn't reset them.
+  - A manifest and a service worker.
+  - Resume where you were.
+- **The week in tests:** a bot plays seven days on the sim alone, and a replay test checks that the same seed and inputs give the same week.
+
 **Done when.**
 1. A seven-day loop plays start to finish, and the bot finishes a week.
 2. 4 of 5 testers reach their first outdoor send within 20 minutes, unassisted.
