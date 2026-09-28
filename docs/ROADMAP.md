@@ -39,6 +39,46 @@ That adds up to about 51–82 weeks, roughly 12–19 months [INFERRED].
 
 ### Phase 1 — Source of truth   **<<< CURRENT MILESTONE**
 
+**Status (28 Sep 2026): in progress.** The release pipeline is built. The source is still missing.
+
+**Done**, in this repo:
+- **CI (`ci.yml`), on every push:**
+  - `npm run check`: one version everywhere, every referenced file exists, and the TWA domain link is intact.
+  - A size report.
+  - A headless Chromium smoke test that plays the first minute: boot, service worker, new game to town, save, clock, reload, offline start. It fails on any error, any failed request, or any request that leaves the site.
+  - It was run against four deliberately broken builds. Each failed in under a second and named the cause.
+- **Deploy on tag (`deploy.yml`):**
+  - The tag must match `package.json` and the version compiled into `index.html`.
+  - It smoke-tests the staged allowlist, deploys, confirms the live site serves the release, then smoke-tests the live site.
+  - Rolling back means running the same workflow on an older tag.
+  - Not yet exercised: it waits on the settings switch in item 4 below.
+- **One version:** `package.json` sets the service-worker cache name and the TWA `appVersionName` through `npm run stamp`. `npm run check` fails on any drift, including the version compiled into the build.
+- **Play toolchain pinned:**
+  - Bubblewrap CLI and core 1.25.0 are pinned via `twa/package-lock.json`. Core owns the Android template.
+  - The workflow asserts `targetSdkVersion` ≥ 36, Play's floor for updates since 31 Aug 2026.
+  - The only bundle built so far (18 Jul) predates Bubblewrap 1.25, so it targets API 35 [INFERRED from that version's template]. It stays listed, but the next Play update has to come from the new workflow.
+  - The first check run found the workflow broken for everyone since 15 Sep. Google removed the legacy SDK `tools` package, and `setup-android` still requested it. Fixed by installing `platform-tools` only.
+  - Verified by an unsigned check run: it built a bundle with `targetSdkVersion` 36 and versionCode 1510275. July's bundle was 1405609, so codes keep increasing.
+- **Dead weight out:**
+  - Removed the duplicate `/music` folder: 6 MB, byte-identical to the embedded tracks, never fetched.
+  - Added `favicon.ico`.
+  - Marked `index.html` as generated, so git never text-diffs it.
+  - Added `npm run compare`, which diffs two builds part by part, for the handoff below.
+- **Docs:** `CLAUDE.md` and `README.md` for this repo. The source repo will need its own.
+
+**Open**, and which Done-when criterion each blocks:
+1. **Put the source in a private repo** (e.g. `RCJLabs/dirtbag-src`). Only Evan can do this; the source isn't on GitHub. Then tag it `v0.956.0-baseline` and run `npm run compare` on its build against this repo's `index.html`. Blocks criterion 1.
+2. **Source CI** that builds `index.html` and hands it to this repo, so a release is "tag" rather than "upload, then tag". Blocks criterion 2.
+3. **The app reads its version from `package.json`** at build time (a Vite `define`). Today that copy is checked, not driven. Blocks criterion 3.
+4. **One-time settings, done by Evan:**
+   - Pages source → GitHub Actions.
+   - A `v*` tag rule on the `github-pages` environment.
+
+   The first tag deploy then exercises `deploy.yml`.
+5. **The next Play update:** run "Build TWA (AAB)" with signing on. Not a Done-when criterion, but due before the next store release.
+
+Criterion 4 (the smoke test runs green in CI) is met.
+
 **Goal.** Get the real source into version control, and build and deploy the game from it, before touching anything else.
 
 **Why.** The repo holds only the compiled build: 59 commits of "Add files via upload" and "Update game to vX build". If the source lives on one machine or in chat history, one bad day loses the game. Until the source is in a repo, no one — Claude Code included — can make a reviewed, reversible change.
@@ -854,3 +894,11 @@ Players will ask "what am I working towards?" by hour 3.
 ## Changelog
 
 - 2026-09-28 — Roadmap written from the v0.956.0 audit (`docs/AUDIT.md`). CURRENT MILESTONE set to Phase 1.
+- 2026-09-28 — Phase 1, part 1: the release pipeline for the built game.
+  - CI: static checks, size report, headless smoke test.
+  - Deploy on tag.
+  - One version, in `package.json`.
+  - Bubblewrap pinned by lockfile, with targetSdk ≥ 36 asserted.
+  - Duplicate `/music` removed; favicon added; `CLAUDE.md` and `README.md` written.
+  - The Play build's SDK setup was broken by Google removing the `tools` package; now fixed.
+  - The marker stays on Phase 1, because the source is still missing.
