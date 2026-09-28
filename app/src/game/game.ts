@@ -6,25 +6,43 @@ import {
   act,
   attemptInput,
   goResult,
+  gradeLabel,
   isNight,
   newGame,
+  PEOPLE,
   PLACES,
-  ROUTES,
+  routeOfId,
+  routesAt,
   startAttempt,
   STEP,
   stepAttempt,
   talkStart,
   THINGS,
+  whereIs,
   type Action,
   type Attempt,
   type AttemptEvent,
   type FallRun,
   type GameEvent,
   type GameState,
-  type Style,
+  type SendStyle,
+  type Skills,
 } from '../sim';
 import { arcTable, atLen, clamp, type Pt } from '../view/kit/geom';
-import { DIM_PINS, MAP_PINS, OY, SCENES, VW, WAKE_X, WALK_OFF_X, WW, Z, type Use } from '../view/layout';
+import {
+  DIM_PINS,
+  MAP_PINS,
+  OY,
+  presentIn,
+  SCENES,
+  spotHot,
+  VW,
+  WAKE_X,
+  WW,
+  Z,
+  type Hot,
+  type Use,
+} from '../view/layout';
 import { mapArt } from '../view/paint/map';
 import { render, type Frame } from '../view/render';
 import { drivePath } from '../view/valley';
@@ -36,10 +54,14 @@ export type View = 'scene' | 'map' | 'wall';
 export type SheetId =
   | { k: 'van' }
   | { k: 'cragVan' }
+  | { k: 'desk' }
   | { k: 'place'; id: string }
   | { k: 'beta'; route: string }
-  | { k: 'fall'; route: string; fall: FallRun; notes: string[] }
-  | { k: 'sent'; route: string; style: Style; go: number }
+  | { k: 'fall'; route: string; fall: FallRun; notes: string[]; gains: Partial<Skills> }
+  | { k: 'sent'; route: string; style: SendStyle; go: number; gains: Partial<Skills> }
+  | { k: 'you' }
+  | { k: 'week' }
+  | { k: 'settings' }
   | { k: 'restart' };
 
 export interface Hud {
@@ -48,6 +70,7 @@ export interface Hud {
   cash: number;
   energy: number;
   skin: number;
+  fed: number;
 }
 
 export interface Ui {
@@ -64,6 +87,8 @@ export interface Ui {
   climbing: boolean;
   driving: boolean;
   wallRoute: string;
+  settings: persist.Settings;
+  still: boolean;
 }
 
 export interface Fast {
@@ -87,6 +112,7 @@ const hudOf = (s: GameState): Hud => ({
   cash: s.cash,
   energy: s.energy,
   skin: s.skin,
+  fed: s.fed,
 });
 
 function freshSeed(): string {
@@ -95,11 +121,15 @@ function freshSeed(): string {
   return `dirtbag-${b[0]!.toString(36)}${b[1]!.toString(36)}`;
 }
 
+const stillFor = (s: persist.Settings, system: boolean) =>
+  s.motion === 'reduce' || (s.motion === 'system' && system);
+
 export class Game {
   state: GameState;
   readonly ui: Store<Ui>;
   readonly fast: Store<Fast>;
-  readonly still: boolean;
+  // Whether the device asks for reduced motion; the settings can override it.
+  private readonly systemStill: boolean;
 
   private player = { x: 300, tx: 300, dir: 1, phase: 0, speed: 0, onArrive: null as (() => void) | null };
   private scout = { x: 436, wag: 0 };
@@ -117,7 +147,8 @@ export class Game {
   private keysWalking = false;
 
   constructor(opts: { still?: boolean } = {}) {
-    this.still = !!opts.still;
+    this.systemStill = !!opts.still;
+    const settings = persist.loadSettings();
     const b = persist.boot(freshSeed);
     this.state = b.state;
     const home = PLACES[this.state.at];
@@ -135,25 +166,47 @@ export class Game {
       climbing: false,
       driving: false,
       wallRoute: 'pump',
+      settings,
+      still: stillFor(settings, this.systemStill),
     });
     this.fast = createStore<Fast>({ cam: 0, att: null });
     if (home?.scene) this.enter(home.scene, this.state.x ?? undefined);
     if (b.note) this.toast(b.note);
   }
 
+  get still(): boolean {
+    return this.ui.get().still;
+  }
+
   // ---- the sim ----
 
   dispatch(a: Action): GameEvent[] {
-    const r = act(this.state, a);
-    const changed = r.state !== this.state;
+    const before = this.state;
+    const r = act(before, a);
+    const changed = r.state !== before;
     this.state = r.state;
     for (const e of r.events) {
       if (e.k === 'line') this.toast(e.text);
       else if (e.k === 'refused') this.toast(e.why);
     }
+    if (changed) this.noteComings(before);
     if (changed && !persist.save(this.state)) this.toast("Couldn't save. The browser's storage may be full.");
     this.sync();
     return r.events;
+  }
+
+  // People keep their own hours. When the clock takes someone away from where you are, or
+  // brings them, say so: otherwise they just blink out of the scene.
+  private noteComings(before: GameState): void {
+    const s = this.state;
+    if (before.at !== s.at || before.day !== s.day) return;
+    for (const who of Object.keys(PEOPLE)) {
+      const was = whereIs(before.seed, who, before.day, before.min) === s.at;
+      const is = whereIs(s.seed, who, s.day, s.min) === s.at;
+      const name = PEOPLE[who]!.name;
+      if (was && !is) this.toast(`${name} heads out.`);
+      else if (!was && is) this.toast(`${name} turns up.`);
+    }
   }
 
   private sync(): void {
@@ -202,6 +255,20 @@ export class Game {
     );
   }
 
+  // ---- settings and your climber ----
+
+  setSettings(p: Partial<persist.Settings>): void {
+    const settings = { ...this.ui.get().settings, ...p };
+    if (!persist.saveSettings(settings)) this.toast("Couldn't keep that setting in this browser.");
+    this.set({ settings, still: stillFor(settings, this.systemStill) });
+  }
+
+  create(name: string, start: string): void {
+    const ev = this.dispatch({ t: 'create', name, start });
+    if (ev.some((e) => e.k === 'refused')) return;
+    this.set({ hint: SCENES[this.ui.get().scene]?.hint ?? null });
+  }
+
   // ---- moving between views ----
 
   // Input is locked only while the old view fades out. Once the new one is in place, taps
@@ -233,7 +300,7 @@ export class Game {
       talk: null,
       stamp: null,
       climbing: false,
-      hint: layout.hint,
+      hint: this.state.climber.name ? layout.hint : null,
     });
     this.fast.set({ cam: this.cam, att: null });
     if (x !== undefined && x !== this.state.x) this.dispatch({ t: 'stand', x });
@@ -256,7 +323,7 @@ export class Game {
       const scene = PLACES[this.state.at]?.scene;
       if (scene && !this.trip) this.enterScene(scene, this.state.x ?? undefined);
     } else if (u.view === 'wall') {
-      if (!u.climbing) this.enterScene('crag', WALK_OFF_X);
+      if (!u.climbing) this.walkOff();
     } else this.openMap();
   }
 
@@ -280,6 +347,11 @@ export class Game {
 
   // ---- scenes: walking and using things ----
 
+  // A scene's hotspots: its fixed things, plus whoever's there right now.
+  private hots(scene: string): Hot[] {
+    return [...SCENES[scene]!.hots, ...presentIn(this.state, scene).map(spotHot)];
+  }
+
   private walkTo(x: number, then: (() => void) | null): void {
     this.player.tx = clamp(x, 24, WW - 24);
     this.player.onArrive = then;
@@ -295,19 +367,21 @@ export class Game {
       const th = THINGS[u.thing];
       if (u.wag) this.scout.wag = 1.4;
       if (!th) return;
-      const night = isNight(this.state.min);
-      if (night && th.nightAct) this.dispatch({ t: 'act', act: th.nightAct });
+      const s = this.state;
+      const night = isNight(s.min);
+      if (th.away && whereIs(s.seed, th.away.who, s.day, s.min) !== s.at) this.toast(th.away.text);
+      else if (night && th.nightAct) this.dispatch({ t: 'act', act: th.nightAct });
       else this.toast(night ? (th.night ?? th.day) : th.day);
-    } else if ('route' in u) {
-      const r = ROUTES[u.route];
-      if (r?.cruxes.length) this.lookUp(u.route);
-      else if (r?.blurb) this.toast(r.blurb);
+    } else if ('route' in u) this.lookUp(u.route);
+    else {
+      const r = routesAt(this.state.seed, 'gym', this.state.day)[u.problem];
+      if (r) this.lookUp(r.id);
     }
   }
 
   // A tap on the screen, in logical pixels.
   tap(sx: number, sy: number): void {
-    if (this.busy) return;
+    if (this.busy || !this.state.climber.name) return;
     const u = this.ui.get();
     if (u.view === 'scene') {
       if (u.sheet) {
@@ -317,7 +391,7 @@ export class Game {
       this.hush();
       const wx = sx / Z + this.cam;
       const wy = (sy - OY) / Z;
-      const h = SCENES[u.scene]!.hots.find((o) => wx >= o.x0 && wx <= o.x1 && wy >= o.y0 && wy <= o.y1);
+      const h = this.hots(u.scene).find((o) => wx >= o.x0 && wx <= o.x1 && wy >= o.y0 && wy <= o.y1);
       if (h)
         this.walkTo(h.stand, () => {
           this.player.dir = h.face;
@@ -346,7 +420,7 @@ export class Game {
 
   // Keyboard: arrows walk, Enter uses what's nearest, M opens the map.
   walkKey(dir: -1 | 1 | 0): void {
-    if (this.ui.get().view !== 'scene') return;
+    if (this.ui.get().view !== 'scene' || !this.state.climber.name) return;
     if (dir === 0) {
       if (this.keysWalking) this.player.tx = this.player.x;
       this.keysWalking = false;
@@ -359,10 +433,10 @@ export class Game {
 
   useNearest(): void {
     const u = this.ui.get();
-    if (u.view !== 'scene' || u.talk || u.sheet) return;
-    const near = SCENES[u.scene]!.hots.map((o) => ({ o, d: Math.abs(o.stand - this.player.x) })).sort(
-      (a, b) => a.d - b.d,
-    )[0];
+    if (u.view !== 'scene' || u.talk || u.sheet || !this.state.climber.name) return;
+    const near = this.hots(u.scene)
+      .map((o) => ({ o, d: Math.abs(o.stand - this.player.x) }))
+      .sort((a, b) => a.d - b.d)[0];
     if (near && near.d < 110)
       this.walkTo(near.o.stand, () => {
         this.player.dir = near.o.face;
@@ -376,6 +450,10 @@ export class Game {
     const t = this.ui.get().talk;
     if (!t) return;
     const ev = this.dispatch({ t: 'say', talk: t.talk, node: t.node, opt });
+    if (ev.some((e) => e.k === 'refused')) {
+      this.set({ talk: null });
+      return;
+    }
     const next = ev.find((e): e is Extract<GameEvent, { k: 'talk' }> => e.k === 'talk');
     this.set({ talk: next?.node ? { talk: t.talk, node: next.node } : null });
   }
@@ -448,9 +526,11 @@ export class Game {
 
   go(): void {
     const route = this.ui.get().wallRoute;
+    const r = routeOfId(this.state, route);
+    if (!r) return;
     const ev = this.dispatch({ t: 'go', route });
     if (ev.some((e) => e.k === 'refused')) return;
-    this.att = startAttempt(this.state, route);
+    this.att = startAttempt(this.state, r);
     this.acc = 0;
     this.fast.set({ cam: this.cam, att: this.att });
     this.set({ sheet: null, climbing: true });
@@ -471,8 +551,19 @@ export class Game {
     this.openSheet({ k: 'beta', route: this.ui.get().wallRoute });
   }
 
+  // Back to the scene the route is in, standing at its foot.
   walkOff(): void {
-    this.enterScene('crag', WALK_OFF_X);
+    const route = this.ui.get().wallRoute;
+    const r = routeOfId(this.state, route);
+    const scene = (r && PLACES[r.place]?.scene) ?? 'crag';
+    const slot =
+      r?.place === 'gym'
+        ? routesAt(this.state.seed, 'gym', this.state.day).findIndex((p) => p.id === route)
+        : -1;
+    const hot = SCENES[scene]!.hots.find((h) =>
+      'route' in h.use ? h.use.route === route : 'problem' in h.use && h.use.problem === slot,
+    );
+    this.enterScene(scene, hot?.stand);
   }
 
   private applyAttempt(r: { att: Attempt; events: AttemptEvent[] }): void {
@@ -488,22 +579,26 @@ export class Game {
     const route = a.route;
     const ev = this.dispatch({ t: 'done', route, result: goResult(a) });
     const notes = ev.flatMap((e) => (e.k === 'learned' && e.how === 'fall' ? [e.text] : []));
-    this.set({ climbing: false, sheet: { k: 'fall', route, fall: a.fall!, notes } });
+    this.set({ climbing: false, sheet: { k: 'fall', route, fall: a.fall!, notes, gains: gainsIn(ev) } });
   }
 
   private finishSend(): void {
     const a = this.att!;
     const route = a.route;
-    const r = ROUTES[route]!;
+    const r = a.def;
     const ev = this.dispatch({ t: 'done', route, result: goResult(a) });
     const sent = ev.find((e): e is Extract<GameEvent, { k: 'sent' }> => e.k === 'sent');
-    this.set({ stamp: `${r.name} · ${r.grade} · go ${sent?.go ?? 1}` });
+    const go = sent?.go ?? this.state.routes[route]?.goes ?? 1;
+    this.set({ stamp: `${r.name} · ${gradeLabel(r)} · go ${go}` });
+    const gains = gainsIn(ev);
     window.setTimeout(
       () => {
         this.set({
           stamp: null,
           climbing: false,
-          sheet: sent ? { k: 'sent', route, style: sent.style, go: sent.go } : null,
+          sheet: sent
+            ? { k: 'sent', route, style: sent.style, go: sent.go, gains }
+            : { k: 'sent', route, style: 'redpoint', go, gains },
         });
       },
       this.still ? 1200 : 2600,
@@ -521,7 +616,6 @@ export class Game {
       this.toasts = [];
       this.sync();
       this.enter('lot');
-      this.toast(`Day 1. $${this.state.cash} and a van.`);
     });
   }
 
@@ -586,7 +680,7 @@ export class Game {
       cam: this.cam,
       t,
       px,
-      still: this.still,
+      still: u.still,
       player: this.player,
       scout: this.scout,
       trip: tripView,
@@ -603,4 +697,10 @@ export class Game {
   warm(): void {
     mapArt();
   }
+}
+
+// What a go taught you, from its events.
+function gainsIn(ev: GameEvent[]): Partial<Skills> {
+  const e = ev.find((x): x is Extract<GameEvent, { k: 'skills' }> => x.k === 'skills');
+  return e?.gains ?? {};
 }

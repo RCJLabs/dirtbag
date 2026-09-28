@@ -2,11 +2,11 @@
 // at 0.2, mid hills at 0.5, the ground at 1.0), flat shapes and no outlines. Each layer is
 // painted once per scene and time of day, then scrolled.
 
-import { BASE_ROUTES, GND, H, W, WW } from '../layout';
+import { BASE_ROUTES, BOULDERS, GND, H, W, WW } from '../layout';
 import { lerp, lin, mk, poly, rad, rr, trace, type G, type Pt } from '../kit/geom';
 import { fbm, mulberry32 } from '../kit/noise';
 import { chair, pineShape, popTop, rock, vanBody, vanWindows } from '../shapes';
-import { ROUTES } from '../../sim';
+import { paintGymBack, paintGymGround } from './gym';
 
 export type Tod = 'morning' | 'night' | 'day';
 
@@ -450,18 +450,14 @@ function paintCragGround(P: Palette): HTMLCanvasElement {
     for (let y = GND; y > -10; y -= 30) pts.push([cx + (r() - 0.5) * 12, y]);
     stroke(g, (gg) => trace(gg, pts, false), 'rgba(40,40,48,.45)', 2.2);
   }
-  // The lines: the one you can climb solid and bright, the rest dashed.
+  // The sport lines, chalked up the wall, their bolts dotted along them.
   for (const rt of BASE_ROUTES) {
-    const open = !!ROUTES[rt.route]?.cruxes.length;
     const pts = routeWiggle(rt.x, rt.n * 7);
-    g.save();
-    g.setLineDash(open ? [] : [4, 4]);
-    g.strokeStyle = open ? 'rgba(247,235,208,.9)' : 'rgba(247,235,208,.55)';
-    g.lineWidth = open ? 1.8 : 1.2;
+    g.strokeStyle = 'rgba(247,235,208,.9)';
+    g.lineWidth = 1.8;
     g.beginPath();
     trace(g, pts, false);
     g.stroke();
-    g.restore();
     g.fillStyle = '#2A2A30';
     for (let i = 2; i < pts.length; i += 3) {
       const [x, y] = pts[i]!;
@@ -475,19 +471,50 @@ function paintCragGround(P: Palette): HTMLCanvasElement {
   g.fillStyle = P.track;
   g.fillRect(0, GND + 6, WW, 22);
   for (const [x, w, h] of [
-    [318, 44, 24],
-    [470, 30, 16],
-    [612, 38, 20],
+    [410, 26, 14],
+    [560, 22, 12],
     [770, 50, 26],
     [918, 40, 22],
   ] as const)
     fill(g, (gg) => rock(gg, x, GND - h * 0.2, w, h), P.talus!);
+  for (const b of BOULDERS) paintBoulder(g, b.x, b.w, b.h, b.route);
   const cv = CRAG_VAN;
   drawVan(g, cv.x, GND - cv.h - cv.h * 0.19, cv.w, cv.h, { body: P.van, trim: P.trim, glass: P.glass });
   fill(g, (gg) => gg.rect(270, GND - 52, 4, 52), '#6B4A30');
   fill(g, (gg) => gg.rect(252, GND - 58, 40, 16), '#7A5A3A');
   fill(g, (gg) => rr(gg, 718, GND - 15, 20, 15, 5), '#C8553F');
   return c;
+}
+
+// A boulder on the talus, side on: a lit face, a shaded side, chalk, and a pad in front.
+function paintBoulder(g: G, x: number, w: number, h: number, id: string): void {
+  const r = mulberry32([...id].reduce((a, c) => a + c.charCodeAt(0), 0));
+  const l = x - w / 2;
+  const rt = x + w / 2;
+  const b = GND + 4;
+  const t = b - h;
+  const shape = (gg: G) => {
+    gg.moveTo(l, b);
+    gg.quadraticCurveTo(l - 5, t + h * 0.3, l + w * 0.2, t + 3 + r() * 4);
+    gg.quadraticCurveTo(x, t - 5, rt - w * 0.2, t + 2 + r() * 4);
+    gg.quadraticCurveTo(rt + 5, t + h * 0.35, rt, b);
+    gg.closePath();
+  };
+  fill(g, shape, '#BDB5A5');
+  g.save();
+  g.beginPath();
+  shape(g);
+  g.clip();
+  g.fillStyle = '#9C968B';
+  g.fillRect(x + w * 0.16, t - 10, w, h + 20);
+  g.fillStyle = 'rgba(255,255,255,.55)';
+  for (let k = 0; k < 4; k++) {
+    g.beginPath();
+    g.ellipse(x - w * 0.12 + (r() - 0.5) * w * 0.3, b - h * (0.3 + k * 0.17), 2.6, 1.8, 0, 0, 6.2832);
+    g.fill();
+  }
+  g.restore();
+  fill(g, (gg) => gg.rect(x - w / 2 - 6, GND - 1, w + 12, 7), id === 'dyno' ? '#C8553F' : '#3F7F6A');
 }
 
 export interface Layer {
@@ -505,9 +532,15 @@ const cache = new Map<string, SceneArt>();
 // The painted layers for a scene at a time of day. Two are kept: the one you're in and the
 // one you just left, so walking back doesn't repaint.
 export function sceneArt(id: string, tod: Tod): SceneArt {
-  const key = `${id}:${tod}`;
+  const key = id === 'gym' ? id : `${id}:${tod}`;
   let a = cache.get(key);
   if (a) return a;
+  if (id === 'gym') {
+    a = { sky: paintGymBack(), layers: [{ p: 1, w: WW, c: paintGymGround() }] };
+    cache.set(key, a);
+    while (cache.size > 2) cache.delete(cache.keys().next().value!);
+    return a;
+  }
   const crag = id === 'crag';
   const P = SP[crag ? 'day' : tod];
   const lw = (p: number) => 360 + (WW - 360) * p;

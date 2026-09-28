@@ -1,26 +1,41 @@
-import { clock, money } from '../sim';
+import { clock, gradeOf, money } from '../sim';
 import type { Game, Ui } from '../game/game';
 
-// Day and time, money, energy and skin, and the one navigation button.
+// Day and time (tap for the forecast), money, your body (tap for you as a climber), and the
+// one navigation button.
 export function Hud({ game, ui }: { game: Game; ui: Ui }) {
-  const { day, min, cash, energy, skin } = ui.hud;
-  const nav = game.navLabel(ui);
+  const { day, min, cash, energy, skin, fed } = ui.hud;
+  // Nothing to navigate until you've made your climber.
+  const made = !!ui.state.climber.name;
+  const nav = made ? game.navLabel(ui) : null;
+  const busy = ui.climbing || ui.driving || !made;
   return (
     <div className="hud">
-      <span className="pill" id="h-time">
+      <button
+        type="button"
+        className="pill"
+        id="h-time"
+        disabled={busy}
+        aria-label={`Day ${day}, ${clock(min)}. The forecast.`}
+        onClick={() => game.openSheet({ k: 'week' })}
+      >
         Day {day} · {clock(min)}
-      </span>
+      </button>
       <span className={`pill${cash < 0 ? ' debt' : ''}`} id="h-cash">
         {money(cash)}
       </span>
-      <span
+      <button
+        type="button"
         className="pill meters"
-        role="group"
-        aria-label={`Energy ${Math.round(energy)}, skin ${Math.round(skin)}`}
+        id="h-you"
+        disabled={busy}
+        aria-label={`V${gradeOf(ui.state.climber.skills)}. Energy ${Math.round(energy)}, skin ${Math.round(skin)}, food ${Math.round(fed)}.`}
+        onClick={() => game.openSheet({ k: 'you' })}
       >
         <Meter name="Energy" id="m-en" v={energy} />
         <Meter name="Skin" id="m-sk" v={skin} />
-      </span>
+        <Meter name="Food" id="m-fd" v={fed} />
+      </button>
       {nav && (
         <button
           type="button"

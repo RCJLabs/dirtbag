@@ -50,6 +50,16 @@ export const LOOK: Record<string, Look> = {
     pony: true,
     tie: '#B23A2C',
   },
+  // Sage: technical, patient, reads everything first. Green tee, plum pants, copper hair.
+  sage: {
+    skin: '#C98E6B',
+    shirt: '#6E9F62',
+    pants: '#4A4456',
+    shoe: '#3A3440',
+    hair: '#B8733A',
+    hat: null,
+    sleeve: 'short',
+  },
 };
 
 const SOLE = '#E6DFD0';

@@ -1,4 +1,4 @@
-import { CLIMB, moveAt, resting, ROUTES, type Attempt, type RouteDef } from '../sim';
+import { CLIMB, gradeLabel, moveAt, resting, type Attempt, type RouteDef } from '../sim';
 import type { Game } from '../game/game';
 import { useStore } from '../game/store';
 import { VERB_TEXT } from './Sheet';
@@ -13,9 +13,10 @@ function status(a: Attempt, r: RouteDef): string {
     const count = v.verb === 'timing' ? ` ${v.hits}/${CLIMB.timing.hits}` : '';
     return `${crux.name}, ${r.beta[v.beta]!.short}. ${how}.${count}`;
   }
-  if (a.phase === 'sent') return 'Chains clipped.';
+  if (a.phase === 'sent') return r.disc === 'sport' ? 'Chains clipped.' : 'Topped out.';
   if (a.pump > 80) return 'Forearms are going.';
   if (!a.hold && resting(a, r) && a.pos > 0) return 'Good rest on the ledge. Shake out.';
+  if (r.disc === 'boulder' && a.pos === 0 && !a.hold) return 'Hold to pull on. Let go to shake out.';
   if (a.hold) return 'Climbing.';
   if (a.pos > 0) return 'Hanging on. Hold to keep moving.';
   return 'Hold to climb. Let go to shake out.';
@@ -27,7 +28,7 @@ export function ClimbPanel({ game }: { game: Game }) {
   const { att } = useStore(game.fast);
   const ui = useStore(game.ui);
   if (!att) return null;
-  const r = ROUTES[att.route]!;
+  const r = att.def;
   const v = att.crux;
   const center = v
     ? v.verb === 'load'
@@ -47,7 +48,7 @@ export function ClimbPanel({ game }: { game: Game }) {
     <div className="climb" id="climb">
       <div className="c-route">
         <span>{r.name}</span>
-        <span className="g">{r.grade}</span>
+        <span className="g">{gradeLabel(r)}</span>
         <span className="t" id="c-go">
           Go {ui.state.routes[att.route]?.goesToday ?? 1}
         </span>

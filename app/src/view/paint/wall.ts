@@ -1,12 +1,15 @@
-// Roadside Crag's wall, face on: the view when you look up at a route. Poster style, with
-// every route's line drawn from its topo. The route you're on is mapped from moves (the
+// The walls you look up at. Roadside's main wall, face on, carries the four sport lines,
+// each drawn from its topo; its boulders and Send City's problems have close-up walls of
+// their own (boulder.ts, gym.ts). Whatever the wall, a route is mapped from moves (the
 // sim's unit) to points along its line here, so the rules never see a pixel.
 
-import { ROUTES } from '../../sim';
+import type { RouteDef } from '../../sim';
 import { arcTable, atLen, lin, mk, poly, spline, trace, type G, type Pt } from '../kit/geom';
 import { mulberry32 } from '../kit/noise';
 import { H, W } from '../layout';
 import { coniferPath, rock } from '../shapes';
+import { boulderArt, boulderTopo } from './boulder';
+import { gymTopo, gymWallArt } from './gym';
 
 const SKY: Pt[] = [
   [-4, 130],
@@ -87,8 +90,8 @@ const CRAG_TREES: [number, number, number][] = [
   [18, 562, 1.1],
   [346, 558, 1],
 ];
-// Where your belayer stands, feet on the talus, and where the rope leaves their hands.
-export const BELAYER = { x: 182, y: 586 };
+// Your belayer stands on the talus a step left of the route's first moves.
+const BELAY_Y = 586;
 
 // Each route's line on this wall, bottom to top, keyed by route id.
 const TOPO_PTS: Record<string, Pt[]> = {
@@ -137,22 +140,59 @@ interface Topo {
   bolts: number[];
 }
 
-export const TOPO: Record<string, Topo> = Object.fromEntries(
-  Object.entries(TOPO_PTS).map(([id, pts]) => {
-    const d = spline(pts, 14);
-    const L = arcTable(d);
-    const len = L[L.length - 1]!;
-    const bolts: number[] = [];
-    for (let s = 34; s < len - 22; s += 44) bolts.push(s);
-    return [id, { d, L, len, bolts }];
-  }),
+const topoOf = (d: Pt[]): Topo => {
+  const L = arcTable(d);
+  const len = L[L.length - 1]!;
+  const bolts: number[] = [];
+  for (let s = 34; s < len - 22; s += 44) bolts.push(s);
+  return { d, L, len, bolts };
+};
+
+const TOPO: Record<string, Topo> = Object.fromEntries(
+  Object.entries(TOPO_PTS).map(([id, pts]) => [id, topoOf(spline(pts, 14))]),
 );
 
+export interface Wall {
+  art: HTMLCanvasElement;
+  topo: Topo;
+  // A close-up wall (boulder or gym): the climber is drawn big.
+  big: boolean;
+}
+
+const close = new Map<string, Wall>();
+
+// A gym problem's place on the wall, from its id ("sc-3-2" is the second, V1).
+export const slotOf = (id: string): number => Math.max(0, Number(id.split('-')[2] ?? 1) - 1);
+
+// The wall a route is on, and its line there.
+export function wallOf(r: RouteDef): Wall {
+  if (r.disc === 'sport') return { art: wallArt(r.id), topo: TOPO[r.id]!, big: false };
+  const key = r.place === 'gym' ? `gym:${slotOf(r.id)}:${r.heightFt}` : r.id;
+  let w = close.get(key);
+  if (!w) {
+    w =
+      r.place === 'gym'
+        ? {
+            art: gymWallArt(slotOf(r.id), r.heightFt),
+            topo: topoOf(gymTopo(slotOf(r.id), r.heightFt)),
+            big: true,
+          }
+        : { art: boulderArt(r.id, r.heightFt), topo: topoOf(boulderTopo(r.id, r.heightFt)), big: true };
+    close.set(key, w);
+  }
+  return w;
+}
+
 // A point on a route's line, `moves` up it.
-export function onRoute(route: string, moves: number): Pt {
-  const t = TOPO[route]!;
-  const total = ROUTES[route]?.moves || 1;
-  return atLen(t.d, t.L, (moves / total) * t.len);
+export function onRoute(r: RouteDef, moves: number): Pt {
+  const t = wallOf(r).topo;
+  return atLen(t.d, t.L, (moves / (r.moves || 1)) * t.len);
+}
+
+// Where the belayer stands for a sport route.
+export function belayAt(r: RouteDef): Pt {
+  const [x] = wallOf(r).topo.d[0]!;
+  return [x - 24, BELAY_Y];
 }
 
 const TALUS = (() => {

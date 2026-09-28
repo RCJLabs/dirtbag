@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef } from 'react';
 import { fill, goesToday, holds, PEOPLE, TALK } from '../sim';
 import type { Game } from '../game/game';
 import { useStore } from '../game/store';
-import { ANCHORS, OY, W, Z } from '../view/layout';
+import { HEAD_Y, OY, SPOTS, W, Z } from '../view/layout';
 
 // A speech bubble with a tail, pinned over the speaker's head as the camera moves.
 export function Bubble({ game, talk, node }: { game: Game; talk: string; node: string }) {
@@ -11,7 +11,8 @@ export function Bubble({ game, talk, node }: { game: Game; talk: string; node: s
   const ref = useRef<HTMLDivElement>(null);
   const def = TALK[talk];
   const n = def?.nodes[node];
-  const anchor = ANCHORS[talk];
+  const spot = SPOTS[ui.scene]?.find((p) => p.talk === talk);
+  const anchor = spot && { wx: spot.x, wy: HEAD_Y };
 
   useLayoutEffect(() => {
     const b = ref.current;
@@ -35,7 +36,7 @@ export function Bubble({ game, talk, node }: { game: Game; talk: string; node: s
   return (
     <div className="bubble" id="bubble" role="dialog" aria-live="polite" ref={ref}>
       <p className="who">{PEOPLE[def.who]?.name}</p>
-      <p>{fill(n.text, { goes: goesToday(ui.state) })}</p>
+      <p>{fill(n.text, { goes: goesToday(ui.state), name: ui.state.climber.name })}</p>
       {opts.length > 0 && (
         <div className="acts">
           {opts.map(({ o, i }) => (

@@ -108,3 +108,40 @@ export function wipe(): void {
     // Nothing to wipe if storage is off.
   }
 }
+
+// Settings live beside the save, never in it: starting over keeps them, and a save that
+// won't load doesn't take them with it.
+const SETTINGS = 'dirtbag.settings';
+
+export interface Settings {
+  // Follow the device, or override it either way.
+  motion: 'system' | 'reduce' | 'full';
+  text: 'normal' | 'large';
+}
+
+export const DEFAULT_SETTINGS: Settings = { motion: 'system', text: 'normal' };
+
+export function loadSettings(): Settings {
+  try {
+    const raw = store()?.getItem(SETTINGS);
+    if (!raw) return DEFAULT_SETTINGS;
+    const v = JSON.parse(raw) as Partial<Settings>;
+    return {
+      motion: v.motion === 'reduce' || v.motion === 'full' ? v.motion : 'system',
+      text: v.text === 'large' ? 'large' : 'normal',
+    };
+  } catch {
+    return DEFAULT_SETTINGS;
+  }
+}
+
+export function saveSettings(s: Settings): boolean {
+  try {
+    const ls = store();
+    if (!ls) return false;
+    ls.setItem(SETTINGS, JSON.stringify(s));
+    return true;
+  } catch {
+    return false;
+  }
+}

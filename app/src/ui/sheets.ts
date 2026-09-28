@@ -1,22 +1,28 @@
-// What each sheet says and offers, built fresh from the state every render, so a sheet can
-// never show a price or an option the rules have moved past. Labels come from the sim's
-// numbers through its formatters.
+// What each list sheet says and offers, built fresh from the state every render, so a sheet
+// can never show a price or an option the rules have moved past. Labels come from the
+// sim's numbers through its formatters.
 
 import {
   ACTS,
+  BODY,
   bodyNote,
-  CLIMB,
   costLabel,
   DAY,
   fill,
+  goBlocked,
+  gradeLabel,
+  headroom,
   MONEY,
   PLACES,
+  restCost,
   road,
-  ROUTES,
-  STYLE_NAME,
+  routeOfId,
+  SEND_NAME,
+  SKILLS,
   TEXT_VALUES,
   unmet,
   type GameState,
+  type Skills,
 } from '../sim';
 import type { Game, SheetId } from '../game/game';
 
@@ -36,10 +42,30 @@ export interface ListSpec {
   notes?: string[];
 }
 
+export const SKILL_NAME: Record<keyof Skills, string> = {
+  power: 'Power',
+  fingers: 'Fingers',
+  endurance: 'Endurance',
+  technique: 'Technique',
+  head: 'Head',
+};
+
+// "+2.3 endurance · +1.1 technique": what a go taught you, big gains first.
+export function gainsLine(g: Partial<Skills>): string {
+  return SKILLS.filter((k) => (g[k] ?? 0) >= 0.05)
+    .sort((a, b) => g[b]! - g[a]!)
+    .map((k) => `+${g[k]!.toFixed(1)} ${k}`)
+    .join(' · ');
+}
+
 function actRow(game: Game, s: GameState, id: string): Row {
   const a = ACTS[id]!;
   const why = unmet(s, a.needs);
-  const note = [bodyNote(a.cost), a.note && fill(a.note, TEXT_VALUES)].filter(Boolean).join('. ');
+  let note = [bodyNote(a.cost), a.note && fill(a.note, TEXT_VALUES)].filter(Boolean).join('. ');
+  if (a.sleep && !why) {
+    if (headroom(s) < MONEY.vanSpot) note = "The card won't cover the spot: a cold night in the pullout.";
+    if (s.fed < BODY.hungryBelow) note += ' You’ll sleep hungry.';
+  }
   return {
     label: a.label,
     cost: costLabel(a.cost, a.sleep ? 'van spot' : ''),
@@ -51,8 +77,22 @@ function actRow(game: Game, s: GameState, id: string): Row {
 
 function driveRow(game: Game, s: GameState, to: string, label: string): Row {
   const r = road(s.at, to)!;
-  return { label, cost: costLabel({ min: r.min, cash: -r.cash }, 'gas'), run: () => game.travel(to) };
+  const declined = r.cash > 0 && headroom(s) < r.cash;
+  return {
+    label,
+    cost: costLabel({ min: r.min, cash: -r.cash }, 'gas'),
+    note: declined ? "The card won't take the gas. You'd be running on fumes." : undefined,
+    run: () => game.travel(to),
+  };
 }
+
+const mapRow = (game: Game): Row => ({
+  label: 'Open the map',
+  run: () => {
+    game.closeSheet();
+    game.openMap();
+  },
+});
 
 export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | null {
   switch (id.k) {
@@ -61,17 +101,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         title: 'Your van',
         sub: s.min >= DAY.bedFrom ? 'Bed made. Mostly.' : `Home, for ${TEXT_VALUES.spot} a night at the Lot.`,
         close: true,
-        rows: [
-          actRow(game, s, 'lot.cook'),
-          actRow(game, s, 'lot.sleep'),
-          {
-            label: 'Open the map',
-            run: () => {
-              game.closeSheet();
-              game.openMap();
-            },
-          },
-        ],
+        rows: [actRow(game, s, 'lot.cook'), actRow(game, s, 'lot.sleep'), mapRow(game)],
       };
 
     case 'cragVan': {
@@ -82,18 +112,19 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           ? `Parked on the shoulder. It's $${back.cash} of gas back to the Lot.`
           : 'Parked on the shoulder.',
         close: true,
-        rows: [
-          ...(back ? [driveRow(game, s, 'lot', 'Drive back to the Lot')] : []),
-          {
-            label: 'Open the map',
-            run: () => {
-              game.closeSheet();
-              game.openMap();
-            },
-          },
-        ],
+        rows: [...(back ? [driveRow(game, s, 'lot', 'Drive back to the Lot')] : []), mapRow(game)],
       };
     }
+
+    case 'desk':
+      return {
+        title: 'The desk',
+        sub: s.today.includes('pass')
+          ? "Your hand's stamped. Climb till ten."
+          : "The kid at the desk doesn't look up. The set changes every seven days.",
+        close: true,
+        rows: [actRow(game, s, 'gym.pass'), actRow(game, s, 'gym.set'), mapRow(game)],
+      };
 
     case 'place': {
       const p = PLACES[id.id]!;
@@ -102,7 +133,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       if (!here) return { title: p.name, sub, close: true, rows: [driveRow(game, s, id.id, 'Drive here')] };
       if (p.scene) {
         const scene = p.scene;
-        const label = scene === 'crag' ? 'Walk to the wall' : 'Walk back to the van';
+        const label =
+          scene === 'crag' ? 'Walk to the wall' : scene === 'gym' ? 'Walk in' : 'Walk back to the van';
         return { title: p.name, sub, close: true, rows: [{ label, run: () => game.enterScene(scene) }] };
       }
       // A card-only place: you're here until you drive somewhere, so there's no close.
@@ -121,27 +153,27 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     }
 
     case 'fall': {
-      const r = ROUTES[id.route]!;
+      const r = routeOfId(s, id.route)!;
       const crux = r.cruxes.find((c) => c.id === id.fall.crux);
       const where = crux ? crux.name.replace(/^The /, 'the ') : 'the wall';
       const hi = s.routes[id.route]?.hi ?? 0;
-      const tired = s.energy < CLIMB.minEnergy;
-      const raw = s.skin < CLIMB.minSkin;
+      const how =
+        r.disc === 'boulder'
+          ? `A ${id.fall.ft}-foot drop to the pads from move ${id.fall.move} of ${r.moves}.`
+          : `A ${id.fall.ft}-foot catch at move ${id.fall.move} of ${r.moves}.`;
+      const why = goBlocked(s, r);
+      const gained = gainsLine(id.gains);
       return {
         title: `Off at ${where}`,
-        sub: `${id.fall.text} A ${id.fall.ft}-foot catch at move ${id.fall.move} of ${r.moves}. High point: move ${hi}.`,
+        sub: `${id.fall.text} ${how} High point: move ${hi}.`,
         close: false,
-        notes: id.notes,
+        notes: [...id.notes, ...(gained ? [gained] : [])],
         rows: [
           {
             label: 'Rest, then go again',
-            cost: costLabel({ min: CLIMB.restMin }),
-            note: tired
-              ? 'Too tired.'
-              : raw
-                ? 'Your skin is done for today.'
-                : 'Pump back to zero. Change your beta if you want.',
-            off: tired || raw,
+            cost: costLabel({ min: restCost(r) }),
+            note: why ? `${why}.` : 'Pump back to zero. Change your beta if you want.',
+            off: !!why,
             run: () => game.rest(),
           },
           { label: 'Walk off', run: () => game.walkOff() },
@@ -150,12 +182,24 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     }
 
     case 'sent': {
-      const r = ROUTES[id.route]!;
+      const r = routeOfId(s, id.route)!;
+      const gained = gainsLine(id.gains);
       return {
-        title: STYLE_NAME[id.style],
-        sub: `${r.name}, ${r.grade}, on go ${id.go}. Rent's still due.`,
+        title: SEND_NAME[id.style],
+        sub: `${r.name}, ${gradeLabel(r)}, on go ${id.go}.${r.disc === 'sport' ? " Rent's still due." : ''}`,
         close: false,
-        rows: [{ label: 'Lower off and walk out', run: () => game.walkOff() }],
+        notes: gained ? [gained] : [],
+        rows: [
+          {
+            label:
+              r.disc === 'sport'
+                ? 'Lower off and walk out'
+                : r.place === 'gym'
+                  ? 'Drop onto the mats'
+                  : 'Walk down the back',
+            run: () => game.walkOff(),
+          },
+        ],
       };
     }
 
@@ -170,7 +214,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         ],
       };
 
-    case 'beta':
+    default:
       return null;
   }
 }

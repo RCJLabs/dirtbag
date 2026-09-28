@@ -4,6 +4,7 @@ import { useStore } from '../game/store';
 import { H, W } from '../view/layout';
 import { Bubble } from './Bubble';
 import { ClimbPanel } from './ClimbPanel';
+import { Create } from './Create';
 import { Hud } from './Hud';
 import { Sheet } from './Sheet';
 
@@ -55,6 +56,8 @@ export function App({ game }: { game: Game }) {
 
     const hold = (e: KeyboardEvent) => e.key === ' ' || e.key === 'Enter';
     const keydown = (e: KeyboardEvent) => {
+      // While you're typing your name, keys are for the form.
+      if (!game.state.climber.name) return;
       const a = document.activeElement;
       const onButton = a instanceof HTMLButtonElement;
       const u = game.ui.get();
@@ -95,17 +98,31 @@ export function App({ game }: { game: Game }) {
 
   return (
     <div className="stage" ref={stage}>
-      <div className="screen" id="scr" ref={screen}>
+      <div
+        className={`screen${ui.settings.text === 'large' ? ' large' : ''}${ui.still ? ' still' : ''}`}
+        id="scr"
+        ref={screen}
+      >
         <canvas id="cv" ref={canvas} aria-label="Game scene" />
         <div className="ui">
           <Hud game={game} ui={ui} />
           {ui.talk && <Bubble game={game} talk={ui.talk.talk} node={ui.talk.node} />}
-          {ui.sheet && <Sheet game={game} id={ui.sheet} state={ui.state} />}
+          {ui.sheet && <Sheet game={game} id={ui.sheet} ui={ui} />}
           {ui.climbing && <ClimbPanel game={game} />}
           {ui.view === 'map' && !ui.driving && !ui.sheet && (
-            <button type="button" className="restart" onClick={() => game.openSheet({ k: 'restart' })}>
-              Start over
-            </button>
+            <div className="corner">
+              <button type="button" className="restart" onClick={() => game.openSheet({ k: 'restart' })}>
+                Start over
+              </button>
+              <button
+                type="button"
+                className="restart"
+                id="b-settings"
+                onClick={() => game.openSheet({ k: 'settings' })}
+              >
+                Settings
+              </button>
+            </div>
           )}
           {ui.stamp && (
             <div className="stamp" id="stamp">
@@ -118,11 +135,12 @@ export function App({ game }: { game: Game }) {
               {ui.toast.text}
             </div>
           )}
-          {ui.hint && (
+          {ui.hint && !ui.sheet && !ui.talk && (
             <p className="hint" id="hint">
               {ui.hint}
             </p>
           )}
+          {!ui.state.climber.name && <Create game={game} />}
           <div className={`fade${ui.fading ? ' on' : ''}`} />
         </div>
       </div>

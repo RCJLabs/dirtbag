@@ -1,14 +1,53 @@
 // One frame of the world: a scene, the map or the wall, drawn from a snapshot the game
 // hands over. Rendering reads state and never changes it.
 
-import { CLIMB, isNight, picks, PLACES, ROUTES, type Attempt, type GameState } from '../sim';
+import {
+  belayer,
+  CLIMB,
+  conditions,
+  gradeLabel,
+  isNight,
+  picks,
+  PLACES,
+  ROUTES,
+  routeOfId,
+  routesAt,
+  type Attempt,
+  type GameState,
+} from '../sim';
 import { rad, type G, type Pt } from './kit/geom';
-import { BASE_ROUTES, DIM_PINS, GND, H, MAP_PINS, OY, W, Z, type PinKind } from './layout';
-import { ACC, CREAM, drawFire, drawLights, label, routeTag, vanIcon } from './paint/fx';
+import {
+  BASE_ROUTES,
+  BOULDERS,
+  DIM_PINS,
+  GND,
+  H,
+  MAP_PINS,
+  OY,
+  presentIn,
+  PROBLEM_X,
+  W,
+  Z,
+  type PinKind,
+} from './layout';
+import {
+  ACC,
+  boulderTag,
+  CREAM,
+  drawFire,
+  drawLights,
+  drawRain,
+  label,
+  routeTag,
+  tapeTag,
+  vanIcon,
+} from './paint/fx';
+import { TAPE } from './paint/gym';
 import { mapArt } from './paint/map';
 import { drawBelayerBack, drawClimber, drawDog, drawPerson, INK, LOOK } from './paint/people';
+import { BIG } from './paint/scale';
 import { FIRE_X, LIGHTS, sceneArt } from './paint/scenes';
-import { BELAYER, onRoute, wallArt } from './paint/wall';
+import { belayAt, onRoute, wallOf } from './paint/wall';
 
 export interface Frame {
   state: GameState;
@@ -18,7 +57,7 @@ export interface Frame {
   t: number;
   // Device pixels per logical pixel on the main canvas.
   px: number;
-  // Reduced motion: no flicker, no bounce, no pulse.
+  // Reduced motion: no flicker, no bounce, no pulse, no falling rain.
   still: boolean;
   player: { x: number; dir: number; phase: number; speed: number };
   scout: { x: number; wag: number };
@@ -34,9 +73,14 @@ export function render(g: G, f: Frame): void {
   else renderScene(g, f);
 }
 
+const wet = (s: GameState) => conditions(s.seed, s.day).sky === 'rain';
+
 function renderScene(g: G, f: Frame): void {
+  const s = f.state;
   const lot = f.scene === 'lot';
-  const night = lot && isNight(f.state.min);
+  const crag = f.scene === 'crag';
+  const gym = f.scene === 'gym';
+  const night = lot && isNight(s.min);
   const art = sceneArt(f.scene, lot ? (night ? 'night' : 'morning') : 'day');
   const cam = f.cam;
   g.drawImage(art.sky, 0, 0, W, H);
@@ -47,15 +91,26 @@ function renderScene(g: G, f: Frame): void {
     drawFire(g, FIRE_X - cam, GND + 1, f.t, night, f.still);
     if (night) drawLights(g, LIGHTS, cam);
     drawDog(g, f.scout.x - cam, GND + 5, 1, f.t, f.scout.wag);
-    drawPerson(g, LOOK.hazel!, { x: 586 - cam, y: GND, dir: -1, pose: 'mug', t: f.t });
-  } else {
+  }
+  if (crag)
     label(g, 'poster', PLACES.road!.name.toUpperCase(), 272 - cam, GND - 46, {
       size: 7.5,
       color: '#F3E6CB',
       halo: '#7A5A3A',
     });
-    drawPerson(g, LOOK.hazel!, { x: 760 - cam, y: GND, dir: -1, pose: 'belay', t: f.t });
+  // Tags on the rock and the tape, then the people in front of them.
+  if (crag) {
+    for (const r of BASE_ROUTES)
+      routeTag(g, r.x - cam, GND - 100, r.n, gradeLabel(ROUTES[r.route]!), true, !!s.routes[r.route]?.sent);
+    for (const b of BOULDERS)
+      boulderTag(g, b.x - cam, GND - b.h - 12, gradeLabel(ROUTES[b.route]!), !!s.routes[b.route]?.sent);
   }
+  if (gym)
+    routesAt(s.seed, 'gym', s.day).forEach((r, n) =>
+      tapeTag(g, PROBLEM_X[n]! - cam, GND - 26, TAPE[n]!, gradeLabel(r), !!s.routes[r.id]?.sent),
+    );
+  for (const p of presentIn(s, f.scene))
+    drawPerson(g, LOOK[p.who]!, { x: p.x - cam, y: GND, dir: p.face, pose: p.pose, t: f.t });
   const p = f.player;
   drawPerson(g, LOOK.you!, {
     x: p.x - cam,
@@ -66,19 +121,6 @@ function renderScene(g: G, f: Frame): void {
     pose: p.speed > 0.05 ? 'walk' : 'stand',
     t: f.t,
   });
-  if (!lot)
-    for (const r of BASE_ROUTES) {
-      const def = ROUTES[r.route]!;
-      routeTag(
-        g,
-        r.x - cam,
-        GND - 100,
-        r.n,
-        def.grade,
-        def.cruxes.length > 0,
-        !!f.state.routes[r.route]?.sent,
-      );
-    }
   g.restore();
   if (night) {
     g.fillStyle = rad(g, W / 2, H * 0.55, H * 0.18, H * 0.72, [
@@ -87,6 +129,7 @@ function renderScene(g: G, f: Frame): void {
     ]);
     g.fillRect(0, 0, W, H);
   }
+  if (!gym && wet(s)) drawRain(g, W, H, f.t, f.still);
 }
 
 const PIN_FILL: Record<PinKind, string> = { crag: ACC.comic, camp: '#9CC77E', town: CREAM };
@@ -147,27 +190,33 @@ function renderMap(g: G, f: Frame): void {
 }
 
 function renderWall(g: G, f: Frame): void {
-  const route = f.wallRoute;
-  const r = ROUTES[route]!;
-  const log = f.state.routes[route];
-  const pick = f.att?.pick ?? picks(f.state, route);
-  g.drawImage(wallArt(route), 0, 0, W, H);
+  const s = f.state;
+  const r = routeOfId(s, f.wallRoute);
+  if (!r) return;
+  const wall = wallOf(r);
+  const log = s.routes[r.id];
+  const pick = f.att?.pick ?? picks(s, r);
+  // On a close-up wall the climber is drawn big, so labels stand further off the line.
+  const off = wall.big ? 44 : 14;
+  g.drawImage(wall.art, 0, 0, W, H);
 
   // Each crux bracketed on the topo, with the beta you'll use there; "?" while there's
   // another way you haven't found.
   for (const c of r.cruxes) {
-    const p0 = onRoute(route, c.from);
-    const p1 = onRoute(route, c.to);
-    const x = Math.max(p0[0], p1[0]) + 14;
-    const my = (p0[1] + p1[1]) / 2;
+    const p0 = onRoute(r, c.from);
+    const p1 = onRoute(r, c.to);
+    const x = Math.min(W - 118, Math.max(p0[0], p1[0]) + off);
+    const y0 = p0[1] - (wall.big ? 30 : 0);
+    const y1 = p1[1] - (wall.big ? 30 : 0);
+    const my = (y0 + y1) / 2;
     const unknown = c.beta.some((b, i) => i > 0 && !log?.known.includes(b));
     g.strokeStyle = ACC.comic;
     g.lineWidth = 2;
     g.beginPath();
-    g.moveTo(x - 4, p0[1]);
-    g.lineTo(x, p0[1]);
-    g.lineTo(x, p1[1]);
-    g.lineTo(x - 4, p1[1]);
+    g.moveTo(x - 4, y0);
+    g.lineTo(x, y0);
+    g.lineTo(x, y1);
+    g.lineTo(x - 4, y1);
     g.stroke();
     label(g, 'comic', c.name.replace(/^The /, ''), x + 6, my - 1, { size: 13, align: 'left' });
     label(g, 'comic', (r.beta[pick[c.id] ?? '']?.short ?? '') + (unknown ? '  ?' : ''), x + 6, my + 13, {
@@ -178,37 +227,45 @@ function renderWall(g: G, f: Frame): void {
   }
 
   const pos = f.att?.pos ?? 0;
-  const [x, y] = onRoute(route, pos);
+  const [x, y] = onRoute(r, pos);
   const falling = f.att?.phase === 'fall';
-  // Quickdraws on every bolt you've clipped, and the rope running through them.
-  const rope: Pt[] = [drawBelayerBack(g, LOOK.hazel!, BELAYER.x, BELAYER.y)];
-  for (const b of r.bolts) {
-    if (b >= pos - CLIMB.clipPast) continue;
-    const [bx, by] = onRoute(route, b);
-    g.strokeStyle = ACC.comic;
-    g.lineWidth = 1.6;
-    g.beginPath();
-    g.moveTo(bx, by);
-    g.lineTo(bx, by + 7);
-    g.stroke();
-    g.lineWidth = 1.3;
-    g.beginPath();
-    g.ellipse(bx, by + 9.5, 2.3, 3.2, 0, 0, 6.2832);
-    g.stroke();
-    rope.push([bx, by + 11]);
+  if (r.disc === 'sport') {
+    // Quickdraws on every bolt you've clipped, and the rope running through them to
+    // whoever's belaying.
+    const who = belayer(s);
+    const [bx0, by0] = belayAt(r);
+    const rope: Pt[] = who ? [drawBelayerBack(g, LOOK[who]!, bx0, by0)] : [];
+    for (const b of r.bolts) {
+      if (b >= pos - CLIMB.clipPast) continue;
+      const [bx, by] = onRoute(r, b);
+      g.strokeStyle = ACC.comic;
+      g.lineWidth = 1.6;
+      g.beginPath();
+      g.moveTo(bx, by);
+      g.lineTo(bx, by + 7);
+      g.stroke();
+      g.lineWidth = 1.3;
+      g.beginPath();
+      g.ellipse(bx, by + 9.5, 2.3, 3.2, 0, 0, 6.2832);
+      g.stroke();
+      rope.push([bx, by + 11]);
+    }
+    if (rope.length) {
+      rope.push([x, y - 1]);
+      g.strokeStyle = '#F4E6C8';
+      g.lineWidth = 1.5;
+      g.lineJoin = 'round';
+      g.beginPath();
+      rope.forEach(([px, py], i) => (i ? g.lineTo(px, py) : g.moveTo(px, py)));
+      g.stroke();
+    }
   }
-  rope.push([x, y - 1]);
-  g.strokeStyle = '#F4E6C8';
-  g.lineWidth = 1.5;
-  g.lineJoin = 'round';
-  g.beginPath();
-  rope.forEach(([px, py], i) => (i ? g.lineTo(px, py) : g.moveTo(px, py)));
-  g.stroke();
 
   // Your high point, flagged.
   const hi = log?.hi ?? 0;
   if (hi > 0 && hi < r.moves) {
-    const [hx, hy] = onRoute(route, hi);
+    const [hx0, hy] = onRoute(r, hi);
+    const hx = hx0 - (wall.big ? 30 : 0);
     g.fillStyle = ACC.comic;
     g.beginPath();
     g.moveTo(hx - 12, hy);
@@ -224,5 +281,13 @@ function renderWall(g: G, f: Frame): void {
     g.lineTo(hx - 12, hy - 12);
     g.stroke();
   }
-  drawClimber(g, LOOK.you!, x, y, falling ? 0 : Math.sin(pos * Math.PI), falling);
+  const stride = falling ? 0 : Math.sin(pos * Math.PI);
+  if (wall.big) {
+    g.save();
+    g.translate(x, y);
+    g.scale(BIG, BIG);
+    drawClimber(g, LOOK.you!, 0, 0, stride, falling);
+    g.restore();
+  } else drawClimber(g, LOOK.you!, x, y, stride, falling);
+  if (r.place !== 'gym' && wet(s)) drawRain(g, W, H, f.t, f.still);
 }

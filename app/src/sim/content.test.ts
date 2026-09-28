@@ -104,7 +104,10 @@ describe('content', () => {
       }
       expect([...reached].sort(), `${id}: unreachable nodes`).toEqual(Object.keys(t.nodes).sort());
     }
-    for (const t of Object.values(THINGS)) if (t.nightAct) expect(ACTS).toHaveProperty([t.nightAct]);
+    for (const t of Object.values(THINGS)) {
+      if (t.nightAct) expect(ACTS).toHaveProperty([t.nightAct]);
+      if (t.away) expect(PEOPLE).toHaveProperty([t.away.who]);
+    }
     for (const p of Object.values(PEOPLE))
       for (const at of p.shows ?? []) expect(PLACES).toHaveProperty([at]);
   });

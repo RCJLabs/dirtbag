@@ -65,4 +65,4 @@ export { ROUTES, LIBRARY, PUMPED, SEND_NAME, gradeName, gradeLabel, libraryBould
 export type { RouteDef, CruxDef, BetaDef, Verb, Disc } from './content/routes';
 export { GYM, WEEK_DAYS, weekOf, gymSet, routeById, routesAt } from './content/gym';
 export { TALK, PEOPLE, THINGS } from './content/people';
-export type { TalkDef, TalkNode, TalkOpt, TalkFx, PersonDef } from './content/people';
+export type { TalkDef, TalkNode, TalkOpt, TalkFx, PersonDef, ThingDef } from './content/people';

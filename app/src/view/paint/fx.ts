@@ -124,6 +124,57 @@ export function routeTag(
   if (sent) label(g, 'poster', 'SENT', x, y - 16, { size: 12, color: ACC.poster });
 }
 
+// A boulder's tag: its grade on a chalk-white card on top of the rock.
+export function boulderTag(g: G, x: number, y: number, grade: string, sent: boolean): void {
+  if (x < -30 || x > VW + 30) return;
+  g.fillStyle = '#F3E6CB';
+  g.strokeStyle = '#1E2B2B';
+  g.lineWidth = 1.5;
+  rr(g, x - 14, y - 9, 28, 17, 3);
+  g.fill();
+  g.stroke();
+  g.font = `800 13px ${FONT.poster}`;
+  g.textAlign = 'center';
+  g.fillStyle = '#1E2B2B';
+  g.fillText(grade, x, y + 4.5);
+  if (sent) label(g, 'poster', 'SENT', x, y - 14, { size: 12, color: ACC.poster });
+}
+
+// A gym problem's start tape: its colour, its grade, and SENT once you've done it.
+export function tapeTag(g: G, x: number, y: number, col: string, grade: string, sent: boolean): void {
+  if (x < -30 || x > VW + 30) return;
+  g.fillStyle = col;
+  g.fillRect(x - 15, y - 8, 30, 15);
+  g.font = `800 12px ${FONT.poster}`;
+  g.textAlign = 'center';
+  g.fillStyle = col === '#E8C547' ? '#1E2B2B' : '#FFFFFF';
+  g.fillText(grade, x, y + 4);
+  if (sent) label(g, 'poster', 'SENT', x, y - 13, { size: 12, color: ACC.poster, halo: '#F3E6CB' });
+}
+
+// Rain over an outdoor view: a grey wash and slanting streaks, falling unless motion is off.
+export function drawRain(g: G, w: number, h: number, t: number, still: boolean): void {
+  g.fillStyle = 'rgba(52,66,92,.42)';
+  g.fillRect(0, 0, w, h);
+  g.strokeStyle = 'rgba(226,234,242,.5)';
+  g.lineWidth = 1.2;
+  g.lineCap = 'round';
+  g.beginPath();
+  let seed = 9;
+  const r = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 110; i++) {
+    const x0 = r() * (w + 60);
+    const y0 = r() * h;
+    const v = 0.8 + r() * 0.5;
+    const fall = still ? 0 : t * 480 * v;
+    const y = ((y0 + fall) % (h + 40)) - 20;
+    const x = x0 - (y + 20) * 0.28;
+    g.moveTo(x, y);
+    g.lineTo(x - 4.5, y + 16);
+  }
+  g.stroke();
+}
+
 // Your van on the map, bouncing a little while it drives.
 export function vanIcon(g: G, x: number, y: number, t: number, moving: boolean, still: boolean): void {
   const b = moving && !still ? Math.abs(Math.sin(t * 14)) * 1.2 : 0;

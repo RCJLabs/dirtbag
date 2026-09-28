@@ -173,12 +173,17 @@ export function rasterMap(
   g.drawImage(c, 0, 0, W, H);
 }
 
-// The drive between two places, as a path along the roads through the junction.
+// The drive between two places, as a path along the roads through the junction. Old Town
+// is off the spur; everything else sits beside the highway and joins it level with its pin.
 function legPts(id: string, pins: Record<string, { x: number; y: number }>): Pt[] {
   const p = pins[id]!;
-  if (id === 'lot') return [[p.x, p.y], ...ROAD.filter((q) => q[1] <= 612 && q[1] > 470)];
-  if (id === 'road') return [[p.x, p.y], ...ROAD.filter((q) => q[1] >= 220 && q[1] < 470).reverse()];
-  return [[p.x, p.y], ...SPUR.slice().reverse()];
+  const [, jy] = JUNCTION;
+  if (id === 'diner') return [[p.x, p.y], ...SPUR.slice().reverse()];
+  const along =
+    p.y > jy
+      ? ROAD.filter((q) => q[1] <= p.y && q[1] > jy)
+      : ROAD.filter((q) => q[1] >= p.y && q[1] < jy).reverse();
+  return [[p.x, p.y], [roadX(p.y), p.y], ...along];
 }
 
 export function drivePath(a: string, b: string, pins: Record<string, { x: number; y: number }>): Pt[] {
