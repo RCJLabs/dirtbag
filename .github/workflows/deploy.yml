@@ -101,20 +101,24 @@ jobs:
 
       - run: npm ci
 
-      - name: Live site serves this release
+      - name: Live site serves this deployment
         run: |
           v=$(node -p "require('./package.json').version")
-          cache="dirtbag-v${v//./}"
           site=https://dirtbag.rcjlabs.com
+          # Wait for this commit's version.json, not just the version string: a redeploy or a
+          # rollback serves a version string the old deployment may already have.
           for i in $(seq 1 30); do
-            if curl -fsS --compressed -H 'Cache-Control: no-cache' "$site/" | grep -q "\"$v\"" &&
-               curl -fsS -H 'Cache-Control: no-cache' "$site/service-worker.js" | grep -q "'$cache'"; then
-              echo "live: $v"
+            if curl -fsS -H 'Cache-Control: no-cache' "$site/version.json?$GITHUB_SHA" | grep -q "\"$GITHUB_SHA\""; then
+              echo "live: $v at $GITHUB_SHA"
               break
             fi
-            if [ "$i" = 30 ]; then echo "::error::$site is still not serving $v after 5 minutes"; exit 1; fi
+            if [ "$i" = 30 ]; then echo "::error::$site is still not serving $GITHUB_SHA after 5 minutes"; exit 1; fi
             sleep 10
           done
+          if ! curl -fsS --compressed -H 'Cache-Control: no-cache' "$site/" | grep -q "\"$v\""; then
+            echo "::error::live index.html is not $v"
+            exit 1
+          fi
           curl -fsS "$site/.well-known/assetlinks.json" | node -e "JSON.parse(require('fs').readFileSync(0, 'utf8')); console.log('assetlinks.json served')"
 
       - name: Install Chromium
