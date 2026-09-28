@@ -1,6 +1,10 @@
-# Runs on every push and PR. Checks that the version agrees everywhere and every referenced file
-# exists, reports the download size, then boots the game in headless Chromium: new game, town,
-# save, clock, reload, offline start. Failure screenshots are kept as a run artifact.
+# Runs on every push and PR. Two jobs:
+#   check  the released site: one version everywhere, every referenced file exists, the download
+#          size, then the live build booted in headless Chromium (new game, town, save, clock,
+#          reload, offline start).
+#   app    the rebuild in app/: formatting, types, the sim's tests, a build inside its size
+#          budget, then a bot that plays the first day on the build.
+# Failure screenshots from either are kept as run artifacts.
 name: CI
 
 on:
@@ -48,4 +52,53 @@ jobs:
         with:
           name: smoke-artifacts
           path: smoke-artifacts/
+          if-no-files-found: ignore
+
+  app:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            app/package-lock.json
+
+      # The app's own tools, plus the repo root's pinned Playwright for the playthrough.
+      - run: npm ci && npm ci --prefix ..
+
+      - name: Formatting
+        run: npm run format:check
+
+      - name: Types (the sim is checked without the DOM)
+        run: npm run typecheck
+
+      - name: Sim tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Size budget
+        run: npm run size
+
+      - name: Install Chromium
+        run: ../node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Play the first day
+        run: npm run e2e
+
+      - name: Keep failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-e2e-artifacts
+          path: app/e2e-artifacts/
           if-no-files-found: ignore
