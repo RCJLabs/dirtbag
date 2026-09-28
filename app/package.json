@@ -1,0 +1,38 @@
+{
+  "name": "dirtbag",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dirtbag, rebuilt: the sim, the Mix renderer and the UI. See docs/ROADMAP.md, the rebuild track.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.sim.json && tsc -p tsconfig.app.json && tsc -p tsconfig.node.json",
+    "test": "vitest run",
+    "e2e": "node e2e/playthrough.mjs",
+    "size": "node scripts/size.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@fontsource/big-shoulders-display": "5.3.0",
+    "@fontsource/patrick-hand": "5.3.0",
+    "@fontsource/patrick-hand-sc": "5.3.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "prettier": "3.9.9",
+    "typescript": "7.0.2",
+    "vite": "8.3.1",
+    "vitest": "5.0.2"
+  }
+}
