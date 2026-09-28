@@ -13,6 +13,7 @@ function status(a: Attempt, r: RouteDef): string {
     const count = v.verb === 'timing' ? ` ${v.hits}/${CLIMB.timing.hits}` : '';
     return `${crux.name}, ${r.beta[v.beta]!.short}. ${how}.${count}`;
   }
+  if (a.phase === 'sent') return 'Chains clipped.';
   if (a.pump > 80) return 'Forearms are going.';
   if (!a.hold && resting(a, r) && a.pos > 0) return 'Good rest on the ledge. Shake out.';
   if (a.hold) return 'Climbing.';

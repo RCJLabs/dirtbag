@@ -87,6 +87,7 @@ const CRAG_TREES: [number, number, number][] = [
   [18, 562, 1.1],
   [346, 558, 1],
 ];
+// Where your belayer stands, feet on the talus, and where the rope leaves their hands.
 export const BELAYER = { x: 182, y: 586 };
 
 // Each route's line on this wall, bottom to top, keyed by route id.
@@ -178,29 +179,6 @@ function boltDots(g: G, t: Topo): void {
   g.moveTo(ax + 4.9, ay);
   g.arc(ax + 3, ay, 1.9, 0, 6.2832);
   g.stroke();
-}
-
-function stickFigure(g: G, x: number, y: number, col: string, w: number): void {
-  g.strokeStyle = col;
-  g.fillStyle = col;
-  g.lineWidth = w;
-  g.lineCap = 'round';
-  g.lineJoin = 'round';
-  g.beginPath();
-  g.moveTo(x - 4, y);
-  g.lineTo(x, y - 13);
-  g.lineTo(x + 4, y);
-  g.moveTo(x, y - 13);
-  g.lineTo(x, y - 25);
-  g.moveTo(x, y - 22);
-  g.lineTo(x + 6, y - 16);
-  g.lineTo(x + 3, y - 12);
-  g.moveTo(x, y - 22);
-  g.lineTo(x - 5, y - 15);
-  g.stroke();
-  g.beginPath();
-  g.arc(x, y - 29, 3.6, 0, 6.2832);
-  g.fill();
 }
 
 function paintWall(g: G, selected: string): void {
@@ -298,7 +276,6 @@ function paintWall(g: G, selected: string): void {
   g.beginPath();
   trace(g, TOPO[selected]!.d, false);
   g.stroke();
-  stickFigure(g, BELAYER.x, BELAYER.y, '#1E2B2B', 2.4);
 }
 
 const cache = new Map<string, HTMLCanvasElement>();

@@ -18,13 +18,13 @@ export function mk(w: number, h: number, k = 2): [HTMLCanvasElement, G] {
   return [c, g];
 }
 
-export function poly(g: G | Path2D, pts: readonly Pt[], close: boolean): void {
+export function poly(g: CanvasPath, pts: readonly Pt[], close: boolean): void {
   g.moveTo(pts[0]![0], pts[0]![1]);
   for (let i = 1; i < pts.length; i++) g.lineTo(pts[i]![0], pts[i]![1]);
   if (close) g.closePath();
 }
 
-function bez(g: G, P: readonly Pt[]): void {
+function bez(g: CanvasPath, P: readonly Pt[]): void {
   for (let i = 1; i < P.length - 2; i++) {
     const p0 = P[i - 1]!;
     const p1 = P[i]!;
@@ -42,7 +42,7 @@ function bez(g: G, P: readonly Pt[]): void {
 }
 
 // A smooth path through the points (Catmull-Rom as Béziers). `close` loops to the start.
-export function trace(g: G, pts: readonly Pt[], close: boolean): void {
+export function trace(g: CanvasPath, pts: readonly Pt[], close: boolean): void {
   const n = pts.length;
   if (n < 3) {
     poly(g, pts, close);
@@ -55,7 +55,7 @@ export function trace(g: G, pts: readonly Pt[], close: boolean): void {
 }
 
 // The same, continuing the current path with a line to the first point.
-export function traceOn(g: G, pts: readonly Pt[]): void {
+export function traceOn(g: CanvasPath, pts: readonly Pt[]): void {
   const n = pts.length;
   const P = [pts[0]!, ...pts, pts[n - 1]!];
   g.lineTo(P[1]![0], P[1]![1]);

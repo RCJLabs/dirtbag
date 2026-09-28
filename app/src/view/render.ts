@@ -6,7 +6,7 @@ import { rad, type G, type Pt } from './kit/geom';
 import { BASE_ROUTES, DIM_PINS, GND, H, MAP_PINS, OY, W, Z, type PinKind } from './layout';
 import { ACC, CREAM, drawFire, drawLights, label, routeTag, vanIcon } from './paint/fx';
 import { mapArt } from './paint/map';
-import { drawClimber, drawDog, drawPerson, INK, LOOK } from './paint/people';
+import { drawBelayerBack, drawClimber, drawDog, drawPerson, INK, LOOK } from './paint/people';
 import { FIRE_X, LIGHTS, sceneArt } from './paint/scenes';
 import { BELAYER, onRoute, wallArt } from './paint/wall';
 
@@ -181,7 +181,7 @@ function renderWall(g: G, f: Frame): void {
   const [x, y] = onRoute(route, pos);
   const falling = f.att?.phase === 'fall';
   // Quickdraws on every bolt you've clipped, and the rope running through them.
-  const rope: Pt[] = [[BELAYER.x + 5, BELAYER.y - 16]];
+  const rope: Pt[] = [drawBelayerBack(g, LOOK.hazel!, BELAYER.x, BELAYER.y)];
   for (const b of r.bolts) {
     if (b >= pos - CLIMB.clipPast) continue;
     const [bx, by] = onRoute(route, b);
