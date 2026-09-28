@@ -9,9 +9,159 @@
 
 **The plan in one line.** Stop adding features. Make the codebase safe to change. Decide what the game is. Show the climbing. Deepen only what matters. Then ship a free first season and a paid full game, with Steam as the main bet.
 
+**Update, 28 Sep 2026: the game is being rebuilt.** The look, the camera and the climbing are decided, and together they replace enough of the game that it is being rebuilt in a new codebase rather than refactored. Read [Direction and the rebuild](#direction-and-the-rebuild) first. Phases it supersedes or reshapes carry a note at the top; the rest still apply to the new build.
+
 **Effort figures** are full-time-equivalent weeks for one developer working at the current AI-assisted pace. They are estimates [INFERRED], not commitments. Commissioned art and music have their own lead times and can run in parallel.
 
+## Direction and the rebuild
+
+*Decided by Evan on 28 Sep 2026, after three rounds of look-book mockups and a playable feel slice.*
+
+**The four decisions:**
+1. **Tone: scrappy survival with a sport core.** Every day is a trade between earning and climbing, all season, not just in week 1 (the audit found the trade dies by day 12–15 today). The attempt is the star; the life around it feeds it and threatens it.
+2. **Camera: side-view scenes joined by a valley map.**
+   - Scenes exist where people are: the Lot, crag bases, later the gym. You tap to walk up to people and things.
+   - Minor places are cards on the map.
+   - No joystick and no commute. The clock moves only on actions and travel, never while you stand still.
+3. **Climbing: beta, then send.**
+   - Before a go you pick beta for each crux, and the beta sets the move you play there:
+     - a tension hold: hold and release to keep a marker in a moving band;
+     - a timing tap: tap twice on the beat;
+     - a hold-to-load throw: charge, then let go in the band.
+   - Between cruxes you hold to climb. Pump builds, and rests pay it back.
+   - Pump, afternoon sun and thin skin narrow every window.
+   - Better beta is earned: by falling at a crux, by watching someone, or by asking the right person.
+4. **Look: the Mix.**
+   - Park-poster landscapes: flat layers, no outlines.
+   - Comic people and panels: clear line, one ink weight, speech bubbles.
+   - All of it is drawn in code, so there are no sprite packs and no licence questions over the art.
+   - Music stays the "Bitwise" album until Phase 13.
+
+**Why rebuild instead of refactor.** The plan below assumed the v0.956 source would land in a repo and be refactored in place (Phase 4's strangler pattern). The four decisions replace the renderer, the world, the map and the climbing screen, which is most of what that refactor would have kept. What's worth keeping is underneath: grades, body, money, people, content and voice. The rebuild ports those.
+
+**What doesn't change.**
+- v0.956 is the spec. Its balance, content, names and voice are ported, not reinvented, except where the four decisions change them.
+- v0.956 stays live and untouched until the rebuild's first season replaces it (R3).
+
+**Where the rebuild lives.** In `app/` in this repo. It has its own package and lockfile and sits outside the site allowlist, so nothing about the live game changes until R3.
+- A public repo is fine for the art now that it's code.
+- The catch: anyone can build the full game from public source. Decide before Phase 19 whether paid content stays out of this repo.
+
+### What the rebuild does to the phases
+
+| Phase | Status |
+|---|---|
+| 1 Source of truth | Closed. The release pipeline is done. The v0.956 source is still wanted as a reference for porting, but it no longer blocks anything. The first tag deploy is still Evan's to run. |
+| 2 Safety net | Its save, crash and determinism rules become the rebuild's foundation (R0). The v0.956 hotfix batch needs the old source; without it, v0.956 stays as it is until R3. |
+| 3 Cut the load | Superseded. The new build has no sprites or base64 music; a size budget runs in CI instead. |
+| 4 Sim out of the UI | Superseded. The new sim is separate from day one. The balance harness moves to R2. |
+| 5 Design bible | Still needed. It runs alongside R1, and R2 needs it. This section is its first page. |
+| 6 Retune the loop | Still needed, on the new sim, in R2. |
+| 7 The first hour | Becomes R1's target. |
+| 8 Choose the look | Done: the Mix. Its tokens and components are built in R0–R1. The Steam capsule art moves to Phase 15. |
+| 9 Climber on the wall | Reshaped as beta-then-send and built from R0. Its Done-when criteria gate R2. |
+| 10 Crags as places | Unchanged in intent. It follows R2, on the new build. |
+| 11 Valley map | Reshaped: the map plus side-view scenes, drawn in code (no Tiled, no tilesets). |
+| 12 UI system | Folded into the rebuild (R0–R2). |
+| 13–20 | Unchanged in intent. They target the new build. |
+
+## The rebuild track
+
+Effort figures are rough [INFERRED], as elsewhere in this plan.
+
+### R0 — Foundation   **<<< CURRENT MILESTONE**
+
+**Goal.** The feel slice's content, running on the architecture the whole game will use.
+
+**Scope.**
+- **`app/`:** Vite, TypeScript, React for the panels over a canvas world, and Vitest. Versions are pinned.
+- **`src/sim`, the rules, engine-free:**
+  - No DOM, no `Math.random`, no wall clock. The sim's own tsconfig has no DOM types, and a test scans for the rest.
+  - The seeded RNG uses the same algorithm and golden vectors as `Dirtbag-UE/Sim/DirtbagRng`, so a seed means the same thing in both games.
+  - One door into the state: `act(state, action) → {state, events}`. The clock moves only there.
+  - The attempt is a fixed-step model, so a go replays exactly from its inputs.
+  - Content is data: places, acts, routes, beta, and people's lines. Cost labels are derived from the numbers, because the audit found hand-written hints drifting from the rules.
+  - Every tunable is a dial with a comment on what it means.
+  - Saves are versioned, with a migration registry. A corrupt save is quarantined, never replaced.
+- **`src/view`:** the Mix painters (poster layers, the comic rig, the map, the wall), ported from the slice.
+- **`src/ui`:** React HUD, bubbles, sheets, the climb panel and the toast lane.
+- **Fonts are self-hosted**, since nothing may leave the site.
+- **CI:** typecheck, unit tests, build, size budget, and a headless bot that plays the slice on the built app.
+
+**Out of scope.** New content, balance, sound, the PWA shell (R1), deploying (R3).
+
+**Done when.**
+1. A fresh clone plus `npm ci && npm run build` in `app/` builds the game, and CI runs everything green.
+2. The bot plays it through with no errors and no cross-origin requests: Hazel's tip, the drive, a fall at crux 1 that reveals the rock-over, the send, two diner shifts, sleep.
+3. Unit tests cover the RNG golden vectors (matching the Unreal harness), the clock and money, beta unlocks, attempt replay, and save round-trip, migration and quarantine.
+4. Nothing in `src/sim` can touch the DOM, `Math.random` or the wall clock, and CI enforces it.
+5. A player downloads under 250 KB, fonts included.
+
+### R1 — The first week
+
+**Goal.** Phase 7's first hour, and a week you'd want to play, on the new build.
+
+**Scope.**
+- **Places:** the Lot, the Diner (shifts), the gym (Send City: plastic, V0–V4, beta-then-send on problems), Roadside Crag with 6–8 lines, and a card or two (Coffee Shop, Gear Shop).
+- **People:** Hazel, one partner, Scout.
+- **Body v1:** energy, skin, food and sleep; the week's bills; debt with a floor.
+- **Climber v1:** v0.956's five skills (power, fingers, technique, endurance, head) set the windows and the pump rate, and mileage builds them. This is where two climbers start playing the same route differently.
+- **Conditions v1:** weather and the shade window each day, from the seeded RNG.
+- **The app shell:** manifest, service worker with a hashed precache, install; resume mid-day after a reload; settings (reduced motion, text size).
+- **Creation:** a name and a quick start.
+
+**Done when.**
+1. A seven-day loop plays start to finish, and the bot finishes a week.
+2. 4 of 5 testers reach their first outdoor send within 20 minutes, unassisted.
+3. A reload or an Android kill resumes in the same place, mid-day.
+4. The same seed and the same inputs replay the same week.
+
+**Depends on:** R0; Phase 5 alongside. **Effort:** ~3–5 weeks.
+
+### R2 — The first season
+
+**Goal.** The free demo Phase 5 defines, on the new build, balanced by bots rather than by feel.
+
+**Scope.**
+- Act I: from plastic to the first V5 project. Roadside Crag and Granite Gorge; the Lot at night; the dog offer; one partner arc; the rival's first appearance; the send card.
+- Port the v0.956 systems the design bible keeps: load and injury, projects and first ascents, partners and bonds. The v0.956 source makes this exact; without it, port from the audit's line references into the prettified bundle.
+- The balance harness (Phase 4's bots, on the new sim) and Phase 6's targets for a season.
+
+**Done when.**
+1. Phase 9's criteria pass on the new wall: a watcher can tell how close a go was; a pumped go feels tense; two climbers play the same route differently.
+2. Phase 7's first-hour criteria pass.
+3. The harness shows a working climber still facing a "can I afford this week off?" choice at the end of the season.
+
+**Depends on:** R1 and Phase 5. **Effort:** ~6–10 weeks.
+
+### R3 — Switch-over
+
+**Goal.** The new build becomes dirtbag.rcjlabs.com and the Play app.
+
+**Scope.**
+- **Decide what happens to v0.956 players** (Evan's call). Either keep v0.956 playable at `/classic/` under its own service-worker scope, or retire it with notice and a save export.
+- **Point the site pipeline at the new build:** check, smoke test, stage, deploy and the TWA. The version moves past 0.956, and the new service worker deletes the old cache.
+- **Store copy:** listing, screenshots, and "What's new" in the game's voice.
+
+**Done when.**
+1. A tag deploys the new build and the Play app updates.
+2. A v0.956 player who opens the site isn't stranded: their career is still playable or exported.
+
+**Depends on:** R2. **Effort:** ~1–2 weeks.
+
+**Risks of the rebuild.**
+- **It stalls at "almost as good as the old one".** That is how rewrites usually fail. Mitigations:
+  - v0.956 stays live and untouched until R3;
+  - R3 ships at the first season, not at full parity;
+  - every milestone is playable;
+  - rules are ported from v0.956's numbers, not redesigned, except where the four decisions change them.
+- **Time.** Code-drawn art saves the commissions and the asset pipeline, but re-implementing the systems spends most of that back. Expect the 12–19 month total to hold rather than shrink [INFERRED].
+- **Old saves.** v0.956 saves don't map onto the new state: the economy, places and climbing all differ. The default is a fresh start. Carrying over name and grade as a legacy import is possible [proposed, Evan's call].
+- **Public source.** See "Where the rebuild lives" above.
+
 ## How the phases fit together
+
+*The table and figures below predate the rebuild. The rebuild track replaces most of Stages A and C.*
 
 | Stage | Phases | Purpose | Rough effort |
 |---|---|---|---|
@@ -37,9 +187,14 @@ That adds up to about 51–82 weeks, roughly 12–19 months [INFERRED].
 ---
 ## Stage A — Make it safe to change
 
-### Phase 1 — Source of truth   **<<< CURRENT MILESTONE**
+### Phase 1 — Source of truth
 
-**Status (28 Sep 2026): in progress.** The release pipeline is built. The source is still missing.
+**Status (28 Sep 2026): closed by the rebuild.** The release pipeline is built. The rebuild changes what the open items below are worth:
+- Items 1–3 were about building v0.956 from its source. The new build is built from source in CI by construction, and R0 drives its version from `package.json`. The v0.956 source is still worth putting somewhere private, as a reference for porting rules exactly in R2.
+- Item 4 is done: Pages builds from Actions and the environment accepts tags. What remains is Evan pushing the first `v0.956.0` tag, which exercises `deploy.yml`.
+- Item 5 still stands before the next store release.
+
+The status as it stood before the rebuild:
 
 **Done**, in this repo:
 - **CI (`ci.yml`), on every push:**
@@ -108,6 +263,8 @@ Criterion 4 (the smoke test runs green in CI) is met.
 
 ### Phase 2 — The safety net: saves, crashes, determinism, hotfixes
 
+*Rebuild note: the save, crash and determinism rules become R0's foundation. The hotfix batch needs the v0.956 source.*
+
 **Goal.** No player can lose a save to a bug again, and the known bugs that break trust are fixed.
 
 **Why.** The audit reproduced two ways to lose everything:
@@ -168,6 +325,8 @@ Several bugs also corrupt progression or economy, including a skill clamp that t
 
 ### Phase 3 — Cut the load
 
+*Rebuild note: superseded. The new build has no sprites or base64 music; R0 adds a size budget to CI.*
+
 **Goal.** First load on a mid-range phone goes from ~11 s to under 3 s, and deploys stop costing each player 10–20 MB.
 
 **Why.** Today the page is 15.3 MB (9.8 MB gzipped), and nothing paints until all of it arrives. Every zone change stalls for 150–470 ms at 4× CPU throttling. Renderer memory reaches ~400 MB, which risks Android killing the TWA.
@@ -195,6 +354,8 @@ Several bugs also corrupt progression or economy, including a skill clamp that t
 ---
 
 ### Phase 4 — Pull the sim out of the UI
+
+*Rebuild note: superseded. The new sim is separate from day one; the balance harness moves to R2.*
 
 **Goal.** A React-free, TypeScript simulation core that runs in Node, holds all the game rules, and is covered by tests and balance bots. The UI becomes a view over it.
 
@@ -360,6 +521,8 @@ The Stick RPG hook — every day is a trade between earning and climbing — onl
 
 ### Phase 7 — The first hour
 
+*Rebuild note: this becomes R1's target, on the new build.*
+
 **Goal.** A new player understands the game, feels the fantasy, and sends outside inside 20 minutes, without being shown 28 panels or 40 numeric choices first.
 
 **Why.** Today a new player sees all of this before ever climbing:
@@ -411,6 +574,8 @@ The tutorial also points at the weakest job, which the sim shows going into debt
 
 ### Phase 8 — Choose the look
 
+*Rebuild note: done. The look is the Mix: park-poster landscapes with comic people and panels, drawn in code. Tokens and components are built in R0–R1; the Steam capsule art moves to Phase 15.*
+
 **Goal.** Pick one art direction, one scale, one palette and one UI kit, and make every later screen follow them. Every asset must be owned, or licensed on clean terms.
 
 **Why.** The current world has three structural problems:
@@ -451,6 +616,8 @@ The full diagnosis is in the audit, under *The map and the look*.
 ---
 
 ### Phase 9 — Put the climber on the wall
+
+*Rebuild note: reshaped as beta-then-send (see Direction) and built from R0. The criteria below gate R2.*
 
 **Goal.** The attempt, the heart of the game, becomes something you watch and drive. You see the line on its topo, the climber moving hold to hold, pump you can see, and falls that land.
 
@@ -534,6 +701,8 @@ The full diagnosis is in the audit, under *The map and the look*.
 
 ### Phase 11 — Replace the joystick town with a valley map
 
+*Rebuild note: reshaped. The map stays; the two walkable scenes become side-view scenes wherever people are, drawn in code rather than from a tileset.*
+
 **Goal.** Every place is readable at a glance and reachable in one or two taps, and building the world stops being a construction project.
 
 **Why.**
@@ -579,6 +748,8 @@ The full diagnosis is in the audit, under *The map and the look*.
 ---
 
 ### Phase 12 — The UI system and the desktop layout
+
+*Rebuild note: folded into the rebuild, R0–R2.*
 
 **Goal.** Every screen is built from one component kit, works in portrait on a phone and in landscape on a desktop, meets basic accessibility, and gives the writing surfaces that respect it.
 
@@ -902,3 +1073,4 @@ Players will ask "what am I working towards?" by hour 3.
   - Duplicate `/music` removed; favicon added; `CLAUDE.md` and `README.md` written.
   - The Play build's SDK setup was broken by Google removing the `tools` package; now fixed.
   - The marker stays on Phase 1, because the source is still missing.
+- 2026-09-28 — Direction decided (tone, camera, climbing, look) and the rebuild track added (R0–R3). Phase 1 closed; affected phases annotated. CURRENT MILESTONE moved to R0.
