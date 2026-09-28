@@ -1,0 +1,3 @@
+# index.html is build output: ~15 MB, mostly one-line base64 and minified JS. A text diff of it
+# floods terminals and review tools; compare two builds with `npm run compare` instead.
+index.html -diff linguist-generated=true

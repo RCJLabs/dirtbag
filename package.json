@@ -1,0 +1,22 @@
+{
+  "name": "dirtbag-site",
+  "version": "0.956.0",
+  "private": true,
+  "description": "Release files and deploy pipeline for Dirtbag (dirtbag.rcjlabs.com). The game's source lives elsewhere; see README.md.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "stamp": "node scripts/stamp-version.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "size": "node scripts/size-report.mjs",
+    "compare": "node scripts/compare-build.mjs",
+    "stage": "node scripts/stage-site.mjs",
+    "serve": "node scripts/lib/serve.mjs . 4173"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  }
+}

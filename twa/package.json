@@ -1,0 +1,8 @@
+{
+  "name": "dirtbag-twa-tools",
+  "private": true,
+  "description": "Pinned Bubblewrap for the Play (TWA) build. The lockfile matters more than the version below: @bubblewrap/cli takes @bubblewrap/core as ^1.x, and core owns the Android template, including targetSdkVersion.",
+  "devDependencies": {
+    "@bubblewrap/cli": "1.25.0"
+  }
+}

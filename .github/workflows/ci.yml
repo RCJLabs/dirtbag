@@ -1,0 +1,51 @@
+# Runs on every push and PR. Checks that the version agrees everywhere and every referenced file
+# exists, reports the download size, then boots the game in headless Chromium: new game, town,
+# save, clock, reload, offline start. Failure screenshots are kept as a run artifact.
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Static checks (version, manifests, referenced files)
+        run: npm run check
+
+      - name: Size report
+        run: npm run size
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Smoke test
+        run: npm run smoke
+
+      - name: Keep failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoke-artifacts
+          path: smoke-artifacts/
+          if-no-files-found: ignore

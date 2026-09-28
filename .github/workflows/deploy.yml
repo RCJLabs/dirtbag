@@ -1,0 +1,124 @@
+# Deploys a release to dirtbag.rcjlabs.com when a version tag is pushed (v0.957.0, ...). The tag
+# must equal package.json's version, which must equal the version compiled into index.html.
+# Rolling back = run this workflow by hand on an older tag.
+#
+# One-time setup, by hand, in the repo's Settings (until then Pages keeps deploying main as before
+# and this workflow's deploy job fails):
+#   1. Pages -> Build and deployment -> Source: "GitHub Actions".
+#   2. Environments -> github-pages -> Deployment branches and tags -> add a tag rule: v*
+#      (by default only the default branch may deploy, which rejects tag runs).
+name: Deploy
+
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Tag matches package.json
+        run: |
+          v=$(node -p "require('./package.json').version")
+          if [ "$GITHUB_REF_NAME" != "v$v" ]; then
+            echo "::error::ref $GITHUB_REF_NAME is not the release tag v$v (run this on a version tag)"
+            exit 1
+          fi
+
+      - name: Static checks
+        run: npm run check
+
+      - name: Size report
+        run: npm run size
+
+      - name: Stage the site (allowlisted files only)
+        run: npm run stage
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Smoke test the staged site
+        run: npm run smoke -- --root _site
+
+      - name: Keep failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoke-artifacts
+          path: smoke-artifacts/
+          if-no-files-found: ignore
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+          # .well-known/assetlinks.json is how the Play app proves it owns the domain. Dotfiles are
+          # dropped by default, and without this file the app shows a browser address bar.
+          include-hidden-files: true
+
+  deploy:
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
+
+  confirm:
+    needs: deploy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Live site serves this release
+        run: |
+          v=$(node -p "require('./package.json').version")
+          cache="dirtbag-v${v//./}"
+          site=https://dirtbag.rcjlabs.com
+          for i in $(seq 1 30); do
+            if curl -fsS --compressed -H 'Cache-Control: no-cache' "$site/" | grep -q "\"$v\"" &&
+               curl -fsS -H 'Cache-Control: no-cache' "$site/service-worker.js" | grep -q "'$cache'"; then
+              echo "live: $v"
+              break
+            fi
+            if [ "$i" = 30 ]; then echo "::error::$site is still not serving $v after 5 minutes"; exit 1; fi
+            sleep 10
+          done
+          curl -fsS "$site/.well-known/assetlinks.json" | node -e "JSON.parse(require('fs').readFileSync(0, 'utf8')); console.log('assetlinks.json served')"
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Smoke test the live site
+        run: npm run smoke -- --url https://dirtbag.rcjlabs.com/
