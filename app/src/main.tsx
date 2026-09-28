@@ -18,6 +18,14 @@ const game = new Game({ still });
 for (const f of ['800 12px "Big Shoulders Display"', '15px "Patrick Hand SC"', '15px "Patrick Hand"'])
   void document.fonts?.load(f).catch(() => undefined);
 
+// The service worker makes the game start with no connection. Built only for production;
+// in dev every reload should hit the server.
+if (import.meta.env.PROD && 'serviceWorker' in navigator)
+  window.addEventListener(
+    'load',
+    () => void navigator.serviceWorker.register('./sw.js').catch(() => undefined),
+  );
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App game={game} />

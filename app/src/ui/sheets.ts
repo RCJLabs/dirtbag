@@ -12,6 +12,7 @@ import {
   goBlocked,
   gradeLabel,
   headroom,
+  isNight,
   MONEY,
   PLACES,
   restCost,
@@ -101,7 +102,12 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         title: 'Your van',
         sub: s.min >= DAY.bedFrom ? 'Bed made. Mostly.' : `Home, for ${TEXT_VALUES.spot} a night at the Lot.`,
         close: true,
-        rows: [actRow(game, s, 'lot.cook'), actRow(game, s, 'lot.sleep'), mapRow(game)],
+        rows: [
+          actRow(game, s, 'lot.cook'),
+          ...(isNight(s.min) ? [] : [actRow(game, s, 'lot.rest')]),
+          actRow(game, s, 'lot.sleep'),
+          mapRow(game),
+        ],
       };
 
     case 'cragVan': {

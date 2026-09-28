@@ -101,6 +101,13 @@ export const ACTS: Record<string, ActDef> = {
     note: 'Wake at {wake}.',
     sleep: true,
   },
+  // Passing the day: somewhere to be when you're spent before dark.
+  'lot.rest': {
+    label: 'Lie around in the van',
+    cost: { min: 60, energy: 4 },
+    needs: [{ night: false, why: "It's evening. The fire's lit." }],
+    says: 'You read the same page four times.',
+  },
   'lot.sit': {
     label: 'Sit a while',
     cost: { min: 40, energy: 3 },

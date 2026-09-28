@@ -162,6 +162,19 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 3. A reload or an Android kill resumes in the same place, mid-day.
 4. The same seed and the same inputs replay the same week.
 
+**Status (28 Sep 2026): built; two criteria need people.**
+- **Passing:**
+  - #1 and #4, in `week.test.ts`: the bot plays seven days for every start on several seeds, with nothing refused. The same seed and inputs rebuild the same week.
+  - The reload half of #3, in the e2e: it plays two days, reloads mid-morning, and starts again offline.
+- **Open:**
+  - #2, the testers.
+  - The Android half of #3: the rebuild has no TWA build yet.
+- **What the bot says, as a first read:**
+  - With human-ish hands (guessed, not measured), the first outdoor send comes on day 1 in 77 of 80 seeded weeks.
+  - The Pump goes in week one about a third of the time: 10 of 20 weeks for the Boulderer, 2 of 20 for the Technician.
+  - Perfect hands onsight almost everything, so difficulty is human precision against the window floor.
+  - Content runs out around day 3 for a keen player. R2's second crag is needed.
+
 **Depends on:** R0; Phase 5 alongside. **Effort:** ~3–5 weeks.
 
 ### R2 — The first season
@@ -1122,3 +1135,7 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-28 — Direction decided (tone, camera, climbing, look) and the rebuild track added (R0–R3). Phase 1 closed; affected phases annotated. CURRENT MILESTONE moved to R0.
 - 2026-09-28 — R0 built in `app/`. The feel slice now runs on an engine-free sim (seeded RNG matching Unreal, fixed-step attempts, versioned saves with quarantine) under the Mix renderer. CI job added. The marker stays on R0 until that job is green on GitHub.
 - 2026-09-28 — R0 done: the `app` job is green on GitHub. CURRENT MILESTONE moved to R1.
+- 2026-09-28 — Characters redrawn as solid comic figures (one outline per figure, cuffed beanie, hemmed sleeves and trousers).
+- 2026-09-28 — R1 sim: v0.956's skills, starts and XP; beta styles set the windows; Roadside's seven lines; Send City's weekly set; fed, bills and the card; seeded weather; Sage's schedule and lessons. Save v2 with a migration tested against a real R0 save.
+- 2026-09-28 — R1 on screen: Send City, boulders and their close-ups, people by their hours, rain, the creation screen, You and forecast sheets, settings. The e2e bot plays two days.
+- 2026-09-28 — R1 shell and week: the manifest, icons drawn in code, and a generated service worker (the e2e restarts offline); the week bot and the replay test. Criteria #1 and #4 pass. #2 (testers) and the Android half of #3 wait on people and a device, so the marker stays on R1.

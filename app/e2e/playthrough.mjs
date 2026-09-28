@@ -411,10 +411,23 @@ if (
   await fail(`the save doesn't show the two days: ${JSON.stringify(st).slice(0, 400)}`);
 log(`save: ${st.climber.name}, skills ${JSON.stringify(st.climber.skills)}`);
 
+console.log('Offline');
+// The service worker has had two days to install; with the network gone, a reload still
+// starts the game where you left it, and nothing fails to load.
+await until('the service worker to control the page', () =>
+  page.evaluate(() => !!navigator.serviceWorker?.controller),
+);
+await page.context().setOffline(true);
+await page.reload({ waitUntil: 'load' });
+await expectText('#h-time', /^Day 2 · 1[12]:\d\d AM$/, 'clock offline');
+await expectText('#h-cash', /^\$68$/, 'cash offline');
+await shot('offline');
+await page.context().setOffline(false);
+
 if (problems.length) await fail(`${problems.length} problem(s) during play`);
 await browser.close();
 await server.close();
-console.log('\n✓ Played two days with no errors and nothing sent off the site.');
+console.log('\n✓ Played two days, then again offline, with no errors and nothing sent off the site.');
 
 // The first go onsights the Warm Boulder; a later one is a redpoint.
 function go1(n) {
