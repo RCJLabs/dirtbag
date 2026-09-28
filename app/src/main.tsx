@@ -18,9 +18,10 @@ const game = new Game({ still });
 for (const f of ['800 12px "Big Shoulders Display"', '15px "Patrick Hand SC"', '15px "Patrick Hand"'])
   void document.fonts?.load(f).catch(() => undefined);
 
-// The service worker makes the game start with no connection. Built only for production;
-// in dev every reload should hit the server.
-if (import.meta.env.PROD && 'serviceWorker' in navigator)
+// The service worker makes the game start with no connection. Built only for production
+// (in dev every reload should hit the server), and only on the installable page, the one
+// that links the manifest: an embedded copy has no worker to register.
+if (import.meta.env.PROD && 'serviceWorker' in navigator && document.querySelector('link[rel="manifest"]'))
   window.addEventListener(
     'load',
     () => void navigator.serviceWorker.register('./sw.js').catch(() => undefined),
