@@ -69,9 +69,9 @@
 
 Effort figures are rough [INFERRED], as elsewhere in this plan.
 
-### R0 — Foundation   **<<< CURRENT MILESTONE**
+### R0 — Foundation
 
-**Status (28 Sep 2026): built; waiting on its first CI run.** Criteria 2–5 pass locally. Criterion 1 needs the new `app` job in `ci.yml` to go green on GitHub. What's in `app/`:
+**Status (28 Sep 2026): done.** All five criteria pass, and CI's new `app` job ran green on GitHub (run 7). What's in `app/`:
 - **The sim.** 51 tests, including the Unreal golden vectors, and a replay test that plays a go twice from the same inputs and gets the same result.
 - **The build.** 156.5 KB for a player to download, fonts included. v0.956 is 9.8 MB gzipped, but it also carries music and much more content, so the two sizes aren't a like-for-like comparison.
 - **The bot.** It plays day 1 through to day 2 and reloads.
@@ -104,7 +104,7 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 4. Nothing in `src/sim` can touch the DOM, `Math.random` or the wall clock, and CI enforces it.
 5. A player downloads under 250 KB, fonts included.
 
-### R1 — The first week
+### R1 — The first week   **<<< CURRENT MILESTONE**
 
 **Goal.** Phase 7's first hour, and a week you'd want to play, on the new build.
 
@@ -1082,3 +1082,4 @@ Players will ask "what am I working towards?" by hour 3.
   - The marker stays on Phase 1, because the source is still missing.
 - 2026-09-28 — Direction decided (tone, camera, climbing, look) and the rebuild track added (R0–R3). Phase 1 closed; affected phases annotated. CURRENT MILESTONE moved to R0.
 - 2026-09-28 — R0 built in `app/`. The feel slice now runs on an engine-free sim (seeded RNG matching Unreal, fixed-step attempts, versioned saves with quarantine) under the Mix renderer. CI job added. The marker stays on R0 until that job is green on GitHub.
+- 2026-09-28 — R0 done: the `app` job is green on GitHub. CURRENT MILESTONE moved to R1.
