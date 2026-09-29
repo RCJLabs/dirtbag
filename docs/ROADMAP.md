@@ -65,8 +65,9 @@
 | 12 UI system | Built on the rebuild (the Journal, the wide screen, keyboard and access, Tonight, no inline styles) and closed by Evan's call. The flows the e2e doesn't play in landscape or by keyboard carry to playtesting. |
 | 13 Sound and feel | Built on the rebuild (effects and ambience made in code, the licence ledger, credits) and closed by Evan's call. Criterion 4 (music) carries with the music decision; criteria 1 and 2 wait on an ear. |
 | 14 Desktop and Steam, 15 Demo and store page | Moved after Phase 18 by Evan's call: the full game first. |
-| 16 The spine | The current milestone. |
-| 17–20 | Unchanged in intent. They target the new build. The order from here: 16, 17, 18, then 14, 15, then 19 and 20. |
+| 21 The climber, 22 The life, 23 Who you are | Added by Evan's call after the gap check; they run before 16. Phase 21 is the current milestone. |
+| 16 The spine | Next after 21–23. |
+| 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 
 ## The rebuild track
 
@@ -408,7 +409,7 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 | A. Make it safe to change | 1–4 | Source control, a safety net, load time, and pulling the simulation out of the UI | 8–14 weeks |
 | B. Decide what the game is | 5–7 | Design bible and cut list, core-loop retune, the first hour | 5–8 weeks |
 | C. Make it look like the game it is | 8–13 | Art direction, the climbing screen, crags, the town, the UI system, sound | 18–29 weeks |
-| E. Make the full game worth paying for | 16–18 | Story spine and ending, the people, careers and jobs | 11–17 weeks |
+| E. Make the full game worth paying for | 21–23, then 16–18 | The climber (gear, trad, training, crags past Act I), the life (van, body, food, hustle, games), who you are (origins, stances, Record Book); then the story spine and ending, the people, careers and jobs | 32–49 weeks |
 | D. Get it in front of people | 14–15 | Desktop/Steam build, then the demo, store page and festival: after the full game, by Evan's call | 4–6 weeks |
 | F. Ship | 19–20 | Monetization, store readiness, beta, launch and after | 5–8 weeks |
 
@@ -661,7 +662,7 @@ Everything later in this plan (retuning, the climbing screen, the new town, the 
   - **The Record Book** — feats, each with its story card attached.
   
   Onboarding becomes Act I's first chapter.
-- **The cut list** (a starting point; confirm in the bible):
+- **The cut list** (a starting point; confirm in the bible). *Evan's call, 29 Sep 2026: blackjack, Texas hold'em, liar's dice, horseshoes and busking (the music hobby) come back, in Phase 22, on terms that stop them farming bond; trivia and a garden with farm visits are maybes.*
 
   | Keep and deepen | Merge | Defer past 1.0 | Cut |
   |---|---|---|---|
@@ -1371,7 +1372,87 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 ## Stage E — Make the full game worth paying for
 
-### Phase 16 — The spine: story, acts and endings   **<<< CURRENT MILESTONE**
+*Phases 21–23 were added by Evan's call (29 Sep 2026) after a gap check found v0.956 systems no phase covered. They run first, before Phase 16, which needs them.*
+
+### Phase 21 — The climber: gear, trad, training, and the crags past Act I   **<<< CURRENT MILESTONE**
+
+*Added 29 Sep 2026 by Evan's call, from a gap check of v0.956 against the rebuild and the phases left: none of this had a phase. Numbered 21 so older numbers don't move; it runs before Phase 16.*
+
+**Goal.** Everything a climber needs past the first season: a rack and what wears it out, trad lines, training that isn't a free exploit, and the crags, walls and expeditions from V10 to the myths.
+
+**Why.**
+- **Phase 16 needs it.** Its 15–25 hour playthrough and The Line need crags past Act I; the rebuild stops at Moonstone and an open V12 project.
+- **Trad is blocked on gear.** Roadside's and the Gorge's trad lines wait for a rack (R2).
+- **v0.956 had it:** 9 crags and 78 lines to V18 and two myths, 52 gear items with wear, 16 training protocols, 4 multi-pitch walls and 3 expeditions (`docs/audit/climbing.md` §2.3, §2.11, §2.14; `economy.md` §2.5).
+
+**Scope** (the audit's verdicts: keep, and fix the exploits):
+- **21.1 Gear.** A rack you buy, carry and wear out, checked by category (the audit's P0 fix): shoes, chalk, pads, rope and draws, crack gloves and tape, a trad rack. Far fewer than v0.956's 52 items. A shop, resoles, the swap meet. It changes the save.
+- **21.2 Trad.** A third discipline: protection you place or run out on the way up, in beta-then-send's terms. Roadside's and the Gorge's trad lines.
+- **21.3 Training.** A hangboard in the van and protocols at the gym, through the load model; phases that lock for days, a taper with a cooldown, prehab. Fewer protocols than v0.956's 16.
+- **21.4 The crags past Act I,** one per slice through "Adding a place": Sandstone Mesa, The Big Stone, Wind River Walls, The Crucible and its myths, Psicobloc Cove (deep-water solo), The Hollow, and The Cave. Lines at every grade to V18, with no V16 hole this time.
+- **21.5 Walls and expeditions.** Multi-pitch walls with bivies; expeditions as weather-window decisions with the odds shown.
+- **21.6 The rest of the rock:** crowds and spray beta, the speed wall, Free Solo mode (seeded, permadeath, chosen at the start), and highball calls where they're missing.
+
+**Done when.**
+1. A trad line can be led, with placements that change the fall.
+2. Gear wears, and worn gear changes a go the player can see.
+3. There are lines at every grade from V0 to V18, and the harness's bots reach V10+ without running out of things to try.
+4. A wall and an expedition can each be climbed and failed.
+5. Training can't be farmed: the harness finds no protocol that beats climbing at any grade.
+
+**Depends on:** Phases 9–11 (on the rebuild). **Effort:** ~8–12 weeks [INFERRED]; 21.4's crags are most of it (a scene and a topo each). **Main risk:** content volume. Each crag goes through the checklist in `app/README.md`.
+
+---
+
+### Phase 22 — The life: the van, the body, food, the hustle, and the games
+
+*Added 29 Sep 2026 by Evan's call, with Phase 21. Runs after it, before Phase 16.*
+
+**Goal.** The survival layer under the climbing, as deep as v0.956's and without its busywork: every day still a trade between earning and climbing.
+
+**Scope.**
+- **The van:** fuel, parts that wear, breakdowns, upgrades and build-outs, parking spots, tickets.
+- **The body, deeper:** treatments and insurance plans, old injuries (scars and marks merged), fear; sickness, teeth and the like merged into one supplies gauge that Tonight shows; psyche.
+- **Food:** groceries, recipes and a cooking beat, fishing, with diminishing returns so food isn't a skill farm.
+- **The hustle:** cans, dumpster runs, foraging, and busking (v0.956's music hobby, as a way to earn).
+- **Events:** knocks on the van, walk-out epics, roadside stops, night events.
+- **Scout's life:** perks, aging, the vet, the end.
+- **Dreams:** the Dream Rig, the War Chest, Home Base.
+- **The games, back by Evan's call:** blackjack, Texas hold'em, liar's dice and horseshoes at the fire and in town; maybe trivia; maybe a garden, with visits to the folks' farm. The audit cut them because all six paid the same reward (psyche, bond, rep), took no time and had no daily cap, so they farmed bond for free (`docs/audit/social.md` §2.9, §439). They come back on three terms: each takes time, each is capped by the day, and each pays something the others don't (poker keeps its reads on people). Blackjack and hold'em are simulated gambling for store ratings: the Play listing's content rating is updated before they ship.
+- **Phase 6's leftovers:** weekly shift schedules, the autopilot shift, lifestyle tiers, winter prep.
+
+**Done when.**
+1. A season's runway still holds Phase 6's targets with the van's costs in.
+2. No game, meal or hustle is a farm: the harness finds none that out-earns or out-bonds its time.
+3. Every event and game has a sound and an e2e step.
+
+**Depends on:** Phase 21 (the van carries the rack). **Effort:** ~8–12 weeks [INFERRED].
+
+---
+
+### Phase 23 — Who you are: origins, paths, stances, and the Record Book
+
+*Added 29 Sep 2026 by Evan's call. Runs after Phase 22, before Phase 16, which keys its epilogues to all of it.*
+
+**Goal.** A climber who's somebody: where they came from, what they're becoming, what they stand for, and a book of what they've done.
+
+**Scope.**
+- **Creation:** origins (the Late Bloomer and the rest), callings, flaws, talents: v0.956's six steps, kept short (R1 cut creation to a name and a start).
+- **Paths, traits and Mastery** (hybrids and style merged), with thresholds in grades, not 0–100 relics.
+- **Personality, factions and stances:** the ethics stances with their echoes and elder options; clubs folded into faction perks.
+- **The Board and the Record Book:** one weekly board; feats, milestones and story cards in one book. Phase 14 maps the Record Book to Steam achievements.
+- **The year:** a recap, and Homecoming.
+
+**Done when.**
+1. Two climbers made differently play differently in their first week, and the harness can tell them apart.
+2. Every stance's echo lands later in the game.
+3. The Record Book holds every feat v0.956 celebrated, merged, with its story.
+
+**Depends on:** Phases 21–22. **Effort:** ~5–8 weeks [INFERRED].
+
+---
+
+### Phase 16 — The spine: story, acts and endings
 
 **Goal.** A written main story across five acts with a real ending. Epilogues are built from the player's actual history, and legacy makes the next generation feel like a continuation.
 
@@ -1672,3 +1753,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 13.2 and 13.3: every place has ambience, from its data, turned by the hour and the sky; the licence ledger lists all 34 sounds, `npm run check` fails on unlisted audio, and Settings has credits. A click in 13.1's effects (envelopes starting at full volume) is fixed.
 - 2026-09-29 — Phase 13 closed by Evan's call: criteria 1–3 met, criterion 4 carried with the parked music decision. CURRENT MILESTONE moved to Phase 14, the desktop and Steam build.
 - 2026-09-29 — Evan's call: finish building the game before the Steam build and the demo. Phases 14 and 15 (Stage D) move after Phase 18, keeping their numbers; the order is now 16, 17, 18, 14, 15, 19, 20. CURRENT MILESTONE moved to Phase 16, the spine: story, acts and endings.
+- 2026-09-29 — A gap check of v0.956 against the rebuild and the phases left found systems nothing covered. Evan's calls: three phases added before Phase 16, numbered 21 (the climber: gear, trad, training, crags past Act I, walls and expeditions), 22 (the life: van, body, food, the hustle, events, and the games) and 23 (who you are: origins, paths, stances, the Record Book); and blackjack, hold'em, liar's dice, horseshoes and busking come back from the cut list (trivia and a garden maybe). The order is now 21, 22, 23, 16, 17, 18, 14, 15, 19, 20. CURRENT MILESTONE moved to Phase 21.
