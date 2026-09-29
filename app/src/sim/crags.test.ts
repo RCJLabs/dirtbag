@@ -59,7 +59,7 @@ describe('Granite Gorge', () => {
     expect(conditions('crags', hot).windows).toBeLessThan(1);
     expect(conditionsAt('crags', hot, 'gorge')).toMatchObject({ windows: 1, greaseFrom: 24 * 60 });
     const r = play(at(5, { at: 'gorge', min: 16 * 60 }), { t: 'go', route: 'gslab' });
-    expect(lines(r.events).some((l) => l.startsWith("Sun's on the wall"))).toBe(false);
+    expect(lines(r.events).some((l) => l.startsWith("Sun's on"))).toBe(false);
   });
 
   it('keeps its sport routes for when someone comes to belay', () => {

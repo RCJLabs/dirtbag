@@ -3,6 +3,7 @@
 // pure function of the seed and the day, so the forecast is simply tomorrow's roll.
 
 import { PLACES } from './content/places';
+import { CLIMB } from './dials';
 import { Rng } from './rng';
 
 export type Sky = 'prime' | 'fair' | 'hot' | 'rain';
@@ -43,7 +44,8 @@ export interface Conditions {
   sky: Sky;
   // The crag is climbable at all.
   open: boolean;
-  // When the sun comes onto Roadside's wall and the rock goes greasy.
+  // When the sun first reaches Roadside's wall. It crosses the wall from there, greasing
+  // each line in turn (sunOn), and has all of it CLIMB.sunSweep minutes later.
   greaseFrom: number;
   // Every outdoor window is scaled by this.
   windows: number;
@@ -51,8 +53,12 @@ export interface Conditions {
   seeping: boolean;
 }
 
+// When the sun is halfway across the wall: 3 PM on a prime day, 2 on a fair one, noon on
+// a hot one. It reaches the wall half a sweep before that.
+const SUN_HALFWAY: Record<Sky, number> = { prime: 15 * 60, fair: 14 * 60, hot: 12 * 60, rain: 14 * 60 };
+
 // What the day means at the crag. Prime is cold and dry: the best friction and the sun
-// comes round later. Hot days grease the wall from noon. Rain closes it, and it seeps the
+// comes round later. Hot days grease the wall by noon. Rain closes it, and it seeps the
 // day after.
 export function conditions(seed: string, day: number): Conditions {
   const sky = skyOn(seed, day);
@@ -61,7 +67,7 @@ export function conditions(seed: string, day: number): Conditions {
   return {
     sky,
     open: sky !== 'rain',
-    greaseFrom: sky === 'prime' ? 15 * 60 : sky === 'hot' ? 12 * 60 : 14 * 60,
+    greaseFrom: SUN_HALFWAY[sky] - CLIMB.sunSweep / 2,
     windows: base * (seeping ? 0.92 : 1),
     seeping,
   };
@@ -84,6 +90,17 @@ export function conditionsAt(
     greaseFrom: 24 * 60,
     windows: (c.sky === 'hot' ? 1 : c.sky === 'prime' ? 1.1 : 1) * (c.seeping ? 0.92 : 1),
   };
+}
+
+// When the sun reaches a line at a crag: the crag's first sun, plus its share of the sweep
+// by where it stands in the sun's path. Shaded rock never gets it, and a crag without a
+// path takes the sun all at once.
+export function sunOn(seed: string, day: number, place: string, route: string): number {
+  const c = conditionsAt(seed, day, place);
+  const path = PLACES[place]?.sun;
+  const i = path?.indexOf(route) ?? -1;
+  if (!path || i < 0 || path.length < 2 || PLACES[place]?.shaded) return c.greaseFrom;
+  return Math.round(c.greaseFrom + (CLIMB.sunSweep * i) / (path.length - 1));
 }
 
 export const SKY_NAME: Record<Sky, string> = { prime: 'Prime', fair: 'Fair', hot: 'Hot', rain: 'Rain' };

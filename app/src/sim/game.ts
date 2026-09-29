@@ -19,7 +19,7 @@ import { PARTNERS, tierOf, whereNow } from './presence';
 import { hashSeed } from './rng';
 import { aimMet, currentGoal } from './story';
 import type { Action, Delta, GameEvent, GameState, Result, RouteLog, SendStyle, Skills } from './types';
-import { conditionsAt, seasonOf } from './weather';
+import { conditionsAt, seasonOf, sunOn } from './weather';
 
 // The message log keeps this many lines; older ones fall off the front.
 export const LOG_MAX = 200;
@@ -500,13 +500,9 @@ export function act(s0: GameState, a: Action): Result {
             ? `That's no ${gradeLabel(r)}. Locals have been sandbagging it.`
             : `That's no ${gradeLabel(r)}. It's soft, and you're not complaining.`,
         );
-      if (
-        r.place !== 'gym' &&
-        s.min >= conditionsAt(s.seed, s.day, r.place).greaseFrom &&
-        !s.today.includes('grease')
-      ) {
+      if (r.place !== 'gym' && s.min >= sunOn(s.seed, s.day, r.place, r.id) && !s.today.includes('grease')) {
         s.today.push('grease');
-        line("Sun's on the wall. Everything feels greasy.");
+        line("Sun's on this line now. Everything feels greasy.");
       }
       break;
     }

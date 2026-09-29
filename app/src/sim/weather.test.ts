@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { whereIs, around } from './presence';
-import { conditions, forecast, seasonOf, skyOn, SEASON_DAYS, type Sky } from './weather';
+import { CLIMB } from './dials';
+import { PLACES } from './content/places';
+import { conditions, forecast, seasonOf, skyOn, sunOn, SEASON_DAYS, type Sky } from './weather';
 
 const days = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
 
@@ -43,13 +45,28 @@ describe('weather', () => {
     expect(conditions('test', rain)).toMatchObject({ open: false, sky: 'rain' });
     const after = conditions('test', rain + 1);
     expect(after).toMatchObject({ open: true, seeping: true });
+    // A prime day's sun is halfway across the wall at 3 PM.
     expect(conditions('test', 1)).toEqual({
       sky: 'prime',
       open: true,
-      greaseFrom: 15 * 60,
+      greaseFrom: 15 * 60 - CLIMB.sunSweep / 2,
       windows: 1.1,
       seeping: false,
     });
+  });
+
+  it('sends the sun across Roadside one line at a time, the projects first', () => {
+    const path = PLACES.road!.sun!;
+    const start = conditions('test', 1).greaseFrom;
+    const times = path.map((id) => sunOn('test', 1, 'road', id));
+    expect(times[0]).toBe(start);
+    expect(times.at(-1)).toBe(start + CLIMB.sunSweep);
+    for (let i = 1; i < times.length; i++) expect(times[i]).toBeGreaterThan(times[i - 1]!);
+    // Halfway along the path, halfway across the sweep: where the single sun time used to be.
+    expect(sunOn('test', 1, 'road', path[(path.length - 1) / 2]!)).toBe(15 * 60);
+    // The Gorge is in the shade all day, and a line off the path takes the sun with the wall.
+    expect(sunOn('test', 1, 'gorge', 'gslab')).toBe(24 * 60);
+    expect(sunOn('test', 1, 'road', 'nope')).toBe(start);
   });
 });
 

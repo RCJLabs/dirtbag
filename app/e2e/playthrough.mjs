@@ -281,6 +281,9 @@ console.log('The Warm Boulder');
 // Spawn 180; the Warm Boulder stands at 340, just off the right of the screen.
 await tapAt(350, screenY(540));
 await expectText('#sheet', /Warm Boulder · V2/, 'beta sheet');
+// Day one's a prime day: the sun comes round the far end of Roadside at 2, and the Warm
+// Boulder, by the road, is the last line it reaches.
+await expectText('#sheet', /in the shade till 4 PM/, 'the shade on it');
 await shot('beta-warm');
 const goes = await sendIt('Warm Boulder');
 await expectText('#sheet', go1(goes), 'result');

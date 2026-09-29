@@ -32,6 +32,7 @@ import {
   presentIn,
   PROBLEM_X,
   SCENES,
+  VW,
   W,
   Z,
   type PinKind,
@@ -43,6 +44,8 @@ import {
   drawFire,
   drawLights,
   drawRain,
+  drawSun,
+  drawWet,
   label,
   routeTag,
   speechMark,
@@ -54,7 +57,8 @@ import { mapArt } from './paint/map';
 import { drawBelayerBack, drawClimber, drawDog, drawPerson, INK, LOOK } from './paint/people';
 import { BIG } from './paint/scale';
 import { FIRE_X, LIGHTS, sceneArt } from './paint/scenes';
-import { belayAt, onRoute, routeStretch, wallOf } from './paint/wall';
+import { belayAt, onRoute, rockPath, routeStretch, wallOf } from './paint/wall';
+import { sceneSun, sunLight, wallSun, wetness } from './sun';
 
 export interface Frame {
   state: GameState;
@@ -81,6 +85,9 @@ export function render(g: G, f: Frame): void {
 }
 
 const wet = (s: GameState) => conditions(s.seed, s.day).sky === 'rain';
+// Where the water runs on wet rock: fixed per wall, so it runs the same way every time.
+const WET_SEED = 57;
+const wetSeed = (id: string) => [...id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, WET_SEED);
 
 function renderScene(g: G, f: Frame): void {
   const s = f.state;
@@ -99,6 +106,22 @@ function renderScene(g: G, f: Frame): void {
     drawFire(g, FIRE_X - cam, GND + 1, f.t, night, f.still);
     if (night) drawLights(g, LIGHTS, cam);
     drawDog(g, f.scout.x - cam, GND + 5, 1, f.t, f.scout.wag);
+  }
+  // The day on the rock: the sun's edge crossing the crag, and the wet after rain.
+  if (crag) {
+    const sun = sceneSun(s, f.scene);
+    if (sun) drawSun(g, sun.x - cam, sun.lit, -10, VW + 10, -40, H + 40, sunLight(s.min));
+    const w = wetness(s, place);
+    if (w)
+      drawWet(
+        g,
+        crag.wall[0] - cam,
+        Math.min(crag.wall[1], crag.width) + 20 - cam,
+        -20,
+        GND + 20,
+        WET_SEED,
+        w === 'soaked',
+      );
   }
   // Scout rode out with you: he's by the van.
   if (crag && s.dog) drawDog(g, 238 - cam, GND + 5, 1, f.t, 0);
@@ -210,6 +233,11 @@ function renderMap(g: G, f: Frame): void {
       size: 15,
       align: p.side > 0 ? 'left' : 'right',
     });
+    // A crag you can't climb today says so before you burn the gas: shut for the season,
+    // or soaked.
+    const shut = PLACES[id]?.crag ? conditionsAt(f.state.seed, f.state.day, id) : null;
+    const why = shut?.closed ? 'CLOSED' : shut && !shut.open ? 'SOAKED' : null;
+    if (why) label(g, 'poster', why, p.x, p.y + 25, { size: 9, color: '#FFFFFF', halo: ACC.comic });
   }
   const here = MAP_PINS[f.state.at];
   const vp: Pt | null = f.trip ? [f.trip.pos[0], f.trip.pos[1] - 10] : here ? [here.x, here.y - 20] : null;
@@ -226,6 +254,18 @@ function renderWall(g: G, f: Frame): void {
   // On a close-up wall the climber is drawn big, so labels stand further off the line.
   const off = wall.big ? 44 : 14;
   g.drawImage(wall.art, 0, 0, W, H);
+  if (r.place !== 'gym') {
+    const sun = wallSun(s, r);
+    if (sun) drawSun(g, sun.x, sun.lit, -10, W + 10, 0, H, sunLight(s.min));
+    const w = wetness(s, r.place);
+    if (w) {
+      g.save();
+      rockPath(g, r);
+      g.clip();
+      drawWet(g, 0, W, 0, H, wetSeed(r.id), w === 'soaked');
+      g.restore();
+    }
+  }
 
   // Each crux bracketed on the topo, with the beta you'll use there; "?" while there's
   // another way you haven't found.

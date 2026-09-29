@@ -9,6 +9,7 @@ This is the game as it ships from 0.960.0 (the roadmap's R3): the first season, 
   - Granite Gorge: it opens at V4 and shuts in spring. Six boulders and three sport lines, one of them a sandbag.
   - Send City: a weekly set, V0 to V5, and a board whose four problems, V4 to V7, stay up four weeks (Phase 10.1, after 0.960.0).
   - The Diner and the Coffee Shop.
+- **Conditions you can see** (Phase 10.2, after 0.960.0): the sun crosses Roadside from its far end to the road over two hours, greasing each line as it gets there, and you can see its edge coming. Wet rock after rain, and closed or soaked crags tagged on the map.
 - **Your body:** v0.956's acute:chronic load with Phase 6's fixes: a seeded start, warm-ups, seeded injury rolls, and a first injury that costs time, not money. Hunger, weekly bills and a card instead of a game over.
 - **People:**
   - Bonds and tiers, earned a day at a time.

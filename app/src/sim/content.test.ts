@@ -114,6 +114,19 @@ describe('content', () => {
     expect(b1[0]!.line).toContain(`${BOARD_WEEKS} weeks`);
   });
 
+  it('every sunny crag lists all its lines, once each, in the path the sun takes', () => {
+    for (const [id, p] of Object.entries(PLACES)) {
+      if (!p.crag || p.shaded) {
+        expect(p.sun, id).toBeUndefined();
+        continue;
+      }
+      const lines = Object.values(ROUTES)
+        .filter((r) => r.place === id)
+        .map((r) => r.id);
+      expect([...(p.sun ?? [])].sort(), id).toEqual(lines.sort());
+    }
+  });
+
   it('talk resolves: people, nodes, acts and beta', () => {
     for (const [id, t] of Object.entries(TALK)) {
       expect(PEOPLE, id).toHaveProperty([t.who]);

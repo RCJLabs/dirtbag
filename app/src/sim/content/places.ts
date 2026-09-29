@@ -25,6 +25,10 @@ export interface PlaceDef {
   closed?: { season: Season; why: string };
   // Shaded rock stays cool: no afternoon grease, and heat doesn't hurt it.
   shaded?: true;
+  // A sunny crag's lines in the order the afternoon sun reaches them, from one end of the
+  // crag to the other, talus boulders and wall lines alike. The scene's layout must agree
+  // (view/sun.test.ts), so the shade line you see crosses each line as it starts to grease.
+  sun?: string[];
   // Real rock: a trip out, and a crag's beats and people.
   crag?: true;
   // The side-view scene you walk around in, or null for a card-only place.
@@ -78,6 +82,21 @@ export const PLACES: Record<string, PlaceDef> = {
     away: 'Granite. Seven lines, from a V2 warm-up to The Pump.',
     here: "You're parked here.",
     acts: [],
+    // The sun comes round the far end first: the projects out in the boulder field lose
+    // their shade early, and the warm-ups by the road keep theirs longest.
+    sun: [
+      'rsopen',
+      'project',
+      'highball',
+      'fingercrack',
+      'testpiece',
+      'pump',
+      'crimpfest',
+      'roadside',
+      'dyno',
+      'warmup',
+      'warm',
+    ],
   },
   gorge: {
     name: 'Granite Gorge',

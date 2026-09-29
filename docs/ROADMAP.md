@@ -948,6 +948,24 @@ The full diagnosis is in the audit, under *The map and the look*.
     - *[proposed]* **Board grades climb like the wall's.** Board V4s and wall V4s are both sent at a median climber grade of V3, and 3 runs sent the V7 at V4. Real boards run stiff. Making this one stiff means a sandbag on every board problem, with its own line on the first go, so it waits for Evan.
     - **The store copy** (`docs/STORE.md`) describes 0.960.0, which has no board. It gains the board with the release that carries it.
 - **10.2, conditions you can see.** The shade line crossing the wall through the day (the prime window made visible), wet streaks after rain, and closures on the map.
+  - *As built (10.2):*
+    - *[proposed]* **The sun crosses a crag a line at a time.** It's a rules change, so the shade line can be honest.
+      - Before, every line at a crag greased at the same minute. Now the sun takes two hours (`CLIMB.sunSweep`) to cross Roadside from the boulder field's far end to the road, and each line greases when it arrives (`sunOn`).
+      - The crossing is centred on R1's single times (3 PM prime, 2 fair, noon hot), so the average line keeps its old time. `greaseFrom` now means the sun's first minute on the wall.
+      - The Gorge stays in the shade.
+      - Why this way round: the far end's projects lose their shade first, so projecting is a morning job, and the warm-ups by the road keep theirs longest, for someone who arrives after a shift. Run left to right first, the sun made day one's Warm Boulder greasy when the e2e bot got there at 2:53 PM, after a double shift.
+    - **On screen.**
+      - In the crag scene, warm light on the side the sun has crossed, with an edge that passes each line's foot at its sun time. A view test holds the scene's layout to the sun's path.
+      - On a route's wall, the same edge crosses its sport lines, or the boulder's close-up.
+      - Wet rock: darker and streaked the day after rain, more so in it.
+      - On the map, CLOSED (the season) and SOAKED (rain) under a crag's pin.
+      - The beta sheet says "in the shade till 4 PM", "in the sun, smaller windows", or "damp from the rain". The forecast gives the sun's crossing ("from 1 PM to 3 PM").
+      - The e2e bot checks the Warm Boulder's shade on day one.
+    - **The harness** (12 seeds × 28 days):
+      - All four season targets pass. The first V5 go is at day 19 for every strategy.
+      - 1 run of 144 has a day with nothing new to try.
+      - Reckless bots' injuries read 7 of 144 (5%, small numbers); moderate bots', 0.
+      - The bots don't plan around the shade, so the gain goes to a player who does.
 - **10.3, Moonstone Boulders**, v0.956's next crag: desert quartzite, opens at V6, a permit to climb. Its scene and topos drawn in code, highballs with pad and spotter decisions (the audit's idea for its identity), and its road on the map. It's where Act II would start.
 
 **Done when, on the rebuild** *[proposed; replaces the criteria above until Evan rules]*:
@@ -1357,3 +1375,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — R3.3: the Play listing and "What's new" for 0.960.0 in `docs/STORE.md`, held to Play's limits by `npm run check`, and eight screenshots from the build. R3 is built; the tags and the Play upload are Evan's.
 - 2026-09-29 — R3 merged (PR #11) and closed by Evan's call with the release carried as his steps (the v0.956.0 and v0.960.0 tags, then the Play upload). CURRENT MILESTONE moved to Phase 10, planned on the rebuild: the board at Send City, conditions you can see, and Moonstone Boulders.
 - 2026-09-29 — Phase 10.1: the board at Send City. Four problems, V4–V7, that stay up four weeks, on a new seed stream logged for Unreal. It has its own scene, sheet, face-on wall and e2e step. "Nothing new to try" in the harness falls from about half the runs to 3 of 144; the season targets still pass.
+- 2026-09-29 — Phase 10.2: conditions you can see. The sun crosses Roadside end to end in two hours and greases each line as it arrives (proposed). The scene and walls show its edge, wet rock shows after rain, and the map tags closed and soaked crags. The season targets pass.

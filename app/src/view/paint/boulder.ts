@@ -32,6 +32,9 @@ function outline(id: string, heightFt: number): Pt[] {
   ];
 }
 
+// The boulder's outline on its close-up, for anything drawn on the rock alone.
+export const boulderOutline = (r: RouteDef): Pt[] => outline(r.id, r.heightFt);
+
 // Where the climber's hips go: feet on the pads to hands on the lip, wandering a little.
 export function boulderTopo(id: string, heightFt: number): Pt[] {
   const r = mulberry32(seedOf(id) + 3);

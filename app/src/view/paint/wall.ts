@@ -8,7 +8,7 @@ import { arcTable, atLen, lin, mk, poly, spline, trace, type G, type Pt } from '
 import { mulberry32 } from '../kit/noise';
 import { H, W } from '../layout';
 import { coniferPath, rock } from '../shapes';
-import { boulderArt, boulderTopo, paintBoulderArt } from './boulder';
+import { boulderArt, boulderOutline, boulderTopo, paintBoulderArt } from './boulder';
 import { boardTopo, boardWallArt, gymTopo, gymWallArt, paintBoardWall, paintGymWall } from './gym';
 
 const SKY: Pt[] = [
@@ -200,29 +200,48 @@ export const slotOf = (id: string): number => Math.max(0, Number(id.split('-')[2
 // set): the grid never changes, so each set has to light new holds on it.
 const boardPattern = (id: string): number => Number(id.split('-')[1] ?? 1) * 10 + slotOf(id);
 
-// The wall a route is on, and its line there.
-export function wallOf(r: RouteDef): Wall {
-  if (r.disc === 'sport') return { art: wallArt(r.place, r.id), topo: TOPO[r.id]!, big: false };
-  const key = r.board
+// A close-up's cache key: gym problems share a wall by their place on it, board problems
+// by their lit holds, and a boulder is its own.
+const closeKey = (r: RouteDef): string =>
+  r.board
     ? `board:${boardPattern(r.id)}:${r.heightFt}`
     : r.place === 'gym'
       ? `gym:${slotOf(r.id)}:${r.heightFt}`
       : r.id;
+
+const topos = new Map<string, Topo>();
+
+// A route's line on its wall, without painting the wall: all that positions on it (the
+// climber, the chalk, the sun's edge) need.
+export function topoFor(r: RouteDef): Topo {
+  if (r.disc === 'sport') return TOPO[r.id]!;
+  const key = closeKey(r);
+  let t = topos.get(key);
+  if (!t) {
+    t = topoOf(
+      r.board
+        ? boardTopo(boardPattern(r.id), r.heightFt)
+        : r.place === 'gym'
+          ? gymTopo(slotOf(r.id), r.heightFt)
+          : boulderTopo(r.id, r.heightFt),
+    );
+    topos.set(key, t);
+  }
+  return t;
+}
+
+// The wall a route is on, and its line there.
+export function wallOf(r: RouteDef): Wall {
+  if (r.disc === 'sport') return { art: wallArt(r.place, r.id), topo: TOPO[r.id]!, big: false };
+  const key = closeKey(r);
   let w = close.get(key);
   if (!w) {
-    w = r.board
-      ? {
-          art: boardWallArt(boardPattern(r.id), r.heightFt),
-          topo: topoOf(boardTopo(boardPattern(r.id), r.heightFt)),
-          big: true,
-        }
+    const art = r.board
+      ? boardWallArt(boardPattern(r.id), r.heightFt)
       : r.place === 'gym'
-        ? {
-            art: gymWallArt(slotOf(r.id), r.heightFt),
-            topo: topoOf(gymTopo(slotOf(r.id), r.heightFt)),
-            big: true,
-          }
-        : { art: boulderArt(r), topo: topoOf(boulderTopo(r.id, r.heightFt)), big: true };
+        ? gymWallArt(slotOf(r.id), r.heightFt)
+        : boulderArt(r);
+    w = { art, topo: topoFor(r), big: true };
     close.set(key, w);
   }
   return w;
@@ -230,13 +249,13 @@ export function wallOf(r: RouteDef): Wall {
 
 // A point on a route's line, `moves` up it.
 export function onRoute(r: RouteDef, moves: number): Pt {
-  const t = wallOf(r).topo;
+  const t = topoFor(r);
   return atLen(t.d, t.L, (moves / (r.moves || 1)) * t.len);
 }
 
 // The stretch of a route's line from one point to another, in moves: what a go climbed.
 export function routeStretch(r: RouteDef, from: number, to: number): Pt[] {
-  const t = wallOf(r).topo;
+  const t = topoFor(r);
   const per = t.len / (r.moves || 1);
   const a = Math.min(r.moves, Math.max(0, from)) * per;
   const b = Math.min(r.moves, Math.max(from, to)) * per;
@@ -248,7 +267,7 @@ export function routeStretch(r: RouteDef, from: number, to: number): Pt[] {
 
 // Where the belayer stands for a sport route.
 export function belayAt(r: RouteDef): Pt {
-  const [x] = wallOf(r).topo.d[0]!;
+  const [x] = topoFor(r).d[0]!;
   return [x - 24, BELAY_Y];
 }
 
@@ -521,6 +540,14 @@ function paintWall(g: G, place: string, selected: string): void {
   if (place === 'gorge') paintGorge(g);
   else paintRoadside(g);
   paintLines(g, place, selected);
+}
+
+// The rock on a route's close-up, as a path to clip to: the face a sport line is on, or
+// the boulder itself, so weather drawn on the rock stays off the sky.
+export function rockPath(g: G, r: RouteDef): void {
+  g.beginPath();
+  if (r.disc === 'sport') poly(g, r.place === 'gorge' ? G_WALL : WALLPOLY, true);
+  else poly(g, boulderOutline(r), true);
 }
 
 // A route's wall, painted into any context in wall units: what the wall view caches at 2x,

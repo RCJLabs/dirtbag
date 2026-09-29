@@ -229,9 +229,13 @@ export const CLIMB = {
   minSkin: 12,
   // Too dark to climb from 7 PM.
   darkFrom: 19 * 60,
-  // Once the sun is on the wall (when depends on the day's weather) every window shrinks
-  // by a fifth. It makes the morning worth driving out for.
+  // Once the sun is on a line (when depends on the day's weather, and on where the line
+  // is) every window on it shrinks by a fifth. It makes the morning worth driving out for.
   greaseFactor: 0.8,
+  // The sun crosses a sunny crag's wall in two hours, end to end, so each line gets the
+  // sun at its own time (sunOn). Long enough that where you start matters: Roadside's
+  // warm-ups keep their shade two hours past its projects.
+  sunSweep: 120,
   // Moves per second while you hold. About a move and a half: fast enough that pump, not
   // boredom, is what makes you let go.
   climbRate: 1.53,

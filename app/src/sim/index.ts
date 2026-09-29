@@ -61,7 +61,7 @@ export {
   gains,
 } from './climber';
 export type { Style, Start, GoSummary } from './climber';
-export { skyOn, forecast, conditions, conditionsAt, seasonOf, SKY_NAME, SEASON_DAYS } from './weather';
+export { skyOn, forecast, conditions, conditionsAt, sunOn, seasonOf, SKY_NAME, SEASON_DAYS } from './weather';
 export type { Sky, Season, Conditions } from './weather';
 export { whereIs, whereNow, around, tierOf, PARTNERS } from './presence';
 export { gradeOfPerson, dexHurt } from './curves';

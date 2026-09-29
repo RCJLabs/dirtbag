@@ -2,8 +2,8 @@
 // labels, route tags and the van on the map.
 
 import { VW } from '../layout';
-import { rad, rr, type G } from '../kit/geom';
-import { vnoise } from '../kit/noise';
+import { lin, rad, rr, type G } from '../kit/geom';
+import { mulberry32, vnoise } from '../kit/noise';
 import { INK } from './people';
 
 export const FONT = {
@@ -180,6 +180,72 @@ export function tapeTag(g: G, x: number, y: number, col: string, grade: string, 
   g.fillStyle = col === '#E8C547' ? '#1E2B2B' : '#FFFFFF';
   g.fillText(grade, x, y + 4);
   if (sent) label(g, 'poster', 'SENT', x, y - 13, { size: 12, color: ACC.poster, halo: '#F3E6CB' });
+}
+
+// Sunlight on rock: a warm wash on the lit side of the sun's edge (1: right of it, -1:
+// left), out to `lo` or `hi`. The edge is soft over 16 px, with a faint shadow line on its
+// shade side, the way a shadow falls across rock. `k` is how strong it is (it goes with
+// the evening).
+export function drawSun(
+  g: G,
+  edge: number,
+  lit: 1 | -1,
+  lo: number,
+  hi: number,
+  y0: number,
+  y1: number,
+  k: number,
+): void {
+  if (k <= 0) return;
+  const warm = (a: number) => `rgba(255,186,96,${(a * k).toFixed(3)})`;
+  const inner = edge + lit * 8;
+  g.fillStyle = warm(0.28);
+  if (lit === 1 && inner < hi) g.fillRect(inner, y0, hi - inner, y1 - y0);
+  if (lit === -1 && inner > lo) g.fillRect(lo, y0, inner - lo, y1 - y0);
+  g.fillStyle = lin(g, inner, 0, edge - lit * 8, 0, [
+    [0, warm(0.28)],
+    [1, warm(0)],
+  ]);
+  g.fillRect(edge - 8, y0, 16, y1 - y0);
+  g.fillStyle = `rgba(30,30,50,${(0.16 * k).toFixed(3)})`;
+  g.fillRect(edge - lit * 9 - 1, y0, 2, y1 - y0);
+}
+
+// Wet rock: darker all over, with water streaks running down from breaks in the rock,
+// darkest where they start and narrowing as they fade. Soaked rock is darker than seeping
+// rock. The streaks sit where the seed puts them, so a wall is wet the same way every time.
+export function drawWet(
+  g: G,
+  x0: number,
+  x1: number,
+  y0: number,
+  y1: number,
+  seed: number,
+  soaked: boolean,
+): void {
+  g.fillStyle = soaked ? 'rgba(18,24,36,.2)' : 'rgba(18,24,36,.12)';
+  g.fillRect(x0, y0, x1 - x0, y1 - y0);
+  const r = mulberry32(seed);
+  const n = Math.round((x1 - x0) / (soaked ? 22 : 30));
+  const a = soaked ? 0.55 : 0.42;
+  for (let i = 0; i < n; i++) {
+    const x = x0 + r() * (x1 - x0);
+    const top = y0 + r() * (y1 - y0) * 0.4;
+    const len = (y1 - y0) * (0.2 + r() * 0.4);
+    const w = 4 + r() * 7;
+    g.fillStyle = lin(g, 0, top, 0, top + len, [
+      [0, `rgba(16,22,32,${a})`],
+      [0.5, `rgba(16,22,32,${(a * 0.5).toFixed(2)})`],
+      [1, 'rgba(16,22,32,0)'],
+    ]);
+    g.beginPath();
+    g.moveTo(x - w / 2, top + w / 2);
+    g.quadraticCurveTo(x, top - w / 2, x + w / 2, top + w / 2);
+    g.lineTo(x + w * 0.12, top + len);
+    g.lineTo(x - w * 0.12, top + len);
+    g.closePath();
+    g.fill();
+  }
 }
 
 // Rain over an outdoor view: a grey wash and slanting streaks, falling unless motion is off.

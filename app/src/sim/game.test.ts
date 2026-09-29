@@ -5,7 +5,7 @@ import { ROUTES } from './content/routes';
 import { BODY, CLIMB, DAY, MONEY } from './dials';
 import { act, goBlocked, goCost, lessonAt, LOG_MAX, NAME_MAX, newGame, talkStart } from './game';
 import type { Action, GameEvent, GameState, GoResult } from './types';
-import { skyOn } from './weather';
+import { skyOn, sunOn } from './weather';
 
 const lines = (ev: GameEvent[]) => ev.flatMap((e) => (e.k === 'line' ? [e.text] : []));
 const refusal = (ev: GameEvent[]) => ev.find((e) => e.k === 'refused');
@@ -330,11 +330,20 @@ describe('goes and sends', () => {
     expect(talkStart(red.state, 'hazel-crag')).toBe('sent');
   });
 
-  it('warns about the sun once a day, when a go starts after the rock greases', () => {
-    const r = play(crag(15 * 60), { t: 'go', route: 'warm' }, { t: 'go', route: 'warm' });
-    expect(lines(r.events).filter((l) => l.startsWith("Sun's on the wall"))).toHaveLength(1);
+  it('warns about the sun once a day, when a go starts on a line the sun has reached', () => {
+    // By 4 on a prime day the sun has the whole wall, the Warm Boulder last.
+    const r = play(crag(16 * 60), { t: 'go', route: 'warm' }, { t: 'go', route: 'warm' });
+    expect(lines(r.events).filter((l) => l.startsWith("Sun's on"))).toHaveLength(1);
     const morning = play(crag(), { t: 'go', route: 'warm' });
     expect(lines(morning.events)).toEqual([]);
+    // The sun reaches the far boulders first and the Warm Boulder by the road last: at the
+    // same minute, one's greasy and the other's still in the shade.
+    const t = sunOn('t', 1, 'road', 'fingercrack');
+    expect(sunOn('t', 1, 'road', 'warm')).toBeGreaterThan(t);
+    expect(lines(play(crag(t), { t: 'go', route: 'fingercrack' }).events)).toContain(
+      "Sun's on this line now. Everything feels greasy.",
+    );
+    expect(lines(play(crag(t), { t: 'go', route: 'warm' }).events)).toEqual([]);
   });
 });
 

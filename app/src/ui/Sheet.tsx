@@ -15,8 +15,10 @@ import {
   type Zone,
   bodyNote,
   BODY,
+  CLIMB,
   clockShort,
   conditions,
+  conditionsAt,
   costLabel,
   dayFactor,
   DOG,
@@ -45,11 +47,13 @@ import {
   SKILLS,
   SKY_NAME,
   startName,
+  sunOn,
   tierOf,
   TIER_NAME,
   type Conditions,
   type GameState,
   type PersonLog,
+  type RouteDef,
   type Season,
   type Verb,
 } from '../sim';
@@ -177,6 +181,21 @@ function Close({ game }: { game: Game }) {
   );
 }
 
+// What the day's doing to a line outdoors: in the sun already, or in the shade and till
+// when; and damp, the day after rain. Nothing on a day of rain: the rock's shut.
+function rockNote(s: GameState, r: RouteDef): string {
+  if (r.place === 'gym') return '';
+  const c = conditionsAt(s.seed, s.day, r.place);
+  if (!c.open) return '';
+  const sun = sunOn(s.seed, s.day, r.place, r.id);
+  const light = dayFactor(s, r).grease
+    ? ' · in the sun, smaller windows'
+    : sun < CLIMB.darkFrom
+      ? ` · in the shade till ${clockShort(sun)}`
+      : '';
+  return light + (c.seeping ? ' · damp from the rain' : '');
+}
+
 // Pick your beta for each crux, then tie in. Beta you haven't earned shows as a locked card
 // with a hint about where to find it. Each card's window is its real width for you today:
 // your skills in its style against the grade, the rock and your hunger.
@@ -187,9 +206,7 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
   const goes = s.routes[route]?.goesToday ?? 0;
   const why = goBlocked(s, r);
   const c = goCost(r);
-  const cost =
-    `${costLabel({ min: c.min })} · ${bodyNote({ energy: c.energy, skin: c.skin })}` +
-    (dayFactor(s, r).grease ? ' · sun on the wall, smaller windows' : '');
+  const cost = `${costLabel({ min: c.min })} · ${bodyNote({ energy: c.energy, skin: c.skin })}${rockNote(s, r)}`;
   const log = s.routes[route];
   const unnamed = r.open && log?.sent && !s.firsts[route];
   return (
@@ -619,18 +636,20 @@ const SEASON: Record<Season, [string, string]> = {
   summer: ['Summer', 'Hot. Climb early, or climb plastic.'],
 };
 
+// The day at Roadside: the sun crosses its wall from the first line to the last.
 function skyLine(c: Conditions): string {
   const t = clockShort(c.greaseFrom);
+  const all = clockShort(c.greaseFrom + CLIMB.sunSweep);
   const wet = c.seeping ? ' Still seeping from the rain.' : '';
   switch (c.sky) {
     case 'rain':
       return "The crag's shut. The gym isn't.";
     case 'prime':
-      return `Cold and dry: the best friction. Sun on the wall from ${t}.${wet}`;
+      return `Cold and dry: the best friction. The sun crosses the wall from ${t} to ${all}.${wet}`;
     case 'hot':
-      return `Greasy from ${t}.${wet}`;
+      return `Greasy from ${t}, and the whole wall by ${all}.${wet}`;
     default:
-      return `Sun on the wall from ${t}.${wet}`;
+      return `The sun crosses the wall from ${t} to ${all}.${wet}`;
   }
 }
 
