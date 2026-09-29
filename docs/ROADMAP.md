@@ -365,6 +365,11 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 - `docs/STORE.md` holds the Play listing for 0.960.0, in the game's voice: an 80-character short description, the full description, and "What's new". The order follows the audit (the life, then the climbing, then the promise); every fact in it is checked against the build. `npm run check` holds each block to Play's limit.
 - Eight 1080 × 1920 screenshots from the 0.960.0 build, listed there with captions. They were delivered with the release work rather than committed, since they're binary.
 
+**Released (29 Sep 2026).** Evan published `v0.960.0` on `main` (`59bd69e`) at 16:17 UTC.
+- Deploy run 1 passed its checks, and its live check: the site serves this commit and the rebuild's worker, and the live smoke test passed. Evan reports the release steps done.
+- `v0.956.0` stays untagged on purpose. That tag's push deploys v0.956, so creating it on `e098332` is the rollback, not a safety step.
+- The live crossover on a phone that had v0.956 installed is the one check left.
+
 **Status (29 Sep 2026): built and merged (PR #11); closed by Evan's call with the release carried.** Evan moved on to Phase 10 the same day; the release steps below stay his, and R3's criterion 1 is met when they're done.
 
 *The notes below are from before the merge.*
@@ -423,7 +428,7 @@ That adds up to about 51–82 weeks, roughly 12–19 months [INFERRED].
 
 **Status (28 Sep 2026): closed by the rebuild.** The release pipeline is built. The rebuild changes what the open items below are worth:
 - Items 1–3 were about building v0.956 from its source. The new build is built from source in CI by construction, and R0 drives its version from `package.json`. The v0.956 source is still worth putting somewhere private, as a reference for porting rules exactly in R2.
-- Item 4 is done: Pages builds from Actions and the environment accepts tags. What remains is Evan pushing the first `v0.956.0` tag, which exercises `deploy.yml`.
+- Item 4 is done: Pages builds from Actions and the environment accepts tags. The first tag deploy was `v0.960.0`, on 29 Sep 2026 (Deploy run 1, green).
 - Item 5 still stands before the next store release.
 
 The status as it stood before the rebuild:
@@ -1532,3 +1537,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 11.2: place cards. Every card has a header showing the place as you'd find it after the drive: its scene, with whoever's there, the light, the wet and the night; the diner and the café get fronts drawn in code. Places with a scene list who's around then, and till when. At a crag with ropes or highballs, a line says whether that means a belayer or a spotter. The e2e checks both.
 - 2026-09-29 — Phase 11.3: adding a place is documented work. Roads are a graph: 11 roads to neighbours instead of one for every pair, and a drive is the quickest way through them. Daily trips and v0.956's drives from the Lot keep their costs. Nine rare trips to or from the Gorge and Moonstone shift; Roadside to the Gorge is now an hour and $10. Drives on the map follow the roads, so Roadside to Moonstone no longer runs south through town. An "Adding a place" checklist is in `app/README.md`, and the tests name what a place is missing.
 - 2026-09-29 — Phase 11.4, by Evan's call: the daily plan. Yesterday, as you played it, is today's plan: one tap runs its drives and errands, it waits while you climb, and it stops at the first thing the day refuses, saying why. You plan on the van and edit by where, then what; bed stays last. The e2e runs day four as a plan in 13 taps (day three took 20), and day five's plan stops at the café.
+- 2026-09-29 — 0.960.0 released: Evan published `v0.960.0` on `main`, and Deploy run 1 went green, live check included. `v0.956.0` is left untagged on purpose, because its push would deploy v0.956; creating it on `e098332` is the rollback. The docs now say so.

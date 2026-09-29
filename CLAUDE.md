@@ -4,7 +4,7 @@ Climbing life-sim: live out of your van, work shifts, push your grade from gym p
 
 **What is and isn't here.**
 - **The game, `app/`.** Rebuilt from source over the roadmap's R0–R3: engine-free sim, the Mix renderer (poster landscapes, comic people, all drawn in code), React panels. Since 0.960.0 it *is* the site: `npm run stage` copies its build (`app/dist`) and a short allowlist into `_site/`. Gameplay and UI work happens here.
-- **v0.956, retired at R3.** The old single-file build (~15 MB, its source never in this repo) left the tree. The `v0.956.0` tag keeps it, and redeploying that tag is the rollback. Its players' saves stay in their browsers: the game offers them as a file, and can carry a climber across (`app/src/game/legacy.ts`).
+- **v0.956, retired at R3.** The old single-file build (~15 MB, its source never in this repo) left the tree. Commit `e098332` on `main` keeps it. Rolling back is creating the `v0.956.0` tag there, since that tag's push deploys it; so the tag doesn't exist yet, on purpose. Its players' saves stay in their browsers: the game offers them as a file, and can carry a climber across (`app/src/game/legacy.ts`).
 
 ## Start every session
 
