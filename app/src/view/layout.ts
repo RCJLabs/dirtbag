@@ -1,7 +1,7 @@
 // Where things are on screen. The rules never see any of this: scenes, hotspots and pins
 // are staging, keyed to content ids so the painters and the sim meet only through ids.
 
-import { whereIs, type GameState } from '../sim';
+import { whereNow, type GameState } from '../sim';
 
 // A portrait phone screen in logical pixels; the page scales it to fit the device.
 export const W = 360;
@@ -197,12 +197,14 @@ export const SPOTS: Record<string, Spot[]> = {
     { who: 'sage', x: 904, face: -1, pose: 'stand', talk: 'sage' },
   ],
   gym: [{ who: 'sage', x: 292, face: 1, pose: 'stand', talk: 'sage' }],
+  // Out at the Gorge only when you've asked, and then on belay under the first line.
+  gorge: [{ who: 'sage', x: 610, face: -1, pose: 'belay', talk: 'sage' }],
 };
 
 // Who's in a scene right now: the people whose day puts them at its place.
 export function presentIn(s: GameState, scene: string): Spot[] {
   const place = SCENES[scene]?.place;
-  return (SPOTS[scene] ?? []).filter((p) => whereIs(s.seed, p.who, s.day, s.min) === place);
+  return (SPOTS[scene] ?? []).filter((p) => whereNow(s, p.who) === place);
 }
 
 // You stand in front of them, facing them.

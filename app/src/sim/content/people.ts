@@ -5,16 +5,31 @@
 // routes) with {goes|go|goes} for the plural, and {name}, your name.
 
 import type { Cond } from '../cond';
-import type { Delta } from '../types';
+import { ARC, BOND } from '../dials';
+import { PLACES } from './places';
+import type { Delta, Skills } from '../types';
 
 export interface TalkFx {
   cost?: Delta;
   learn?: string; // "route/beta", learned by being told
   today?: string;
   act?: string;
+  // A line for the log and the toast lane. {away} is the days they'll be gone; skills they
+  // leave you with are added to the end.
   line?: string;
   // They climb a line you're working, and you watch their beta.
   watch?: true;
+  // This plays the next beat of their arc.
+  arc?: true;
+  // Skills you come away with.
+  train?: Partial<Skills>;
+  // Bond: more of it, or at least this much.
+  bond?: number;
+  bondAtLeast?: number;
+  // They're gone for this many days.
+  away?: number;
+  // They'll meet you at this place today.
+  invite?: string;
 }
 
 export interface TalkOpt {
@@ -107,10 +122,16 @@ export const TALK: Record<string, TalkDef> = {
       start: { text: "Rope's flaked. I'll belay whatever you want to get on.", opts: [{ label: 'OK' }] },
     },
   },
+  // Sage's arc is v0.956's, beat for beat. Her guiding stint is a week here, not v0.956's
+  // sixteen days, so the text says less about how long; the last beat needs real rock.
   sage: {
     who: 'sage',
     start: [
       { when: { notMet: 'sage' }, node: 'meet' },
+      { when: { arc: 'sage/1' }, node: 'beat-1' },
+      { when: { arc: 'sage/2' }, node: 'beat-2' },
+      { when: { arc: 'sage/3' }, node: 'beat-3' },
+      { when: { arc: 'sage/4', outside: true }, node: 'beat-4' },
       { when: { today: 'sage' }, node: 'done' },
       { node: 'again' },
     ],
@@ -125,9 +146,93 @@ export const TALK: Record<string, TalkDef> = {
       hi: { text: "Hi. Come find me when you're stuck on something.", opts: [{ label: 'Will do' }] },
       again: {
         text: "Stuck on something, {name}? Point at it and I'll show you how I'd go.",
-        opts: [{ label: 'Show me the beta', primary: true, fx: { watch: true } }, { label: 'Not now' }],
+        opts: [
+          { label: 'Show me the beta', primary: true, fx: { watch: true } },
+          {
+            label: 'Come out to the Gorge?',
+            when: {
+              bond: `sage/${BOND.invite}`,
+              grade: PLACES.gorge!.minGrade,
+              open: 'gorge',
+              before: BOND.inviteBefore,
+              notToday: 'invite',
+            },
+            fx: {
+              invite: 'gorge',
+              today: 'invite',
+              line: 'Sage: "Meet you at the pullout. I\'ll bring the rope."',
+            },
+          },
+          { label: 'Not now' },
+        ],
       },
       done: { text: "That's all you get from me today. Go climb.", opts: [{ label: 'Fair' }] },
+      'beat-1': {
+        text: 'Sage doesn\'t say much. She just watches you flail at a sequence, points two feet left, and suddenly it\'s trivial. "You were fighting it." She climbs like water finding the easy way down.',
+        opts: [
+          {
+            label: 'Climb with her',
+            primary: true,
+            fx: { arc: true, train: { technique: 2 }, line: 'Sage quietly fixes your footwork.' },
+          },
+        ],
+      },
+      'beat-2': {
+        text: 'Sage is sitting on her pad, turning her phone over and over. "Got the call: a guiding stint up in the Bugaboos. Real money, real alpine." She looks genuinely torn. "Tell me straight."',
+        opts: [
+          {
+            label: '"Go. You\'d be crazy not to."',
+            primary: true,
+            fx: {
+              arc: true,
+              away: ARC.sageAway,
+              bond: 1,
+              line: 'You send her off with a blessing. "Go get it." Sage is off guiding, back in {away} days.',
+            },
+          },
+          {
+            label: '"I\'ll miss having you out here."',
+            fx: {
+              arc: true,
+              away: ARC.sageAway,
+              train: { head: 2 },
+              line: 'She squeezes your shoulder. "I\'ll be back before you know it." Sage is off guiding, back in {away} days.',
+            },
+          },
+        ],
+      },
+      'beat-3': {
+        text: 'Sage is back from the Bugaboos, browner and leaner, with granite in her hands. She drops her pack and grins. "Missed this rock. Missed this crew." Then she steps onto your project and flashes the crux you\'ve been stuck on, just to show you it goes.',
+        opts: [
+          {
+            label: 'Welcome her back',
+            primary: true,
+            fx: {
+              arc: true,
+              train: { technique: 3, endurance: 2 },
+              line: 'Sage is back, and dialed from the granite.',
+            },
+          },
+        ],
+      },
+      'beat-4': {
+        text: 'That long technical testpiece Sage always eyed: today\'s the day. She reads it move by move, you trade leads, every foot placement dialed. At the chains she bumps your fist. "Couldn\'t have done it without you. Either of us."',
+        opts: [
+          {
+            label: 'Top it out together',
+            primary: true,
+            when: { energy: 12 },
+            fx: {
+              arc: true,
+              cost: { min: 120, energy: -12 },
+              train: { technique: 6 },
+              bondAtLeast: 7,
+              line: 'You and Sage top out the testpiece together. Partners for good.',
+            },
+          },
+          { label: "Not today, I'm spent" },
+        ],
+      },
     },
   },
 };

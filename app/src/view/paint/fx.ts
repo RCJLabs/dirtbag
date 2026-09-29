@@ -41,6 +41,36 @@ export function label(
   g.fillText(txt, x, y);
 }
 
+// Someone with something to say: a little speech balloon with three dots over their head,
+// bobbing unless motion is off.
+export function speechMark(g: G, x: number, y: number, t: number, still: boolean): void {
+  if (x < -30 || x > VW + 30) return;
+  const by = y - (still ? 0 : Math.abs(Math.sin(t * 2.6)) * 2.5);
+  g.fillStyle = CREAM;
+  g.strokeStyle = INK;
+  g.lineWidth = 1.6;
+  rr(g, x - 13, by - 18, 26, 15, 6);
+  g.fill();
+  g.stroke();
+  g.beginPath();
+  g.moveTo(x - 3, by - 3.6);
+  g.lineTo(x - 1, by + 3);
+  g.lineTo(x + 4, by - 3.6);
+  g.closePath();
+  g.fill();
+  g.beginPath();
+  g.moveTo(x - 3, by - 2.6);
+  g.lineTo(x - 1, by + 3);
+  g.lineTo(x + 4, by - 2.6);
+  g.stroke();
+  g.fillStyle = INK;
+  for (const dx of [-6, 0, 6]) {
+    g.beginPath();
+    g.arc(x + dx, by - 10.5, 1.7, 0, 6.2832);
+    g.fill();
+  }
+}
+
 // The camp fire: a glow at night, four flickering tongues, and smoke by day.
 export function drawFire(g: G, x: number, y: number, t: number, night: boolean, still: boolean): void {
   const big = night ? 1 : 0.55;

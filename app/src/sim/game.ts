@@ -11,8 +11,8 @@ import { ACTS, PLACES, road, TEXT_VALUES } from './content/places';
 import { PEOPLE, TALK } from './content/people';
 import { SEND_NAME, effGrade, gradeLabel, gradeName, type RouteDef } from './content/routes';
 import { BODY, CLIMB, DAY, INJURY, LOAD, MONEY } from './dials';
-import { fill, money } from './format';
-import { whereIs } from './presence';
+import { fill, money, skillsNote } from './format';
+import { PARTNERS, tierOf, whereNow } from './presence';
 import type { Action, Delta, GameEvent, GameState, Result, RouteLog, SendStyle, Skills } from './types';
 import { conditionsAt, seasonOf } from './weather';
 
@@ -83,9 +83,19 @@ export const restCost = (r: RouteDef): number => CLIMB.restMin[r.disc];
 
 // Who'd belay you on a rope here, now.
 export function belayer(s: GameState): string | null {
-  for (const who of ['hazel', 'sage']) if (whereIs(s.seed, who, s.day, s.min) === s.at) return who;
+  for (const who of PARTNERS) if (whereNow(s, who) === s.at) return who;
   return null;
 }
+
+// v0.956's bond tiers, by name.
+export const TIER_NAME = ['Stranger', 'Acquaintance', 'Regular', 'Partner', 'Ride-or-Die'];
+const TIER_LINE = [
+  '',
+  '{who} knows your name now.',
+  'You and {who} are regulars.',
+  'You and {who} are partners now: you climb, you belay, nobody keeps score.',
+  '{who} is ride-or-die.',
+];
 
 export function goBlocked(s: GameState, r: RouteDef): string | null {
   if (r.place === 'gym') {
@@ -222,12 +232,21 @@ export function act(s0: GameState, a: Action): Result {
     if (d.says) line(d.says);
     return null;
   };
+  const meet = (who: string) => (s.people[who] ??= { bond: 0, last: 0, since: s.day });
+  // Bond, and the line when it takes you up a tier.
+  const bond = (who: string, to: number) => {
+    const p = meet(who);
+    const was = tierOf(p.bond);
+    p.bond = Math.max(0, to);
+    const tier = tierOf(p.bond);
+    if (tier > was) line(fill(TIER_LINE[tier]!, { who: PEOPLE[who]?.name ?? who }));
+  };
   // A day climbing together, watching or belaying, counts once toward the bond.
   const climbedWith = (who: string) => {
-    const p = (s.people[who] ??= { bond: 0, last: 0 });
+    const p = meet(who);
     if (p.last === s.day) return;
-    p.bond += 1;
     p.last = s.day;
+    bond(who, p.bond + 1);
   };
   const learn = (route: string, beta: string, how: 'fall' | 'told' | 'watched', text: string) => {
     const L = logOf(s, route);
@@ -285,10 +304,9 @@ export function act(s0: GameState, a: Action): Result {
       const fx = opt.fx ?? {};
       // You can finish a sentence with someone who's just left, but they won't do anything
       // for you: a conversation can straddle the hour they head off.
-      if (Object.keys(fx).length && whereIs(s.seed, talk.who, s.day, s.min) !== s.at)
-        return refuse("They're not here.");
+      if (Object.keys(fx).length && whereNow(s, talk.who) !== s.at) return refuse("They're not here.");
       // Talking to someone is meeting them.
-      s.people[talk.who] ??= { bond: 0, last: 0 };
+      const p = meet(talk.who);
       if (fx.act) {
         const why = runAct(fx.act);
         if (why) return refuse(why);
@@ -300,7 +318,22 @@ export function act(s0: GameState, a: Action): Result {
         if (route && beta) learn(route, beta, 'told', '');
       }
       if (fx.watch) watch(talk.who);
-      if (fx.line) line(fx.line);
+      if (fx.arc) {
+        p.arc = (p.arc ?? 0) + 1;
+        p.beatDay = s.day;
+      }
+      if (fx.train) train(fx.train);
+      if (fx.away) {
+        p.away = s.day + fx.away;
+        delete p.invite;
+      }
+      if (fx.invite) p.invite = { day: s.day, place: fx.invite, from: s.min };
+      if (fx.line) {
+        const said = fill(fx.line, { away: fx.away ?? 0 });
+        line(fx.train ? `${said} ${skillsNote(fx.train)}.` : said);
+      }
+      if (fx.bond) bond(talk.who, p.bond + fx.bond);
+      if (fx.bondAtLeast) bond(talk.who, Math.max(p.bond, fx.bondAtLeast));
       events.push({ k: 'talk', node: opt.next ?? null });
       break;
     }
@@ -341,8 +374,10 @@ export function act(s0: GameState, a: Action): Result {
       const L = logOf(s, a.route);
       L.goes += 1;
       L.goesToday += 1;
+      // Whoever's on belay, and anyone you know climbing here, makes it a day together.
       const who = r.disc === 'sport' ? belayer(s) : null;
       if (who) climbedWith(who);
+      for (const w of PARTNERS) if (w !== who && s.people[w] && whereNow(s, w) === s.at) climbedWith(w);
       // A sandbag shows itself on your first go.
       if (L.goes === 1 && r.trueGrade !== undefined && r.trueGrade !== r.grade)
         line(

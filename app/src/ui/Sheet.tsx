@@ -28,14 +28,19 @@ import {
   MONEY,
   money,
   needFor,
+  PEOPLE,
   picks,
+  PLACES,
   routeOfId,
   seasonOf,
   SKILLS,
   SKY_NAME,
   STARTS,
+  tierOf,
+  TIER_NAME,
   type Conditions,
   type GameState,
+  type PersonLog,
   type Season,
   type Verb,
 } from '../sim';
@@ -343,6 +348,7 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
       </p>
       <p className="crux">Load</p>
       <LoadRow s={s} />
+      <PeopleRows s={s} />
       <p className="crux">Money</p>
       <p className="sub">
         {s.cash >= 0 ? `${money(s.cash)} cash.` : `${money(-s.cash)} on the card.`}{' '}
@@ -386,6 +392,37 @@ function LoadRow({ s }: { s: GameState }) {
       </p>
     </>
   );
+}
+
+// The people you've met: how close you are, in v0.956's tiers, and where things stand.
+function PeopleRows({ s }: { s: GameState }) {
+  const met = Object.entries(s.people).filter(([id]) => PEOPLE[id]);
+  if (!met.length) return null;
+  return (
+    <>
+      <p className="crux">People</p>
+      <ul className="days people">
+        {met.map(([id, p]) => (
+          <li key={id}>
+            <b>{PEOPLE[id]!.name}</b>
+            <span className="sky">{TIER_NAME[tierOf(p.bond)]}</span>
+            <small>{personNote(s, p)}</small>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+function personNote(s: GameState, p: PersonLog): string {
+  if (p.away !== undefined && s.day < p.away) {
+    const n = p.away - s.day;
+    return `Away, back in ${n} day${n > 1 ? 's' : ''}.`;
+  }
+  if (p.invite?.day === s.day) return `Meeting you at ${PLACES[p.invite.place]?.name ?? 'the crag'} today.`;
+  if (p.last === s.day) return 'Climbed together today.';
+  if (p.last > 0) return `Last climbed together on day ${p.last}.`;
+  return 'You haven’t climbed together yet.';
 }
 
 const SEASON: Record<Season, [string, string]> = {

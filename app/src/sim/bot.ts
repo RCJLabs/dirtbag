@@ -13,15 +13,16 @@ import {
   stepAttempt,
   type Attempt,
 } from './climb';
-import { isNight, unmet } from './cond';
+import { holds, isNight, unmet } from './cond';
 import { routesAt } from './content/gym';
 import { ACTS, PLACES, road } from './content/places';
+import { TALK } from './content/people';
 import type { RouteDef } from './content/routes';
 import { CLIMB, DAY, LOAD, MONEY } from './dials';
 import { cold, ratio } from './body';
 import { gradeOf, average } from './climber';
 import { act, goBlocked, knowsBeta, newGame, talkStart } from './game';
-import { whereIs } from './presence';
+import { whereNow } from './presence';
 import type { Action, GameState, GoResult } from './types';
 import type { Rng } from './rng';
 import { conditions } from './weather';
@@ -230,10 +231,19 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     workMin += s.min - t;
   }
 
+  // Talks to Sage when she's here: her lesson once a day, and whatever beat of her arc is
+  // due (the first answer, like a player who doesn't read).
   function maybeSage() {
-    if (whereIs(s.seed, 'sage', s.day, s.min) !== s.at || s.today.includes('sage')) return;
-    const node = talkStart(s, 'sage');
-    if (node === 'meet' || node === 'again') go({ t: 'say', talk: 'sage', node, opt: 0 });
+    for (let n = 0; n < 3; n++) {
+      // A beat can send her off mid-conversation.
+      if (whereNow(s, 'sage') !== s.at) return;
+      const node = talkStart(s, 'sage');
+      if (!node || !(node === 'meet' || node === 'again' || node.startsWith('beat-'))) return;
+      if (node === 'again' && s.today.includes('sage')) return;
+      const opt = TALK.sage!.nodes[node]!.opts.findIndex((o) => !o.when || holds(s, o.when));
+      if (opt < 0 || !go({ t: 'say', talk: 'sage', node, opt })) return;
+      if (node === 'meet' || node === 'again') return;
+    }
   }
 
   // The next line to try at a place: the easiest one not yet sent with a window the hands

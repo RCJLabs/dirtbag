@@ -235,6 +235,13 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
   - Bond is +1 a day climbing together (Phase 6's cap), and a partner turns up more as the tier rises.
   - Partners' grades track yours: Sage moves a grade every 20 days.
   - Sage's four-beat arc uses v0.956's text, at bonds 1, 3, 5 and 7, at least five days apart (Phase 6's spacing).
+  - *As built (R2.4):*
+    - A day counts toward the bond when you climb where a partner you've met is, not only on belay.
+    - Each tier adds 7% to a partner's odds of turning up (v0.956: 11% on a lower base), so Ride-or-Die Sage turns up five days in six.
+    - *[proposed]* Sage's guiding stint lasts a week, not v0.956's 16 days, so her arc fits Act I; her lines say less about how long.
+    - *[proposed]* The blessing at beat two gives bond, since the rebuild has no reputation; the last beat needs real rock and takes two hours.
+    - *[proposed]* A Regular will come out to the Gorge if you ask before 1 PM on a dry day, and belay you there.
+    - The bots reach beat three around day 21 and the last beat between days 28 and 35.
 - **The rival, Dex Calloway** (v0.956's: power, a nemesis):
   - *Fix (Phase 6):* his own seeded curve, with streaks, injuries and a peak, instead of v0.956's rubber band one grade ahead.
   - He first shows up when you send your first V4. He races you for the open project at the act's end.
@@ -1212,3 +1219,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — R2 load and injury: v0.956's acute:chronic model with Phase 6's fixes (seeded chronic load, warm-ups, seeded rolls, a free first injury). Save v3.
 - 2026-09-29 — R2 crags: Roadside's other four lines, its open project yours to first-ascend, name and grade; Granite Gorge (opens at V4, shut in spring, shaded all day, one sandbag), with its own scene, wall and map road. The harness then showed a V4 bot sending the Gorge's V9: windows above your grade were far too wide, fixed in the next commit.
 - 2026-09-29 — R2 windows: above your grade they now close about 40% a grade (R1's floor let a V4 send the Gorge's V9), and the harness's hands vary their reaction time from go to go, so tension cruxes stop being all-or-nothing. The bots' displayed grade at day 42 drops from V5 to V4; their first V5 project comes around day 14. R2's rules so far are logged in Dirtbag-UE's spec log.
+- 2026-09-29 — R2 partners: v0.956's bond tiers, earned a day at a time climbing where a partner is; partners who turn up more as the bond grows; Sage's four-beat arc in v0.956's words, five days apart, with a week away guiding; and asking her out to belay at the Gorge. A speech mark shows when someone has something to say; the You sheet lists the people you've met.

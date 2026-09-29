@@ -16,6 +16,7 @@ export {
   routeOfId,
   lineGrade,
   lineName,
+  TIER_NAME,
   faSuggestions,
   FA_NAME_MAX,
   LOG_MAX,
@@ -54,17 +55,17 @@ export {
 export type { Style, Start, GoSummary } from './climber';
 export { skyOn, forecast, conditions, conditionsAt, seasonOf, SKY_NAME, SEASON_DAYS } from './weather';
 export type { Sky, Season, Conditions } from './weather';
-export { whereIs, around } from './presence';
+export { whereIs, whereNow, around, tierOf, PARTNERS } from './presence';
 export { ratio, zone, daysOff, cold, goLoad, projected } from './body';
 export type { Zone } from './body';
-export { holds, unmet, isNight, headroom } from './cond';
+export { holds, unmet, isNight, headroom, beatDue } from './cond';
 export type { Cond, Need } from './cond';
 export { toSave, fromSave, validate, SAVE_VERSION, MIGRATIONS } from './save';
 export type { LoadResult, Migration, SaveFile } from './save';
 export { Rng, hashSeed, mulberry32 } from './rng';
 export type { Stream } from './rng';
 export * from './format';
-export { DAY, MONEY, BODY, CLIMB, LOAD, INJURY } from './dials';
+export { DAY, MONEY, BODY, CLIMB, LOAD, INJURY, BOND, ARC } from './dials';
 export { PLACES, ACTS, ROADS, road, TEXT_VALUES } from './content/places';
 export type { PlaceDef, ActDef, RoadDef } from './content/places';
 export {

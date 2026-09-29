@@ -1,10 +1,12 @@
 // Conditions content can ask about, as data. Every field present must hold. A small fixed
 // vocabulary keeps content JSON-shaped and keeps rules out of content files.
 
-import { DAY, MONEY } from './dials';
+import { gradeOf } from './climber';
+import { PLACES } from './content/places';
+import { ARC, DAY, MONEY } from './dials';
 import { clockShort, fill } from './format';
 import type { GameState } from './types';
-import { skyOn, type Sky } from './weather';
+import { conditionsAt, skyOn, type Sky } from './weather';
 
 export interface Cond {
   night?: boolean; // true: only at night; false: only by day
@@ -23,6 +25,11 @@ export interface Cond {
   met?: string; // you've met this person
   notMet?: string;
   sky?: Sky; // today's weather
+  arc?: string; // "who/n": beat n of their arc is due (bond reached, days since the last)
+  bond?: string; // "who/n": your bond with them is at least n
+  grade?: number; // your grade is at least this
+  open?: string; // that place's rock is climbable today
+  outside?: boolean; // true: at a crag; false: anywhere else
 }
 
 // A condition an act needs, with the line shown when it fails. `why` may use {t}, the
@@ -58,7 +65,31 @@ export function holds(s: GameState, c: Cond): boolean {
   if (c.met !== undefined && !s.people[c.met]) return false;
   if (c.notMet !== undefined && s.people[c.notMet]) return false;
   if (c.sky !== undefined && skyOn(s.seed, s.day) !== c.sky) return false;
+  if (c.arc !== undefined && !beatDue(s, c.arc)) return false;
+  if (c.bond !== undefined) {
+    const [who, n] = c.bond.split('/');
+    if ((s.people[who ?? '']?.bond ?? 0) < Number(n)) return false;
+  }
+  if (c.grade !== undefined && gradeOf(s.climber.skills) < c.grade) return false;
+  if (c.open !== undefined) {
+    const k = conditionsAt(s.seed, s.day, c.open);
+    if (!k.open || k.closed) return false;
+  }
+  if (c.outside !== undefined && !!PLACES[s.at]?.crag !== c.outside) return false;
   return true;
+}
+
+// Whether beat n of someone's arc is due: the one before it played, the bond there, and
+// enough days since the last.
+export function beatDue(s: GameState, ref: string): boolean {
+  const [who, n] = ref.split('/');
+  const beat = Number(n);
+  const p = s.people[who ?? ''];
+  if (!p || (p.arc ?? 0) !== beat - 1) return false;
+  if (p.bond < (ARC.bonds[beat - 1] ?? Infinity)) return false;
+  // The first beat waits a day past meeting; each after it waits out the spacing.
+  if (p.beatDay === undefined) return s.day > (p.since ?? 0);
+  return s.day - p.beatDay >= ARC.spacing;
 }
 
 // The first unmet need's line, or null when everything holds.

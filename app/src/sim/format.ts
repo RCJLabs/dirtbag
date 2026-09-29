@@ -2,7 +2,7 @@
 // numbers the rules use, never typed by hand: the audit found v0.956's hand-written hints
 // drifting from its rules ("van $18" when it cost more, "35 energy / 3 h" for the crag).
 
-import type { Delta } from './types';
+import type { Delta, Skills } from './types';
 
 // The typographic minus, as in the rest of the UI.
 export const MINUS = '−';
@@ -64,4 +64,12 @@ export function fill(text: string, ctx: Record<string, string | number> = {}): s
       return String(v);
     },
   );
+}
+
+// What someone left you with: "+3 technique, +2 endurance".
+export function skillsNote(t: Partial<Skills>): string {
+  return Object.entries(t)
+    .filter(([, v]) => v)
+    .map(([k, v]) => signed(v, k))
+    .join(', ');
 }

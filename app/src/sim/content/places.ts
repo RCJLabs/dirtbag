@@ -24,6 +24,8 @@ export interface PlaceDef {
   closed?: { season: Season; why: string };
   // Shaded rock stays cool: no afternoon grease, and heat doesn't hurt it.
   shaded?: true;
+  // Real rock: a trip out, and a crag's beats and people.
+  crag?: true;
   // The side-view scene you walk around in, or null for a card-only place.
   scene: string | null;
   // The map card's line when you're elsewhere, and when you're here.
@@ -66,6 +68,7 @@ export const PLACES: Record<string, PlaceDef> = {
   },
   road: {
     name: 'Roadside Crag',
+    crag: true,
     scene: 'crag',
     away: 'Granite. Seven lines, from a V2 warm-up to The Pump.',
     here: "You're parked here.",
@@ -73,6 +76,7 @@ export const PLACES: Record<string, PlaceDef> = {
   },
   gorge: {
     name: 'Granite Gorge',
+    crag: true,
     scene: 'gorge',
     away: 'Classic granite, two hours out and in the shade. Harder lines.',
     here: 'The canyon’s cool even at noon.',

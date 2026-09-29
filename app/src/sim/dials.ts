@@ -105,6 +105,31 @@ export const LOAD = {
   >,
 };
 
+// Partners (v0.956's): bond tiers, a bond a day climbing together (Phase 6's cap on
+// v0.956's one a go, which made Ride-or-Die two crag days away), and partners who turn
+// up more as the tier rises.
+export const BOND = {
+  // Stranger, Acquaintance, Regular, Partner, Ride-or-Die.
+  tiers: [0, 1, 3, 5, 7],
+  // Each tier adds to a partner's odds of turning up on a day. v0.956 added 0.11 a tier to
+  // Sage's 0.42; from the rebuild's 0.55, 0.07 a tier lands Ride-or-Die at the same
+  // five days in six.
+  perTier: 0.07,
+  // A Regular will come out to the Gorge with you if you ask before one.
+  invite: 3,
+  inviteBefore: 13 * 60,
+};
+
+// Partner arcs: v0.956's four beats, at bonds 1, 3, 5 and 7, with Phase 6's spacing (v0.956
+// had none, so a whole arc could land in a week).
+export const ARC = {
+  bonds: [1, 3, 5, 7],
+  spacing: 5,
+  // Sage's guiding stint. v0.956 sent her off for 16 days, most of Act I here; a week keeps
+  // her arc inside the act.
+  sageAway: 7,
+};
+
 // Injuries: v0.956's three tiers and how long each keeps you off. The clinic is a copay
 // (your weekly insurance pays the rest), and your first injury costs only time (Phase 6).
 export const INJURY = {

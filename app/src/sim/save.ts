@@ -169,8 +169,23 @@ function validateClimber(x: unknown): string[] {
   return err;
 }
 
+const optInt = (x: unknown) => x === undefined || isInt(x);
 const isPerson = (x: unknown): x is PersonLog =>
-  isObj(x) && isInt(x.bond) && x.bond >= 0 && isInt(x.last) && x.last >= 0;
+  isObj(x) &&
+  isInt(x.bond) &&
+  x.bond >= 0 &&
+  isInt(x.last) &&
+  x.last >= 0 &&
+  optInt(x.since) &&
+  optInt(x.arc) &&
+  optInt(x.beatDay) &&
+  optInt(x.away) &&
+  (x.invite === undefined ||
+    (isObj(x.invite) &&
+      isInt(x.invite.day) &&
+      typeof x.invite.place === 'string' &&
+      x.invite.place in PLACES &&
+      isInt(x.invite.from)));
 
 function validateRoute(x: unknown): string[] {
   if (!isObj(x)) return ['not an object'];

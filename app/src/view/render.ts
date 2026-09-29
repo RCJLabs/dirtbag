@@ -14,6 +14,7 @@ import {
   ROUTES,
   routeOfId,
   routesAt,
+  talkStart,
   type Attempt,
   type GameState,
 } from '../sim';
@@ -23,6 +24,7 @@ import {
   DIM_PINS,
   GND,
   H,
+  HEAD_Y,
   MAP_PINS,
   OY,
   presentIn,
@@ -41,6 +43,7 @@ import {
   drawRain,
   label,
   routeTag,
+  speechMark,
   tapeTag,
   vanIcon,
 } from './paint/fx';
@@ -115,8 +118,11 @@ function renderScene(g: G, f: Frame): void {
     routesAt(s.seed, 'gym', s.day).forEach((r, n) =>
       tapeTag(g, PROBLEM_X[n]! - cam, GND - 26, TAPE[n]!, gradeLabel(r), !!s.routes[r.id]?.sent),
     );
-  for (const p of presentIn(s, f.scene))
+  for (const p of presentIn(s, f.scene)) {
     drawPerson(g, LOOK[p.who]!, { x: p.x - cam, y: GND, dir: p.face, pose: p.pose, t: f.t });
+    // A beat of their story is waiting on you.
+    if (talkStart(s, p.talk)?.startsWith('beat-')) speechMark(g, p.x - cam, HEAD_Y - 10, f.t, f.still);
+  }
   const p = f.player;
   drawPerson(g, LOOK.you!, {
     x: p.x - cam,

@@ -20,6 +20,7 @@ import {
   talkStart,
   THINGS,
   whereIs,
+  whereNow,
   type Action,
   type Attempt,
   type AttemptEvent,
@@ -213,8 +214,8 @@ export class Game {
     const s = this.state;
     if (before.at !== s.at || before.day !== s.day) return;
     for (const who of Object.keys(PEOPLE)) {
-      const was = whereIs(before.seed, who, before.day, before.min) === s.at;
-      const is = whereIs(s.seed, who, s.day, s.min) === s.at;
+      const was = whereIs(before.seed, who, before.day, before.min, before.people[who]) === s.at;
+      const is = whereNow(s, who) === s.at;
       const name = PEOPLE[who]!.name;
       if (was && !is) this.toast(`${name} heads out.`);
       else if (!was && is) this.toast(`${name} turns up.`);
@@ -385,7 +386,7 @@ export class Game {
       if (!th) return;
       const s = this.state;
       const night = isNight(s.min);
-      if (th.away && whereIs(s.seed, th.away.who, s.day, s.min) !== s.at) this.toast(th.away.text);
+      if (th.away && whereNow(s, th.away.who) !== s.at) this.toast(th.away.text);
       else if (night && th.nightAct) this.dispatch({ t: 'act', act: th.nightAct });
       else this.toast(night ? (th.night ?? th.day) : th.day);
     } else if ('route' in u) this.lookUp(u.route);

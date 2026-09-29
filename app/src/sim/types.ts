@@ -95,6 +95,15 @@ export interface PersonLog {
   bond: number;
   // The last day you climbed together.
   last: number;
+  // The day you met.
+  since?: number;
+  // Their arc: beats played, and the day of the last one.
+  arc?: number;
+  beatDay?: number;
+  // Away until this day (Sage's guiding stint).
+  away?: number;
+  // You asked them out somewhere today: they're there from `from` till their day ends.
+  invite?: { day: number; place: string; from: number };
 }
 
 export type SendStyle = 'onsight' | 'flash' | 'redpoint';
