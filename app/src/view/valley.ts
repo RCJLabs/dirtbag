@@ -92,6 +92,15 @@ export const SIDE_ROADS: Record<string, { pts: Pt[]; dirt?: true }> = {
     ],
     dirt: true,
   },
+  // On north from the highway's end to The Big Stone.
+  stone: {
+    pts: [
+      [384, 58],
+      [370, 48],
+      [356, 40],
+      [346, 34],
+    ],
+  },
   // The desert road west to Sandstone Mesa, where the highway climbs out of the valley.
   mesa: {
     pts: [

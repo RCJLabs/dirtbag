@@ -168,6 +168,34 @@ const DESERT: Palette = {
   talus: '#CDB58F',
 };
 
+// The Big Stone: a high valley in the shade of its own walls. Clean sky, bright granite,
+// a green meadow and big pines.
+const VALLEY: Palette = {
+  sky: [
+    [0, '#7FB2DA'],
+    [0.6, '#CFE0E6'],
+    [1, '#E8E6D6'],
+  ],
+  orb: '#FFF8E4',
+  orbX: 90,
+  orbY: 60,
+  far2: '#9FB2C2',
+  far: '#8196A8',
+  mid: '#6F8B63',
+  midTree: '#3F5E44',
+  trees: '#2C4A34',
+  ground: '#7C8F58',
+  ground2: '#6C7F4C',
+  track: '#8E8A6E',
+  van: '#E6DCC4',
+  trim: '#2F6F73',
+  glass: '#6F8C98',
+  wall: '#C9CCCB',
+  wallShade: '#9EA4AA',
+  wallDark: '#4A515B',
+  talus: '#9A9C98',
+};
+
 // Sandstone Mesa: a desert morning, red rock gone orange where the sun's on it, varnish
 // black, and pale sand.
 const MESA: Palette = {
@@ -789,6 +817,11 @@ const TREES: Record<string, [number, number][]> = {
     [96, 170],
     [250, 150],
   ],
+  stone: [
+    [16, 200],
+    [96, 170],
+    [260, 150],
+  ],
   mesa: [
     [20, 1.1],
     [252, 0.8],
@@ -812,6 +845,12 @@ const TALUS: Record<string, [number, number, number][]> = {
     [918, 40, 22],
     [1056, 24, 12],
     [1270, 22, 10],
+  ],
+  stone: [
+    [620, 30, 14],
+    [860, 40, 18],
+    [1040, 28, 12],
+    [1340, 34, 16],
   ],
   mesa: [
     [410, 22, 10],
@@ -1015,6 +1054,7 @@ const LOOK: Record<string, { P: Palette; seed: number; rock: Rock }> = {
   gorge: { P: GORGE, seed: 17, rock: 'granite' },
   moon: { P: DESERT, seed: 23, rock: 'quartzite' },
   mesa: { P: MESA, seed: 29, rock: 'redrock' },
+  stone: { P: VALLEY, seed: 31, rock: 'granite' },
 };
 
 // The painted layers for a scene at a time of day. Two are kept: the one you're in and the

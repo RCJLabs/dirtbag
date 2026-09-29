@@ -233,6 +233,28 @@ const TOPO_PTS: Record<string, Pt[]> = {
     [312, 196],
     [306, 124],
   ],
+  // The Big Stone: Valley Classic up the steep face through its roof, the Trad Pitch up
+  // the corner. Both go most of the way up the close-up: the wall above goes on for days.
+  bclassic: [
+    [96, 540],
+    [102, 470],
+    [90, 400],
+    [104, 344],
+    [96, 290],
+    [108, 220],
+    [100, 150],
+    [106, 80],
+  ],
+  btrad: [
+    [256, 540],
+    [250, 470],
+    [258, 400],
+    [252, 330],
+    [262, 260],
+    [256, 190],
+    [264, 120],
+    [258, 70],
+  ],
   testpiece: [
     [290, 538],
     [298, 470],
@@ -487,6 +509,101 @@ const M_WALL: Pt[] = [
   [320, 440],
   [338, BASE_Y],
 ];
+
+// The Big Stone: a granite face with no top in sight, a corner right of centre, a roof,
+// and black streaks down it.
+const B_WALL: Pt[] = [
+  [-4, BASE_Y],
+  [-4, -4],
+  [364, -4],
+  [364, BASE_Y],
+];
+
+function paintStone(g: G): void {
+  const r = mulberry32(171);
+  g.fillStyle = '#C9CCCB';
+  g.fillRect(0, 0, W, H);
+  // The corner: the shaded wall right of it, and the crack in its back.
+  g.fillStyle = '#9EA4AA';
+  g.beginPath();
+  g.moveTo(262, -4);
+  g.lineTo(W + 4, -4);
+  g.lineTo(W + 4, BASE_Y);
+  g.lineTo(254, BASE_Y);
+  g.closePath();
+  g.fill();
+  g.strokeStyle = 'rgba(34,38,46,.7)';
+  g.lineWidth = 2.6;
+  g.beginPath();
+  trace(
+    g,
+    [
+      [262, -4],
+      [256, 120],
+      [262, 260],
+      [254, 400],
+      [260, 540],
+    ],
+    false,
+  );
+  g.stroke();
+  // Panels and exfoliating sheets.
+  g.strokeStyle = 'rgba(34,38,46,.35)';
+  g.lineWidth = 1.6;
+  for (let i = 0; i < 5; i++) {
+    const cx = 20 + r() * 220;
+    const cy = 60 + r() * 380;
+    const rad = 40 + r() * 50;
+    g.beginPath();
+    g.arc(cx, cy + rad, rad, Math.PI * 1.25, Math.PI * 1.6);
+    g.stroke();
+  }
+  for (let i = 0; i < 12; i++) {
+    const x = r() * W;
+    const len = 160 + r() * 320;
+    g.fillStyle = lin(g, 0, 0, 0, len, [
+      [0, 'rgba(34,38,46,.3)'],
+      [1, 'rgba(34,38,46,0)'],
+    ]);
+    g.fillRect(x, -4, 4 + r() * 10, len);
+  }
+  // Valley Classic's roof, where its first crux is.
+  g.fillStyle = '#4A515B';
+  g.beginPath();
+  g.moveTo(52, 382);
+  g.lineTo(150, 374);
+  g.lineTo(150, 394);
+  g.lineTo(60, 402);
+  g.closePath();
+  g.fill();
+  g.strokeStyle = 'rgba(255,255,255,.5)';
+  g.lineWidth = 1.8;
+  g.beginPath();
+  g.moveTo(52, 382);
+  g.lineTo(150, 374);
+  g.stroke();
+  g.fillStyle = 'rgba(150,172,112,.35)';
+  for (let i = 0; i < 30; i++) {
+    g.beginPath();
+    g.ellipse(r() * W, 40 + r() * 480, 2 + r() * 6, 1.5 + r() * 3, 0, 0, 6.2832);
+    g.fill();
+  }
+
+  g.fillStyle = '#7C8F58';
+  g.fillRect(-4, BASE_Y, W + 8, H - BASE_Y);
+  g.fillStyle = '#9A9C98';
+  for (const t of TALUS) {
+    g.beginPath();
+    rock(g, ...t);
+    g.fill();
+  }
+  g.fillStyle = '#2C4A34';
+  for (const [tx, ty, sc] of CRAG_TREES) {
+    g.beginPath();
+    coniferPath(g, tx, ty, sc * 1.3);
+    g.fill();
+  }
+}
 
 // Sandstone Mesa: a flat-topped red wall, varnish streaked down it from the rim.
 const S_WALL: Pt[] = [
@@ -844,6 +961,7 @@ function paintWall(g: G, place: string, selected: string): void {
   if (place === 'gorge') paintGorge(g);
   else if (place === 'moon') paintMoon(g);
   else if (place === 'mesa') paintMesa(g);
+  else if (place === 'stone') paintStone(g);
   else paintRoadside(g);
   paintLines(g, place, selected);
 }
@@ -857,7 +975,7 @@ export function rockPath(g: G, r: RouteDef): void {
 }
 
 // Each crag's rock face on its close-up, where weather is drawn; Roadside's is WALLPOLY.
-const FACE: Record<string, Pt[]> = { gorge: G_WALL, moon: M_WALL, mesa: S_WALL };
+const FACE: Record<string, Pt[]> = { gorge: G_WALL, moon: M_WALL, mesa: S_WALL, stone: B_WALL };
 
 // A route's wall, painted into any context in wall units: what the wall view caches at 2x,
 // for the send card to paint at its own size.

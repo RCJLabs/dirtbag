@@ -996,6 +996,59 @@ const sTrad = libraryTrad('sdtrad', 'Desert Trad Line', 11, 'technical', 'mesa',
   b: { style: 'technical', name: 'The runout face', from: 19.0, to: 21.8, win: 'Top out onto the mesa.' },
 });
 
+// ---- The Big Stone: v0.956's valley of granite big walls, four hours out ----
+// Its five single-pitch lines, names and grades as v0.956 had them. Its multi-pitch walls
+// come with Phase 21.5. It opens at V8, once you've paid for the trip, and it's shaded.
+
+const bBase = libraryBoulder('bbase', 'Base Camp Boulder', 6, 'power', 'stone', {
+  moves: 6,
+  from: 2.8,
+  to: 4.4,
+  cruxName: 'The lip',
+  heightFt: 13,
+  line: 'Everyone’s first problem here, done in approach shoes by people waiting on a wall.',
+});
+const bWarm = libraryBoulder('bwarm', 'The Warm-Up Wall', 9, 'crimp', 'stone', {
+  moves: 8,
+  from: 4.0,
+  to: 6.0,
+  cruxName: 'The dime edges',
+  heightFt: 16,
+  line: 'A warm-up, if you warm up on V10. The guidebook says V9.',
+  trueGrade: 10,
+});
+const bSplit = libraryBoulder('bsplit', 'The Splitter Pitch', 10, 'crack', 'stone', {
+  moves: 9,
+  from: 5.2,
+  to: 7.4,
+  cruxName: 'The finger lock',
+  heightFt: 22,
+  line: 'A perfect finger crack that ends a long way off the ground.',
+  highball: true,
+});
+const bTrad = libraryTrad('btrad', 'The Trad Pitch', 11, 'technical', 'stone', {
+  moves: 28,
+  heightFt: 120,
+  line: 'One long pitch up a corner on the big wall. Bring the rack and a lot of patience.',
+  rest: 14.2,
+  a: { style: 'crack', name: 'The corner', from: 8.4, to: 11.2, win: 'Out of the corner.' },
+  b: {
+    style: 'technical',
+    name: 'The slab traverse',
+    from: 20.6,
+    to: 23.4,
+    win: 'Top out. The valley goes quiet.',
+  },
+});
+const bClassic = librarySport('bclassic', 'Valley Classic', 12, 'power', 'stone', {
+  moves: 30,
+  heightFt: 125,
+  line: 'The one everybody drives four hours for. Steep, clean and famous.',
+  rest: 15.4,
+  a: { style: 'power', name: 'The roof', from: 9.2, to: 12.0, win: 'Over the roof.' },
+  b: { style: 'crimp', name: 'The headwall', from: 22.8, to: 26.0, win: 'Chains, and a very long lower.' },
+});
+
 export const ROUTES: Record<string, RouteDef> = {
   warm: warmBoulder,
   dyno,
@@ -1039,6 +1092,11 @@ export const ROUTES: Record<string, RouteDef> = {
   senduro: sEnduro,
   sbiglink: sLink,
   sdtrad: sTrad,
+  bbase: bBase,
+  bwarm: bWarm,
+  bsplit: bSplit,
+  btrad: bTrad,
+  bclassic: bClassic,
 };
 
 // Said when you come off between cruxes with nothing left in your arms.

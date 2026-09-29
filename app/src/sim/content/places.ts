@@ -209,6 +209,23 @@ export const PLACES: Record<string, PlaceDef> = {
       'svarnish',
     ],
   },
+  // v0.956's "valley of granite big walls, the multi-day proving ground": V8 to get in, a
+  // trip paid for once, four hours out, and shaded. Its walls come with Phase 21.5.
+  stone: {
+    name: 'The Big Stone',
+    crag: true,
+    scene: 'stone',
+    ambience: { wind: 0.3, birds: 0.3, creek: 0.4 },
+    away: 'A valley of granite big walls, four hours out. The proving ground.',
+    here: 'Granite to the sky on both sides. Your neck hurts already.',
+    acts: [],
+    minGrade: 8,
+    invite: 7,
+    locked: 'The walls are V8 and up, and they don’t care who you are. Come back when you’re climbing V8.',
+    unlock: 600,
+    shaded: true,
+    ownSky: true,
+  },
   gym: {
     name: 'Send City',
     scene: 'gym',
@@ -488,6 +505,9 @@ export const ROADS: RoadDef[] = [
   // The Mesa: v0.956's three hours and 35% of a tank from the Lot, west off the highway
   // past Roadside on the desert road.
   { a: 'mesa', b: 'road', min: 120, cash: 20 },
+  // The Big Stone: v0.956's four hours and 38% of a tank from the Lot, north past where the
+  // highway leaves the valley.
+  { a: 'stone', b: 'road', min: 180, cash: 22 },
 ];
 
 // A drive: its time and gas, and the places it passes on the way.

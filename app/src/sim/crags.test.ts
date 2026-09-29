@@ -151,6 +151,35 @@ describe('Sandstone Mesa (Phase 21.4)', () => {
   });
 });
 
+describe('The Big Stone (Phase 21.4)', () => {
+  it('opens at V8 once the trip is paid for, four hours out, in the shade', () => {
+    const r = act(at(8, { cash: 700 }), { t: 'travel', to: 'stone' });
+    expect(r.events[0]).toMatchObject({ k: 'refused' });
+    const paid = play(at(8, { cash: 700 }), { t: 'unlock', place: 'stone' }, { t: 'travel', to: 'stone' });
+    expect(paid.state).toMatchObject({ at: 'stone', cash: 100 - road('lot', 'stone')!.cash });
+    expect(road('lot', 'stone')!.min).toBe(240);
+    const hot = days(2, 120).find((d) => conditionsAt('crags', d, 'stone').sky === 'hot');
+    if (hot) expect(conditionsAt('crags', hot, 'stone').greaseFrom).toBe(24 * 60);
+  });
+
+  it('keeps v0.956’s five single pitches, and takes a Ride-or-Die to come out', () => {
+    const here = Object.values(ROUTES).filter((r) => r.place === 'stone');
+    expect(here.map((r) => [r.name, r.disc]).sort()).toEqual(
+      [
+        ['Base Camp Boulder', 'boulder'],
+        ['The Splitter Pitch', 'boulder'],
+        ['The Trad Pitch', 'trad'],
+        ['The Warm-Up Wall', 'boulder'],
+        ['Valley Classic', 'sport'],
+      ].sort(),
+    );
+    expect(TALK.sage!.nodes.invite!.opts.find((o) => o.fx?.invite === 'stone')?.when).toMatchObject({
+      bond: 'sage/7',
+      unlocked: 'stone',
+    });
+  });
+});
+
 describe('highballs [proposed]', () => {
   it('can land you badly off a fall: more from higher, less with the haul’s pads and a spotter', () => {
     const tall = ROUTES.marete!;

@@ -155,6 +155,26 @@ export const CRAGS: Record<string, CragSpec> = {
     // The spire, with a highball either side.
     frame: 760,
   },
+  // The Big Stone: a granite big wall filling the right of the scene, its two single
+  // pitches on it, and boulders in the meadow at its foot.
+  stone: {
+    width: 1400,
+    wall: [560, 1400],
+    lines: [
+      { n: 1, x: 780, route: 'bclassic' },
+      // Up the corner system.
+      { n: 2, x: 966, route: 'btrad' },
+    ],
+    boulders: [
+      { x: 350, w: 90, h: 54, route: 'bbase' },
+      { x: 1110, w: 84, h: 70, route: 'bwarm' },
+      { x: 1260, w: 80, h: 96, route: 'bsplit' },
+    ],
+    sign: 272,
+    hint: 'Boulders in the meadow. The wall needs a belayer.',
+    // The foot of the wall.
+    frame: 820,
+  },
   // Sandstone Mesa: a red wall with three bolted lines and a crack, boulders on the sand
   // either side, and the Megaproject's block out past the end of it.
   mesa: {
@@ -247,6 +267,7 @@ export const SCENES: Record<string, SceneLayout> = {
   gorge: cragScene('gorge', CRAGS.gorge!),
   moon: cragScene('moon', CRAGS.moon!),
   mesa: cragScene('mesa', CRAGS.mesa!),
+  stone: cragScene('stone', CRAGS.stone!),
   gym: {
     place: 'gym',
     width: GYM_W,
@@ -309,6 +330,7 @@ export const SPOTS: Record<string, Spot[]> = {
   // Nobody's day brings them out here, but Dex stays wherever he first saw you send a V4.
   moon: [{ who: 'dex', x: 1190, face: -1, pose: 'stand', talk: 'dex' }],
   mesa: [{ who: 'dex', x: 1320, face: -1, pose: 'stand', talk: 'dex' }],
+  stone: [{ who: 'dex', x: 1180, face: -1, pose: 'stand', talk: 'dex' }],
 };
 
 // Who's in a scene right now: the people whose day puts them at its place.
@@ -359,6 +381,8 @@ export const MAP_PINS: Record<string, Pin> = {
   moon: { x: 336, y: 100, side: -1, kind: 'crag' },
   // West off the highway on a desert road, past the valley's rim.
   mesa: { x: 200, y: 60, side: -1, kind: 'crag' },
+  // Up the highway past where it leaves the valley.
+  stone: { x: 346, y: 34, side: -1, kind: 'crag' },
 };
 export const DIM_PINS: [number, number][] = [
   [266, 334],

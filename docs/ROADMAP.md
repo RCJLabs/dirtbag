@@ -1444,6 +1444,13 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The harness** now runs eight weeks by default, so the squeeze stays in view. Over 56 days: no stuck nights (81 before); balanced runway 2.3, 3.7, 3.7 and 4.7 days at days 7–28, still under a week; everything else as before. A worker who barely climbs banks about $1,000 by day 56, which is what working instead of climbing should buy, but it's where v0.956's "money stops mattering" starts; worth watching when Phase 22 adds costs.
 - **Save v7,** migrated from a real Phase 21.4 save (v6): no shifts counted, so everyone starts at the first rank.
 
+**Status (29 Sep 2026): 21.4, second crag built: The Big Stone.**
+- **The crag,** through "Adding a place": v0.956's five single pitches, names and grades from its bundle. Base Camp Boulder V6, The Warm-Up Wall V9 (really V10), The Splitter Pitch V10 (a 22 ft highball); The Trad Pitch 5.13d on gear, up a corner; Valley Classic 5.14a, bolted, through a roof. Its three multi-pitch walls come with 21.5.
+- **Access** as v0.956 had it: V8, a $600 trip paid once in cash (as Moonstone's is), four hours from the Lot ($22 of gas past Roadside), shaded, weather of its own. Asking a partner out here takes Ride-or-Die, the first crag at that bond [proposed].
+- **Its picture:** a granite big wall with no top in sight, a corner and a roof, a green meadow and pines; a close-up face for its two roped lines; a boulder look; a pin north of where the highway leaves the valley.
+- **The bots** don't go: they don't pay for trips. Nothing in the harness changes.
+- **Seen on the way:** the wet-rock overlay after rain is a flat translucent box over the wall's whole span, sky edge and ground included. It's the same at every crag; a pass on it belongs with the art, not here.
+
 ---
 
 ### Phase 22 — The life: the van, the body, food, the hustle, and the games
@@ -1801,3 +1808,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 21.3: training. Six protocols and prehab at the van (a hangboard) and the gym, through the load model; one session a day, none tapering, hurt or fried; phases that hold for 6 days and a peak that ends in a deload; a taper with a 14-day cooldown; save v6; a harness target holding every protocol under climbing's rate at every grade reached.
 - 2026-09-29 — Phase 21.4: Sandstone Mesa. v0.956's eleven lines (V7 to an open V13, three bolted, one trad), V7 to get in, closed in summer, desert rock and its own weather; a red-sandstone scene, wall and boulder look; a pin on a desert road; Sage will come out to belay; the bots drive there from V7.
 - 2026-09-29 — Promotions and invites (Evan's call on the V5 squeeze): café and setting ranks that raise a shift's pay, setting's gated by grade; Hazel and Sage can be asked out to any crag, by bond; save v7; the harness runs eight weeks, with no stuck nights.
+- 2026-09-29 — Phase 21.4: The Big Stone. v0.956's five single pitches (V6 to 5.14a, one trad, one bolted), V8 and a $600 trip, four hours out, shaded; a granite big-wall scene, face and boulder look; Ride-or-Die to bring a partner.
