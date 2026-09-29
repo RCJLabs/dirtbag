@@ -281,36 +281,71 @@ export const ACTS: Record<string, ActDef> = {
   },
 };
 
-// Every pair of places: minutes and gas. Town is ten minutes wide; the crag is an hour out.
+// The valley's roads: each place to its neighbours, and nothing more. A drive anywhere
+// else is the quickest way through them (`road`). Town is a few streets, ten minutes
+// wide. The highway runs from town up to Roadside, an hour out, and the Gorge's dirt road
+// and the desert road to Moonstone both leave it there. A new place needs roads to its
+// neighbours only: content.test.ts holds the network to reaching everywhere.
 export const ROADS: RoadDef[] = [
-  { a: 'lot', b: 'road', min: 60, cash: 12 },
+  { a: 'lot', b: 'cafe', min: 8, cash: 1 },
   { a: 'lot', b: 'gym', min: 12, cash: 1 },
   { a: 'lot', b: 'diner', min: 10, cash: 1 },
-  { a: 'lot', b: 'cafe', min: 8, cash: 1 },
-  { a: 'gym', b: 'cafe', min: 5, cash: 0 },
+  { a: 'cafe', b: 'gym', min: 5, cash: 0 },
+  { a: 'cafe', b: 'diner', min: 8, cash: 1 },
   { a: 'gym', b: 'diner', min: 10, cash: 1 },
-  { a: 'diner', b: 'cafe', min: 8, cash: 1 },
-  { a: 'road', b: 'gym', min: 70, cash: 12 },
-  { a: 'road', b: 'diner', min: 70, cash: 12 },
+  { a: 'road', b: 'lot', min: 60, cash: 12 },
   { a: 'road', b: 'cafe', min: 65, cash: 12 },
-  // The Gorge: v0.956's two hours and 22% of a tank each way.
-  { a: 'gorge', b: 'lot', min: 120, cash: 22 },
-  { a: 'gorge', b: 'road', min: 70, cash: 12 },
-  { a: 'gorge', b: 'gym', min: 125, cash: 22 },
-  { a: 'gorge', b: 'diner', min: 125, cash: 22 },
-  { a: 'gorge', b: 'cafe', min: 125, cash: 22 },
+  { a: 'road', b: 'diner', min: 70, cash: 12 },
+  // The Gorge: v0.956's two hours and 22% of a tank from the Lot, the last hour of it on
+  // the dirt road that leaves the highway past Roadside.
+  { a: 'gorge', b: 'road', min: 60, cash: 10 },
   // Moonstone: v0.956's three hours and 30% of a tank from the Lot, north up the highway
   // past Roadside and out of the valley.
-  { a: 'moon', b: 'lot', min: 180, cash: 30 },
-  { a: 'moon', b: 'road', min: 120, cash: 20 },
-  { a: 'moon', b: 'gorge', min: 190, cash: 32 },
-  { a: 'moon', b: 'gym', min: 175, cash: 29 },
-  { a: 'moon', b: 'diner', min: 180, cash: 30 },
-  { a: 'moon', b: 'cafe', min: 175, cash: 29 },
+  { a: 'moon', b: 'road', min: 120, cash: 18 },
 ];
 
-export const road = (a: string, b: string): RoadDef | undefined =>
-  ROADS.find((r) => (r.a === a && r.b === b) || (r.a === b && r.b === a));
+// A drive: its time and gas, and the places it passes on the way.
+export interface Trip {
+  min: number;
+  cash: number;
+  via: string[];
+}
+
+const trips = new Map<string, Trip | undefined>();
+
+// The quickest drive between two places: the least time along the roads, then the least
+// gas. None to where you already are, or to somewhere no road reaches.
+export function road(a: string, b: string): Trip | undefined {
+  const key = `${a}>${b}`;
+  if (!trips.has(key)) trips.set(key, a === b ? undefined : quickest(a, b));
+  return trips.get(key);
+}
+
+function quickest(from: string, to: string): Trip | undefined {
+  const best = new Map<string, { min: number; cash: number; path: string[] }>([
+    [from, { min: 0, cash: 0, path: [] }],
+  ]);
+  const done = new Set<string>();
+  for (;;) {
+    let at: string | null = null;
+    for (const [id, t] of best) {
+      if (done.has(id)) continue;
+      const b = at === null ? null : best.get(at)!;
+      if (!b || t.min < b.min || (t.min === b.min && t.cash < b.cash)) at = id;
+    }
+    if (at === null) return undefined;
+    const here = best.get(at)!;
+    if (at === to) return { min: here.min, cash: here.cash, via: here.path.slice(0, -1) };
+    done.add(at);
+    for (const r of ROADS) {
+      const next = r.a === at ? r.b : r.b === at ? r.a : null;
+      if (!next || done.has(next)) continue;
+      const t = { min: here.min + r.min, cash: here.cash + r.cash, path: [...here.path, next] };
+      const was = best.get(next);
+      if (!was || t.min < was.min || (t.min === was.min && t.cash < was.cash)) best.set(next, t);
+    }
+  }
+}
 
 // Values content text may name, derived from the dials.
 export const TEXT_VALUES = {

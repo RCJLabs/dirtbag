@@ -61,7 +61,7 @@
 | 8 Choose the look | Done: the Mix. Its tokens and components are built in R0–R1. The Steam capsule art moves to Phase 15. |
 | 9 Climber on the wall | Reshaped as beta-then-send and built from R0. Its Done-when criteria gate R2. |
 | 10 Crags as places | Built on the rebuild (the board, conditions you can see, Moonstone) and closed by Evan's call. Its testers' criterion carries. |
-| 11 Valley map | Reshaped: the map plus side-view scenes, drawn in code (no Tiled, no tilesets). The current milestone: 11.1 (count the taps) and 11.2 (place cards) are built, and criteria 2 and 3 pass. |
+| 11 Valley map | Reshaped: the map plus side-view scenes, drawn in code (no Tiled, no tilesets). The current milestone: 11.1 to 11.3 are built (the taps, place cards, adding a place), and criteria 2 and 3 pass. |
 | 12 UI system | Folded into the rebuild (R0–R2). |
 | 13–20 | Unchanged in intent. They target the new build. |
 
@@ -1123,6 +1123,22 @@ There's no joystick, zone graph or tileset to retire. What's left, in slices:
   - Roads become a graph: a place needs roads to its neighbours only, and a trip anywhere else is the quickest way through them. Today every pair of places needs its own hand-typed road; Moonstone needed six.
   - A checklist goes in `app/README.md`.
   - CI checks that every place has a pin, a card, roads that reach everywhere, and a scene (or none, on purpose).
+  - *As built (11.3):*
+    - **Roads are a graph.** Each place has roads to its neighbours only: 11 roads, down from one for every pair (21). A drive anywhere else is the quickest way through them, by time, then by gas (`road`).
+      - The network: town's six streets; the highway up to Roadside from the Lot, the café and the diner; and one road each for the far crags. The Gorge's dirt road and the desert road to Moonstone both leave the highway at Roadside.
+      - Every trip made daily keeps its cost: town hops, town to Roadside and back, and v0.956's drives from the Lot to the Gorge (two hours, $22) and to Moonstone (three hours, $30).
+      - Nine rare trips change, all to or from the Gorge or Moonstone:
+        - Roadside to the Gorge: 60 min and $10 (was 70 and $12).
+        - Roadside to Moonstone: $18 (was $20).
+        - The gym to Moonstone: 190 min (was 175). The café and the diner to Moonstone: 10 min longer.
+        - The gym and the diner to the Gorge: 5 min longer.
+        - The Gorge to Moonstone: 180 min and $28 (was 190 and $32).
+      - The harness reads the same on every target, and all of the e2e's clock and cash checks hold.
+    - **Drives on the map follow the roads.** A place off the highway declares its side road in `SIDE_ROADS`: Old Town's spur, the Gorge's dirt road. A drive runs out along one side road, along the highway, and in along the other. Before, every drive went through the Old Town junction, so Roadside to Moonstone ran south to town and back.
+    - **A checklist** in `app/README.md`, "Adding a place": the place, its acts, its roads, its lines, its pin and side road, its picture (a scene with its header frame, or a front), its people, the checks, the logs.
+    - **CI's checks**, by name:
+      - `content.test.ts`: every road joins two real places, once, and is the quickest way between its own ends (else nobody drives it). Every place reaches every other, the same both ways. v0.956's drives from the Lot keep their terms.
+      - `layout.test.ts`: a pin and a header for every place, and a scene that's the place's own. Side roads start on the highway. Drives go pin to pin without running past either end or skipping road.
 - **11.4, the daily agenda** (optional in the scope above): plan a day as a sequence ("shift → diner → gym → van") and run it, stopping at the first thing the day refuses.
 
 **Done when, on the rebuild** *[proposed; replaces the criteria above until Evan rules]*:
@@ -1132,7 +1148,7 @@ There's no joystick, zone graph or tileset to retire. What's left, in slices:
 4. The clock doesn't move while you're idle: true, and checked by the smoke test.
 5. A new place without a scene takes under an hour: a checklist, the road graph and CI's checks make it a data change plus a pin.
 
-**Status (29 Sep 2026): 11.1 and 11.2 built.** Criteria 2 and 3 pass on the build, counted by the e2e: 3 taps at most for a trip from a scene, and day three in 20. Criterion 4 passes (the smoke test). Criterion 1 carries to the testers; 5 waits on 11.3.
+**Status (29 Sep 2026): 11.1 to 11.3 built.** Criteria 2 and 3 pass on the build, counted by the e2e: 3 taps at most for a trip from a scene, and day three in 20. Criterion 4 passes (the smoke test). Criterion 1 carries to the testers. For 5, the checklist and the checks are in, and a timed run of the checklist is next.
 
 ---
 
@@ -1495,3 +1511,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 10 closed by Evan's call: criteria 1–3 pass on the build, and criterion 4 (testers) carries. CURRENT MILESTONE moved to Phase 11, planned on the rebuild: count the taps, place cards, adding a place as documented work, and the daily agenda.
 - 2026-09-29 — Phase 11.1: count the taps. On a pinned seed, the e2e bot counts every trip (3 taps at most from a scene, 2 by the crag's van) and a day-3 loop. The loop took 32 taps, 12 of them waiting for bed at 6 PM. Bed now opens at dark (5 PM), and lying around till dark is one tap (proposed). Day three: 20 taps. Criteria 2 and 3 pass; the season targets don't move.
 - 2026-09-29 — Phase 11.2: place cards. Every card has a header showing the place as you'd find it after the drive: its scene, with whoever's there, the light, the wet and the night; the diner and the café get fronts drawn in code. Places with a scene list who's around then, and till when. At a crag with ropes or highballs, a line says whether that means a belayer or a spotter. The e2e checks both.
+- 2026-09-29 — Phase 11.3: adding a place is documented work. Roads are a graph: 11 roads to neighbours instead of one for every pair, and a drive is the quickest way through them. Daily trips and v0.956's drives from the Lot keep their costs. Nine rare trips to or from the Gorge and Moonstone shift; Roadside to the Gorge is now an hour and $10. Drives on the map follow the roads, so Roadside to Moonstone no longer runs south through town. An "Adding a place" checklist is in `app/README.md`, and the tests name what a place is missing.

@@ -12,7 +12,7 @@ import {
   BOARD_WEEKS,
   WEEK_DAYS,
 } from './content/gym';
-import { ACTS, PLACES, ROADS, TEXT_VALUES } from './content/places';
+import { ACTS, PLACES, road, ROADS, TEXT_VALUES } from './content/places';
 import { fill } from './format';
 import { PEOPLE, TALK, THINGS } from './content/people';
 import { ROUTES, type RouteDef } from './content/routes';
@@ -26,21 +26,38 @@ const everyRoute: RouteDef[] = [
 ];
 
 describe('content', () => {
-  it('places list real acts, each act belongs to a place, and every two places share one road', () => {
+  it('places list real acts, and each act belongs to a place', () => {
     for (const p of Object.values(PLACES)) for (const a of p.acts) expect(ACTS, a).toHaveProperty([a]);
     for (const id of Object.keys(ACTS)) expect(PLACES, id).toHaveProperty([id.split('.')[0]!]);
+  });
+
+  it('joins every place to every other by road, with no road going to waste', () => {
     const ids = Object.keys(PLACES);
+    const seen = new Set<string>();
     for (const r of ROADS) {
-      expect(PLACES).toHaveProperty([r.a]);
-      expect(PLACES).toHaveProperty([r.b]);
+      expect(PLACES, r.a).toHaveProperty([r.a]);
+      expect(PLACES, r.b).toHaveProperty([r.b]);
+      const k = [r.a, r.b].sort().join('-');
+      expect(r.a, k).not.toBe(r.b);
+      expect(seen.has(k), `two roads ${k}`).toBe(false);
+      seen.add(k);
+      // Each road is the quickest way between its own ends: one that isn't, nobody drives.
+      expect(road(r.a, r.b), k).toMatchObject({ min: r.min, cash: r.cash });
     }
     for (const a of ids)
-      for (const b of ids)
-        if (a < b)
-          expect(
-            ROADS.filter((r) => [r.a, r.b].sort().join() === [a, b].join()),
-            `${a}-${b}`,
-          ).toHaveLength(1);
+      for (const b of ids) {
+        if (a === b) continue;
+        const there = road(a, b);
+        expect(there, `${a} to ${b}`).toBeDefined();
+        expect(road(b, a), `${b} to ${a}`).toMatchObject({ min: there!.min, cash: there!.cash });
+      }
+  });
+
+  it("keeps v0.956's drives from the Lot, the far crags by way of Roadside", () => {
+    expect(road('lot', 'road')).toEqual({ min: 60, cash: 12, via: [] });
+    expect(road('lot', 'gorge')).toEqual({ min: 120, cash: 22, via: ['road'] });
+    expect(road('lot', 'moon')).toEqual({ min: 180, cash: 30, via: ['road'] });
+    expect(road('lot', 'lot')).toBeUndefined();
   });
 
   it('routes are climbable in order, and every beta is defined and styled', () => {

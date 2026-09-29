@@ -48,14 +48,6 @@ export const CREEK: Pt[] = [
   [150, 605],
   [166, 600],
 ];
-// The Old Town spur off the highway, and where it leaves it.
-export const SPUR: Pt[] = [
-  [207, 470],
-  [176, 468],
-  [146, 467],
-  [118, 466],
-];
-export const JUNCTION: Pt = [207, 470];
 // The walk-in to Roadside.
 export const TRAILS: Pt[][] = [
   [
@@ -64,15 +56,31 @@ export const TRAILS: Pt[][] = [
     [286, 232],
   ],
 ];
-// The dirt road west off the highway to Granite Gorge, from the highway end.
-export const DIRT: Pt[] = [
-  [274, 168],
-  [236, 172],
-  [198, 168],
-  [160, 162],
-  [122, 156],
-  [96, 152],
-];
+// The side roads: how a place off the highway reaches it, from where it leaves the
+// highway. A place beside the highway has none: it joins the highway level with its pin.
+export const SIDE_ROADS: Record<string, { pts: Pt[]; dirt?: true }> = {
+  // The Old Town spur.
+  diner: {
+    pts: [
+      [207, 470],
+      [176, 468],
+      [146, 467],
+      [118, 466],
+    ],
+  },
+  // The dirt road west to Granite Gorge.
+  gorge: {
+    pts: [
+      [274, 168],
+      [236, 172],
+      [198, 168],
+      [160, 162],
+      [122, 156],
+      [96, 152],
+    ],
+    dirt: true,
+  },
+};
 export const BLOCKS: [number, number, number, number][] = [
   [222, 400, 30, 20],
   [258, 400, 34, 20],
@@ -175,25 +183,21 @@ export function rasterMap(
   g.drawImage(c, 0, 0, W, H);
 }
 
-// The drive between two places, as a path along the roads through the junction. Old Town
-// is off the spur, Granite Gorge at the end of the dirt road; everything else sits beside
-// the highway and joins it level with its pin.
-function legPts(id: string, pins: Record<string, { x: number; y: number }>): Pt[] {
+// How a place joins the highway: from its pin, down its side road if it has one, to the
+// highway at level `y`.
+export function joinOf(id: string, pins: Record<string, { x: number; y: number }>): { y: number; pts: Pt[] } {
   const p = pins[id]!;
-  const [, jy] = JUNCTION;
-  if (id === 'diner') return [[p.x, p.y], ...SPUR.slice().reverse()];
-  if (id === 'gorge') {
-    const [, dy] = DIRT[0]!;
-    const along = ROAD.filter((q) => q[1] >= dy && q[1] < jy).reverse();
-    return [[p.x, p.y], ...DIRT.slice().reverse(), [roadX(dy), dy], ...along];
-  }
-  const along =
-    p.y > jy
-      ? ROAD.filter((q) => q[1] <= p.y && q[1] > jy)
-      : ROAD.filter((q) => q[1] >= p.y && q[1] < jy).reverse();
-  return [[p.x, p.y], [roadX(p.y), p.y], ...along];
+  const side = SIDE_ROADS[id];
+  const y = side ? side.pts[0]![1] : p.y;
+  return { y, pts: [[p.x, p.y], ...(side?.pts.slice().reverse() ?? []), [roadX(y), y]] };
 }
 
+// The drive between two places: out along one's side road, up or down the highway, and in
+// along the other's. It never runs past either end.
 export function drivePath(a: string, b: string, pins: Record<string, { x: number; y: number }>): Pt[] {
-  return [...legPts(a, pins), JUNCTION, ...legPts(b, pins).reverse()];
+  const from = joinOf(a, pins);
+  const to = joinOf(b, pins);
+  const between = ROAD.filter((q) => (q[1] - from.y) * (q[1] - to.y) < 0);
+  // The highway is listed south to north.
+  return [...from.pts, ...(to.y < from.y ? between : between.reverse()), ...to.pts.slice().reverse()];
 }

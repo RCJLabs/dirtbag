@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { betaScale } from './climb';
 import { needFor } from './climber';
 import { routeById } from './content/gym';
+import { road } from './content/places';
 import { ROUTES } from './content/routes';
 import { HIGHBALL } from './dials';
 import { act, belayer, faSuggestions, goBlocked, landingChance, lineGrade, lineName, newGame } from './game';
@@ -90,12 +91,13 @@ describe('Moonstone Boulders', () => {
   it('charges a permit every trip in, and won’t let the card pay it', () => {
     const s = at(6, { cash: 100, unlocked: ['moon'] });
     const r = play(s, { t: 'travel', to: 'moon' });
-    expect(r.state.cash).toBe(100 - 30 - 20);
+    expect(r.state.cash).toBe(100 - road('lot', 'moon')!.cash - 20);
     expect(r.state.at).toBe('moon');
     expect(lines(r.events)).toContain("Permit, $20. The ranger doesn't look up.");
     // Back out and in again: another permit.
     const again = play(r.state, { t: 'travel', to: 'road' }, { t: 'travel', to: 'moon' });
-    expect(again.state.cash).toBe(50 - 20 - 20 - 20);
+    const gas = road('moon', 'road')!.cash;
+    expect(again.state.cash).toBe(r.state.cash - gas - gas - 20);
     expect(refused(at(6, { cash: -1000, unlocked: ['moon'] }), { t: 'travel', to: 'moon' })).toMatch(
       /\$20 permit, and the card won't cover it/,
     );

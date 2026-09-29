@@ -76,6 +76,32 @@ npm run harness        # bots play whole seasons; prints the tables and Phase 6'
   - The loader never repairs a save and never substitutes a fresh one. `game/persist.ts` moves a bad save aside, falls back to the last save from an earlier day, and says so.
 - **Nothing leaves the site.** Fonts are bundled (OFL, from `@fontsource`), and the e2e bot fails on any off-site request.
 
+## Adding a place
+
+A place is data, a pin and a picture. In order:
+
+1. **The place.** An entry in `PLACES` (`src/sim/content/places.ts`):
+   - `name`;
+   - `away` and `here`, the card's lines (`{spot}` and the other `TEXT_VALUES` fill in; so does `{lines}`, the count of its lines);
+   - `acts`, the ids of what you can do there;
+   - `scene`: its side-view scene, or `null` for a place you only see as a card.
+   - A crag also takes `crag: true`, and its `sun` path: every line, from the end the sun reaches first. As needed, add `shaded`, `desert`, `ownSky` (weather of its own), `closed` (a season), `minGrade` with `locked`, `unlock` (paid once), `permit` (every trip) and `pads`.
+2. **Its acts** in `ACTS`, in the same file: what each costs, what it needs, what it says. Ids are `place.act`.
+3. **Its roads** in `ROADS`, in the same file: one to each neighbour, with minutes and gas (v0.956's where it has them). Every other drive goes through them, the quickest way.
+4. **Its lines**, for a crag: `src/sim/content/routes.ts`, with `place` set.
+5. **Its pin** in `MAP_PINS` (`src/view/layout.ts`): where it is, which side its label sits, and its kind. A place off the highway also needs its side road in `SIDE_ROADS` (`src/view/valley.ts`), starting where it leaves the highway. The drive animates along it.
+6. **Its picture**, the card's header:
+   - With a scene: an entry in `SCENES` (`src/view/layout.ts`), with the `frame` its header looks at. A crag also needs its `CRAGS` layout (wall, lines, boulders, sign) and its painter in `paint/scenes.ts`.
+   - Without a scene: a front in `src/view/paint/fronts.ts`.
+7. **Its people**, if anyone's day brings them there: `sim/presence.ts`, and where they stand in `SPOTS`.
+8. **Check.** Run `npm test`. These fail by name if something's missing:
+   - `content.test.ts`: acts that don't exist; a road to nowhere, a duplicate, one that's never the quickest way, or a place no road reaches; text that can't be filled.
+   - `layout.test.ts`: no pin, no header, a scene that isn't the place's, a side road that doesn't start on the highway, a drive that runs past its ends, a crag line with nowhere on screen.
+   - `sun.test.ts`: a sun path that misses a line or doubles back.
+
+   If the place changes a season (a crag in Act I's grades, a job), run `npm run harness` too. The bots only climb at Roadside, the Gorge and the gym, so a crag they should use goes into their day in `sim/bot.ts` first.
+9. **Log it.** Add a changelog line in `docs/ROADMAP.md`. A new rule, or a change to one, also goes in `Dirtbag-UE/concepts/2D-SPEC-LOG.md`.
+
 ## What it still fakes
 
 - **Balance.**

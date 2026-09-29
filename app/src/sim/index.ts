@@ -91,7 +91,7 @@ export type { Stream } from './rng';
 export * from './format';
 export { DAY, MONEY, BODY, CLIMB, LOAD, INJURY, HIGHBALL, BOND, ARC, DOG, LEGACY } from './dials';
 export { PLACES, ACTS, ROADS, road, TEXT_VALUES } from './content/places';
-export type { PlaceDef, ActDef, RoadDef } from './content/places';
+export type { PlaceDef, ActDef, RoadDef, Trip } from './content/places';
 export {
   ROUTES,
   LIBRARY,
