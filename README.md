@@ -52,7 +52,7 @@ The game has its own commands (tests, types, the e2e bot, the balance harness) i
 
 ## Status
 
-The live site is 0.960.0, the rebuilt game (R3), released 29 Sep 2026: a first season, Act I, from gym plastic to your first V5 project. Built since and not released yet: Phase 10 (Send City's board, conditions you can see, Moonstone Boulders) and Phase 11 (the valley's roads, place cards, the daily plan). A v0.956 player who opens the new game is told v0.956 has retired, can keep their career as a file, and can carry on under their old name. The current milestone is Phase 11, the valley map ([`docs/ROADMAP.md`](docs/ROADMAP.md)).
+The live site is 0.960.0, the rebuilt game (R3), released 29 Sep 2026: a first season, Act I, from gym plastic to your first V5 project. It stays 0.960.0 until the `v0.961.0` tag deploys Phase 10 (Send City's board, conditions you can see, Moonstone Boulders) and Phase 11 (the valley's roads, place cards, the daily plan). A v0.956 player who opens the new game is told v0.956 has retired, can keep their career as a file, and can carry on under their old name. The current milestone is Phase 12, the UI system and the desktop layout ([`docs/ROADMAP.md`](docs/ROADMAP.md)).
 
 ## Credits
 

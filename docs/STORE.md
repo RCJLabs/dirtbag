@@ -21,10 +21,10 @@ THE LIFE
 Sleep in the van at the Lot. Cook ramen. Pick up shifts when the money runs low, set problems at the gym for a free pass, and keep enough on the card for gas. The bills come every week, whether you sent anything or not.
 
 THE CLIMBING
-Every crux has more than one way through it. Before a go you choose your beta, then you climb it: hold to climb, load a throw and let go in the band, stay in tension, or tap on the beat. Pump builds, skin wears thin, and the afternoon sun greases everything. Fall at a crux often enough and you'll find another way. Watch someone who knows it and you might learn a better one.
+Every crux has more than one way through it. Before a go you choose your beta, then you climb it: hold to climb, load a throw and let go in the band, stay in tension, or tap on the beat. Pump builds, skin wears thin, and the sun works its way across the crag, greasing each line it reaches. Fall at a crux often enough and you'll find another way. Watch someone who knows it and you might learn a better one.
 
 THE PLACES
-Send City, the gym, with a new set every week. Roadside Crag: eleven lines, from the warm-ups to a project nobody's done. Granite Gorge, shaded and serious, for when you're climbing V4.
+Send City, the gym, with a new set every week and a board that stays up for four. Roadside Crag: eleven lines, from the warm-ups to a project nobody's done. Granite Gorge, shaded and serious, for when you're climbing V4. Moonstone Boulders, out in the desert, for when you're climbing V6: tall problems, a permit every trip, and nobody out there to spot you.
 
 THE PEOPLE
 Hazel knows everyone at the fire. Sage will climb with you if you keep showing up. Dex Calloway wants the first ascent you've been working, and he isn't going to wait. A stray called Scout sleeps by the vans at the Lot. Keep heading out to climb and he might decide he's yours.
@@ -38,12 +38,10 @@ Free. No ads, no accounts, no tracking. Plays offline. Your save stays on your p
 If you played the old version (0.956): it has retired. Your career is still on your phone. The game will keep it as a file, or carry you across under your old name.
 ```
 
-## What's new in 0.960.0
+## What's new in 0.961.0
 
 ```text whats-new
-The whole game, rebuilt. Before every go you pick your beta for each crux, then send it, or don't. Pump, skin and the weather have a say. The first season is here: Roadside Crag, Granite Gorge, the gym, Sage, Dex, and a dog called Scout.
-
-v0.956 has retired. If you played it, your career is still on your phone: the game will keep it as a file, or carry you across under your old name.
+Crags are places now. Send City has a board: four hard problems that stay up four weeks, graded stiff. The sun crosses Roadside a line at a time, so the shade is worth planning around, and wet rock looks it. Moonstone Boulders opens at V6: desert highballs, a permit every trip, and nothing between a fall and an ankle but the pads you haul out there. Place cards show who'll be there when you arrive. Bed opens at dark, and yesterday can be tomorrow's plan, run in one go.
 ```
 
 ## Screenshots
