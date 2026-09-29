@@ -47,6 +47,9 @@ export const weekOf = (day: number): number => Math.floor((day - 1) / WEEK_DAYS)
 
 // The board's reset: every BOARD_WEEKS weeks, from the first morning.
 export const BOARD_WEEKS = 4;
+// Board grades run stiff, as real boards' do: each problem climbs like the grade above its
+// label (Evan's call, 29 Sep 2026). It keeps the V7 a month-two project, not a fluke.
+export const BOARD_STIFF = 1;
 export const blockOf = (day: number): number => Math.floor((day - 1) / (WEEK_DAYS * BOARD_WEEKS)) + 1;
 // One problem at each grade, easiest on the left.
 const BOARD_GRADES = [4, 5, 6, 7];
@@ -125,6 +128,7 @@ export function boardSet(seed: string, block: number): RouteDef[] {
       cruxName: CRUX_NAME[type],
       heightFt: 12,
       line: `${moves} moves on the board. It stays up ${BOARD_WEEKS} weeks.`,
+      trueGrade: grade + BOARD_STIFF,
       board: true,
     });
   });

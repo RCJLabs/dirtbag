@@ -210,7 +210,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       const next = blockOf(s.day) * WEEK_DAYS * BOARD_WEEKS + 1 - s.day;
       return {
         title: 'The board',
-        sub: `The steep panel in the back: ${probs.length} problems, ${gradeLabel(probs[0]!)} to ${gradeLabel(probs.at(-1)!)}, lit on the grid. They stay up ${BOARD_WEEKS} weeks. A new set goes up ${next === 1 ? 'tomorrow' : `in ${next} days`}.`,
+        sub: `The steep panel in the back: ${probs.length} problems, ${gradeLabel(probs[0]!)} to ${gradeLabel(probs.at(-1)!)}, lit on the grid. Board grades run stiff, and they stay up ${BOARD_WEEKS} weeks. A new set goes up ${next === 1 ? 'tomorrow' : `in ${next} days`}.`,
         close: true,
         rows: probs.map((r) => ({
           label: r.name,

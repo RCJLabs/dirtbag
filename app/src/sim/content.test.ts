@@ -99,6 +99,8 @@ describe('content', () => {
   it('the board sets four hard problems, V4 to V7, that stay up four weeks', () => {
     const b1 = boardSet('a', 1);
     expect(b1.map((r) => r.grade)).toEqual([4, 5, 6, 7]);
+    // And they climb a grade stiff, as boards do.
+    expect(b1.map((r) => r.trueGrade)).toEqual([5, 6, 7, 8]);
     expect(b1.every((r) => r.board && r.place === 'gym' && r.disc === 'boulder')).toBe(true);
     expect(new Set(b1.map((r) => r.name)).size).toBe(4);
     // Up from the first morning to the last day of the fourth week, then reset.

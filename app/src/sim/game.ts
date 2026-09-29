@@ -564,12 +564,14 @@ export function act(s0: GameState, a: Action): Result {
       const who = r.disc === 'sport' ? belayer(s) : null;
       if (who) climbedWith(who);
       for (const w of PARTNERS) if (w !== who && s.people[w] && whereNow(s, w) === s.at) climbedWith(w);
-      // A sandbag shows itself on your first go.
+      // A sandbag shows itself on your first go; on the board, everyone saw it coming.
       if (L.goes === 1 && r.trueGrade !== undefined && r.trueGrade !== r.grade)
         line(
-          r.trueGrade > r.grade
-            ? `That's no ${gradeLabel(r)}. Locals have been sandbagging it.`
-            : `That's no ${gradeLabel(r)}. It's soft, and you're not complaining.`,
+          r.board
+            ? `Board grades: that's no ${gradeLabel(r)}. Nobody on the mats is surprised.`
+            : r.trueGrade > r.grade
+              ? `That's no ${gradeLabel(r)}. Locals have been sandbagging it.`
+              : `That's no ${gradeLabel(r)}. It's soft, and you're not complaining.`,
         );
       if (r.place !== 'gym' && s.min >= sunOn(s.seed, s.day, r.place, r.id) && !s.today.includes('grease')) {
         s.today.push('grease');

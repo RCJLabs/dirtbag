@@ -9,7 +9,7 @@ This is the game as it ships from 0.960.0 (the roadmap's R3): the first season, 
   - Granite Gorge: it opens at V4 and shuts in spring. Six boulders and three sport lines, one of them a sandbag.
   - Moonstone Boulders (Phase 10.3, after 0.960.0): desert quartzite up the highway, from V6. You pay once for the haul and a permit every trip. It has its own desert sky: drier and hotter than the valley's. Seven boulders, highballs among them, and two sport lines on a spire that nobody comes out to belay yet.
   - Highballs (Phase 10.3b, proposed): a fall off a tall boulder can land you badly, more from higher. The haul's pads and a partner spotting each halve it, and the beta sheet shows the odds.
-  - Send City: a weekly set, V0 to V5, and a board whose four problems, V4 to V7, stay up four weeks (Phase 10.1, after 0.960.0).
+  - Send City: a weekly set, V0 to V5, and a board whose four problems, V4 to V7, stay up four weeks and run a grade stiff (Phase 10.1, after 0.960.0).
   - The Diner and the Coffee Shop.
 - **Conditions you can see** (Phase 10.2, after 0.960.0): the sun crosses Roadside from its far end to the road over two hours, greasing each line as it gets there, and you can see its edge coming. Wet rock after rain, and closed or soaked crags tagged on the map.
 - **Your body:** v0.956's acute:chronic load with Phase 6's fixes: a seeded start, warm-ups, seeded injury rolls, and a first injury that costs time, not money. Hunger, weekly bills and a card instead of a game over.
@@ -84,8 +84,7 @@ npm run harness        # bots play whole seasons; prints the tables and Phase 6'
 - **Feel.** Phase 9's criteria (a watcher can tell how close a go was; a pumped go feels tense) and Phase 7's first hour need people, not bots.
 - **Content.**
   - Twenty crag lines, six gym problems a week, and the board's four.
-  - Before the board, about half the bots hit a wet day in week four with nothing new to try. Now 3 runs in 144 do, each with all four board problems sent. The board's next set comes on day 29.
-  - The board's grades climb like the wall's, not stiff the way real boards run: 3 runs sent its V7 at V4 *[proposed: Evan's call]*.
+  - Before the board, about half the bots hit a wet day in week four with nothing new to try. With the board a grade stiff, none of 144 runs do. The harness counts only content running out, not days the body said no.
 - **Injuries** are rare in the first month: none for bots that warm up and heed the warning, and 3% for reckless ones. That meets Phase 6's ceiling, but it may be too gentle to register as a trade-off. It's a playtest question.
 - **Design calls** marked *[proposed]* in the roadmap are Evan's to rule on: Sage's week away, the blessing's bond, the race's V4 trigger, Act I's "regular" stage, pace, and the card's footer.
 - **Not in yet:** sound, gear (the trad lines wait for it), comps, media, and jobs beyond the café and setting.

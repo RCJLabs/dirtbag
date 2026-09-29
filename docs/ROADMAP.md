@@ -945,7 +945,10 @@ The full diagnosis is in the audit, under *The map and the look*.
       - The median climber ends the month at V4, where it was V3.
       - The first V5 go comes about a day later (days 19–20), because the bots work the board's V4 first.
       - All four season targets still pass.
-    - *[proposed]* **Board grades climb like the wall's.** Board V4s and wall V4s are both sent at a median climber grade of V3, and 3 runs sent the V7 at V4. Real boards run stiff. Making this one stiff means a sandbag on every board problem, with its own line on the first go, so it waits for Evan.
+    - **Board grades run a grade stiff** (Evan's call, 29 Sep 2026). As first built, they climbed like the wall's: board V4s and wall V4s were both sent at a median climber grade of V3, and 3 runs sent the V7 at V4.
+      - Now each board problem climbs like the grade above its label (`BOARD_STIFF`), as real boards run.
+      - It says so on your first go: "Board grades: that's no V5. Nobody on the mats is surprised."
+      - The board's card warns you before you pull on.
     - **The store copy** (`docs/STORE.md`) describes 0.960.0, which has no board. It gains the board with the release that carries it.
 - **10.2, conditions you can see.** The shade line crossing the wall through the day (the prime window made visible), wet streaks after rain, and closures on the map.
   - *As built (10.2):*
@@ -988,7 +991,7 @@ The full diagnosis is in the audit, under *The map and the look*.
       - The spire's two lines need a belayer, and nobody's schedule brings anyone to Moonstone yet. They're climbable data waiting on a road-trip partner, as the Gorge's bolts waited on Sage.
       - The bots don't go there. It's past the first month for all of them, so the harness is unchanged.
       - There's still no V10 boulder anywhere in the game, and v0.956 had none here either (criterion 3).
-  - *As built (10.3b, highballs):* all of it is *[proposed]*. v0.956 had no highball rule, only a generic "close call" for climbing without a pad, and a shop upsell for "a second crashpad for highballs".
+  - *As built (10.3b, highballs):* new design, kept as built by Evan's call (29 Sep 2026), month-one risk and all. v0.956 had no highball rule, only a generic "close call" for climbing without a pad, and a shop upsell for "a second crashpad for highballs".
     - **The rule.**
       - A `highball` flag goes on the tall boulders: Roadside's Highball Arête (18 ft, whose own line says the crux is where the pads stop helping), and Moonstone's Tall Arête, Splitter and project.
       - A fall off one can land badly. Nothing up to 8 ft; above that, each foot adds 1.2% (`HIGHBALL`), so a fall from 16 ft is about 1 in 10 and from 22 ft about 1 in 6.
@@ -1005,17 +1008,22 @@ The full diagnosis is in the audit, under *The map and the look*.
 **Done when, on the rebuild** *[proposed; replaces the criteria above until Evan rules]*:
 1. The gym and every crag in the game read as places: their own scene, lines drawn from data, and conditions you can see (shade, wet, closed).
 2. Any day of the first season, in any weather, has something new to try: the harness's "nothing new to try" reads 0.
-3. There are lines at every grade from V0 to the top of the content.
+3. There are lines at every grade the first season reaches, V0 to V9. (Scoped to Act I by Evan's call, 29 Sep 2026: Moonstone is where Act II starts, and more crags come in later phases.)
 4. Testers can point at where they want to go and say why (conditions, style, a project).
 
-**Status (29 Sep 2026): 10.1–10.3 built; the marker stays.**
-1. Met on the build: the gym, Roadside, the Gorge and Moonstone each have a scene, lines drawn from data, and conditions you can see.
-2. Not met: 1 run in 144 is left.
-   - The harness now counts only content running out. Before, a day the body kept you off the rock counted as nothing to try; now it's "resting", since the lines were still there.
-   - The one run left is a V4 climber who had sent everything at the gym by day 25, the board's V7 included, and then got a wet day.
-   - Making the board's grades stiff (still Evan's call) would very likely close it.
-3. Not met: there's no V10 boulder anywhere. Sport goes to grade 10 at Moonstone, and v0.956 had no V10 boulder at these crags either.
+**Status (29 Sep 2026): 10.1–10.3 built. Criteria 1–3 pass on the build; 4 waits on testers, so the marker stays until Evan closes the phase.**
+1. Met: the gym, Roadside, the Gorge and Moonstone each have a scene, lines drawn from data, and conditions you can see.
+2. Met: 0 runs in 144 have a day with nothing new to try.
+   - The harness counts only content running out. Before, a day the body kept you off the rock counted as nothing to try; now it's "resting", since the lines were still there.
+   - The last run it caught was a V4 climber who had cleared the gym by day 25, the board's V7 included, then got a wet day. With the board a grade stiff, that V7 is a month-two project.
+3. Met, as scoped: every boulder grade from V0 to V9 has lines. The weekly set covers V0–V5, Roadside V2–V7, the board V4–V7 and the Gorge V5–V9.
 4. Needs testers.
+
+With the stiff board, the harness (12 seeds × 28 days) shows:
+- All four season targets pass.
+- The first V5 go comes at day 19–19.5, but a few runs (up to 2 of 12 in some starts) don't tie into a V5 by day 28.
+- An hour on the rock at V4 teaches 8.3 skill points, down from 10.1, since the board's V5 now climbs like a V6.
+- Careful first-month injuries read 8 of 144 (6%); reckless, 15 of 144.
 
 *As built (follow-ups, 29 Sep 2026):*
 - **Moonstone's own sky.** v0.956 rolled every crag's weather from its climate. Out of the valley, Moonstone now gets its own sky, as a new place flag `ownSky`:
@@ -1431,3 +1439,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 10.3a: Moonstone Boulders as a place. v0.956's terms: V6, a $400 haul paid once, a $20 permit each trip. Nine lines, a desert scene with a quartzite spire, its road and map pin. Save v4 adds the trips you've paid for, migrated from a real v3 save. Highballs (10.3b) are next.
 - 2026-09-29 — Phase 10.3b: highballs (proposed). A fall off a tall boulder can land you badly, by height, halved by the Moonstone haul's pads and again by a partner spotting. The beta sheet shows the odds. Careful bots wait for a spotter; 7% of moderate runs now end month one with a jammed ankle. Phase 10's slices are built; its criteria 2–4 aren't met, so the marker stays.
 - 2026-09-29 — Phase 10 follow-ups: Moonstone gets its own desert sky (v0.956's per-crag weather), on its card and the forecast. The harness counts only content, not injuries, as "nothing new to try": 1 run in 144 is left, and it hinges on the board-stiffness call. Roadside's card counts its lines from the data.
+- 2026-09-29 — Evan's calls: the board runs a grade stiff, criterion 3 is scoped to Act I (V0–V9), and highball risk stays as built. With the stiff board, the harness reads 0 runs in 144 with nothing new to try. Phase 10's criteria 1–3 pass; 4 waits on testers.

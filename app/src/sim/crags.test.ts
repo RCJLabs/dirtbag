@@ -3,6 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { betaScale } from './climb';
 import { needFor } from './climber';
+import { routeById } from './content/gym';
 import { ROUTES } from './content/routes';
 import { HIGHBALL } from './dials';
 import { act, belayer, faSuggestions, goBlocked, landingChance, lineGrade, lineName, newGame } from './game';
@@ -171,6 +172,16 @@ describe('sandbags', () => {
     expect(lines(first.events)).toContain("That's no V7. Locals have been sandbagging it.");
     const second = play(first.state, { t: 'rest', route: 'gdyno' }, { t: 'go', route: 'gdyno' });
     expect(lines(second.events).some((l) => l.includes('sandbagging'))).toBe(false);
+  });
+
+  it('run a grade stiff on the board, which nobody finds surprising', () => {
+    const s = at(6, { at: 'gym', min: 10 * 60, today: ['warm', 'pass'] });
+    const b = routeById('crags', 'bd-1-2')!;
+    expect(b.trueGrade).toBe(b.grade + 1);
+    const first = play(s, { t: 'go', route: b.id });
+    expect(lines(first.events)).toContain(
+      `Board grades: that's no V${b.grade}. Nobody on the mats is surprised.`,
+    );
   });
 });
 
