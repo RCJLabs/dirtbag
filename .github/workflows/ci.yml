@@ -3,7 +3,7 @@
 #          file there, the download size, then the staged site booted in headless Chromium (a
 #          new climber, the save, the clock, reload, offline start).
 #   app    the game in app/: formatting, types, the sim's tests, a build inside its size
-#          budget, then a bot that plays the first two days on the build, and a v0.956 player.
+#          budget, then a bot that plays the first three days on the build, and a v0.956 player.
 # Failure screenshots from either are kept as run artifacts.
 name: CI
 

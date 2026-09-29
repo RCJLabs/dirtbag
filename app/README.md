@@ -38,7 +38,7 @@ npm run typecheck      # the sim is checked with no DOM types, the rest with the
 npm run format         # Prettier (CI runs format:check)
 npm run build          # dist/
 npm run size           # what a player downloads, against the budget
-npm run e2e            # a bot plays two days on dist/ in headless Chromium and reloads offline, then a v0.956 player crosses over
+npm run e2e            # a bot plays three days on dist/ in headless Chromium (counting day three's taps) and reloads offline, then a v0.956 player crosses over
 npm run harness        # bots play whole seasons; prints the tables and Phase 6's first-season targets
 ```
 
@@ -58,7 +58,7 @@ npm run harness        # bots play whole seasons; prints the tables and Phase 6'
 | `src/game/` | The game loop, input, walking, driving and the attempt's timing; saves to localStorage. `legacy.ts` reads a retired v0.956 career and keeps it as a file, never writing to it. |
 | `src/ui/` | React panels: HUD, speech bubbles, sheets, the climb panel, the goal pill. `card.ts` words the send card; `view/paint/card.ts` paints it. |
 | `build/pwa.ts` | The installable shell, made at build time: the manifest and icons (drawn in code, `favicon.ico` too), and a service worker that precaches exactly this build. The worker is `service-worker.js`, v0.956's name, so a browser that installed v0.956 swaps workers in place, and it clears v0.956's cache. |
-| `e2e/playthrough.mjs` | The bot that plays two days in the browser, then checks the game starts offline. |
+| `e2e/playthrough.mjs` | The bot that plays three days in the browser, on a pinned seed, and checks the game starts offline. It counts the taps on every trip and on day three, against Phase 11's budgets. |
 
 ## Rules
 

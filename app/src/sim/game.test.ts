@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { gains, gradeOf, needFor, STARTS } from './climber';
 import { gymSet } from './content/gym';
+import { ACTS } from './content/places';
 import { ROUTES } from './content/routes';
 import { BODY, CLIMB, DAY, MONEY } from './dials';
-import { act, goBlocked, goCost, lessonAt, LOG_MAX, NAME_MAX, newGame, talkStart } from './game';
+import { act, actCost, goBlocked, goCost, lessonAt, LOG_MAX, NAME_MAX, newGame, talkStart } from './game';
 import type { Action, GameEvent, GameState, GoResult } from './types';
 import { skyOn, sunOn } from './weather';
 
@@ -122,7 +123,7 @@ describe('the day', () => {
       k: 'refused',
       why: "Not yet. The day's still going.",
     });
-    const evening = at(s, 'lot', DAY.bedFrom);
+    const evening = at(s, 'lot', DAY.nightFrom);
     const tired = { ...evening, energy: 40, skin: 30, fed: 60, cash: 10, today: ['coffee'] };
     tired.routes = { pump: { ...emptyRoute(), goesToday: 3, sentToday: true } };
     const slept = play(tired, { t: 'act', act: 'lot.sleep' });
@@ -140,8 +141,33 @@ describe('the day', () => {
     expect(lines(slept.events)).toEqual([`Van spot, $${MONEY.vanSpot}. You're $8 in the hole.`]);
   });
 
+  it('lies around till dark in one tap, at the hourly rate, and turns in from dark', () => {
+    // Back from the crag at 1:13 PM, the day done.
+    const back = { ...at(newGame('t'), 'lot', 13 * 60 + 13), energy: 50 };
+    const rest = ACTS['lot.rest']!;
+    const hours = (DAY.nightFrom - back.min) / 60;
+    expect(actCost(back, rest)).toEqual({
+      min: DAY.nightFrom - back.min,
+      energy: Math.round(rest.cost.energy! * hours),
+    });
+    const lay = play(back, { t: 'act', act: 'lot.rest' });
+    expect(lay.state).toMatchObject({
+      min: DAY.nightFrom,
+      energy: 50 + Math.round(rest.cost.energy! * hours),
+    });
+    expect(lines(lay.events)).toEqual([rest.says]);
+    // Dark: the fire's lit, so no more lying around, and bed is open.
+    expect(refusal(act(lay.state, { t: 'act', act: 'lot.rest' }).events)).toMatchObject({
+      why: "It's evening. The fire's lit.",
+    });
+    expect(refusal(act({ ...back, min: DAY.nightFrom - 1 }, { t: 'act', act: 'lot.sleep' }).events)?.k).toBe(
+      'refused',
+    );
+    expect(play(lay.state, { t: 'act', act: 'lot.sleep' }).state.day).toBe(2);
+  });
+
   it('sleeps worse hungry, rough when the card is full, and pays the bills every seventh night', () => {
-    const night = at(newGame('t'), 'lot', DAY.bedFrom);
+    const night = at(newGame('t'), 'lot', DAY.nightFrom);
     const hungry = play({ ...night, energy: 20, fed: 10 }, { t: 'act', act: 'lot.sleep' });
     expect(hungry.state.energy).toBe(20 + BODY.sleepEnergy - BODY.hungryNight);
     expect(lines(hungry.events)).toContain('You went to bed hungry, and it shows.');

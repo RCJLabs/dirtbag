@@ -11,7 +11,6 @@ import {
   bodyNote,
   conditionsAt,
   costLabel,
-  DAY,
   DOG,
   DOG_OFFER,
   DOG_TIER_NAME,
@@ -28,6 +27,7 @@ import {
   money,
   PLACES,
   restCost,
+  actCost,
   road,
   ROUTES,
   routeOfId,
@@ -93,14 +93,15 @@ export function gainsLine(g: Partial<Skills>): string {
 function actRow(game: Game, s: GameState, id: string): Row {
   const a = ACTS[id]!;
   const why = unmet(s, a.needs);
-  let note = [bodyNote(a.cost), a.note && fill(a.note, TEXT_VALUES)].filter(Boolean).join('. ');
+  const cost = actCost(s, a);
+  let note = [bodyNote(cost), a.note && fill(a.note, TEXT_VALUES)].filter(Boolean).join('. ');
   if (a.sleep && !why) {
     if (headroom(s) < MONEY.vanSpot) note = "The card won't cover the spot: a cold night in the pullout.";
     if (s.fed < BODY.hungryBelow) note += ' You’ll sleep hungry.';
   }
   return {
     label: a.label,
-    cost: costLabel(a.cost, a.sleep ? 'van spot' : ''),
+    cost: costLabel(cost, a.sleep ? 'van spot' : ''),
     note: why ?? note,
     off: !!why,
     run: () => game.doAct(id),
@@ -172,7 +173,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     case 'van':
       return {
         title: 'Your van',
-        sub: s.min >= DAY.bedFrom ? 'Bed made. Mostly.' : `Home, for ${TEXT_VALUES.spot} a night at the Lot.`,
+        sub: isNight(s.min) ? 'Bed made. Mostly.' : `Home, for ${TEXT_VALUES.spot} a night at the Lot.`,
         close: true,
         rows: [
           actRow(game, s, 'lot.cook'),

@@ -15,7 +15,7 @@ import {
   LANDING_LINE,
   LANDING_NAME,
 } from './content/injuries';
-import { ACTS, PLACES, road, TEXT_VALUES } from './content/places';
+import { ACTS, PLACES, road, TEXT_VALUES, type ActDef } from './content/places';
 import { DOG_LINES, DOG_OFFER } from './content/dog';
 import { PEOPLE, RACE_ROUTE, RIVAL_FA_NAMES, TALK } from './content/people';
 import { ACT_I_END } from './content/story';
@@ -107,6 +107,17 @@ export function goCost(r: RouteDef): Required<Pick<Delta, 'min' | 'energy' | 'fe
 }
 
 export const restCost = (r: RouteDef): number => CLIMB.restMin[r.disc];
+
+// What an act costs you now. One that runs till a time of day costs its hourly rate for
+// every hour it takes.
+export function actCost(s: GameState, d: ActDef): Delta {
+  if (d.until === undefined) return d.cost;
+  const min = Math.max(0, d.until - s.min);
+  const out: Delta = { min };
+  for (const k of ['cash', 'energy', 'skin', 'fed'] as const)
+    if (d.cost[k]) out[k] = Math.round((d.cost[k] * min) / 60);
+  return out;
+}
 
 // Who'd belay you on a rope here, now.
 export function belayer(s: GameState): string | null {
@@ -370,7 +381,7 @@ export function act(s0: GameState, a: Action): Result {
       sleep();
       return null;
     }
-    spend(d.cost);
+    spend(actCost(s, d));
     for (const f of d.sets ?? []) if (!s.today.includes(f)) s.today.push(f);
     if (d.trains) train(d.trains);
     if (d.dog?.adopt) s.dog = { name: 'Scout', since: s.day, fed: 60, bond: 0 };

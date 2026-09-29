@@ -8,6 +8,7 @@ export {
   goBlocked,
   goCost,
   restCost,
+  actCost,
   belayer,
   landingChance,
   fallFt,

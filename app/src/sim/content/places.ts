@@ -65,6 +65,9 @@ export interface ActDef {
   trains?: Partial<Skills>;
   // Sleep ends the day; its rules live in the sim, not here.
   sleep?: true;
+  // Takes all the time till this minute of the day, in one go; `cost` is then what an hour
+  // of it costs. Lying around till dark.
+  until?: number;
   // What it does for your dog: takes him on, fills his bowl, or adds to the bond.
   dog?: { adopt?: true; fill?: true; bond?: number };
   // A line picked by the day, instead of the same one every time.
@@ -176,16 +179,17 @@ export const ACTS: Record<string, ActDef> = {
   'lot.sleep': {
     label: 'Sleep',
     cost: { cash: -MONEY.vanSpot },
-    needs: [{ from: DAY.bedFrom, why: "Not yet. The day's still going." }],
+    needs: [{ from: DAY.nightFrom, why: "Not yet. The day's still going." }],
     note: 'Wake at {wake}.',
     sleep: true,
   },
-  // Passing the day: somewhere to be when you're spent before dark.
+  // Passing the day: somewhere to be when you're spent before dark, in one go.
   'lot.rest': {
-    label: 'Lie around in the van',
-    cost: { min: 60, energy: 4 },
+    label: 'Lie around till dark',
+    cost: { energy: 4 },
+    until: DAY.nightFrom,
     needs: [{ night: false, why: "It's evening. The fire's lit." }],
-    says: 'You read the same page four times.',
+    says: "You read the same page until it's too dark to read.",
   },
   'lot.adopt': {
     label: DOG_OFFER.yes,

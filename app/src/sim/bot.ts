@@ -18,7 +18,7 @@ import { routesAt } from './content/gym';
 import { ACTS, PLACES, road } from './content/places';
 import { TALK } from './content/people';
 import type { RouteDef } from './content/routes';
-import { BODY, CLIMB, DAY, LOAD, MONEY } from './dials';
+import { BODY, CLIMB, LOAD, MONEY } from './dials';
 import { cold, freshLoad, ratio } from './body';
 import { gradeOf, average } from './climber';
 import { act, faSuggestions, goBlocked, knowsBeta, landingChance, newGame, talkStart } from './game';
@@ -393,7 +393,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     // Scout: taken on when he picks you, fed when his bowl's low. No stick: bots are busy.
     tryAct('lot.adopt');
     if (s.dog && s.dog.fed < 40) tryAct('lot.kibble');
-    while (s.min < DAY.bedFrom) if (!tryAct(isNight(s.min) ? 'lot.sit' : 'lot.rest')) break;
+    if (!isNight(s.min)) tryAct('lot.rest');
     run.days.push({
       day: s.day,
       cash: s.cash,

@@ -30,7 +30,7 @@ Releasing and rolling back: `README.md` → Releasing.
 - `npm test` — the sim's tests plus the save-layer tests. Must pass before any commit that touches `app/src`.
 - `npm run typecheck` — three configs; `tsconfig.sim.json` checks `src/sim` with no DOM types.
 - `npm run format:check` (or `npm run format`) — Prettier, as CI runs it.
-- `npm run build`, then `npm run size` (player download against the budget) and `npm run e2e` (a bot plays two days on the build, then a v0.956 player crosses over). Run both before any commit that changes what a player sees.
+- `npm run build`, then `npm run size` (player download against the budget) and `npm run e2e` (a bot plays three days on the build, counting day three's taps, then a v0.956 player crosses over). Run both before any commit that changes what a player sees.
 - `npm run dev` — local dev server.
 
 ## Load-bearing rules

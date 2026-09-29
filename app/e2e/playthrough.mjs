@@ -1,16 +1,19 @@
-// Plays the first day of the built game in headless Chromium, the way a player would: taps,
+// Plays the first days of the built game in headless Chromium, the way a player would: taps,
 // keys and the hold button, reading only what's on screen. Fails on any uncaught error,
 // console error, failed request or request that leaves the site, and on any step that
 // doesn't land where it should.
 //
 //   npm run build && npm run e2e           (Playwright comes from the repo root: npm ci there)
 //
-// Two days. Day one: make a climber (Act I's first goal on screen), Hazel's tip about the
-// roof, a double at the café (the goal done), the drive out, an onsight of the Warm
-// Boulder and its card, a fall on The Pump that shows you the rock-over, dinner, the fire,
-// sleep, and a reload that comes back to the same morning.
+// Three days, on a pinned seed. Day one: make a climber (Act I's first goal on screen),
+// Hazel's tip about the roof, a double at the café (the goal done), the drive out, an
+// onsight of the Warm Boulder and its card, a fall on The Pump that shows you the
+// rock-over, dinner, the fire, sleep, and a reload that comes back to the same morning.
 // Day two: Send City, a setting shift, Sage turning up and showing you a problem's trick,
-// and a flash with it.
+// a flash with it, the board, then home to lie around till dark.
+// Day three is counted (Phase 11): a shift, the crag, three goes, back, dinner and bed in
+// 20 taps or fewer, not counting the climbing itself. Every trip is counted too: two taps
+// from the map, three from a scene.
 // Then a v0.956 player, in a browser of their own: the retirement notice, their career kept
 // as a file, and coming across as they were.
 import { mkdirSync, readFileSync, rmSync } from 'node:fs';
@@ -28,6 +31,18 @@ const browser = await chromium.launch(
   process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : { channel: 'chromium' },
 );
 const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+// The seed a new climber's valley rolls is pinned, so day three's weather is the same every
+// run: prime, and Roadside open. The game rolls it from eight random bytes; anything else
+// that asks for random bytes still gets them.
+const SEED = 'dirtbag-qc6qki1m66opy';
+await page.addInitScript(() => {
+  const real = crypto.getRandomValues.bind(crypto);
+  crypto.getRandomValues = (a) => {
+    if (!(a instanceof Uint32Array) || a.length !== 2) return real(a);
+    a.set([1592590338, 3517427878]);
+    return a;
+  };
+});
 
 const problems = [];
 page.on('pageerror', (e) => problems.push(`uncaught: ${e.message}`));
@@ -76,11 +91,16 @@ async function expectText(sel, re, what) {
   return t;
 }
 
+// Every tap, click, key and walk the player makes, for Phase 11's budgets. The hold button
+// isn't counted: that's the climbing itself.
+let taps = 0;
+
 // Taps on the game screen in its own 360 x 740 logical pixels.
 async function tapAt(x, y) {
   const box = await page.locator('#cv').boundingBox();
   const k = box.width / 360;
   await page.mouse.click(box.x + x * k, box.y + y * k);
+  taps++;
 }
 
 const click = async (sel, name) => {
@@ -95,6 +115,12 @@ const click = async (sel, name) => {
     .locator(sel, name ? { hasText: name } : {})
     .first()
     .click();
+  taps++;
+};
+
+const press = async (key) => {
+  await page.keyboard.press(key);
+  taps++;
 };
 
 const hudTime = () => text('#h-time');
@@ -197,7 +223,42 @@ async function walk(dx) {
   await page.keyboard.down(key);
   await wait((Math.abs(dx) / WALK) * 1000);
   await page.keyboard.up(key);
+  taps++;
   await wait(1500);
+}
+
+// ---- trips ----
+
+// Where the map's pins are, on the game screen (view/layout.ts, MAP_PINS).
+const PIN = { lot: [262, 612], diner: [96, 458], gym: [282, 414], cafe: [282, 476] };
+const trips = [];
+
+// A trip from a scene: the map, the pin, the drive. Phase 11 holds every trip to two taps
+// from the map, so three from a scene; the card between pin and drive stays, since it shows
+// the cost, the weather and who's there. `onMap` runs on the map, uncounted.
+async function driveFrom(what, pin, card, onMap) {
+  const t0 = taps;
+  await click('#b-nav', 'Map');
+  await until('the map', async () => (await text('#b-nav')) === 'Close');
+  await wait(450); // taps during a fade are ignored, as they are for a player
+  if (onMap) await onMap();
+  await tapAt(...pin);
+  await expectText('#sheet', card, 'place card');
+  await click('#sheet .opt', 'Drive here');
+  counted(what, taps - t0, 3);
+}
+
+// A drive offered on the card in front of you (a card-only place, or the van): its tap is
+// the whole trip.
+async function driveOn(what, label) {
+  const t0 = taps;
+  await click('#sheet .opt', label);
+  counted(what, taps - t0, 2);
+}
+
+function counted(what, n, most) {
+  trips.push(`${what} ${n}`);
+  if (n > most) problems.push(`${what} took ${n} taps; the most is ${most}`);
 }
 
 // Plays a go until it sends, resting and going again if it doesn't, up to `tries` goes.
@@ -243,7 +304,7 @@ await tapAt(340, 650);
 await wait(2200);
 await tapAt(340, 650);
 await wait(2200);
-await page.keyboard.press('Enter');
+await press('Enter');
 await expectText('#bubble', /staring at The Pump/, 'Hazel');
 await shot('hazel');
 await click('#bubble button', 'Ask about the roof');
@@ -252,20 +313,14 @@ await click('#bubble button', 'Got it');
 await expectText('#toast', /New beta: heel-hook the lip/, 'toast');
 
 console.log('A double at the café');
-await click('#b-nav', 'Map');
-await until('the map', async () => (await text('#b-nav')) === 'Close');
-await wait(450);
-await shot('map');
-await tapAt(282, 476);
-await expectText('#sheet', /Coffee Shop/, 'place card');
-await click('#sheet .opt', 'Drive here');
+await driveFrom('the Lot to the café', PIN.cafe, /Coffee Shop/, () => shot('map'));
 await expectText('#sheet', /Wren is on the bar/, 'at the café');
 await click('#sheet .opt', 'Pick up a double');
 await expectText('#h-cash', /^\$96$/, 'paid');
 await expectText('#h-time', /1:48 PM$/, 'clock');
 
 console.log('Drive to Roadside Crag');
-await click('#sheet .opt', 'Drive to Roadside Crag');
+await driveOn('the café to Roadside', 'Drive to Roadside Crag');
 await wait(800);
 await shot('driving');
 await until('arrival', async () => (await text('#h-time')) === 'Day 1 · 2:53 PM');
@@ -333,16 +388,11 @@ await click('#sheet .opt', 'Walk off');
 
 console.log('Dinner');
 await until('the crag again', async () => (await text('#b-nav')) === 'Map');
-await click('#b-nav', 'Map');
-await until('the map', async () => (await text('#b-nav')) === 'Close');
-await wait(450); // taps during a fade are ignored, as they are for a player
-await tapAt(96, 458);
-await expectText('#sheet', /The Diner/, 'place card');
-await click('#sheet .opt', 'Drive here');
+await driveFrom('Roadside to the diner', PIN.diner, /The Diner/);
 await expectText('#sheet', /Otis is reading the paper/, 'at the diner');
 await click('#sheet .opt', 'Order the special');
 await shot('diner');
-await click('#sheet .opt', 'Drive back to the Lot');
+await driveOn('the diner to the Lot', 'Drive back to the Lot');
 await until('the Lot', async () => (await text('#hint')) === 'Tap anywhere to walk');
 await expectText('#h-time', clockRe(17 * 60 + 33 + late), 'clock');
 
@@ -358,7 +408,7 @@ for (let i = 0; i < 2; i++) {
   await tapAt(340, 650);
   await wait(2200);
 }
-await page.keyboard.press('Enter');
+await press('Enter');
 await expectText('#bubble', new RegExp(`${goes + 1} goes today`), 'Hazel at night');
 await shot('fire');
 await click('#bubble button', 'Sit a while');
@@ -368,7 +418,8 @@ console.log('Sleep');
 await page.keyboard.down('ArrowLeft');
 await wait(2600);
 await page.keyboard.up('ArrowLeft');
-await page.keyboard.press('Enter');
+taps++;
+await press('Enter');
 await expectText('#sheet', /Your van/, 'van');
 await click('#sheet .opt', 'Sleep');
 await expectText('#h-time', /^Day 2 · 7:10 AM$/, 'morning');
@@ -384,12 +435,7 @@ if (await page.locator('#create').count()) await fail('the climber screen came b
 // ---- day two ----
 
 console.log('Send City');
-await click('#b-nav', 'Map');
-await until('the map', async () => (await text('#b-nav')) === 'Close');
-await wait(450);
-await tapAt(282, 414);
-await expectText('#sheet', /Send City/, 'place card');
-await click('#sheet .opt', 'Drive here');
+await driveFrom('the Lot to Send City', PIN.gym, /Send City/);
 await until('the gym', async () => (await text('#hint'))?.includes('Day pass at the desk'));
 await wait(400);
 await shot('gym');
@@ -402,7 +448,7 @@ await click('#sheet .opt', 'Set problems for a shift');
 await expectText('#h-time', /11:22 AM$/, 'clock');
 await expectText('#h-cash', /^\$68$/, 'paid');
 await expectText('#toast', /Sage turns up/, 'Sage');
-await page.locator('#sheet .x').click();
+await click('#sheet .x');
 await wait(300);
 // You're at the desk's front (240); Sage stands at 292.
 await tapAt(screenX(292, 240), screenY(530));
@@ -417,6 +463,7 @@ await wait(1600);
 await tapAt(screenX(384, 330), screenY(450));
 await expectText('#sheet', /· V0/, 'beta sheet');
 await page.locator('#sheet .beta').nth(1).click();
+taps++;
 await until(
   'the new beta picked',
   async () => (await page.locator('#sheet .beta').nth(1).getAttribute('aria-checked')) === 'true',
@@ -446,7 +493,7 @@ await until('the gym again', async () => (await text('#b-nav')) === 'Map');
 await wait(600);
 await tapAt(screenX(1090, 1050, GYM_W), screenY(450));
 await expectText('#sheet', /The board/, 'the board, from its foot');
-await page.locator('#sheet .x').click();
+await click('#sheet .x');
 await wait(300);
 
 console.log('The save');
@@ -455,6 +502,7 @@ const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
   saved?.v !== 4 ||
+  st.seed !== SEED ||
   st.climber?.name !== 'Robin' ||
   st.climber.start !== 'technician' ||
   !st.routes.warm?.sent ||
@@ -478,6 +526,86 @@ await expectText('#h-time', /^Day 2 · 1[12]:\d\d AM$/, 'clock offline');
 await expectText('#h-cash', /^\$68$/, 'cash offline');
 await shot('offline');
 await page.context().setOffline(false);
+
+console.log('Home, and lie around till dark');
+// Nothing more today: one tap takes the afternoon, and bed opens once it's dark.
+await driveFrom('Send City to the Lot', PIN.lot, /The Lot/);
+await until('the Lot', async () => (await text('#hint')) === 'Tap anywhere to walk');
+await tapAt(100, 560);
+await expectText('#sheet', /Your van/, 'van');
+await click('#sheet .opt', 'Lie around till dark');
+await expectText('#h-time', /^Day 2 · 5:00 PM$/, 'dark');
+await click('#sheet .opt', 'Sleep');
+await expectText('#h-time', /^Day 3 · 7:10 AM$/, 'morning');
+
+// ---- day three, counted ----
+
+console.log('Day three, counted');
+// A working day on Phase 11's budget, 20 taps or fewer, not counting the climbing itself:
+// a shift, the crag, three goes, back, dinner, bed.
+const day3 = taps;
+await driveFrom('the Lot to the café', PIN.cafe, /Coffee Shop/);
+await click('#sheet .opt', 'Work a shift');
+await expectText('#h-time', /^Day 3 · 10:18 AM$/, 'clock');
+await driveOn('the café to Roadside', 'Drive to Roadside Crag');
+await until('the crag', async () => (await text('#hint'))?.includes('Boulders on the talus'));
+await wait(400);
+// Three goes on the Warm Boulder: the first from the van (180), where it's just off the
+// right of the screen, then from its foot (310) after a send, or straight from the rest
+// after a fall.
+let from = 180;
+for (let go = 1; ; go++) {
+  if (!(await page.locator('#sheet .go').count())) {
+    await tapAt(from === 180 ? 350 : screenX(340, from), screenY(540));
+    await expectText('#sheet', /Warm Boulder · V2/, 'beta sheet');
+  }
+  await click('#sheet .go');
+  await until('the climb panel', () => page.locator('#climb').count());
+  await climb();
+  const next = await until(
+    'the go to end',
+    async () =>
+      ((await page.locator('#sheet .opt', { hasText: 'Rest, then go again' }).count()) &&
+        'Rest, then go again') ||
+      ((await page.locator('#sheet .opt', { hasText: 'Walk down the back' }).count()) &&
+        'Walk down the back'),
+    15_000,
+  );
+  log(`go ${go}: ${(await text('#sheet'))?.slice(0, 60)}`);
+  if (go === 3) {
+    await click('#sheet .opt', next === 'Walk down the back' ? next : 'Walk off');
+    break;
+  }
+  await click('#sheet .opt', next);
+  if (next === 'Walk down the back') {
+    await until('the crag again', async () => (await text('#b-nav')) === 'Map');
+    await wait(600);
+    from = 310;
+  }
+}
+await until('the crag again', async () => (await text('#b-nav')) === 'Map');
+await wait(600);
+// The van, parked on the left: on screen from the boulder's foot.
+{
+  const t0 = taps;
+  await tapAt(screenX(215, 310), screenY(520));
+  await expectText('#sheet', /The van/, 'the van');
+  await click('#sheet .opt', 'Drive back to the Lot');
+  counted('Roadside to the Lot, by the van', taps - t0, 3);
+}
+await until('the Lot', async () => (await text('#hint')) === 'Tap anywhere to walk');
+await tapAt(100, 560);
+await expectText('#sheet', /Your van/, 'van');
+await click('#sheet .opt', 'Cook ramen');
+await click('#sheet .opt', 'Lie around till dark');
+await expectText('#h-time', /^Day 3 · 5:00 PM$/, 'dark');
+await click('#sheet .opt', 'Sleep');
+await expectText('#h-time', /^Day 4 · 7:10 AM$/, 'morning');
+const loop = taps - day3;
+log(`day three: ${loop} taps, the most being 20`);
+log(`trips, in taps: ${trips.join(' · ')}`);
+if (loop > 20) await fail(`day three took ${loop} taps; the most is 20`);
+await shot('day-4');
 
 console.log('A v0.956 player');
 // v0.956 retired at R3. Someone who played it opens the new game in a browser that still
@@ -557,7 +685,9 @@ console.log('A v0.956 player');
 if (problems.length) await fail(`${problems.length} problem(s) during play`);
 await browser.close();
 await server.close();
-console.log('\n✓ Played two days, then again offline, with no errors and nothing sent off the site.');
+console.log(
+  `\n✓ Played three days, day three in ${loop} taps, and again offline, with no errors and nothing sent off the site.`,
+);
 
 // The first go onsights the Warm Boulder; a later one is a redpoint.
 function go1(n) {

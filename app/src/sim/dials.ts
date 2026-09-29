@@ -26,11 +26,11 @@ export const DAY = {
   // Wake at 7:10: early enough for the morning shade at the crag, late enough that a lie-in
   // isn't a choice you have to make.
   wakeMin: 7 * 60 + 10,
-  // From 5 PM the Lot is a night scene: the fire's lit and Hazel is back.
+  // From 5 PM the Lot is a night scene: the fire's lit, Hazel is back, and you can turn in.
+  // Bed was 6 PM, to make a bad day harder to skip. All it made harder was the evening:
+  // Phase 11's count found 12 of a day-3 loop's 32 taps spent waiting for bed.
   nightFrom: 17 * 60,
   nightUntil: 5 * 60,
-  // Bed from 6 PM. Any earlier and skipping the rest of a bad day is too easy.
-  bedFrom: 18 * 60,
 };
 
 export const MONEY = {

@@ -61,7 +61,7 @@
 | 8 Choose the look | Done: the Mix. Its tokens and components are built in R0–R1. The Steam capsule art moves to Phase 15. |
 | 9 Climber on the wall | Reshaped as beta-then-send and built from R0. Its Done-when criteria gate R2. |
 | 10 Crags as places | Built on the rebuild (the board, conditions you can see, Moonstone) and closed by Evan's call. Its testers' criterion carries. |
-| 11 Valley map | Reshaped: the map plus side-view scenes, drawn in code (no Tiled, no tilesets). The current milestone, planned on the rebuild. |
+| 11 Valley map | Reshaped: the map plus side-view scenes, drawn in code (no Tiled, no tilesets). The current milestone: 11.1 (count the taps) is built, and criteria 2 and 3 pass. |
 | 12 UI system | Folded into the rebuild (R0–R2). |
 | 13–20 | Unchanged in intent. They target the new build. |
 
@@ -1090,6 +1090,17 @@ With the stiff board, the harness (12 seeds × 28 days) shows:
 
 There's no joystick, zone graph or tileset to retire. What's left, in slices:
 - **11.1, count the taps.** The e2e bot counts its taps on every trip and on a scripted day-3 loop (a shift, the crag, three goes, back, dinner, bed), and reports them against criteria 2 and 3. Anything over gets fixed.
+  - *As built (11.1):*
+    - **What counts:** every tap, click, key and walk the player makes, but not the hold button, which is the climbing itself. Picking a line, Go and walking off all count, so the loop's three goes cost 9 taps.
+    - **The first count**, on the build as it was:
+      - Trips: 3 taps from a scene by the map (Map, pin, drive), 2 by the crag's van, 1 from a card-only place's own card. Criterion 2 held as built.
+      - The day-3 loop: 32 taps. 12 of them waited for bed at 6 PM after getting home at 1 PM: four "Lie around in the van" at an hour each, the walk to the fire, two sits there, and the walk back. The other 20 were the day.
+    - *[proposed]* **Bed once it's dark, and one tap to get there.**
+      - Bed opens at 5 PM, when the Lot turns to night and the fire's lit, not 6. The hour between could only be filled at the fire, on foot.
+      - "Lie around till dark" takes the rest of the afternoon in one tap, at the old 4 energy an hour. Acts gain an `until` time, and `actCost` prices them the same for the rules and the button.
+      - The trade: 6 PM made a bad day harder to skip, but only by taps. Skipping a day still costs what it did: the $18 spot, a shift not worked, a day of the season.
+      - The harness doesn't move: all four targets pass, the first V5 go comes on days 19–19.5, and the injury counts are the same.
+    - **The e2e** now plays three days on a pinned seed, so day three is prime and Roadside is open. Day two ends with the drive home and one tap to dark. Day three takes 20 taps. The run fails on a loop over 20, or a trip over three taps from a scene.
 - **11.2, place cards.** Each card gets a header drawn from the place itself, and "Who's around": the people there now (partners, regulars, Dex). So before the drive you know whether there's a belayer, or a spotter for a highball.
 - **11.3, adding a place is documented work.**
   - Roads become a graph: a place needs roads to its neighbours only, and a trip anywhere else is the quickest way through them. Today every pair of places needs its own hand-typed road; Moonstone needed six.
@@ -1103,6 +1114,8 @@ There's no joystick, zone graph or tileset to retire. What's left, in slices:
 3. A day-3 loop takes 20 taps or fewer, not counting the climbing itself. The e2e bot counts it.
 4. The clock doesn't move while you're idle: true, and checked by the smoke test.
 5. A new place without a scene takes under an hour: a checklist, the road graph and CI's checks make it a data change plus a pin.
+
+**Status (29 Sep 2026): 11.1 built.** Criteria 2 and 3 pass on the build, counted by the e2e: 3 taps at most for a trip from a scene, and day three in 20. Criterion 4 passes (the smoke test). Criterion 1 carries to the testers; 5 waits on 11.3.
 
 ---
 
@@ -1463,3 +1476,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 10 follow-ups: Moonstone gets its own desert sky (v0.956's per-crag weather), on its card and the forecast. The harness counts only content, not injuries, as "nothing new to try": 1 run in 144 is left, and it hinges on the board-stiffness call. Roadside's card counts its lines from the data.
 - 2026-09-29 — Evan's calls: the board runs a grade stiff, criterion 3 is scoped to Act I (V0–V9), and highball risk stays as built. With the stiff board, the harness reads 0 runs in 144 with nothing new to try. Phase 10's criteria 1–3 pass; 4 waits on testers.
 - 2026-09-29 — Phase 10 closed by Evan's call: criteria 1–3 pass on the build, and criterion 4 (testers) carries. CURRENT MILESTONE moved to Phase 11, planned on the rebuild: count the taps, place cards, adding a place as documented work, and the daily agenda.
+- 2026-09-29 — Phase 11.1: count the taps. On a pinned seed, the e2e bot counts every trip (3 taps at most from a scene, 2 by the crag's van) and a day-3 loop. The loop took 32 taps, 12 of them waiting for bed at 6 PM. Bed now opens at dark (5 PM), and lying around till dark is one tap (proposed). Day three: 20 taps. Criteria 2 and 3 pass; the season targets don't move.
