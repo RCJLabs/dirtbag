@@ -49,7 +49,7 @@ The rebuild has its own commands in [`app/README.md`](app/README.md).
 
 ## Status
 
-The live game is v0.956.0. The roadmap is in [`docs/ROADMAP.md`](docs/ROADMAP.md). Its current milestone is R1, the first week on the rebuild; R0, the foundation (the first morning, the drive and The Pump on the new architecture), is done. CI, tag deploys, a single version source and a pinned Play toolchain are in place for the live game.
+The live game is v0.956.0. The roadmap is in [`docs/ROADMAP.md`](docs/ROADMAP.md). Its current milestone is R3, the switch-over: the rebuild in `app/` replaces v0.956 on the site and in the Play app. R0–R2 are done: the rebuild plays a first season, Act I, from gym plastic to your first V5 project. CI, tag deploys, a single version source and a pinned Play toolchain are in place for the live game.
 
 ## Credits
 

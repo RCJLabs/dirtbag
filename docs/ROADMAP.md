@@ -181,7 +181,7 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 
 **Depends on:** R0; Phase 5 alongside. **Effort:** ~3–5 weeks.
 
-### R2 — The first season   **<<< CURRENT MILESTONE**
+### R2 — The first season
 
 **Goal.** The free demo Phase 5 defines, on the new build, balanced by bots rather than by feel.
 
@@ -294,16 +294,17 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 2. Phase 7's first-hour criteria pass.
 3. The harness shows a working climber still facing a "can I afford this week off?" choice at the end of the season.
 
-**Status (29 Sep 2026).** Built: R2.1 to R2.5.
+**Status (29 Sep 2026): done; criteria 1 and 2 by Evan's call.** Built: R2.1 to R2.5.
 - Criterion 3 passes in the harness (above).
-- Criteria 1 and 2 need people. Everything they test is built:
-  - for Phase 9's watchers: the reach bar, the chalk band, the pump shake and vignette, and pace;
-  - for Phase 7's testers: the first hour, with Act I's goals on screen.
-- R2 stays the CURRENT MILESTONE until watchers and testers have played it.
+- Criteria 1 and 2 (Phase 9's watchers, Phase 7's first hour) were accepted by Evan on 29 Sep as tested and watched. What they covered:
+  - Phase 9: the reach bar, the chalk band, the pump shake and vignette, and pace;
+  - Phase 7: the first hour, with Act I's goals on screen.
+- The design calls marked *[proposed]* above stand as built until Evan rules on them: Sage's week away, the blessing's bond, the race's V4 trigger, Act I's "regular" stage, pace, and the card's footer.
+- Carried open: injuries may be too gentle in the first month, and wet days in week four can leave nothing new to try (both above).
 
 **Depends on:** R1 and Phase 5. **Effort:** ~6–10 weeks.
 
-### R3 — Switch-over
+### R3 — Switch-over   **<<< CURRENT MILESTONE**
 
 **Goal.** The new build becomes dirtbag.rcjlabs.com and the Play app.
 
@@ -1261,3 +1262,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — R2 wall feel (Phase 9): the fall sheet draws how far a go got against your best; a chalk band and an X on the wall; pumped climbers shake and the screen's edges close in; and, proposed, climbers move through a line at a pace set by how far over or under its grade they are. Fixed "A 11-foot catch".
 - 2026-09-29 — R2 send card: a first send gets a card painted on the device from the line's own wall and topo (name, grade, how it went, the crag and the day, you at the top, a ribbon for a first ascent), to share or save as a PNG. Nothing is uploaded. The wall, boulder and gym painters now paint into any canvas, so the card is crisp at its size.
 - 2026-09-29 — R2 targets: the harness checks Phase 6's first-season targets and passes all four. Its bots now log time on the rock, what it taught them, and any stuck night. It also found wet days in week four with nothing new to try once the gym set is done. R2 is built; criteria 1 and 2 wait on watchers and testers.
+- 2026-09-29 — R2 closed by Evan's call: criteria 1 and 2 accepted as tested and watched; the proposed design calls stand as built until he rules. CURRENT MILESTONE moved to R3.
