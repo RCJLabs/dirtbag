@@ -52,7 +52,7 @@ The game has its own commands (tests, types, the e2e bot, the balance harness) i
 
 ## Status
 
-The live site is v0.956.0 until the `v0.960.0` tag deploys the rebuilt game. That switch-over is R3, the roadmap's current milestone ([`docs/ROADMAP.md`](docs/ROADMAP.md)). R0–R2 are done: the game plays a first season, Act I, from gym plastic to your first V5 project. A v0.956 player who opens the new game is told v0.956 has retired, can keep their career as a file, and can carry on under their old name.
+The live site is v0.956.0 until the `v0.960.0` tag deploys the rebuilt game (R3, built and merged; the tags and the Play upload are Evan's). R0–R3 and Phase 10 are done: the game plays a first season, Act I, from gym plastic to your first V5 project, plus Send City's board and Moonstone Boulders for after it. A v0.956 player who opens the new game is told v0.956 has retired, can keep their career as a file, and can carry on under their old name. The current milestone is Phase 11, the valley map ([`docs/ROADMAP.md`](docs/ROADMAP.md)).
 
 ## Credits
 

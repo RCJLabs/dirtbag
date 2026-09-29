@@ -60,8 +60,8 @@
 | 7 The first hour | Becomes R1's target. |
 | 8 Choose the look | Done: the Mix. Its tokens and components are built in R0–R1. The Steam capsule art moves to Phase 15. |
 | 9 Climber on the wall | Reshaped as beta-then-send and built from R0. Its Done-when criteria gate R2. |
-| 10 Crags as places | Unchanged in intent. It follows R2, on the new build. |
-| 11 Valley map | Reshaped: the map plus side-view scenes, drawn in code (no Tiled, no tilesets). |
+| 10 Crags as places | Built on the rebuild (the board, conditions you can see, Moonstone) and closed by Evan's call. Its testers' criterion carries. |
+| 11 Valley map | Reshaped: the map plus side-view scenes, drawn in code (no Tiled, no tilesets). The current milestone, planned on the rebuild. |
 | 12 UI system | Folded into the rebuild (R0–R2). |
 | 13–20 | Unchanged in intent. They target the new build. |
 
@@ -895,7 +895,7 @@ The full diagnosis is in the audit, under *The map and the look*.
 
 ---
 
-### Phase 10 — Make crags into places   **<<< CURRENT MILESTONE**
+### Phase 10 — Make crags into places
 
 **Goal.** Each crag is a place you recognize and plan a trip to: a topo with its lines, conditions you can see, and a road-trip map that connects them.
 
@@ -1011,7 +1011,7 @@ The full diagnosis is in the audit, under *The map and the look*.
 3. There are lines at every grade the first season reaches, V0 to V9. (Scoped to Act I by Evan's call, 29 Sep 2026: Moonstone is where Act II starts, and more crags come in later phases.)
 4. Testers can point at where they want to go and say why (conditions, style, a project).
 
-**Status (29 Sep 2026): 10.1–10.3 built. Criteria 1–3 pass on the build; 4 waits on testers, so the marker stays until Evan closes the phase.**
+**Status (29 Sep 2026): 10.1–10.3 built; closed by Evan's call.** Criteria 1–3 pass on the build. Criterion 4 (testers) carries to the first tester round. The marker moved to Phase 11.
 1. Met: the gym, Roadside, the Gorge and Moonstone each have a scene, lines drawn from data, and conditions you can see.
 2. Met: 0 runs in 144 have a day with nothing new to try.
    - The harness counts only content running out. Before, a day the body kept you off the rock counted as nothing to try; now it's "resting", since the lines were still there.
@@ -1036,7 +1036,7 @@ With the stiff board, the harness (12 seeds × 28 days) shows:
 
 ---
 
-### Phase 11 — Replace the joystick town with a valley map
+### Phase 11 — Replace the joystick town with a valley map   **<<< CURRENT MILESTONE**
 
 *Rebuild note: reshaped. The map stays; the two walkable scenes become side-view scenes wherever people are, drawn in code rather than from a tileset.*
 
@@ -1081,6 +1081,28 @@ With the stiff board, the harness (12 seeds × 28 days) shows:
 5. A new place can be added in under an hour, excluding the illustration.
 
 **Depends on:** Phase 8, ideally with Phase 4's UI state machine. **Effort:** ~4–6 weeks. **Main risk:** losing the charm of wandering. Put ambience and people into the camps, the cards and the map: animated weather, night, season, and the van moving along the road.
+
+**On the rebuild (plan, 29 Sep 2026).** Most of the scope above is already how the rebuild works:
+- a valley map drawn in code, with labelled pins;
+- tap a pin, then drive: the van runs along the road for a fixed time and gas;
+- side-view scenes you tap to walk around;
+- a clock that moves only on actions and travel (criterion 4, which the smoke test already checks).
+
+There's no joystick, zone graph or tileset to retire. What's left, in slices:
+- **11.1, count the taps.** The e2e bot counts its taps on every trip and on a scripted day-3 loop (a shift, the crag, three goes, back, dinner, bed), and reports them against criteria 2 and 3. Anything over gets fixed.
+- **11.2, place cards.** Each card gets a header drawn from the place itself, and "Who's around": the people there now (partners, regulars, Dex). So before the drive you know whether there's a belayer, or a spotter for a highball.
+- **11.3, adding a place is documented work.**
+  - Roads become a graph: a place needs roads to its neighbours only, and a trip anywhere else is the quickest way through them. Today every pair of places needs its own hand-typed road; Moonstone needed six.
+  - A checklist goes in `app/README.md`.
+  - CI checks that every place has a pin, a card, roads that reach everywhere, and a scene (or none, on purpose).
+- **11.4, the daily agenda** (optional in the scope above): plan a day as a sequence ("shift → diner → gym → van") and run it, stopping at the first thing the day refuses.
+
+**Done when, on the rebuild** *[proposed; replaces the criteria above until Evan rules]*:
+1. 4 of 5 testers find any destination within 5 seconds. This carries to the tester round.
+2. Any destination is two taps from the map (the pin, then the drive), and so three from a scene. The card between pin and drive shows the cost, the weather and who's there, so it stays. The e2e bot counts it.
+3. A day-3 loop takes 20 taps or fewer, not counting the climbing itself. The e2e bot counts it.
+4. The clock doesn't move while you're idle: true, and checked by the smoke test.
+5. A new place without a scene takes under an hour: a checklist, the road graph and CI's checks make it a data change plus a pin.
 
 ---
 
@@ -1440,3 +1462,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 10.3b: highballs (proposed). A fall off a tall boulder can land you badly, by height, halved by the Moonstone haul's pads and again by a partner spotting. The beta sheet shows the odds. Careful bots wait for a spotter; 7% of moderate runs now end month one with a jammed ankle. Phase 10's slices are built; its criteria 2–4 aren't met, so the marker stays.
 - 2026-09-29 — Phase 10 follow-ups: Moonstone gets its own desert sky (v0.956's per-crag weather), on its card and the forecast. The harness counts only content, not injuries, as "nothing new to try": 1 run in 144 is left, and it hinges on the board-stiffness call. Roadside's card counts its lines from the data.
 - 2026-09-29 — Evan's calls: the board runs a grade stiff, criterion 3 is scoped to Act I (V0–V9), and highball risk stays as built. With the stiff board, the harness reads 0 runs in 144 with nothing new to try. Phase 10's criteria 1–3 pass; 4 waits on testers.
+- 2026-09-29 — Phase 10 closed by Evan's call: criteria 1–3 pass on the build, and criterion 4 (testers) carries. CURRENT MILESTONE moved to Phase 11, planned on the rebuild: count the taps, place cards, adding a place as documented work, and the daily agenda.
