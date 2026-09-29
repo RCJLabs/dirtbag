@@ -74,6 +74,7 @@ export type SheetId =
       from: 'send' | 'wall';
     }
   | { k: 'dog' }
+  | { k: 'act' }
   | { k: 'you' }
   | { k: 'week' }
   | { k: 'settings' }
@@ -160,6 +161,9 @@ export class Game {
   private toastN = 0;
   private toastShown = 0;
   private keysWalking = false;
+  // The end of an act waits until you're back in a scene with nothing open, so it never
+  // lands on top of the send that finished it.
+  private actCard = false;
 
   constructor(opts: { still?: boolean } = {}) {
     this.systemStill = !!opts.still;
@@ -203,10 +207,12 @@ export class Game {
     for (const e of r.events) {
       if (e.k === 'line') this.toast(e.text);
       else if (e.k === 'refused') this.toast(e.why);
+      else if (e.k === 'act') this.actCard = true;
     }
     if (changed) this.noteComings(before);
     if (changed && !persist.save(this.state)) this.toast("Couldn't save. The browser's storage may be full.");
     this.sync();
+    this.maybeActCard();
     return r.events;
   }
 
@@ -319,6 +325,7 @@ export class Game {
     });
     this.fast.set({ cam: this.cam, att: null });
     if (x !== undefined && x !== this.state.x) this.dispatch({ t: 'stand', x });
+    this.maybeActCard();
   }
 
   enterScene(scene: string, x?: number): void {
@@ -354,6 +361,14 @@ export class Game {
 
   closeSheet(): void {
     this.set({ sheet: null });
+    this.maybeActCard();
+  }
+
+  private maybeActCard(): void {
+    const u = this.ui.get();
+    if (!this.actCard || u.view !== 'scene' || u.sheet || u.talk || u.climbing) return;
+    this.actCard = false;
+    this.set({ sheet: { k: 'act' } });
   }
 
   hush(): void {
@@ -480,6 +495,7 @@ export class Game {
     }
     const next = ev.find((e): e is Extract<GameEvent, { k: 'talk' }> => e.k === 'talk');
     this.set({ talk: next?.node ? { talk: t.talk, node: next.node } : null });
+    this.maybeActCard();
   }
 
   // ---- places and the map ----

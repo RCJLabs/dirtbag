@@ -52,6 +52,8 @@ export interface GameState {
   // Trips out to a crag, and your dog once one has picked you.
   trips: number;
   dog: DogLog | null;
+  // Act I's goals done, in order.
+  goals: number;
   // The message log: every line the game has told you, newest last.
   log: LogLine[];
 }
@@ -182,6 +184,9 @@ export type GameEvent =
   | { k: 'skills'; gains: Partial<Skills>; grade: number | null }
   // The first ascent of an open line: it's yours to name.
   | { k: 'fa'; route: string }
+  // A goal of the act done, or the whole act.
+  | { k: 'goal'; id: string }
+  | { k: 'act'; n: number }
   // A go that hurt you, with the line that says so (logged, and shown on the go's sheet).
   | { k: 'injured'; kind: string; tier: 1 | 2 | 3; days: number; text: string }
   // A conversation moves to another node, or ends (null).

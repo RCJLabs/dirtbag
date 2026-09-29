@@ -1,7 +1,12 @@
 import { Fragment, useLayoutEffect, useRef, useState } from 'react';
 import {
+  ACT_I,
+  ACT_I_END,
   average,
   betaScale,
+  currentGoal,
+  goalDesc,
+  progress,
   cold,
   daysOff,
   LOAD,
@@ -355,6 +360,7 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
           </li>
         ))}
       </ul>
+      <ActRow s={s} />
       <p className="crux">Body</p>
       <p className="sub">
         Energy {Math.round(s.energy)}, skin {Math.round(s.skin)}, food {Math.round(s.fed)}.
@@ -403,6 +409,33 @@ function LoadRow({ s }: { s: GameState }) {
         {s.injury && off > 0
           ? ` Your ${s.injury.kind} needs ${off} more day${off > 1 ? 's' : ''} off the rock.`
           : ''}
+      </p>
+    </>
+  );
+}
+
+// Act I: the stage you're on, why, and how far along it is; or that the season's done.
+function ActRow({ s }: { s: GameState }) {
+  const g = currentGoal(s);
+  if (!g)
+    return (
+      <>
+        <p className="crux">Act I · done</p>
+        <p className="sub">{ACT_I_END.text}</p>
+      </>
+    );
+  const p = progress(s, g.aim);
+  return (
+    <>
+      <p className="crux">
+        Act I · {s.goals + 1} of {ACT_I.length} · {g.title}
+      </p>
+      <p className="sub">
+        {g.text} <b>{goalDesc(g)}</b>
+        {p.need > 1 && !('cash' in g.aim) && !('grade' in g.aim) && !('regular' in g.aim)
+          ? ` (${Math.min(p.have, p.need)} of ${p.need})`
+          : ''}
+        .
       </p>
     </>
   );

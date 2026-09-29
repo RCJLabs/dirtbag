@@ -33,6 +33,7 @@ const R2_BODY = {
   race: null,
   trips: 0,
   dog: null,
+  goals: 0,
 };
 
 describe('saves', () => {

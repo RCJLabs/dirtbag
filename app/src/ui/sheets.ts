@@ -3,6 +3,7 @@
 // sim's numbers through its formatters.
 
 import {
+  ACT_I_END,
   ACTS,
   BODY,
   bodyNote,
@@ -272,6 +273,14 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         rows: [actRow(game, s, 'lot.kibble'), actRow(game, s, 'lot.play')],
       };
     }
+
+    case 'act':
+      return {
+        title: ACT_I_END.title,
+        sub: ACT_I_END.text,
+        close: false,
+        rows: [{ label: 'Keep climbing', run: () => game.closeSheet() }],
+      };
 
     case 'restart':
       return {

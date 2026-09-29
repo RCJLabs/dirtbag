@@ -198,6 +198,11 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
   - It runs from the first morning to your first V5 project, over fall and into winter (about four weeks).
   - It ends when you tie into a V5. The hook is Dex's challenge: a race for Roadside's open project.
   - Where the demo stops is Evan's call. Nothing in the rebuild locks until Phase 19.
+  - *As built (R2.5):* Act I is v0.956's "Your First Season" quest, in its words:
+    - Its five stages: $60 in hand, 3 sends anywhere, 2 outside, regulars with someone (v0.956 wanted 15 reputation, which the rebuild doesn't have), and climbing V4.
+    - Its skill and cash rewards, and a card at the end.
+    - It ends at V4, as v0.956's did, and the same night Dex's race starts: that's the hook.
+    - A "Next" pill keeps the current goal on screen (Phase 7: say what you want to do next).
 - **Places:**
   - **Roadside gets the rest of v0.956's lines:**
     - Finger Crack V4 (crack);
@@ -1229,3 +1234,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — R2 partners: v0.956's bond tiers, earned a day at a time climbing where a partner is; partners who turn up more as the bond grows; Sage's four-beat arc in v0.956's words, five days apart, with a week away guiding; and asking her out to belay at the Gorge. A speech mark shows when someone has something to say; the You sheet lists the people you've met.
 - 2026-09-29 — R2 rival: Dex Calloway on his own seeded curve (streaks, a stretch hurt, a peak), met over your first V4, and v0.956's first-ascent race for the open project, set off once you're climbing V4. The harness bot learned to pick beta by how forgiving it is for its hands, to take the dare, and to name its first ascents; bot runs now keep every line.
 - 2026-09-29 — R2 Scout: the Lot's stray picks you on your tenth trip out. Kibble, the stick and ride-alongs at v0.956's numbers and in its words; he sits by the van at the crag and has a row on the You sheet. R2.4 (people) is built; R2.5 (Act I, the send card, the wall's feel, tuning, docs) is next.
+- 2026-09-29 — R2 Act I: v0.956's first-season quest as the demo's goal ladder, in its words and with its rewards, a "Next" pill on screen, and an end-of-act card; it ends at V4, the night Dex's race begins.

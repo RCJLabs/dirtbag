@@ -5,6 +5,7 @@ import { H, W } from '../view/layout';
 import { Bubble } from './Bubble';
 import { ClimbPanel } from './ClimbPanel';
 import { Create } from './Create';
+import { Goal } from './Goal';
 import { Hud } from './Hud';
 import { Sheet } from './Sheet';
 
@@ -135,6 +136,7 @@ export function App({ game }: { game: Game }) {
               {ui.toast.text}
             </div>
           )}
+          <Goal game={game} ui={ui} />
           {ui.hint && !ui.sheet && !ui.talk && (
             <p className="hint" id="hint">
               {ui.hint}

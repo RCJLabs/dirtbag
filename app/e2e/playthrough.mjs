@@ -5,9 +5,10 @@
 //
 //   npm run build && npm run e2e           (Playwright comes from the repo root: npm ci there)
 //
-// Two days. Day one: make a climber, Hazel's tip about the roof, a double at the café, the
-// drive out, an onsight of the Warm Boulder, a fall on The Pump that shows you the
-// rock-over, dinner, the fire, sleep, and a reload that comes back to the same morning.
+// Two days. Day one: make a climber (Act I's first goal on screen), Hazel's tip about the
+// roof, a double at the café (the goal done), the drive out, an onsight of the Warm
+// Boulder, a fall on The Pump that shows you the rock-over, dinner, the fire, sleep, and a
+// reload that comes back to the same morning.
 // Day two: Send City, a setting shift, Sage turning up and showing you a problem's trick,
 // and a flash with it.
 import { mkdirSync, rmSync } from 'node:fs';
@@ -226,6 +227,7 @@ await click('#c-technician');
 await click('#c-go', 'Start');
 await until('the climber screen to go', async () => !(await page.locator('#create').count()));
 await expectText('#hint', /Tap anywhere to walk/, 'hint');
+await expectText('#goal', /Have \$60 in hand/, 'the first goal');
 await wait(400);
 await shot('lot-morning');
 
@@ -265,6 +267,9 @@ await expectText('#h-cash', /^\$84$/, 'cash after gas');
 await until('the crag', async () => (await text('#hint'))?.includes('Boulders on the talus'));
 await wait(400);
 await shot('crag');
+
+// The double put $60 in hand: Act I's first goal is done and the next one's up.
+await expectText('#goal', /Send 3 lines anywhere/, 'the second goal');
 
 console.log('The Warm Boulder');
 // Spawn 180; the Warm Boulder stands at 340, just off the right of the screen.

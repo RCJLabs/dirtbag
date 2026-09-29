@@ -41,7 +41,8 @@ export const MIGRATIONS: Record<number, Migration> = {
     };
   },
   // v2 (R1) -> v3 (R2): training load, seeded at a light day's load as a new game's is; no
-  // injury, and none so far; no first ascents, no race on, no trips out and no dog. (v3 grows with R2 until R2's build ships;
+  // injury, and none so far; no first ascents, no race on, no trips out, no dog, and Act I
+  // from its first goal (checked on the next action, so an old save catches up). (v3 grows with R2 until R2's build ships;
   // from then on it's history like the rest.)
   2: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
@@ -54,6 +55,7 @@ export const MIGRATIONS: Record<number, Migration> = {
       race: null,
       trips: 0,
       dog: null,
+      goals: 0,
     };
   },
 };
@@ -158,6 +160,7 @@ export function validate(x: unknown): string[] {
   const race = x.race;
   need(race === null || (isObj(race) && typeof race.route === 'string' && isInt(race.until)), 'race');
   need(isInt(x.trips) && x.trips >= 0, 'trips');
+  need(isInt(x.goals) && x.goals >= 0, 'goals');
   const dog = x.dog;
   const pct = (v: unknown) => isNum(v) && v >= 0 && v <= 100;
   need(

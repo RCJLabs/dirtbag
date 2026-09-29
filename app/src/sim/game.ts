@@ -11,11 +11,13 @@ import { CLINIC_LINE, FIRST_FREE_LINE, HEALED_LINE, HURT_LINE } from './content/
 import { ACTS, PLACES, road, TEXT_VALUES } from './content/places';
 import { DOG_LINES, DOG_OFFER } from './content/dog';
 import { PEOPLE, RACE_ROUTE, RIVAL_FA_NAMES, TALK } from './content/people';
+import { ACT_I_END } from './content/story';
 import { SEND_NAME, effGrade, gradeLabel, gradeName, type RouteDef } from './content/routes';
 import { BODY, CLIMB, DAY, DOG, INJURY, LOAD, MONEY, RIVAL } from './dials';
 import { fill, money, skillsNote } from './format';
 import { PARTNERS, tierOf, whereNow } from './presence';
 import { hashSeed } from './rng';
+import { aimMet, currentGoal } from './story';
 import type { Action, Delta, GameEvent, GameState, Result, RouteLog, SendStyle, Skills } from './types';
 import { conditionsAt, seasonOf } from './weather';
 
@@ -45,6 +47,7 @@ export function newGame(seed: string): GameState {
     race: null,
     trips: 0,
     dog: null,
+    goals: 0,
     log: [],
   };
 }
@@ -613,6 +616,20 @@ export function act(s0: GameState, a: Action): Result {
             : `First ascent: ${name}, ${called}. That's on the map now.`,
       );
       break;
+    }
+  }
+  // Act I's goals, after whatever just happened: each one done says so, and the last ends
+  // the act.
+  for (let g = currentGoal(s); s.climber.name && g && aimMet(s, g.aim); g = currentGoal(s)) {
+    s.goals += 1;
+    if (g.train) train(g.train);
+    events.push({ k: 'goal', id: g.id });
+    line(g.train ? `${g.done} ${skillsNote(g.train)}.` : g.done);
+    if (!currentGoal(s)) {
+      s.cash += ACT_I_END.cash;
+      events.push({ k: 'act', n: 1 });
+      note(ACT_I_END.text);
+      line(`First season done. There's ${money(ACT_I_END.cash)} in the glovebox you'd forgotten about.`);
     }
   }
   return { state: s, events };
