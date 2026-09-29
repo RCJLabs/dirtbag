@@ -9,9 +9,10 @@ import { CARRIED, STARTS } from './climber';
 import { GEAR } from './content/gear';
 import { PLACES } from './content/places';
 import { TRAIN } from './dials';
+import { JOBS } from './content/jobs';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -76,6 +77,12 @@ export const MIGRATIONS: Record<number, Migration> = {
   5: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, training: { phase: 'base', since: isInt(x.day) ? x.day : 1, taper: null, prehab: 0 } };
+  },
+  // v6 (Phase 21.3) -> v7: shifts worked, counted from here. v6 never counted them, so
+  // everyone starts at the first rank.
+  6: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, jobs: {} };
   },
 };
 
@@ -200,6 +207,7 @@ export function validate(x: unknown): string[] {
       tr.prehab >= 0,
     'training',
   );
+  need(isObj(x.jobs) && Object.entries(x.jobs).every(([id, n]) => id in JOBS && isInt(n) && n >= 0), 'jobs');
   const dog = x.dog;
   const pct = (v: unknown) => isNum(v) && v >= 0 && v <= 100;
   need(

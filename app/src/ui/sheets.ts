@@ -58,6 +58,8 @@ import {
   taperDay,
   taperWait,
   trainBlocked,
+  nextRank,
+  rankName,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import type { Game, SheetId } from '../game/game';
@@ -120,7 +122,9 @@ function actRow(game: Game, s: GameState, id: string): Row {
   const a = ACTS[id]!;
   const why = unmet(s, a.needs);
   const cost = actCost(s, a);
-  let note = [bodyNote(cost), a.note && fill(a.note, TEXT_VALUES)].filter(Boolean).join('. ');
+  let note = [bodyNote(cost), a.note && fill(a.note, TEXT_VALUES), a.job && jobNote(s, a.job.id)]
+    .filter(Boolean)
+    .join('. ');
   if (a.sleep && !why) {
     if (headroom(s) < MONEY.vanSpot) note = "The card won't cover the spot: a cold night in the pullout.";
     if (s.fed < BODY.hungryBelow) note += ' You’ll sleep hungry.';
@@ -142,6 +146,17 @@ function trainRow(game: Game, s: GameState): Row {
     note: board ? `${blockLine(s)} A hangboard would put sessions here; prehab needs nothing.` : blockLine(s),
     run: () => game.openSheet({ k: 'train' }),
   };
+}
+
+// Where you stand at a job: your rank, and what the next one takes.
+function jobNote(s: GameState, job: string): string {
+  const next = nextRank(s, job);
+  if (!next) return `${rankName(s, job)}, as high as it goes`;
+  const need = [
+    next.shifts ? `${next.shifts} more shift${next.shifts > 1 ? 's' : ''}` : '',
+    next.grade !== null ? `climbing V${next.grade}` : '',
+  ].filter(Boolean);
+  return `${rankName(s, job)}. ${next.name} takes ${need.join(' and ')}`;
 }
 
 function driveRow(game: Game, s: GameState, to: string, label: string): Row {

@@ -147,7 +147,7 @@ describe('Sandstone Mesa (Phase 21.4)', () => {
     expect(here.find((r) => r.open)?.grade).toBe(13);
     const s = at(8, { at: 'mesa', min: 10 * 60 });
     expect(goBlocked(s, ROUTES.sdlap!)).toBe('Nobody here to belay you');
-    expect(TALK.sage!.nodes.again!.opts.some((o) => o.fx?.invite === 'mesa')).toBe(true);
+    expect(TALK.sage!.nodes.invite!.opts.find((o) => o.fx?.invite === 'mesa')?.when?.bond).toBe('sage/5');
   });
 });
 

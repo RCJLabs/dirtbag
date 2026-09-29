@@ -148,3 +148,5 @@ export { PROTOCOLS, PREHAB } from './content/training';
 export type { ProtocolDef } from './content/training';
 export { PHASES, PHASE_NAME, phaseLock, taperDay, taperWait, prehabbed, trainWindows } from './training';
 export { sessionCost, prehabCost, sessionGains, sessionLoad, trainBlocked, prehabBlocked } from './sessions';
+export { JOBS } from './content/jobs';
+export { rankAt, rankName, nextRank, raiseAt, shiftsAt } from './jobs';

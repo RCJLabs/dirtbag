@@ -168,45 +168,81 @@ describe("Sage's arc", () => {
   });
 });
 
-describe('asking Sage out to the Gorge', () => {
-  const dry = (from: number) => {
+describe('asking crew out climbing', () => {
+  const dry = (from: number, place = 'gorge') => {
     for (let d = from; ; d++) {
-      const c = conditionsAt('people', d, 'gorge');
+      const c = conditionsAt('people', d, place);
       if (c.open && !c.closed && whereIs('people', 'sage', d, 10 * 60, { bond: 3, last: 0 }) === 'gym')
         return d;
     }
   };
+  // The crags on the invite list you could pick right now.
+  const where = (x: GameState, talk = 'sage') =>
+    TALK[talk]!.nodes.invite!.opts.filter(
+      (o, i) => o.fx?.invite && act(x, { t: 'say', talk, node: 'invite', opt: i }).events[0]?.k !== 'refused',
+    ).map((o) => o.fx!.invite);
+  const pick = (x: GameState, place: string, talk = 'sage') =>
+    play(x, {
+      t: 'say',
+      talk,
+      node: 'invite',
+      opt: TALK[talk]!.nodes.invite!.opts.findIndex((o) => o.fx?.invite === place),
+    });
 
-  it('takes a Regular, a V4, dry Gorge rock and a morning', () => {
+  it('asks in the morning, once a day, of anyone you’ve got to know', () => {
     const d = dry(3);
     const s = withSage({ bond: 3 }, { day: d, at: 'gym', min: 10 * 60, today: ['sage'] });
-    const opts = (x: GameState) =>
-      TALK.sage!.nodes.again!.opts.filter(
-        (o) =>
-          !o.when ||
-          act(x, { t: 'say', talk: 'sage', node: 'again', opt: TALK.sage!.nodes.again!.opts.indexOf(o) })
-            .events[0]?.k !== 'refused',
-      ).map((o) => o.label);
-    expect(opts(s)).toContain('Come out to the Gorge?');
-    expect(opts({ ...s, people: { sage: { ...s.people.sage!, bond: 2 } } })).not.toContain(
-      'Come out to the Gorge?',
-    );
-    expect(opts({ ...s, climber: grade(3) })).not.toContain('Come out to the Gorge?');
-    expect(opts({ ...s, min: BOND.inviteBefore })).not.toContain('Come out to the Gorge?');
+    const ask = TALK.sage!.nodes.again!.opts.findIndex((o) => o.next === 'invite');
+    const can = (x: GameState) =>
+      act(x, { t: 'say', talk: 'sage', node: 'again', opt: ask }).events[0]?.k !== 'refused';
+    expect(can(s)).toBe(true);
+    expect(can({ ...s, min: BOND.inviteBefore })).toBe(false);
+    expect(can({ ...s, today: [...s.today, 'invite'] })).toBe(false);
+    expect(can({ ...s, people: { sage: { ...s.people.sage!, bond: 0 } } })).toBe(false);
+  });
+
+  it('takes a closer bond the further out the crag: a Regular for the Gorge, a Partner for the Mesa', () => {
+    const d = dry(3);
+    const s = withSage({ bond: 3 }, { day: d, at: 'gym', min: 10 * 60, today: ['sage'], climber: grade(8) });
+    expect(where(s)).toContain('gorge');
+    expect(where(s)).not.toContain('mesa');
+    expect(where({ ...s, people: { sage: { ...s.people.sage!, bond: 2 } } })).not.toContain('gorge');
+    expect(where({ ...s, climber: grade(3) })).not.toContain('gorge');
+    const close = { ...s, people: { sage: { ...s.people.sage!, bond: 5 } } };
+    const mesa = dry(3, 'mesa');
+    if (conditionsAt('people', d, 'mesa').open && !conditionsAt('people', d, 'mesa').closed)
+      expect(where(close)).toContain('mesa');
+    // Moonstone only once the haul's paid for.
+    expect(where({ ...close, day: mesa })).not.toContain('moon');
     expect(skyOn('people', d)).not.toBe('rain');
   });
 
   it('puts her at the Gorge for the day, on belay', () => {
     const d = dry(3);
     const s = withSage({ bond: 3 }, { day: d, at: 'gym', min: 10 * 60, today: ['sage'] });
-    const asked = play(s, { t: 'say', talk: 'sage', node: 'again', opt: 1 });
+    const asked = pick(s, 'gorge');
     expect(asked.state.people.sage?.invite).toEqual({ day: d, place: 'gorge', from: 10 * 60 });
     expect(whereNow(asked.state, 'sage')).toBe('gorge');
-    expect(lines(asked.events)).toEqual(['Sage: "Meet you at the pullout. I\'ll bring the rope."']);
+    expect(lines(asked.events)).toEqual(['Sage: "Granite Gorge. Meet you there. I’ll bring the rope."']);
     const there = play(asked.state, { t: 'travel', to: 'gorge' }).state;
     expect(goBlocked(there, ROUTES.gintro!)).toBeNull();
     // And home in the evening, and not tomorrow.
     expect(whereNow({ ...there, min: 18 * 60 }, 'sage')).toBeNull();
     expect(whereIs('people', 'sage', d + 1, 10 * 60, there.people.sage)).not.toBe('gorge');
+  });
+
+  it('takes Hazel off her crag for the day, if you’re close enough', () => {
+    const d = dry(3);
+    const s: GameState = {
+      ...newGame('people'),
+      day: d,
+      at: 'lot',
+      min: 7 * 60 + 50,
+      climber: grade(5),
+      people: { hazel: { bond: 3, last: 0 } },
+    };
+    const asked = pick(s, 'gorge', 'hazel-lot');
+    expect(whereNow({ ...asked.state, min: 10 * 60 }, 'hazel')).toBe('gorge');
+    expect(where({ ...s, people: { hazel: { bond: 2, last: 0 } } }, 'hazel-lot')).not.toContain('gorge');
   });
 });

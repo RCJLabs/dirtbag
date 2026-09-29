@@ -42,6 +42,9 @@ export interface PlaceDef {
   sun?: string[];
   // Real rock: a trip out, and a crag's beats and people.
   crag?: true;
+  // The bond a partner needs with you to come out here when you ask: further, harder to
+  // talk them into (BOND.tiers names them).
+  invite?: number;
   // The side-view scene you walk around in, or null for a card-only place.
   scene: string | null;
   // The map card's line when you're elsewhere, and when you're here.
@@ -91,6 +94,9 @@ export interface ActDef {
   saysOneOf?: string[];
   // What it does to your kit: sets an item to this (condition, or 1 for owned), or adds uses.
   gear?: { id: string; set?: number; add?: number };
+  // A shift at a job (content/jobs.ts), counting this many toward promotion. Its pay is
+  // `cost.cash` at the first rank, plus the rank's raise for each shift.
+  job?: { id: string; shifts: number };
 }
 
 export interface RoadDef {
@@ -117,6 +123,7 @@ export const PLACES: Record<string, PlaceDef> = {
     away: 'Granite. {lines} lines, from a V2 warm-up to The Pump.',
     here: "You're parked here.",
     acts: [],
+    invite: 1,
     // The sun comes round the far end first: the projects out in the boulder field lose
     // their shade early, and the warm-ups by the road keep theirs longest.
     sun: [
@@ -143,6 +150,7 @@ export const PLACES: Record<string, PlaceDef> = {
     here: 'The canyon’s cool even at noon.',
     acts: [],
     minGrade: 4,
+    invite: 3,
     locked: 'V5 and up. It’s no place to learn: come back when you’re climbing V4.',
     closed: { season: 'spring', why: 'Closed for nesting raptors till summer' },
     shaded: true,
@@ -158,6 +166,7 @@ export const PLACES: Record<string, PlaceDef> = {
     here: 'Sand, sky, and boulders the size of houses.',
     acts: [],
     minGrade: 6,
+    invite: 5,
     locked: 'Tall, hard and a long way out. Come back when you’re climbing V6.',
     unlock: 400,
     permit: 20,
@@ -179,6 +188,7 @@ export const PLACES: Record<string, PlaceDef> = {
     here: 'Red rock, black varnish, and nobody for miles.',
     acts: [],
     minGrade: 7,
+    invite: 5,
     locked: 'V7 and up, and they mean it. Come back when you’re climbing V7.',
     closed: { season: 'summer', why: 'Too hot to hold anything till fall' },
     desert: true,
@@ -318,7 +328,8 @@ export const ACTS: Record<string, ActDef> = {
       { energy: 12, why: 'Too tired to pull shots.' },
     ],
     sets: ['worked'],
-    says: 'Three hours of oat milk. +$28.',
+    job: { id: 'cafe', shifts: 1 },
+    says: 'Three hours of oat milk.',
   },
   'cafe.double': {
     label: 'Pick up a double',
@@ -330,7 +341,8 @@ export const ACTS: Record<string, ActDef> = {
     ],
     note: 'The day is gone after this.',
     sets: ['worked'],
-    says: 'Six hours on your feet. +$56.',
+    job: { id: 'cafe', shifts: 2 },
+    says: 'Six hours on your feet.',
   },
   'cafe.coffee': {
     label: 'Buy a coffee',
@@ -444,7 +456,8 @@ export const ACTS: Record<string, ActDef> = {
     note: 'Trains technique. Your pass is on the house.',
     sets: ['worked', 'pass'],
     trains: { technique: 3 },
-    says: 'Four hours on a ladder with a drill. +$28, and a free pass.',
+    job: { id: 'set', shifts: 1 },
+    says: 'Four hours on a ladder with a drill, and a free pass.',
   },
 };
 

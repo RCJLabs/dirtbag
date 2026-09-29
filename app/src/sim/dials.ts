@@ -116,8 +116,8 @@ export const BOND = {
   // Sage's 0.42; from the rebuild's 0.55, 0.07 a tier lands Ride-or-Die at the same
   // five days in six.
   perTier: 0.07,
-  // A Regular will come out to the Gorge with you if you ask before one.
-  invite: 3,
+  // A partner will come out climbing with you if you ask before one; how close you need to
+  // be depends on the crag (PlaceDef.invite).
   inviteBefore: 13 * 60,
 };
 

@@ -33,6 +33,8 @@ import {
   sessionLoad,
   trainBlocked,
 } from './sessions';
+import { JOBS } from './content/jobs';
+import { raiseAt, rankAt, rankName, shiftsAt } from './jobs';
 import { freshTraining, PHASE_NAME, phaseLock, taperDay, taperWait } from './training';
 import { SEND_NAME, effGrade, gradeLabel, gradeName, roped, type RouteDef } from './content/routes';
 import { BODY, CLIMB, DAY, DOG, HIGHBALL, INJURY, LOAD, MONEY, RIVAL, TRAD, TRAIN } from './dials';
@@ -85,6 +87,7 @@ export function newGame(seed: string): GameState {
     unlocked: [],
     gear: { ...START_KIT },
     training: freshTraining(1),
+    jobs: {},
     log: [],
   };
 }
@@ -142,6 +145,8 @@ export const restCost = (r: RouteDef): number => CLIMB.restMin[r.disc];
 // What an act costs you now. One that runs till a time of day costs its hourly rate for
 // every hour it takes.
 export function actCost(s: GameState, d: ActDef): Delta {
+  // A shift pays its rank's raise on top.
+  if (d.job) return { ...d.cost, cash: (d.cost.cash ?? 0) + raiseAt(s, d.job.id) * d.job.shifts };
   if (d.until === undefined) return d.cost;
   const min = Math.max(0, d.until - s.min);
   const out: Delta = { min };
@@ -453,15 +458,25 @@ export function act(s0: GameState, a: Action): Result {
       sleep();
       return null;
     }
-    spend(actCost(s, d));
+    const cost = actCost(s, d);
+    spend(cost);
     for (const f of d.sets ?? []) if (!s.today.includes(f)) s.today.push(f);
     if (d.trains) train(d.trains);
     if (d.dog?.adopt) s.dog = { name: 'Scout', since: s.day, fed: 60, bond: 0 };
     if (s.dog && d.dog?.fill) s.dog.fed = 100;
     if (s.dog && d.dog?.bond) s.dog.bond = Math.min(100, s.dog.bond + d.dog.bond);
     if (d.gear) s.gear[d.gear.id] = d.gear.set ?? (s.gear[d.gear.id] ?? 0) + (d.gear.add ?? 0);
-    if (d.says) line(d.says);
+    if (d.says) line(d.job ? `${d.says} +${money(cost.cash ?? 0)}.` : d.says);
     if (d.saysOneOf) line(ofDay(s, id, d.saysOneOf));
+    if (d.job) {
+      const was = rankAt(s, d.job.id);
+      s.jobs[d.job.id] = shiftsAt(s, d.job.id) + d.job.shifts;
+      const now = rankAt(s, d.job.id);
+      if (now > was)
+        line(
+          `Promoted: ${rankName(s, d.job.id)}. That's +${money(raiseAt(s, d.job.id) - JOBS[d.job.id]!.raise * was)} a shift.`,
+        );
+    }
     return null;
   };
   const meet = (who: string) => (s.people[who] ??= { bond: 0, last: 0, since: s.day });

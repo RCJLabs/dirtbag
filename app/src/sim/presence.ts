@@ -13,8 +13,10 @@ import { conditions } from './weather';
 // A bond's tier: 0 Stranger, 1 Acquaintance, 2 Regular, 3 Partner, 4 Ride-or-Die.
 export const tierOf = (bond: number): number => BOND.tiers.filter((t) => bond >= t).length - 1;
 
-// Hazel lives at the Lot and spends open days at the crag, where she'll belay you.
-function hazel(seed: string, day: number, min: number): string {
+// Hazel lives at the Lot and spends open days at the crag, where she'll belay you, unless
+// you've asked her somewhere else for the day.
+function hazel(seed: string, day: number, min: number, p?: PersonLog): string {
+  if (p?.invite?.day === day && min >= p.invite.from && min < 17 * 60) return p.invite.place;
   const open = conditions(seed, day).open;
   return open && min >= 8 * 60 && min < 17 * 60 ? 'road' : 'lot';
 }
@@ -48,7 +50,7 @@ function dex(seed: string, day: number, min: number, p?: PersonLog): string | nu
 }
 
 export function whereIs(seed: string, who: string, day: number, min: number, p?: PersonLog): string | null {
-  if (who === 'hazel') return hazel(seed, day, min);
+  if (who === 'hazel') return hazel(seed, day, min, p);
   if (who === 'sage') return sage(seed, day, min, p);
   if (who === 'dex') return dex(seed, day, min, p);
   return null;

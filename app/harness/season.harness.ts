@@ -12,7 +12,9 @@ import { TRAIN } from '../src/sim/dials';
 import { checkpoints, contentOut, firstInjury, firstTry, median, season } from '../src/sim/harness';
 
 const SEEDS = Number(process.env.SEEDS ?? 12);
-const DAYS = Number(process.env.DAYS ?? 28);
+// Eight weeks: the first month is Phase 6's, and the second is where the mid-grades squeeze
+// (Phase 21.4 found the bots going broke at V5 from day 45, which 28 days never saw).
+const DAYS = Number(process.env.DAYS ?? 56);
 const AT = [7, 14, 21, 28, 42, 56].filter((d) => d <= DAYS);
 const out = (s = '') => process.stdout.write(`${s}\n`);
 const f1 = (x: number) => (Number.isNaN(x) ? '–' : x.toFixed(1));

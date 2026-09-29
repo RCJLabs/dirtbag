@@ -659,7 +659,8 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 6 ||
+  saved?.v !== 7 ||
+  !(st.jobs?.set >= 1) ||
   st.training?.phase !== 'base' ||
   st.seed !== SEED ||
   !(st.gear?.shoes > 0 && st.gear.shoes < 60) ||

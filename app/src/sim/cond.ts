@@ -42,6 +42,7 @@ export interface Cond {
   hasNot?: string; // you don't
   gearBelow?: string; // "id/n": that gear's condition or uses are under n
   weekend?: boolean; // true: only on a weekend (the swap meet); false: only on a weekday
+  unlocked?: string; // you've paid for that place's haul
 }
 
 // The last two days of every seven are the weekend: the week's bills land on its last night.
@@ -96,6 +97,7 @@ export function holds(s: GameState, c: Cond): boolean {
     if ((s.people[who ?? '']?.bond ?? 0) < Number(n)) return false;
   }
   if (c.grade !== undefined && gradeOf(s.climber.skills) < c.grade) return false;
+  if (c.unlocked !== undefined && !s.unlocked.includes(c.unlocked)) return false;
   if (c.open !== undefined) {
     const k = conditionsAt(s.seed, s.day, c.open);
     if (!k.open || k.closed) return false;

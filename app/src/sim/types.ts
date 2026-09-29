@@ -60,6 +60,8 @@ export interface GameState {
   gear: Record<string, number>;
   // Your training block (Phase 21.3).
   training: Training;
+  // Shifts worked at each job (content/jobs.ts): what your rank there is earned from.
+  jobs: Record<string, number>;
   // The message log: every line the game has told you, newest last.
   log: LogLine[];
 }
