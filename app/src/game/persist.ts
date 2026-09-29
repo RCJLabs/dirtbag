@@ -117,9 +117,12 @@ export interface Settings {
   // Follow the device, or override it either way.
   motion: 'system' | 'reduce' | 'full';
   text: 'normal' | 'large';
+  sound: 'on' | 'quiet' | 'off';
+  // A buzz in the hand on a send, a fall or a crux, where the device can.
+  buzz: 'on' | 'off';
 }
 
-export const DEFAULT_SETTINGS: Settings = { motion: 'system', text: 'normal' };
+export const DEFAULT_SETTINGS: Settings = { motion: 'system', text: 'normal', sound: 'on', buzz: 'on' };
 
 export function loadSettings(): Settings {
   try {
@@ -129,6 +132,8 @@ export function loadSettings(): Settings {
     return {
       motion: v.motion === 'reduce' || v.motion === 'full' ? v.motion : 'system',
       text: v.text === 'large' ? 'large' : 'normal',
+      sound: v.sound === 'quiet' || v.sound === 'off' ? v.sound : 'on',
+      buzz: v.buzz === 'off' ? 'off' : 'on',
     };
   } catch {
     return DEFAULT_SETTINGS;

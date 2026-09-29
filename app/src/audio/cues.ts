@@ -1,0 +1,52 @@
+// What each thing the player does sounds like, by name. Pure: the game says which cue,
+// sound.ts says how it sounds. cues.test.ts holds every act and every crux verb to having one.
+import type { ActDef, Verb } from '../sim';
+
+export type Cue =
+  // Around the valley.
+  | 'tap'
+  | 'step'
+  | 'talk'
+  | 'paper'
+  | 'drive'
+  | 'eat'
+  | 'earn'
+  | 'pay'
+  | 'sleep'
+  | 'rest'
+  | 'dog'
+  // On the wall.
+  | 'pullon'
+  | 'move'
+  | 'clip'
+  | 'crux'
+  | 'cleared'
+  | 'grip'
+  | 'slap'
+  | 'charge'
+  | 'release'
+  | 'breath'
+  | 'fell'
+  | 'land'
+  | 'send';
+
+// An act sounds like what it does to you: bed, the dog, time passing, money in, food in,
+// money out, in that order.
+export function actCue(a: ActDef): Cue {
+  if (a.sleep) return 'sleep';
+  if (a.dog) return 'dog';
+  if (a.until) return 'rest';
+  const c = a.cost;
+  if ((c.cash ?? 0) > 0) return 'earn';
+  if ((c.fed ?? 0) > 0 || ((c.energy ?? 0) > 0 && (c.cash ?? 0) < 0)) return 'eat';
+  if ((c.cash ?? 0) < 0) return 'pay';
+  return 'rest';
+}
+
+// Each crux verb, as your hands play it: a tension hold grips and lets go, a timing tap
+// slaps the hold, a hold-to-load charges and then lets fly.
+export const VERB_CUES: Record<Verb, { down: Cue; up?: Cue }> = {
+  tension: { down: 'grip' },
+  timing: { down: 'slap' },
+  load: { down: 'charge', up: 'release' },
+};

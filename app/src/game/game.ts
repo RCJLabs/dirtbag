@@ -4,7 +4,9 @@
 
 import {
   act,
+  ACTS,
   attemptInput,
+  CLIMB,
   dogOffered,
   goResult,
   gradeLabel,
@@ -32,6 +34,9 @@ import {
   type SendStyle,
   type Skills,
 } from '../sim';
+import { bedFor, ON_THE_MAP } from '../audio/beds';
+import { actCue, VERB_CUES } from '../audio/cues';
+import { Sound } from '../audio/sound';
 import { arcTable, atLen, clamp, type Pt } from '../view/kit/geom';
 import {
   DIM_PINS,
@@ -101,6 +106,7 @@ export type SheetId =
   | { k: 'note'; text: string; day: number; min: number }
   | { k: 'week' }
   | { k: 'settings' }
+  | { k: 'credits' }
   | { k: 'restart' }
   | { k: 'plan' };
 
@@ -182,6 +188,9 @@ export class Game {
 
   private player = { x: 300, tx: 300, dir: 1, phase: 0, speed: 0, onArrive: null as (() => void) | null };
   private scout = { x: 436, wag: 0 };
+  // The sound, and when on the wall the next breath is due, in the go's own seconds.
+  readonly sound = new Sound();
+  private breathAt = 0;
   private cam = 0;
   // How much of a scene the screen sees across, in world pixels.
   private vw = W / Z;
@@ -230,6 +239,21 @@ export class Game {
       plan: null,
     });
     this.fast = createStore<Fast>({ cam: 0, att: null });
+    this.sound.configure(settings);
+    // The ambience drops while someone's talking to you, and follows you about: the place
+    // you're at, or the map while you're on it or driving.
+    let talking = false;
+    const listen = () => {
+      const u = this.ui.get();
+      const t = !!u.talk;
+      if (t !== talking) this.sound.duck((talking = t));
+      const s = this.state;
+      const map = u.view === 'map' && (u.driving || !!PLACES[s.at]?.scene);
+      const key = map ? 'map' : `${s.at}:${isNight(s.min) ? 'night' : 'day'}:${s.day}`;
+      this.sound.setBed(key, map ? ON_THE_MAP : bedFor(s, s.at));
+    };
+    this.ui.subscribe(listen);
+    listen();
     if (home?.scene) this.enter(home.scene, this.state.x ?? undefined);
     if (b.note) this.toast(b.note);
   }
@@ -256,6 +280,9 @@ export class Game {
     const r = act(before, a);
     const changed = r.state !== before;
     this.state = r.state;
+    // What an act does to you, heard: the till, the stove, the coins.
+    const def = a.t === 'act' ? ACTS[a.act] : undefined;
+    if (def && !r.events.some((e) => e.k === 'refused')) this.sound.play(actCue(def));
     for (const e of r.events) {
       if (e.k === 'line') this.toast(e.text);
       else if (e.k === 'refused') this.toast(e.why);
@@ -337,6 +364,7 @@ export class Game {
 
   setSettings(p: Partial<persist.Settings>): void {
     const settings = { ...this.ui.get().settings, ...p };
+    this.sound.configure(settings);
     if (!persist.saveSettings(settings)) this.toast("Couldn't keep that setting in this browser.");
     this.set({ settings, still: stillFor(settings, this.systemStill) });
   }
@@ -392,6 +420,7 @@ export class Game {
 
   openMap(): void {
     this.hush();
+    this.sound.play('paper');
     this.fadeTo(() => this.set({ view: 'map', sheet: null, hint: null }));
   }
 
@@ -478,7 +507,10 @@ export class Game {
     if ('sheet' in u) this.openSheet({ k: u.sheet });
     else if ('talk' in u) {
       const node = talkStart(this.state, u.talk);
-      if (node) this.set({ talk: { talk: u.talk, node }, sheet: null });
+      if (node) {
+        this.sound.play('talk');
+        this.set({ talk: { talk: u.talk, node }, sheet: null });
+      }
     } else if ('thing' in u) {
       const th = THINGS[u.thing];
       if (u.wag) this.scout.wag = 1.4;
@@ -578,6 +610,7 @@ export class Game {
       return;
     }
     const next = ev.find((e): e is Extract<GameEvent, { k: 'talk' }> => e.k === 'talk');
+    if (next?.node) this.sound.play('talk');
     this.set({ talk: next?.node ? { talk: t.talk, node: next.node } : null });
     this.maybeCard();
   }
@@ -626,6 +659,7 @@ export class Game {
     this.hush();
     const pts = drivePath(from, to, MAP_PINS);
     const trip: Trip = { to, pts, L: arcTable(pts), t: 0, dur: this.still ? 0.01 : 1.8 };
+    this.sound.play('drive', trip.dur / 1.8);
     const start = () => {
       this.trip = trip;
       this.set({ view: 'map', sheet: null, driving: true, hint: null });
@@ -677,6 +711,7 @@ export class Game {
     this.today = noted(this.today, { place: this.state.at, climb: true });
     this.att = startAttempt(this.state, r);
     this.acc = 0;
+    this.breathAt = 0;
     this.fast.set({ cam: this.cam, att: this.att });
     this.set({ sheet: null, climbing: true });
   }
@@ -686,6 +721,11 @@ export class Game {
     const a = this.att;
     if (!a || !this.ui.get().climbing) return;
     if (!on && !a.hold) return;
+    // Your hands, heard: chalk off and onto the first hold, or the crux's verb.
+    const c = a.crux ? VERB_CUES[a.crux.verb] : null;
+    if (on && !c && a.pos === 0) this.sound.play('pullon');
+    else if (on && c && c.down !== 'charge') this.sound.play(c.down);
+    else if (!on && c?.up) this.sound.play(c.up);
     this.applyAttempt(attemptInput(a, on));
   }
 
@@ -717,10 +757,34 @@ export class Game {
   }
 
   private applyAttempt(r: { att: Attempt; events: AttemptEvent[] }): void {
+    const was = this.att;
     this.att = r.att;
+    this.hear(was, r.att, r.events);
     for (const e of r.events) {
       if (e.k === 'lowered') this.finishFall();
       else if (e.k === 'sent') this.finishSend();
+    }
+  }
+
+  // A go, heard: each move, each bolt clipped, the charge of a throw, breath as the pump
+  // builds, and the crux, the fall, the landing and the top. The big ones buzz too.
+  private hear(was: Attempt | null, a: Attempt, events: AttemptEvent[]): void {
+    const s = this.sound;
+    if (was && Math.floor(a.pos) > Math.floor(was.pos)) s.play('move');
+    if (was && a.def.disc === 'sport')
+      for (const b of a.def.bolts)
+        if (was.pos < b + CLIMB.clipPast && a.pos >= b + CLIMB.clipPast) s.play('clip');
+    s.charge(a.crux?.verb === 'load' && a.hold ? a.crux.m : null);
+    if (a.pump > 45 && a.t >= this.breathAt && (a.phase === 'climb' || a.phase === 'crux')) {
+      s.play('breath', a.pump / 100);
+      this.breathAt = a.t + 1.8 - (a.pump - 45) / 55;
+    }
+    for (const e of events) {
+      if (e.k === 'crux') (s.play('crux'), s.vibrate(12));
+      else if (e.k === 'cleared') (s.play('cleared'), s.vibrate(20));
+      else if (e.k === 'fell') (s.play('fell'), s.vibrate(70));
+      else if (e.k === 'lowered') s.play('land');
+      else if (e.k === 'sent') (s.play('send'), s.vibrate([30, 60, 40]));
     }
   }
 
@@ -898,6 +962,7 @@ export class Game {
         this.applyAttempt(stepAttempt(this.att, STEP));
       }
     }
+    this.sound.tick(dt);
     if (this.scout.wag > 0) this.scout.wag -= dt;
     const f = this.fast.get();
     if (Math.abs(f.cam - this.cam) > 0.01 || f.att !== this.att)
@@ -911,7 +976,9 @@ export class Game {
       const v = Math.sign(d) * Math.min(Math.abs(d), WALK_SPEED * dt);
       p.x += v;
       p.dir = Math.sign(d);
+      const stride = Math.floor(p.phase / Math.PI);
       p.phase += Math.abs(v) * 0.14;
+      if (Math.floor(p.phase / Math.PI) !== stride) this.sound.play('step');
       p.speed = Math.min(1, p.speed + dt * 5);
     } else {
       const was = p.speed;

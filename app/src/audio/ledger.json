@@ -1,0 +1,143 @@
+{
+  "about": "Every sound the game plays, and where it comes from. 'code' is synthesised in the browser by the file named; a recording would name its file under recordings, with its author, licence and source, and its credit goes on the credits screen. src/audio/ledger.test.ts and npm run check hold the game to this file.",
+  "sounds": {
+    "tap": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "step": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "talk": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "paper": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "drive": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "eat": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "earn": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "pay": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "sleep": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "rest": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "dog": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "pullon": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "move": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "clip": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "crux": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "cleared": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "grip": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "slap": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "charge": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "release": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "breath": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "fell": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "land": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "send": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "wind": {
+      "made": "code",
+      "in": "src/audio/ambience.ts"
+    },
+    "birds": {
+      "made": "code",
+      "in": "src/audio/ambience.ts"
+    },
+    "crickets": {
+      "made": "code",
+      "in": "src/audio/ambience.ts"
+    },
+    "fire": {
+      "made": "code",
+      "in": "src/audio/ambience.ts"
+    },
+    "creek": {
+      "made": "code",
+      "in": "src/audio/ambience.ts"
+    },
+    "rain": {
+      "made": "code",
+      "in": "src/audio/ambience.ts"
+    },
+    "room": {
+      "made": "code",
+      "in": "src/audio/ambience.ts"
+    },
+    "murmur": {
+      "made": "code",
+      "in": "src/audio/ambience.ts"
+    },
+    "clinks": {
+      "made": "code",
+      "in": "src/audio/ambience.ts"
+    },
+    "hawk": {
+      "made": "code",
+      "in": "src/audio/ambience.ts"
+    }
+  },
+  "recordings": [],
+  "music": []
+}

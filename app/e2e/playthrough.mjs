@@ -43,6 +43,10 @@ const browser = await chromium.launch(
 // that asks for random bytes still gets them.
 const SEED = 'dirtbag-qc6qki1m66opy';
 const problems = [];
+// Every sound the portrait run plays, by cue (Phase 13: every verb has a sound).
+const heard = new Set();
+// And every place's ambience it played (Phase 13: every place has ambience).
+const beds = new Set();
 
 // A page the bot plays on, watched for everything the run fails on. `who` names it in a
 // problem.
@@ -59,6 +63,12 @@ async function playPage(viewport, deviceScaleFactor, who = '') {
   // Phase 12: no toast runs past 30 words, and none lands on a control you could tap. Every
   // toast the run shows is watched, not just the ones the bot looks for, across reloads.
   await p.exposeFunction('problem', (why) => problems.push(`${who}${why}`));
+  await p.exposeFunction('heard', (cue) => !who && heard.add(cue));
+  await p.exposeFunction('bed', (key) => !who && beds.add(key.split(':')[0]));
+  await p.addInitScript(() => {
+    window.addEventListener('dirtbag:sound', (e) => window.heard(e.detail));
+    window.addEventListener('dirtbag:ambience', (e) => window.bed(e.detail));
+  });
   await p.addInitScript(() => {
     let last = '';
     new MutationObserver(() => {
@@ -767,6 +777,19 @@ await expectText('#plan-chip', /Plan stopped.*Shifts start by 3 PM/, 'the plan s
 await shot('plan-stopped');
 await click('#plan-chip .plan-x');
 
+console.log('What it sounded like');
+log(`heard: ${[...heard].sort().join(', ')}`);
+log(`ambience: ${[...beds].sort().join(', ')}`);
+// The places the five days go; beds.test.ts holds the Gorge and Moonstone to theirs.
+const quiet = ['cafe', 'diner', 'gym', 'lot', 'map', 'road'].filter((b) => !beds.has(b));
+if (quiet.length) await fail(`no ambience at: ${quiet.join(', ')}`);
+// Everything the five days do. Paying, Scout and a hold-to-load's charge and throw aren't
+// in them; cues.test.ts holds those to having a sound.
+const HEARD =
+  'breath cleared clip crux drive earn eat fell grip land move paper pullon rest send slap sleep step talk tap';
+const silent = HEARD.split(' ').filter((c) => !heard.has(c));
+if (silent.length) await fail(`never heard: ${silent.join(', ')}`);
+
 console.log('A v0.956 player');
 // v0.956 retired at R3. Someone who played it opens the new game in a browser that still
 // holds their career: they're told, they can keep it as a file, and they come across as
@@ -1032,8 +1055,13 @@ console.log('A landscape window');
   await expectText('#log', /heel-hook the lip/, 'the journal, from its button');
   await click('#sheet .x');
 
-  // The map's valley sits in the middle; a sheet docks at the right, clear of it.
+  // The map's valley sits in the middle; a sheet docks at the right, clear of it. On the
+  // way, Settings and the credits: sound made in code, from the licence ledger.
   await openMap();
+  await click('#b-settings', 'Settings');
+  await click('#b-credits', 'Credits');
+  await expectText('#credits-sound', /Made in code/, 'the credits');
+  await click('#sheet .x');
   const left = (1184 - 360) / 2;
   await tapAt(left + 292, 220);
   await expectText('#sheet', /Roadside Crag/, 'place card, in landscape');
