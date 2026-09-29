@@ -75,6 +75,8 @@ export interface RouteDef {
   trueGrade?: number;
   // Unclimbed: the first to send it names it (v0.956's open projects).
   open?: true;
+  // On Send City's board: the gym's steep panel, whose problems stay up for weeks.
+  board?: true;
 }
 
 // The grade a line really climbs at.
@@ -300,12 +302,14 @@ export function libraryBoulder(
     line: string;
     trueGrade?: number;
     open?: true;
+    board?: true;
   },
 ): RouteDef {
   const [a, b] = LIBRARY[type];
   return {
     ...(shape.trueGrade !== undefined ? { trueGrade: shape.trueGrade } : {}),
     ...(shape.open ? { open: true as const } : {}),
+    ...(shape.board ? { board: true as const } : {}),
     id,
     name,
     grade,

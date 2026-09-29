@@ -7,7 +7,8 @@ This is the game as it ships from 0.960.0 (the roadmap's R3): the first season, 
 - **Places:**
   - Roadside Crag: seven boulders and four sport lines, including an open project you first-ascend, name and grade.
   - Granite Gorge: it opens at V4 and shuts in spring. Six boulders and three sport lines, one of them a sandbag.
-  - Send City's weekly set, the Diner and the Coffee Shop.
+  - Send City: a weekly set, V0 to V5, and a board whose four problems, V4 to V7, stay up four weeks (Phase 10.1, after 0.960.0).
+  - The Diner and the Coffee Shop.
 - **Your body:** v0.956's acute:chronic load with Phase 6's fixes: a seeded start, warm-ups, seeded injury rolls, and a first injury that costs time, not money. Hunger, weekly bills and a card instead of a game over.
 - **People:**
   - Bonds and tiers, earned a day at a time.
@@ -43,7 +44,7 @@ npm run harness        # bots play whole seasons; prints the tables and Phase 6'
 | Path | What lives there |
 |---|---|
 | `src/sim/` | The rules: state, actions, the clock, money and body, climbing, saves, the RNG. Plain TypeScript, no DOM. |
-| `src/sim/content/` | Places, acts, roads, routes, beta, people and their lines, as data. `gym.ts` makes Send City's weekly set from the seed. |
+| `src/sim/content/` | Places, acts, roads, routes, beta, people and their lines, as data. `gym.ts` makes Send City's weekly set and its board from the seed. |
 | `src/sim/climber.ts`, `weather.ts`, `presence.ts` | Skills and the grade curve; each day's sky; where people are. All pure functions of the state or the seed. |
 | `src/sim/bot.ts` | A player that isn't one: plays whole days through `act()`, with perfect or human-ish hands, under three strategies (climber, balanced, worker). |
 | `src/sim/harness.ts`, `harness/` | The balance harness: bots play 28-day seasons across every start and strategy. It prints grade, money, runway and injuries, then passes or fails Phase 6's first-season targets. |
@@ -62,7 +63,7 @@ npm run harness        # bots play whole seasons; prints the tables and Phase 6'
   - Nothing in `src/sim` may touch the page, storage, the network, real time or `Math.random`, or import from `view`, `ui` or `game`.
   - `tsconfig.sim.json` has no DOM types, and `purity.test.ts` scans for the rest.
 - **The clock moves only on actions.** Walking around a scene is free; nothing ticks while you stand still.
-- **What isn't stored is derived from the seed.** The weather, where people are, and the gym's set are pure functions of the seed, the day and the clock, so nothing about them can drift in a save.
+- **What isn't stored is derived from the seed.** The weather, where people are, and the gym's sets are pure functions of the seed, the day and the clock, so nothing about them can drift in a save.
 - **A go is a fixed-step model.** `stepAttempt` advances it by `STEP` (1/60 s), and `attemptInput` takes the finger going down or up. The same inputs always replay the same go (`climb.test.ts`).
 - **Seeded randomness only**, through `sim/rng.ts`: mulberry32, FNV-1a over UTF-16 code units, and named streams. It is the same generator as `Dirtbag-UE/Sim/DirtbagRng`, and it checks the same golden vectors. If they move, every seed changes meaning, which is save-breaking.
 - **Content is data.** A new place, route, beta or line is a data entry. `content.test.ts` checks that every reference resolves and every talk node is reachable.
@@ -75,10 +76,13 @@ npm run harness        # bots play whole seasons; prints the tables and Phase 6'
 ## What it still fakes
 
 - **Balance.**
-  - The harness fits the season's shape: runway, the first V5 project around day 18, injuries, and climbing against setting. `npm run harness` prints the targets.
+  - The harness fits the season's shape: runway, the first V5 project around day 19–20, injuries, and climbing against setting. `npm run harness` prints the targets.
   - The bots' human-ish hands are guesses, not measurements: scatter on the load and timing meters, and about 200 ms of lag on the tension band, varied from go to go (`HUMAN` in `sim/bot.ts`).
 - **Feel.** Phase 9's criteria (a watcher can tell how close a go was; a pumped go feels tense) and Phase 7's first hour need people, not bots.
-- **Content.** Twenty crag lines and six gym problems a week. By the fourth week, about half the bots hit a wet day with the week's gym set done and nothing new to try. A player can lap, rest or work, but there's no new challenge that day.
+- **Content.**
+  - Twenty crag lines, six gym problems a week, and the board's four.
+  - Before the board, about half the bots hit a wet day in week four with nothing new to try. Now 3 runs in 144 do, each with all four board problems sent. The board's next set comes on day 29.
+  - The board's grades climb like the wall's, not stiff the way real boards run: 3 runs sent its V7 at V4 *[proposed: Evan's call]*.
 - **Injuries** are rare in the first month: none for bots that warm up and heed the warning, and 3% for reckless ones. That meets Phase 6's ceiling, but it may be too gentle to register as a trade-off. It's a playtest question.
 - **Design calls** marked *[proposed]* in the roadmap are Evan's to rule on: Sage's week away, the blessing's bond, the race's V4 trigger, Act I's "regular" stage, pace, and the card's footer.
 - **Not in yet:** sound, gear (the trad lines wait for it), comps, media, and jobs beyond the café and setting.

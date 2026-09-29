@@ -2,16 +2,26 @@
 // reference resolves, routes are physically sane, and every talk node is reachable.
 import { describe, expect, it } from 'vitest';
 import { MIX } from './climber';
-import { gymSet, routeById, routesAt, weekOf } from './content/gym';
+import {
+  gymSet,
+  routeById,
+  routesAt,
+  weekOf,
+  boardSet,
+  blockOf,
+  BOARD_WEEKS,
+  WEEK_DAYS,
+} from './content/gym';
 import { ACTS, PLACES, ROADS } from './content/places';
 import { PEOPLE, TALK, THINGS } from './content/people';
 import { ROUTES, type RouteDef } from './content/routes';
 
 const STYLES = Object.keys(MIX);
-// The fixed lines, and the gym's first two months for two seeds.
+// The fixed lines, and the gym's first two months (the wall and the board) for two seeds.
 const everyRoute: RouteDef[] = [
   ...Object.values(ROUTES),
   ...['a', 'b'].flatMap((seed) => [1, 2, 3, 4, 5, 6, 7, 8].flatMap((w) => gymSet(seed, w))),
+  ...['a', 'b'].flatMap((seed) => [1, 2].flatMap((b) => boardSet(seed, b))),
 ];
 
 describe('content', () => {
@@ -71,8 +81,9 @@ describe('content', () => {
     expect(new Set(w1.map((r) => r.name)).size).toBe(6);
     expect(gymSet('a', 1)).toBe(w1);
     expect(gymSet('a', 2).map((r) => r.name)).not.toEqual(w1.map((r) => r.name));
-    expect(routesAt('a', 'gym', 7)).toBe(w1);
-    expect(routesAt('a', 'gym', 8)).toBe(gymSet('a', 2));
+    // The gym's lines are the week's wall, then the board.
+    expect(routesAt('a', 'gym', 7).slice(0, 6)).toEqual(w1);
+    expect(routesAt('a', 'gym', 8).slice(0, 6)).toEqual(gymSet('a', 2));
     expect(weekOf(1)).toBe(1);
     expect(weekOf(8)).toBe(2);
     expect(routesAt('a', 'road', 1).map((r) => r.id)).toEqual(
@@ -82,6 +93,25 @@ describe('content', () => {
     );
     expect(routeById('a', 'sc-99-7')).toBeUndefined();
     expect(routeById('a', 'nope')).toBeUndefined();
+  });
+
+  it('the board sets four hard problems, V4 to V7, that stay up four weeks', () => {
+    const b1 = boardSet('a', 1);
+    expect(b1.map((r) => r.grade)).toEqual([4, 5, 6, 7]);
+    expect(b1.every((r) => r.board && r.place === 'gym' && r.disc === 'boulder')).toBe(true);
+    expect(new Set(b1.map((r) => r.name)).size).toBe(4);
+    // Up from the first morning to the last day of the fourth week, then reset.
+    const lastDay = WEEK_DAYS * BOARD_WEEKS;
+    expect(blockOf(1)).toBe(1);
+    expect(blockOf(lastDay)).toBe(1);
+    expect(blockOf(lastDay + 1)).toBe(2);
+    expect(routesAt('a', 'gym', 1).slice(6)).toEqual(b1);
+    expect(routesAt('a', 'gym', lastDay).slice(6)).toEqual(b1);
+    expect(boardSet('a', 2).map((r) => r.name)).not.toEqual(b1.map((r) => r.name));
+    // An old problem still resolves, for its log.
+    expect(routeById('a', 'bd-1-3')).toBe(b1[2]);
+    expect(routeById('a', 'bd-1-9')).toBeUndefined();
+    expect(b1[0]!.line).toContain(`${BOARD_WEEKS} weeks`);
   });
 
   it('talk resolves: people, nodes, acts and beta', () => {

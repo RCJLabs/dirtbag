@@ -58,6 +58,7 @@ export type SheetId =
   | { k: 'van' }
   | { k: 'cragVan' }
   | { k: 'desk' }
+  | { k: 'board' }
   | { k: 'place'; id: string }
   | { k: 'beta'; route: string }
   | { k: 'fall'; route: string; fall: FallRun; notes: string[]; gains: Partial<Skills>; best: number | null }
@@ -612,8 +613,13 @@ export class Game {
       r?.place === 'gym'
         ? routesAt(this.state.seed, 'gym', this.state.day).findIndex((p) => p.id === route)
         : -1;
+    // The board's problems all start under the board.
     const hot = SCENES[scene]!.hots.find((h) =>
-      'route' in h.use ? h.use.route === route : 'problem' in h.use && h.use.problem === slot,
+      r?.board
+        ? 'sheet' in h.use && h.use.sheet === 'board'
+        : 'route' in h.use
+          ? h.use.route === route
+          : 'problem' in h.use && h.use.problem === slot,
     );
     this.enterScene(scene, hot?.stand);
   }

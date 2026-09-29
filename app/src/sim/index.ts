@@ -89,7 +89,17 @@ export {
   librarySport,
 } from './content/routes';
 export type { RouteDef, CruxDef, BetaDef, Verb, Disc } from './content/routes';
-export { GYM, WEEK_DAYS, weekOf, gymSet, routeById, routesAt } from './content/gym';
+export {
+  GYM,
+  WEEK_DAYS,
+  BOARD_WEEKS,
+  weekOf,
+  blockOf,
+  gymSet,
+  boardSet,
+  routeById,
+  routesAt,
+} from './content/gym';
 export { TALK, PEOPLE, THINGS, RACE_ROUTE } from './content/people';
 export { DOG_OFFER, DOG_TIER_NAME } from './content/dog';
 export { ACT_I, ACT_I_END } from './content/story';

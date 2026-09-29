@@ -5,6 +5,8 @@
 import {
   ACT_I_END,
   ACTS,
+  blockOf,
+  BOARD_WEEKS,
   BODY,
   bodyNote,
   conditionsAt,
@@ -16,6 +18,7 @@ import {
   dogTier,
   fill,
   goBlocked,
+  gradeLabel,
   gradeOf,
   headroom,
   isNight,
@@ -26,11 +29,14 @@ import {
   restCost,
   road,
   routeOfId,
+  routesAt,
   SEND_NAME,
   SKILLS,
   TEXT_VALUES,
   unmet,
+  WEEK_DAYS,
   type GameState,
+  type RouteDef,
   type Skills,
 } from '../sim';
 import type { Game, SheetId } from '../game/game';
@@ -109,6 +115,14 @@ function driveRow(game: Game, s: GameState, to: string, label: string): Row {
   };
 }
 
+// Where you stand on a problem: sent and how, how close you've got, or not touched yet.
+function problemNote(s: GameState, r: RouteDef): string {
+  const log = s.routes[r.id];
+  if (log?.sent) return `${SEND_NAME[log.sent.style]}, day ${log.sent.day}.`;
+  if (log?.goes) return `${log.goes} go${log.goes > 1 ? 'es' : ''}. Your best: move ${log.hi} of ${r.moves}.`;
+  return `${r.type[0]!.toUpperCase()}${r.type.slice(1)}, ${r.moves} moves. Not tried.`;
+}
+
 const mapRow = (game: Game): Row => ({
   label: 'Open the map',
   run: () => {
@@ -153,6 +167,23 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         close: true,
         rows: [actRow(game, s, 'gym.pass'), actRow(game, s, 'gym.set'), mapRow(game)],
       };
+
+    case 'board': {
+      const probs = routesAt(s.seed, 'gym', s.day).filter((r) => r.board);
+      // Days until the next set goes up: the day after this block's last.
+      const next = blockOf(s.day) * WEEK_DAYS * BOARD_WEEKS + 1 - s.day;
+      return {
+        title: 'The board',
+        sub: `The steep panel in the back: ${probs.length} problems, ${gradeLabel(probs[0]!)} to ${gradeLabel(probs.at(-1)!)}, lit on the grid. They stay up ${BOARD_WEEKS} weeks. A new set goes up ${next === 1 ? 'tomorrow' : `in ${next} days`}.`,
+        close: true,
+        rows: probs.map((r) => ({
+          label: r.name,
+          cost: gradeLabel(r),
+          note: problemNote(s, r),
+          run: () => game.lookUp(r.id),
+        })),
+      };
+    }
 
     case 'place': {
       const p = PLACES[id.id]!;

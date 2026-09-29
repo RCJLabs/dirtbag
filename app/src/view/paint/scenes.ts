@@ -3,7 +3,7 @@
 // painted once per scene and time of day, then scrolled.
 
 import { ROUTES } from '../../sim';
-import { CRAGS, GND, H, W, WW, type CragSpec } from '../layout';
+import { CRAGS, GND, H, W, WW, type CragSpec, GYM_W } from '../layout';
 import { lerp, lin, mk, poly, rad, rr, trace, type G, type Pt } from '../kit/geom';
 import { fbm, mulberry32 } from '../kit/noise';
 import { chair, pineShape, popTop, rock, vanBody, vanWindows } from '../shapes';
@@ -794,7 +794,7 @@ export function sceneArt(id: string, tod: Tod): SceneArt {
   let a = cache.get(key);
   if (a) return a;
   if (id === 'gym') {
-    a = { sky: paintGymBack(), layers: [{ p: 1, w: WW, c: paintGymGround() }] };
+    a = { sky: paintGymBack(), layers: [{ p: 1, w: GYM_W, c: paintGymGround() }] };
     cache.set(key, a);
     while (cache.size > 2) cache.delete(cache.keys().next().value!);
     return a;

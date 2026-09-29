@@ -931,6 +931,22 @@ The full diagnosis is in the audit, under *The map and the look*.
 
 **On the rebuild (plan, 29 Sep 2026).** The scope above was written for v0.956's nine crags up to V17. The rebuilt game has the gym, Roadside Crag and Granite Gorge, and a first season that tops out at V9. Phase 10 grows it a place at a time, in slices:
 - **10.1, the board at Send City.** A steep board beside the weekly wall, with harder problems (V4–V7) that stay up four weeks: v0.956's "persistent gym walls". It fills the gap R2's harness found, where by week four about half the bots hit a wet day with the week's set done and nothing new to try.
+  - *As built (10.1):*
+    - **The board.** Four problems, V4 to V7 left to right, each a one-crux library boulder of 6–9 moves drawn from steep styles: power and crimp twice as often as dyno and technical. All four reset together every four weeks (`BOARD_WEEKS`).
+    - **Ids and saves.** Ids are `bd-{block}-{n}` on a new seed stream, `worldgen` → `sendcity-board-{block}`, logged for Unreal. An old id still resolves for its log. The state's shape doesn't change.
+    - **On screen.**
+      - The gym scene runs on past the wall to the board: a dark panel with a lit grid, its grades on the kicker, and "RESET EVERY 4 WEEKS" (from `BOARD_WEEKS`).
+      - Its sheet lists the four problems: where you stand on each, and the days until the next set.
+      - Face-on, a problem is its lit holds: green start, blue hands, yellow feet, a purple finish.
+      - Down from a board problem, you land under the board.
+      - The e2e bot opens the board and a problem, and checks where "Down" puts you.
+    - **The harness** (12 seeds × 28 days × every start and strategy):
+      - "Nothing new to try" went from 4–10 runs of every 12 to 3 of 144. In those 3, the climber had sent all four board problems by day 26–27; the next set goes up on day 29.
+      - The median climber ends the month at V4, where it was V3.
+      - The first V5 go comes about a day later (days 19–20), because the bots work the board's V4 first.
+      - All four season targets still pass.
+    - *[proposed]* **Board grades climb like the wall's.** Board V4s and wall V4s are both sent at a median climber grade of V3, and 3 runs sent the V7 at V4. Real boards run stiff. Making this one stiff means a sandbag on every board problem, with its own line on the first go, so it waits for Evan.
+    - **The store copy** (`docs/STORE.md`) describes 0.960.0, which has no board. It gains the board with the release that carries it.
 - **10.2, conditions you can see.** The shade line crossing the wall through the day (the prime window made visible), wet streaks after rain, and closures on the map.
 - **10.3, Moonstone Boulders**, v0.956's next crag: desert quartzite, opens at V6, a permit to climb. Its scene and topos drawn in code, highballs with pad and spotter decisions (the audit's idea for its identity), and its road on the map. It's where Act II would start.
 
@@ -1340,3 +1356,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — R3.2: the site becomes the game's build, at 0.960.0. The build's worker takes v0.956's name and clears its cache, and a local crossover test shows a v0.956 browser swapping to the rebuild within seconds, offline included. Smoke, check, stage, CI and Deploy follow the build. v0.956's files leave the tree; its tag keeps them.
 - 2026-09-29 — R3.3: the Play listing and "What's new" for 0.960.0 in `docs/STORE.md`, held to Play's limits by `npm run check`, and eight screenshots from the build. R3 is built; the tags and the Play upload are Evan's.
 - 2026-09-29 — R3 merged (PR #11) and closed by Evan's call with the release carried as his steps (the v0.956.0 and v0.960.0 tags, then the Play upload). CURRENT MILESTONE moved to Phase 10, planned on the rebuild: the board at Send City, conditions you can see, and Moonstone Boulders.
+- 2026-09-29 — Phase 10.1: the board at Send City. Four problems, V4–V7, that stay up four weeks, on a new seed stream logged for Unreal. It has its own scene, sheet, face-on wall and e2e step. "Nothing new to try" in the harness falls from about half the runs to 3 of 144; the season targets still pass.

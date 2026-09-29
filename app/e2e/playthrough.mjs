@@ -186,8 +186,10 @@ async function climb({ failFirst = false } = {}) {
 const WALK = 118;
 const Z = 1.3;
 const VW = 360 / Z;
-const camFor = (x) => Math.min(Math.max(x - VW / 2, 0), 960 - VW);
-const screenX = (worldX, standX) => (worldX - camFor(standX)) * Z;
+// Scenes are 960 wide unless they say otherwise; the gym runs on past its wall to the board.
+const GYM_W = 1250;
+const camFor = (x, w = 960) => Math.min(Math.max(x - VW / 2, 0), w - VW);
+const screenX = (worldX, standX, w) => (worldX - camFor(standX, w)) * Z;
 const screenY = (worldY) => worldY * Z + (612 - 560 * Z);
 
 async function walk(dx) {
@@ -421,6 +423,28 @@ const gymGoes = await sendIt('the V0');
 if (gymGoes !== 1) await fail(`the V0 took ${gymGoes} goes`);
 await expectText('#sheet', /^Flash/, 'result');
 await shot('flash');
+
+console.log('The board');
+// Off the V0 at its foot (354). The board hangs past the wall, 990 to 1190: walk most of
+// the way, and it's on screen.
+await click('#sheet .opt', 'Drop onto the mats');
+await until('the gym again', async () => (await text('#b-nav')) === 'Map');
+await wait(600);
+await walk(700);
+await tapAt(screenX(1090, 1054, GYM_W), screenY(450));
+await expectText('#sheet', /The board.*4 problems, V4 to V7/, 'the board');
+await shot('board');
+await click('#sheet .opt');
+await expectText('#sheet', /· V4/, 'a board problem');
+await shot('beta-board');
+// Down from a board problem, you're back under the board, not at the wall's first problem.
+await click('#b-nav', 'Down');
+await until('the gym again', async () => (await text('#b-nav')) === 'Map');
+await wait(600);
+await tapAt(screenX(1090, 1050, GYM_W), screenY(450));
+await expectText('#sheet', /The board/, 'the board, from its foot');
+await page.locator('#sheet .x').click();
+await wait(300);
 
 console.log('The save');
 const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save') ?? 'null'));

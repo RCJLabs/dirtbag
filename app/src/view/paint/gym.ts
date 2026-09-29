@@ -3,10 +3,10 @@
 // at when you pick a problem. The six problems keep their places and tape colours from week
 // to week; what changes with the set is the names and the moves, which live in the sim.
 
-import { TEXT_VALUES } from '../../sim';
-import { lin, mk, rad, rr, spline, type G, type Pt } from '../kit/geom';
+import { BOARD_WEEKS, TEXT_VALUES } from '../../sim';
+import { lin, mk, poly, rad, rr, spline, type G, type Pt } from '../kit/geom';
 import { mulberry32 } from '../kit/noise';
-import { DESK_X, GND, H, PROBLEM_X, W, WW } from '../layout';
+import { BOARD_X0, BOARD_X1, DESK_X, GND, GYM_W, H, PROBLEM_X, W } from '../layout';
 import { label } from './fx';
 import { FEET, FLOOR_Y, FT, REACH } from './scale';
 
@@ -112,12 +112,12 @@ function tnuts(g: G, x0: number, x1: number, y0: number, y1: number): void {
 }
 
 export function paintGymGround(): HTMLCanvasElement {
-  const [c, g] = mk(WW, H, 2);
+  const [c, g] = mk(GYM_W, H, 2);
   // Floor: concrete by the door, rubber under the wall.
   g.fillStyle = '#8C8A84';
-  g.fillRect(-10, GND - 6, WW + 20, H);
+  g.fillRect(-10, GND - 6, GYM_W + 20, H);
   g.fillStyle = '#7C7A74';
-  g.fillRect(-10, GND + 30, WW + 20, H);
+  g.fillRect(-10, GND + 30, GYM_W + 20, H);
 
   // The sign, the hangboard and the door on the back wall.
   label(g, 'poster', 'SEND CITY', 186, 262, { size: 46, color: '#D8553F', halo: '#E6DCC7' });
@@ -233,7 +233,107 @@ export function paintGymGround(): HTMLCanvasElement {
   g.fillRect(WALL_X0 - 14, GND - 8, WALL_X1 - WALL_X0 + 28, 4);
   g.fillStyle = 'rgba(20,30,50,.35)';
   for (let x = WALL_X0 + 106; x < WALL_X1; x += 120) g.fillRect(x, GND - 8, 2, 24);
+
+  paintBoardInScene(g);
   return c;
+}
+
+// ---- the board ----
+
+// Where it hangs in the room, and its lights: start, hand, foot and finish, as boards light them.
+const BOARD_TOP = WALL_TOP + 20;
+const KICK = 30;
+const BOARD_DARK = '#34302C';
+const BOARD_HOLD = '#CFC8BA';
+export const LED = { start: '#36C27A', hand: '#3AA0E8', foot: '#E8C547', finish: '#C04FD1' };
+
+// The board from across the room: a dark panel on a steel frame, wider at the top because it
+// leans out over the mats, a kicker at its foot, a grid of holds and a few of them lit.
+function paintBoardInScene(g: G): void {
+  const x0 = BOARD_X0;
+  const x1 = BOARD_X1;
+  const lean = 16;
+  const base = GND - KICK;
+  // The frame's legs, splayed toward you.
+  g.fillStyle = STEEL;
+  g.beginPath();
+  poly(
+    g,
+    [
+      [x0 - lean - 6, BOARD_TOP - 6],
+      [x0 - lean + 2, BOARD_TOP - 6],
+      [x0 + 8, GND],
+      [x0, GND],
+    ],
+    true,
+  );
+  poly(
+    g,
+    [
+      [x1 + lean + 6, BOARD_TOP - 6],
+      [x1 + lean - 2, BOARD_TOP - 6],
+      [x1 - 8, GND],
+      [x1, GND],
+    ],
+    true,
+  );
+  g.fill();
+  g.fillRect(x0 - lean - 6, BOARD_TOP - 12, x1 - x0 + 2 * lean + 12, 8);
+  // The panel and its kicker.
+  g.fillStyle = BOARD_DARK;
+  g.beginPath();
+  poly(
+    g,
+    [
+      [x0 - lean, BOARD_TOP],
+      [x1 + lean, BOARD_TOP],
+      [x1, base],
+      [x0, base],
+    ],
+    true,
+  );
+  g.fill();
+  g.fillStyle = '#2B2825';
+  g.fillRect(x0 + 4, base, x1 - x0 - 8, KICK - 6);
+  // The grid, and the lit holds of whatever problem's up.
+  const rows = 9;
+  const cols = 11;
+  const lit = mulberry32(77);
+  for (let r = 0; r < rows; r++) {
+    const t = r / (rows - 1);
+    const y = BOARD_TOP + 10 + (base - BOARD_TOP - 18) * t;
+    const w0 = x0 - lean + 8 + lean * t;
+    const w1 = x1 + lean - 8 - lean * t;
+    for (let c = 0; c < cols; c++) {
+      const x = w0 + ((w1 - w0) * c) / (cols - 1);
+      g.fillStyle = BOARD_HOLD;
+      hold(g, x, y, 2.4, 1000 + r * cols + c);
+      g.fill();
+      if (lit() < 0.11) {
+        const col = r === 0 ? LED.finish : r === rows - 1 ? LED.start : r > rows - 3 ? LED.foot : LED.hand;
+        g.strokeStyle = col;
+        g.lineWidth = 1.4;
+        g.beginPath();
+        g.arc(x, y, 4, 0, 6.2832);
+        g.stroke();
+      }
+    }
+  }
+  label(g, 'poster', 'THE BOARD', (x0 + x1) / 2, BOARD_TOP - 38, {
+    size: 17,
+    color: '#2B2A33',
+    halo: '#E6DCC7',
+  });
+  label(g, 'poster', `RESET EVERY ${BOARD_WEEKS} WEEKS`, (x0 + x1) / 2, BOARD_TOP - 22, {
+    size: 9,
+    color: '#5E5A52',
+    halo: '#E6DCC7',
+  });
+  // Mats under it.
+  g.fillStyle = MAT;
+  g.fillRect(x0 - lean - 20, GND - 8, x1 - x0 + 2 * lean + 40, 24);
+  g.fillStyle = '#5585B8';
+  g.fillRect(x0 - lean - 20, GND - 8, x1 - x0 + 2 * lean + 40, 4);
 }
 
 // ---- the face-on wall ----
@@ -253,6 +353,122 @@ export function gymTopo(slot: number, heightFt: number): Pt[] {
 }
 
 const walls = new Map<number, HTMLCanvasElement>();
+
+// ---- the board, face-on ----
+
+// The board's grid in the close-up, and where a problem's holds sit on it: the start near the
+// kicker, hands zigzagging up to the finish on the top row, and a couple of feet lit low.
+const BOARD_ROWS = 12;
+const BOARD_COLS = 9;
+const boardTop = (heightFt: number) => finishY(heightFt) - 20;
+const boardKick = FLOOR_Y - 64;
+function boardCell(r: number, c: number, heightFt: number): Pt {
+  const t = r / (BOARD_ROWS - 1);
+  const top = boardTop(heightFt);
+  // Rows near the top look wider: it leans out over you.
+  const half = (W / 2 - 22) * (1.06 - 0.12 * t);
+  return [W / 2 - half + (2 * half * c) / (BOARD_COLS - 1), top + (boardKick - 18 - top) * t];
+}
+
+type Lit = { at: Pt; role: keyof typeof LED };
+function boardHolds(slot: number, heightFt: number): Lit[] {
+  const r = mulberry32(1300 + slot * 29);
+  const out: Lit[] = [];
+  let c = 3 + Math.floor(r() * 3);
+  out.push({ at: boardCell(BOARD_ROWS - 2, c, heightFt), role: 'start' });
+  for (let row = BOARD_ROWS - 4; row > 0; row -= 2) {
+    c = Math.max(1, Math.min(BOARD_COLS - 2, c + (r() < 0.5 ? -1 : 1) * (1 + Math.floor(r() * 2))));
+    out.push({ at: boardCell(row, c, heightFt), role: 'hand' });
+  }
+  out.push({
+    at: boardCell(0, Math.max(1, Math.min(BOARD_COLS - 2, c + (r() < 0.5 ? -1 : 1))), heightFt),
+    role: 'finish',
+  });
+  for (const fc of [2 + Math.floor(r() * 2), 5 + Math.floor(r() * 2)])
+    out.push({ at: boardCell(BOARD_ROWS - 1, fc, heightFt), role: 'foot' });
+  return out;
+}
+
+// Where the climber's hips go on a board problem: up its lit hand holds, leaning further
+// toward them than on the wall, because a board problem wanders across the whole grid.
+export function boardTopo(slot: number, heightFt: number): Pt[] {
+  const hs = boardHolds(slot, heightFt).filter((h) => h.role !== 'foot');
+  const y0 = FLOOR_Y - FEET;
+  const y1 = finishY(heightFt) + REACH;
+  const pts: Pt[] = hs.map((h, i) => [cx + (h.at[0] - cx) * 0.6, y0 + ((y1 - y0) * i) / (hs.length - 1)]);
+  return spline(pts, 10);
+}
+
+const boards = new Map<string, HTMLCanvasElement>();
+
+export function boardWallArt(slot: number, heightFt: number): HTMLCanvasElement {
+  const key = `${slot}:${heightFt}`;
+  const hit = boards.get(key);
+  if (hit) return hit;
+  const [c, g] = mk(W, H, 2);
+  paintBoardWall(g, slot, heightFt);
+  boards.set(key, c);
+  return c;
+}
+
+// A board problem face-on: the dark panel filling the view, its grid of holds, and this
+// problem's holds lit in their colours.
+export function paintBoardWall(g: G, slot: number, heightFt: number): void {
+  const top = boardTop(heightFt) - 34;
+  g.fillStyle = '#E6DCC7';
+  g.fillRect(0, 0, W, H);
+  g.fillStyle = STEEL;
+  g.fillRect(0, 0, W, 70);
+  g.fillRect(0, top - 14, W, 14);
+  label(g, 'poster', 'THE BOARD', W / 2, top - 44, { size: 24, color: '#2B2A33', halo: '#E6DCC7' });
+  label(g, 'poster', `RESET EVERY ${BOARD_WEEKS} WEEKS`, W / 2, top - 26, {
+    size: 11,
+    color: '#5E5A52',
+    halo: '#E6DCC7',
+  });
+  g.fillStyle = BOARD_DARK;
+  g.beginPath();
+  poly(
+    g,
+    [
+      [-12, top],
+      [W + 12, top],
+      [W - 8, boardKick],
+      [8, boardKick],
+    ],
+    true,
+  );
+  g.fill();
+  g.fillStyle = '#2B2825';
+  g.fillRect(8, boardKick, W - 16, FLOOR_Y - boardKick);
+  for (let r = 0; r < BOARD_ROWS; r++)
+    for (let c = 0; c < BOARD_COLS; c++) {
+      const [x, y] = boardCell(r, c, heightFt);
+      g.fillStyle = BOARD_HOLD;
+      hold(g, x, y, 6.2 - (r / BOARD_ROWS) * 1.4, 2000 + r * BOARD_COLS + c);
+      g.fill();
+    }
+  for (const h of boardHolds(slot, heightFt)) {
+    const col = LED[h.role];
+    g.fillStyle = rad(g, h.at[0], h.at[1], 4, 22, [
+      [0, `${col}88`],
+      [1, `${col}00`],
+    ]);
+    g.fillRect(h.at[0] - 22, h.at[1] - 22, 44, 44);
+    g.strokeStyle = col;
+    g.lineWidth = 3;
+    g.beginPath();
+    g.arc(h.at[0], h.at[1], 11, 0, 6.2832);
+    g.stroke();
+  }
+  // Mats.
+  g.fillStyle = MAT;
+  g.fillRect(0, FLOOR_Y, W, H - FLOOR_Y);
+  g.fillStyle = '#5585B8';
+  g.fillRect(0, FLOOR_Y, W, 6);
+  g.fillStyle = 'rgba(20,30,50,.35)';
+  for (const x of [60, 180, 300]) g.fillRect(x, FLOOR_Y, 2, H - FLOOR_Y);
+}
 
 export function gymWallArt(slot: number, heightFt: number): HTMLCanvasElement {
   const key = slot * 100 + heightFt;

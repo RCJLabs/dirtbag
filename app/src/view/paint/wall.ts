@@ -9,7 +9,7 @@ import { mulberry32 } from '../kit/noise';
 import { H, W } from '../layout';
 import { coniferPath, rock } from '../shapes';
 import { boulderArt, boulderTopo, paintBoulderArt } from './boulder';
-import { gymTopo, gymWallArt, paintGymWall } from './gym';
+import { boardTopo, boardWallArt, gymTopo, gymWallArt, paintBoardWall, paintGymWall } from './gym';
 
 const SKY: Pt[] = [
   [-4, 130],
@@ -196,14 +196,27 @@ const close = new Map<string, Wall>();
 // A gym problem's place on the wall, from its id ("sc-3-2" is the second, V1).
 export const slotOf = (id: string): number => Math.max(0, Number(id.split('-')[2] ?? 1) - 1);
 
+// A board problem's lit holds, from its id ("bd-2-3" is the third problem of the second
+// set): the grid never changes, so each set has to light new holds on it.
+const boardPattern = (id: string): number => Number(id.split('-')[1] ?? 1) * 10 + slotOf(id);
+
 // The wall a route is on, and its line there.
 export function wallOf(r: RouteDef): Wall {
   if (r.disc === 'sport') return { art: wallArt(r.place, r.id), topo: TOPO[r.id]!, big: false };
-  const key = r.place === 'gym' ? `gym:${slotOf(r.id)}:${r.heightFt}` : r.id;
+  const key = r.board
+    ? `board:${boardPattern(r.id)}:${r.heightFt}`
+    : r.place === 'gym'
+      ? `gym:${slotOf(r.id)}:${r.heightFt}`
+      : r.id;
   let w = close.get(key);
   if (!w) {
-    w =
-      r.place === 'gym'
+    w = r.board
+      ? {
+          art: boardWallArt(boardPattern(r.id), r.heightFt),
+          topo: topoOf(boardTopo(boardPattern(r.id), r.heightFt)),
+          big: true,
+        }
+      : r.place === 'gym'
         ? {
             art: gymWallArt(slotOf(r.id), r.heightFt),
             topo: topoOf(gymTopo(slotOf(r.id), r.heightFt)),
@@ -514,6 +527,7 @@ function paintWall(g: G, place: string, selected: string): void {
 // for the send card to paint at its own size.
 export function paintRouteArt(g: G, r: RouteDef): void {
   if (r.disc === 'sport') paintWall(g, r.place, r.id);
+  else if (r.board) paintBoardWall(g, boardPattern(r.id), r.heightFt);
   else if (r.place === 'gym') paintGymWall(g, slotOf(r.id), r.heightFt);
   else paintBoulderArt(g, r);
 }

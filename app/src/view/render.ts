@@ -21,6 +21,7 @@ import {
 } from '../sim';
 import { rad, type G, type Pt } from './kit/geom';
 import {
+  BOARD_X0,
   CRAGS,
   DIM_PINS,
   GND,
@@ -117,10 +118,20 @@ function renderScene(g: G, f: Frame): void {
     for (const b of crag.boulders)
       boulderTag(g, b.x - cam, GND - b.h - 12, lineGrade(s, ROUTES[b.route]!), !!s.routes[b.route]?.sent);
   }
-  if (gym)
-    routesAt(s.seed, 'gym', s.day).forEach((r, n) =>
-      tapeTag(g, PROBLEM_X[n]! - cam, GND - 26, TAPE[n]!, gradeLabel(r), !!s.routes[r.id]?.sent),
-    );
+  if (gym) {
+    const lines = routesAt(s.seed, 'gym', s.day);
+    lines
+      .filter((r) => !r.board)
+      .forEach((r, n) =>
+        tapeTag(g, PROBLEM_X[n]! - cam, GND - 26, TAPE[n]!, gradeLabel(r), !!s.routes[r.id]?.sent),
+      );
+    // The board's problems, tagged along its kicker.
+    lines
+      .filter((r) => r.board)
+      .forEach((r, n) =>
+        tapeTag(g, BOARD_X0 + 25 + n * 50 - cam, GND - 16, '#2B2825', gradeLabel(r), !!s.routes[r.id]?.sent),
+      );
+  }
   for (const p of presentIn(s, f.scene)) {
     drawPerson(g, LOOK[p.who]!, { x: p.x - cam, y: GND, dir: p.face, pose: p.pose, t: f.t });
     // They've something to tell you.
