@@ -19,6 +19,7 @@ export type Cue =
   | 'pullon'
   | 'move'
   | 'clip'
+  | 'place'
   | 'crux'
   | 'cleared'
   | 'grip'

@@ -785,6 +785,8 @@ await expectText('#sheet', /Drive to The Gear Shop/, 'the café’s card');
 await driveOn('the café to the gear shop', 'Drive to The Gear Shop');
 await header('the shop’s front');
 await expectText('#sheet', /A block of chalk/, 'at the shop');
+// Phase 21.2: the rack's on the wall at the shop, for the trad lines.
+await expectText('#sheet', /A rack/, 'a rack for sale');
 const before = await text('#h-cash');
 await click('#sheet .opt', 'A block of chalk');
 await expectText('#toast', /You crush half of it/, 'chalk bought');

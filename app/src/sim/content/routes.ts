@@ -14,7 +14,10 @@ import type { Style } from '../climber';
 import type { GoStyle } from '../types';
 
 export type Verb = 'tension' | 'timing' | 'load';
-export type Disc = 'boulder' | 'sport';
+export type Disc = 'boulder' | 'sport' | 'trad';
+
+// On a rope: a sport route clipped to bolts, or a trad line protected with what you place.
+export const roped = (r: { disc: Disc }): boolean => r.disc !== 'boulder';
 
 export interface BetaDef {
   name: string;
@@ -68,8 +71,10 @@ export interface RouteDef {
   cruxes: CruxDef[];
   beta: Record<string, BetaDef>;
   rest: { at: number; radius: number } | null;
-  // Clips, in moves. Boulders have none: you land on pads.
+  // Clips, in moves. Boulders have none: you land on pads. Trad lines have none either.
   bolts: number[];
+  // Trad only: the stances, in moves, where you can stop and place a piece.
+  stances?: number[];
   // A sandbag (or a soft touch): the grade it really climbs at, which the rules use. The
   // listed grade is what the guidebook says (v0.956's trueGrade).
   trueGrade?: number;
@@ -118,6 +123,14 @@ const boltsFor = (moves: number, first = 2.2, gap = 2.8): number[] => {
   const out: number[] = [];
   for (let m = first; m < moves - 1.5; m += gap) out.push(Math.round(m * 100) / 100);
   return out;
+};
+
+// Stances on a trad line: a first one low, then one every `gap` moves, and one at the rest.
+const stancesFor = (moves: number, rest: number, first = 2.4, gap = 3.2): number[] => {
+  const out: number[] = [];
+  for (let m = first; m < moves - 1.5; m += gap)
+    if (Math.abs(m - rest) > 1) out.push(Math.round(m * 100) / 100);
+  return [...out, rest].sort((a, b) => a - b);
 };
 
 // ---- the beta library: a common pair of ways through each style of crux ----
@@ -381,6 +394,16 @@ export function librarySport(
     rest: { at: shape.rest, radius: 0.8 },
     bolts: boltsFor(shape.moves),
   };
+}
+
+// A trad line: a library sport route's shape, with stances in place of bolts. What protects
+// you is what you stopped to place.
+export function libraryTrad(...args: Parameters<typeof librarySport>): RouteDef {
+  const r = librarySport(...args);
+  const stances = stancesFor(r.moves, r.rest!.at).filter(
+    (at) => !r.cruxes.some((c) => at >= c.from && at <= c.to),
+  );
+  return { ...r, disc: 'trad', bolts: [], stances };
 }
 
 // ---- Roadside Crag ----
@@ -650,7 +673,7 @@ const crimpfest = libraryBoulder('crimpfest', 'Crimpfest', 4, 'crimp', 'road', {
 });
 
 // The rest of v0.956's Roadside: a crack, the highball that tests your head, everyone's
-// project, and the line nobody's done. Trad Arête waits for a gear system.
+// project, and the line nobody's done. Trad Arête, its one trad line, is further down.
 const fingerCrack = libraryBoulder('fingercrack', 'Finger Crack', 4, 'crack', 'road', {
   moves: 6,
   from: 2.2,
@@ -684,6 +707,17 @@ const roadsideOpen = libraryBoulder('rsopen', 'The open project', 7, 'dyno', 'ro
   heightFt: 13,
   line: 'Nobody’s done it. The chalk stops at the fourth move.',
   open: true,
+});
+
+// v0.956's Roadside trad line: an arête with a crack up its side, and nothing in it but
+// what you bring.
+const tradArete = libraryTrad('tradarete', 'Trad Arête', 5, 'technical', 'road', {
+  moves: 22,
+  heightFt: 75,
+  line: 'No bolts. The crack takes gear, if you stop to place it.',
+  rest: 11.8,
+  a: { style: 'technical', name: 'The arête', from: 6.4, to: 8.6, win: 'Back to the crack.' },
+  b: { style: 'crack', name: 'The flare', from: 16.2, to: 18.4, win: 'Top out.' },
 });
 
 // ---- Granite Gorge: v0.956's second crag, shaded, two hours out ----
@@ -761,6 +795,16 @@ const gPowerEnd = librarySport('gpe', 'Power Endurance', 8, 'power', 'gorge', {
   rest: 14,
   a: { style: 'power', name: 'The roof', from: 8.0, to: 10.2, win: 'Through the roof.' },
   b: { style: 'endurance', name: 'The long finish', from: 18.4, to: 21.6, win: 'Chains. Barely.' },
+});
+
+// v0.956's Gorge Trad: a long crack up the back of the gorge, pumpy all the way.
+const gTrad = libraryTrad('gtrad', 'Gorge Trad', 8, 'endurance', 'gorge', {
+  moves: 26,
+  heightFt: 95,
+  line: 'Ninety-five feet of crack. The gear is good; stopping to place it isn’t free.',
+  rest: 13.6,
+  a: { style: 'crack', name: 'The off-width bulge', from: 7.8, to: 10.0, win: 'Past the bulge.' },
+  b: { style: 'endurance', name: 'The long corner', from: 18.6, to: 21.8, win: 'Top out. Build an anchor.' },
 });
 
 // ---- Moonstone Boulders: v0.956's desert highball crag, three hours out ----
@@ -857,6 +901,7 @@ export const ROUTES: Record<string, RouteDef> = {
   roadside,
   pump,
   testpiece,
+  tradarete: tradArete,
   gslab: gSlab,
   gserenity: gSerenity,
   gpinch: gPinch,
@@ -866,6 +911,7 @@ export const ROUTES: Record<string, RouteDef> = {
   gintro: gIntro,
   gclassic: gClassic,
   gpe: gPowerEnd,
+  gtrad: gTrad,
   marete: mArete,
   mmantel: mMantel,
   megg: mEgg,

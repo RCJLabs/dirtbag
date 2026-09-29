@@ -2,7 +2,7 @@
 // The rules decide both (sunOn, conditionsAt); this only works out where to draw them, so
 // the light on a line changes the minute its windows do.
 
-import { CLIMB, conditionsAt, PLACES, routeOfId, sunOn, type GameState, type RouteDef } from '../sim';
+import { CLIMB, conditionsAt, PLACES, roped, routeOfId, sunOn, type GameState, type RouteDef } from '../sim';
 import { CRAGS, W } from './layout';
 import { onRoute } from './paint/wall';
 
@@ -70,7 +70,7 @@ export function wallSun(s: GameState, r: RouteDef): Edge | null {
     sunOn(s.seed, s.day, r.place, id),
     onRoute(routeOfId(s, id)!, 0)[0],
   ];
-  const ids = r.disc === 'sport' ? sun.ids.filter((id) => routeOfId(s, id)?.disc === 'sport') : [r.id];
+  const ids = roped(r) ? sun.ids.filter((id) => roped(routeOfId(s, id)!)) : [r.id];
   return edgeAt(s.min, ids.map(at), sun.step, -40, W + 40, sun.lit);
 }
 

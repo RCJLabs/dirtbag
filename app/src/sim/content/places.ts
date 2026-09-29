@@ -124,6 +124,7 @@ export const PLACES: Record<string, PlaceDef> = {
       'project',
       'highball',
       'fingercrack',
+      'tradarete',
       'testpiece',
       'pump',
       'crimpfest',
@@ -197,8 +198,10 @@ export const PLACES: Record<string, PlaceDef> = {
       'shop.tape',
       'shop.shoes',
       'shop.pad',
+      'shop.rack',
       'shop.usedShoes',
       'shop.usedPad',
+      'shop.usedRack',
     ],
   },
   cafe: {
@@ -365,6 +368,25 @@ export const ACTS: Record<string, ActDef> = {
     gear: { id: 'pad', set: 1 },
     says: 'The foam is tired and the cover is duct tape. It still lands.',
   },
+  'shop.rack': {
+    label: 'A rack',
+    cost: { min: 20, cash: -KIT.rack.price },
+    needs: [{ hasNot: 'rack', why: 'One rack is plenty. Two is a hobby.' }, { pay: KIT.rack.price }],
+    gear: { id: 'rack', set: 1 },
+    says: 'A rack of cams, a set of nuts, slings. It jangles like money leaving.',
+  },
+  'shop.usedRack': {
+    label: 'A used rack, from the swap meet',
+    cost: { min: 20, cash: -Math.round(KIT.used.share * KIT.rack.price) },
+    needs: [
+      { weekend: true, why: 'The swap meet is weekends.' },
+      { hasNot: 'rack', why: 'One rack is plenty. Two is a hobby.' },
+      { pay: Math.round(KIT.used.share * KIT.rack.price) },
+    ],
+    gear: { id: 'rack', set: 1 },
+    says: 'Somebody’s old rack: faded slings, cams that still cam. You check every trigger twice.',
+  },
+
   'gym.pass': {
     label: 'Buy a day pass',
     cost: { min: 5, cash: -MONEY.dayPass },

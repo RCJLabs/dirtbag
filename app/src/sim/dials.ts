@@ -3,6 +3,7 @@
 // retunes them against the bots in R2.
 
 import type { Style } from './climber';
+import type { Disc } from './content/routes';
 
 // How a crux's window scales with your margin: your level in the beta's style, less the
 // line's grade. Under your level windows open 24% a grade, but never past 1.4, so a crux
@@ -221,15 +222,17 @@ export const CLIMB = {
   // crag go; goes here are played in real time, so each costs less and a day holds more.
   go: {
     sport: { min: 25, energy: 10, fed: 6 },
+    // A trad go is racking up, placing on the way and cleaning on the way down: longer.
+    trad: { min: 35, energy: 12, fed: 7 },
     boulder: { min: 10, energy: 6, fed: 4 },
     gym: { min: 8, energy: 5, fed: 3 },
-  } as Record<'sport' | 'boulder' | 'gym', { min: number; energy: number; fed: number }>,
+  } as Record<Disc | 'gym', { min: number; energy: number; fed: number }>,
   // Skin per go by the route's style: v0.956's table at 0.6x for the shorter goes, and
   // 1.35x on real rock.
   skin: { crimp: 7, crack: 9, endurance: 6, power: 5, dyno: 4, technical: 3 } as Record<Style, number>,
   rockSkin: 1.35,
   // Between goes. Long enough that "one more" costs daylight.
-  restMin: { sport: 20, boulder: 10 } as Record<'sport' | 'boulder', number>,
+  restMin: { sport: 20, trad: 25, boulder: 10 } as Record<Disc, number>,
   // What a go teaches, against v0.956's formula. Its goes cost two hours and its first week
   // was already too fast (V3 inside it, docs/audit/climbing.md §5.3); goes here are shorter
   // and more of them fit in a day, so each teaches 60% as much.
@@ -292,6 +295,29 @@ export const CLIMB = {
   clearCrux: 0.13,
 };
 
+// Trad (Phase 21.2): at a stance, letting go places a piece instead of shaking out. v0.956
+// had no trad minigame at all, only a rack choice before the go; here every piece is a
+// choice made on the wall, paid for in pump and time.
+export const TRAD = {
+  // A stance is this many moves either side of its mark: below it you reach for it, past it
+  // you can still stop. Nearly a second of climbing: whether to stop is the decision, not
+  // whether you can hit the spot.
+  before: 0.5,
+  after: 0.8,
+  // The climb panel says a stance is coming this many moves before it.
+  ahead: 1.2,
+  // Seconds of letting go to get a piece in, and the pump it costs a second where hanging
+  // would pay 4.5 back. A piece is about seven points of pump against resting.
+  placeTime: 1.1,
+  placePump: 2,
+  // A fall that reaches the ground is a deck: under `safeFt` you walk it off; above, each
+  // foot is `perFoot` more likely to hurt, three times a highball's with no pad under you.
+  // How far over sets how bad, as a highball's does.
+  deck: { safeFt: 6, perFoot: 0.036, tier2: 6, tier3: 12 },
+  // v0.956 gave a trad send +3 head. Here it's a share of a go's lesson, added to head.
+  sendHead: 0.4,
+};
+
 // Your kit (Phase 21.1): v0.956's gear, cut to what a go can feel. Its wear was per two-hour
 // attempt; a go here is minutes and a day holds ten of them, so wear per go is a fraction.
 export const KIT = {
@@ -330,6 +356,8 @@ export const KIT = {
   // A pad of your own: with the one everyone has, that's two, and a highball's landing
   // halves as the Moonstone haul's pads do (HIGHBALL.pads).
   pad: { price: 180 },
+  // A rack: cams, nuts, slings. v0.956's $280. Nobody leads trad without one.
+  rack: { price: 280 },
   // The swap meet at the shop on weekends: v0.956's 55% of new, in fair shape.
   used: { share: 0.55, condition: 60 },
 };

@@ -3,7 +3,7 @@
 // close-up walls of their own (boulder.ts, gym.ts). Whatever the wall, a route is mapped
 // from moves (the sim's unit) to points along its line here, so the rules never see a pixel.
 
-import { ROUTES, type RouteDef } from '../../sim';
+import { roped, ROUTES, type RouteDef } from '../../sim';
 import { arcTable, atLen, lin, mk, poly, spline, trace, type G, type Pt } from '../kit/geom';
 import { mulberry32 } from '../kit/noise';
 import { H, W } from '../layout';
@@ -174,6 +174,26 @@ const TOPO_PTS: Record<string, Pt[]> = {
     [238, 132],
     [222, 86],
   ],
+  // Trad Arête: up the right-hand crack, round the roof's end and on up the wall's edge.
+  tradarete: [
+    [332, 536],
+    [324, 470],
+    [334, 420],
+    [328, 362],
+    [342, 310],
+    [348, 246],
+    [344, 184],
+  ],
+  // Gorge Trad: the corner, bottom to top.
+  gtrad: [
+    [236, 540],
+    [232, 470],
+    [226, 404],
+    [224, 340],
+    [226, 270],
+    [228, 200],
+    [224, 112],
+  ],
   testpiece: [
     [290, 538],
     [298, 470],
@@ -235,7 +255,7 @@ const topos = new Map<string, Topo>();
 // A route's line on its wall, without painting the wall: all that positions on it (the
 // climber, the chalk, the sun's edge) need.
 export function topoFor(r: RouteDef): Topo {
-  if (r.disc === 'sport') return TOPO[r.id]!;
+  if (roped(r)) return TOPO[r.id]!;
   const key = closeKey(r);
   let t = topos.get(key);
   if (!t) {
@@ -253,7 +273,7 @@ export function topoFor(r: RouteDef): Topo {
 
 // The wall a route is on, and its line there.
 export function wallOf(r: RouteDef): Wall {
-  if (r.disc === 'sport') return { art: wallArt(r.place, r.id), topo: TOPO[r.id]!, big: false };
+  if (roped(r)) return { art: wallArt(r.place, r.id), topo: TOPO[r.id]!, big: false };
   const key = closeKey(r);
   let w = close.get(key);
   if (!w) {
@@ -626,9 +646,11 @@ function paintGorge(g: G): void {
 }
 
 // Other lines dashed with their bolts; yours solid, its bolts drawn live as you clip them.
+// A trad line has no bolts to draw: only what you place.
 function paintLines(g: G, place: string, selected: string): void {
   for (const [id, t] of Object.entries(TOPO)) {
     if (id === selected || ROUTES[id]?.place !== place) continue;
+    const trad = ROUTES[id]?.disc === 'trad';
     g.strokeStyle = '#F7EBD0';
     g.lineWidth = 1.5;
     g.setLineDash([4, 3]);
@@ -636,7 +658,7 @@ function paintLines(g: G, place: string, selected: string): void {
     trace(g, t.d, false);
     g.stroke();
     g.setLineDash([]);
-    boltDots(g, t);
+    if (!trad) boltDots(g, t);
   }
   g.strokeStyle = '#DA6A34';
   g.lineWidth = 2.6;
@@ -670,15 +692,14 @@ function paintWall(g: G, place: string, selected: string): void {
 // the boulder itself, so weather drawn on the rock stays off the sky.
 export function rockPath(g: G, r: RouteDef): void {
   g.beginPath();
-  if (r.disc === 'sport')
-    poly(g, r.place === 'gorge' ? G_WALL : r.place === 'moon' ? M_WALL : WALLPOLY, true);
+  if (roped(r)) poly(g, r.place === 'gorge' ? G_WALL : r.place === 'moon' ? M_WALL : WALLPOLY, true);
   else poly(g, boulderOutline(r), true);
 }
 
 // A route's wall, painted into any context in wall units: what the wall view caches at 2x,
 // for the send card to paint at its own size.
 export function paintRouteArt(g: G, r: RouteDef): void {
-  if (r.disc === 'sport') paintWall(g, r.place, r.id);
+  if (roped(r)) paintWall(g, r.place, r.id);
   else if (r.board) paintBoardWall(g, boardPattern(r.id), r.heightFt);
   else if (r.place === 'gym') paintGymWall(g, slotOf(r.id), r.heightFt);
   else paintBoulderArt(g, r);

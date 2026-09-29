@@ -31,6 +31,14 @@ export const LANDING_LINE: [string, string, string] = [
   'A long way down off {route}, and nothing soft at the bottom. {Kind}. {days} days, and the clinic isn’t cheap.',
 ];
 
+// Decking off a trad line: nothing held, and the ground is where you land.
+export const DECK_LINE: [string, string, string] = [
+  'Nothing held. You hit the ground at the foot of {route}. A {kind}: {days} days off.',
+  'You deck off {route}. {Kind}. {days} days off, and a clinic visit.',
+  'You deck from high on {route}, and the ground doesn’t give. {Kind}. {days} days, and the clinic isn’t cheap.',
+];
+export const DECK_WALKED = 'You hit the ground off {route}. Nothing broken. Next time, place something.';
+
 // Said when it happens: {route}, {kind} (capitalised at the start of a sentence as {Kind}),
 // {days}. And when it's healed.
 export const HURT_LINE: [string, string, string] = [

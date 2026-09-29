@@ -3,6 +3,7 @@ import {
   ACT_I,
   ACT_I_END,
   average,
+  roped,
   betaScale,
   currentGoal,
   goalDesc,
@@ -458,7 +459,7 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
         </p>
       )}
       <button type="button" className="go" disabled={!!why} onClick={() => game.go()}>
-        {why ?? (r.disc === 'sport' ? 'Tie in and go' : 'Pull on')}
+        {why ?? (r.disc === 'trad' ? 'Rack up and go' : r.disc === 'sport' ? 'Tie in and go' : 'Pull on')}
         <small>{cost}</small>
       </button>
       {log?.sent && !unnamed && (
@@ -582,8 +583,7 @@ function FaBody({ game, route, s }: { game: Game; route: string; s: GameState })
     >
       <h3 id="sheet-title">First ascent</h3>
       <p className="sub">
-        Nobody’s climbed this {r.disc === 'sport' ? 'route' : 'line'} before you. It’s yours to name, and to
-        grade.
+        Nobody’s climbed this {roped(r) ? 'route' : 'line'} before you. It’s yours to name, and to grade.
       </p>
       <p className="crux">The grade</p>
       <div role="radiogroup" aria-label="The grade" className="calls">

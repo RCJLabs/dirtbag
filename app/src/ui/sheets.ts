@@ -326,7 +326,9 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       const how =
         r.disc === 'boulder'
           ? `${aFoot(id.fall.ft)} drop to the pads from move ${id.fall.move} of ${r.moves}.`
-          : `${aFoot(id.fall.ft)} catch at move ${id.fall.move} of ${r.moves}.`;
+          : id.fall.deck
+            ? `${aFoot(id.fall.ft)} fall from move ${id.fall.move} of ${r.moves}, and nothing held it off the ground.`
+            : `${aFoot(id.fall.ft)} catch at move ${id.fall.move} of ${r.moves}.`;
       const why = goBlocked(s, r);
       const gained = gainsLine(id.gains);
       return {
@@ -358,7 +360,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       const gained = gainsLine(id.gains);
       return {
         title: SEND_NAME[id.style],
-        sub: `${lineName(s, r)}, ${lineGrade(s, r)}, on go ${id.go}.${r.disc === 'sport' ? " Rent's still due." : ''}`,
+        sub: `${lineName(s, r)}, ${lineGrade(s, r)}, on go ${id.go}.${r.disc === 'sport' ? " Rent's still due." : r.disc === 'trad' ? ' On gear you placed.' : ''}`,
         close: false,
         notes: [...id.notes, ...(gained ? [gained] : [])],
         rows: [
@@ -366,9 +368,11 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             label:
               r.disc === 'sport'
                 ? 'Lower off and walk out'
-                : r.place === 'gym'
-                  ? 'Drop onto the mats'
-                  : 'Walk down the back',
+                : r.disc === 'trad'
+                  ? 'Clean your gear and walk out'
+                  : r.place === 'gym'
+                    ? 'Drop onto the mats'
+                    : 'Walk down the back',
             run: () => game.walkOff(),
           },
           ...(id.first ? [cardRow(game, id)] : []),

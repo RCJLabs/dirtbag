@@ -11,6 +11,7 @@ export {
   actCost,
   belayer,
   landingChance,
+  deckChance,
   fallFt,
   morePads,
   lessonAt,
@@ -39,6 +40,8 @@ export {
   dayFactor,
   moveAt,
   resting,
+  stanceAt,
+  protection,
   picks,
   routeOf,
   betaOf,
@@ -93,7 +96,7 @@ export type { LoadResult, Migration, SaveFile } from './save';
 export { Rng, hashSeed, mulberry32 } from './rng';
 export type { Stream } from './rng';
 export * from './format';
-export { DAY, MONEY, BODY, CLIMB, LOAD, INJURY, HIGHBALL, BOND, ARC, DOG, LEGACY, KIT } from './dials';
+export { DAY, MONEY, BODY, CLIMB, LOAD, INJURY, HIGHBALL, BOND, ARC, DOG, LEGACY, KIT, TRAD } from './dials';
 export { PLACES, ACTS, ROADS, road, TEXT_VALUES } from './content/places';
 export type { PlaceDef, ActDef, RoadDef, Trip, Ambience } from './content/places';
 export {
@@ -106,6 +109,8 @@ export {
   effGrade,
   libraryBoulder,
   librarySport,
+  libraryTrad,
+  roped,
 } from './content/routes';
 export type { RouteDef, CruxDef, BetaDef, Verb, Disc } from './content/routes';
 export {

@@ -1409,7 +1409,16 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Save v5,** migrated from a real 0.961.0 save (v4): climbers already out here get the starting kit.
 - **The bots** stop at the shop for a resole and chalk when they can afford it. Phase 6's four targets still pass; the runway medians fell a little (days 14–28: 2.0, 2.0, 2.6 days, from 2.3, 2.5, 3.4), which is the kit costing something.
 - **The e2e** drives from the café to the shop on day five, buys chalk and reads the kit on the You page. Day three's taps and day four's plan don't move.
-- **Not in yet:** the rope, the rack and the hangboard (their slices); gear for trad (21.2).
+- **Not in yet:** the rope and the hangboard (their slices). The rack came with 21.2.
+
+**Status (29 Sep 2026): 21.2 built.** Trad is a third discipline, and criterion 1 passes: a lead where you place two pieces falls 8 ft onto them, and the same fall with none decks from 22 ft (seen in the browser, and held in `trad.test.ts`).
+- **Placing** (numbers in `TRAD`): a trad line has stances instead of bolts, marked on the wall. Let go at one and you place a piece in 1.1 s, which costs pump where hanging would pay it back (about 7 points a piece against resting). Climb through and you've run it out. The climb panel says when a stance is coming, and how far you are over your last piece.
+- **Falling:** a fall catches on the last piece you placed, as a sport fall does on the last bolt. A fall longer than the air under you ends on the ground: a deck, with an injury roll from 6 ft up (3.6% a foot, three times a highball's, with no pad). v0.956 had no trad play at all, only a rack choice before the go.
+- **The lines:** Trad Arête (5.12b, Roadside, up the wall's right edge) and Gorge Trad (5.13a, the Gorge's corner), v0.956's two, built from the beta library as its sport lines are. A trad go takes 35 minutes; a send adds a little head, as v0.956's +3 did.
+- **The rack:** $280 at the gear shop (v0.956's price), or 55% at the weekend swap meet. Leading trad needs one and a belayer. No save change: the kit map already takes any item.
+- **A piece going in** has its own sound, made in code like the rest (`place` in the ledger).
+- **The e2e** checks the shop has a rack. It doesn't lead a trad line: that needs a rack and a belayer at once, which the five days don't reach.
+- **Not in yet:** the bots don't buy a rack, so the harness plays no trad (its numbers match 21.1's exactly). Pieces never pull out, and there's no gear quality: every piece holds.
 
 ---
 
@@ -1764,3 +1773,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Evan's call: finish building the game before the Steam build and the demo. Phases 14 and 15 (Stage D) move after Phase 18, keeping their numbers; the order is now 16, 17, 18, 14, 15, 19, 20. CURRENT MILESTONE moved to Phase 16, the spine: story, acts and endings.
 - 2026-09-29 — A gap check of v0.956 against the rebuild and the phases left found systems nothing covered. Evan's calls: three phases added before Phase 16, numbered 21 (the climber: gear, trad, training, crags past Act I, walls and expeditions), 22 (the life: van, body, food, the hustle, events, and the games) and 23 (who you are: origins, paths, stances, the Record Book); and blackjack, hold'em, liar's dice, horseshoes and busking come back from the cut list (trivia and a garden maybe). The order is now 21, 22, 23, 16, 17, 18, 14, 15, 19, 20. CURRENT MILESTONE moved to Phase 21.
 - 2026-09-29 — Phase 21.1: your kit. Shoes that wear, chalk, tape and a second pad; worn kit tightens every crux through the same factor the beta sheet shows; a gear shop in town with resoles and a weekend swap meet; save v5 from a real 0.961.0 save; bots keep their kit up and Phase 6's targets still pass.
+- 2026-09-29 — Phase 21.2: trad. Stances where you choose to place a piece (for pump) or run it out; falls catch on what you placed, and with nothing low enough you deck, with an injury roll; Trad Arête and Gorge Trad; a rack at the gear shop and the swap meet; a sound for a piece going in.

@@ -12,6 +12,8 @@ import {
   FIRST_FREE_LINE,
   HEALED_LINE,
   HURT_LINE,
+  DECK_LINE,
+  DECK_WALKED,
   LANDING_LINE,
   LANDING_NAME,
 } from './content/injuries';
@@ -21,8 +23,8 @@ import { PEOPLE, RACE_ROUTE, RIVAL_FA_NAMES, TALK } from './content/people';
 import { ACT_I_END } from './content/story';
 import { START_KIT } from './content/gear';
 import { has, tapedSkin, wearKit } from './kit';
-import { SEND_NAME, effGrade, gradeLabel, gradeName, type RouteDef } from './content/routes';
-import { BODY, CLIMB, DAY, DOG, HIGHBALL, INJURY, LOAD, MONEY, RIVAL } from './dials';
+import { SEND_NAME, effGrade, gradeLabel, gradeName, roped, type RouteDef } from './content/routes';
+import { BODY, CLIMB, DAY, DOG, HIGHBALL, INJURY, LOAD, MONEY, RIVAL, TRAD } from './dials';
 import { fill, money, skillsNote } from './format';
 import { PARTNERS, tierOf, whereNow } from './presence';
 import { hashSeed, Rng } from './rng';
@@ -102,7 +104,6 @@ export const routeOfId = (s: GameState, id: string): RouteDef | undefined => rou
 
 // ---- queries the UI shares with the rules, so a button never offers what act() refuses ----
 
-// What one go on this line costs you.
 // What a go costs you. Given your state, tape on a crack takes its share off the skin.
 export function goCost(r: RouteDef, s?: GameState): Required<Pick<Delta, 'min' | 'energy' | 'fed' | 'skin'>> {
   const kind = r.place === 'gym' ? 'gym' : r.disc;
@@ -163,6 +164,27 @@ export function rollLanding(s: GameState, r: RouteDef, moves: number, n: number)
   return { kind: LANDING_NAME[tier - 1]!, tier, until: s.day + 1 + rng.int(lo, hi) };
 }
 
+// ---- decking off trad [proposed] ----
+
+// The chance a ground fall of `ft` hurts you: nothing up to the safe height, then more with
+// every foot. No pad, no spotter: you're on a rope, it just didn't help.
+export function deckChance(ft: number): number {
+  const over = ft - TRAD.deck.safeFt;
+  return over <= 0 ? 0 : Math.min(1, TRAD.deck.perFoot * over);
+}
+
+// Rolls a deck, on the landing's label: a line is trad or a highball, never both.
+export function rollDeck(s: GameState, ft: number, n: number): Injury | null {
+  const p = deckChance(ft);
+  if (p <= 0) return null;
+  const rng = Rng.fromStream(s.seed, 'session').derive(`landing-${s.day}-${n}`);
+  if (rng.next() >= p) return null;
+  const over = ft - TRAD.deck.safeFt;
+  const tier: 1 | 2 | 3 = over >= TRAD.deck.tier3 ? 3 : over >= TRAD.deck.tier2 ? 2 : 1;
+  const [lo, hi] = INJURY.days[tier - 1]!;
+  return { kind: LANDING_NAME[tier - 1]!, tier, until: s.day + 1 + rng.int(lo, hi) };
+}
+
 // A pick from a list that holds for the day: the same line if you ask twice.
 const ofDay = <T>(s: GameState, key: string, xs: readonly T[]): T =>
   xs[hashSeed(`${s.seed}:${key}:${s.day}`) % xs.length]!;
@@ -197,7 +219,8 @@ export function goBlocked(s: GameState, r: RouteDef): string | null {
     if (c.closed) return c.closed;
     if (!c.open) return 'The rock is soaked';
     if (s.min >= CLIMB.darkFrom) return 'Too dark to climb';
-    if (r.disc === 'sport' && !belayer(s)) return 'Nobody here to belay you';
+    if (r.disc === 'trad' && !has(s, 'rack')) return 'You need a rack to lead this. The gear shop sells them';
+    if (roped(r) && !belayer(s)) return 'Nobody here to belay you';
   }
   const off = daysOff(s);
   if (off > 0) return `Your ${s.injury!.kind} needs ${off} more day${off > 1 ? 's' : ''}`;
@@ -580,7 +603,7 @@ export function act(s0: GameState, a: Action): Result {
       L.goes += 1;
       L.goesToday += 1;
       // Whoever's on belay, and anyone you know climbing here, makes it a day together.
-      const who = r.disc === 'sport' ? belayer(s) : null;
+      const who = roped(r) ? belayer(s) : null;
       if (who) climbedWith(who);
       for (const w of PARTNERS) if (w !== who && s.people[w] && whereNow(s, w) === s.at) climbedWith(w);
       // A sandbag shows itself on your first go; on the board, everyone saw it coming.
@@ -624,8 +647,12 @@ export function act(s0: GameState, a: Action): Result {
       const goN = Object.values(s.routes).reduce((t, x) => t + x.goesToday, 0);
       // Overuse first; failing that, a fall off a highball can land you badly.
       const strain = rollInjury(s, r, load, wasCold, goN);
-      const landed = strain || res.sent ? null : rollLanding(s, r, res.hi, goN);
+      // A deck is only as far as the result says, and only on trad: nothing else has one.
+      const deck = r.disc === 'trad' && !res.sent && res.deck ? Math.min(res.deck, r.heightFt) : 0;
+      const landed =
+        strain || res.sent ? null : deck ? rollDeck(s, deck, goN) : rollLanding(s, r, res.hi, goN);
       const hurt = strain ?? landed;
+      if (deck && !hurt) line(fill(DECK_WALKED, { route: r.name }));
       if (!s.today.includes('warm')) s.today.push('warm');
       s.skin = clamp100(s.skin - Math.max(0, tapedSkin(s, r, res.skin)));
       for (const l of wearKit(s, r)) line(l);
@@ -676,6 +703,11 @@ export function act(s0: GameState, a: Action): Result {
         const gym = r.place === 'gym' && (k === 'technique' || k === 'endurance') ? CLIMB.gymSpecialty : 1;
         got[k] = round2(got[k]! * CLIMB.learn * (lap ? CLIMB.repeatLearn : 1) * gym * spent);
       }
+      // Leading on gear you placed yourself is a lesson for the head.
+      if (r.disc === 'trad' && res.sent)
+        got.head = round2(
+          (got.head ?? 0) + TRAD.sendHead * CLIMB.learn * (lap ? CLIMB.repeatLearn : 1) * spent,
+        );
       train(got);
       const after = gradeOf(s.climber.skills);
       events.push({ k: 'skills', gains: got, grade: after > before ? after : null });
@@ -684,7 +716,7 @@ export function act(s0: GameState, a: Action): Result {
         s.injury = hurt;
         const days = hurt.until - s.day - 1;
         const kind = hurt.kind;
-        const text = fill((landed ? LANDING_LINE : HURT_LINE)[hurt.tier - 1]!, {
+        const text = fill((landed ? (deck ? DECK_LINE : LANDING_LINE) : HURT_LINE)[hurt.tier - 1]!, {
           route: r.name,
           kind,
           Kind: kind[0]!.toUpperCase() + kind.slice(1),

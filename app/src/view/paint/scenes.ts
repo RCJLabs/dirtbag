@@ -771,7 +771,7 @@ function paintCragGround(P: Palette, id: string, kind: Rock): HTMLCanvasElement 
     [1, 'rgba(40,36,34,.28)'],
   ]);
   g.fillRect(spec.wall[0] - 2, GND - 60, w, 60);
-  // The sport lines, chalked up the wall, their bolts dotted along them.
+  // The lines, chalked up the wall, a sport line's bolts dotted along it. Trad has none.
   for (const rt of spec.lines) {
     const pts = routeWiggle(rt.x, rt.n * 7);
     g.strokeStyle = 'rgba(247,235,208,.9)';
@@ -780,12 +780,13 @@ function paintCragGround(P: Palette, id: string, kind: Rock): HTMLCanvasElement 
     trace(g, pts, false);
     g.stroke();
     g.fillStyle = '#2A2A30';
-    for (let i = 2; i < pts.length; i += 3) {
-      const [x, y] = pts[i]!;
-      g.beginPath();
-      g.arc(x, y, 1.8, 0, 6.2832);
-      g.fill();
-    }
+    if (ROUTES[rt.route]?.disc !== 'trad')
+      for (let i = 2; i < pts.length; i += 3) {
+        const [x, y] = pts[i]!;
+        g.beginPath();
+        g.arc(x, y, 1.8, 0, 6.2832);
+        g.fill();
+      }
   }
   g.restore();
   fill(g, (gg) => gg.rect(-10, GND - 6, w + 20, H), P.ground);

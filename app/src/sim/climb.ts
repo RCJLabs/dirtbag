@@ -8,11 +8,15 @@
 //   timing   tap when the sweeping marker crosses the band, twice;
 //   load     hold to charge, let go inside the band.
 // Pump, afternoon sun and thin skin shrink the window when the crux starts.
+//
+// On trad there are no bolts. Let go at a stance and you place a piece, which costs pump
+// where hanging would pay it back; climb through and you've run it out. A fall catches on
+// the last piece you placed, and with nothing low enough to hold it, you hit the ground.
 
 import { margin, pumpFactor, windowFactor } from './climber';
 import { effGrade, PUMPED, type BetaDef, type CruxDef, type RouteDef, type Verb } from './content/routes';
 import { cold } from './body';
-import { BODY, CLIMB, LOAD } from './dials';
+import { BODY, CLIMB, LOAD, TRAD } from './dials';
 import { kitFactor } from './kit';
 import type { GameState, GoResult } from './types';
 import { conditionsAt, sunOn } from './weather';
@@ -44,6 +48,8 @@ export interface FallRun {
   from: number;
   to: number;
   t: number;
+  // Trad: the feet you hit the ground from, when nothing held.
+  deck?: number;
 }
 
 export interface Attempt {
@@ -71,6 +77,9 @@ export interface Attempt {
   hi: number;
   // The beta you tried this go, crux by crux, in order.
   tried: string[];
+  // Trad: the stances you've placed at, and how long you've been placing at this one.
+  placed: number[];
+  placing: number;
   t: number;
 }
 
@@ -79,6 +88,7 @@ export type AttemptEvent =
   | { k: 'cleared'; crux: string }
   | { k: 'fell'; crux: string | null }
   | { k: 'lowered' }
+  | { k: 'placed'; at: number }
   | { k: 'sent' };
 
 export interface Step {
@@ -165,6 +175,8 @@ export function startAttempt(s: GameState, r: RouteDef): Attempt {
     msg: null,
     hi: 0,
     tried: [],
+    placed: [],
+    placing: 0,
     t: 0,
   };
 }
@@ -187,11 +199,29 @@ export const moveAt = (att: Attempt, r: RouteDef = routeOf(att)): number =>
 export const resting = (att: Attempt, r: RouteDef = routeOf(att)): boolean =>
   !!r.rest && att.phase === 'climb' && Math.abs(att.pos - r.rest.at) < r.rest.radius;
 
+// Trad: the stance you're at, if you're at one and haven't placed there yet.
+export function stanceAt(att: Attempt, r: RouteDef = routeOf(att)): number | null {
+  if (att.phase !== 'climb') return null;
+  for (const at of r.stances ?? [])
+    if (att.pos >= at - TRAD.before && att.pos <= at + TRAD.after && !att.placed.includes(at)) return at;
+  return null;
+}
+
+// What catches a fall: the bolts clipped, or the pieces placed, below where you are.
+export function protection(att: Attempt, r: RouteDef = routeOf(att)): number[] {
+  const all = r.disc === 'trad' ? [...att.placed].sort((x, y) => x - y) : r.bolts;
+  return all.filter((b) => b < att.pos - CLIMB.clipPast);
+}
+
+// Feet off the ground at `moves`.
+const feetAt = (r: RouteDef, moves: number): number => (Math.max(0, moves) * r.heightFt) / r.moves;
+
 function copy(a: Attempt): Attempt {
   return {
     ...a,
     done: [...a.done],
     tried: [...a.tried],
+    placed: [...a.placed],
     crux: a.crux && { ...a.crux },
     fall: a.fall && { ...a.fall },
     msg: a.msg && { ...a.msg },
@@ -243,18 +273,36 @@ function fall(a: Attempt, r: RouteDef, text: string | undefined, ev: AttemptEven
   const move = Math.min(r.moves, Math.floor(a.pos) + 1);
   let ft: number;
   let to: number;
+  let deck: number | undefined;
   if (r.disc === 'boulder') {
     // No rope: you drop to the pads from wherever you were.
     ft = Math.max(1, Math.round((a.pos * r.heightFt) / r.moves));
     to = 0;
   } else {
-    const clipped = r.bolts.filter((b) => b < a.pos - CLIMB.clipPast);
+    const clipped = protection(a, r);
     const last = clipped.length ? clipped[clipped.length - 1]! : null;
     const over = last === null ? a.pos : a.pos - last;
     ft = Math.round((2 * over * r.heightFt) / r.moves + CLIMB.slackFt);
     to = last === null ? 0 : Math.max(0, last - over - CLIMB.lowerMargin);
+    // On trad, a fall longer than the air under you ends on the ground. (Sport's first bolt
+    // is low enough that the same fall is a step down, so its falls stay as they were.)
+    const air = feetAt(r, a.pos);
+    if (r.disc === 'trad' && ft >= air) {
+      ft = Math.max(1, Math.round(air));
+      to = 0;
+      deck = ft;
+    }
   }
-  a.fall = { crux: a.crux?.id ?? null, move, text: line, ft, from: a.pos, to, t: 0 };
+  a.fall = {
+    crux: a.crux?.id ?? null,
+    move,
+    text: line,
+    ft,
+    from: a.pos,
+    to,
+    t: 0,
+    ...(deck ? { deck } : {}),
+  };
   a.hi = Math.max(a.hi, move);
   a.phase = 'fall';
   a.hold = false;
@@ -326,6 +374,8 @@ export function stepAttempt(att: Attempt, dt: number = STEP): Step {
 
   if (a.phase === 'climb') {
     if (a.hold) {
+      // A piece half-placed when you move on isn't in.
+      a.placing = 0;
       a.pos += CLIMB.climbRate * a.mods.speed * dt;
       a.pump += CLIMB.pumpClimb * a.mods.pump * dt;
       for (const c of r.cruxes) {
@@ -340,7 +390,18 @@ export function stepAttempt(att: Attempt, dt: number = STEP): Step {
         return { att: a, events: ev };
       }
     } else {
-      a.pump -= (resting(a, r) ? CLIMB.pumpRest : CLIMB.pumpHang) * dt;
+      const at = stanceAt(a, r);
+      if (at !== null) {
+        // Placing: one hand on the rock, the other fiddling a cam in.
+        a.placing += dt;
+        a.pump += TRAD.placePump * dt;
+        if (a.placing >= TRAD.placeTime) {
+          a.placed.push(at);
+          a.placing = 0;
+          say(a, 'Piece in.', 1);
+          ev.push({ k: 'placed', at });
+        }
+      } else a.pump -= (resting(a, r) ? CLIMB.pumpRest : CLIMB.pumpHang) * dt;
     }
     a.pump = clamp(a.pump, 0, 100);
     if (a.pump >= 100) fall(a, r, PUMPED, ev);
@@ -382,5 +443,6 @@ export function goResult(att: Attempt): GoResult {
     fellAt: att.fall?.crux ?? null,
     tried: [...att.tried],
     skin: att.skin,
+    ...(att.fall?.deck ? { deck: att.fall.deck } : {}),
   };
 }

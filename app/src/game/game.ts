@@ -771,7 +771,7 @@ export class Game {
   private hear(was: Attempt | null, a: Attempt, events: AttemptEvent[]): void {
     const s = this.sound;
     if (was && Math.floor(a.pos) > Math.floor(was.pos)) s.play('move');
-    if (was && a.def.disc === 'sport')
+    if (was && a.def.disc !== 'boulder')
       for (const b of a.def.bolts)
         if (was.pos < b + CLIMB.clipPast && a.pos >= b + CLIMB.clipPast) s.play('clip');
     s.charge(a.crux?.verb === 'load' && a.hold ? a.crux.m : null);
@@ -784,6 +784,7 @@ export class Game {
       else if (e.k === 'cleared') (s.play('cleared'), s.vibrate(20));
       else if (e.k === 'fell') (s.play('fell'), s.vibrate(70));
       else if (e.k === 'lowered') s.play('land');
+      else if (e.k === 'placed') (s.play('place'), s.vibrate(10));
       else if (e.k === 'sent') (s.play('send'), s.vibrate([30, 60, 40]));
     }
   }

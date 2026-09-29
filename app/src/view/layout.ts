@@ -90,6 +90,8 @@ export const CRAGS: Record<string, CragSpec> = {
       { n: 2, x: 560, route: 'roadside' },
       { n: 3, x: 700, route: 'pump' },
       { n: 4, x: 840, route: 'testpiece' },
+      // The arête at the wall's end, with no bolts on it.
+      { n: 5, x: 945, route: 'tradarete' },
     ],
     boulders: [
       { x: 340, w: 68, h: 50, route: 'warm' },
@@ -105,7 +107,7 @@ export const CRAGS: Record<string, CragSpec> = {
     // The belay under The Pump, Sage by the Testpiece and Dex in the boulder field.
     frame: 930,
   },
-  // The Gorge: granite in the shade, three bolted lines up the canyon wall, boulders on
+  // The Gorge: granite in the shade, three bolted lines and a trad corner up the canyon wall, boulders on
   // its floor either side.
   gorge: {
     width: 1340,
@@ -113,7 +115,9 @@ export const CRAGS: Record<string, CragSpec> = {
     lines: [
       { n: 1, x: 560, route: 'gintro' },
       { n: 2, x: 820, route: 'gclassic' },
-      { n: 3, x: 1080, route: 'gpe' },
+      // The corner between the Classic and Power Endurance takes gear, not bolts.
+      { n: 3, x: 950, route: 'gtrad' },
+      { n: 4, x: 1080, route: 'gpe' },
     ],
     boulders: [
       { x: 380, w: 96, h: 46, route: 'gslab' },

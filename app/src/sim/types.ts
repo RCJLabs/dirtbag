@@ -181,6 +181,8 @@ export interface GoResult {
   tried: string[];
   // Extra skin the beta cost on the way (crimpy sequences).
   skin: number;
+  // Trad: the feet you hit the ground from, if a fall had nothing to catch it.
+  deck?: number;
 }
 
 export type GameEvent =

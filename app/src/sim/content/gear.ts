@@ -23,6 +23,7 @@ export const GEAR: Record<string, GearDef> = {
   },
   tape: { name: 'Tape', kind: 'uses', what: `A crack takes ${less(KIT.tape.skin)} skin through tape.` },
   pad: { name: 'A second pad', kind: 'owned', what: `Highball landings: ${less(HIGHBALL.pads)} risk.` },
+  rack: { name: 'A rack', kind: 'owned', what: 'Cams, nuts and slings. What you place is what catches you.' },
 };
 
 // What a new climber has: the shoes they drove out in, and half a bag of chalk.

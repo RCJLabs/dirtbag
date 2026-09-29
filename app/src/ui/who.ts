@@ -8,6 +8,7 @@ import {
   knows,
   PARTNERS,
   PEOPLE,
+  roped,
   ROUTES,
   staysAt,
   type GameState,
@@ -43,7 +44,7 @@ export function whoAround(s: GameState, place: string, at: number): Who {
     : ['Nobody.'];
 
   const routes = Object.values(ROUTES).filter((r) => r.place === place);
-  const ropes = routes.some((r) => r.disc === 'sport');
+  const ropes = routes.some(roped);
   const tall = routes.some((r) => r.highball);
   if (!ropes && !tall) return { at, lines, cover: null };
   const what = ropes && tall ? 'A belayer and a spotter' : ropes ? 'A belayer' : 'A spotter';

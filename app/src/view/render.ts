@@ -4,6 +4,8 @@
 import {
   belayer,
   CLIMB,
+  protection,
+  roped,
   conditionsAt,
   gradeLabel,
   isNight,
@@ -388,7 +390,12 @@ function wallPanel(g: G, f: Frame, r: RouteDef): void {
   for (const c of r.cruxes) {
     const p0 = onRoute(r, c.from);
     const p1 = onRoute(r, c.to);
-    const x = Math.min(W - 118, Math.max(p0[0], p1[0]) + off);
+    // Right of the line, unless the line runs up the wall's right edge: then left of it, so
+    // the labels never sit beside a neighbour's line instead.
+    const right = Math.max(p0[0], p1[0]) + off;
+    const flip = right > W - 118;
+    const x = flip ? Math.min(p0[0], p1[0]) - off : right;
+    const d = flip ? -1 : 1;
     const y0 = p0[1] - (wall.big ? 30 : 0);
     const y1 = p1[1] - (wall.big ? 30 : 0);
     const my = (y0 + y1) / 2;
@@ -396,15 +403,16 @@ function wallPanel(g: G, f: Frame, r: RouteDef): void {
     g.strokeStyle = ACC.comic;
     g.lineWidth = 2;
     g.beginPath();
-    g.moveTo(x - 4, y0);
+    g.moveTo(x - 4 * d, y0);
     g.lineTo(x, y0);
     g.lineTo(x, y1);
-    g.lineTo(x - 4, y1);
+    g.lineTo(x - 4 * d, y1);
     g.stroke();
-    label(g, 'comic', c.name.replace(/^The /, ''), x + 6, my - 1, { size: 13, align: 'left' });
-    label(g, 'comic', (r.beta[pick[c.id] ?? '']?.short ?? '') + (unknown ? '  ?' : ''), x + 6, my + 13, {
+    const align = flip ? 'right' : 'left';
+    label(g, 'comic', c.name.replace(/^The /, ''), x + 6 * d, my - 1, { size: 13, align });
+    label(g, 'comic', (r.beta[pick[c.id] ?? '']?.short ?? '') + (unknown ? '  ?' : ''), x + 6 * d, my + 13, {
       size: 12,
-      align: 'left',
+      align,
       color: ACC.comic,
     });
   }
@@ -426,14 +434,27 @@ function wallPanel(g: G, f: Frame, r: RouteDef): void {
   const pos = f.att?.pos ?? 0;
   const [x, y] = onRoute(r, pos);
   const falling = f.att?.phase === 'fall';
-  if (r.disc === 'sport') {
-    // Quickdraws on every bolt you've clipped, and the rope running through them to
-    // whoever's belaying.
+  if (roped(r)) {
+    // Quickdraws on every bolt you've clipped, or the pieces you've placed, and the rope
+    // running through them to whoever's belaying. A trad line shows its stances too: the
+    // ones you've passed without placing are where you ran it out.
     const who = belayer(s);
     const [bx0, by0] = belayAt(r);
     const rope: Pt[] = who ? [drawBelayerBack(g, LOOK[who]!, bx0, by0)] : [];
-    for (const b of r.bolts) {
-      if (b >= pos - CLIMB.clipPast) continue;
+    const trad = r.disc === 'trad';
+    if (trad)
+      for (const at of r.stances ?? []) {
+        if (f.att?.placed.includes(at)) continue;
+        const [sx, sy] = onRoute(r, at);
+        g.strokeStyle = 'rgba(255,255,255,.55)';
+        g.lineWidth = 2;
+        g.beginPath();
+        g.moveTo(sx - 7, sy + 4);
+        g.lineTo(sx + 7, sy + 3);
+        g.stroke();
+      }
+    const pieces = f.att ? protection(f.att, r) : trad ? [] : r.bolts.filter((b) => b < pos - CLIMB.clipPast);
+    for (const b of pieces) {
       const [bx, by] = onRoute(r, b);
       g.strokeStyle = ACC.comic;
       g.lineWidth = 1.6;
@@ -441,6 +462,13 @@ function wallPanel(g: G, f: Frame, r: RouteDef): void {
       g.moveTo(bx, by);
       g.lineTo(bx, by + 7);
       g.stroke();
+      if (trad) {
+        // A cam: its lobes in the crack, a sling to the rope.
+        g.fillStyle = '#C8553F';
+        g.beginPath();
+        g.arc(bx, by, 3, 0, 6.2832);
+        g.fill();
+      }
       g.lineWidth = 1.3;
       g.beginPath();
       g.ellipse(bx, by + 9.5, 2.3, 3.2, 0, 0, 6.2832);

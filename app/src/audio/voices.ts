@@ -136,6 +136,12 @@ export const VOICES: Record<Cue, (v: V, k: number) => void> = {
     tone(v, { f: 4200, dur: 0.03, gain: 0.3 });
     tone(v, { f: 5600, dur: 0.04, gain: 0.25, delay: 0.05 });
   },
+  // A cam's lobes springing open in the crack, then the rope clipped to it.
+  place: (v) => {
+    burst(v, { filter: 'bandpass', f: 2600, q: 2.5, dur: 0.08, gain: 0.5 });
+    tone(v, { f: 3800, dur: 0.03, gain: 0.25, delay: 0.14 });
+    tone(v, { f: 5000, dur: 0.04, gain: 0.2, delay: 0.19 });
+  },
   // Here's the hard bit.
   crux: (v) => tone(v, { type: 'triangle', f: 220, dur: 0.16, gain: 0.3 }),
   // Through it.
