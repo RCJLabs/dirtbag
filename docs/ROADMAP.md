@@ -62,7 +62,7 @@
 | 9 Climber on the wall | Reshaped as beta-then-send and built from R0. Its Done-when criteria gate R2. |
 | 10 Crags as places | Built on the rebuild (the board, conditions you can see, Moonstone) and closed by Evan's call. Its testers' criterion carries. |
 | 11 Valley map | Built on the rebuild (the taps, place cards, adding a place, the daily plan) and closed by Evan's call. Criteria 2 to 5 pass; its testers' criterion carries. Released in 0.961.0 with Phase 10. |
-| 12 UI system | Folded into the rebuild (R0–R2). The current milestone: what's left of it gets planned on the rebuild next. |
+| 12 UI system | Partly folded into the rebuild (R0–R2). The current milestone, planned on the rebuild: a Journal instead of tabs, the message log, and a screen that widens for landscape. |
 | 13–20 | Unchanged in intent. They target the new build. |
 
 ## The rebuild track
@@ -1225,6 +1225,32 @@ There's no joystick, zone graph or tileset to retire. What's left, in slices:
 
 **Depends on:** Phases 4 and 8. **Effort:** ~4–6 weeks. **Main risk:** a big-bang re-skin. Migrate hub by hub.
 
+#### Phase 12 on the rebuild
+
+*Planned 29 Sep 2026, with Evan's calls on navigation and landscape.*
+
+**What the rebuild already covers.** The "Why" above is v0.956's. The rebuild's panels share one kit of tokens (colours, fonts, borders); 11 inline `style` props are left, mostly CSS variables for meters. Toasts queue one at a time, never catch a tap, and hold back while you drive. Reduced motion follows the system, and settings sit beside the save, so starting over keeps them. What's missing, by criterion:
+1. A handful of inline styles.
+2. **Landscape.** The game is one 360 × 740 portrait screen, scaled to fit and letterboxed. At 1280 × 800 it's a column about 390 px wide.
+3. Keyboard: scenes (arrows, Space, M), sheets and the wall work; map pins and scene hotspots don't take focus.
+4. Nothing caps a toast's length or sends a long line to a card.
+5. There's no message log.
+
+Also short of the scope: "large" text is about 1.15×, by a size step inside the fixed screen, not 1.3× by reflow. Nobody has measured contrast, and the meters are bars coloured low.
+
+**Evan's calls.**
+- **No tabs.** The five tabs were written to replace v0.956's 28-tile hub, which the rebuild doesn't have, and they'd cut against walking up to people and things in scenes. The **Journal** replaces them: one button in the HUD for the message log, you as a climber, your people, and the record.
+- **Landscape widens the world.** The screen stays 740 logical pixels tall and grows as wide as the window allows, so a landscape screen shows more of each scene rather than a phone column with panels beside it. Sheets become a side panel in landscape, so the scene stays in view.
+
+**Slices.**
+- **12.1 Text surfaces.** The Journal and its message log: the last 200 events in full, kept beside the save like settings (no save version bump). A line over about 30 words goes to a card you dismiss, never a toast; a test holds every content line to that, and the e2e opens the log. Criteria 4 and 5.
+- **12.2 The wide screen.** The logical width follows the window, 360 at the least and capped around 16:9. Scenes show more of themselves and pad past their ends; the HUD, goal pill and hints lay out on the width; sheets dock to the right in landscape. Then the map, whose valley needs painting wider, and the wall, board and gym views, which are composed for portrait. The e2e plays at 360 × 740 and at 1280 × 800. Criterion 2. The biggest slice: about 1–2 weeks [INFERRED].
+- **12.3 Keyboard and access.** Map pins and scene hotspots reachable by keyboard, Escape to close, visible focus; the e2e plays a day without the pointer. `npm run check` computes the kit's contrast against WCAG AA. Text at 1.3× by reflow. Meters that say low by shape as well as colour. Criterion 3 and the accessibility scope.
+- **12.4 Tonight.** The rebuild has far fewer meters than v0.956: tonight's cost, runway, the next bill, injury risk and tomorrow's forecast, on the van at night.
+- **12.5 The last inline styles**, and `check` fails on new ones. Criterion 1.
+
+**Unreal.** On hold, by Evan's call, until the conversion to the new game is done. Spec changes are still logged, per CLAUDE.md.
+
 ---
 
 ### Phase 13 — Sound and feel
@@ -1546,3 +1572,5 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — 0.960.0 released: Evan published `v0.960.0` on `main`, and Deploy run 1 went green, live check included. `v0.956.0` is left untagged on purpose, because its push would deploy v0.956; creating it on `e098332` is the rollback. The docs now say so.
 - 2026-09-29 — Phase 11 closed by Evan's call: criteria 2 to 5 pass on the build, and criterion 1 (testers) carries. Phase 10 and 11 ship together as 0.961.0, with the store's "What's new" and the full description updated for them. CURRENT MILESTONE moved to Phase 12; what the rebuild left of it gets planned next.
 - 2026-09-29 — 0.961.0 released: Evan published `v0.961.0` on `main` (`afab5a5`), and Deploy run 2 went green, live check included. Phase 10 and 11 are live; the Play update is Evan's.
+- 2026-09-29 — Phase 12 planned on the rebuild, with Evan's calls: a Journal instead of the five tabs, and landscape widens the world rather than framing a phone column. Slices 12.1 (text surfaces) to 12.5. Unreal is on hold until the conversion is done.
+- 2026-09-29 — Every send after a line's first is now a repeat, by Evan's call; it was named "Redpoint" however many times you'd sent it. The log keeps the first send's style, so saves don't change.
