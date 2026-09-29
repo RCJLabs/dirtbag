@@ -45,7 +45,21 @@ import {
   type Sky,
   tonight,
   type Tonight,
+  PHASES,
+  PHASE_NAME,
+  phaseLock,
+  PREHAB,
+  prehabBlocked,
+  prehabCost,
+  PROTOCOLS,
+  sessionCost,
+  sessionGains,
+  skillsNote,
+  taperDay,
+  taperWait,
+  trainBlocked,
 } from '../sim';
+import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import type { Game, SheetId } from '../game/game';
 import { CRAGS } from '../view/layout';
 import { whoAround, type Who } from './who';
@@ -117,6 +131,16 @@ function actRow(game: Game, s: GameState, id: string): Row {
     note: why ?? note,
     off: !!why,
     run: () => game.doAct(id),
+  };
+}
+
+// Into the train sheet: the block you're in, or why there's nothing to do there yet.
+function trainRow(game: Game, s: GameState): Row {
+  const board = s.at === 'lot' && !s.gear.hangboard;
+  return {
+    label: 'Train',
+    note: board ? `${blockLine(s)} A hangboard would put sessions here; prehab needs nothing.` : blockLine(s),
+    run: () => game.openSheet({ k: 'train' }),
   };
 }
 
@@ -192,6 +216,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         rows: [
           actRow(game, s, 'lot.cook'),
           ...(isNight(s.min) ? [] : [actRow(game, s, 'lot.rest')]),
+          trainRow(game, s),
           actRow(game, s, 'lot.sleep'),
           ...(plan.length
             ? [{ label: 'Run the plan', note: `${planLine(plan)}.`, run: () => game.runPlan(plan) }]
@@ -229,7 +254,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           ? "Your hand's stamped. Climb till ten."
           : "The kid at the desk doesn't look up. The set changes every seven days.",
         close: true,
-        rows: [actRow(game, s, 'gym.pass'), actRow(game, s, 'gym.set'), mapRow(game)],
+        rows: [actRow(game, s, 'gym.pass'), actRow(game, s, 'gym.set'), trainRow(game, s), mapRow(game)],
       };
 
     case 'board': {
@@ -440,6 +465,85 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           { label: 'Keep playing', run: () => game.closeSheet() },
         ],
       };
+
+    case 'train': {
+      const where = s.at === 'gym' ? 'gym' : 'van';
+      const rows: Row[] = Object.entries(PROTOCOLS)
+        .filter(([, p]) => p.where === where)
+        .map(([pid, p]) => {
+          const why = trainBlocked(s, pid);
+          const got = skillsNote(sessionGains(s, p));
+          return {
+            label: p.name,
+            cost: costLabel(sessionCost(p)),
+            note: why ? `${why}.` : `${p.what} ${got}. ${bodyNote(sessionCost(p))}.`,
+            off: !!why,
+            run: () => game.train(pid),
+          };
+        });
+      if (where === 'van') {
+        const why = prehabBlocked(s);
+        rows.push({
+          label: PREHAB.name,
+          cost: costLabel(prehabCost()),
+          note: why ? `${why}.` : prehabNote(),
+          off: !!why,
+          run: () => game.train('prehab'),
+        });
+      }
+      const tw = taperWait(s);
+      const tapering = taperDay(s) > 0;
+      return {
+        title: where === 'gym' ? 'Train at the gym' : 'Train at the van',
+        sub: `${blockLine(s)} One session a day.`,
+        close: true,
+        rows: [
+          ...rows,
+          {
+            label: 'Change phase',
+            note: phaseNote(s.training.phase),
+            run: () => game.openSheet({ k: 'phases' }),
+          },
+          {
+            label: 'Taper for a send',
+            note: tapering
+              ? 'You’re tapering.'
+              : tw
+                ? `Too soon after the last one: ${tw} more day${tw > 1 ? 's' : ''}.`
+                : taperNote(),
+            off: tapering || tw > 0,
+            run: () => game.taper(),
+          },
+        ],
+      };
+    }
+
+    case 'phases': {
+      const lock = phaseLock(s);
+      return {
+        title: 'Your phase',
+        sub: blockLine(s),
+        close: true,
+        rows: [
+          ...PHASES.map((ph) => {
+            const now = ph === s.training.phase;
+            return {
+              label: PHASE_NAME[ph],
+              note: now
+                ? `You’re in it. ${phaseNote(ph)}`
+                : lock
+                  ? `Locked ${lock} more day${lock > 1 ? 's' : ''}. ${phaseNote(ph)}`
+                  : phaseNote(ph),
+              off: now || lock > 0,
+              run: () => {
+                if (!game.setPhase(ph)) game.openSheet({ k: 'train' });
+              },
+            };
+          }),
+          { label: 'Back', run: () => game.openSheet({ k: 'train' }) },
+        ],
+      };
+    }
 
     default:
       return null;

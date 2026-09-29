@@ -8,9 +8,10 @@
 import { CARRIED, STARTS } from './climber';
 import { GEAR } from './content/gear';
 import { PLACES } from './content/places';
+import { TRAIN } from './dials';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -69,6 +70,12 @@ export const MIGRATIONS: Record<number, Migration> = {
   4: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, gear: { shoes: 60, chalk: 30 } };
+  },
+  // v5 (Phase 21.2) -> v6 (Phase 21.3): a training block, in base since the day you load it,
+  // never tapered, no prehab.
+  5: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, training: { phase: 'base', since: isInt(x.day) ? x.day : 1, taper: null, prehab: 0 } };
   },
 };
 
@@ -180,6 +187,18 @@ export function validate(x: unknown): string[] {
         ([id, n]) => id in GEAR && isNum(n) && n >= 0 && (GEAR[id]!.kind !== 'wears' || n <= 100),
       ),
     'gear',
+  );
+  const tr = x.training;
+  need(
+    isObj(tr) &&
+      typeof tr.phase === 'string' &&
+      tr.phase in TRAIN.phases &&
+      isInt(tr.since) &&
+      tr.since >= 1 &&
+      (tr.taper === null || (isInt(tr.taper) && tr.taper >= 1)) &&
+      isInt(tr.prehab) &&
+      tr.prehab >= 0,
+    'training',
   );
   const dog = x.dog;
   const pct = (v: unknown) => isNum(v) && v >= 0 && v <= 100;

@@ -23,7 +23,7 @@ import { cold, freshLoad, ratio } from './body';
 import { gradeOf, average } from './climber';
 import { act, faSuggestions, goBlocked, knowsBeta, landingChance, newGame, talkStart } from './game';
 import { whereNow } from './presence';
-import type { Action, GameState, GoResult } from './types';
+import type { Action, GameState, GoResult, Skills } from './types';
 import type { Rng } from './rng';
 import { conditions } from './weather';
 
@@ -63,6 +63,8 @@ export interface DaySummary {
   // over all five: what climbing's worth an hour, against a setting shift's.
   climbMin: number;
   climbGain: number;
+  // The skills the day started with: what a training session would have been worth instead.
+  skills: Skills;
   // A night the rules count as failure: going to bed hungry, or with the card nearly maxed.
   stuck: boolean;
 }
@@ -367,6 +369,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   }
 
   function day() {
+    const morning = { ...s.climber.skills };
     workMin = 0;
     hardest = -1;
     climbMin = 0;
@@ -420,6 +423,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       where,
       climbMin,
       climbGain: Math.round(climbGain * 100) / 100,
+      skills: morning,
       stuck: s.fed < BODY.hungryBelow || headroom(s) < MONEY.vanSpot,
     });
     tryAct('lot.sleep');

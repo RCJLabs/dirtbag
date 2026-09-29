@@ -358,6 +358,45 @@ export const KIT = {
   pad: { price: 180 },
   // A rack: cams, nuts, slings. v0.956's $280. Nobody leads trad without one.
   rack: { price: 280 },
+  // A hangboard screwed over the van's back doors (Phase 21.3) [proposed price]. v0.956
+  // sold a pull-up bar as a van upgrade at $90; a board alone is cheaper.
+  hangboard: { price: 60 },
   // The swap meet at the shop on weekends: v0.956's 55% of new, in fair shape.
   used: { share: 0.55, condition: 60 },
+};
+
+// Training (Phase 21.3): v0.956's protocols, cut from 16 to six and prehab, with its
+// exploits closed (docs/audit/climbing.md §2.11, fixes in §7 "Now"). Training is what you
+// do when you can't climb, or to shore up one skill: an hour of it teaches less than an
+// hour on the rock at every grade (the harness holds it to that), and it loads your body
+// the way a go does.
+export const TRAIN = {
+  // A session's lesson before its weights, hi() and the phase: `base` at V0, and `perGrade`
+  // more a grade, half a fall's (climber.ts gains: 4 + 0.7 a grade), so it keeps pace
+  // with a go's as grades climb. The harness holds the best protocol under an hour on the
+  // rock at every grade the bots reach.
+  base: 2,
+  perGrade: 0.35,
+  // Prehab: v0.956's ×0.6 on the chance of an injury, for 8 days.
+  prehab: { days: 8, risk: 0.6 },
+  // Campus boards wait until you're climbing this grade: v0.956 let anyone at them.
+  campusGrade: 4,
+  // Phases [proposed]: base is where everyone starts, and changes nothing. A phase you
+  // choose holds for `lock` days before you can change it (v0.956 let you switch at bedtime). Peak runs
+  // at most `peakDays`, then drops you into deload on its own.
+  lock: 6,
+  peakDays: 7,
+  phases: {
+    base: { train: 1, risk: 1, windows: 1 },
+    // Training harder: more from each session, and more risk on everything.
+    build: { train: 1.25, risk: 1.2, windows: 1 },
+    // Sharp for sending: every crux a little wider, sessions teach less, and you're fragile.
+    peak: { train: 0.7, risk: 1.3, windows: 1.04 },
+    // Backing off: half from a session, less risk, and each night takes a fifth off your
+    // acute load (v0.956's ×0.8).
+    deload: { train: 0.5, risk: 0.6, windows: 1, acute: 0.8 },
+  },
+  // Taper: three days with no training, every crux 3% wider and 6% on the last day
+  // (v0.956's +0.03 and +0.06), then a fortnight before you can taper again.
+  taper: { days: 3, windows: 1.03, last: 1.06, cooldown: 14 },
 };

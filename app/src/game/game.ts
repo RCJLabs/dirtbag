@@ -31,6 +31,7 @@ import {
   type GameEvent,
   type GameState,
   type GoStyle,
+  type PhaseId,
   type SendStyle,
   type Skills,
 } from '../sim';
@@ -108,7 +109,10 @@ export type SheetId =
   | { k: 'settings' }
   | { k: 'credits' }
   | { k: 'restart' }
-  | { k: 'plan' };
+  | { k: 'plan' }
+  // Phase 21.3: sessions where you are, and the phases.
+  | { k: 'train' }
+  | { k: 'phases' };
 
 export interface Hud {
   day: number;
@@ -283,6 +287,7 @@ export class Game {
     // What an act does to you, heard: the till, the stove, the coins.
     const def = a.t === 'act' ? ACTS[a.act] : undefined;
     if (def && !r.events.some((e) => e.k === 'refused')) this.sound.play(actCue(def));
+    if (a.t === 'train' && !r.events.some((e) => e.k === 'refused')) this.sound.play('train');
     for (const e of r.events) {
       if (e.k === 'line') this.toast(e.text);
       else if (e.k === 'refused') this.toast(e.why);
@@ -634,6 +639,19 @@ export class Game {
     if (no?.k === 'refused') return no.why;
     this.today = noted(this.today, { place: this.state.at, act: id });
     return null;
+  }
+
+  // A training session, a phase, a taper. Each returns why the rules refused it, if they did.
+  train(protocol: string): string | null {
+    return refusal(this.dispatch({ t: 'train', protocol }));
+  }
+
+  setPhase(phase: PhaseId): string | null {
+    return refusal(this.dispatch({ t: 'phase', phase }));
+  }
+
+  taper(): string | null {
+    return refusal(this.dispatch({ t: 'taper' }));
   }
 
   // Pay for a trip once (Moonstone's haul): the place card rebuilds with the drive on it.
@@ -1032,6 +1050,12 @@ export class Game {
 }
 
 // What a go taught you, from its events.
+// Why the rules refused an action, or null.
+function refusal(ev: GameEvent[]): string | null {
+  const no = ev.find((e) => e.k === 'refused');
+  return no?.k === 'refused' ? no.why : null;
+}
+
 function gainsIn(ev: GameEvent[]): Partial<Skills> {
   const e = ev.find((x): x is Extract<GameEvent, { k: 'skills' }> => x.k === 'skills');
   return e?.gains ?? {};

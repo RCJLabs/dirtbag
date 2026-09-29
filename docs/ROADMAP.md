@@ -1420,6 +1420,16 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The e2e** checks the shop has a rack. It doesn't lead a trad line: that needs a rack and a belayer at once, which the five days don't reach.
 - **Not in yet:** the bots don't buy a rack, so the harness plays no trad (its numbers match 21.1's exactly). Pieces never pull out, and there's no gear quality: every piece holds.
 
+**Status (29 Sep 2026): 21.3 built.** Criterion 5 passes as a harness target: at every grade the bots reach (V0–V5 over 56 days), the best protocol for that day's skills, in build, teaches under an hour on the rock: 67% at V0, 27–44% from V1 up.
+- **Six protocols and prehab** (`sim/content/training.ts`, numbers in `TRAIN`), from v0.956's sixteen: max hangs, repeaters, and pull-ups and core on a hangboard at the van ($60 at the gear shop [proposed]); campus (from V4), 4x4s and ARC laps at the gym on a day pass. Each trains two skills, costs time, energy, food and some skin, and loads your body like a go of its energy times its intensity, so it counts toward the injury warning and the fried block.
+- **A session teaches** a lesson that grows with your grade (half a fall's), through hi() like a go. One session a day. None while you taper, hurt or fried: v0.956 allowed all three.
+- **Phases** [proposed]: base (where everyone starts, no commitment), build (sessions ×1.25, risk ×1.2), peak (every crux 4% wider, sessions ×0.7, risk ×1.3), deload (sessions half, risk ×0.6, a fifth off acute load each night). A chosen phase holds for 6 days, and peak ends itself in a deload after 7. That closes v0.956's bedtime deload and permanent peak.
+- **Taper:** 3 days of no training, every crux 3% wider and 6% on the last day, then 14 days before the next. **Prehab:** 30 minutes at the van, no gear, 40% less injury risk for 8 days; allowed hurt.
+- **Where:** a Train row on the van and the gym desk opens the sheet: the block you're in, each session with what it'd teach you today, the phase, the taper. Every number on it comes from `TRAIN`.
+- **Save v6,** migrated from a real Phase 21.2 save (v5): everyone starts in base, never tapered.
+- **The e2e** drives home from the shop on day five, opens the train sheet and does prehab. **The harness** records each day's morning skills for the check; the bots don't train, so Phase 6's targets read as before.
+- **Not in yet:** a rep minigame (v0.956 had four; sessions here are a choice, not a play), coaching, and visualise/footwork/falls work for head: head still comes only from the rock. Past V5 the check is untested: the bots don't get there.
+
 ---
 
 ### Phase 22 — The life: the van, the body, food, the hustle, and the games
@@ -1774,3 +1784,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — A gap check of v0.956 against the rebuild and the phases left found systems nothing covered. Evan's calls: three phases added before Phase 16, numbered 21 (the climber: gear, trad, training, crags past Act I, walls and expeditions), 22 (the life: van, body, food, the hustle, events, and the games) and 23 (who you are: origins, paths, stances, the Record Book); and blackjack, hold'em, liar's dice, horseshoes and busking come back from the cut list (trivia and a garden maybe). The order is now 21, 22, 23, 16, 17, 18, 14, 15, 19, 20. CURRENT MILESTONE moved to Phase 21.
 - 2026-09-29 — Phase 21.1: your kit. Shoes that wear, chalk, tape and a second pad; worn kit tightens every crux through the same factor the beta sheet shows; a gear shop in town with resoles and a weekend swap meet; save v5 from a real 0.961.0 save; bots keep their kit up and Phase 6's targets still pass.
 - 2026-09-29 — Phase 21.2: trad. Stances where you choose to place a piece (for pump) or run it out; falls catch on what you placed, and with nothing low enough you deck, with an injury roll; Trad Arête and Gorge Trad; a rack at the gear shop and the swap meet; a sound for a piece going in.
+- 2026-09-29 — Phase 21.3: training. Six protocols and prehab at the van (a hangboard) and the gym, through the load model; one session a day, none tapering, hurt or fried; phases that hold for 6 days and a peak that ends in a deload; a taper with a 14-day cooldown; save v6; a harness target holding every protocol under climbing's rate at every grade reached.

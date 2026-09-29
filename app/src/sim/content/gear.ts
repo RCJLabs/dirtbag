@@ -23,6 +23,11 @@ export const GEAR: Record<string, GearDef> = {
   },
   tape: { name: 'Tape', kind: 'uses', what: `A crack takes ${less(KIT.tape.skin)} skin through tape.` },
   pad: { name: 'A second pad', kind: 'owned', what: `Highball landings: ${less(HIGHBALL.pads)} risk.` },
+  hangboard: {
+    name: 'A hangboard',
+    kind: 'owned',
+    what: 'Over the van’s back doors. Fingers and pulling, on a rainy day.',
+  },
   rack: { name: 'A rack', kind: 'owned', what: 'Cams, nuts and slings. What you place is what catches you.' },
 };
 

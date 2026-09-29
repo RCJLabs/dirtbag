@@ -46,6 +46,12 @@ export const HURT_LINE: [string, string, string] = [
   'You feel it go on {route}. {Kind}. {days} days off, and a clinic visit.',
   'A pop you hear before you feel. {Kind}, on {route}. {days} days, and the clinic isn’t cheap.',
 ];
+// Hurt training: {session} is the protocol, lower case.
+export const TRAIN_HURT_LINE: [string, string, string] = [
+  'Something tweaks halfway through {session}. A {kind}: {days} days off, if you’re smart.',
+  '{Kind}, on {session}. {days} days off, and a clinic visit.',
+  'A pop on {session} you hear before you feel. {Kind}. {days} days, and the clinic isn’t cheap.',
+];
 export const HEALED_LINE = 'Your {kind} feels normal again. Ease back in.';
 export const FIRST_FREE_LINE = 'The clinic waves off the bill. First one’s on the house, apparently.';
 export const CLINIC_LINE = 'The clinic takes {cost}. Insurance covers the rest, eventually.';

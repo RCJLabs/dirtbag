@@ -53,6 +53,10 @@
       "made": "code",
       "in": "src/audio/voices.ts"
     },
+    "train": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
     "clip": {
       "made": "code",
       "in": "src/audio/voices.ts"

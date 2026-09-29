@@ -28,6 +28,7 @@ This is the game as it ships from 0.960.0 (the roadmap's R3): the first season, 
 - **The shell:** the game installs and plays offline.
 - **Your kit** (Phase 21.1, after 0.961.0): shoes that wear by the go, chalk, tape for cracks, a second pad, all from the gear shop in town (resoles, and a swap meet on weekends). Worn kit tightens every crux; the You page and the beta sheet say how much.
 - **Trad** (Phase 21.2, after 0.961.0): Trad Arête and Gorge Trad, led on a rack from the gear shop. Let go at a stance to place a piece, for pump, or climb through and run it out; a fall catches on your last piece, and with nothing low enough you deck (`TRAD` in `dials.ts`).
+- **Training** (Phase 21.3, after 0.961.0): Train on the van (with a hangboard) or at the gym desk. Six protocols and prehab, one session a day, through the load model; phases that hold for days, a taper with a cooldown (`sim/training.ts`, `sessions.ts`, `TRAIN` in `dials.ts`). The harness holds every protocol under an hour on the rock.
 - **Sound** (Phase 13.1, after 0.961.0): every verb has one, made in code with Web Audio (`src/audio/`), like the art. Volume and vibration in Settings. `npm run dev`, then `/sounds.html`, to hear them all. Every place has ambience, from its data (`ambience` in `PLACES`), turned by the hour and the weather. Every sound is in the licence ledger (`src/audio/ledger.json`); Settings has credits. No music yet.
 - **Tonight** (Phase 12.4, after 0.961.0): at night the van says what bed costs, what's left in the morning, how your body will read and tomorrow's sky, from the numbers sleep uses (`sim/tonight.ts`).
 - **Keyboard and access** (Phase 12.3, after 0.961.0): Tab reaches everything, the things in scenes and the map's pins included; Escape puts down what's open; text goes to 1.3×; the panel colours meet WCAG AA (`npm run check`).
@@ -56,6 +57,7 @@ npm run harness        # bots play whole seasons; prints the tables and Phase 6'
 | `src/sim/` | The rules: state, actions, the clock, money and body, climbing, saves, the RNG. Plain TypeScript, no DOM. |
 | `src/sim/content/` | Places, acts, roads, routes, beta, people and their lines, as data. `gym.ts` makes Send City's weekly set and its board from the seed. |
 | `src/sim/kit.ts`, `content/gear.ts` | Your kit: what it is, what a go does to it, and what it does to a go (`KIT` in `dials.ts`). |
+| `src/sim/training.ts`, `sessions.ts`, `content/training.ts` | Your training block (phase, taper, prehab) and a session: what it costs, teaches and loads (`TRAIN` in `dials.ts`). |
 | `src/sim/climber.ts`, `weather.ts`, `presence.ts` | Skills and the grade curve; each day's sky; where people are. All pure functions of the state or the seed. |
 | `src/sim/bot.ts` | A player that isn't one: plays whole days through `act()`, with perfect or human-ish hands, under three strategies (climber, balanced, worker). |
 | `src/sim/harness.ts`, `harness/` | The balance harness: bots play 28-day seasons across every start and strategy. It prints grade, money, runway and injuries, then passes or fails Phase 6's first-season targets. |
@@ -123,5 +125,5 @@ A place is data, a pin and a picture. In order:
 - **Injuries** are rare in the first month: none for bots that warm up and heed the warning, and 3% for reckless ones. That meets Phase 6's ceiling, but it may be too gentle to register as a trade-off. It's a playtest question.
 - **Design calls** marked *[proposed]* in the roadmap are Evan's to rule on: Sage's week away, the blessing's bond, the race's V4 trigger, Act I's "regular" stage, pace, and the card's footer.
 - **Not in yet:** comps, media, and jobs beyond the café and setting. The bots don't lead trad yet: they never buy a rack.
-- **Saves.** Save v5 (Phase 21.1) adds your kit; v4 (Phase 10.3) the trips you've paid for. Each loads from a real save of the version before, through a tested migration.
+- **Saves.** Save v6 (Phase 21.3) adds your training block; v5 (Phase 21.1) your kit; v4 (Phase 10.3) the trips you've paid for. Each loads from a real save of the version before, through a tested migration.
 - **The switch-over, live.** The crossover (a browser with v0.956 installed meeting this build) was tested locally, not yet on the real site. On the first visit after the deploy, v0.956 shows once from its own cache. Within a few seconds the new worker takes over and deletes v0.956's cache, and from the next launch it's this game.

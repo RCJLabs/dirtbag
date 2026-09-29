@@ -18,6 +18,7 @@ import { effGrade, PUMPED, type BetaDef, type CruxDef, type RouteDef, type Verb 
 import { cold } from './body';
 import { BODY, CLIMB, LOAD, TRAD } from './dials';
 import { kitFactor } from './kit';
+import { trainWindows } from './training';
 import type { GameState, GoResult } from './types';
 import { conditionsAt, sunOn } from './weather';
 
@@ -123,11 +124,11 @@ export function picks(s: GameState, r: RouteDef): Record<string, string> {
 }
 
 // What the day does to every window: the rock's conditions and the sun (outdoors only),
-// hunger, and whether you've warmed up.
+// hunger, whether you've warmed up, and your training block (peak, a taper).
 export function dayFactor(s: GameState, r: RouteDef): { windows: number; grease: boolean } {
   const weak = s.fed < BODY.weakBelow ? 1 - (0.3 * (BODY.weakBelow - s.fed)) / BODY.weakBelow : 1;
   // A hard line before you've warmed up.
-  const body = weak * (cold(s, r) ? LOAD.coldWindows : 1);
+  const body = weak * (cold(s, r) ? LOAD.coldWindows : 1) * trainWindows(s);
   if (r.place === 'gym') return { windows: body, grease: false };
   const c = conditionsAt(s.seed, s.day, r.place);
   const grease = s.min >= sunOn(s.seed, s.day, r.place, r.id);

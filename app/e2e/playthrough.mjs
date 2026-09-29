@@ -659,7 +659,8 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 5 ||
+  saved?.v !== 6 ||
+  st.training?.phase !== 'base' ||
   st.seed !== SEED ||
   !(st.gear?.shoes > 0 && st.gear.shoes < 60) ||
   st.climber?.name !== 'Robin' ||
@@ -792,6 +793,21 @@ await click('#sheet .opt', 'A block of chalk');
 await expectText('#toast', /You crush half of it/, 'chalk bought');
 log(`cash ${before} → ${await text('#h-cash')}`);
 await shot('gear-shop');
+
+console.log('Training');
+// Phase 21.3: home to the van, where the train sheet has the block you're in and prehab,
+// which needs no hangboard.
+await driveOn('the shop to the Lot', 'Drive back to the Lot');
+await until('the Lot', async () => (await text('#b-nav')) === 'Map', 15_000);
+await wait(600);
+await tapAt(100, 560);
+await expectText('#sheet', /Train/, 'the van');
+await click('#sheet .opt', 'Train');
+await expectText('#sheet', /Base: no phase on.*Prehab.*Change phase.*Taper for a send/, 'the train sheet');
+await click('#sheet .opt', 'Prehab');
+await expectText('#toast', /Covered for \d+ days/, 'prehab done');
+await shot('train-sheet');
+await press('Escape');
 await click('#h-you');
 await expectText('#kit', /Shoes.*Chalk\d+ left/, 'the kit');
 
@@ -804,7 +820,7 @@ if (quiet.length) await fail(`no ambience at: ${quiet.join(', ')}`);
 // Everything the five days do. Scout and a hold-to-load's charge and throw aren't in them;
 // cues.test.ts holds those to having a sound.
 const HEARD =
-  'breath cleared clip crux drive earn eat fell grip land move paper pay pullon rest send slap sleep step talk tap';
+  'breath cleared clip crux drive earn eat fell grip land move paper pay pullon rest send slap sleep step talk tap train';
 const silent = HEARD.split(' ').filter((c) => !heard.has(c));
 if (silent.length) await fail(`never heard: ${silent.join(', ')}`);
 

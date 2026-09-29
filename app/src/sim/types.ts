@@ -58,8 +58,22 @@ export interface GameState {
   unlocked: string[];
   // Your kit, by id in content/gear.ts: condition, uses left, or 1 for owned (Phase 21.1).
   gear: Record<string, number>;
+  // Your training block (Phase 21.3).
+  training: Training;
   // The message log: every line the game has told you, newest last.
   log: LogLine[];
+}
+
+export type PhaseId = 'base' | 'build' | 'peak' | 'deload';
+
+export interface Training {
+  phase: PhaseId;
+  // The day this phase began.
+  since: number;
+  // The day your last taper began, or null if you've never tapered.
+  taper: number | null;
+  // The last day prehab covers; 0 for never.
+  prehab: number;
 }
 
 export interface Load {
@@ -168,7 +182,11 @@ export type Action =
   | { t: 'go'; route: string }
   | { t: 'rest'; route: string }
   | { t: 'done'; route: string; result: GoResult }
-  | { t: 'name'; route: string; name: string; call: -1 | 0 | 1 };
+  | { t: 'name'; route: string; name: string; call: -1 | 0 | 1 }
+  // Phase 21.3: a session (a protocol's id, or 'prehab'), a phase, a taper.
+  | { t: 'train'; protocol: string }
+  | { t: 'phase'; phase: PhaseId }
+  | { t: 'taper' };
 
 // What a finished go hands back to the game.
 export interface GoResult {

@@ -96,7 +96,22 @@ export type { LoadResult, Migration, SaveFile } from './save';
 export { Rng, hashSeed, mulberry32 } from './rng';
 export type { Stream } from './rng';
 export * from './format';
-export { DAY, MONEY, BODY, CLIMB, LOAD, INJURY, HIGHBALL, BOND, ARC, DOG, LEGACY, KIT, TRAD } from './dials';
+export {
+  DAY,
+  MONEY,
+  BODY,
+  CLIMB,
+  LOAD,
+  INJURY,
+  HIGHBALL,
+  BOND,
+  ARC,
+  DOG,
+  LEGACY,
+  KIT,
+  TRAD,
+  TRAIN,
+} from './dials';
 export { PLACES, ACTS, ROADS, road, TEXT_VALUES } from './content/places';
 export type { PlaceDef, ActDef, RoadDef, Trip, Ambience } from './content/places';
 export {
@@ -129,3 +144,7 @@ export { DOG_OFFER, DOG_TIER_NAME } from './content/dog';
 export { ACT_I, ACT_I_END } from './content/story';
 export { currentGoal, goalDesc, progress } from './story';
 export type { TalkDef, TalkNode, TalkOpt, TalkFx, PersonDef, ThingDef } from './content/people';
+export { PROTOCOLS, PREHAB } from './content/training';
+export type { ProtocolDef } from './content/training';
+export { PHASES, PHASE_NAME, phaseLock, taperDay, taperWait, prehabbed, trainWindows } from './training';
+export { sessionCost, prehabCost, sessionGains, sessionLoad, trainBlocked, prehabBlocked } from './sessions';

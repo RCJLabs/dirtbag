@@ -12,6 +12,7 @@ import {
   FIRST_FREE_LINE,
   HEALED_LINE,
   HURT_LINE,
+  TRAIN_HURT_LINE,
   DECK_LINE,
   DECK_WALKED,
   LANDING_LINE,
@@ -23,13 +24,24 @@ import { PEOPLE, RACE_ROUTE, RIVAL_FA_NAMES, TALK } from './content/people';
 import { ACT_I_END } from './content/story';
 import { START_KIT } from './content/gear';
 import { has, tapedSkin, wearKit } from './kit';
+import {
+  prehabBlocked,
+  prehabCost,
+  protocolOf,
+  sessionCost,
+  sessionGains,
+  sessionLoad,
+  trainBlocked,
+} from './sessions';
+import { freshTraining, PHASE_NAME, phaseLock, taperDay, taperWait } from './training';
 import { SEND_NAME, effGrade, gradeLabel, gradeName, roped, type RouteDef } from './content/routes';
-import { BODY, CLIMB, DAY, DOG, HIGHBALL, INJURY, LOAD, MONEY, RIVAL, TRAD } from './dials';
+import { BODY, CLIMB, DAY, DOG, HIGHBALL, INJURY, LOAD, MONEY, RIVAL, TRAD, TRAIN } from './dials';
 import { fill, money, skillsNote } from './format';
 import { PARTNERS, tierOf, whereNow } from './presence';
 import { hashSeed, Rng } from './rng';
 import { aimMet, currentGoal } from './story';
 import type {
+  PhaseId,
   Action,
   Delta,
   GameEvent,
@@ -72,6 +84,7 @@ export function newGame(seed: string): GameState {
     goals: 0,
     unlocked: [],
     gear: { ...START_KIT },
+    training: freshTraining(1),
     log: [],
   };
 }
@@ -95,6 +108,17 @@ export function emptyLog(): RouteLog {
 const clone = (s: GameState): GameState => JSON.parse(JSON.stringify(s)) as GameState;
 const clamp100 = (v: number) => Math.max(0, Math.min(100, v));
 const round2 = (v: number) => Math.round(v * 100) / 100;
+
+// A session's injury roll is numbered apart from the day's goes, so the two never share one.
+const TRAIN_ROLL = 1000;
+
+// Said when you change phase.
+const PHASE_LINE: Record<PhaseId, string> = {
+  base: 'Back to base. Mileage, and nothing silly.',
+  build: 'Building. More from every session, and your body keeps the receipts.',
+  peak: `Peaking. ${TRAIN.peakDays} days to cash it in, then you pay for it.`,
+  deload: 'Deloading. Half the training, and the tired starts to lift.',
+};
 
 function logOf(s: GameState, route: string): RouteLog {
   return (s.routes[route] ??= emptyLog());
@@ -302,6 +326,17 @@ export function act(s0: GameState, a: Action): Result {
     for (const [k, v] of Object.entries(t) as [keyof Skills, number][])
       s.climber.skills[k] = round2(s.climber.skills[k] + v);
   };
+  // An injury lands: the line, the clinic's bill (the first one's waived), the count.
+  const injure = (hurt: Injury, text: string) => {
+    s.injury = hurt;
+    const days = hurt.until - s.day - 1;
+    events.push({ k: 'injured', kind: hurt.kind, tier: hurt.tier, days, text });
+    note(text);
+    const bill = s.hurt === 0 ? 0 : INJURY.clinic[hurt.tier - 1]!;
+    if (hurt.tier > 1) line(bill ? fill(CLINIC_LINE, { cost: money(bill) }) : FIRST_FREE_LINE);
+    if (bill) spend({ cash: -bill });
+    s.hurt += 1;
+  };
   const sleep = () => {
     const ended = s.day;
 
@@ -314,9 +349,16 @@ export function act(s0: GameState, a: Action): Result {
     s.energy = clamp100(s.energy + rest);
     s.skin = clamp100(s.skin + BODY.sleepSkin);
     s.fed = clamp100(s.fed - BODY.nightFed);
-    // The day's load folds into the averages.
+    // The day's load folds into the averages; a deload sheds some of the acute.
     const p = projected(s.load);
-    s.load = { acute: round2(p.acute), chronic: round2(p.chronic), today: 0 };
+    const shed = s.training.phase === 'deload' ? TRAIN.phases.deload.acute : 1;
+    s.load = { acute: round2(p.acute * shed), chronic: round2(p.chronic), today: 0 };
+    // Peak runs its course, then you back off whether you meant to or not.
+    if (s.training.phase === 'peak' && s.day - s.training.since >= TRAIN.peakDays) {
+      s.training.phase = 'deload';
+      s.training.since = s.day;
+      line(`${TRAIN.peakDays} days at peak is all you get. Your body calls a deload, and it isn’t asking.`);
+    }
     s.today = [];
     for (const r of Object.values(s.routes)) {
       r.goesToday = 0;
@@ -713,22 +755,79 @@ export function act(s0: GameState, a: Action): Result {
       events.push({ k: 'skills', gains: got, grade: after > before ? after : null });
       if (after > before) line(`Something clicks. You're climbing V${after} now.`);
       if (hurt) {
-        s.injury = hurt;
-        const days = hurt.until - s.day - 1;
         const kind = hurt.kind;
         const text = fill((landed ? (deck ? DECK_LINE : LANDING_LINE) : HURT_LINE)[hurt.tier - 1]!, {
           route: r.name,
           kind,
           Kind: kind[0]!.toUpperCase() + kind.slice(1),
-          days,
+          days: hurt.until - s.day - 1,
         });
-        events.push({ k: 'injured', kind, tier: hurt.tier, days, text });
-        note(text);
-        const bill = s.hurt === 0 ? 0 : INJURY.clinic[hurt.tier - 1]!;
-        if (hurt.tier > 1) line(bill ? fill(CLINIC_LINE, { cost: money(bill) }) : FIRST_FREE_LINE);
-        if (bill) spend({ cash: -bill });
-        s.hurt += 1;
+        injure(hurt, text);
       }
+      break;
+    }
+
+    case 'train': {
+      if (a.protocol === 'prehab') {
+        const why = prehabBlocked(s);
+        if (why) return refuse(`${why}.`);
+        spend(prehabCost());
+        s.today.push('prehab');
+        s.training.prehab = s.day + TRAIN.prehab.days - 1;
+        line(`Bands, wrist curls, the boring half of climbing. Covered for ${TRAIN.prehab.days} days.`);
+        break;
+      }
+      const p = protocolOf(a.protocol);
+      const why = trainBlocked(s, a.protocol);
+      if (!p || why) return refuse(`${why ?? 'No such session'}.`);
+      // Judged on the body you started with, as a go is.
+      const got = sessionGains(s, p);
+      const load = sessionLoad(s, p);
+      s.load.today = round2(s.load.today + load);
+      const hurt = rollInjury(s, { type: p.style }, load, false, TRAIN_ROLL);
+      spend(sessionCost(p));
+      s.today.push('trained');
+      const before = gradeOf(s.climber.skills);
+      train(got);
+      const after = gradeOf(s.climber.skills);
+      events.push({ k: 'skills', gains: got, grade: after > before ? after : null });
+      line(`${p.name}, done. ${skillsNote(got)}.`);
+      if (after > before) line(`Something clicks. You're climbing V${after} now.`);
+      if (hurt) {
+        const kind = hurt.kind;
+        injure(
+          hurt,
+          fill(TRAIN_HURT_LINE[hurt.tier - 1]!, {
+            session: p.name.toLowerCase(),
+            kind,
+            Kind: kind[0]!.toUpperCase() + kind.slice(1),
+            days: hurt.until - s.day - 1,
+          }),
+        );
+      }
+      break;
+    }
+
+    case 'phase': {
+      if (!(a.phase in TRAIN.phases)) return refuse('No such phase.');
+      if (a.phase === s.training.phase) return refuse("You're in it.");
+      const wait = phaseLock(s);
+      if (wait > 0)
+        return refuse(
+          `Give ${PHASE_NAME[s.training.phase].toLowerCase()} ${wait} more day${wait > 1 ? 's' : ''}.`,
+        );
+      s.training.phase = a.phase;
+      s.training.since = s.day;
+      line(PHASE_LINE[a.phase]);
+      break;
+    }
+
+    case 'taper': {
+      if (taperDay(s)) return refuse("You're tapering.");
+      const wait = taperWait(s);
+      if (wait > 0) return refuse(`Too soon after the last one. ${wait} more day${wait > 1 ? 's' : ''}.`);
+      s.training.taper = s.day;
+      line(`Tapering: no training for ${TRAIN.taper.days} days, and fresh arms at the end of it.`);
       break;
     }
 

@@ -5,6 +5,10 @@ import { it } from 'vitest';
 import type { BotRun, Strategy } from '../src/sim/bot';
 import { gradeOf, STARTS } from '../src/sim/climber';
 import { ACTS } from '../src/sim/content/places';
+import { PROTOCOLS } from '../src/sim/content/training';
+import { newGame } from '../src/sim/game';
+import { sessionGains } from '../src/sim/sessions';
+import { TRAIN } from '../src/sim/dials';
 import { checkpoints, contentOut, firstInjury, firstTry, median, season } from '../src/sim/harness';
 
 const SEEDS = Number(process.env.SEEDS ?? 12);
@@ -105,6 +109,32 @@ function targets(all: Record<Strategy, BotRun[]>, reckless: BotRun[]): void {
     rates.every((x) => x.rate > setRate),
     'Climbing out-teaches setting shifts at every grade',
     `skill an hour on the rock ${rates.map((x) => `V${x.g} ${x.rate.toFixed(2)}`).join(', ')}; setting ${setRate.toFixed(2)} (flat).`,
+  );
+
+  // 5. Training can't be farmed (Phase 21.3): at each grade the bots reached, an hour of the
+  // best protocol, in build (the phase that teaches most), on the skills the bots woke up
+  // with that day, teaches less than an hour on the rock did.
+  const trainRates = rates.map(({ g, rate }) => {
+    const days = moderate.flatMap((r) => r.days.filter((d) => d.climbMin && d.grade === g));
+    // Campus waits for its grade, as the rules make it.
+    const best = Object.entries(PROTOCOLS)
+      .filter(([id]) => id !== 'campus' || g >= TRAIN.campusGrade)
+      .map(([id, p]) => {
+        const per = days.map((d) => {
+          const s = { ...newGame('h'), climber: { name: 'h', start: 'allrounder', skills: d.skills } };
+          s.training = { ...s.training, phase: 'build' as const };
+          const got = sessionGains(s, p);
+          return Object.values(got).reduce((n, v) => n + v, 0) / (p.min / 60);
+        });
+        return { id, rate: per.reduce((n, v) => n + v, 0) / (per.length || 1) };
+      })
+      .sort((x, y) => y.rate - x.rate)[0]!;
+    return { g, rate, best };
+  });
+  say(
+    trainRates.every((x) => x.best.rate < x.rate),
+    'Training can’t be farmed: no protocol out-teaches climbing at any grade',
+    `best session an hour, in build, against the rock: ${trainRates.map((x) => `V${x.g} ${x.best.id} ${x.best.rate.toFixed(2)} (${Math.round((100 * x.best.rate) / x.rate)}%)`).join(', ')}.`,
   );
 
   // 4. A median climber is on a V5 project by day 28.
