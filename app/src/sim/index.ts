@@ -81,6 +81,8 @@ export { whereIs, whereNow, around, tierOf, PARTNERS, staysAt, knows, DAY_END } 
 export type { Stay } from './presence';
 export { gradeOfPerson, dexHurt } from './curves';
 export { ratio, zone, daysOff, cold, goLoad, projected } from './body';
+export { tonight, runway } from './tonight';
+export type { Tonight } from './tonight';
 export type { Zone } from './body';
 export { holds, unmet, isNight, headroom, beatDue, dogOffered } from './cond';
 export type { Cond, Need } from './cond';

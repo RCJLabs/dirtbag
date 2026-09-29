@@ -4,6 +4,7 @@ import { useStore } from '../game/store';
 import { MAP_PINS, OY, Z } from '../view/layout';
 import { mapLeft } from '../view/render';
 import { hotLabel } from './hots';
+import { vars } from './vars';
 
 // Pins are this wide on the map, in logical pixels, with room for a finger round them.
 const PIN = 32;
@@ -56,11 +57,11 @@ export function Hots({ game, ui }: { game: Game; ui: Ui }) {
   return null;
 }
 
-// Where a button sits, as the layout's variables: geometry from the canvas, not styling.
+// Where a button sits: geometry from the canvas, for the stylesheet to place it by.
 const box = (x: number, y: number, w: number, h: number) =>
-  ({
+  vars({
     '--x': `${x.toFixed(1)}px`,
     '--y': `${y.toFixed(1)}px`,
     '--bw': `${w.toFixed(1)}px`,
     '--bh': `${h.toFixed(1)}px`,
-  }) as React.CSSProperties;
+  });

@@ -26,6 +26,7 @@ This is the game as it ships from 0.960.0 (the roadmap's R3): the first season, 
 - **The journal** (Phase 12.1, after 0.961.0): tap your body in the HUD. You as a climber, and "Lately": the last 200 things that happened, in full. A line too long for a toast comes on a card instead.
 - **v0.956's players:** v0.956 retired at 0.960.0. Someone who played it is told so, can keep their old career as a file, and can carry on under their old name, their climbing capped at V3.
 - **The shell:** the game installs and plays offline.
+- **Tonight** (Phase 12.4, after 0.961.0): at night the van says what bed costs, what's left in the morning, how your body will read and tomorrow's sky, from the numbers sleep uses (`sim/tonight.ts`).
 - **Keyboard and access** (Phase 12.3, after 0.961.0): Tab reaches everything, the things in scenes and the map's pins included; Escape puts down what's open; text goes to 1.3×; the panel colours meet WCAG AA (`npm run check`).
 - **Any window** (Phase 12.2, after 0.961.0): portrait is a phone screen; a wider window widens the world, up to about 16:9, with sheets docked at the right from 1080 across. Walls close up stay portrait, as a panel over their crag.
 

@@ -180,6 +180,8 @@ button.pill:disabled {
 /* ---- speech ---- */
 .bubble {
   position: absolute;
+  left: var(--x);
+  top: var(--y);
   width: max-content;
   max-width: 258px;
   background: var(--u-bg);
@@ -486,7 +488,7 @@ button.pill:disabled {
 .c-bar i {
   display: block;
   height: 100%;
-  width: 0;
+  width: var(--w, 0);
   background: var(--u-ink);
 }
 .c-bar i.hot {
@@ -514,12 +516,15 @@ button.pill:disabled {
 /* The cruxes, underlined in the accent so they read over the fill as well as past it. */
 .reach .r-cx {
   position: absolute;
+  left: var(--l);
+  width: var(--w);
   bottom: 0;
   height: 4px;
   background: var(--u-acc);
 }
 .reach .r-go {
   position: absolute;
+  width: var(--w);
   left: 0;
   top: 0;
   bottom: 0;
@@ -527,6 +532,7 @@ button.pill:disabled {
 }
 .reach .r-best {
   position: absolute;
+  left: var(--l);
   top: -2px;
   bottom: -2px;
   width: 3px;
@@ -552,6 +558,8 @@ button.pill:disabled {
 }
 .verb .band {
   position: absolute;
+  left: var(--l);
+  width: var(--w);
   top: 0;
   bottom: 0;
   background: color-mix(in srgb, var(--u-acc) 38%, transparent);
@@ -560,6 +568,7 @@ button.pill:disabled {
 }
 .verb .fill {
   position: absolute;
+  width: var(--w, 0);
   left: 0;
   top: 0;
   bottom: 0;
@@ -567,6 +576,7 @@ button.pill:disabled {
 }
 .verb .mk {
   position: absolute;
+  left: var(--l);
   top: -4px;
   bottom: -4px;
   width: 5px;

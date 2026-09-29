@@ -128,6 +128,28 @@ check("the kit's colours meet WCAG AA", () => {
   return `${pairs.length} pairs, the lowest ${Math.min(...out).toFixed(2)}:1`;
 });
 
+// --- no one-off inline styles --------------------------------------------------------------
+// The game's panels take their look from styles.css. Inline, a component sets only custom
+// properties (levels and geometry from the game) through ui/vars.ts, and code touching an
+// element's style sets only custom properties too. Dev tools (src/dev) don't ship.
+check('the game sets no inline styles but custom properties', () => {
+  const files = ['app/src/ui', 'app/src/game'].flatMap((dir) =>
+    readdirSync(join(ROOT, dir), { recursive: true })
+      .filter((f) => /\.tsx?$/.test(f) && !/\.test\./.test(f))
+      .map((f) => `${dir}/${f}`),
+  );
+  const bad = [];
+  for (const f of files)
+    read(f)
+      .split('\n')
+      .forEach((line, i) => {
+        if (/style=\{(?!vars\(|box\()/.test(line) || /\.style\.(?!setProperty\(\s*['"`]--)/.test(line))
+          bad.push(`${f}:${i + 1}`);
+      });
+  if (bad.length) fail(`inline styles at ${bad.join(', ')}; set custom properties with vars() and style in styles.css`);
+  return `${files.length} files`;
+});
+
 // --- the Play build can still verify the domain ----------------------------------------------------
 check('TWA host matches CNAME and assetlinks.json names the app', () => {
   const twa = json('twa-manifest.json');

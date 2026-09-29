@@ -1,5 +1,6 @@
 import { clock, gradeOf, money } from '../sim';
 import type { Game, Ui } from '../game/game';
+import { vars } from './vars';
 
 // Day and time (tap for the forecast), money, your body (tap for your journal), and the
 // one navigation button. A screen with room for it gets the journal its own button too.
@@ -70,7 +71,7 @@ function Meter({ name, id, v }: { name: string; id: string; v: number }) {
   return (
     <span aria-hidden="true">
       {name}
-      <i id={id} className={v < 25 ? 'low' : undefined} style={{ ['--v' as string]: (v / 100).toFixed(2) }} />
+      <i id={id} className={v < 25 ? 'low' : undefined} style={vars({ '--v': (v / 100).toFixed(2) })} />
     </span>
   );
 }

@@ -21,8 +21,8 @@ export function Bubble({ game, talk, node }: { game: Game; talk: string; node: s
     const w = b.offsetWidth;
     const h = b.offsetHeight;
     const left = Math.min(Math.max(sx - w / 2, 8), ui.w - 8 - w);
-    b.style.left = `${left}px`;
-    b.style.top = `${Math.max(66, anchor.wy * Z + OY - h - 16)}px`;
+    b.style.setProperty('--x', `${left}px`);
+    b.style.setProperty('--y', `${Math.max(66, anchor.wy * Z + OY - h - 16)}px`);
     b.style.setProperty('--tx', `${Math.min(Math.max(sx - left - 7, 16), w - 30)}px`);
   });
 

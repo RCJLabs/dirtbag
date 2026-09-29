@@ -2,6 +2,7 @@ import { CLIMB, gradeLabel, moveAt, resting, type Attempt, type RouteDef } from 
 import type { Game } from '../game/game';
 import { useStore } from '../game/store';
 import { VERB_TEXT } from './Sheet';
+import { vars } from './vars';
 
 // What the panel says under the pump bar, most urgent first.
 function status(a: Attempt, r: RouteDef): string {
@@ -59,7 +60,7 @@ export function ClimbPanel({ game }: { game: Game }) {
           <i
             id="c-pump"
             className={att.pump > 75 ? 'hot' : undefined}
-            style={{ width: `${att.pump.toFixed(1)}%` }}
+            style={vars({ '--w': `${att.pump.toFixed(1)}%` })}
           />
         </div>
         <span id="c-move">
@@ -81,14 +82,17 @@ export function ClimbPanel({ game }: { game: Game }) {
           <div
             className="fill"
             id="v-fill"
-            style={{ width: v.verb === 'load' ? `${(v.m * 100).toFixed(1)}%` : '0%' }}
+            style={vars({ '--w': v.verb === 'load' ? `${(v.m * 100).toFixed(1)}%` : '0%' })}
           />
           <div
             className="band"
             id="v-band"
-            style={{ left: `${((center - v.w) * 100).toFixed(1)}%`, width: `${(v.w * 200).toFixed(1)}%` }}
+            style={vars({
+              '--l': `${((center - v.w) * 100).toFixed(1)}%`,
+              '--w': `${(v.w * 200).toFixed(1)}%`,
+            })}
           />
-          <div className="mk" id="v-mk" style={{ left: `${(v.m * 100).toFixed(1)}%` }} />
+          <div className="mk" id="v-mk" style={vars({ '--l': `${(v.m * 100).toFixed(1)}%` })} />
         </div>
       )}
       <button

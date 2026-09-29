@@ -60,6 +60,7 @@ import {
   type GameState,
   type LogLine,
   type PersonLog,
+  type Tonight,
   type RouteDef,
   type Season,
   type Verb,
@@ -72,6 +73,7 @@ import { planLine, stepLabel, stepsAt, withStep, type PlanStep } from '../game/p
 import { CARD, cardPng } from '../view/paint/card';
 import { cardFile, cardOf, cardText } from './card';
 import { buildSheet, SKILL_NAME, type ListSpec } from './sheets';
+import { vars } from './vars';
 
 export const VERB_TEXT: Record<Verb, string> = {
   load: 'Hold to load, let go in the band',
@@ -144,6 +146,7 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
           {n}
         </p>
       ))}
+      {spec.tonight && <TonightList t={spec.tonight} />}
       {spec.who && <WhoList {...spec.who} />}
       <ul>
         {spec.rows.map((r) => (
@@ -292,11 +295,11 @@ function Reach({ moves, cruxes, go, best }: NonNullable<ListSpec['reach']>) {
   return (
     <>
       <div className="reach" id="reach" role="img" aria-label={`${say} This go against your best.`}>
-        <i className="r-go" style={{ width: pct(go) }} />
+        <i className="r-go" style={vars({ '--w': pct(go) })} />
         {cruxes.map(([a, b]) => (
-          <i key={a} className="r-cx" style={{ left: pct(a), width: pct(b - a) }} />
+          <i key={a} className="r-cx" style={vars({ '--l': pct(a), '--w': pct(b - a) })} />
         ))}
-        {!!best && <i className="r-best" style={{ left: pct(best) }} />}
+        {!!best && <i className="r-best" style={vars({ '--l': pct(best) })} />}
       </div>
       <p className="reach-say">{say}</p>
     </>
@@ -617,6 +620,60 @@ function FaBody({ game, route, s }: { game: Game; route: string; s: GameState })
 }
 
 // Bills land on the night of every seventh day.
+// Tonight, from the van: what bed costs, what's left in the morning, how you'll feel and
+// what the sky will do. Every number is the one sleep will use (sim/tonight.ts).
+function TonightList({ t }: { t: Tonight }) {
+  const nights = (n: number) => (n === 0 ? 'Tonight' : n === 1 ? 'Tomorrow night' : `In ${n} nights`);
+  const [word, what] = LOAD_WORD[t.zone];
+  return (
+    <>
+      <p className="crux">Tonight</p>
+      <ul className="days" id="tonight">
+        <li>
+          <b>The spot</b>
+          <span className="sky">{t.rough ? 'The pullout' : money(t.spot)}</span>
+          <small>
+            {t.rough
+              ? `The card won't take the spot. A cold night: +${t.energy} energy by morning.`
+              : `+${t.energy} energy by morning.`}
+            {t.hungry ? ` You'd go to bed hungry, and it costs you ${BODY.hungryNight} of that.` : ''}
+          </small>
+        </li>
+        <li>
+          <b>Bills</b>
+          <span className="sky">{money(t.bills)}</span>
+          <small>{nights(t.billsIn)}: registration and insurance.</small>
+        </li>
+        <li>
+          <b>Morning</b>
+          <span className="sky">{money(t.cash)}</span>
+          <small>
+            {t.cash > 0
+              ? t.runway > 0
+                ? `About ${t.runway} day${t.runway === 1 ? '' : 's'} without a shift.`
+                : 'Not a full day without a shift.'
+              : t.card > 0
+                ? `On the card. It takes ${money(t.card)} more.`
+                : "The card's maxed."}
+          </small>
+        </li>
+        <li>
+          <b>Body</b>
+          <span className="sky">{word}</span>
+          <small>
+            {t.off > 0 ? `${t.off} more day${t.off === 1 ? '' : 's'} off the rock. ` : ''}
+            {what}
+          </small>
+        </li>
+        <li data-sky={t.sky}>
+          <b>Tomorrow</b>
+          <span className="sky">{SKY_NAME[t.sky]}</span>
+        </li>
+      </ul>
+    </>
+  );
+}
+
 function billsWhen(day: number): string {
   const n = Math.ceil(day / 7) * 7 - day + 1;
   return n === 1 ? 'tonight' : `in ${n} nights`;
@@ -696,7 +753,7 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
         {SKILLS.map((k) => (
           <li key={k}>
             <span>{SKILL_NAME[k]}</span>
-            <i style={{ ['--v' as string]: Math.min(1, c.skills[k] / scale).toFixed(3) }} />
+            <i style={vars({ '--v': Math.min(1, c.skills[k] / scale).toFixed(3) })} />
             <b>{c.skills[k].toFixed(1)}</b>
           </li>
         ))}
@@ -740,7 +797,7 @@ function LoadRow({ s }: { s: GameState }) {
           <span>This week</span>
           <i
             className={r > LOAD.risk ? 'hot' : undefined}
-            style={{ ['--v' as string]: Math.min(1, r / LOAD.fried).toFixed(3) }}
+            style={vars({ '--v': Math.min(1, r / LOAD.fried).toFixed(3) })}
           />
           <b>{word}</b>
         </li>

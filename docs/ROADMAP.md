@@ -1251,7 +1251,7 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 **Unreal.** On hold, by Evan's call, until the conversion to the new game is done. Spec changes are still logged, per CLAUDE.md.
 
-**Status (29 Sep 2026): 12.1 to 12.3 built.**
+**Status (29 Sep 2026): 12.1 to 12.5 built. Closing is Evan's call; where each criterion stands is at the end.**
 - The sim already kept a log of the last 200 lines in the save (`LOG_MAX`), with nothing showing it. The Journal shows it: your body in the HUD, or the goal pill, opens it, on "You" (the old "you" sheet) or "Lately" (the log, by day, newest first).
 - A line over 30 words (`TOAST_WORDS`) goes on a card, "Right" to put it down, that waits until nothing else is open, as the end of Act I's card already did. None of today's toasted lines is that long: the longest texts are Sage's beats, which are speech bubbles.
 - The e2e opens the log on day two and watches every toast of the run, reloads included; it fails on one over 30 words.
@@ -1281,6 +1281,21 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Fixed on the way:** the screen's `wide` class was set by hand and React dropped it whenever the screen's other classes changed (a setting, or now the map), so a wide screen could stop docking its sheets.
 - **Not covered by keyboard in the e2e:** the gym, the board, the plan, the send card, naming a first ascent, and Settings. They're ordinary buttons, so Tab reaches them, but the bot hasn't played them that way. Nobody has tried it with a real screen reader.
 - **Criterion 3** is met on what the keyboard day covers.
+
+12.4, Tonight:
+- At night the van says what bed will do: the spot (or the pullout, when the card won't take it) and the energy back by morning, a hungry night's cost, the week's bills and when, the morning's cash and its runway (or what the card still takes), how your body will read, days still off the rock, and tomorrow's sky.
+- It's `tonight()` in the sim, from the numbers sleep uses; a test holds sleep to its prediction on an ordinary night, a bills night and a night in the pullout. Runway moved there from the harness, so the player and the harness read the same one, and the harness's targets are unchanged.
+- v0.956's "Tonight" had about eight meters (fueling, teeth, sickness and more); the rebuild doesn't have those, so it's five lines. The e2e checks it on the first night: $41 in the morning, which is what sleep leaves.
+
+12.5, no one-off inline styles:
+- A component sets only custom properties inline (a meter's level, a band's place, a button's box over the canvas), through `ui/vars.ts`; styles.css does the styling. The pump bar, the verb bands, the go's reach, the bubble and the skill bars moved over. `npm run check` fails on any other inline style in the game's UI; the dev-only figure sheet doesn't ship and isn't checked.
+
+**Where the criteria stand:**
+1. No one-off inline styles: met, and checked.
+2. Every flow in portrait and landscape: met for what the e2e plays in landscape (a first morning, the map, a go, turning the window); the gym, the board, the plan, the send card and the night aren't played there yet.
+3. Keyboard reaches every control: met for what the keyboard day plays (a whole day, from the climber screen to bed); the gym, the board, the plan, the send card, naming a first ascent and Settings aren't played by keyboard yet. No real screen reader has been tried.
+4. No long text in a timed toast, none over a control: met, and checked on every toast of every run. Scene things, whose tap areas can be a whole wall, aren't counted; toasts never take a tap.
+5. The message log holds the last 200 events in full: met for the sim's events. People coming and going, what a thing says when tapped, and refusals are toasts only.
 
 ---
 
@@ -1608,3 +1623,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 12.1: the Journal. Your body in the HUD opens it: you as a climber, and "Lately", the sim's 200-line log that nothing showed until now. A line over 30 words goes on a card, not a toast, and the e2e fails on any toast longer. Day three's taps don't move.
 - 2026-09-29 — Phase 12.2: the wide screen. A landscape window widens the screen to up to 1248 across instead of framing a phone: scenes and skies show more, the map paints ridged country around the valley, walls close up are panels over their crag, and sheets dock at the right from 1080 across. Toasts moved off the HUD, and the e2e checks every one against every control. A landscape morning joins the e2e.
 - 2026-09-29 — Phase 12.3: keyboard and access. Scenes' things and the map's pins take the keyboard and a screen reader, Escape puts things down, one focus ring, text at a true 1.3×, low meters striped, and the accent deepened to pass the new WCAG AA check in `npm run check`. The e2e plays a day by keyboard alone at the larger text.
+- 2026-09-29 — Phase 12.4 and 12.5: the van says what tonight will do (from `tonight()`, which sleep is held to), and inline styles are down to custom properties, checked by `npm run check`. Phase 12's slices are all built; closing it is Evan's call.

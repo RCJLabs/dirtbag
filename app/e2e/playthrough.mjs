@@ -197,7 +197,7 @@ async function setHold(on) {
 const panel = () =>
   page.evaluate(() => {
     const v = document.getElementById('verb');
-    const pump = parseFloat(document.getElementById('c-pump')?.style.width ?? '0') || 0;
+    const pump = parseFloat(document.getElementById('c-pump')?.style.getPropertyValue('--w') ?? '0') || 0;
     const move =
       parseInt((document.getElementById('c-move')?.textContent ?? '').replace(/\D+/g, ' ').trim(), 10) || 0;
     return {
@@ -512,7 +512,8 @@ await tapAt(100, 560);
 await expectText('#sheet', /Your van/, 'van');
 await click('#sheet .opt', 'Cook ramen');
 await expectText('#h-time', clockRe(17 * 60 + 53 + late), 'clock');
-await tapAt(200, 300);
+// Above the sheet, which at night has Tonight on it too.
+await tapAt(200, 150);
 await until('the sheet to close', async () => !(await page.locator('#sheet').count()));
 for (let i = 0; i < 2; i++) {
   await tapAt(340, 650);
@@ -531,6 +532,8 @@ await page.keyboard.up('ArrowLeft');
 taps++;
 await press('Enter');
 await expectText('#sheet', /Your van/, 'van');
+// Tonight says what bed will do, and bed does it: $41 in the morning.
+await expectText('#tonight', /The spot\$18.*Morning\$41/, 'tonight');
 await click('#sheet .opt', 'Sleep');
 await expectText('#h-time', /^Day 2 · 7:10 AM$/, 'morning');
 await expectText('#h-cash', /^\$41$/, 'cash');
