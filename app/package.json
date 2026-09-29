@@ -13,6 +13,7 @@
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.sim.json && tsc -p tsconfig.app.json && tsc -p tsconfig.node.json",
     "test": "vitest run",
+    "harness": "vitest run --mode harness",
     "e2e": "node e2e/playthrough.mjs",
     "size": "node scripts/size.mjs",
     "format": "prettier --write .",

@@ -1,7 +1,7 @@
 // A player that isn't one: plays whole days through act() and the go model, for the week
-// test now and the balance harness in R2. Its choices are rules of thumb, and every one goes
-// through the same door a tap does, so a bot's week is a real week. Its hands are better
-// than anyone's (it reads the meter exactly), so what it reaches is an upper bound.
+// test and the balance harness. Its choices are rules of thumb, and every one goes through
+// the same door a tap does, so a bot's week is a real week. With careful hands it reads the
+// meter exactly, so what it reaches is an upper bound; human hands scatter.
 
 import {
   attemptInput,
@@ -15,9 +15,10 @@ import {
 } from './climb';
 import { isNight, unmet } from './cond';
 import { routesAt } from './content/gym';
-import { ACTS } from './content/places';
+import { ACTS, road } from './content/places';
 import type { RouteDef } from './content/routes';
 import { CLIMB, DAY, MONEY } from './dials';
+import { gradeOf, average } from './climber';
 import { act, goBlocked, knowsBeta, newGame, talkStart } from './game';
 import { whereIs } from './presence';
 import type { Action, GameState, GoResult } from './types';
@@ -31,7 +32,32 @@ export interface BotRun {
   // a rule that leaves no way forward.
   refused: string[];
   sends: string[];
+  // One line per day, taken at bedtime.
+  days: DaySummary[];
 }
+
+export interface DaySummary {
+  day: number;
+  cash: number;
+  grade: number;
+  // The five skills' average: the grade's finer grain.
+  avg: number;
+  energy: number;
+  skin: number;
+  fed: number;
+  goes: number;
+  // Minutes on the clock at work.
+  workMin: number;
+  // The hardest grade index you tied in on today, or -1.
+  hardest: number;
+  // Where the day's climbing was: a place, "tired" (too spent to go), or "nothing" (no line
+  // left within reach anywhere).
+  where: string;
+}
+
+// How a bot spends its days. The climber works only when the money's nearly gone; the
+// balanced one keeps a cushion; the worker takes every shift going and climbs after.
+export type Strategy = 'climber' | 'balanced' | 'worker';
 
 // Reads the meter the way the e2e bot reads the screen: hold to track the tension band,
 // release a throw just inside its band, tap on the beat; shake out at the rest, and hang
@@ -147,14 +173,23 @@ function bestBeta(s: GameState, r: RouteDef): { picks: [string, string][]; worst
 export interface WeekOpts {
   days?: number;
   start?: string;
+  strategy?: Strategy;
   // Hands for each go; perfect ones by default.
   hands?: () => (a: Attempt, i: number) => boolean;
 }
 
-export function playWeek(seed: string, opts: WeekOpts = {}): BotRun {
+// The cash each strategy tries to keep before it'll spend a day climbing.
+const CUSHION: Record<Strategy, number> = { climber: 15, balanced: 60, worker: Infinity };
+
+export const playWeek = (seed: string, opts: WeekOpts = {}): BotRun => playDays(seed, { days: 7, ...opts });
+
+export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   const hands = opts.hands ?? carefulHands;
+  const strategy = opts.strategy ?? 'balanced';
   let s = newGame(seed);
-  const run: BotRun = { state: s, actions: [], refused: [], sends: [] };
+  const run: BotRun = { state: s, actions: [], refused: [], sends: [], days: [] };
+  let workMin = 0;
+  let hardest = -1;
 
   const go = (a: Action): boolean => {
     const r = act(s, a);
@@ -176,10 +211,12 @@ export function playWeek(seed: string, opts: WeekOpts = {}): BotRun {
   const billsSoon = () => Math.ceil(s.day / 7) * 7 - s.day <= 1;
 
   function work() {
-    const want = 60 + (billsSoon() ? MONEY.registration + MONEY.insurance : 0);
+    const want = CUSHION[strategy] + (billsSoon() ? MONEY.registration + MONEY.insurance : 0);
     if (s.cash >= want) return;
     travel('cafe');
+    const t = s.min;
     if (!tryAct('cafe.double')) tryAct('cafe.shift');
+    workMin += s.min - t;
   }
 
   function maybeSage() {
@@ -188,13 +225,26 @@ export function playWeek(seed: string, opts: WeekOpts = {}): BotRun {
     if (node === 'meet' || node === 'again') go({ t: 'say', talk: 'sage', node, opt: 0 });
   }
 
-  // The next line to try: the easiest one not yet sent with a window the hands can hold;
-  // with everything sent, the day's done.
-  function choose(): RouteDef | null {
-    const lines = routesAt(s.seed, s.at, s.day)
-      .filter((r) => !goBlocked(s, r) && !s.routes[r.id]?.sent && (s.routes[r.id]?.goesToday ?? 0) < 3)
-      .sort((a, b) => a.grade - b.grade);
-    return lines.find((r) => bestBeta(s, r).worst >= 0.045) ?? null;
+  // The next line to try at a place: the easiest one not yet sent with a window the hands
+  // can hold; failing that, a project (the unsent line with the widest window, three goes a
+  // day at most, as a player would work a line above them); with everything sent, there's
+  // nothing to go there for.
+  function choose(place = s.at): RouteDef | null {
+    // Plan for when you'd get there, with the pass you'd buy at the desk.
+    const drive = place === s.at ? 0 : (road(s.at, place)?.min ?? 0);
+    const there = {
+      ...s,
+      at: place,
+      min: s.min + drive,
+      today: place === 'gym' ? [...s.today, 'pass'] : s.today,
+    };
+    const lines = routesAt(s.seed, place, s.day)
+      .filter((r) => !goBlocked(there, r) && !s.routes[r.id]?.sent && (s.routes[r.id]?.goesToday ?? 0) < 3)
+      .map((r) => ({ r, w: bestBeta(there, r).worst }))
+      .sort((a, b) => a.r.grade - b.r.grade);
+    const easy = lines.find((l) => l.w >= 0.045);
+    if (easy) return easy.r;
+    return lines.sort((a, b) => b.w - a.w)[0]?.r ?? null;
   }
 
   function session() {
@@ -207,6 +257,7 @@ export function playWeek(seed: string, opts: WeekOpts = {}): BotRun {
         if ((s.routes[r.id]?.pick[crux] ?? r.cruxes.find((c) => c.id === crux)!.beta[0]) !== beta)
           go({ t: 'pick', route: r.id, crux, beta });
       if (!go({ t: 'go', route: r.id })) return;
+      hardest = Math.max(hardest, r.grade);
       const res = playGo(s, r, hands());
       go({ t: 'done', route: r.id, result: res });
       if (!res.sent && !goBlocked(s, r)) go({ t: 'rest', route: r.id });
@@ -214,19 +265,38 @@ export function playWeek(seed: string, opts: WeekOpts = {}): BotRun {
   }
 
   function day() {
+    workMin = 0;
+    hardest = -1;
     travel('lot');
     if (s.fed < 70) tryAct('lot.cook');
     work();
-    const place = conditions(s.seed, s.day).open ? 'road' : 'gym';
-    if (s.min < 16 * 60) {
+    // The crag when it's dry and there's something there to try; the gym otherwise.
+    const open = conditions(s.seed, s.day).open;
+    const place = open && choose('road') ? 'road' : choose('gym') ? 'gym' : null;
+    let where = place ? 'tired' : 'nothing';
+    if (place && s.min < 16 * 60 && s.energy >= 30 && s.skin >= 25) {
       travel(place);
       if (place === 'gym') tryAct('gym.pass');
       session();
+      where = place;
     }
     travel('lot');
     if (s.fed < 60) tryAct('lot.cook');
     if (s.fed < 40) tryAct('lot.cook');
     while (s.min < DAY.bedFrom) if (!tryAct(isNight(s.min) ? 'lot.sit' : 'lot.rest')) break;
+    run.days.push({
+      day: s.day,
+      cash: s.cash,
+      grade: gradeOf(s.climber.skills),
+      avg: average(s.climber.skills),
+      energy: s.energy,
+      skin: s.skin,
+      fed: s.fed,
+      goes: Object.values(s.routes).reduce((n, r) => n + r.goesToday, 0),
+      workMin,
+      hardest,
+      where,
+    });
     tryAct('lot.sleep');
   }
 

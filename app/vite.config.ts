@@ -9,11 +9,15 @@ const { version } = JSON.parse(readFileSync(new URL('./package.json', import.met
   version: string;
 };
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   // Relative asset URLs, so the same build runs at the site root, under a subpath or as a preview.
   base: './',
   plugins: [react(), pwa()],
   define: { __APP_VERSION__: JSON.stringify(version) },
   build: { target: 'es2022' },
-  test: { include: ['src/**/*.test.ts'], environment: 'node' },
-});
+  // `--mode harness` runs the balance harness instead of the tests.
+  test: {
+    include: mode === 'harness' ? ['harness/**/*.harness.ts'] : ['src/**/*.test.ts'],
+    environment: 'node',
+  },
+}));
