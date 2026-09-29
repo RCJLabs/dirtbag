@@ -128,7 +128,10 @@ export interface PersonLog {
   ahead?: boolean;
 }
 
+// How a line's first send went, kept in its log.
 export type SendStyle = 'onsight' | 'flash' | 'redpoint';
+// How any send went: a line you've already sent is a repeat, never a second redpoint.
+export type GoStyle = SendStyle | 'repeat';
 
 export interface SendRecord {
   day: number;
@@ -183,7 +186,7 @@ export type GameEvent =
   | { k: 'line'; text: string }
   // New beta, with the line that tells you how you saw it.
   | { k: 'learned'; route: string; beta: string; how: 'fall' | 'told' | 'watched'; text: string }
-  | { k: 'sent'; route: string; style: SendStyle; go: number }
+  | { k: 'sent'; route: string; style: GoStyle; go: number }
   // What a go taught you, and your grade if it moved.
   | { k: 'skills'; gains: Partial<Skills>; grade: number | null }
   // The first ascent of an open line: it's yours to name.

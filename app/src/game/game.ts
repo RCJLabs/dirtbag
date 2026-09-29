@@ -28,6 +28,7 @@ import {
   type FallRun,
   type GameEvent,
   type GameState,
+  type GoStyle,
   type SendStyle,
   type Skills,
 } from '../sim';
@@ -67,7 +68,7 @@ export type SheetId =
   | {
       k: 'sent';
       route: string;
-      style: SendStyle;
+      style: GoStyle;
       go: number;
       gains: Partial<Skills>;
       notes: string[];
@@ -698,9 +699,11 @@ export class Game {
         this.set({
           stamp: null,
           climbing: false,
-          sheet: fa
-            ? { k: 'fa', route, style, go, gains, notes, from: 'send' }
-            : { k: 'sent', route, style, go, gains, notes, first },
+          // A first ascent is a first send, so never a repeat.
+          sheet:
+            fa && style !== 'repeat'
+              ? { k: 'fa', route, style, go, gains, notes, from: 'send' }
+              : { k: 'sent', route, style, go, gains, notes, first },
         });
       },
       this.still ? 1200 : 2600,
