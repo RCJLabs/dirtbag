@@ -105,6 +105,17 @@ export function App({ game }: { game: Game }) {
     window.addEventListener('keydown', keydown);
     window.addEventListener('keyup', keyup);
 
+    // Sound can only start from a gesture, so every tap and key offers it one. A button in
+    // the panels ticks as it's pressed; the hold button has the climbing's own sounds.
+    const wake = () => game.sound.unlock();
+    const tick = (e: MouseEvent) => {
+      const b = (e.target as Element | null)?.closest?.('button');
+      if (b && b.id !== 'hold') game.sound.play('tap');
+    };
+    window.addEventListener('pointerdown', wake, true);
+    window.addEventListener('keydown', wake, true);
+    sc.addEventListener('click', tick);
+
     const warm = window.setTimeout(() => game.warm(), 1200);
     return () => {
       cancelAnimationFrame(raf);
@@ -112,6 +123,9 @@ export function App({ game }: { game: Game }) {
       cv.removeEventListener('pointerdown', down);
       window.removeEventListener('keydown', keydown);
       window.removeEventListener('keyup', keyup);
+      window.removeEventListener('pointerdown', wake, true);
+      window.removeEventListener('keydown', wake, true);
+      sc.removeEventListener('click', tick);
       clearTimeout(warm);
     };
   }, [game]);

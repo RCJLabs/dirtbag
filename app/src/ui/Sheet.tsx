@@ -973,6 +973,17 @@ function SettingsBody({ game, settings }: { game: Game; settings: Settings }) {
         {choice('text', 'normal', 'Normal')}
         {choice('text', 'large', 'Large')}
       </div>
+      <p className="crux">Sound</p>
+      <div role="radiogroup" aria-label="Sound">
+        {choice('sound', 'on', 'On')}
+        {choice('sound', 'quiet', 'Quiet')}
+        {choice('sound', 'off', 'Off')}
+      </div>
+      <p className="crux">Vibration</p>
+      <div role="radiogroup" aria-label="Vibration">
+        {choice('buzz', 'on', 'On, where the phone can')}
+        {choice('buzz', 'off', 'Off')}
+      </div>
       <OldCareer />
     </>
   );
