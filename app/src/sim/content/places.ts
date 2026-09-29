@@ -168,6 +168,37 @@ export const PLACES: Record<string, PlaceDef> = {
     // roof loses its shade first, the arête by the van keeps it longest.
     sun: ['mopen', 'mroof', 'msplitter', 'mhueco', 'mmoon', 'mspire', 'megg', 'mmantel', 'marete'],
   },
+  // v0.956's fourth crag: "a famous desert destination, world-class and brutal". V7 to get
+  // in, three hours out, and shut for the summer heat. No haul to pay for: just the drive.
+  mesa: {
+    name: 'Sandstone Mesa',
+    crag: true,
+    scene: 'mesa',
+    ambience: { wind: 0.5, hawk: 0.25 },
+    away: 'Red desert sandstone, three hours out. World-class, and brutal about it.',
+    here: 'Red rock, black varnish, and nobody for miles.',
+    acts: [],
+    minGrade: 7,
+    locked: 'V7 and up, and they mean it. Come back when you’re climbing V7.',
+    closed: { season: 'summer', why: 'Too hot to hold anything till fall' },
+    desert: true,
+    ownSky: true,
+    // The sun comes round the far end first, as at Moonstone: the project out past the
+    // Prow loses its shade first, the traverse by the van keeps it longest.
+    sun: [
+      'sopen',
+      'smega',
+      'spowerhouse',
+      'sprow',
+      'sdtrad',
+      'sbiglink',
+      'senduro',
+      'sdlap',
+      'ssplit',
+      'scrimps',
+      'svarnish',
+    ],
+  },
   gym: {
     name: 'Send City',
     scene: 'gym',
@@ -441,6 +472,9 @@ export const ROADS: RoadDef[] = [
   // Moonstone: v0.956's three hours and 30% of a tank from the Lot, north up the highway
   // past Roadside and out of the valley.
   { a: 'moon', b: 'road', min: 120, cash: 18 },
+  // The Mesa: v0.956's three hours and 35% of a tank from the Lot, west off the highway
+  // past Roadside on the desert road.
+  { a: 'mesa', b: 'road', min: 120, cash: 20 },
 ];
 
 // A drive: its time and gas, and the places it passes on the way.

@@ -193,6 +193,21 @@ export const TALK: Record<string, TalkDef> = {
               line: 'Sage: "Meet you at the pullout. I\'ll bring the rope."',
             },
           },
+          {
+            label: 'Come out to the Mesa?',
+            when: {
+              bond: `sage/${BOND.invite}`,
+              grade: PLACES.mesa!.minGrade,
+              open: 'mesa',
+              before: BOND.inviteBefore,
+              notToday: 'invite',
+            },
+            fx: {
+              invite: 'mesa',
+              today: 'invite',
+              line: 'Sage: "Three hours of desert for a belay. You\'re buying the gas." She\'s already packing.',
+            },
+          },
           { label: 'Not now' },
         ],
       },

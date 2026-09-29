@@ -9,7 +9,8 @@ import { ROUTES } from './content/routes';
 import { HIGHBALL } from './dials';
 import { act, belayer, faSuggestions, goBlocked, landingChance, lineGrade, lineName, newGame } from './game';
 import type { Action, GameEvent, GameState } from './types';
-import { conditions, conditionsAt, skyOn } from './weather';
+import { conditions, conditionsAt, seasonOf, skyOn } from './weather';
+import { TALK } from './content/people';
 
 const lines = (ev: GameEvent[]) => ev.flatMap((e) => (e.k === 'line' ? [e.text] : []));
 const at = (grade: number, over: Partial<GameState> = {}): GameState => {
@@ -116,6 +117,37 @@ describe('Moonstone Boulders', () => {
     expect(betaScale(s, ROUTES.megg!, 'A1')).toBeLessThan(
       betaScale({ ...s, at: 'road' }, { ...ROUTES.megg!, place: 'road' }, 'A1'),
     );
+  });
+});
+
+describe('Sandstone Mesa (Phase 21.4)', () => {
+  it('opens at V7, three hours out, with no haul to pay for', () => {
+    const r = act(at(6), { t: 'travel', to: 'mesa' });
+    expect(r.events[0]).toMatchObject({ k: 'refused' });
+    const s = play(at(7), { t: 'travel', to: 'mesa' }).state;
+    expect(s).toMatchObject({ at: 'mesa', cash: 100 - road('lot', 'mesa')!.cash });
+    expect(road('lot', 'mesa')!.min).toBe(180);
+  });
+
+  it('shuts for the summer heat, and is desert rock the rest of the year', () => {
+    const summer = days(60, 100).find(
+      (d) => seasonOf(d) === 'summer' && conditionsAt('crags', d, 'mesa').open,
+    )!;
+    expect(goBlocked(at(8, { at: 'mesa', day: summer, min: 10 * 60 }), ROUTES.svarnish!)).toBe(
+      'Too hot to hold anything till fall',
+    );
+    const fall = days(1, 28).find((d) => conditionsAt('crags', d, 'mesa').open)!;
+    expect(goBlocked(at(8, { at: 'mesa', day: fall, min: 10 * 60 }), ROUTES.svarnish!)).toBeNull();
+  });
+
+  it('keeps v0.956’s eleven lines, V7 to the open V13, and Sage will come out to belay', () => {
+    const here = Object.values(ROUTES).filter((r) => r.place === 'mesa');
+    expect(here).toHaveLength(11);
+    expect(Math.min(...here.map((r) => r.grade))).toBe(7);
+    expect(here.find((r) => r.open)?.grade).toBe(13);
+    const s = at(8, { at: 'mesa', min: 10 * 60 });
+    expect(goBlocked(s, ROUTES.sdlap!)).toBe('Nobody here to belay you');
+    expect(TALK.sage!.nodes.again!.opts.some((o) => o.fx?.invite === 'mesa')).toBe(true);
   });
 });
 

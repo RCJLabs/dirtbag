@@ -1430,6 +1430,14 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The e2e** drives home from the shop on day five, opens the train sheet and does prehab. **The harness** records each day's morning skills for the check; the bots don't train, so Phase 6's targets read as before.
 - **Not in yet:** a rep minigame (v0.956 had four; sessions here are a choice, not a play), coaching, and visualise/footwork/falls work for head: head still comes only from the rock. Past V5 the check is untested: the bots don't get there.
 
+**Status (29 Sep 2026): 21.4, first crag built: Sandstone Mesa.** One crag per slice, as planned; the other six (The Big Stone, Wind River Walls, The Crucible, Psicobloc Cove, The Hollow, The Cave) are to come, and criterion 3 waits on them.
+- **The crag,** through "Adding a place": v0.956's eleven lines with its names and grades (from the v0.956 bundle at `e098332`). Seven boulders from V7 to the open V13, with The Prow a sandbag (V9, really V10); Desert Lap 5.13a, Desert Enduro 5.13b and The Big Link 5.13d bolted; the Desert Trad Line 5.13d on gear.
+- **Access** as v0.956 had it: V7 to get in, no haul to pay for, three hours from the Lot ($20 of gas past Roadside), desert rock (every window ×0.92), weather of its own, and shut in summer for the heat.
+- **Its picture:** a scene of red desert sandstone with black varnish, a pale caprock and huecos; a close-up wall with The Big Link's bulge and the trad line's crack; a boulder look; a pin west off the highway on a dirt road.
+- **A belayer:** nobody's day brings anyone to the Mesa, so Sage now takes an invite there, as she does to the Gorge (bond 3, V7). Moonstone's spire has no such invite, and Dex doesn't belay, so its two bolted lines can't be led at all. That gap predates this slice; the fix is the same invite plus a condition on the haul being paid for.
+- **The bots** drive to the Mesa once they climb V7, after Roadside and the Gorge. In 56 days they reach V5, so none gets there yet.
+- **Found on the way, not fixed:** past day 45 the balanced bots go broke. Around V5, with Roadside done, they drive to the Gorge daily ($44 of gas against a $56 shift) and fail its projects; by day 56 they're ~$150 in debt, with 81 stuck nights across the runs. It was the same at 21.3. The 28-day targets never see it. It's the mid-grade squeeze criterion 3 is about, and needs a call: cheaper gas, better pay, or more V5–V7 lines closer in.
+
 ---
 
 ### Phase 22 — The life: the van, the body, food, the hustle, and the games
@@ -1785,3 +1793,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 21.1: your kit. Shoes that wear, chalk, tape and a second pad; worn kit tightens every crux through the same factor the beta sheet shows; a gear shop in town with resoles and a weekend swap meet; save v5 from a real 0.961.0 save; bots keep their kit up and Phase 6's targets still pass.
 - 2026-09-29 — Phase 21.2: trad. Stances where you choose to place a piece (for pump) or run it out; falls catch on what you placed, and with nothing low enough you deck, with an injury roll; Trad Arête and Gorge Trad; a rack at the gear shop and the swap meet; a sound for a piece going in.
 - 2026-09-29 — Phase 21.3: training. Six protocols and prehab at the van (a hangboard) and the gym, through the load model; one session a day, none tapering, hurt or fried; phases that hold for 6 days and a peak that ends in a deload; a taper with a 14-day cooldown; save v6; a harness target holding every protocol under climbing's rate at every grade reached.
+- 2026-09-29 — Phase 21.4: Sandstone Mesa. v0.956's eleven lines (V7 to an open V13, three bolted, one trad), V7 to get in, closed in summer, desert rock and its own weather; a red-sandstone scene, wall and boulder look; a pin on a desert road; Sage will come out to belay; the bots drive there from V7.

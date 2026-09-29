@@ -280,7 +280,7 @@ describe('beta', () => {
       k: 'refused',
       why: "They're not here.",
     });
-    expect(refusal(act(gone, { t: 'say', talk: 'sage', node: 'again', opt: 2 }).events)).toBeUndefined();
+    expect(refusal(act(gone, { t: 'say', talk: 'sage', node: 'again', opt: 3 }).events)).toBeUndefined();
   });
 });
 

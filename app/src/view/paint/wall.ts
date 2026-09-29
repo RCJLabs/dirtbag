@@ -194,6 +194,45 @@ const TOPO_PTS: Record<string, Pt[]> = {
     [228, 200],
     [224, 112],
   ],
+  // Sandstone Mesa's wall: Desert Lap up the varnish on the left, Desert Enduro the full
+  // height beside it, The Big Link through the bulge, and the trad line up the crack.
+  sdlap: [
+    [60, 538],
+    [54, 470],
+    [66, 404],
+    [58, 336],
+    [70, 268],
+    [64, 200],
+    [70, 168],
+  ],
+  senduro: [
+    [140, 540],
+    [146, 470],
+    [134, 400],
+    [150, 330],
+    [140, 260],
+    [152, 190],
+    [144, 120],
+  ],
+  sbiglink: [
+    [222, 540],
+    [216, 470],
+    [228, 414],
+    [212, 382],
+    [226, 352],
+    [218, 280],
+    [230, 200],
+    [222, 112],
+  ],
+  sdtrad: [
+    [302, 540],
+    [298, 470],
+    [304, 400],
+    [296, 330],
+    [302, 262],
+    [312, 196],
+    [306, 124],
+  ],
   testpiece: [
     [290, 538],
     [298, 470],
@@ -449,6 +488,126 @@ const M_WALL: Pt[] = [
   [338, BASE_Y],
 ];
 
+// Sandstone Mesa: a flat-topped red wall, varnish streaked down it from the rim.
+const S_WALL: Pt[] = [
+  [-4, BASE_Y],
+  [-4, 104],
+  [60, 98],
+  [120, 101],
+  [180, 94],
+  [240, 99],
+  [300, 92],
+  [364, 97],
+  [364, BASE_Y],
+];
+
+function paintMesa(g: G): void {
+  g.fillStyle = lin(g, 0, 0, 0, 120, [
+    [0, '#8FB9D6'],
+    [1, '#F1D6B0'],
+  ]);
+  g.fillRect(0, 0, W, H);
+  // Another mesa, far off across the flats.
+  g.fillStyle = '#C7968A';
+  g.beginPath();
+  g.moveTo(-4, 118);
+  g.lineTo(-4, 84);
+  g.lineTo(90, 84);
+  g.lineTo(104, 118);
+  g.closePath();
+  g.fill();
+  const r = mulberry32(151);
+  g.save();
+  g.beginPath();
+  poly(g, S_WALL, true);
+  g.clip();
+  g.fillStyle = lin(g, 0, 90, 0, BASE_Y, [
+    [0, '#C8683E'],
+    [1, '#B45A38'],
+  ]);
+  g.fillRect(0, 0, W, H);
+  // Cross-bedding: long shallow curves, the old dunes this was.
+  g.strokeStyle = 'rgba(90,40,26,.28)';
+  g.lineWidth = 1.4;
+  for (let y = 150; y < BASE_Y; y += 40 + r() * 30) {
+    g.beginPath();
+    g.moveTo(-4, y);
+    for (let x = 0; x <= W + 8; x += 24) g.lineTo(x, y + Math.sin(x * 0.012 + y) * 10 + (r() - 0.5) * 3);
+    g.stroke();
+  }
+  // Desert varnish: black streaks where water runs off the rim.
+  for (let i = 0; i < 16; i++) {
+    const x = r() * W;
+    const len = 120 + r() * 300;
+    g.fillStyle = lin(g, 0, 96, 0, 96 + len, [
+      [0, 'rgba(40,22,20,.55)'],
+      [1, 'rgba(40,22,20,0)'],
+    ]);
+    g.fillRect(x, 96, 6 + r() * 16, len);
+  }
+  // Huecos, a few.
+  g.fillStyle = 'rgba(70,30,20,.5)';
+  for (let i = 0; i < 9; i++) {
+    g.beginPath();
+    g.ellipse(20 + r() * 320, 160 + r() * 340, 3 + r() * 5, 2 + r() * 3, 0, 0, 6.2832);
+    g.fill();
+  }
+  // The Big Link's bulge, and its shadow.
+  g.fillStyle = 'rgba(70,30,22,.45)';
+  g.beginPath();
+  g.moveTo(186, 392);
+  g.quadraticCurveTo(222, 368, 262, 390);
+  g.lineTo(262, 404);
+  g.quadraticCurveTo(222, 386, 186, 404);
+  g.closePath();
+  g.fill();
+  g.strokeStyle = 'rgba(255,214,176,.5)';
+  g.lineWidth = 2;
+  g.beginPath();
+  g.moveTo(186, 392);
+  g.quadraticCurveTo(222, 368, 262, 390);
+  g.stroke();
+  // The trad line's crack, and the blank face above it.
+  g.strokeStyle = 'rgba(40,20,16,.7)';
+  g.lineWidth = 2.4;
+  g.beginPath();
+  trace(
+    g,
+    [
+      [310, 540],
+      [306, 470],
+      [312, 400],
+      [304, 330],
+      [310, 262],
+      [316, 214],
+    ],
+    false,
+  );
+  g.stroke();
+  // The rim: a paler cap of harder rock.
+  g.fillStyle = '#D9906A';
+  g.fillRect(-4, 90, W + 8, 16);
+  g.restore();
+
+  g.fillStyle = '#D9B48A';
+  g.fillRect(-4, BASE_Y, W + 8, H - BASE_Y);
+  g.fillStyle = '#C49A72';
+  for (let i = 0; i < 14; i++) {
+    g.beginPath();
+    rock(g, r() * W, BASE_Y + 20 + r() * 160, 12 + r() * 20, 6 + r() * 8);
+    g.fill();
+  }
+  g.fillStyle = '#6E7A55';
+  for (const [tx, ty, sc] of [
+    [16, BASE_Y + 4, 1.1],
+    [346, BASE_Y + 2, 0.9],
+  ] as const) {
+    g.beginPath();
+    g.ellipse(tx, ty - 8 * sc, 18 * sc, 10 * sc, 0, 0, 6.2832);
+    g.fill();
+  }
+}
+
 function paintMoon(g: G): void {
   g.fillStyle = lin(g, 0, 0, 0, 300, [
     [0, '#9CC3D9'],
@@ -684,6 +843,7 @@ export function wallArt(place: string, selected: string): HTMLCanvasElement {
 function paintWall(g: G, place: string, selected: string): void {
   if (place === 'gorge') paintGorge(g);
   else if (place === 'moon') paintMoon(g);
+  else if (place === 'mesa') paintMesa(g);
   else paintRoadside(g);
   paintLines(g, place, selected);
 }
@@ -692,9 +852,12 @@ function paintWall(g: G, place: string, selected: string): void {
 // the boulder itself, so weather drawn on the rock stays off the sky.
 export function rockPath(g: G, r: RouteDef): void {
   g.beginPath();
-  if (roped(r)) poly(g, r.place === 'gorge' ? G_WALL : r.place === 'moon' ? M_WALL : WALLPOLY, true);
+  if (roped(r)) poly(g, FACE[r.place] ?? WALLPOLY, true);
   else poly(g, boulderOutline(r), true);
 }
+
+// Each crag's rock face on its close-up, where weather is drawn; Roadside's is WALLPOLY.
+const FACE: Record<string, Pt[]> = { gorge: G_WALL, moon: M_WALL, mesa: S_WALL };
 
 // A route's wall, painted into any context in wall units: what the wall view caches at 2x,
 // for the send card to paint at its own size.

@@ -92,6 +92,17 @@ export const SIDE_ROADS: Record<string, { pts: Pt[]; dirt?: true }> = {
     ],
     dirt: true,
   },
+  // The desert road west to Sandstone Mesa, where the highway climbs out of the valley.
+  mesa: {
+    pts: [
+      [318, 98],
+      [290, 90],
+      [258, 80],
+      [228, 70],
+      [200, 60],
+    ],
+    dirt: true,
+  },
 };
 export const BLOCKS: [number, number, number, number][] = [
   [222, 400, 30, 20],

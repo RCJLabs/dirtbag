@@ -168,6 +168,34 @@ const DESERT: Palette = {
   talus: '#CDB58F',
 };
 
+// Sandstone Mesa: a desert morning, red rock gone orange where the sun's on it, varnish
+// black, and pale sand.
+const MESA: Palette = {
+  sky: [
+    [0, '#8FB9D6'],
+    [0.6, '#E6DCC8'],
+    [1, '#F1D6B0'],
+  ],
+  orb: '#FFF1D6',
+  orbX: 300,
+  orbY: 70,
+  far2: '#D2A898',
+  far: '#C28574',
+  mid: '#D0A27A',
+  midTree: '#6E7A55',
+  trees: '#5E6B48',
+  ground: '#D9B48A',
+  ground2: '#C9A27A',
+  track: '#C0976E',
+  van: '#E6DCC4',
+  trim: '#2F6F73',
+  glass: '#6F8C98',
+  wall: '#C8683E',
+  wallShade: '#A5502F',
+  wallDark: '#4A2A22',
+  talus: '#C49A72',
+};
+
 // The poster never outlines anything: shapes are fills, lines are plain strokes.
 function fill(g: G, draw: (g: G) => void, col: string): void {
   g.beginPath();
@@ -477,7 +505,7 @@ const CRAG_VAN = { x: 34, w: 200, h: 82 };
 
 // How a crag's rock is painted: Roadside's banded sandstone, the Gorge's granite, or
 // Moonstone's quartzite.
-type Rock = 'sandstone' | 'granite' | 'quartzite';
+type Rock = 'sandstone' | 'granite' | 'quartzite' | 'redrock';
 
 // The wall's outline: a ragged left edge from its foot, and either the scene's right edge
 // or, where the wall ends, a top that steps down into the talus.
@@ -702,6 +730,52 @@ function quartzite(g: G, P: Palette, c: CragSpec, r: () => number): void {
   }
 }
 
+// The Mesa's red desert sandstone: a flat rim of paler caprock, cross-bedding, black
+// varnish streaked down from the rim, and huecos.
+function redrock(g: G, P: Palette, c: CragSpec, r: () => number): void {
+  const [x0, x1] = c.wall;
+  fill(
+    g,
+    (gg) =>
+      poly(
+        gg,
+        [
+          [x0 + 260, -20],
+          [x1 + 30, -20],
+          [x1 + 30, GND],
+          [x0 + 320, GND],
+        ],
+        true,
+      ),
+    P.wallShade!,
+  );
+  g.strokeStyle = 'rgba(90,40,26,.28)';
+  g.lineWidth = 1.6;
+  for (let y = 90; y < GND; y += 44 + r() * 34) {
+    g.beginPath();
+    for (let x = x0; x <= x1 + 30; x += 24) g.lineTo(x, y + Math.sin(x * 0.01 + y) * 12);
+    g.stroke();
+  }
+  for (let i = 0; i < 18; i++) {
+    const x = x0 + 30 + r() * (x1 - x0 - 30);
+    const len = 140 + r() * 320;
+    g.fillStyle = lin(g, 0, 20, 0, 20 + len, [
+      [0, 'rgba(40,22,20,.55)'],
+      [1, 'rgba(40,22,20,0)'],
+    ]);
+    g.fillRect(x, 20, 6 + r() * 18, len);
+  }
+  g.fillStyle = 'rgba(70,30,20,.45)';
+  for (let i = 0; i < 16; i++) {
+    g.beginPath();
+    g.ellipse(x0 + 40 + r() * (x1 - x0 - 60), 80 + r() * 380, 3 + r() * 6, 2 + r() * 4, 0, 0, 6.2832);
+    g.fill();
+  }
+  // The caprock.
+  g.fillStyle = '#D9906A';
+  g.fillRect(x0 - 10, 6, x1 - x0 + 60, 20);
+}
+
 // Behind-the-boulders trees: junipers at Roadside and Moonstone, pines in the Gorge.
 const TREES: Record<string, [number, number][]> = {
   crag: [
@@ -714,6 +788,12 @@ const TREES: Record<string, [number, number][]> = {
     [18, 210],
     [96, 170],
     [250, 150],
+  ],
+  mesa: [
+    [20, 1.1],
+    [252, 0.8],
+    [1230, 1],
+    [1540, 1.2],
   ],
   moon: [
     [16, 1.2],
@@ -732,6 +812,12 @@ const TALUS: Record<string, [number, number, number][]> = {
     [918, 40, 22],
     [1056, 24, 12],
     [1270, 22, 10],
+  ],
+  mesa: [
+    [410, 22, 10],
+    [660, 30, 12],
+    [1110, 26, 12],
+    [1420, 24, 10],
   ],
   moon: [
     [446, 24, 10],
@@ -765,6 +851,7 @@ function paintCragGround(P: Palette, id: string, kind: Rock): HTMLCanvasElement 
   g.clip();
   if (kind === 'granite') granite(g, P, spec, r);
   else if (kind === 'quartzite') quartzite(g, P, spec, r);
+  else if (kind === 'redrock') redrock(g, P, spec, r);
   else sandstone(g, P, spec, r);
   g.fillStyle = lin(g, 0, GND - 60, 0, GND, [
     [0, 'rgba(40,36,34,0)'],
@@ -808,6 +895,7 @@ const BOULDER_ROCK: Record<Rock, [string, string]> = {
   sandstone: ['#BDB5A5', '#9C968B'],
   granite: ['#C3C6C6', '#969BA1'],
   quartzite: ['#EDE3D3', '#C4B19E'],
+  redrock: ['#C8683E', '#9C4A30'],
 };
 
 // A boulder on the talus, side on: an angular block with a lit face and a shaded side,
@@ -922,6 +1010,13 @@ const cache = new Map<string, SceneArt>();
 // twice. The far layers are painted wide enough for it wherever it looks.
 export const SEEN = Math.max(600, W_MAX / Z);
 
+// The crags away from the valley: their own light, their own rock.
+const LOOK: Record<string, { P: Palette; seed: number; rock: Rock }> = {
+  gorge: { P: GORGE, seed: 17, rock: 'granite' },
+  moon: { P: DESERT, seed: 23, rock: 'quartzite' },
+  mesa: { P: MESA, seed: 29, rock: 'redrock' },
+};
+
 // The painted layers for a scene at a time of day. Two are kept: the one you're in and the
 // one you just left, so walking back doesn't repaint. A place card's header paints from a
 // scene without keeping it (`keep` false), so looking at the map never pushes out yours.
@@ -944,12 +1039,12 @@ function paintArt(id: string, tod: Tod): SceneArt {
     };
   const crag = CRAGS[id];
   const gorge = id === 'gorge';
-  const moon = id === 'moon';
-  const P = gorge ? GORGE : moon ? DESERT : SP[crag ? 'day' : tod];
+  const look = LOOK[id];
+  const P = look?.P ?? SP[crag ? 'day' : tod];
   const w = crag?.width ?? WW;
   const lw = (p: number) => SEEN + (w - SEEN) * p;
-  const seed = gorge ? 17 : moon ? 23 : crag ? 11 : 5;
-  const rock: Rock = gorge ? 'granite' : moon ? 'quartzite' : 'sandstone';
+  const seed = look?.seed ?? (crag ? 11 : 5);
+  const rock: Rock = look?.rock ?? 'sandstone';
   return {
     sky: paintSky(P, crag ? 'day' : tod),
     marks: skyMarks(P, crag ? 'day' : tod),

@@ -889,6 +889,113 @@ const mMoon = librarySport('mmoon', 'Moonlight Arête', 10, 'technical', 'moon',
   b: { style: 'crimp', name: 'The headwall', from: 20.2, to: 23.6, win: 'Chains.' },
 });
 
+// ---- Sandstone Mesa: v0.956's fourth crag, desert sandstone three hours out ----
+// Its eleven lines, names and grades as v0.956 had them: V7 to the open V13, three bolted
+// lines and a trad line. It opens at V7 and shuts for the summer heat.
+
+const sVarnish = libraryBoulder('svarnish', 'Desert Varnish', 7, 'endurance', 'mesa', {
+  moves: 10,
+  from: 6.0,
+  to: 8.4,
+  cruxName: 'The last slopers',
+  heightFt: 15,
+  line: 'Ten moves across black varnish. The holds are fine; there are just a lot of them.',
+});
+const sCrimps = libraryBoulder('scrimps', 'Sandstone Crimps', 8, 'crimp', 'mesa', {
+  moves: 7,
+  from: 3.4,
+  to: 5.2,
+  cruxName: 'The flakes',
+  heightFt: 14,
+  line: 'Thin flakes that might be holds or might be next year’s talus.',
+});
+const sProw = libraryBoulder('sprow', 'The Prow', 9, 'technical', 'mesa', {
+  moves: 8,
+  from: 4.2,
+  to: 6.2,
+  cruxName: 'The prow',
+  heightFt: 17,
+  line: 'A sharp prow, climbed on its edge. The guidebook says V9.',
+  trueGrade: 10,
+});
+const sSplit = libraryBoulder('ssplit', 'Desert Splitter', 9, 'crack', 'mesa', {
+  moves: 8,
+  from: 3.8,
+  to: 5.8,
+  cruxName: 'The flare',
+  heightFt: 16,
+  line: 'A splitter through a boulder the size of a van. Tape up.',
+});
+const sPowerhouse = libraryBoulder('spowerhouse', 'Powerhouse', 10, 'power', 'mesa', {
+  moves: 6,
+  from: 2.6,
+  to: 4.2,
+  cruxName: 'The roof',
+  heightFt: 12,
+  line: 'Six moves out a roof on slopers that don’t care how strong you are.',
+});
+const sMega = libraryBoulder('smega', 'The Megaproject', 11, 'dyno', 'mesa', {
+  moves: 6,
+  from: 3.0,
+  to: 4.4,
+  cruxName: 'The jump',
+  heightFt: 15,
+  line: 'Everyone’s project, for a reason. The jump is further than it looks, and it looks far.',
+});
+const sOpen = libraryBoulder('sopen', 'The Mesa project', 13, 'crimp', 'mesa', {
+  moves: 8,
+  from: 4.4,
+  to: 6.6,
+  cruxName: 'The blank bit',
+  heightFt: 16,
+  line: 'Unclimbed. Chalk on two holds, and a long blank stretch nobody has chalked.',
+  open: true,
+});
+const sLap = librarySport('sdlap', 'Desert Lap', 8, 'crimp', 'mesa', {
+  moves: 22,
+  heightFt: 85,
+  line: 'The warm-up here, which says something about here.',
+  rest: 11.4,
+  a: { style: 'crimp', name: 'The varnish', from: 6.4, to: 8.6, win: 'Onto the ledge.' },
+  b: { style: 'technical', name: 'The slab', from: 16.2, to: 18.4, win: 'Chains.' },
+});
+const sEnduro = librarySport('senduro', 'Desert Enduro', 9, 'endurance', 'mesa', {
+  moves: 28,
+  heightFt: 110,
+  line: 'A hundred and ten feet, and none of it is a rest you’d call a rest.',
+  rest: 14.8,
+  a: {
+    style: 'endurance',
+    name: 'The first headwall',
+    from: 9.2,
+    to: 12.0,
+    win: 'A shake, if you’re quick.',
+  },
+  b: {
+    style: 'crimp',
+    name: 'The top edges',
+    from: 21.6,
+    to: 24.6,
+    win: 'Chains. Your forearms file a complaint.',
+  },
+});
+const sLink = librarySport('sbiglink', 'The Big Link', 11, 'technical', 'mesa', {
+  moves: 30,
+  heightFt: 120,
+  line: 'Two routes linked through a blank bulge. The link is the whole point.',
+  rest: 15.2,
+  a: { style: 'technical', name: 'The bulge', from: 9.6, to: 12.4, win: 'Through the link.' },
+  b: { style: 'power', name: 'The lip', from: 23.0, to: 25.8, win: 'Chains. All of it, in one go.' },
+});
+const sTrad = libraryTrad('sdtrad', 'Desert Trad Line', 11, 'technical', 'mesa', {
+  moves: 26,
+  heightFt: 105,
+  line: 'Soft sandstone and a thin crack. Place carefully; it holds if you did.',
+  rest: 13.4,
+  a: { style: 'crack', name: 'The thin crack', from: 7.6, to: 10.2, win: 'Out of the crack.' },
+  b: { style: 'technical', name: 'The runout face', from: 19.0, to: 21.8, win: 'Top out onto the mesa.' },
+});
+
 export const ROUTES: Record<string, RouteDef> = {
   warm: warmBoulder,
   dyno,
@@ -921,6 +1028,17 @@ export const ROUTES: Record<string, RouteDef> = {
   mopen: mOpen,
   mspire: mSpire,
   mmoon: mMoon,
+  svarnish: sVarnish,
+  scrimps: sCrimps,
+  sprow: sProw,
+  ssplit: sSplit,
+  spowerhouse: sPowerhouse,
+  smega: sMega,
+  sopen: sOpen,
+  sdlap: sLap,
+  senduro: sEnduro,
+  sbiglink: sLink,
+  sdtrad: sTrad,
 };
 
 // Said when you come off between cruxes with nothing left in your arms.

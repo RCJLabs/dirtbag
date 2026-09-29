@@ -69,6 +69,9 @@ export interface DaySummary {
   stuck: boolean;
 }
 
+// Where the bots climb: the crags they drive to without paying for a haul, and the gym.
+const BOT_PLACES = ['road', 'gorge', 'mesa', 'gym'];
+
 // A careful climber reads a highball's landing odds the way they read the load warning: they
 // won't work one while a fall from its crux lands badly more than 1 time in 20, so they wait
 // for someone to spot them. A reckless one doesn't look.
@@ -381,19 +384,23 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     // The crag when it's dry and there's something there to try; the gym otherwise.
     // Roadside first, the Gorge once it's open to you and there's nothing new at Roadside,
     // the gym when the rock's wet or done.
+    // The Mesa once it's open to you, its own weather and seasons deciding (Phase 21.4).
     const open = conditions(s.seed, s.day).open;
-    const gorge = gradeOf(s.climber.skills) >= (PLACES.gorge?.minGrade ?? 99);
+    const grade = gradeOf(s.climber.skills);
+    const opens = (id: string) => grade >= (PLACES[id]?.minGrade ?? 0);
     const place =
       open && choose('road')
         ? 'road'
-        : open && gorge && choose('gorge')
+        : open && opens('gorge') && choose('gorge')
           ? 'gorge'
-          : choose('gym')
-            ? 'gym'
-            : null;
+          : opens('mesa') && choose('mesa')
+            ? 'mesa'
+            : choose('gym')
+              ? 'gym'
+              : null;
     // Nothing to climb isn't the same as nothing new to try: a hurt or spent climber still
     // has unsent lines out there, and only a day without any counts as the content running out.
-    let where = place ? 'tired' : ['road', 'gorge', 'gym'].some(fresh) ? 'resting' : 'nothing';
+    let where = place ? 'tired' : BOT_PLACES.some(fresh) ? 'resting' : 'nothing';
     if (place && s.min < 16 * 60 && s.energy >= 30 && s.skin >= 25) {
       travel(place);
       if (place === 'gym') tryAct('gym.pass');

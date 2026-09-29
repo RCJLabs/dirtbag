@@ -155,6 +155,31 @@ export const CRAGS: Record<string, CragSpec> = {
     // The spire, with a highball either side.
     frame: 760,
   },
+  // Sandstone Mesa: a red wall with three bolted lines and a crack, boulders on the sand
+  // either side, and the Megaproject's block out past the end of it.
+  mesa: {
+    width: 1560,
+    wall: [620, 1140],
+    lines: [
+      { n: 1, x: 700, route: 'sdlap' },
+      { n: 2, x: 820, route: 'senduro' },
+      { n: 3, x: 940, route: 'sbiglink' },
+      { n: 4, x: 1060, route: 'sdtrad' },
+    ],
+    boulders: [
+      { x: 340, w: 96, h: 50, route: 'svarnish' },
+      { x: 470, w: 60, h: 48, route: 'scrimps' },
+      { x: 590, w: 84, h: 60, route: 'ssplit' },
+      { x: 1170, w: 74, h: 70, route: 'sprow' },
+      { x: 1270, w: 72, h: 44, route: 'spowerhouse' },
+      { x: 1370, w: 60, h: 56, route: 'smega' },
+      { x: 1480, w: 66, h: 54, route: 'sopen' },
+    ],
+    sign: 272,
+    hint: 'Boulders on the sand. The wall needs a belayer.',
+    // The wall, and the Prow past its end.
+    frame: 900,
+  },
 };
 
 // Send City: the desk by the door, then six problems along the wall, V0 to V5, and past the
@@ -221,6 +246,7 @@ export const SCENES: Record<string, SceneLayout> = {
   crag: cragScene('road', CRAGS.crag!),
   gorge: cragScene('gorge', CRAGS.gorge!),
   moon: cragScene('moon', CRAGS.moon!),
+  mesa: cragScene('mesa', CRAGS.mesa!),
   gym: {
     place: 'gym',
     width: GYM_W,
@@ -282,6 +308,7 @@ export const SPOTS: Record<string, Spot[]> = {
   ],
   // Nobody's day brings them out here, but Dex stays wherever he first saw you send a V4.
   moon: [{ who: 'dex', x: 1190, face: -1, pose: 'stand', talk: 'dex' }],
+  mesa: [{ who: 'dex', x: 1320, face: -1, pose: 'stand', talk: 'dex' }],
 };
 
 // Who's in a scene right now: the people whose day puts them at its place.
@@ -330,6 +357,8 @@ export const MAP_PINS: Record<string, Pin> = {
   gorge: { x: 96, y: 150, side: 1, kind: 'crag', dy: -16 },
   // Out of the valley where the highway leaves it, north past Roadside.
   moon: { x: 336, y: 100, side: -1, kind: 'crag' },
+  // West off the highway on a desert road, past the valley's rim.
+  mesa: { x: 200, y: 60, side: -1, kind: 'crag' },
 };
 export const DIM_PINS: [number, number][] = [
   [266, 334],
