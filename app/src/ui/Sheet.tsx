@@ -66,6 +66,7 @@ import type { Game, SheetId, Ui } from '../game/game';
 import { legacyFile, saveLegacyFile } from '../game/legacy';
 import type { Settings } from '../game/persist';
 import { paintHeader } from '../view/header';
+import { planLine, stepLabel, stepsAt, withStep, type PlanStep } from '../game/plan';
 import { CARD, cardPng } from '../view/paint/card';
 import { cardFile, cardOf, cardText } from './card';
 import { buildSheet, SKILL_NAME, type ListSpec } from './sheets';
@@ -117,6 +118,8 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
       <SettingsBody game={game} settings={ui.settings} />
     ) : id.k === 'card' ? (
       <CardBody game={game} id={id} s={state} />
+    ) : id.k === 'plan' ? (
+      <PlanBody game={game} ui={ui} />
     ) : null;
   if (body)
     return (
@@ -152,6 +155,94 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
         ))}
       </ul>
     </div>
+  );
+}
+
+// The day's plan: its steps, each one out with a tap, and more added by where, then what. A
+// plan you haven't made yet starts from yesterday, as you played it.
+function PlanBody({ game, ui }: { game: Game; ui: Ui }) {
+  const { plan, yesterday } = ui.plans;
+  const steps = plan.length ? plan : yesterday;
+  const fromYesterday = !plan.length && yesterday.length > 0;
+  // null: the steps; '': where the next one is; a place: what to do there.
+  const [adding, setAdding] = useState<string | null>(null);
+  const opt = (label: string, run: () => void, cost = '', idAttr?: string) => (
+    <li key={label + cost}>
+      <button type="button" className="opt" id={idAttr} onClick={run}>
+        <span>{label}</span>
+        <span className="c">{cost}</span>
+      </button>
+    </li>
+  );
+  if (adding === '')
+    return (
+      <>
+        <h3 id="sheet-title">Where?</h3>
+        <ul>
+          {Object.entries(PLACES).map(([id, p]) => opt(p.name, () => setAdding(id)))}
+          {opt('Back', () => setAdding(null))}
+        </ul>
+      </>
+    );
+  if (adding)
+    return (
+      <>
+        <h3 id="sheet-title">{PLACES[adding]?.name}</h3>
+        <ul>
+          {stepsAt(ui.state, adding).map((st) =>
+            opt(stepLabel(st), () => {
+              game.setPlan(withStep(steps, st));
+              setAdding(null);
+            }),
+          )}
+          {opt('Back', () => setAdding(''))}
+        </ul>
+      </>
+    );
+  return (
+    <>
+      <h3 id="sheet-title">The plan</h3>
+      <p className="sub">
+        {fromYesterday
+          ? 'Yesterday, as you played it. Change what you like.'
+          : steps.length
+            ? 'Run in one go. It waits while you climb, and stops at anything the day won’t allow.'
+            : 'Nothing yet. Add a step, or play a day and it’s here tomorrow.'}
+      </p>
+      {steps.length > 0 && (
+        <ol className="plan" id="plan">
+          {steps.map((st: PlanStep, i) => (
+            <li key={`${i}-${st.place}-${st.act ?? 'climb'}`}>
+              <span>
+                {PLACES[st.place]?.name} · {stepLabel(st)}
+              </span>
+              <button
+                type="button"
+                className="plan-x"
+                aria-label={`Take out step ${i + 1}`}
+                onClick={() => game.setPlan(steps.filter((_, j) => j !== i))}
+              >
+                ✕
+              </button>
+            </li>
+          ))}
+        </ol>
+      )}
+      <ul>
+        {steps.length > 0 &&
+          opt(
+            'Run it',
+            () => {
+              if (fromYesterday) game.setPlan(steps);
+              game.runPlan(steps);
+            },
+            '',
+            'plan-run',
+          )}
+        {opt('Add a step', () => setAdding(''))}
+        {plan.length > 0 && opt('Clear it', () => game.setPlan([]))}
+      </ul>
+    </>
   );
 }
 

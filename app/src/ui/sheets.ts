@@ -46,6 +46,7 @@ import {
 import type { Game, SheetId } from '../game/game';
 import { CRAGS } from '../view/layout';
 import { whoAround, type Who } from './who';
+import { planLine } from '../game/plan';
 
 export interface Row {
   label: string;
@@ -176,7 +177,8 @@ const mapRow = (game: Game): Row => ({
 
 export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | null {
   switch (id.k) {
-    case 'van':
+    case 'van': {
+      const { plan, yesterday } = game.ui.get().plans;
       return {
         title: 'Your van',
         sub: isNight(s.min) ? 'Bed made. Mostly.' : `Home, for ${TEXT_VALUES.spot} a night at the Lot.`,
@@ -185,9 +187,22 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           actRow(game, s, 'lot.cook'),
           ...(isNight(s.min) ? [] : [actRow(game, s, 'lot.rest')]),
           actRow(game, s, 'lot.sleep'),
+          ...(plan.length
+            ? [{ label: 'Run the plan', note: `${planLine(plan)}.`, run: () => game.runPlan(plan) }]
+            : []),
+          {
+            label: 'Plan the day',
+            note: plan.length
+              ? undefined
+              : yesterday.length
+                ? 'It starts from yesterday, as you played it.'
+                : 'Drives, shifts and meals in one go. It waits while you climb.',
+            run: () => game.openSheet({ k: 'plan' }),
+          },
           mapRow(game),
         ],
       };
+    }
 
     case 'cragVan': {
       const back = road(s.at, 'lot');

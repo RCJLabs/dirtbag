@@ -13,7 +13,8 @@
 // a flash with it, the board, then home to lie around till dark.
 // Day three is counted (Phase 11): a shift, the crag, three goes, back, dinner and bed in
 // 20 taps or fewer, not counting the climbing itself. Every trip is counted too: two taps
-// from the map, three from a scene.
+// from the map, three from a scene. Day four runs day three again as a plan, and day five
+// runs one the day won't allow.
 // Then a v0.956 player, in a browser of their own: the retirement notice, their career kept
 // as a file, and coming across as they were.
 import { mkdirSync, readFileSync, rmSync } from 'node:fs';
@@ -297,6 +298,42 @@ async function sendIt(route, tries = 3) {
     await click('#sheet .opt', 'Rest, then go again');
   }
   await fail(`${route} never went`);
+}
+
+// Three goes on the Warm Boulder, arriving at Roadside by the van: the first from where you
+// park (180), where it's just off the right of the screen, then from its foot (310) after a
+// send, or straight from the rest after a fall. Ends walked off, back in the scene.
+async function warmGoes() {
+  let from = 180;
+  for (let go = 1; ; go++) {
+    if (!(await page.locator('#sheet .go').count())) {
+      await tapAt(from === 180 ? 350 : screenX(340, from), screenY(540));
+      await expectText('#sheet', /Warm Boulder · V2/, 'beta sheet');
+    }
+    await click('#sheet .go');
+    await until('the climb panel', () => page.locator('#climb').count());
+    await climb();
+    const next = await until(
+      'the go to end',
+      async () =>
+        ((await page.locator('#sheet .opt', { hasText: 'Rest, then go again' }).count()) &&
+          'Rest, then go again') ||
+        ((await page.locator('#sheet .opt', { hasText: 'Walk down the back' }).count()) &&
+          'Walk down the back'),
+      15_000,
+    );
+    log(`go ${go}: ${(await text('#sheet'))?.slice(0, 60)}`);
+    if (go === 3) {
+      await click('#sheet .opt', next === 'Walk down the back' ? next : 'Walk off');
+      break;
+    }
+    await click('#sheet .opt', next);
+    if (next === 'Walk down the back') {
+      await until('the crag again', async () => (await text('#b-nav')) === 'Map');
+      await wait(600);
+      from = 310;
+    }
+  }
 }
 
 // ---- day one ----
@@ -595,39 +632,7 @@ await expectText('#h-time', /^Day 3 · 10:18 AM$/, 'clock');
 await driveOn('the café to Roadside', 'Drive to Roadside Crag');
 await until('the crag', async () => (await text('#hint'))?.includes('Boulders on the talus'));
 await wait(400);
-// Three goes on the Warm Boulder: the first from the van (180), where it's just off the
-// right of the screen, then from its foot (310) after a send, or straight from the rest
-// after a fall.
-let from = 180;
-for (let go = 1; ; go++) {
-  if (!(await page.locator('#sheet .go').count())) {
-    await tapAt(from === 180 ? 350 : screenX(340, from), screenY(540));
-    await expectText('#sheet', /Warm Boulder · V2/, 'beta sheet');
-  }
-  await click('#sheet .go');
-  await until('the climb panel', () => page.locator('#climb').count());
-  await climb();
-  const next = await until(
-    'the go to end',
-    async () =>
-      ((await page.locator('#sheet .opt', { hasText: 'Rest, then go again' }).count()) &&
-        'Rest, then go again') ||
-      ((await page.locator('#sheet .opt', { hasText: 'Walk down the back' }).count()) &&
-        'Walk down the back'),
-    15_000,
-  );
-  log(`go ${go}: ${(await text('#sheet'))?.slice(0, 60)}`);
-  if (go === 3) {
-    await click('#sheet .opt', next === 'Walk down the back' ? next : 'Walk off');
-    break;
-  }
-  await click('#sheet .opt', next);
-  if (next === 'Walk down the back') {
-    await until('the crag again', async () => (await text('#b-nav')) === 'Map');
-    await wait(600);
-    from = 310;
-  }
-}
+await warmGoes();
 await until('the crag again', async () => (await text('#b-nav')) === 'Map');
 await wait(600);
 // The van, parked on the left: on screen from the boulder's foot.
@@ -651,6 +656,50 @@ log(`day three: ${loop} taps, the most being 20`);
 log(`trips, in taps: ${trips.join(' · ')}`);
 if (loop > 20) await fail(`day three took ${loop} taps; the most is 20`);
 await shot('day-4');
+
+// ---- day four, by the plan (Phase 11.4) ----
+
+console.log('Day four, by the plan');
+// Yesterday, as played, is today's plan: one tap runs its drives and errands, it waits while
+// you climb, and "Go on" runs the rest of the day.
+const day4 = taps;
+await tapAt(100, 560);
+await expectText('#sheet', /Your van/, 'van');
+await click('#sheet .opt', 'Plan the day');
+await expectText(
+  '#sheet',
+  /Yesterday, as you played it.*Coffee Shop · Work a shift.*Roadside Crag · Climb.*The Lot · Cook ramen.*The Lot · Lie around till dark.*The Lot · Sleep/,
+  'the plan',
+);
+await shot('plan');
+await click('#plan-run');
+await until(
+  'the plan to wait at the crag',
+  async () => (await text('#plan-chip'))?.includes('Go on'),
+  30_000,
+);
+await expectText('#h-time', /^Day 4 · 11:23 AM$/, 'clock');
+await expectText('#plan-chip', /Climb, then The Lot/, 'the plan waiting');
+await shot('plan-waiting');
+await warmGoes();
+await until('the crag again', async () => (await text('#b-nav')) === 'Map');
+await wait(600);
+await click('#plan-go');
+await until('the next morning', async () => /^Day 5 · 7:10 AM$/.test((await text('#h-time')) ?? ''), 30_000);
+const byPlan = taps - day4;
+log(`day four, by the plan: ${byPlan} taps, the most being 13`);
+if (byPlan > 13) await fail(`day four took ${byPlan} taps by the plan; the most is 13`);
+
+console.log("Day five: a plan the day won't allow");
+// Lie around till dark, then run the plan: the café won't start a shift that late, and the
+// plan stops there and says so.
+await tapAt(100, 560);
+await expectText('#sheet', /Run the plan/, 'the plan kept');
+await click('#sheet .opt', 'Lie around till dark');
+await click('#sheet .opt', 'Run the plan');
+await expectText('#plan-chip', /Plan stopped.*Shifts start by 3 PM/, 'the plan stopped');
+await shot('plan-stopped');
+await click('#plan-chip .plan-x');
 
 console.log('A v0.956 player');
 // v0.956 retired at R3. Someone who played it opens the new game in a browser that still
@@ -731,7 +780,7 @@ if (problems.length) await fail(`${problems.length} problem(s) during play`);
 await browser.close();
 await server.close();
 console.log(
-  `\n✓ Played three days, day three in ${loop} taps, and again offline, with no errors and nothing sent off the site.`,
+  `\n✓ Played five days, day three in ${loop} taps and day four by the plan in ${byPlan}, and again offline, with no errors and nothing sent off the site.`,
 );
 
 // The first go onsights the Warm Boulder; a later one is a redpoint.

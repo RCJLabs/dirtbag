@@ -38,7 +38,7 @@ npm run typecheck      # the sim is checked with no DOM types, the rest with the
 npm run format         # Prettier (CI runs format:check)
 npm run build          # dist/
 npm run size           # what a player downloads, against the budget
-npm run e2e            # a bot plays three days on dist/ in headless Chromium (counting day three's taps) and reloads offline, then a v0.956 player crosses over
+npm run e2e            # a bot plays five days on dist/ in headless Chromium (counting day three's taps, running day four as a plan) and reloads offline, then a v0.956 player crosses over
 npm run harness        # bots play whole seasons; prints the tables and Phase 6's first-season targets
 ```
 
@@ -55,10 +55,10 @@ npm run harness        # bots play whole seasons; prints the tables and Phase 6'
 | `src/sim/curves.ts` | Other climbers' grades over the season: Sage's steady climb, and Dex's streaks, injury and peak. |
 | `src/sim/dials.ts` | Every tunable number, with what it means and why it's set there. |
 | `src/view/` | The painters and the frame renderer: scenes, the map, the wall, people. Reads state, never changes it. `header.ts` draws a place card's header from the place's scene, or from its front in `paint/fronts.ts` for a place without one. |
-| `src/game/` | The game loop, input, walking, driving and the attempt's timing; saves to localStorage. `legacy.ts` reads a retired v0.956 career and keeps it as a file, never writing to it. |
+| `src/game/` | The game loop, input, walking, driving and the attempt's timing; saves to localStorage. `legacy.ts` reads a retired v0.956 career and keeps it as a file, never writing to it. `plan.ts` is the day's plan: its steps, what can be planned where, and yesterday as you played it, kept beside the save. |
 | `src/ui/` | React panels: HUD, speech bubbles, sheets, the climb panel, the goal pill. `card.ts` words the send card; `view/paint/card.ts` paints it. `who.ts` words a place card's "Who's around". |
 | `build/pwa.ts` | The installable shell, made at build time: the manifest and icons (drawn in code, `favicon.ico` too), and a service worker that precaches exactly this build. The worker is `service-worker.js`, v0.956's name, so a browser that installed v0.956 swaps workers in place, and it clears v0.956's cache. |
-| `e2e/playthrough.mjs` | The bot that plays three days in the browser, on a pinned seed, and checks the game starts offline. It counts the taps on every trip and on day three, against Phase 11's budgets. |
+| `e2e/playthrough.mjs` | The bot that plays five days in the browser, on a pinned seed, and checks the game starts offline. It counts the taps on every trip and on day three against Phase 11's budgets, runs day four as a plan, and has day five's plan stopped by the day. |
 
 ## Rules
 

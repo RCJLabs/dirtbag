@@ -61,7 +61,7 @@
 | 8 Choose the look | Done: the Mix. Its tokens and components are built in R0–R1. The Steam capsule art moves to Phase 15. |
 | 9 Climber on the wall | Reshaped as beta-then-send and built from R0. Its Done-when criteria gate R2. |
 | 10 Crags as places | Built on the rebuild (the board, conditions you can see, Moonstone) and closed by Evan's call. Its testers' criterion carries. |
-| 11 Valley map | Reshaped: the map plus side-view scenes, drawn in code (no Tiled, no tilesets). The current milestone: 11.1 to 11.3 are built (the taps, place cards, adding a place), and criteria 2 and 3 pass. |
+| 11 Valley map | Reshaped: the map plus side-view scenes, drawn in code (no Tiled, no tilesets). The current milestone: 11.1 to 11.4 are built (the taps, place cards, adding a place, the daily plan). Criteria 2 to 5 pass; 1 waits on testers. |
 | 12 UI system | Folded into the rebuild (R0–R2). |
 | 13–20 | Unchanged in intent. They target the new build. |
 
@@ -1146,6 +1146,19 @@ There's no joystick, zone graph or tileset to retire. What's left, in slices:
       - Then everything passed, and the place worked in the game: its card, the drive there, and a drive from it to every other place, all worked out from its one road.
       - The front, the illustration, is the slow part, and the criterion leaves it out. The run was mine, not a person's, so its speed says nothing about theirs. What it shows is that the steps are complete and each gap gets named.
 - **11.4, the daily agenda** (optional in the scope above): plan a day as a sequence ("shift → diner → gym → van") and run it, stopping at the first thing the day refuses.
+  - *As built (11.4, Evan's call to build it):*
+    - **A plan is a list of steps**: a place, and an act there (a shift, a meal, cooking, lying around, bed) or a climb. It runs in one go:
+      - it drives to each place and does each act through `act()`, as a tap would, so the rules never know a plan ran them;
+      - it waits at a climb while you climb, and **Go on** runs the rest;
+      - it stops at the first thing the day refuses and says why. Bed ends the day, and the plan with it.
+    - **Yesterday is the plan.** The game notes each day as you play it: every act, and a climb once a visit. "Plan the day", on the van, opens on yesterday. Take steps out, add them by where and then what; bed always stays last. "Run the plan" repeats it the next morning.
+    - **What you can plan** comes from the data: a place's acts, and climbing where there's something to climb. It leaves out the moment Scout picks you, and a dog's errands when you have no dog.
+    - **The plan lives beside the save**, like the settings (`dirtbag.plan`). The save's shape doesn't change. Starting over forgets it.
+    - **A chip under the HUD** shows the step it's on, **Go on** after a climb, and why it stopped. It sits above any sheet, because a card-only place always has its card open.
+    - **The e2e:**
+      - Day four runs day three again as a plan: 13 taps, against day three's 20. That's 3 to start it, 9 for the three goes, and 1 to go on.
+      - Day five lies around till dark, then runs the plan, which stops at the café: "Shifts start by 3 PM."
+    - Size: 203 KB of the 250 KB budget.
 
 **Done when, on the rebuild** *[proposed; replaces the criteria above until Evan rules]*:
 1. 4 of 5 testers find any destination within 5 seconds. This carries to the tester round.
@@ -1154,7 +1167,7 @@ There's no joystick, zone graph or tileset to retire. What's left, in slices:
 4. The clock doesn't move while you're idle: true, and checked by the smoke test.
 5. A new place without a scene takes under an hour: a checklist, the road graph and CI's checks make it a data change plus a pin.
 
-**Status (29 Sep 2026): 11.1 to 11.3 built.** Criteria 2 and 3 pass on the build, counted by the e2e: 3 taps at most for a trip from a scene, and day three in 20. Criterion 4 passes (the smoke test). Criterion 5 passes by a dry run: a card-only place was 13 lines of data and a pin, with the tests naming each missing piece, and its front is the illustration the criterion leaves out. Criterion 1 carries to the testers.
+**Status (29 Sep 2026): 11.1 to 11.4 built.** Criteria 2 and 3 pass on the build, counted by the e2e: 3 taps at most for a trip from a scene, day three in 20, and day four by the plan in 13. Criterion 4 passes (the smoke test). Criterion 5 passes by a dry run: a card-only place was 13 lines of data and a pin, with the tests naming each missing piece, and its front is the illustration the criterion leaves out. Criterion 1 carries to the testers.
 
 ---
 
@@ -1518,3 +1531,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 11.1: count the taps. On a pinned seed, the e2e bot counts every trip (3 taps at most from a scene, 2 by the crag's van) and a day-3 loop. The loop took 32 taps, 12 of them waiting for bed at 6 PM. Bed now opens at dark (5 PM), and lying around till dark is one tap (proposed). Day three: 20 taps. Criteria 2 and 3 pass; the season targets don't move.
 - 2026-09-29 — Phase 11.2: place cards. Every card has a header showing the place as you'd find it after the drive: its scene, with whoever's there, the light, the wet and the night; the diner and the café get fronts drawn in code. Places with a scene list who's around then, and till when. At a crag with ropes or highballs, a line says whether that means a belayer or a spotter. The e2e checks both.
 - 2026-09-29 — Phase 11.3: adding a place is documented work. Roads are a graph: 11 roads to neighbours instead of one for every pair, and a drive is the quickest way through them. Daily trips and v0.956's drives from the Lot keep their costs. Nine rare trips to or from the Gorge and Moonstone shift; Roadside to the Gorge is now an hour and $10. Drives on the map follow the roads, so Roadside to Moonstone no longer runs south through town. An "Adding a place" checklist is in `app/README.md`, and the tests name what a place is missing.
+- 2026-09-29 — Phase 11.4, by Evan's call: the daily plan. Yesterday, as you played it, is today's plan: one tap runs its drives and errands, it waits while you climb, and it stops at the first thing the day refuses, saying why. You plan on the van and edit by where, then what; bed stays last. The e2e runs day four as a plan in 13 taps (day three took 20), and day five's plan stops at the café.
