@@ -84,6 +84,8 @@ export interface RouteDef {
   board?: true;
   // A boulder tall enough that a fall off it is a real fall: it can land you badly (HIGHBALL).
   highball?: true;
+  // A myth (v0.956's revealAfter): a line you can't even read until you've sent this one.
+  hiddenUntil?: string;
 }
 
 // The grade a line really climbs at.
@@ -319,6 +321,7 @@ export function libraryBoulder(
     open?: true;
     board?: true;
     highball?: true;
+    hiddenUntil?: string;
   },
 ): RouteDef {
   const [a, b] = LIBRARY[type];
@@ -327,6 +330,7 @@ export function libraryBoulder(
     ...(shape.open ? { open: true as const } : {}),
     ...(shape.board ? { board: true as const } : {}),
     ...(shape.highball ? { highball: true as const } : {}),
+    ...(shape.hiddenUntil ? { hiddenUntil: shape.hiddenUntil } : {}),
     id,
     name,
     grade,
@@ -1140,6 +1144,112 @@ const wTrad = libraryTrad('wtrad', 'Alpine Trad', 13, 'endurance', 'wind', {
   b: { style: 'endurance', name: 'The upper corner', from: 22.4, to: 25.8, win: 'Top out into the wind.' },
 });
 
+// ---- The Crucible: v0.956's remote, frigid wall, where the grades run out ----
+// Its lines as v0.956 had them, V13 to its two V18 myths, and one it didn't have: The Anvil,
+// V16, so the grades run out without a hole in them [proposed]. A myth can't be read until
+// you've sent the hardest known line under it (v0.956's revealAfter), and nobody has
+// climbed one: its first ascent is yours to name.
+
+const cReckoning = libraryBoulder('creckoning', 'The Reckoning', 13, 'crimp', 'crucible', {
+  moves: 8,
+  from: 4.0,
+  to: 6.2,
+  cruxName: 'The razor edges',
+  heightFt: 15,
+  line: 'Edges in cold gneiss, sharp enough to shave with. The first thing here, and it’s V13.',
+});
+const cVise = libraryBoulder('cvise', 'The Vise', 14, 'crack', 'crucible', {
+  moves: 7,
+  from: 3.4,
+  to: 5.6,
+  cruxName: 'The squeeze',
+  heightFt: 16,
+  line: 'A crack that closes on your hand like it means it.',
+});
+const cApparition = libraryBoulder('capparition', 'Apparition', 15, 'power', 'crucible', {
+  moves: 6,
+  from: 2.8,
+  to: 4.6,
+  cruxName: 'The ghost hold',
+  heightFt: 14,
+  line: 'A hold you only see from the move before it. The guidebook says V15; it isn’t quite.',
+  trueGrade: 14,
+});
+const cAnvil = libraryBoulder('canvil', 'The Anvil', 16, 'power', 'crucible', {
+  moves: 7,
+  from: 3.2,
+  to: 5.2,
+  cruxName: 'The strike',
+  heightFt: 15,
+  line: 'A block of black gneiss with one way up it, and every move of it hits back.',
+});
+const cHorizon = libraryBoulder('chorizon', 'Event Horizon', 17, 'dyno', 'crucible', {
+  moves: 8,
+  from: 4.4,
+  to: 6.0,
+  cruxName: 'The point of no return',
+  heightFt: 17,
+  line: 'Past the third move there’s no down-climbing it. The jump is the only way off.',
+});
+const cGenesis = libraryBoulder('cgenesis', 'The Crucible myth', 18, 'dyno', 'crucible', {
+  moves: 5,
+  from: 1.8,
+  to: 3.6,
+  cruxName: 'The move',
+  heightFt: 16,
+  line: 'The undercut setup, feet at your ears. Then the move: full extension, double-clutch, to a flat edge nobody has held. Then the mantel.',
+  open: true,
+  hiddenUntil: 'chorizon',
+});
+const cCrux = librarySport('ccrux', 'Crucible Crux', 13, 'dyno', 'crucible', {
+  moves: 26,
+  heightFt: 100,
+  line: 'The warm-up, if you’ve driven this far to warm up on 5.14.',
+  rest: 13.2,
+  a: { style: 'dyno', name: 'The dyno', from: 8.2, to: 10.0, win: 'Stuck it.' },
+  b: { style: 'crimp', name: 'The cold edges', from: 19.6, to: 22.4, win: 'Chains.' },
+});
+const cLifeline = librarySport('clifeline', 'The Lifeline', 15, 'crimp', 'crucible', {
+  moves: 30,
+  heightFt: 115,
+  line: 'One thin seam, all the way. The seam is the lifeline; there’s nothing either side of it.',
+  rest: 15.0,
+  a: { style: 'crimp', name: 'The seam', from: 9.2, to: 12.4, win: 'Off the thin bit.' },
+  b: { style: 'technical', name: 'The blank finish', from: 23.4, to: 26.8, win: 'Chains, somehow.' },
+});
+const cThreshold = librarySport('cthreshold', 'Threshold', 17, 'endurance', 'crucible', {
+  moves: 36,
+  heightFt: 130,
+  line: 'The hardest known line on the wall: thirty-six moves with nowhere to hide.',
+  rest: 17.6,
+  a: { style: 'endurance', name: 'The long middle', from: 11.2, to: 15.0, win: 'Still on.' },
+  b: {
+    style: 'power',
+    name: 'The last roof',
+    from: 28.0,
+    to: 31.8,
+    win: 'Chains. The whole valley heard that.',
+  },
+});
+const cMyth = {
+  ...librarySport('cmyth', 'The myth above Threshold', 18, 'power', 'crucible', {
+    moves: 38,
+    heightFt: 140,
+    line: 'The opening slab, a two-finger pull, the roof with feet cut, a kneebar that almost counts. Then, at forty metres, a left-hand mono.',
+    rest: 19.0,
+    a: { style: 'power', name: 'The roof', from: 12.0, to: 15.2, win: 'Feet back on.' },
+    b: {
+      style: 'crimp',
+      name: 'The mono',
+      from: 30.0,
+      to: 33.6,
+      win: 'The victory jugs, and you’re still on.',
+    },
+  }),
+  open: true as const,
+  hiddenUntil: 'cthreshold',
+};
+
 export const ROUTES: Record<string, RouteDef> = {
   warm: warmBoulder,
   dyno,
@@ -1197,6 +1307,16 @@ export const ROUTES: Record<string, RouteDef> = {
   wskyline: wSkyline,
   wastroman: wAstro,
   wtrad: wTrad,
+  creckoning: cReckoning,
+  cvise: cVise,
+  capparition: cApparition,
+  canvil: cAnvil,
+  chorizon: cHorizon,
+  cgenesis: cGenesis,
+  ccrux: cCrux,
+  clifeline: cLifeline,
+  cthreshold: cThreshold,
+  cmyth: cMyth,
 };
 
 // Said when you come off between cruxes with nothing left in your arms.

@@ -3,6 +3,7 @@ import {
   ACT_I,
   ACT_I_END,
   average,
+  revealed,
   roped,
   betaScale,
   currentGoal,
@@ -363,6 +364,16 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
   const cost = `${costLabel({ min: c.min })} · ${bodyNote({ energy: c.energy, skin: c.skin })}${rockNote(s, r)}`;
   const log = s.routes[route];
   const unnamed = r.open && log?.sent && !s.firsts[route];
+  // A myth you can't read yet: no name, no grade, no beta. Just what it'll take.
+  if (!revealed(s, r))
+    return (
+      <>
+        <h3 id="sheet-title">A line you can’t read</h3>
+        <p className="sub">
+          There’s something here. You can’t see where it goes, or whether it goes at all. {why}.
+        </p>
+      </>
+    );
   return (
     <>
       <h3 id="sheet-title">

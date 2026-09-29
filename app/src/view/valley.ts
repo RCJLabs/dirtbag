@@ -107,6 +107,17 @@ export const SIDE_ROADS: Record<string, { pts: Pt[]; dirt?: true }> = {
     ],
     dirt: true,
   },
+  // East to The Crucible: off the highway above Midtown, up over the pass.
+  crucible: {
+    pts: [
+      [roadX(364), 364],
+      [250, 360],
+      [282, 358],
+      [312, 364],
+      [338, 372],
+    ],
+    dirt: true,
+  },
   // On north from the highway's end to The Big Stone.
   stone: {
     pts: [

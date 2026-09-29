@@ -3,11 +3,21 @@
 import { describe, expect, it } from 'vitest';
 import { betaScale } from './climb';
 import { needFor } from './climber';
-import { routeById } from './content/gym';
+import { routeById, routesAt } from './content/gym';
 import { road } from './content/places';
 import { ROUTES } from './content/routes';
 import { HIGHBALL } from './dials';
-import { act, belayer, faSuggestions, goBlocked, landingChance, lineGrade, lineName, newGame } from './game';
+import {
+  act,
+  belayer,
+  emptyLog,
+  faSuggestions,
+  goBlocked,
+  landingChance,
+  lineGrade,
+  lineName,
+  newGame,
+} from './game';
 import type { Action, GameEvent, GameState } from './types';
 import { conditions, conditionsAt, seasonOf, skyOn } from './weather';
 import { TALK } from './content/people';
@@ -208,6 +218,41 @@ describe('Wind River Walls (Phase 21.4)', () => {
         .map((r) => r.disc)
         .sort(),
     ).toEqual(['sport', 'sport', 'sport', 'trad']);
+  });
+});
+
+describe('The Crucible (Phase 21.4)', () => {
+  it('opens at V11, four hours south, with no haul to pay for', () => {
+    expect(act(at(10), { t: 'travel', to: 'crucible' }).events[0]).toMatchObject({ k: 'refused' });
+    const s = play(at(11), { t: 'travel', to: 'crucible' }).state;
+    expect(s).toMatchObject({ at: 'crucible', cash: 100 - road('lot', 'crucible')!.cash });
+    expect(road('lot', 'crucible')!.min).toBe(240);
+  });
+
+  it('keeps its myths unreadable until the hardest known line under each is sent', () => {
+    const s = at(18, { at: 'crucible', min: 10 * 60 });
+    const myth = ROUTES.cgenesis!;
+    expect(goBlocked(s, myth)).toBe("You can't read this line yet. Send Event Horizon first");
+    const sent = {
+      ...s,
+      routes: { chorizon: { ...emptyLog(), sent: { day: 1, go: 1, style: 'redpoint' as const } } },
+    };
+    expect(goBlocked(sent, myth)).toBeNull();
+    // Both are open: the first ascent is yours to name.
+    expect(ROUTES.cmyth!).toMatchObject({ grade: 18, disc: 'sport', open: true, hiddenUntil: 'cthreshold' });
+    expect(myth).toMatchObject({ grade: 18, open: true });
+  });
+});
+
+describe('the grades (Phase 21.4)', () => {
+  it('run from V0 to V18 with no hole: the gym up to V5, the crags from V2', () => {
+    const outdoors = new Set(
+      Object.values(ROUTES)
+        .filter((r) => r.disc === 'boulder' && r.place !== 'gym')
+        .map((r) => r.grade),
+    );
+    const gym = new Set(routesAt('crags', 'gym', 1).map((r) => r.grade));
+    for (let g = 0; g <= 18; g++) expect(outdoors.has(g) || gym.has(g), `V${g}`).toBe(true);
   });
 });
 

@@ -239,7 +239,13 @@ const TIER_LINE = [
   '{who} is ride-or-die.',
 ];
 
+// Whether you can read a line yet: a myth stays unreadable until you've sent the one under it.
+export const revealed = (s: GameState, r: RouteDef): boolean =>
+  !r.hiddenUntil || !!s.routes[r.hiddenUntil]?.sent;
+
 export function goBlocked(s: GameState, r: RouteDef): string | null {
+  if (!revealed(s, r))
+    return `You can't read this line yet. Send ${routeOfId(s, r.hiddenUntil!)?.name ?? 'the hardest line here'} first`;
   if (r.place === 'gym') {
     if (s.min >= 22 * 60) return 'Send City is closed';
     if (!s.today.includes('pass')) return 'Buy a day pass at the desk first';

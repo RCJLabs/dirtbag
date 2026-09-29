@@ -5,6 +5,7 @@ import {
   belayer,
   CLIMB,
   protection,
+  revealed,
   roped,
   conditionsAt,
   gradeLabel,
@@ -58,7 +59,7 @@ import { mapArt } from './paint/map';
 import { drawBelayerBack, drawClimber, drawDog, drawPerson, INK, LOOK } from './paint/people';
 import { BIG } from './paint/scale';
 import { drawSkyMarks, FIRE_X, LIGHTS, sceneArt, SKY_W, type SceneArt, type Tod } from './paint/scenes';
-import { belayAt, onRoute, rockPath, routeStretch, wallOf } from './paint/wall';
+import { belayAt, onRoute, rockPath, routeStretch, topoFor, traceSelected, wallOf } from './paint/wall';
 import { sceneSun, sunLight, wallSun, wetness } from './sun';
 
 export interface Frame {
@@ -186,9 +187,23 @@ export function sceneLive(g: G, s: GameState, scene: string, cam: number, eye: E
     if (conditionsAt(s.seed, s.day, place).closed)
       label(g, 'poster', 'CLOSED', sign, GND - 30, { size: 7.5, color: '#FFFFFF', halo: ACC.comic });
     for (const r of crag.lines)
-      routeTag(g, r.x - cam, GND - 100, r.n, gradeLabel(ROUTES[r.route]!), true, !!s.routes[r.route]?.sent);
+      routeTag(
+        g,
+        r.x - cam,
+        GND - 100,
+        r.n,
+        revealed(s, ROUTES[r.route]!) ? gradeLabel(ROUTES[r.route]!) : '?',
+        true,
+        !!s.routes[r.route]?.sent,
+      );
     for (const b of crag.boulders)
-      boulderTag(g, b.x - cam, GND - b.h - 12, lineGrade(s, ROUTES[b.route]!), !!s.routes[b.route]?.sent);
+      boulderTag(
+        g,
+        b.x - cam,
+        GND - b.h - 12,
+        revealed(s, ROUTES[b.route]!) ? lineGrade(s, ROUTES[b.route]!) : '?',
+        !!s.routes[b.route]?.sent,
+      );
   }
   if (gym) {
     const lines = routesAt(s.seed, 'gym', s.day);
@@ -385,9 +400,12 @@ function wallPanel(g: G, f: Frame, r: RouteDef): void {
     }
   }
 
+  // A myth's line, once you can read it: the wall's art leaves it out till then.
+  if (r.hiddenUntil && roped(r) && revealed(s, r)) traceSelected(g, topoFor(r));
+
   // Each crux bracketed on the topo, with the beta you'll use there; "?" while there's
-  // another way you haven't found.
-  for (const c of r.cruxes) {
+  // another way you haven't found. A myth you can't read shows none.
+  for (const c of revealed(s, r) ? r.cruxes : []) {
     const p0 = onRoute(r, c.from);
     const p1 = onRoute(r, c.to);
     // Right of the line, unless the line runs up the wall's right edge: then left of it, so

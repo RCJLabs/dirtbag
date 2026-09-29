@@ -21,6 +21,7 @@ export {
   routeOfId,
   lineGrade,
   lineName,
+  revealed,
   talkValues,
   dogTier,
   dogLine,

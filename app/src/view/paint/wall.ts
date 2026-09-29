@@ -294,6 +294,44 @@ const TOPO_PTS: Record<string, Pt[]> = {
     [308, 190],
     [314, 122],
   ],
+  // The Crucible: Crucible Crux on the left, The Lifeline up its seam, Threshold up the
+  // middle, and the myth up the right, where nobody has chalked anything.
+  ccrux: [
+    [56, 540],
+    [62, 470],
+    [52, 400],
+    [64, 330],
+    [56, 260],
+    [64, 190],
+    [58, 140],
+  ],
+  clifeline: [
+    [138, 540],
+    [134, 470],
+    [140, 400],
+    [134, 330],
+    [140, 260],
+    [134, 190],
+    [140, 118],
+  ],
+  cthreshold: [
+    [220, 540],
+    [226, 470],
+    [214, 400],
+    [228, 330],
+    [218, 260],
+    [230, 190],
+    [222, 108],
+  ],
+  cmyth: [
+    [300, 540],
+    [294, 470],
+    [306, 400],
+    [296, 330],
+    [308, 260],
+    [300, 190],
+    [308, 104],
+  ],
   testpiece: [
     [290, 538],
     [298, 470],
@@ -548,6 +586,97 @@ const M_WALL: Pt[] = [
   [320, 440],
   [338, BASE_Y],
 ];
+
+// The Crucible: a black gneiss face under a grey sky, folded into pale bands, frost in
+// its cracks, and a thin seam up the Lifeline.
+const C_WALL: Pt[] = [
+  [-4, BASE_Y],
+  [-4, 120],
+  [80, 112],
+  [150, 118],
+  [230, 100],
+  [300, 108],
+  [364, 96],
+  [364, BASE_Y],
+];
+
+function paintCrucible(g: G): void {
+  const r = mulberry32(191);
+  g.fillStyle = lin(g, 0, 0, 0, 130, [
+    [0, '#9AA6B2'],
+    [1, '#DCDEDC'],
+  ]);
+  g.fillRect(0, 0, W, H);
+  g.fillStyle = '#8C959E';
+  g.beginPath();
+  g.moveTo(-4, 130);
+  for (let x = 0; x <= W + 8; x += 24) g.lineTo(x, 96 + Math.sin(x * 0.03) * 10 + r() * 6);
+  g.lineTo(W + 4, 130);
+  g.closePath();
+  g.fill();
+  g.save();
+  g.beginPath();
+  poly(g, C_WALL, true);
+  g.clip();
+  g.fillStyle = '#4D4F55';
+  g.fillRect(0, 0, W, H);
+  for (let i = 0; i < 12; i++) {
+    const y = 100 + i * 40 + r() * 10;
+    g.strokeStyle = r() < 0.5 ? 'rgba(200,196,186,.26)' : 'rgba(10,10,14,.3)';
+    g.lineWidth = 3 + r() * 5;
+    g.beginPath();
+    for (let x = -4; x <= W + 8; x += 16) g.lineTo(x, y + Math.sin(x * 0.03 + i) * 12 + x * 0.06);
+    g.stroke();
+  }
+  g.strokeStyle = 'rgba(236,234,226,.5)';
+  g.lineWidth = 1.8;
+  for (let i = 0; i < 5; i++) {
+    const x = r() * W;
+    const y = 140 + r() * 360;
+    g.beginPath();
+    g.moveTo(x, y);
+    g.lineTo(x + 30 + r() * 40, y + 20 + r() * 30);
+    g.stroke();
+  }
+  // The Lifeline's seam.
+  g.strokeStyle = 'rgba(8,8,10,.75)';
+  g.lineWidth = 1.6;
+  g.beginPath();
+  trace(
+    g,
+    [
+      [146, 540],
+      [142, 420],
+      [148, 300],
+      [142, 180],
+      [146, 118],
+    ],
+    false,
+  );
+  g.stroke();
+  g.fillStyle = 'rgba(236,240,242,.75)';
+  for (let i = 0; i < 12; i++) {
+    g.beginPath();
+    g.ellipse(r() * W, 130 + r() * 380, 5 + r() * 10, 1.5 + r() * 2, 0, 0, 6.2832);
+    g.fill();
+  }
+  g.restore();
+
+  g.fillStyle = '#B9BDB8';
+  g.fillRect(-4, BASE_Y, W + 8, H - BASE_Y);
+  g.fillStyle = '#7E8184';
+  for (const t of TALUS) {
+    g.beginPath();
+    rock(g, ...t);
+    g.fill();
+  }
+  g.fillStyle = '#26302B';
+  for (const [tx, ty, sc] of CRAG_TREES) {
+    g.beginPath();
+    coniferPath(g, tx, ty, sc * 0.7);
+    g.fill();
+  }
+}
 
 // Wind River: an alpine face with its top against the sky, snow on the ranges behind, a
 // crack up the middle and a corner at the right.
@@ -1102,7 +1231,8 @@ function paintGorge(g: G): void {
 // A trad line has no bolts to draw: only what you place.
 function paintLines(g: G, place: string, selected: string): void {
   for (const [id, t] of Object.entries(TOPO)) {
-    if (id === selected || ROUTES[id]?.place !== place) continue;
+    // A myth nobody has read isn't drawn: there's nothing on the rock to see.
+    if (id === selected || ROUTES[id]?.place !== place || ROUTES[id]?.hiddenUntil) continue;
     const trad = ROUTES[id]?.disc === 'trad';
     g.strokeStyle = '#F7EBD0';
     g.lineWidth = 1.5;
@@ -1113,11 +1243,18 @@ function paintLines(g: G, place: string, selected: string): void {
     g.setLineDash([]);
     if (!trad) boltDots(g, t);
   }
+  // A myth's own line waits for the render, which draws it once you can read it.
+  if (ROUTES[selected]?.hiddenUntil) return;
+  traceSelected(g, TOPO[selected]!);
+}
+
+// Your line, solid.
+export function traceSelected(g: G, t: { d: Pt[] }): void {
   g.strokeStyle = '#DA6A34';
   g.lineWidth = 2.6;
   g.lineCap = 'round';
   g.beginPath();
-  trace(g, TOPO[selected]!.d, false);
+  trace(g, t.d, false);
   g.stroke();
 }
 
@@ -1140,6 +1277,7 @@ function paintWall(g: G, place: string, selected: string): void {
   else if (place === 'mesa') paintMesa(g);
   else if (place === 'stone') paintStone(g);
   else if (place === 'wind') paintWind(g);
+  else if (place === 'crucible') paintCrucible(g);
   else paintRoadside(g);
   paintLines(g, place, selected);
 }
@@ -1153,7 +1291,14 @@ export function rockPath(g: G, r: RouteDef): void {
 }
 
 // Each crag's rock face on its close-up, where weather is drawn; Roadside's is WALLPOLY.
-const FACE: Record<string, Pt[]> = { gorge: G_WALL, moon: M_WALL, mesa: S_WALL, stone: B_WALL, wind: R_WALL };
+const FACE: Record<string, Pt[]> = {
+  gorge: G_WALL,
+  moon: M_WALL,
+  mesa: S_WALL,
+  stone: B_WALL,
+  wind: R_WALL,
+  crucible: C_WALL,
+};
 
 // A route's wall, painted into any context in wall units: what the wall view caches at 2x,
 // for the send card to paint at its own size.

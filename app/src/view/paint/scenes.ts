@@ -168,6 +168,34 @@ const DESERT: Palette = {
   talus: '#CDB58F',
 };
 
+// The Crucible: overcast and freezing. A flat grey sky, frost on the ground, and black
+// gneiss banded with pale quartz.
+const FRIGID: Palette = {
+  sky: [
+    [0, '#9AA6B2'],
+    [0.6, '#C9CFD4'],
+    [1, '#DCDEDC'],
+  ],
+  orb: '#EDEFEE',
+  orbX: 280,
+  orbY: 90,
+  far2: '#AEB6BD',
+  far: '#8C959E',
+  mid: '#6E7672',
+  midTree: '#39443E',
+  trees: '#26302B',
+  ground: '#B9BDB8',
+  ground2: '#A6AAA5',
+  track: '#9A9C96',
+  van: '#E6DCC4',
+  trim: '#2F6F73',
+  glass: '#6F8C98',
+  wall: '#4D4F55',
+  wallShade: '#3A3C42',
+  wallDark: '#1F2024',
+  talus: '#7E8184',
+};
+
 // Wind River: high and cold. Deep blue sky, ranges gone white with snow, granite a shade
 // darker than the valley's, thin grass and a few stunted pines.
 const ALPINE: Palette = {
@@ -561,7 +589,7 @@ const CRAG_VAN = { x: 34, w: 200, h: 82 };
 
 // How a crag's rock is painted: Roadside's banded sandstone, the Gorge's granite, or
 // Moonstone's quartzite.
-type Rock = 'sandstone' | 'granite' | 'quartzite' | 'redrock';
+type Rock = 'sandstone' | 'granite' | 'quartzite' | 'redrock' | 'gneiss';
 
 // The wall's outline: a ragged left edge from its foot, and either the scene's right edge
 // or, where the wall ends, a top that steps down into the talus.
@@ -832,6 +860,52 @@ function redrock(g: G, P: Palette, c: CragSpec, r: () => number): void {
   g.fillRect(x0 - 10, 6, x1 - x0 + 60, 20);
 }
 
+// The Crucible's gneiss: dark rock folded into pale wavy bands, quartz veins across them,
+// and frost in the cracks.
+function gneiss(g: G, P: Palette, c: CragSpec, r: () => number): void {
+  const [x0, x1] = c.wall;
+  fill(
+    g,
+    (gg) =>
+      poly(
+        gg,
+        [
+          [x0 + 300, -20],
+          [x1 + 30, -20],
+          [x1 + 30, GND],
+          [x0 + 340, GND],
+        ],
+        true,
+      ),
+    P.wallShade!,
+  );
+  // The folds: long wavy bands, lighter and darker.
+  for (let i = 0; i < 14; i++) {
+    const y = -10 + i * 42 + r() * 12;
+    g.strokeStyle = r() < 0.5 ? 'rgba(200,196,186,.28)' : 'rgba(10,10,14,.3)';
+    g.lineWidth = 3 + r() * 6;
+    g.beginPath();
+    for (let x = x0; x <= x1 + 30; x += 18) g.lineTo(x, y + Math.sin(x * 0.012 + i) * 22 + (x - x0) * 0.08);
+    g.stroke();
+  }
+  g.strokeStyle = 'rgba(236,234,226,.55)';
+  g.lineWidth = 2;
+  for (let i = 0; i < 6; i++) {
+    const x = x0 + 60 + r() * (x1 - x0 - 100);
+    const y = 60 + r() * 360;
+    g.beginPath();
+    g.moveTo(x, y);
+    g.lineTo(x + 40 + r() * 60, y + 30 + r() * 40);
+    g.stroke();
+  }
+  g.fillStyle = 'rgba(236,240,242,.7)';
+  for (let i = 0; i < 10; i++) {
+    g.beginPath();
+    g.ellipse(x0 + 40 + r() * (x1 - x0 - 60), 40 + r() * 460, 6 + r() * 12, 2 + r() * 2, 0, 0, 6.2832);
+    g.fill();
+  }
+}
+
 // Behind-the-boulders trees: junipers at Roadside and Moonstone, pines in the Gorge.
 const TREES: Record<string, [number, number][]> = {
   crag: [
@@ -844,6 +918,10 @@ const TREES: Record<string, [number, number][]> = {
     [18, 210],
     [96, 170],
     [250, 150],
+  ],
+  crucible: [
+    [20, 120],
+    [262, 100],
   ],
   wind: [
     [18, 130],
@@ -878,6 +956,11 @@ const TALUS: Record<string, [number, number, number][]> = {
     [918, 40, 22],
     [1056, 24, 12],
     [1270, 22, 10],
+  ],
+  crucible: [
+    [620, 32, 14],
+    [1180, 40, 18],
+    [1460, 26, 12],
   ],
   wind: [
     [600, 34, 16],
@@ -930,14 +1013,17 @@ function paintCragGround(P: Palette, id: string, kind: Rock): HTMLCanvasElement 
   if (kind === 'granite') granite(g, P, spec, r);
   else if (kind === 'quartzite') quartzite(g, P, spec, r);
   else if (kind === 'redrock') redrock(g, P, spec, r);
+  else if (kind === 'gneiss') gneiss(g, P, spec, r);
   else sandstone(g, P, spec, r);
   g.fillStyle = lin(g, 0, GND - 60, 0, GND, [
     [0, 'rgba(40,36,34,0)'],
     [1, 'rgba(40,36,34,.28)'],
   ]);
   g.fillRect(spec.wall[0] - 2, GND - 60, w, 60);
-  // The lines, chalked up the wall, a sport line's bolts dotted along it. Trad has none.
+  // The lines, chalked up the wall, a sport line's bolts dotted along it. Trad has none, and
+  // a myth nobody has climbed has no chalk at all.
   for (const rt of spec.lines) {
+    if (ROUTES[rt.route]?.hiddenUntil) continue;
     const pts = routeWiggle(rt.x, rt.n * 7);
     g.strokeStyle = 'rgba(247,235,208,.9)';
     g.lineWidth = 1.8;
@@ -974,6 +1060,7 @@ const BOULDER_ROCK: Record<Rock, [string, string]> = {
   granite: ['#C3C6C6', '#969BA1'],
   quartzite: ['#EDE3D3', '#C4B19E'],
   redrock: ['#C8683E', '#9C4A30'],
+  gneiss: ['#5A5C62', '#3A3C42'],
 };
 
 // A boulder on the talus, side on: an angular block with a lit face and a shaded side,
@@ -1095,6 +1182,7 @@ const LOOK: Record<string, { P: Palette; seed: number; rock: Rock }> = {
   mesa: { P: MESA, seed: 29, rock: 'redrock' },
   stone: { P: VALLEY, seed: 31, rock: 'granite' },
   wind: { P: ALPINE, seed: 37, rock: 'granite' },
+  crucible: { P: FRIGID, seed: 41, rock: 'gneiss' },
 };
 
 // The painted layers for a scene at a time of day. Two are kept: the one you're in and the

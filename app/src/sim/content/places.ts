@@ -246,6 +246,22 @@ export const PLACES: Record<string, PlaceDef> = {
     shaded: true,
     ownSky: true,
   },
+  // v0.956's "remote, frigid wall, where the grades run out": V11, four hours out, shaded, no
+  // haul to pay for. East out of the valley, over the pass above Midtown.
+  crucible: {
+    name: 'The Crucible',
+    crag: true,
+    scene: 'crucible',
+    ambience: { wind: 0.8, hawk: 0.1 },
+    away: 'A remote, frigid wall four hours east, over the pass. Where the grades run out.',
+    here: 'Black gneiss, cold wind, and nothing easy.',
+    acts: [],
+    minGrade: 11,
+    invite: 7,
+    locked: 'Nothing here is under V13. Come back when you’re climbing V11, and even then.',
+    shaded: true,
+    ownSky: true,
+  },
   gym: {
     name: 'Send City',
     scene: 'gym',
@@ -531,6 +547,8 @@ export const ROADS: RoadDef[] = [
   // Wind River: v0.956's four hours and 40% of a tank from the Lot, on past the Gorge where
   // its dirt road climbs out of the valley.
   { a: 'wind', b: 'gorge', min: 120, cash: 14 },
+  // The Crucible: v0.956's four hours and 45% of a tank from the Lot, east over the pass.
+  { a: 'crucible', b: 'lot', min: 240, cash: 26 },
 ];
 
 // A drive: its time and gas, and the places it passes on the way.

@@ -1457,6 +1457,14 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Its picture:** alpine granite against a deep sky with snow on the ranges, a crack and a corner, snow lying near the top of the close-up; a boulder look by the lake; a pin on the Gorge's road where it climbs out of the valley.
 - **The map is filling up at the top:** five crags now sit in its top 150 px. The labels are clear, but the next far crags need to go somewhere else, or the map needs a way to show "out of the valley" places.
 
+**Status (29 Sep 2026): 21.4, fourth crag built: The Crucible, and the grades run to V18 with no hole.**
+- **The crag,** through "Adding a place": v0.956's lines, names and grades from its bundle. Boulders: The Reckoning V13, The Vise V14, Apparition V15 (really V14), Event Horizon V17. Bolted: Crucible Crux 5.14b, The Lifeline 5.14d, Threshold 5.15d. And its two myths, V18 and 5.16a.
+- **One line v0.956 didn't have:** The Anvil, V16 [proposed]. v0.956 had no V16 anywhere; now every grade V0 to V18 has a line (the gym to V5, the crags from V2), and `crags.test.ts` holds it.
+- **Myths** (a new rule, v0.956's revealAfter): a myth can't be read until you've sent the hardest known line under it, Event Horizon for the boulder and Threshold for the route. Until then its tag is "?", the wall shows no line, its sheet says only what it'll take, and the rules refuse a go. Both are open: the first ascent is yours to name. Their crux names and lines are v0.956's move-by-move descriptions.
+- **Access** as v0.956 had it: V11, no trip to pay for, four hours from the Lot ($26 of gas), shaded, weather of its own. Ride-or-Die to bring a partner. East out of the valley over the pass above Midtown: the top of the map was full, and the south end sits under the goal chip.
+- **Its picture:** black gneiss folded into pale bands under a flat grey sky, frost on the ground; a close-up face with the Lifeline's seam; a boulder look.
+- **Criterion 3's first half** (lines at every grade from V0 to V18) now holds. The second half, bots reaching V10+ without running out of things to try, doesn't yet: the bots don't pay for trips, and in 56 days they reach V5.
+
 ---
 
 ### Phase 22 — The life: the van, the body, food, the hustle, and the games
@@ -1816,3 +1824,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Promotions and invites (Evan's call on the V5 squeeze): café and setting ranks that raise a shift's pay, setting's gated by grade; Hazel and Sage can be asked out to any crag, by bond; save v7; the harness runs eight weeks, with no stuck nights.
 - 2026-09-29 — Phase 21.4: The Big Stone. v0.956's five single pitches (V6 to 5.14a, one trad, one bolted), V8 and a $600 trip, four hours out, shaded; a granite big-wall scene, face and boulder look; Ride-or-Die to bring a partner.
 - 2026-09-29 — Phase 21.4: Wind River Walls. v0.956's nine lines (V9 to an open V15; three bolted to 5.14c, one trad), V9, an $800 trip and a $35 permit, four hours out past the Gorge, shaded, shut in winter; an alpine scene, face and boulder look.
+- 2026-09-29 — Phase 21.4: The Crucible. v0.956's lines V13 to its two V18 myths, and The Anvil (V16) so no grade is missing; myths that can't be read until the line under them is sent; V11, four hours east over the pass, shaded; a gneiss scene, face and boulder look.

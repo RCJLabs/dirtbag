@@ -155,6 +155,29 @@ export const CRAGS: Record<string, CragSpec> = {
     // The spire, with a highball either side.
     frame: 760,
   },
+  // The Crucible: a black gneiss wall with four roped lines, the myth the last of them, and
+  // boulders on the frozen ground either side; the boulder myth out past Event Horizon.
+  crucible: {
+    width: 1600,
+    wall: [640, 1220],
+    lines: [
+      { n: 1, x: 720, route: 'ccrux' },
+      { n: 2, x: 840, route: 'clifeline' },
+      { n: 3, x: 960, route: 'cthreshold' },
+      { n: 4, x: 1080, route: 'cmyth' },
+    ],
+    boulders: [
+      { x: 340, w: 80, h: 54, route: 'creckoning' },
+      { x: 460, w: 70, h: 60, route: 'cvise' },
+      { x: 570, w: 64, h: 50, route: 'capparition' },
+      { x: 1290, w: 76, h: 62, route: 'canvil' },
+      { x: 1400, w: 84, h: 68, route: 'chorizon' },
+      { x: 1510, w: 72, h: 58, route: 'cgenesis' },
+    ],
+    sign: 272,
+    hint: 'Nothing here is easy. The wall needs a belayer.',
+    frame: 920,
+  },
   // Wind River: an alpine wall with four roped lines, boulders by the lake either side.
   wind: {
     width: 1560,
@@ -291,6 +314,7 @@ export const SCENES: Record<string, SceneLayout> = {
   mesa: cragScene('mesa', CRAGS.mesa!),
   stone: cragScene('stone', CRAGS.stone!),
   wind: cragScene('wind', CRAGS.wind!),
+  crucible: cragScene('crucible', CRAGS.crucible!),
   gym: {
     place: 'gym',
     width: GYM_W,
@@ -355,6 +379,7 @@ export const SPOTS: Record<string, Spot[]> = {
   mesa: [{ who: 'dex', x: 1320, face: -1, pose: 'stand', talk: 'dex' }],
   stone: [{ who: 'dex', x: 1180, face: -1, pose: 'stand', talk: 'dex' }],
   wind: [{ who: 'dex', x: 1350, face: -1, pose: 'stand', talk: 'dex' }],
+  crucible: [{ who: 'dex', x: 1340, face: -1, pose: 'stand', talk: 'dex' }],
 };
 
 // Who's in a scene right now: the people whose day puts them at its place.
@@ -409,6 +434,8 @@ export const MAP_PINS: Record<string, Pin> = {
   stone: { x: 346, y: 34, side: -1, kind: 'crag' },
   // On past the Gorge, where its dirt road climbs out of the valley.
   wind: { x: 40, y: 108, side: 1, kind: 'crag' },
+  // East out of the valley, over the pass above Midtown.
+  crucible: { x: 338, y: 372, side: -1, kind: 'crag', dy: -16 },
 };
 export const DIM_PINS: [number, number][] = [
   [266, 334],
