@@ -155,6 +155,28 @@ export const CRAGS: Record<string, CragSpec> = {
     // The spire, with a highball either side.
     frame: 760,
   },
+  // Wind River: an alpine wall with four roped lines, boulders by the lake either side.
+  wind: {
+    width: 1560,
+    wall: [620, 1240],
+    lines: [
+      { n: 1, x: 700, route: 'wglacier' },
+      { n: 2, x: 820, route: 'wskyline' },
+      { n: 3, x: 940, route: 'wastroman' },
+      { n: 4, x: 1060, route: 'wtrad' },
+    ],
+    boulders: [
+      { x: 340, w: 80, h: 52, route: 'walpine' },
+      { x: 480, w: 70, h: 60, route: 'wdiamond' },
+      { x: 1300, w: 84, h: 70, route: 'woffwidth' },
+      { x: 1400, w: 66, h: 56, route: 'wthin' },
+      { x: 1500, w: 60, h: 64, route: 'wopen' },
+    ],
+    sign: 272,
+    hint: 'Boulders by the lake. The wall needs a belayer, and a jacket.',
+    // The wall.
+    frame: 900,
+  },
   // The Big Stone: a granite big wall filling the right of the scene, its two single
   // pitches on it, and boulders in the meadow at its foot.
   stone: {
@@ -268,6 +290,7 @@ export const SCENES: Record<string, SceneLayout> = {
   moon: cragScene('moon', CRAGS.moon!),
   mesa: cragScene('mesa', CRAGS.mesa!),
   stone: cragScene('stone', CRAGS.stone!),
+  wind: cragScene('wind', CRAGS.wind!),
   gym: {
     place: 'gym',
     width: GYM_W,
@@ -331,6 +354,7 @@ export const SPOTS: Record<string, Spot[]> = {
   moon: [{ who: 'dex', x: 1190, face: -1, pose: 'stand', talk: 'dex' }],
   mesa: [{ who: 'dex', x: 1320, face: -1, pose: 'stand', talk: 'dex' }],
   stone: [{ who: 'dex', x: 1180, face: -1, pose: 'stand', talk: 'dex' }],
+  wind: [{ who: 'dex', x: 1350, face: -1, pose: 'stand', talk: 'dex' }],
 };
 
 // Who's in a scene right now: the people whose day puts them at its place.
@@ -383,6 +407,8 @@ export const MAP_PINS: Record<string, Pin> = {
   mesa: { x: 200, y: 60, side: -1, kind: 'crag' },
   // Up the highway past where it leaves the valley.
   stone: { x: 346, y: 34, side: -1, kind: 'crag' },
+  // On past the Gorge, where its dirt road climbs out of the valley.
+  wind: { x: 40, y: 108, side: 1, kind: 'crag' },
 };
 export const DIM_PINS: [number, number][] = [
   [266, 334],

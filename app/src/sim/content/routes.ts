@@ -1049,6 +1049,97 @@ const bClassic = librarySport('bclassic', 'Valley Classic', 12, 'power', 'stone'
   b: { style: 'crimp', name: 'The headwall', from: 22.8, to: 26.0, win: 'Chains, and a very long lower.' },
 });
 
+// ---- Wind River Walls: v0.956's high alpine granite, past the Gorge ----
+// Its nine lines, names and grades as v0.956 had them: V9 to an open V15, three bolted
+// and a trad line. V9 and a trip to pay for, a permit every time, and snowed in all winter.
+
+const wAlpine = libraryBoulder('walpine', 'Alpine Crimps', 9, 'crimp', 'wind', {
+  moves: 7,
+  from: 3.6,
+  to: 5.4,
+  cruxName: 'The frozen edges',
+  heightFt: 13,
+  line: 'Edges on a block by the lake. Your fingers go numb before they go pumped.',
+});
+const wDiamond = libraryBoulder('wdiamond', 'The Diamond', 11, 'technical', 'wind', {
+  moves: 8,
+  from: 4.2,
+  to: 6.2,
+  cruxName: 'The facet',
+  heightFt: 15,
+  line: 'A diamond-shaped face climbed on its facets. Soft for V11, and everyone knows it.',
+  trueGrade: 10,
+});
+const wOffwidth = libraryBoulder('woffwidth', 'Offwidth Horror', 12, 'crack', 'wind', {
+  moves: 7,
+  from: 3.4,
+  to: 5.6,
+  cruxName: 'The chimney-that-isn’t',
+  heightFt: 16,
+  line: 'Too wide for a fist, too narrow for a body. It costs skin you didn’t know you had.',
+});
+const wThin = libraryBoulder('wthin', 'Thin Air', 13, 'power', 'wind', {
+  moves: 6,
+  from: 2.8,
+  to: 4.4,
+  cruxName: 'The lunge',
+  heightFt: 14,
+  line: 'Eleven thousand feet up, a lunge that’s hard at sea level.',
+});
+const wOpen = libraryBoulder('wopen', 'The Wind River project', 15, 'technical', 'wind', {
+  moves: 9,
+  from: 4.6,
+  to: 7.0,
+  cruxName: 'The blank arête',
+  heightFt: 18,
+  line: 'Unclimbed. An arête with no holds on it that anyone’s found yet.',
+  open: true,
+});
+const wGlacier = librarySport('wglacier', 'Glacier Point', 10, 'crimp', 'wind', {
+  moves: 24,
+  heightFt: 95,
+  line: 'Clean alpine granite over a glacier. Crimps all the way, and cold ones.',
+  rest: 12.2,
+  a: { style: 'crimp', name: 'The seam', from: 7.2, to: 9.6, win: 'Off the seam.' },
+  b: { style: 'technical', name: 'The slab', from: 17.8, to: 20.2, win: 'Chains, and a view that goes on.' },
+});
+const wSkyline = librarySport('wskyline', 'Skyline Traverse', 12, 'technical', 'wind', {
+  moves: 30,
+  heightFt: 110,
+  line: 'Sideways along the skyline for half its length. The rope drag is the second crux.',
+  rest: 15.0,
+  a: { style: 'technical', name: 'The traverse', from: 8.8, to: 12.4, win: 'Across.' },
+  b: {
+    style: 'endurance',
+    name: 'The last bolts',
+    from: 23.2,
+    to: 26.6,
+    win: 'Chains. Lower slowly; it wanders.',
+  },
+});
+const wAstro = librarySport('wastroman', 'Astroman', 14, 'crack', 'wind', {
+  moves: 32,
+  heightFt: 130,
+  line: 'A bolted crack line, the hardest thing on the wall. It’s everything, the whole way.',
+  rest: 16.4,
+  a: { style: 'crack', name: 'The Harding slot', from: 10.0, to: 13.2, win: 'Out of the slot.' },
+  b: {
+    style: 'power',
+    name: 'The roof crack',
+    from: 24.6,
+    to: 28.2,
+    win: 'Chains. You’ll be telling people.',
+  },
+});
+const wTrad = libraryTrad('wtrad', 'Alpine Trad', 13, 'endurance', 'wind', {
+  moves: 30,
+  heightFt: 125,
+  line: 'A long crack up the wall, gear the whole way, and the weather watching.',
+  rest: 15.6,
+  a: { style: 'crack', name: 'The long hands', from: 9.4, to: 12.6, win: 'Out of the hands section.' },
+  b: { style: 'endurance', name: 'The upper corner', from: 22.4, to: 25.8, win: 'Top out into the wind.' },
+});
+
 export const ROUTES: Record<string, RouteDef> = {
   warm: warmBoulder,
   dyno,
@@ -1097,6 +1188,15 @@ export const ROUTES: Record<string, RouteDef> = {
   bsplit: bSplit,
   btrad: bTrad,
   bclassic: bClassic,
+  walpine: wAlpine,
+  wdiamond: wDiamond,
+  woffwidth: wOffwidth,
+  wthin: wThin,
+  wopen: wOpen,
+  wglacier: wGlacier,
+  wskyline: wSkyline,
+  wastroman: wAstro,
+  wtrad: wTrad,
 };
 
 // Said when you come off between cruxes with nothing left in your arms.

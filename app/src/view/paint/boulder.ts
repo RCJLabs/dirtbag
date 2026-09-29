@@ -66,6 +66,19 @@ interface Look {
   scrub?: true;
 }
 const LOOKS: Record<string, Look> = {
+  wind: {
+    sky: ['#5E93C8', '#E4ECEE'],
+    sun: '#FFFBEF',
+    back: '#DDE5EA',
+    haze: 'rgba(120,150,180,.2)',
+    trees: '#3C5642',
+    talus: '#A2A5A2',
+    ground: '#8A9170',
+    stones: '#9A9580',
+    face: '#C3C7C9',
+    side: '#8E959C',
+    speckle: true,
+  },
   stone: {
     sky: ['#7FB2DA', '#E8E6D6'],
     sun: '#FFF8E4',

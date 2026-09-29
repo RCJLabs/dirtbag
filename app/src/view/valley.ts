@@ -92,6 +92,21 @@ export const SIDE_ROADS: Record<string, { pts: Pt[]; dirt?: true }> = {
     ],
     dirt: true,
   },
+  // Wind River: the Gorge's dirt road, and on past it up out of the valley.
+  wind: {
+    pts: [
+      [274, 168],
+      [236, 172],
+      [198, 168],
+      [160, 162],
+      [122, 156],
+      [96, 152],
+      [72, 136],
+      [54, 122],
+      [40, 108],
+    ],
+    dirt: true,
+  },
   // On north from the highway's end to The Big Stone.
   stone: {
     pts: [

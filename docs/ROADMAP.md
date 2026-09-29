@@ -1451,6 +1451,12 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The bots** don't go: they don't pay for trips. Nothing in the harness changes.
 - **Seen on the way:** the wet-rock overlay after rain is a flat translucent box over the wall's whole span, sky edge and ground included. It's the same at every crag; a pass on it belongs with the art, not here.
 
+**Status (29 Sep 2026): 21.4, third crag built: Wind River Walls.**
+- **The crag,** through "Adding a place": v0.956's nine lines, names and grades from its bundle. Boulders: Alpine Crimps V9, The Diamond V11 (really V10), Offwidth Horror V12, Thin Air V13, and an open V15. Bolted: Glacier Point 5.13c, Skyline Traverse 5.14a, Astroman 5.14c; Alpine Trad 5.14b on gear.
+- **Access** as v0.956 had it: V9, an $800 trip paid once and a $35 permit every trip, four hours from the Lot on past the Gorge's dirt road ($14 of gas from the Gorge), shaded, its own weather, snowed in all winter. Ride-or-Die to bring a partner.
+- **Its picture:** alpine granite against a deep sky with snow on the ranges, a crack and a corner, snow lying near the top of the close-up; a boulder look by the lake; a pin on the Gorge's road where it climbs out of the valley.
+- **The map is filling up at the top:** five crags now sit in its top 150 px. The labels are clear, but the next far crags need to go somewhere else, or the map needs a way to show "out of the valley" places.
+
 ---
 
 ### Phase 22 — The life: the van, the body, food, the hustle, and the games
@@ -1809,3 +1815,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 21.4: Sandstone Mesa. v0.956's eleven lines (V7 to an open V13, three bolted, one trad), V7 to get in, closed in summer, desert rock and its own weather; a red-sandstone scene, wall and boulder look; a pin on a desert road; Sage will come out to belay; the bots drive there from V7.
 - 2026-09-29 — Promotions and invites (Evan's call on the V5 squeeze): café and setting ranks that raise a shift's pay, setting's gated by grade; Hazel and Sage can be asked out to any crag, by bond; save v7; the harness runs eight weeks, with no stuck nights.
 - 2026-09-29 — Phase 21.4: The Big Stone. v0.956's five single pitches (V6 to 5.14a, one trad, one bolted), V8 and a $600 trip, four hours out, shaded; a granite big-wall scene, face and boulder look; Ride-or-Die to bring a partner.
+- 2026-09-29 — Phase 21.4: Wind River Walls. v0.956's nine lines (V9 to an open V15; three bolted to 5.14c, one trad), V9, an $800 trip and a $35 permit, four hours out past the Gorge, shaded, shut in winter; an alpine scene, face and boulder look.

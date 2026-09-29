@@ -226,6 +226,26 @@ export const PLACES: Record<string, PlaceDef> = {
     shaded: true,
     ownSky: true,
   },
+  // v0.956's "high alpine granite cathedral, a long, costly haul for the committed": V9, a
+  // trip paid for once and a permit every time, four hours out past the Gorge, shaded, and
+  // snowed in all winter.
+  wind: {
+    name: 'Wind River Walls',
+    crag: true,
+    scene: 'wind',
+    ambience: { wind: 0.7, creek: 0.3, hawk: 0.15 },
+    away: 'High alpine granite past the Gorge. A long, costly haul for the committed.',
+    here: 'Thin air, cold rock, and weather you watch.',
+    acts: [],
+    minGrade: 9,
+    invite: 7,
+    locked: 'V9 and up, and a long way up at that. Come back when you’re climbing V9.',
+    unlock: 800,
+    permit: 35,
+    closed: { season: 'winter', why: 'Snowed in till spring' },
+    shaded: true,
+    ownSky: true,
+  },
   gym: {
     name: 'Send City',
     scene: 'gym',
@@ -508,6 +528,9 @@ export const ROADS: RoadDef[] = [
   // The Big Stone: v0.956's four hours and 38% of a tank from the Lot, north past where the
   // highway leaves the valley.
   { a: 'stone', b: 'road', min: 180, cash: 22 },
+  // Wind River: v0.956's four hours and 40% of a tank from the Lot, on past the Gorge where
+  // its dirt road climbs out of the valley.
+  { a: 'wind', b: 'gorge', min: 120, cash: 14 },
 ];
 
 // A drive: its time and gas, and the places it passes on the way.

@@ -180,6 +180,37 @@ describe('The Big Stone (Phase 21.4)', () => {
   });
 });
 
+describe('Wind River Walls (Phase 21.4)', () => {
+  it('opens at V9 once paid for, takes a permit every trip, past the Gorge, four hours out', () => {
+    const paid = play(at(9, { cash: 900 }), { t: 'unlock', place: 'wind' }, { t: 'travel', to: 'wind' });
+    expect(paid.state.at).toBe('wind');
+    expect(paid.state.cash).toBe(100 - road('lot', 'wind')!.cash - 35);
+    expect(road('lot', 'wind')!.min).toBe(240);
+    expect(road('lot', 'wind')!.via).toContain('gorge');
+  });
+
+  it('is snowed in all winter', () => {
+    const winter = days(1, 400).find(
+      (d) => seasonOf(d) === 'winter' && conditionsAt('crags', d, 'wind').open,
+    )!;
+    expect(
+      goBlocked(at(10, { at: 'wind', day: winter, min: 10 * 60, unlocked: ['wind'] }), ROUTES.walpine!),
+    ).toBe('Snowed in till spring');
+  });
+
+  it('keeps v0.956’s nine lines, V9 to an open V15', () => {
+    const here = Object.values(ROUTES).filter((r) => r.place === 'wind');
+    expect(here).toHaveLength(9);
+    expect(here.find((r) => r.open)?.grade).toBe(15);
+    expect(
+      here
+        .filter((r) => r.disc !== 'boulder')
+        .map((r) => r.disc)
+        .sort(),
+    ).toEqual(['sport', 'sport', 'sport', 'trad']);
+  });
+});
+
 describe('highballs [proposed]', () => {
   it('can land you badly off a fall: more from higher, less with the haul’s pads and a spotter', () => {
     const tall = ROUTES.marete!;

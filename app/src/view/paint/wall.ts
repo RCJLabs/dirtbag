@@ -255,6 +255,45 @@ const TOPO_PTS: Record<string, Pt[]> = {
     [264, 120],
     [258, 70],
   ],
+  // Wind River: Glacier Point up the left, Skyline Traverse out right along the band,
+  // Astroman up the crack, and Alpine Trad up the corner at the right.
+  wglacier: [
+    [58, 540],
+    [52, 470],
+    [64, 400],
+    [56, 330],
+    [66, 260],
+    [60, 190],
+    [66, 134],
+  ],
+  wskyline: [
+    [128, 540],
+    [134, 470],
+    [124, 410],
+    [150, 372],
+    [180, 350],
+    [196, 290],
+    [188, 220],
+    [196, 124],
+  ],
+  wastroman: [
+    [232, 540],
+    [228, 470],
+    [236, 400],
+    [228, 330],
+    [236, 270],
+    [230, 200],
+    [238, 116],
+  ],
+  wtrad: [
+    [310, 540],
+    [304, 470],
+    [312, 400],
+    [306, 330],
+    [314, 260],
+    [308, 190],
+    [314, 122],
+  ],
   testpiece: [
     [290, 538],
     [298, 470],
@@ -509,6 +548,144 @@ const M_WALL: Pt[] = [
   [320, 440],
   [338, BASE_Y],
 ];
+
+// Wind River: an alpine face with its top against the sky, snow on the ranges behind, a
+// crack up the middle and a corner at the right.
+const R_WALL: Pt[] = [
+  [-4, BASE_Y],
+  [-4, 128],
+  [60, 116],
+  [110, 124],
+  [170, 102],
+  [230, 110],
+  [290, 96],
+  [364, 112],
+  [364, BASE_Y],
+];
+
+function paintWind(g: G): void {
+  const r = mulberry32(181);
+  g.fillStyle = lin(g, 0, 0, 0, 140, [
+    [0, '#5E93C8'],
+    [1, '#E4ECEE'],
+  ]);
+  g.fillRect(0, 0, W, H);
+  // The ranges behind, snow on their tops.
+  g.fillStyle = '#B7C6D2';
+  g.beginPath();
+  g.moveTo(-4, 140);
+  for (const [x, y] of [
+    [30, 74],
+    [70, 96],
+    [120, 58],
+    [170, 90],
+    [220, 66],
+    [280, 98],
+    [330, 70],
+    [368, 90],
+  ] as const)
+    g.lineTo(x, y);
+  g.lineTo(368, 140);
+  g.closePath();
+  g.fill();
+  g.fillStyle = '#EEF2F4';
+  for (const [x, y] of [
+    [30, 74],
+    [120, 58],
+    [220, 66],
+    [330, 70],
+  ] as const) {
+    g.beginPath();
+    g.moveTo(x - 14, y + 12);
+    g.lineTo(x, y);
+    g.lineTo(x + 14, y + 12);
+    g.closePath();
+    g.fill();
+  }
+  g.save();
+  g.beginPath();
+  poly(g, R_WALL, true);
+  g.clip();
+  g.fillStyle = '#B9BDC0';
+  g.fillRect(0, 0, W, H);
+  // The corner at the right, and its shaded side.
+  g.fillStyle = '#8E959C';
+  g.beginPath();
+  g.moveTo(318, 0);
+  g.lineTo(W + 4, 0);
+  g.lineTo(W + 4, BASE_Y);
+  g.lineTo(312, BASE_Y);
+  g.closePath();
+  g.fill();
+  g.strokeStyle = 'rgba(34,38,46,.7)';
+  g.lineWidth = 2.4;
+  for (const pts of [
+    [
+      [238, 110],
+      [232, 250],
+      [238, 400],
+      [232, 540],
+    ],
+    [
+      [318, 96],
+      [312, 300],
+      [318, 540],
+    ],
+  ] as Pt[][]) {
+    g.beginPath();
+    trace(g, pts, false);
+    g.stroke();
+  }
+  // The band Skyline Traverse follows.
+  g.strokeStyle = 'rgba(255,255,255,.45)';
+  g.lineWidth = 2;
+  g.beginPath();
+  g.moveTo(110, 382);
+  g.lineTo(210, 356);
+  g.stroke();
+  for (let i = 0; i < 12; i++) {
+    const x = r() * W;
+    const len = 140 + r() * 300;
+    g.fillStyle = lin(g, 0, 100, 0, 100 + len, [
+      [0, 'rgba(34,38,46,.3)'],
+      [1, 'rgba(34,38,46,0)'],
+    ]);
+    g.fillRect(x, 100, 4 + r() * 9, len);
+  }
+  g.fillStyle = 'rgba(160,176,120,.35)';
+  for (let i = 0; i < 24; i++) {
+    g.beginPath();
+    g.ellipse(r() * W, 140 + r() * 380, 2 + r() * 5, 1.5 + r() * 3, 0, 0, 6.2832);
+    g.fill();
+  }
+  // Snow lying in the cracks near the top.
+  g.fillStyle = 'rgba(245,248,250,.85)';
+  for (const [x, y] of [
+    [60, 130],
+    [175, 118],
+    [300, 116],
+  ] as const) {
+    g.beginPath();
+    g.ellipse(x, y, 14, 4, 0, 0, 6.2832);
+    g.fill();
+  }
+  g.restore();
+
+  g.fillStyle = '#8A9170';
+  g.fillRect(-4, BASE_Y, W + 8, H - BASE_Y);
+  g.fillStyle = '#A2A5A2';
+  for (const t of TALUS) {
+    g.beginPath();
+    rock(g, ...t);
+    g.fill();
+  }
+  g.fillStyle = '#2A4432';
+  for (const [tx, ty, sc] of CRAG_TREES) {
+    g.beginPath();
+    coniferPath(g, tx, ty, sc * 0.8);
+    g.fill();
+  }
+}
 
 // The Big Stone: a granite face with no top in sight, a corner right of centre, a roof,
 // and black streaks down it.
@@ -962,6 +1139,7 @@ function paintWall(g: G, place: string, selected: string): void {
   else if (place === 'moon') paintMoon(g);
   else if (place === 'mesa') paintMesa(g);
   else if (place === 'stone') paintStone(g);
+  else if (place === 'wind') paintWind(g);
   else paintRoadside(g);
   paintLines(g, place, selected);
 }
@@ -975,7 +1153,7 @@ export function rockPath(g: G, r: RouteDef): void {
 }
 
 // Each crag's rock face on its close-up, where weather is drawn; Roadside's is WALLPOLY.
-const FACE: Record<string, Pt[]> = { gorge: G_WALL, moon: M_WALL, mesa: S_WALL, stone: B_WALL };
+const FACE: Record<string, Pt[]> = { gorge: G_WALL, moon: M_WALL, mesa: S_WALL, stone: B_WALL, wind: R_WALL };
 
 // A route's wall, painted into any context in wall units: what the wall view caches at 2x,
 // for the send card to paint at its own size.
