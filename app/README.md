@@ -89,7 +89,7 @@ A place is data, a pin and a picture. In order:
 2. **Its acts** in `ACTS`, in the same file: what each costs, what it needs, what it says. Ids are `place.act`.
 3. **Its roads** in `ROADS`, in the same file: one to each neighbour, with minutes and gas (v0.956's where it has them). Every other drive goes through them, the quickest way.
 4. **Its lines**, for a crag: `src/sim/content/routes.ts`, with `place` set.
-5. **Its pin** in `MAP_PINS` (`src/view/layout.ts`): where it is, which side its label sits, and its kind. A place off the highway also needs its side road in `SIDE_ROADS` (`src/view/valley.ts`), starting where it leaves the highway. The drive animates along it.
+5. **Its pin** in `MAP_PINS` (`src/view/layout.ts`): where it is, which side its label sits, and its kind. A place more than a couple of blocks off the highway also needs its side road in `SIDE_ROADS` (`src/view/valley.ts`), starting where it leaves the highway. The drive animates along it.
 6. **Its picture**, the card's header:
    - With a scene: an entry in `SCENES` (`src/view/layout.ts`), with the `frame` its header looks at. A crag also needs its `CRAGS` layout (wall, lines, boulders, sign) and its painter in `paint/scenes.ts`.
    - Without a scene: a front in `src/view/paint/fronts.ts`.

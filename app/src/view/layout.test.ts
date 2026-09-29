@@ -77,12 +77,14 @@ describe('the drives on the map', () => {
           expect(y, `${a} to ${b}`).toBeLessThanOrEqual(Math.max(...ends) + 1);
         }
         // No stretch of road skipped: the longest step is a town street from the highway to a
-        // pin a couple of blocks off it.
-        for (let i = 1; i < pts.length; i++)
+        // pin a couple of blocks off it. A place further off needs a side road.
+        for (let i = 1; i < pts.length; i++) {
+          const step = Math.hypot(pts[i]![0] - pts[i - 1]![0], pts[i]![1] - pts[i - 1]![1]);
           expect(
-            Math.hypot(pts[i]![0] - pts[i - 1]![0], pts[i]![1] - pts[i - 1]![1]),
-            `${a} to ${b}`,
+            step,
+            `${a} to ${b}: a pin this far off the highway needs a side road (SIDE_ROADS)`,
           ).toBeLessThan(90);
+        }
       }
   });
 });

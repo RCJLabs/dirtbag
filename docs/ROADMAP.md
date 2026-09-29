@@ -1139,6 +1139,12 @@ There's no joystick, zone graph or tileset to retire. What's left, in slices:
     - **CI's checks**, by name:
       - `content.test.ts`: every road joins two real places, once, and is the quickest way between its own ends (else nobody drives it). Every place reaches every other, the same both ways. v0.956's drives from the Lot keep their terms.
       - `layout.test.ts`: a pin and a header for every place, and a scene that's the place's own. Side roads start on the highway. Drives go pin to pin without running past either end or skipping road.
+    - **A dry run of the checklist**, in a scratch copy that was then thrown away: a card-only "Gear Shop" in Midtown.
+      - The data was 13 lines in `places.ts` (the place, one act, one road to the café), plus a one-line pin and a stand-in front.
+      - With the data alone, the tests failed by name on the missing pin and header.
+      - With the pin, they failed on a pin too far off the highway for a straight street. That failure now says to give it a side road.
+      - Then everything passed, and the place worked in the game: its card, the drive there, and a drive from it to every other place, all worked out from its one road.
+      - The front, the illustration, is the slow part, and the criterion leaves it out. The run was mine, not a person's, so its speed says nothing about theirs. What it shows is that the steps are complete and each gap gets named.
 - **11.4, the daily agenda** (optional in the scope above): plan a day as a sequence ("shift → diner → gym → van") and run it, stopping at the first thing the day refuses.
 
 **Done when, on the rebuild** *[proposed; replaces the criteria above until Evan rules]*:
@@ -1148,7 +1154,7 @@ There's no joystick, zone graph or tileset to retire. What's left, in slices:
 4. The clock doesn't move while you're idle: true, and checked by the smoke test.
 5. A new place without a scene takes under an hour: a checklist, the road graph and CI's checks make it a data change plus a pin.
 
-**Status (29 Sep 2026): 11.1 to 11.3 built.** Criteria 2 and 3 pass on the build, counted by the e2e: 3 taps at most for a trip from a scene, and day three in 20. Criterion 4 passes (the smoke test). Criterion 1 carries to the testers. For 5, the checklist and the checks are in, and a timed run of the checklist is next.
+**Status (29 Sep 2026): 11.1 to 11.3 built.** Criteria 2 and 3 pass on the build, counted by the e2e: 3 taps at most for a trip from a scene, and day three in 20. Criterion 4 passes (the smoke test). Criterion 5 passes by a dry run: a card-only place was 13 lines of data and a pin, with the tests naming each missing piece, and its front is the illustration the criterion leaves out. Criterion 1 carries to the testers.
 
 ---
 
