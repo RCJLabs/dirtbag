@@ -4,6 +4,7 @@
 // (`npm run build --prefix app`); a missing build fails, it doesn't skip.
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { contrast, tokens } from './lib/contrast.mjs';
 import { COPIES, ROOT, read, packageVersion } from './lib/version.mjs';
 
 const DIST = 'app/dist';
@@ -101,6 +102,52 @@ check("docs/STORE.md fits Play's limits", () => {
     return `${key} ${n}/${max}`;
   });
   return out.join(', ');
+});
+
+// --- the game's text is readable ------------------------------------------------------------
+// Every pairing of text and ground in the panel kit, held to WCAG AA: 4.5:1 for text (all of
+// the kit's is under 18pt), 3:1 for the keyboard's ring against the paper it sits on.
+check("the kit's colours meet WCAG AA", () => {
+  const t = tokens(read('app/src/ui/styles.css'));
+  const pairs = [
+    ['ink', 'bg', 4.5],
+    ['dim', 'bg', 4.5],
+    ['acc', 'bg', 4.5],
+    ['rain', 'bg', 4.5],
+    ['btnInk', 'btn', 4.5],
+    ['hudInk', 'hudBg', 4.5],
+    ['acc', 'hudBg', 4.5],
+    ['focus', 'bg', 3],
+  ];
+  const out = pairs.map(([fg, bg, min]) => {
+    if (!t[fg] || !t[bg]) fail(`no --u-${t[fg] ? bg : fg} colour in the kit`);
+    const r = contrast(t[fg], t[bg]);
+    if (r < min) fail(`${fg} on ${bg} is ${r.toFixed(2)}:1; AA needs ${min}:1`);
+    return r;
+  });
+  return `${pairs.length} pairs, the lowest ${Math.min(...out).toFixed(2)}:1`;
+});
+
+// --- no one-off inline styles --------------------------------------------------------------
+// The game's panels take their look from styles.css. Inline, a component sets only custom
+// properties (levels and geometry from the game) through ui/vars.ts, and code touching an
+// element's style sets only custom properties too. Dev tools (src/dev) don't ship.
+check('the game sets no inline styles but custom properties', () => {
+  const files = ['app/src/ui', 'app/src/game'].flatMap((dir) =>
+    readdirSync(join(ROOT, dir), { recursive: true })
+      .filter((f) => /\.tsx?$/.test(f) && !/\.test\./.test(f))
+      .map((f) => `${dir}/${f}`),
+  );
+  const bad = [];
+  for (const f of files)
+    read(f)
+      .split('\n')
+      .forEach((line, i) => {
+        if (/style=\{(?!vars\(|box\()/.test(line) || /\.style\.(?!setProperty\(\s*['"`]--)/.test(line))
+          bad.push(`${f}:${i + 1}`);
+      });
+  if (bad.length) fail(`inline styles at ${bad.join(', ')}; set custom properties with vars() and style in styles.css`);
+  return `${files.length} files`;
 });
 
 // --- the Play build can still verify the domain ----------------------------------------------------

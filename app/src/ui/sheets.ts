@@ -9,6 +9,7 @@ import {
   BOARD_WEEKS,
   BODY,
   bodyNote,
+  clock,
   clockShort,
   conditionsAt,
   costLabel,
@@ -42,6 +43,8 @@ import {
   type RouteDef,
   type Skills,
   type Sky,
+  tonight,
+  type Tonight,
 } from '../sim';
 import type { Game, SheetId } from '../game/game';
 import { CRAGS } from '../view/layout';
@@ -69,6 +72,8 @@ export interface ListSpec {
   head?: { place: string; min: number; say: string };
   // Who's around then.
   who?: Who;
+  // At the van at night: what going to bed would do.
+  tonight?: Tonight;
 }
 
 // A card of a line you've sent, to keep: from its sent sheet, or later from its beta sheet.
@@ -182,6 +187,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       return {
         title: 'Your van',
         sub: isNight(s.min) ? 'Bed made. Mostly.' : `Home, for ${TEXT_VALUES.spot} a night at the Lot.`,
+        tonight: isNight(s.min) ? tonight(s) : undefined,
         close: true,
         rows: [
           actRow(game, s, 'lot.cook'),
@@ -402,6 +408,15 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         rows: [actRow(game, s, 'lot.kibble'), actRow(game, s, 'lot.play')],
       };
     }
+
+    // Too long for a toast: it waits on a card, and stays in the journal.
+    case 'note':
+      return {
+        title: `Day ${id.day} · ${clock(id.min)}`,
+        sub: id.text,
+        close: false,
+        rows: [{ label: 'Right', run: () => game.closeSheet() }],
+      };
 
     case 'act':
       return {

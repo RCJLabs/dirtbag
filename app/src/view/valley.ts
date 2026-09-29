@@ -3,7 +3,7 @@
 
 import { clamp, lerp, mk, spline, type G, type Pt } from './kit/geom';
 import { fbm } from './kit/noise';
-import { H, W } from './layout';
+import { H, W, W_MAX } from './layout';
 
 export const riverX = (y: number): number =>
   176 + 34 * Math.sin(y * 0.0085 + 0.8) + 12 * Math.sin(y * 0.023 + 1.7);
@@ -24,6 +24,18 @@ export const ROAD: Pt[] = spline(
   ],
   12,
 );
+
+// The highway on north, past where the portrait map's edge cut it off: only a wide map
+// sees it. It's scenery; drives never use it.
+export const ROAD_NORTH: Pt[] = spline(
+  [
+    [318, 98],
+    [384, 58],
+    [452, 24],
+    [530, -14],
+  ],
+  12,
+).filter(([x]) => x >= 384);
 
 export function roadX(y: number): number {
   for (let i = 0; i < ROAD.length - 1; i++) {
@@ -99,6 +111,18 @@ export const BLOCKS: [number, number, number, number][] = [
 ];
 export const LOT_RECT: [number, number, number, number] = [242, 598, 44, 28];
 
+// How far the map reaches past the portrait screen's edges, each side: the country a wide
+// screen sees around the valley.
+export const MAP_PAD = (W_MAX - W) / 2;
+
+// Past the portrait map's edges the valley walls crest (CREST out) and fall away into the
+// next country over, rough with ridges. Each term starts from nothing at the edge and
+// changes smoothly away from it, so a wide map has no seam where the portrait one ended.
+const CREST = 50;
+const FALL = 170;
+const DROP = 110;
+const RIDGES = 150;
+
 // Terrain height: low along the river and road, rising to the ridges, a dip for the lake,
 // and two cliff bands where the crags are.
 function elev(x: number, y: number): number {
@@ -106,8 +130,21 @@ function elev(x: number, y: number): number {
   const rd = roadX(y);
   const lo = Math.min(r, rd) - 30;
   const hi = Math.max(r, rd) + 24;
-  const d = x < lo ? lo - x : x > hi ? x - hi : 0;
+  const out = x < 0 ? -x : x > W ? x - W : 0;
+  const d = out
+    ? Math.max(
+        0,
+        Math.max(0, x < 0 ? lo : W - hi) +
+          out * Math.exp(-out / CREST) -
+          DROP * (1 - Math.exp(-((out / FALL) ** 2))),
+      )
+    : x < lo
+      ? lo - x
+      : x > hi
+        ? x - hi
+        : 0;
   let h = 16 + Math.pow(d / 10, 1.35) * 3.1 + (fbm(x * 0.013, y * 0.013, 11) - 0.5) * 36;
+  if (out) h += RIDGES * (fbm(x * 0.011, y * 0.011, 29) - 0.5) * (1 - Math.exp(-((out / 110) ** 2)));
   if (y < 280) h += (280 - y) * 0.13;
   const lx = (x - LAKE.x) / LAKE.rx;
   const ly = (y - LAKE.y) / LAKE.ry;
@@ -119,20 +156,20 @@ function elev(x: number, y: number): number {
 }
 
 const GS = 5;
-const GX = Math.ceil(W / GS) + 1;
+const GX = Math.ceil((W + 2 * MAP_PAD) / GS) + 1;
 const GY = Math.ceil(H / GS) + 1;
 let grid: Float32Array | null = null;
 
 function heights(): Float32Array {
   if (grid) return grid;
   grid = new Float32Array(GX * GY);
-  for (let j = 0; j < GY; j++) for (let i = 0; i < GX; i++) grid[j * GX + i] = elev(i * GS, j * GS);
+  for (let j = 0; j < GY; j++) for (let i = 0; i < GX; i++) grid[j * GX + i] = elev(i * GS - MAP_PAD, j * GS);
   return grid;
 }
 
 export function hAt(x: number, y: number): number {
   const h = heights();
-  const fx = clamp(x / GS, 0, GX - 1.001);
+  const fx = clamp((x + MAP_PAD) / GS, 0, GX - 1.001);
   const fy = clamp(y / GS, 0, GY - 1.001);
   const i = fx | 0;
   const j = fy | 0;
@@ -160,27 +197,31 @@ export const bandIndex = (h: number): number =>
   h < 26 ? 0 : h < 40 ? 1 : h < 58 ? 2 : h < 84 ? 3 : h < 112 ? 4 : 5;
 
 // Paints the terrain pixel by pixel: colorAt(x, y, height, shade, band, inLake) -> rgb.
+// It covers `pad` either side of the portrait map too, in the map's own x.
 export function rasterMap(
   g: G,
   colorAt: (x: number, y: number, h: number, s: number, band: number, lake: boolean) => number[],
+  pad = 0,
 ): void {
-  const [c, cg] = mk(W, H, 1);
-  const img = cg.createImageData(W, H);
+  const w = W + 2 * pad;
+  const [c, cg] = mk(w, H, 1);
+  const img = cg.createImageData(w, H);
   const d = img.data;
   for (let y = 0; y < H; y++)
-    for (let x = 0; x < W; x++) {
+    for (let px = 0; px < w; px++) {
+      const x = px - pad;
       const h = hAt(x, y);
       const lx = (x - LAKE.x) / LAKE.rx;
       const ly = (y - LAKE.y) / LAKE.ry;
       const col = colorAt(x, y, h, shadeAt(x, y), bandIndex(h), lx * lx + ly * ly < 1);
-      const i = (y * W + x) * 4;
+      const i = (y * w + px) * 4;
       d[i] = col[0]!;
       d[i + 1] = col[1]!;
       d[i + 2] = col[2]!;
       d[i + 3] = 255;
     }
   cg.putImageData(img, 0, 0);
-  g.drawImage(c, 0, 0, W, H);
+  g.drawImage(c, -pad, 0, w, H);
 }
 
 // How a place joins the highway: from its pin, down its side road if it has one, to the

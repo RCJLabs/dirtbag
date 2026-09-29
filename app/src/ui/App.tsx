@@ -1,17 +1,19 @@
 import { useEffect, useRef } from 'react';
 import type { Game } from '../game/game';
 import { useStore } from '../game/store';
-import { H, W } from '../view/layout';
+import { H, screenWidth, WIDE } from '../view/layout';
 import { Bubble } from './Bubble';
 import { ClimbPanel } from './ClimbPanel';
 import { Create } from './Create';
 import { Goal } from './Goal';
 import { PlanChip } from './PlanChip';
+import { Hots } from './Hots';
 import { Hud } from './Hud';
 import { Sheet } from './Sheet';
 
-// The screen: a 360 x 740 logical phone screen scaled to fit the window, the world on a
-// canvas underneath and the panels on top. The canvas draws every frame; React redraws the
+// The screen: 740 logical pixels tall, scaled to fit the window, and as wide as the window's
+// shape allows: 360 in portrait, up to W_MAX in landscape. The world is on a canvas
+// underneath and the panels are on top. The canvas draws every frame; React redraws the
 // panels only when the game says something changed.
 export function App({ game }: { game: Game }) {
   const ui = useStore(game.ui);
@@ -27,12 +29,15 @@ export function App({ game }: { game: Game }) {
     let px = 2;
     const fit = () => {
       const r = st.getBoundingClientRect();
-      const k = Math.min(r.width / W, r.height / H);
+      const w = screenWidth(r.width / Math.max(1, r.height));
+      const k = Math.min(r.width / w, r.height / H);
       sc.style.setProperty('--k', k.toFixed(4));
+      sc.style.setProperty('--w', `${w}px`);
       // Backing pixels to match the device, capped: past 3x nobody can tell.
       px = Math.min(3, Math.max(1, k * (window.devicePixelRatio || 1)));
-      cv.width = Math.round(W * px);
+      cv.width = Math.round(w * px);
       cv.height = Math.round(H * px);
+      game.resize(w);
     };
     const ro = new ResizeObserver(fit);
     ro.observe(st);
@@ -51,7 +56,7 @@ export function App({ game }: { game: Game }) {
 
     const down = (e: PointerEvent) => {
       const r = cv.getBoundingClientRect();
-      const k = r.width / W;
+      const k = r.height / H;
       game.tap((e.clientX - r.left) / k, (e.clientY - r.top) / k);
     };
     cv.addEventListener('pointerdown', down);
@@ -63,10 +68,23 @@ export function App({ game }: { game: Game }) {
       const a = document.activeElement;
       const onButton = a instanceof HTMLButtonElement;
       const u = game.ui.get();
+      // Escape puts down whatever's open, the most recent first: a conversation, a sheet
+      // that has a close button, then the map, back to where you are.
+      if (e.key === 'Escape') {
+        const x = document.querySelector<HTMLButtonElement>('#sheet .x');
+        if (u.talk) game.hush();
+        else if (x) x.click();
+        else if (!u.sheet && u.view === 'map' && game.navLabel(u) === 'Close') game.nav();
+        return;
+      }
       if (u.view === 'wall') {
         if (u.climbing && hold(e) && a?.id !== 'hold') {
           e.preventDefault();
           if (!e.repeat) game.press(true);
+        } else if (!u.climbing && !u.sheet && hold(e) && !onButton) {
+          // The wall again, as a tap on it does: its beta sheet.
+          e.preventDefault();
+          game.tap(0, 0);
         }
         return;
       }
@@ -101,13 +119,22 @@ export function App({ game }: { game: Game }) {
   return (
     <div className="stage" ref={stage}>
       <div
-        className={`screen${ui.settings.text === 'large' ? ' large' : ''}${ui.still ? ' still' : ''}`}
+        className={[
+          'screen',
+          ui.settings.text === 'large' && 'large',
+          ui.still && 'still',
+          ui.view === 'map' && 'on-map',
+          ui.w >= WIDE && 'wide',
+        ]
+          .filter(Boolean)
+          .join(' ')}
         id="scr"
         ref={screen}
       >
         <canvas id="cv" ref={canvas} aria-label="Game scene" />
         <div className="ui">
           <Hud game={game} ui={ui} />
+          <Hots game={game} ui={ui} />
           {ui.talk && <Bubble game={game} talk={ui.talk.talk} node={ui.talk.node} />}
           {ui.sheet && <Sheet game={game} id={ui.sheet} ui={ui} />}
           {ui.climbing && <ClimbPanel game={game} />}

@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { PLACES, ROUTES } from '../sim';
 import { hasHeader } from './header';
-import { CRAGS, MAP_PINS, SCENES, SPOTS, widthOf } from './layout';
+import { CRAGS, H, MAP_PINS, SCENES, screenWidth, SPOTS, W, W_MAX, WIDE, widthOf, Z } from './layout';
 import { drivePath, joinOf, roadX, SIDE_ROADS } from './valley';
 
 describe('the crags on screen', () => {
@@ -51,6 +51,21 @@ describe('the crags on screen', () => {
     }
     // Anyone whose day can bring them to a scene has somewhere to stand in it.
     for (const id of Object.keys(SCENES)) expect(SPOTS[id], id).toBeDefined();
+  });
+});
+
+describe('the screen', () => {
+  it('is W wide in portrait, widens with the window, and stops at W_MAX', () => {
+    expect(screenWidth(390 / 844)).toBe(W);
+    expect(screenWidth(768 / 1024)).toBe(Math.round(H * 0.75));
+    expect(screenWidth(1280 / 800)).toBe(Math.round(H * 1.6));
+    expect(screenWidth(1920 / 1080)).toBe(W_MAX);
+    // A Steam Deck docks its sheets.
+    expect(screenWidth(1280 / 800)).toBeGreaterThanOrEqual(WIDE);
+  });
+
+  it('never sees past a scene’s ends, even at its widest', () => {
+    for (const [id, s] of Object.entries(SCENES)) expect(s.width, id).toBeGreaterThanOrEqual(W_MAX / Z);
   });
 });
 

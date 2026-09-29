@@ -17,6 +17,13 @@
 // runs one the day won't allow.
 // Then a v0.956 player, in a browser of their own: the retirement notice, their career kept
 // as a file, and coming across as they were.
+// Then a day played with the keyboard alone, and the text at its larger size (Phase 12):
+// making a climber, Hazel, the journal, the map's pins, a go on the Warm Boulder, the drive
+// home and bed, with nothing running off the screen.
+// Last, a first morning on a landscape window (Phase 12): the screen widens rather than
+// letterboxing, sheets dock at the right, the map's valley sits in the middle of more
+// country, a wall close up is a panel over its crag, and turning the window to portrait
+// and back mid-go keeps the game where it was.
 import { mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
@@ -31,30 +38,64 @@ const server = await startServer({ root: join(APP, 'dist') });
 const browser = await chromium.launch(
   process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : { channel: 'chromium' },
 );
-const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
 // The seed a new climber's valley rolls is pinned, so day three's weather is the same every
 // run: prime, and Roadside open. The game rolls it from eight random bytes; anything else
 // that asks for random bytes still gets them.
 const SEED = 'dirtbag-qc6qki1m66opy';
-await page.addInitScript(() => {
-  const real = crypto.getRandomValues.bind(crypto);
-  crypto.getRandomValues = (a) => {
-    if (!(a instanceof Uint32Array) || a.length !== 2) return real(a);
-    a.set([1592590338, 3517427878]);
-    return a;
-  };
-});
-
 const problems = [];
-page.on('pageerror', (e) => problems.push(`uncaught: ${e.message}`));
-page.on('console', (m) => m.type() === 'error' && problems.push(`console.error: ${m.text()}`));
-page.on('requestfailed', (r) => problems.push(`request failed: ${r.url()}`));
-// data: and this page's own blob: URLs (the send card's image) never touch the network.
-page.on('request', (r) => {
-  const u = r.url();
-  if (!u.startsWith(server.url) && !u.startsWith('data:') && !u.startsWith(`blob:${server.url}`))
-    problems.push(`left the site: ${u}`);
-});
+
+// A page the bot plays on, watched for everything the run fails on. `who` names it in a
+// problem.
+async function playPage(viewport, deviceScaleFactor, who = '') {
+  const p = await browser.newPage({ viewport, deviceScaleFactor });
+  await p.addInitScript(() => {
+    const real = crypto.getRandomValues.bind(crypto);
+    crypto.getRandomValues = (a) => {
+      if (!(a instanceof Uint32Array) || a.length !== 2) return real(a);
+      a.set([1592590338, 3517427878]);
+      return a;
+    };
+  });
+  // Phase 12: no toast runs past 30 words, and none lands on a control you could tap. Every
+  // toast the run shows is watched, not just the ones the bot looks for, across reloads.
+  await p.exposeFunction('problem', (why) => problems.push(`${who}${why}`));
+  await p.addInitScript(() => {
+    let last = '';
+    new MutationObserver(() => {
+      const el = document.getElementById('toast');
+      const t = el?.textContent?.trim() ?? '';
+      if (t === last) return;
+      last = t;
+      if (!el) return;
+      if (t.split(/\s+/).length > 30) window.problem(`a toast over 30 words: ${t}`);
+      const a = el.getBoundingClientRect();
+      // A thing in a scene isn't counted: its tap area can be a whole wall, top to ground, and
+      // no lane misses it. Toasts never take a tap, so a tap there still lands.
+      for (const c of document.querySelectorAll(
+        'button:not(:disabled):not(.hot), button.hot.pin, input, [role="radio"]',
+      )) {
+        const b = c.getBoundingClientRect();
+        if (!b.width || a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top)
+          continue;
+        const what = c.id ? `#${c.id}` : c.getAttribute('aria-label') || c.textContent?.trim().slice(0, 30);
+        window.problem(`a toast over ${what}: ${t}`);
+      }
+    }).observe(document, { subtree: true, childList: true, characterData: true });
+  });
+  p.on('pageerror', (e) => problems.push(`${who}uncaught: ${e.message}`));
+  p.on('console', (m) => m.type() === 'error' && problems.push(`${who}console.error: ${m.text()}`));
+  p.on('requestfailed', (r) => problems.push(`${who}request failed: ${r.url()}`));
+  // data: and this page's own blob: URLs (the send card's image) never touch the network.
+  p.on('request', (r) => {
+    const u = r.url();
+    if (!u.startsWith(server.url) && !u.startsWith('data:') && !u.startsWith(`blob:${server.url}`))
+      problems.push(`${who}left the site: ${u}`);
+  });
+  return p;
+}
+
+// Every helper below plays on `page`; the landscape morning at the end swaps it.
+let page = await playPage({ width: 390, height: 844 }, 2);
 
 let n = 0;
 const shot = (name) => page.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-${name}.png`) });
@@ -96,10 +137,10 @@ async function expectText(sel, re, what) {
 // isn't counted: that's the climbing itself.
 let taps = 0;
 
-// Taps on the game screen in its own 360 x 740 logical pixels.
+// Taps on the game screen in its own logical pixels: 740 tall, and 360 across in portrait.
 async function tapAt(x, y) {
   const box = await page.locator('#cv').boundingBox();
-  const k = box.width / 360;
+  const k = box.height / 740;
   await page.mouse.click(box.x + x * k, box.y + y * k);
   taps++;
 }
@@ -129,8 +170,16 @@ const hudTime = () => text('#h-time');
 // ---- the hold button ----
 
 let down = false;
+// The keyboard day holds on with the space bar instead of a finger on the button.
+let holdKey = false;
 async function setHold(on) {
   if (on === down) return;
+  if (holdKey) {
+    if (on) await page.keyboard.down(' ');
+    else await page.keyboard.up(' ');
+    down = on;
+    return;
+  }
   // page.$ doesn't wait: the button is gone the moment a go ends.
   const el = await page.$('#hold');
   const b = el && (await el.boundingBox());
@@ -148,7 +197,7 @@ async function setHold(on) {
 const panel = () =>
   page.evaluate(() => {
     const v = document.getElementById('verb');
-    const pump = parseFloat(document.getElementById('c-pump')?.style.width ?? '0') || 0;
+    const pump = parseFloat(document.getElementById('c-pump')?.style.getPropertyValue('--w') ?? '0') || 0;
     const move =
       parseInt((document.getElementById('c-move')?.textContent ?? '').replace(/\D+/g, ' ').trim(), 10) || 0;
     return {
@@ -463,7 +512,8 @@ await tapAt(100, 560);
 await expectText('#sheet', /Your van/, 'van');
 await click('#sheet .opt', 'Cook ramen');
 await expectText('#h-time', clockRe(17 * 60 + 53 + late), 'clock');
-await tapAt(200, 300);
+// Above the sheet, which at night has Tonight on it too.
+await tapAt(200, 150);
 await until('the sheet to close', async () => !(await page.locator('#sheet').count()));
 for (let i = 0; i < 2; i++) {
   await tapAt(340, 650);
@@ -482,6 +532,8 @@ await page.keyboard.up('ArrowLeft');
 taps++;
 await press('Enter');
 await expectText('#sheet', /Your van/, 'van');
+// Tonight says what bed will do, and bed does it: $41 in the morning.
+await expectText('#tonight', /The spot\$18.*Morning\$41/, 'tonight');
 await click('#sheet .opt', 'Sleep');
 await expectText('#h-time', /^Day 2 · 7:10 AM$/, 'morning');
 await expectText('#h-cash', /^\$41$/, 'cash');
@@ -492,6 +544,20 @@ await page.reload({ waitUntil: 'load' });
 await expectText('#h-time', /^Day 2 · 7:10 AM$/, 'clock after reload');
 await expectText('#h-cash', /^\$41$/, 'cash after reload');
 if (await page.locator('#create').count()) await fail('the climber screen came back after a reload');
+
+console.log('The journal');
+// Your body in the HUD opens your journal; "Lately" has yesterday in full, newest first.
+await click('#h-you');
+await expectText('#sheet-title', /^Robin/, 'the journal');
+await click('#j-lately');
+const days = await until('the log', () =>
+  page.evaluate(() => [...document.querySelectorAll('#log .crux')].map((e) => e.textContent).join(', ')),
+);
+if (!days.startsWith('Day 2, Day 1')) await fail(`the log's days: ${days}`);
+log(`lately: ${days}`);
+await expectText('#log', /Van spot, \$18\. Morning comes anyway\./, 'last night, in full');
+await shot('journal');
+await click('#sheet .x');
 
 // ---- day two ----
 
@@ -774,6 +840,238 @@ console.log('A v0.956 player');
     `came across: ${me.name}, V${grade}, fingers still the strength (${me.skills.fingers} vs head ${me.skills.head})`,
   );
   await ctx.close();
+}
+
+console.log('A keyboard, and larger text');
+{
+  const portrait = page;
+  page = await playPage({ width: 390, height: 844 }, 2, 'keyboard: ');
+  await page.addInitScript(() => {
+    localStorage.setItem('dirtbag.settings', JSON.stringify({ motion: 'system', text: 'large' }));
+    for (const t of ['pointerdown', 'mousedown', 'touchstart'])
+      window.addEventListener(t, () => window.problem(`the keyboard day used a pointer (${t})`), true);
+  });
+  holdKey = true;
+  // Tab until the keyboard is on the thing: its id, its label, then its words.
+  const tabTo = async (what, re, most = 60) => {
+    for (let i = 0; i < most; i++) {
+      const at = await page.evaluate(() => {
+        const a = document.activeElement;
+        return a
+          ? `${a.id}|${a.getAttribute('aria-label') ?? ''}|${a.textContent?.replace(/\s+/g, ' ').trim() ?? ''}`
+          : '';
+      });
+      if (re.test(at)) return;
+      await page.keyboard.press('Tab');
+    }
+    await fail(`Tab never reached ${what}`);
+  };
+  const key = (k) => page.keyboard.press(k);
+  // Nothing runs off the screen or scrolls sideways at the larger text.
+  const fits = async (where) => {
+    const out = await page.evaluate(() => {
+      const s = document.getElementById('scr').getBoundingClientRect();
+      const bad = [];
+      for (const el of document.querySelectorAll('#scr .ui *')) {
+        if (el.classList.contains('hot')) continue;
+        const r = el.getBoundingClientRect();
+        if (!r.width || !r.height) continue;
+        const name = el.id || String(el.className) || el.tagName;
+        if (r.left < s.left - 1 || r.right > s.right + 1) bad.push(`${name} off the screen`);
+        if (el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflowX !== 'visible')
+          bad.push(`${name} scrolls sideways`);
+      }
+      return [...new Set(bad)];
+    });
+    if (out.length) await fail(`at the larger text, ${where}: ${out.slice(0, 6).join(', ')}`);
+    log(`fits at the larger text: ${where}`);
+  };
+
+  await page.goto(server.url, { waitUntil: 'load' });
+  await until('the climber screen', () => page.locator('#create').count());
+  await fits('the climber screen');
+  await tabTo('the name', /^c-name\|/);
+  await page.keyboard.type('Robin');
+  await tabTo('The Technician', /^c-technician\|/);
+  await key(' ');
+  await tabTo('Start', /^c-go\|/);
+  await key('Enter');
+  await until('the climber screen to go', async () => !(await page.locator('#create').count()));
+  await wait(400);
+  await fits('the Lot');
+  await shot('keyboard-lot');
+
+  // Hazel's off the right of a portrait screen: walk that way with the arrow key until she's
+  // on it, then her button; her bubble takes the keyboard.
+  await page.keyboard.down('ArrowRight');
+  await wait(1600);
+  await page.keyboard.up('ArrowRight');
+  await wait(1200);
+  await tabTo('Hazel', /\|Hazel\|/);
+  await key('Enter');
+  await expectText('#bubble', /staring at The Pump/, 'Hazel, by keyboard');
+  await fits('Hazel’s bubble');
+  await key('Enter');
+  await expectText('#bubble', /Hook your left heel/, 'Hazel on the roof');
+  await key('Enter');
+  await expectText('#toast', /New beta: heel-hook the lip/, 'toast');
+
+  // The journal, and Escape to put it down.
+  await tabTo('your body', /\|[^|]*Your journal\./);
+  await key('Enter');
+  await expectText('#sheet-title', /^Robin/, 'the journal, by keyboard');
+  await fits('the journal');
+  await shot('keyboard-journal');
+  await key('Escape');
+  await until('the journal to close', async () => !(await page.locator('#sheet').count()));
+
+  // The map by M, a pin by Tab, and the drive.
+  await key('m');
+  await until('the map', async () => (await text('#b-nav')) === 'Close');
+  await wait(450);
+  await tabTo('Roadside Crag’s pin', /^pin-road\|/);
+  await key('Enter');
+  await expectText('#sheet', /Roadside Crag/, 'the card, by keyboard');
+  await fits('a place card');
+  await tabTo('the drive', /\|Drive here/);
+  await key('Enter');
+  await until('the crag', async () => (await text('#hint'))?.includes('Boulders on the talus'));
+  await wait(400);
+
+  // The Warm Boulder: its sheet, Escape, Enter at the wall for it again, and a go on the
+  // space bar.
+  await tabTo('the Warm Boulder', /\|Warm Boulder, V2/);
+  await key('Enter');
+  await expectText('#sheet', /Warm Boulder · V2/, 'the beta sheet, by keyboard');
+  await fits('a beta sheet');
+  await key('Escape');
+  await until('the sheet to close', async () => !(await page.locator('#sheet').count()));
+  await key('Enter');
+  await expectText('#sheet', /Warm Boulder · V2/, 'the beta sheet again, from the wall');
+  await tabTo('Pull on', /\|Pull on/);
+  await key('Enter');
+  await until('the climb panel', () => page.locator('#climb').count());
+  await fits('the climb panel');
+  await shot('keyboard-climb');
+  await climb();
+  await until('the go to end', () => page.locator('#sheet').count(), 15_000);
+  await tabTo('the way down', /\|(Walk down the back|Walk off)$/);
+  await key('Enter');
+  await until('the crag again', async () => (await text('#b-nav')) === 'Map');
+  await wait(600);
+
+  // Home, and bed at dark.
+  await key('m');
+  await until('the map', async () => (await text('#b-nav')) === 'Close');
+  await wait(450);
+  await tabTo('the Lot’s pin', /^pin-lot\|/);
+  await key('Enter');
+  await tabTo('the drive home', /\|Drive here/);
+  await key('Enter');
+  await until('the Lot', async () => (await text('#hint')) !== null || (await text('#b-nav')) === 'Map');
+  await wait(1200);
+  await tabTo('your van', /\|Your van\|/);
+  await key('Enter');
+  await expectText('#sheet', /Your van/, 'the van, by keyboard');
+  await tabTo('lying around', /\|Lie around till dark/);
+  await key('Enter');
+  await tabTo('bed', /\|Sleep/);
+  await key('Enter');
+  await expectText('#h-time', /^Day 2 · /, 'morning, by keyboard');
+  holdKey = false;
+  await page.close();
+  page = portrait;
+}
+
+console.log('A landscape window');
+// A Steam Deck's shape, 1280 x 800: the screen is 740 tall and 1184 across.
+{
+  const portrait = page;
+  page = await playPage({ width: 1280, height: 800 }, 1, 'landscape: ');
+  const screen = () =>
+    page.evaluate(() => {
+      const s = document.getElementById('scr');
+      return {
+        w: parseFloat(getComputedStyle(s).getPropertyValue('--w')),
+        wide: s.classList.contains('wide'),
+      };
+    });
+  // Where something is, in the screen's logical pixels.
+  const where = (sel) =>
+    page.evaluate((q) => {
+      const r = document.querySelector(q)?.getBoundingClientRect();
+      const c = document.getElementById('cv').getBoundingClientRect();
+      const k = c.height / 740;
+      return r && { x0: (r.left - c.left) / k, x1: (r.right - c.left) / k, y0: (r.top - c.top) / k };
+    }, sel);
+
+  await page.goto(server.url, { waitUntil: 'load' });
+  await until('the climber screen', () => page.locator('#create').count());
+  const sc = await screen();
+  if (sc.w !== 1184 || !sc.wide) await fail(`the landscape screen: ${JSON.stringify(sc)}`);
+  log(`screen: ${sc.w} across, sheets docked`);
+  await page.fill('#c-name', 'Robin');
+  await click('#c-technician');
+  await click('#c-go', 'Start');
+  await until('the climber screen to go', async () => !(await page.locator('#create').count()));
+  await wait(400);
+  await shot('landscape-lot');
+
+  // The Lot is 960 wide and the screen sees 911 of it: Hazel at 586 is on screen from the
+  // start, and a tap on her walks you over and talks.
+  await tapAt(586 * Z, screenY(530));
+  await expectText('#bubble', /staring at The Pump/, 'Hazel, in landscape');
+  const bubble = await where('#bubble');
+  if (!bubble || bubble.x0 < 586 * Z - 300 || bubble.x1 > 586 * Z + 300)
+    await fail(`Hazel's bubble isn't over her: ${JSON.stringify(bubble)}`);
+  await click('#bubble button', 'Ask about the roof');
+  await click('#bubble button', 'Got it');
+
+  // The journal has a button of its own on a wide HUD.
+  await click('#h-journal', 'Journal');
+  await expectText('#log', /heel-hook the lip/, 'the journal, from its button');
+  await click('#sheet .x');
+
+  // The map's valley sits in the middle; a sheet docks at the right, clear of it.
+  await openMap();
+  const left = (1184 - 360) / 2;
+  await tapAt(left + 292, 220);
+  await expectText('#sheet', /Roadside Crag/, 'place card, in landscape');
+  const card = await where('#sheet');
+  if (!card || card.x0 < left + 360 || Math.abs(card.x1 - 1176) > 2 || card.y0 < 60)
+    await fail(`the card isn't docked clear of the valley: ${JSON.stringify(card)}`);
+  await header('the card’s header, in landscape');
+  await shot('landscape-map');
+  await click('#sheet .opt', 'Drive here');
+  await until('the crag, in landscape', async () => (await text('#hint'))?.includes('Boulders on the talus'));
+  await wait(400);
+  await shot('landscape-crag');
+
+  // The camera stays at the crag's left end: the Warm Boulder's at 340.
+  await tapAt(340 * Z, screenY(540));
+  await expectText('#sheet', /Warm Boulder · V2/, 'beta sheet, in landscape');
+  await shot('landscape-wall');
+  await click('#sheet .go');
+  await until('the climb panel', () => page.locator('#climb').count());
+  const panelAt = await where('#climb');
+  if (!panelAt || panelAt.x0 < left || panelAt.x1 > left + 360)
+    await fail(`the climb panel isn't under the wall: ${JSON.stringify(panelAt)}`);
+  // Turn the window to portrait and back, mid-go: the go carries on.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await until('a portrait screen', async () => (await screen()).w === 360);
+  await wait(300);
+  await shot('landscape-turned');
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await until('landscape again', async () => (await screen()).w === 1184);
+  await climb();
+  const after = await until(
+    'the go to end',
+    async () => (await text('#stamp')) || (await text('#sheet')),
+    15_000,
+  );
+  log(`the go, turned and back: ${after.slice(0, 60)}`);
+  await page.close();
+  page = portrait;
 }
 
 if (problems.length) await fail(`${problems.length} problem(s) during play`);

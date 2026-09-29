@@ -17,6 +17,7 @@ import {
   TALK,
   type Attempt,
   type GameState,
+  type RouteDef,
 } from '../sim';
 import { rad, type G, type Pt } from './kit/geom';
 import {
@@ -54,7 +55,7 @@ import { TAPE } from './paint/gym';
 import { mapArt } from './paint/map';
 import { drawBelayerBack, drawClimber, drawDog, drawPerson, INK, LOOK } from './paint/people';
 import { BIG } from './paint/scale';
-import { FIRE_X, LIGHTS, sceneArt, type SceneArt, type Tod } from './paint/scenes';
+import { drawSkyMarks, FIRE_X, LIGHTS, sceneArt, SKY_W, type SceneArt, type Tod } from './paint/scenes';
 import { belayAt, onRoute, rockPath, routeStretch, wallOf } from './paint/wall';
 import { sceneSun, sunLight, wallSun, wetness } from './sun';
 
@@ -64,6 +65,8 @@ export interface Frame {
   scene: string;
   cam: number;
   t: number;
+  // The screen's width in logical pixels: W in portrait, up to W_MAX on a wide window.
+  w: number;
   // Device pixels per logical pixel on the main canvas.
   px: number;
   // Reduced motion: no flicker, no bounce, no pulse, no falling rain.
@@ -102,30 +105,25 @@ export interface Eye {
 export const todAt = (scene: string, min: number): Tod =>
   scene === 'lot' ? (isNight(min) ? 'night' : 'morning') : 'day';
 
-function renderScene(g: G, f: Frame): void {
-  const eye: Eye = { w: W, h: H, z: Z, oy: OY, px: f.px };
+function renderScene(g: G, f: Frame, company: Company = f): void {
+  const eye: Eye = { w: f.w, h: H, z: Z, oy: OY, px: f.px };
   sceneBack(g, sceneArt(f.scene, todAt(f.scene, f.state.min)), f.cam, eye);
-  sceneLive(g, f.state, f.scene, f.cam, eye, f);
+  sceneLive(g, f.state, f.scene, f.cam, eye, company);
 }
 
 // The painted part of a scene: its sky, then its layers, each moved by the camera as far as
 // its distance says. An eye on a band of the world sees the band of sky the screen shows
-// behind it.
+// behind it, as much of it across as its zoom says, from the middle out.
 export function sceneBack(g: G, art: SceneArt, cam: number, eye: Eye): void {
   const sky = art.sky;
-  const k = sky.height / H;
+  const kc = sky.height / H;
+  const k = eye.z / Z;
+  const sw = Math.min(SKY_W, eye.w / k);
+  const x0 = (SKY_W - sw) / 2;
+  const y0 = OY - eye.oy / k;
   g.setTransform(eye.px, 0, 0, eye.px, 0, 0);
-  g.drawImage(
-    sky,
-    0,
-    (OY - (eye.oy * Z) / eye.z) * k,
-    sky.width,
-    (eye.h / eye.z) * Z * k,
-    0,
-    0,
-    eye.w,
-    eye.h,
-  );
+  g.drawImage(sky, x0 * kc, y0 * kc, sw * kc, (eye.h / k) * kc, 0, 0, eye.w, eye.h);
+  drawSkyMarks(g, art.marks, x0, y0, k);
   g.setTransform(eye.px * eye.z, 0, 0, eye.px * eye.z, 0, eye.px * eye.oy);
   for (const L of art.layers) g.drawImage(L.c, -cam * L.p, 0, L.w, H);
   g.setTransform(eye.px, 0, 0, eye.px, 0, 0);
@@ -237,9 +235,15 @@ export function sceneLive(g: G, s: GameState, scene: string, cam: number, eye: E
 
 const PIN_FILL: Record<PinKind, string> = { crag: ACC.comic, camp: '#9CC77E', town: CREAM };
 
+// The map's valley is composed for portrait; a wider screen sees more country either side
+// of it, and the valley stays in the middle.
+export const mapLeft = (w: number): number => (w - W) / 2;
+
 function renderMap(g: G, f: Frame): void {
-  g.drawImage(mapArt(), 0, 0, W, H);
-  // The title, as a comic caption box.
+  const art = mapArt(f.w);
+  const aw = art.width / (art.height / H);
+  g.drawImage(art, ((aw - f.w) / 2) * (art.height / H), 0, f.w * (art.height / H), art.height, 0, 0, f.w, H);
+  // The title, as a comic caption box, in the screen's corner.
   g.fillStyle = INK;
   g.fillRect(18, 59, 188, 38);
   g.fillStyle = '#F2C84B';
@@ -248,6 +252,7 @@ function renderMap(g: G, f: Frame): void {
   g.lineWidth = 2.5;
   g.strokeRect(14, 55, 188, 38);
   label(g, 'comic', 'Dirtbag Valley', 108, 82, { size: 25, halo: '#F2C84B' });
+  g.translate(mapLeft(f.w), 0);
   for (const [x, y] of DIM_PINS) {
     g.fillStyle = 'rgba(30,30,34,.4)';
     g.beginPath();
@@ -295,12 +300,70 @@ function renderMap(g: G, f: Frame): void {
   const here = MAP_PINS[f.state.at];
   const vp: Pt | null = f.trip ? [f.trip.pos[0], f.trip.pos[1] - 10] : here ? [here.x, here.y - 20] : null;
   if (vp) vanIcon(g, vp[0], vp[1], f.t, !!f.trip, f.still);
+  g.setTransform(f.px, 0, 0, f.px, 0, 0);
 }
 
+// A wall close up is composed for portrait. On a wider screen it's a panel down the middle,
+// over the scene you looked up from, dimmed, with you out of it: you're on the wall.
 function renderWall(g: G, f: Frame): void {
-  const s = f.state;
-  const r = routeOfId(s, f.wallRoute);
+  const r = routeOfId(f.state, f.wallRoute);
   if (!r) return;
+  const ox = (f.w - W) / 2;
+  if (ox > 0) {
+    renderScene(g, f, { t: f.t, still: f.still });
+    g.setTransform(f.px, 0, 0, f.px, 0, 0);
+    g.fillStyle = 'rgba(24,20,18,.5)';
+    g.fillRect(0, 0, f.w, H);
+    g.fillStyle = INK;
+    g.fillRect(ox + 5, 0, W, H);
+    g.save();
+    g.setTransform(f.px, 0, 0, f.px, f.px * ox, 0);
+    g.beginPath();
+    g.rect(0, 0, W, H);
+    g.clip();
+  }
+  wallPanel(g, f, r);
+  if (ox > 0) {
+    g.restore();
+    g.strokeStyle = INK;
+    g.lineWidth = 2.5;
+    g.beginPath();
+    g.moveTo(ox, 0);
+    g.lineTo(ox, H);
+    g.moveTo(ox + W, 0);
+    g.lineTo(ox + W, H);
+    g.stroke();
+  }
+  wallWeather(g, f, r);
+}
+
+// Over the whole screen: the rain, and the edges closing in as the pump bar fills, pulsing
+// near the top. The gradient is squashed to the screen's shape so the sides close in as
+// much as the ends.
+function wallWeather(g: G, f: Frame, r: RouteDef): void {
+  const s = f.state;
+  if (r.place !== 'gym' && wet(s, r.place)) drawRain(g, f.w, H, f.t, f.still);
+  const pump = f.att && (f.att.phase === 'climb' || f.att.phase === 'crux') ? f.att.pump : 0;
+  if (pump > 45) {
+    const beat = f.still || pump < 80 ? 1 : 0.85 + 0.15 * Math.sin(f.t * 8);
+    const a = Math.min(0.7, Math.pow((pump - 45) / 55, 1.2) * 0.7) * beat;
+    const w = f.w;
+    const k = H / w;
+    g.save();
+    g.translate(w / 2, H * 0.42);
+    g.scale(1, k);
+    g.fillStyle = rad(g, 0, 0, w * 0.2, w * 0.78, [
+      [0, 'rgba(30,8,8,0)'],
+      [1, `rgba(30,8,8,${a.toFixed(3)})`],
+    ]);
+    g.fillRect(-w / 2, -0.42 * w, w, w);
+    g.restore();
+  }
+}
+
+// The wall itself, in the portrait column's pixels.
+function wallPanel(g: G, f: Frame, r: RouteDef): void {
+  const s = f.state;
   const wall = wallOf(r);
   const log = s.routes[r.id];
   const pick = f.att?.pick ?? picks(s, r);
@@ -443,21 +506,4 @@ function renderWall(g: G, f: Frame): void {
     drawClimber(g, LOOK.you!, 0, 0, stride, falling);
     g.restore();
   } else drawClimber(g, LOOK.you!, sx, sy, stride, falling);
-  if (r.place !== 'gym' && wet(s, r.place)) drawRain(g, W, H, f.t, f.still);
-  // And the world narrows: the edges close in as the bar fills, pulsing near the top. The
-  // gradient is squashed to the screen's shape so the sides close in as much as the ends.
-  if (pump > 45) {
-    const beat = f.still || pump < 80 ? 1 : 0.85 + 0.15 * Math.sin(f.t * 8);
-    const a = Math.min(0.7, Math.pow((pump - 45) / 55, 1.2) * 0.7) * beat;
-    const k = H / W;
-    g.save();
-    g.translate(W / 2, H * 0.42);
-    g.scale(1, k);
-    g.fillStyle = rad(g, 0, 0, W * 0.2, W * 0.78, [
-      [0, 'rgba(30,8,8,0)'],
-      [1, `rgba(30,8,8,${a.toFixed(3)})`],
-    ]);
-    g.fillRect(-W / 2, -0.42 * W, W, W);
-    g.restore();
-  }
 }

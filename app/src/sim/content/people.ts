@@ -317,6 +317,8 @@ export const TALK: Record<string, TalkDef> = {
 // Things you can look at. `night` falls back to `day`; `nightAct` runs an act instead;
 // `away` is what you see while its owner is somewhere else.
 export interface ThingDef {
+  // What it's called to a screen reader, and on the button a keyboard lands on.
+  name: string;
   day: string;
   night?: string;
   nightAct?: string;
@@ -324,12 +326,16 @@ export interface ThingDef {
 }
 
 export const THINGS: Record<string, ThingDef> = {
-  scout: { day: 'Scout thumps his tail twice and goes back to sleep.' },
+  scout: { name: 'Scout', day: 'Scout thumps his tail twice and goes back to sleep.' },
   'hazel-van': {
+    name: "Hazel's van",
     day: "Hazel's van. Curtains still shut.",
     night: "Hazel's van. The lantern's on.",
     away: { who: 'hazel', text: "Hazel's van, locked. She's out at the crag till five." },
   },
-  fire: { day: 'Coals and a coffee pot. Hazel got up first.', nightAct: 'lot.sit' },
-  desk: { day: "The kid at the desk doesn't look up. A sign says: DAY PASS, NO REFUNDS, NO CAMPUS." },
+  fire: { name: 'The fire', day: 'Coals and a coffee pot. Hazel got up first.', nightAct: 'lot.sit' },
+  desk: {
+    name: 'The desk',
+    day: "The kid at the desk doesn't look up. A sign says: DAY PASS, NO REFUNDS, NO CAMPUS.",
+  },
 };

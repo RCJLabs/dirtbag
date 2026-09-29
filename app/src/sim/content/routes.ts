@@ -11,7 +11,7 @@
 // generated each week (gym.ts) from the beta library below.
 
 import type { Style } from '../climber';
-import type { SendStyle } from '../types';
+import type { GoStyle } from '../types';
 
 export type Verb = 'tension' | 'timing' | 'load';
 export type Disc = 'boulder' | 'sport';
@@ -880,8 +880,9 @@ export const ROUTES: Record<string, RouteDef> = {
 // Said when you come off between cruxes with nothing left in your arms.
 export const PUMPED = 'Pumped. Your forearms quit before you do.';
 
-export const SEND_NAME: Record<SendStyle, string> = {
+export const SEND_NAME: Record<GoStyle, string> = {
   onsight: 'Onsight',
   flash: 'Flash',
   redpoint: 'Redpoint',
+  repeat: 'Repeat',
 };

@@ -42,11 +42,13 @@ export function fbm(x: number, y: number, s: number, octaves = 4): number {
 }
 
 // Print grain over a whole screen-sized canvas.
-export function grain(g: G, seed: number, amt: number): void {
+// Film grain over a `w` wide stretch, as thick as ever: 6,500 flecks to a screen's width.
+export function grain(g: G, seed: number, amt: number, w = W): void {
   const r = mulberry32(seed);
-  for (let i = 0; i < 6500; i++) {
+  const n = Math.round((6500 * w) / W);
+  for (let i = 0; i < n; i++) {
     const a = amt * r();
     g.fillStyle = r() < 0.55 ? `rgba(0,0,0,${a})` : `rgba(255,255,255,${a * 1.3})`;
-    g.fillRect(r() * W, r() * H, 0.5 + r() * 0.9, 0.5 + r() * 0.9);
+    g.fillRect(r() * w, r() * H, 0.5 + r() * 0.9, 0.5 + r() * 0.9);
   }
 }

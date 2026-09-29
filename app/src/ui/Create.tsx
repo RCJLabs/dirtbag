@@ -3,6 +3,7 @@ import { CARRIED, carried, gradeOf, MONEY, NAME_MAX, SKILLS, STARTS, type Skills
 import type { Game } from '../game/game';
 import { findLegacy, saveLegacyFile } from '../game/legacy';
 import { SKILL_NAME } from './sheets';
+import { vars } from './vars';
 
 // The first screen of a new game: a name and one of v0.956's four starts. Someone who played
 // v0.956, which R3 retired, is told so first: they can keep their old career as a file, and
@@ -104,7 +105,7 @@ function SkillBars({ skills }: { skills: Skills }) {
     <span className="bars" aria-hidden="true">
       {SKILLS.map((k) => (
         <span key={k}>
-          <i style={{ ['--v' as string]: (skills[k] / top).toFixed(3) }} />
+          <i style={vars({ '--v': (skills[k] / top).toFixed(3) })} />
           {SKILL_NAME[k].slice(0, 4)}
         </span>
       ))}

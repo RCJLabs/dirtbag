@@ -1,8 +1,9 @@
 import { clock, gradeOf, money } from '../sim';
 import type { Game, Ui } from '../game/game';
+import { vars } from './vars';
 
-// Day and time (tap for the forecast), money, your body (tap for you as a climber), and the
-// one navigation button.
+// Day and time (tap for the forecast), money, your body (tap for your journal), and the
+// one navigation button. A screen with room for it gets the journal its own button too.
 export function Hud({ game, ui }: { game: Game; ui: Ui }) {
   const { day, min, cash, energy, skin, fed } = ui.hud;
   // Nothing to navigate until you've made your climber.
@@ -29,13 +30,24 @@ export function Hud({ game, ui }: { game: Game; ui: Ui }) {
         className="pill meters"
         id="h-you"
         disabled={busy}
-        aria-label={`V${gradeOf(ui.state.climber.skills)}. Energy ${Math.round(energy)}, skin ${Math.round(skin)}, food ${Math.round(fed)}.`}
-        onClick={() => game.openSheet({ k: 'you' })}
+        aria-label={`V${gradeOf(ui.state.climber.skills)}. Energy ${Math.round(energy)}, skin ${Math.round(skin)}, food ${Math.round(fed)}. Your journal.`}
+        onClick={() => game.openSheet({ k: 'journal', page: 'you' })}
       >
         <Meter name="Energy" id="m-en" v={energy} />
         <Meter name="Skin" id="m-sk" v={skin} />
         <Meter name="Food" id="m-fd" v={fed} />
       </button>
+      {ui.w >= JOURNAL_BUTTON && (
+        <button
+          type="button"
+          className="pill"
+          id="h-journal"
+          disabled={busy}
+          onClick={() => game.openSheet({ k: 'journal', page: 'lately' })}
+        >
+          Journal
+        </button>
+      )}
       {nav && (
         <button
           type="button"
@@ -51,11 +63,15 @@ export function Hud({ game, ui }: { game: Game; ui: Ui }) {
   );
 }
 
+// How wide the screen must be before the journal gets a button of its own. A portrait
+// HUD has about 55 px to spare, and the word doesn't fit.
+const JOURNAL_BUTTON = 480;
+
 function Meter({ name, id, v }: { name: string; id: string; v: number }) {
   return (
     <span aria-hidden="true">
       {name}
-      <i id={id} className={v < 25 ? 'low' : undefined} style={{ ['--v' as string]: (v / 100).toFixed(2) }} />
+      <i id={id} className={v < 25 ? 'low' : undefined} style={vars({ '--v': (v / 100).toFixed(2) })} />
     </span>
   );
 }

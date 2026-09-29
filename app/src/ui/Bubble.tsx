@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef } from 'react';
 import { fill, holds, PEOPLE, TALK, talkValues } from '../sim';
 import type { Game } from '../game/game';
 import { useStore } from '../game/store';
-import { HEAD_Y, OY, SPOTS, W, Z } from '../view/layout';
+import { HEAD_Y, OY, SPOTS, Z } from '../view/layout';
 
 // A speech bubble with a tail, pinned over the speaker's head as the camera moves.
 export function Bubble({ game, talk, node }: { game: Game; talk: string; node: string }) {
@@ -20,9 +20,9 @@ export function Bubble({ game, talk, node }: { game: Game; talk: string; node: s
     const sx = (anchor.wx - cam) * Z;
     const w = b.offsetWidth;
     const h = b.offsetHeight;
-    const left = Math.min(Math.max(sx - w / 2, 8), W - 8 - w);
-    b.style.left = `${left}px`;
-    b.style.top = `${Math.max(66, anchor.wy * Z + OY - h - 16)}px`;
+    const left = Math.min(Math.max(sx - w / 2, 8), ui.w - 8 - w);
+    b.style.setProperty('--x', `${left}px`);
+    b.style.setProperty('--y', `${Math.max(66, anchor.wy * Z + OY - h - 16)}px`);
     b.style.setProperty('--tx', `${Math.min(Math.max(sx - left - 7, 16), w - 30)}px`);
   });
 

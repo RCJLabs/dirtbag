@@ -33,6 +33,7 @@ import type {
   Injury,
   Result,
   RouteLog,
+  GoStyle,
   SendStyle,
   Skills,
 } from './types';
@@ -622,8 +623,10 @@ export function act(s0: GameState, a: Action): Result {
       s.skin = clamp100(s.skin - Math.max(0, res.skin));
       L.hi = Math.max(L.hi, Math.min(r.moves, Math.max(0, Math.floor(res.hi))));
       if (res.sent) {
-        const style: SendStyle = L.goes === 1 ? (L.told.length ? 'flash' : 'onsight') : 'redpoint';
-        L.sent ??= { day: s.day, go: L.goes, style };
+        // The log keeps how the first send went; any send after it is a repeat.
+        const firstStyle: SendStyle = L.goes === 1 ? (L.told.length ? 'flash' : 'onsight') : 'redpoint';
+        const style: GoStyle = lap ? 'repeat' : firstStyle;
+        L.sent ??= { day: s.day, go: L.goes, style: firstStyle };
         L.sentToday = true;
         events.push({ k: 'sent', route: a.route, style, go: L.goes });
         if (r.open && !s.firsts[r.id] && L.sent.day === s.day && L.sent.go === L.goes)

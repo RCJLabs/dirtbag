@@ -61,9 +61,10 @@
 | 8 Choose the look | Done: the Mix. Its tokens and components are built in R0–R1. The Steam capsule art moves to Phase 15. |
 | 9 Climber on the wall | Reshaped as beta-then-send and built from R0. Its Done-when criteria gate R2. |
 | 10 Crags as places | Built on the rebuild (the board, conditions you can see, Moonstone) and closed by Evan's call. Its testers' criterion carries. |
-| 11 Valley map | Built on the rebuild (the taps, place cards, adding a place, the daily plan) and closed by Evan's call. Criteria 2 to 5 pass; its testers' criterion carries. Ships in 0.961.0. |
-| 12 UI system | Folded into the rebuild (R0–R2). The current milestone: what's left of it gets planned on the rebuild next. |
-| 13–20 | Unchanged in intent. They target the new build. |
+| 11 Valley map | Built on the rebuild (the taps, place cards, adding a place, the daily plan) and closed by Evan's call. Criteria 2 to 5 pass; its testers' criterion carries. Released in 0.961.0 with Phase 10. |
+| 12 UI system | Built on the rebuild (the Journal, the wide screen, keyboard and access, Tonight, no inline styles) and closed by Evan's call. The flows the e2e doesn't play in landscape or by keyboard carry to playtesting. |
+| 13 Sound and feel | The current milestone. |
+| 14–20 | Unchanged in intent. They target the new build. |
 
 ## The rebuild track
 
@@ -1174,11 +1175,15 @@ There's no joystick, zone graph or tileset to retire. What's left, in slices:
 
 **Status (29 Sep 2026): 11.1 to 11.4 built; closed by Evan's call, shipping as 0.961.0 with Phase 10.** Criterion 1 (testers) carries, as Phase 10's did. The marker moved to Phase 12.
 
+**Released (29 Sep 2026).** Evan published `v0.961.0` on `main` (`afab5a5`, the merge of PR #12) at 17:36 UTC, carrying Phase 10 and Phase 11.
+- Deploy run 2 passed its checks and its live check: the site serves this commit, and the live smoke test passed.
+- The Play update (Actions → Build TWA (AAB), then the upload with 0.961.0's "What's new" from `docs/STORE.md`) is Evan's step.
+
 **Status before closing: 11.1 to 11.4 built.** Criteria 2 and 3 pass on the build, counted by the e2e: 3 taps at most for a trip from a scene, day three in 20, and day four by the plan in 13. Criterion 4 passes (the smoke test). Criterion 5 passes by a dry run: a card-only place was 13 lines of data and a pin, with the tests naming each missing piece, and its front is the illustration the criterion leaves out. Criterion 1 carries to the testers.
 
 ---
 
-### Phase 12 — The UI system and the desktop layout   **<<< CURRENT MILESTONE**
+### Phase 12 — The UI system and the desktop layout
 
 *Rebuild note: folded into the rebuild, R0–R2.*
 
@@ -1221,9 +1226,81 @@ There's no joystick, zone graph or tileset to retire. What's left, in slices:
 
 **Depends on:** Phases 4 and 8. **Effort:** ~4–6 weeks. **Main risk:** a big-bang re-skin. Migrate hub by hub.
 
+#### Phase 12 on the rebuild
+
+*Planned 29 Sep 2026, with Evan's calls on navigation and landscape.*
+
+**What the rebuild already covers.** The "Why" above is v0.956's. The rebuild's panels share one kit of tokens (colours, fonts, borders); 11 inline `style` props are left, mostly CSS variables for meters. Toasts queue one at a time, never catch a tap, and hold back while you drive. Reduced motion follows the system, and settings sit beside the save, so starting over keeps them. What's missing, by criterion:
+1. A handful of inline styles.
+2. **Landscape.** The game is one 360 × 740 portrait screen, scaled to fit and letterboxed. At 1280 × 800 it's a column about 390 px wide.
+3. Keyboard: scenes (arrows, Space, M), sheets and the wall work; map pins and scene hotspots don't take focus.
+4. Nothing caps a toast's length or sends a long line to a card.
+5. There's no message log.
+
+Also short of the scope: "large" text is about 1.15×, by a size step inside the fixed screen, not 1.3× by reflow. Nobody has measured contrast, and the meters are bars coloured low.
+
+**Evan's calls.**
+- **No tabs.** The five tabs were written to replace v0.956's 28-tile hub, which the rebuild doesn't have, and they'd cut against walking up to people and things in scenes. The **Journal** replaces them: one button in the HUD for the message log, you as a climber, your people, and the record.
+- **Landscape widens the world.** The screen stays 740 logical pixels tall and grows as wide as the window allows, so a landscape screen shows more of each scene rather than a phone column with panels beside it. Sheets become a side panel in landscape, so the scene stays in view.
+
+**Slices.**
+- **12.1 Text surfaces.** The Journal and its message log: the last 200 events in full. A line over about 30 words goes to a card you dismiss, never a toast, and the e2e opens the log. Criteria 4 and 5.
+- **12.2 The wide screen.** The logical width follows the window, 360 at the least and capped around 16:9. Scenes show more of themselves and pad past their ends; the HUD, goal pill and hints lay out on the width; sheets dock to the right in landscape. Then the map, whose valley needs painting wider, and the wall, board and gym views, which are composed for portrait. The e2e plays at 360 × 740 and at 1280 × 800. Criterion 2. The biggest slice: about 1–2 weeks [INFERRED].
+- **12.3 Keyboard and access.** Map pins and scene hotspots reachable by keyboard, Escape to close, visible focus; the e2e plays a day without the pointer. `npm run check` computes the kit's contrast against WCAG AA. Text at 1.3× by reflow. Meters that say low by shape as well as colour. Criterion 3 and the accessibility scope.
+- **12.4 Tonight.** The rebuild has far fewer meters than v0.956: tonight's cost, runway, the next bill, injury risk and tomorrow's forecast, on the van at night.
+- **12.5 The last inline styles**, and `check` fails on new ones. Criterion 1.
+
+**Unreal.** On hold, by Evan's call, until the conversion to the new game is done. Spec changes are still logged, per CLAUDE.md.
+
+**Status (29 Sep 2026): 12.1 to 12.5 built; closed by Evan's call.** Criteria 1, 4 and 5 are met; 2 and 3 are met for what the e2e plays, and the rest of their flows carry to playtesting, as does a real Steam Deck, tablet and screen reader. Where each criterion stands is at the end of this section. The marker moved to Phase 13.
+- The sim already kept a log of the last 200 lines in the save (`LOG_MAX`), with nothing showing it. The Journal shows it: your body in the HUD, or the goal pill, opens it, on "You" (the old "you" sheet) or "Lately" (the log, by day, newest first).
+- A line over 30 words (`TOAST_WORDS`) goes on a card, "Right" to put it down, that waits until nothing else is open, as the end of Act I's card already did. None of today's toasted lines is that long: the longest texts are Sage's beats, which are speech bubbles.
+- The e2e opens the log on day two and watches every toast of the run, reloads included; it fails on one over 30 words.
+- The Journal is the body pill rather than a new HUD button: a portrait HUD has about 55 px free, and "Journal" doesn't fit there. In landscape (12.2) it can get its own.
+- What the log doesn't hold: people coming and going, what a thing in a scene says when you tap it, and refusals. Those are toasts only. Criterion 5 reads "events"; these aren't in the sim's log, and adding them there would be a sim change.
+
+12.2, the wide screen:
+- **The screen.** It stays 740 logical pixels tall and is as wide as the window's shape: 360 in portrait (unchanged), 555 on a tablet held upright, 987 at 4:3, 1184 on a Steam Deck or a 16:10 laptop. It stops at `W_MAX`, 1248: the Lot, the narrowest scene, at the scenes' zoom, so no scene shows past its ends (a test holds every scene to it). A 16:9 monitor gets a sliver of frame each side.
+- **Scenes** show more of themselves: 911 world pixels of the Lot's 960 on a Steam Deck, against 277 in portrait. The far layers are painted wide enough for it. Skies are painted as wide as the widest screen with the portrait stretch in the middle, their glow at one pixel to one, and the sun, moon and stars drawn live, crisp at any size. The gym's back wall repeats its trusses, windows and lamps outward.
+- **The map** is painted wider around the same valley: past the portrait map's edges the valley walls crest and fall away into ridged country, with no seam, and the highway runs on north. Pins, drives and taps are the valley's, in the middle. The wide map is painted only once a screen is wider than portrait, so phones don't pay for it.
+- **Walls close up** stay composed for portrait. On a wider screen the wall is a comic panel down the middle, over the crag you looked up from, dimmed and without you in it. Repainting every wall wider would mean recomposing about a dozen hand-placed topos; the panel keeps them as they are. If it reads as a phone column on a Steam Deck, this is the part to revisit.
+- **Panels.** From 1080 across (`WIDE`), sheets dock at the right under the HUD, clear of the valley and of a wall's panel, and the world stays in view. Below that, sheets, the climb panel and the climber screen keep a phone's proportions, centred. A wide HUD gives the Journal its own button.
+- **Toasts** moved down 10 px: they sat 5 px over the body pill, and the plan chip 3 px. The e2e now checks every toast of the run against every live control, and fails on an overlap; at the old spot it found 26.
+- **The e2e** plays a first morning at 1280 × 800 after the portrait run: the screen's width and docking, Hazel's bubble over her, the Journal's button, the map's card docked clear of the valley, the drive, the Warm Boulder's wall and climb panel, and turning the window to portrait and back mid-go.
+- **Not covered in landscape yet:** the gym and the board, the plan, the send card, the diner and the night. They use the same sheets and scenes, so they should work, but the bot hasn't played them there. Nobody has played it on a real Steam Deck or tablet, and the wide map's paint time on slow hardware isn't measured.
+- **Criterion 2** is met on what the e2e covers; the rest of it is the list above.
+
+12.3, keyboard and access:
+- **The keyboard reaches the canvas.** Each thing in a scene (on screen) and each pin on the map has an invisible, labelled button over it: Tab lands on it with a ring, Enter walks you over and uses it, and a screen reader says what it is ("Warm Boulder, V2, sent"). A pointer passes straight through to the canvas, so taps don't change. Things off screen get a button once you walk them into view with the arrow keys; Enter still uses whatever's nearest. The things in scenes gained names in the content for it.
+- **Escape** puts down what's open, the most recent first: a conversation, a sheet with a close button, then the map. **Enter at the wall** brings its beta sheet back, as a tap does.
+- **One focus ring** on every control, 3 px, from a kit colour.
+- **Contrast.** `npm run check` computes every text-on-ground pairing in the kit against WCAG AA. The accent red was 3.9:1 on the paper and is now `#ce422a`, 4.6:1: the same red, a shade deeper. The check fails on the old one.
+- **Text at 1.3×.** The larger setting was about 1.15×, a size step; it's now 1.3× for all panel text, and panels reflow to fit. The HUD's pills stay at their size: a portrait HUD has no room to grow.
+- **Low by shape.** A meter running low, a load bar running hot and the pump bar get stripes as well as red, for every player rather than behind a colourblind switch. Sent tags on the rock already say SENT.
+- **The e2e plays a day by keyboard alone**, at the larger text, in a browser of its own that fails on any pointer event: making a climber, walking to Hazel and talking, the journal and Escape, the map by M and a pin by Tab, the drive, a go on the Warm Boulder on the space bar, the drive home, lying around till dark, and bed. At each step it checks nothing runs off the screen or scrolls sideways.
+- **Toasts on the map** go to the band between Roadside and Send City, which no pin crosses, when no sheet is open; lines held during a drive are said after you arrive, not over the map. The e2e's toast check now counts map pins as controls. A thing in a scene isn't counted: a sport line's tap area is the whole wall, no lane misses it, and a toast never takes a tap.
+- **Fixed on the way:** the screen's `wide` class was set by hand and React dropped it whenever the screen's other classes changed (a setting, or now the map), so a wide screen could stop docking its sheets.
+- **Not covered by keyboard in the e2e:** the gym, the board, the plan, the send card, naming a first ascent, and Settings. They're ordinary buttons, so Tab reaches them, but the bot hasn't played them that way. Nobody has tried it with a real screen reader.
+- **Criterion 3** is met on what the keyboard day covers.
+
+12.4, Tonight:
+- At night the van says what bed will do: the spot (or the pullout, when the card won't take it) and the energy back by morning, a hungry night's cost, the week's bills and when, the morning's cash and its runway (or what the card still takes), how your body will read, days still off the rock, and tomorrow's sky.
+- It's `tonight()` in the sim, from the numbers sleep uses; a test holds sleep to its prediction on an ordinary night, a bills night and a night in the pullout. Runway moved there from the harness, so the player and the harness read the same one, and the harness's targets are unchanged.
+- v0.956's "Tonight" had about eight meters (fueling, teeth, sickness and more); the rebuild doesn't have those, so it's five lines. The e2e checks it on the first night: $41 in the morning, which is what sleep leaves.
+
+12.5, no one-off inline styles:
+- A component sets only custom properties inline (a meter's level, a band's place, a button's box over the canvas), through `ui/vars.ts`; styles.css does the styling. The pump bar, the verb bands, the go's reach, the bubble and the skill bars moved over. `npm run check` fails on any other inline style in the game's UI; the dev-only figure sheet doesn't ship and isn't checked.
+
+**Where the criteria stand:**
+1. No one-off inline styles: met, and checked.
+2. Every flow in portrait and landscape: met for what the e2e plays in landscape (a first morning, the map, a go, turning the window); the gym, the board, the plan, the send card and the night aren't played there yet.
+3. Keyboard reaches every control: met for what the keyboard day plays (a whole day, from the climber screen to bed); the gym, the board, the plan, the send card, naming a first ascent and Settings aren't played by keyboard yet. No real screen reader has been tried.
+4. No long text in a timed toast, none over a control: met, and checked on every toast of every run. Scene things, whose tap areas can be a whole wall, aren't counted; toasts never take a tap.
+5. The message log holds the last 200 events in full: met for the sim's events. People coming and going, what a thing says when tapped, and refusals are toasts only.
+
 ---
 
-### Phase 13 — Sound and feel
+### Phase 13 — Sound and feel   **<<< CURRENT MILESTONE**
 
 **Goal.** Every action has feedback, the world has ambience, and the music is owned or cleanly licensed for a paid release.
 
@@ -1541,3 +1618,11 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 11.4, by Evan's call: the daily plan. Yesterday, as you played it, is today's plan: one tap runs its drives and errands, it waits while you climb, and it stops at the first thing the day refuses, saying why. You plan on the van and edit by where, then what; bed stays last. The e2e runs day four as a plan in 13 taps (day three took 20), and day five's plan stops at the café.
 - 2026-09-29 — 0.960.0 released: Evan published `v0.960.0` on `main`, and Deploy run 1 went green, live check included. `v0.956.0` is left untagged on purpose, because its push would deploy v0.956; creating it on `e098332` is the rollback. The docs now say so.
 - 2026-09-29 — Phase 11 closed by Evan's call: criteria 2 to 5 pass on the build, and criterion 1 (testers) carries. Phase 10 and 11 ship together as 0.961.0, with the store's "What's new" and the full description updated for them. CURRENT MILESTONE moved to Phase 12; what the rebuild left of it gets planned next.
+- 2026-09-29 — 0.961.0 released: Evan published `v0.961.0` on `main` (`afab5a5`), and Deploy run 2 went green, live check included. Phase 10 and 11 are live; the Play update is Evan's.
+- 2026-09-29 — Phase 12 planned on the rebuild, with Evan's calls: a Journal instead of the five tabs, and landscape widens the world rather than framing a phone column. Slices 12.1 (text surfaces) to 12.5. Unreal is on hold until the conversion is done.
+- 2026-09-29 — Every send after a line's first is now a repeat, by Evan's call; it was named "Redpoint" however many times you'd sent it. The log keeps the first send's style, so saves don't change.
+- 2026-09-29 — Phase 12.1: the Journal. Your body in the HUD opens it: you as a climber, and "Lately", the sim's 200-line log that nothing showed until now. A line over 30 words goes on a card, not a toast, and the e2e fails on any toast longer. Day three's taps don't move.
+- 2026-09-29 — Phase 12.2: the wide screen. A landscape window widens the screen to up to 1248 across instead of framing a phone: scenes and skies show more, the map paints ridged country around the valley, walls close up are panels over their crag, and sheets dock at the right from 1080 across. Toasts moved off the HUD, and the e2e checks every one against every control. A landscape morning joins the e2e.
+- 2026-09-29 — Phase 12.3: keyboard and access. Scenes' things and the map's pins take the keyboard and a screen reader, Escape puts things down, one focus ring, text at a true 1.3×, low meters striped, and the accent deepened to pass the new WCAG AA check in `npm run check`. The e2e plays a day by keyboard alone at the larger text.
+- 2026-09-29 — Phase 12.4 and 12.5: the van says what tonight will do (from `tonight()`, which sleep is held to), and inline styles are down to custom properties, checked by `npm run check`. Phase 12's slices are all built; closing it is Evan's call.
+- 2026-09-29 — Phase 12 closed by Evan's call: criteria 1, 4 and 5 met; 2 and 3 met for what the e2e plays, the rest carried to playtesting. CURRENT MILESTONE moved to Phase 13, sound and feel; it gets planned on the rebuild next.

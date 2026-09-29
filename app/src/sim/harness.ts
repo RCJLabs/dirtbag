@@ -3,14 +3,11 @@
 // the tables (harness/season.harness.ts).
 
 import { humanHands, playDays, type BotRun, type Strategy } from './bot';
-import { ACTS } from './content/places';
-import { MONEY } from './dials';
 import { Rng } from './rng';
+import { runway } from './tonight';
 
-// A day with no trips out: the van spot, two packets of ramen, and a seventh of the week's
-// bills. Runway is how many of those days your cash covers without a shift.
-export const BASE_BURN =
-  MONEY.vanSpot + 2 * -(ACTS['lot.cook']!.cost.cash ?? 0) + (MONEY.registration + MONEY.insurance) / 7;
+// Runway is the van's own measure (tonight.ts): the harness and the player read the same one.
+export { BASE_BURN, runway } from './tonight';
 
 export interface SeasonOpts {
   start: string;
@@ -31,8 +28,6 @@ export function season(seed: string, o: SeasonOpts): BotRun {
     hands: o.human ? () => humanHands(Rng.fromStream(seed, 'session').derive(`bot-go-${n++}`)) : undefined,
   });
 }
-
-export const runway = (cash: number): number => Math.max(0, cash) / BASE_BURN;
 
 export interface Checkpoint {
   day: number;

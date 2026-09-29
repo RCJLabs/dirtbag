@@ -10,7 +10,12 @@ export function Goal({ game, ui }: { game: Game; ui: Ui }) {
   const p = progress(ui.state, g.aim);
   const counted = p.need > 1 && !('cash' in g.aim) && !('grade' in g.aim) && !('regular' in g.aim);
   return (
-    <button type="button" className="goal" id="goal" onClick={() => game.openSheet({ k: 'you' })}>
+    <button
+      type="button"
+      className="goal"
+      id="goal"
+      onClick={() => game.openSheet({ k: 'journal', page: 'you' })}
+    >
       <b>Next</b>
       {goalDesc(g)}
       {counted && (

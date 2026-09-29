@@ -3,7 +3,11 @@
 
 import { whereNow, type GameState } from '../sim';
 
-// A portrait phone screen in logical pixels; the page scales it to fit the device.
+// A portrait phone screen in logical pixels; the page scales it to fit the device. The
+// screen is always H tall. It is W wide in portrait, and on a wider window it widens to
+// match, up to W_MAX, so a landscape screen sees more of the world rather than a phone
+// column in a black frame. W stays the width of everything composed for portrait: the map's
+// valley, a wall close up, and the panels.
 export const W = 360;
 export const H = 740;
 
@@ -14,7 +18,19 @@ export const WW = 960;
 export const GND = 560;
 export const Z = 1.3;
 export const OY = 612 - GND * Z;
-export const VW = W / Z;
+
+// The widest the screen gets: the narrowest scene (the Lot, WW) at the scenes' zoom, so no
+// scene ever shows past its ends. About 16:9.5; a Steam Deck or a 16:10 laptop fits inside
+// it, and a 16:9 monitor gets a sliver of frame at each side. layout.test.ts holds every
+// scene to it.
+export const W_MAX = Math.round(WW * Z);
+// From this wide, a sheet docks at the right instead of over the world's bottom half. It's
+// where a sheet 360 across clears a portrait column in the middle (the map's valley, a
+// wall close up): W / 2 + W / 2 + 360 each side of the centre.
+export const WIDE = 1080;
+
+// The screen's width for a window of this shape (width over height).
+export const screenWidth = (aspect: number): number => Math.min(W_MAX, Math.max(W, Math.round(H * aspect)));
 
 // What tapping a thing in a scene does. A gym problem is named by its place on the wall,
 // since the set (and so its id) changes every week.

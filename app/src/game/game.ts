@@ -28,6 +28,7 @@ import {
   type FallRun,
   type GameEvent,
   type GameState,
+  type GoStyle,
   type SendStyle,
   type Skills,
 } from '../sim';
@@ -39,7 +40,7 @@ import {
   presentIn,
   SCENES,
   spotHot,
-  VW,
+  W,
   WAKE_X,
   widthOf,
   Z,
@@ -47,13 +48,19 @@ import {
   type Use,
 } from '../view/layout';
 import { mapArt } from '../view/paint/map';
-import { render, type Frame } from '../view/render';
+import { mapLeft, render, type Frame } from '../view/render';
 import { drivePath } from '../view/valley';
 import * as persist from './persist';
 import { loadPlans, noted, savePlans, SLEEP, wipePlans, type PlanStep, type Plans } from './plan';
 import { createStore, type Store } from './store';
 
 export type View = 'scene' | 'map' | 'wall';
+
+export type JournalPage = 'you' | 'lately';
+
+// Past this many words a line goes on a card, not a toast: nobody reads 40 words in the
+// few seconds a toast stays up.
+export const TOAST_WORDS = 30;
 
 export type SheetId =
   | { k: 'van' }
@@ -67,7 +74,7 @@ export type SheetId =
   | {
       k: 'sent';
       route: string;
-      style: SendStyle;
+      style: GoStyle;
       go: number;
       gains: Partial<Skills>;
       notes: string[];
@@ -88,7 +95,10 @@ export type SheetId =
     }
   | { k: 'dog' }
   | { k: 'act' }
-  | { k: 'you' }
+  // Your journal: you as a climber, or the log of what's happened lately.
+  | { k: 'journal'; page: JournalPage }
+  // A line too long for a toast, on a card you put down yourself.
+  | { k: 'note'; text: string; day: number; min: number }
   | { k: 'week' }
   | { k: 'settings' }
   | { k: 'restart' }
@@ -119,6 +129,8 @@ export interface Ui {
   wallRoute: string;
   settings: persist.Settings;
   still: boolean;
+  // The screen's width in logical pixels: W in portrait, wider on a wider window.
+  w: number;
   // The plan you've made, and yesterday as you played it.
   plans: Plans;
   // A plan being run: its steps, the one it's on, whether it's waiting while you climb, and
@@ -171,6 +183,8 @@ export class Game {
   private player = { x: 300, tx: 300, dir: 1, phase: 0, speed: 0, onArrive: null as (() => void) | null };
   private scout = { x: 436, wag: 0 };
   private cam = 0;
+  // How much of a scene the screen sees across, in world pixels.
+  private vw = W / Z;
   private att: Attempt | null = null;
   private acc = 0;
   private trip: Trip | null = null;
@@ -182,9 +196,9 @@ export class Game {
   private toastN = 0;
   private toastShown = 0;
   private keysWalking = false;
-  // The end of an act waits until you're back in a scene with nothing open, so it never
-  // lands on top of the send that finished it.
-  private actCard = false;
+  // Cards wait until nothing else is open, so one never lands on top of the send that
+  // caused it. The end of an act also waits until you're back in a scene.
+  private cards: SheetId[] = [];
   // Today as you've played it, to offer as tomorrow's plan; and a plan being run.
   private today: PlanStep[] = [];
   private run: { steps: PlanStep[]; i: number } | null = null;
@@ -211,12 +225,24 @@ export class Game {
       wallRoute: 'pump',
       settings,
       still: stillFor(settings, this.systemStill),
+      w: W,
       plans: loadPlans(),
       plan: null,
     });
     this.fast = createStore<Fast>({ cam: 0, att: null });
     if (home?.scene) this.enter(home.scene, this.state.x ?? undefined);
     if (b.note) this.toast(b.note);
+  }
+
+  // The window changed shape: the screen is `w` logical pixels wide now. The camera keeps
+  // you where you were, inside the scene.
+  resize(w: number): void {
+    if (w === this.ui.get().w) return;
+    this.vw = w / Z;
+    this.set({ w });
+    const u = this.ui.get();
+    if (u.view === 'scene') this.cam = clamp(this.player.x - this.vw / 2, 0, this.sceneW() - this.vw);
+    this.fast.set({ ...this.fast.get(), cam: this.cam });
   }
 
   get still(): boolean {
@@ -233,12 +259,12 @@ export class Game {
     for (const e of r.events) {
       if (e.k === 'line') this.toast(e.text);
       else if (e.k === 'refused') this.toast(e.why);
-      else if (e.k === 'act') this.actCard = true;
+      else if (e.k === 'act') this.cards.push({ k: 'act' });
     }
     if (changed) this.noteComings(before);
     if (changed && !persist.save(this.state)) this.toast("Couldn't save. The browser's storage may be full.");
     this.sync();
-    this.maybeActCard();
+    this.maybeCard();
     return r.events;
   }
 
@@ -269,6 +295,11 @@ export class Game {
   // A line gets its full time on screen when nothing's waiting behind it, and just enough
   // to read when something is, so a quick player never reads news from two actions ago.
   toast(text: string): void {
+    if (words(text) > TOAST_WORDS) {
+      this.cards.push({ k: 'note', text, day: this.state.day, min: this.state.min });
+      this.maybeCard();
+      return;
+    }
     if (this.held) {
       this.held.lines.push(text);
       return;
@@ -339,7 +370,7 @@ export class Game {
     const layout = SCENES[scene]!;
     const px = x ?? layout.spawn;
     Object.assign(this.player, { x: px, tx: px, dir: 1, speed: 0, onArrive: null });
-    this.cam = clamp(px - VW / 2, 0, widthOf(scene) - VW);
+    this.cam = clamp(px - this.vw / 2, 0, widthOf(scene) - this.vw);
     this.att = null;
     this.set({
       view: 'scene',
@@ -352,7 +383,7 @@ export class Game {
     });
     this.fast.set({ cam: this.cam, att: null });
     if (x !== undefined && x !== this.state.x) this.dispatch({ t: 'stand', x });
-    this.maybeActCard();
+    this.maybeCard();
   }
 
   enterScene(scene: string, x?: number): void {
@@ -388,14 +419,16 @@ export class Game {
 
   closeSheet(): void {
     this.set({ sheet: null });
-    this.maybeActCard();
+    this.maybeCard();
   }
 
-  private maybeActCard(): void {
+  private maybeCard(): void {
     const u = this.ui.get();
-    if (!this.actCard || u.view !== 'scene' || u.sheet || u.talk || u.climbing) return;
-    this.actCard = false;
-    this.set({ sheet: { k: 'act' } });
+    const next = this.cards[0];
+    if (!next || u.sheet || u.talk || u.climbing || u.driving) return;
+    if (u.view !== 'scene' && (next.k === 'act' || u.view !== 'map')) return;
+    this.cards.shift();
+    this.set({ sheet: next });
   }
 
   hush(): void {
@@ -409,6 +442,28 @@ export class Game {
   }
 
   // A scene's hotspots: its fixed things, plus whoever's there right now.
+  // What you can walk up to and use in the scene you're in.
+  hotsHere(): Hot[] {
+    const u = this.ui.get();
+    return u.view === 'scene' ? this.hots(u.scene) : [];
+  }
+
+  // Walk up to a thing and use it, as a tap on it does.
+  useHot(h: Hot): void {
+    if (this.busy || this.ui.get().view !== 'scene') return;
+    this.hush();
+    this.walkTo(h.stand, () => {
+      this.player.dir = h.face;
+      this.use(h.use);
+    });
+  }
+
+  // A pin on the map, pressed: its card, as a tap on it does.
+  openPin(id: string): void {
+    if (this.busy || this.trip || this.ui.get().view !== 'map') return;
+    this.openSheet({ k: 'place', id });
+  }
+
   private hots(scene: string): Hot[] {
     return [...SCENES[scene]!.hots, ...presentIn(this.state, scene).map(spotHot)];
   }
@@ -468,8 +523,10 @@ export class Game {
     else if (u.view === 'wall' && !u.climbing && !u.sheet) this.openSheet({ k: 'beta', route: u.wallRoute });
   }
 
-  private tapMap(sx: number, sy: number): void {
+  private tapMap(x: number, sy: number): void {
     if (this.trip) return;
+    // The valley sits in the middle of a wide screen.
+    const sx = x - mapLeft(this.ui.get().w);
     const near = Object.entries(MAP_PINS)
       .map(([id, p]) => ({ id, d: Math.hypot(p.x - sx, p.y - sy) }))
       .sort((a, b) => a.d - b.d)[0];
@@ -522,7 +579,7 @@ export class Game {
     }
     const next = ev.find((e): e is Extract<GameEvent, { k: 'talk' }> => e.k === 'talk');
     this.set({ talk: next?.node ? { talk: t.talk, node: next.node } : null });
-    this.maybeActCard();
+    this.maybeCard();
   }
 
   // ---- places and the map ----
@@ -585,10 +642,14 @@ export class Game {
     this.held = null;
     this.set({ driving: false });
     this.sync();
-    for (const l of lines) this.toast(l);
+    // What you learned on the way is said where you get to, not over the map's pins.
+    const say = () => lines.forEach((l) => this.toast(l));
     const scene = PLACES[trip.to]?.scene;
-    if (scene) this.enterScene(scene);
-    else this.openSheet({ k: 'place', id: trip.to });
+    if (scene) this.fadeTo(() => (this.enter(scene), say()));
+    else {
+      this.openSheet({ k: 'place', id: trip.to });
+      say();
+    }
     if (this.run) this.later(() => this.planStep(), FADE_MS + PLAN_BEAT);
   }
 
@@ -698,9 +759,11 @@ export class Game {
         this.set({
           stamp: null,
           climbing: false,
-          sheet: fa
-            ? { k: 'fa', route, style, go, gains, notes, from: 'send' }
-            : { k: 'sent', route, style, go, gains, notes, first },
+          // A first ascent is a first send, so never a repeat.
+          sheet:
+            fa && style !== 'repeat'
+              ? { k: 'fa', route, style, go, gains, notes, from: 'send' }
+              : { k: 'sent', route, style, go, gains, notes, first },
         });
       },
       this.still ? 1200 : 2600,
@@ -861,7 +924,7 @@ export class Game {
       }
       if (was > 0 && p.speed === 0 && Math.round(p.x) !== this.state.x) this.dispatch({ t: 'stand', x: p.x });
     }
-    this.cam += (clamp(p.x - VW / 2, 0, this.sceneW() - VW) - this.cam) * Math.min(1, dt * 5);
+    this.cam += (clamp(p.x - this.vw / 2, 0, this.sceneW() - this.vw) - this.cam) * Math.min(1, dt * 5);
   }
 
   frame(t: number, px: number): Frame {
@@ -879,6 +942,7 @@ export class Game {
       scene: u.scene,
       cam: this.cam,
       t,
+      w: u.w,
       px,
       still: u.still,
       player: this.player,
@@ -904,3 +968,5 @@ function gainsIn(ev: GameEvent[]): Partial<Skills> {
   const e = ev.find((x): x is Extract<GameEvent, { k: 'skills' }> => x.k === 'skills');
   return e?.gains ?? {};
 }
+
+export const words = (text: string): number => text.split(/\s+/).filter(Boolean).length;

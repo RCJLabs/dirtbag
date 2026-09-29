@@ -23,8 +23,12 @@ This is the game as it ships from 0.960.0 (the roadmap's R3): the first season, 
   - Pump you can see: the climber shakes and the screen's edges close in.
   - Climbers move at a pace set by their grade.
 - **The send card:** a PNG of your line, drawn on the device, to save or share.
+- **The journal** (Phase 12.1, after 0.961.0): tap your body in the HUD. You as a climber, and "Lately": the last 200 things that happened, in full. A line too long for a toast comes on a card instead.
 - **v0.956's players:** v0.956 retired at 0.960.0. Someone who played it is told so, can keep their old career as a file, and can carry on under their old name, their climbing capped at V3.
 - **The shell:** the game installs and plays offline.
+- **Tonight** (Phase 12.4, after 0.961.0): at night the van says what bed costs, what's left in the morning, how your body will read and tomorrow's sky, from the numbers sleep uses (`sim/tonight.ts`).
+- **Keyboard and access** (Phase 12.3, after 0.961.0): Tab reaches everything, the things in scenes and the map's pins included; Escape puts down what's open; text goes to 1.3×; the panel colours meet WCAG AA (`npm run check`).
+- **Any window** (Phase 12.2, after 0.961.0): portrait is a phone screen; a wider window widens the world, up to about 16:9, with sheets docked at the right from 1080 across. Walls close up stay portrait, as a panel over their crag.
 
 ## Commands
 
@@ -96,7 +100,7 @@ A place is data, a pin and a picture. In order:
 7. **Its people**, if anyone's day brings them there: `sim/presence.ts`, and where they stand in `SPOTS`.
 8. **Check.** Run `npm test`. These fail by name if something's missing:
    - `content.test.ts`: acts that don't exist; a road to nowhere, a duplicate, one that's never the quickest way, or a place no road reaches; text that can't be filled.
-   - `layout.test.ts`: no pin, no header, a scene that isn't the place's, a side road that doesn't start on the highway, a drive that runs past its ends, a crag line with nowhere on screen.
+   - `layout.test.ts`: no pin, no header, a scene that isn't the place's, a scene narrower than the widest screen sees (960, the Lot's width), a side road that doesn't start on the highway, a drive that runs past its ends, a crag line with nowhere on screen.
    - `sun.test.ts`: a sun path that misses a line or doubles back.
 
    If the place changes a season (a crag in Act I's grades, a job), run `npm run harness` too. The bots only climb at Roadside, the Gorge and the gym, so a crag they should use goes into their day in `sim/bot.ts` first.

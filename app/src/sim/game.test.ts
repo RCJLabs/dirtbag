@@ -331,7 +331,7 @@ describe('goes and sends', () => {
     expect(goBlocked({ ...passed, min: 22 * 60 }, p)).toBe('Send City is closed');
   });
 
-  it('first go: onsight, or flash if you were told; later goes: redpoint', () => {
+  it('first go: onsight, or flash if you were told; a later first send: redpoint', () => {
     const top = sent(24, ['A1', 'B1']);
     const onsight = play(crag(), { t: 'go', route: 'pump' }, { t: 'done', route: 'pump', result: top });
     expect(onsight.events).toContainEqual({ k: 'sent', route: 'pump', style: 'onsight', go: 1 });
@@ -354,6 +354,20 @@ describe('goes and sends', () => {
     expect(red.events).toContainEqual({ k: 'sent', route: 'pump', style: 'redpoint', go: 2 });
     expect(red.state.routes.pump?.sent).toMatchObject({ day: 1, go: 2, style: 'redpoint' });
     expect(talkStart(red.state, 'hazel-crag')).toBe('sent');
+  });
+
+  it('a send of a line you have already sent is a repeat, and the log keeps the first', () => {
+    const top = sent(24, ['A1', 'B1']);
+    const again = play(
+      crag(),
+      { t: 'go', route: 'pump' },
+      { t: 'done', route: 'pump', result: top },
+      { t: 'rest', route: 'pump' },
+      { t: 'go', route: 'pump' },
+      { t: 'done', route: 'pump', result: top },
+    );
+    expect(again.events).toContainEqual({ k: 'sent', route: 'pump', style: 'repeat', go: 2 });
+    expect(again.state.routes.pump?.sent).toMatchObject({ day: 1, go: 1, style: 'onsight' });
   });
 
   it('warns about the sun once a day, when a go starts on a line the sun has reached', () => {

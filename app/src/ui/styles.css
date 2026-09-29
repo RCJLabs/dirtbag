@@ -38,7 +38,7 @@ body {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 360px;
+  width: var(--w, 360px);
   height: 740px;
   transform: translate(-50%, -50%) scale(var(--k, 1));
   overflow: hidden;
@@ -49,7 +49,8 @@ body {
   /* The comic kit. */
   --u-bg: #fffdf5;
   --u-ink: #1b1b1f;
-  --u-acc: #d8553f;
+  /* Deep enough for small text on the paper: 4.6:1 (npm run check holds the kit to AA). */
+  --u-acc: #ce422a;
   --u-dim: #5e5a52;
   --u-font: 'Patrick Hand SC', 'Patrick Hand', cursive;
   --u-mono: 'Patrick Hand', cursive;
@@ -58,13 +59,18 @@ body {
   --u-shadow: 4px 4px 0 #1b1b1f;
   --u-btn: #f2c84b;
   --u-btnInk: #1b1b1f;
-  --u-fs: 1.08;
+  /* Text size: --u-k is the player's setting, 1 or 1.3; panel text scales by it. */
+  --u-k: 1;
+  --u-fs: calc(1.08 * var(--u-k));
   --u-hudBg: #fffdf5;
   --u-hudInk: #1b1b1f;
+  /* Rain on the forecast, and the keyboard's ring. */
+  --u-rain: #2f5e8c;
+  --u-focus: #2b6c84;
 }
 /* Settings: larger text scales every panel's type; less motion drops the fades. */
 .screen.large {
-  --u-fs: 1.24;
+  --u-k: 1.3;
 }
 .screen.still .fade {
   transition: none;
@@ -74,7 +80,7 @@ body {
   position: absolute;
   left: 0;
   top: 0;
-  width: 360px;
+  width: var(--w, 360px);
   height: 740px;
   touch-action: none;
   cursor: pointer;
@@ -174,6 +180,8 @@ button.pill:disabled {
 /* ---- speech ---- */
 .bubble {
   position: absolute;
+  left: var(--x);
+  top: var(--y);
   width: max-content;
   max-width: 258px;
   background: var(--u-bg);
@@ -198,7 +206,7 @@ button.pill:disabled {
 }
 .who {
   margin: 0 0 4px;
-  font: 700 12px/1 var(--u-mono);
+  font: 700 calc(12px * var(--u-k)) / 1 var(--u-mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--u-dim);
@@ -421,7 +429,7 @@ button.pill:disabled {
 }
 .go small {
   display: block;
-  font: 500 12px/1.2 var(--u-mono);
+  font: 500 calc(12px * var(--u-k)) / 1.2 var(--u-mono);
   letter-spacing: 0;
   margin-top: 3px;
   opacity: 0.85;
@@ -451,12 +459,12 @@ button.pill:disabled {
   font: 700 calc(21px * var(--u-fs)) / 1 var(--u-font);
 }
 .c-route .g {
-  font: 600 14px/1 var(--u-mono);
+  font: 600 calc(14px * var(--u-k)) / 1 var(--u-mono);
   color: var(--u-acc);
 }
 .c-route .t {
   margin-left: auto;
-  font: 500 12px/1 var(--u-mono);
+  font: 500 calc(12px * var(--u-k)) / 1 var(--u-mono);
   color: var(--u-dim);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -467,7 +475,7 @@ button.pill:disabled {
   gap: 8px;
   align-items: center;
   margin: 10px 0 6px;
-  font: 600 11.5px/1 var(--u-mono);
+  font: 600 calc(11.5px * var(--u-k)) / 1 var(--u-mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -480,7 +488,7 @@ button.pill:disabled {
 .c-bar i {
   display: block;
   height: 100%;
-  width: 0;
+  width: var(--w, 0);
   background: var(--u-ink);
 }
 .c-bar i.hot {
@@ -508,12 +516,15 @@ button.pill:disabled {
 /* The cruxes, underlined in the accent so they read over the fill as well as past it. */
 .reach .r-cx {
   position: absolute;
+  left: var(--l);
+  width: var(--w);
   bottom: 0;
   height: 4px;
   background: var(--u-acc);
 }
 .reach .r-go {
   position: absolute;
+  width: var(--w);
   left: 0;
   top: 0;
   bottom: 0;
@@ -521,6 +532,7 @@ button.pill:disabled {
 }
 .reach .r-best {
   position: absolute;
+  left: var(--l);
   top: -2px;
   bottom: -2px;
   width: 3px;
@@ -546,6 +558,8 @@ button.pill:disabled {
 }
 .verb .band {
   position: absolute;
+  left: var(--l);
+  width: var(--w);
   top: 0;
   bottom: 0;
   background: color-mix(in srgb, var(--u-acc) 38%, transparent);
@@ -554,6 +568,7 @@ button.pill:disabled {
 }
 .verb .fill {
   position: absolute;
+  width: var(--w, 0);
   left: 0;
   top: 0;
   bottom: 0;
@@ -561,6 +576,7 @@ button.pill:disabled {
 }
 .verb .mk {
   position: absolute;
+  left: var(--l);
   top: -4px;
   bottom: -4px;
   width: 5px;
@@ -588,10 +604,11 @@ button.pill:disabled {
 }
 
 /* ---- toasts, the stamp, hints ---- */
+/* Under the HUD's tallest pill (your body, to 65px), never over it. */
 .toast {
   position: absolute;
   left: 50%;
-  top: 60px;
+  top: 70px;
   transform: translateX(-50%);
   width: max-content;
   max-width: 300px;
@@ -625,7 +642,7 @@ button.pill:disabled {
 }
 .stamp span {
   display: block;
-  font: 600 13px/1.3 var(--u-mono);
+  font: 600 calc(13px * var(--u-k)) / 1.3 var(--u-mono);
   color: var(--u-ink);
   margin-top: 4px;
 }
@@ -636,7 +653,7 @@ button.pill:disabled {
   bottom: 22px;
   margin: 0;
   text-align: center;
-  font: 600 14px/1.2 var(--u-mono);
+  font: 600 calc(14px * var(--u-k)) / 1.2 var(--u-mono);
   color: #ffffff;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
   pointer-events: none !important;
@@ -672,12 +689,18 @@ button.pill:disabled {
 }
 /* A plan being run, under the HUD: above any sheet, and toasts make room for it. */
 .ui:has(.plan-chip) .toast {
-  top: 102px;
+  top: 110px;
+}
+/* The map's pins run from top to bottom; the band between Roadside (to y 236) and Send City
+   (from y 398) is clear of them, so a toast on the open map goes there. A sheet on the
+   map covers the bottom, and a toast keeps to the top. */
+.screen.on-map .ui:not(:has(.sheet)) .toast {
+  top: 248px;
 }
 .plan-chip {
   position: absolute;
   left: 50%;
-  top: 62px;
+  top: 70px;
   transform: translateX(-50%);
   display: flex;
   gap: 7px;
@@ -747,7 +770,7 @@ button.pill:disabled {
   border-radius: var(--u-rad);
   box-shadow: 2px 2px 0 var(--u-ink);
   padding: 6px 10px;
-  font: 600 13px/1 var(--u-mono);
+  font: 600 calc(13px * var(--u-k)) / 1 var(--u-mono);
 }
 .fade {
   position: absolute;
@@ -809,11 +832,31 @@ button.pill:disabled {
   border-top: 1px solid color-mix(in srgb, var(--u-ink) 20%, transparent);
   font: 600 calc(14px * var(--u-fs)) / 1.2 var(--u-mono);
 }
+.log {
+  list-style: none;
+  margin: 2px 0 6px;
+  padding: 0;
+}
+.log li {
+  display: grid;
+  grid-template-columns: 62px 1fr;
+  gap: 8px;
+  padding: 5px 0;
+  border-top: 1px solid color-mix(in srgb, var(--u-ink) 20%, transparent);
+  font: 500 calc(13px * var(--u-fs)) / 1.3 var(--u-mono);
+}
+.log b {
+  font-weight: 600;
+  color: var(--u-dim);
+}
+.pages {
+  margin: 2px 0 8px;
+}
 .days .sky {
   color: var(--u-acc);
 }
 .days li[data-sky='rain'] .sky {
-  color: #2f5e8c;
+  color: var(--u-rain);
 }
 .days small {
   grid-column: 1/-1;
@@ -970,20 +1013,74 @@ button.pill:disabled {
   background: var(--u-ink);
 }
 
-.hold:focus-visible,
-.sheet button:focus-visible,
-.bubble button:focus-visible,
-.navb:focus-visible,
-button.pill:focus-visible,
-.start:focus-visible,
-.create .go:focus-visible,
-.restart:focus-visible {
-  outline: 2px solid #2b6c84;
-  outline-offset: 2px;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .fade {
     transition: none;
   }
+}
+
+/* ---- wider than portrait ----
+   Panels composed for a phone keep a phone's width and centre on a wider screen. From
+   WIDE (layout.ts) up, sheets dock at the right under the HUD, and the world stays in view
+   beside them. */
+.sheet,
+.climb,
+.create {
+  max-width: 520px;
+  margin: 0 auto;
+}
+.screen.wide .sheet {
+  left: auto;
+  top: 64px;
+  bottom: auto;
+  width: 360px;
+  max-height: calc(100% - 72px);
+}
+.screen.wide .climb {
+  max-width: 344px;
+}
+
+/* ---- larger text ----
+   Pills that sit on one line at the normal size may wrap at 1.3x rather than run off the
+   screen. */
+.screen.large .goal,
+.screen.large .plan-chip {
+  white-space: normal;
+}
+
+/* ---- low, said by shape as well as colour ----
+   A meter running low, and a load bar running hot, get stripes, so the warning doesn't
+   rest on telling red from black. */
+.meters i.low::after,
+.skills i.hot::after,
+.c-bar i.hot {
+  background-image: repeating-linear-gradient(-45deg, transparent 0 2px, rgba(255, 253, 245, 0.55) 2px 3.5px);
+}
+
+/* ---- keyboard ----
+   Everything you can press shows where the keyboard is: the same ring on every control. */
+.screen button:focus-visible,
+.screen input:focus-visible {
+  outline: 3px solid var(--u-focus);
+  outline-offset: 2px;
+}
+
+/* The things in a scene and the pins on the map, for the keyboard and screen readers: an
+   invisible button over each, which a pointer passes straight through to the canvas. */
+.hot {
+  position: absolute;
+  padding: 0;
+  margin: 0;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  color: transparent;
+  left: var(--x);
+  top: var(--y);
+  width: var(--bw);
+  height: var(--bh);
+  pointer-events: none !important;
+}
+.hot.pin {
+  border-radius: 50%;
 }
