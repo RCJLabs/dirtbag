@@ -2,6 +2,7 @@
 // each) and weights (docs/audit/climbing.md §2.13). Nothing is stored: a day's sky is a
 // pure function of the seed and the day, so the forecast is simply tomorrow's roll.
 
+import { PLACES } from './content/places';
 import { Rng } from './rng';
 
 export type Sky = 'prime' | 'fair' | 'hot' | 'rain';
@@ -63,6 +64,25 @@ export function conditions(seed: string, day: number): Conditions {
     greaseFrom: sky === 'prime' ? 15 * 60 : sky === 'hot' ? 12 * 60 : 14 * 60,
     windows: base * (seeping ? 0.92 : 1),
     seeping,
+  };
+}
+
+// What the day means at a particular crag: the valley's weather, plus the crag's own shade
+// and closures. Shaded rock doesn't grease and doesn't mind the heat.
+export function conditionsAt(
+  seed: string,
+  day: number,
+  place: string,
+): Conditions & { closed: string | null } {
+  const c = conditions(seed, day);
+  const p = PLACES[place];
+  const closed = p?.closed && seasonOf(day) === p.closed.season ? p.closed.why : null;
+  if (!p?.shaded) return { ...c, closed };
+  return {
+    ...c,
+    closed,
+    greaseFrom: 24 * 60,
+    windows: (c.sky === 'hot' ? 1 : c.sky === 'prime' ? 1.1 : 1) * (c.seeping ? 0.92 : 1),
   };
 }
 

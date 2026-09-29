@@ -56,20 +56,22 @@ export const SPUR: Pt[] = [
   [118, 466],
 ];
 export const JUNCTION: Pt = [207, 470];
+// The walk-in to Roadside.
 export const TRAILS: Pt[][] = [
   [
     [266, 258],
     [276, 244],
     [286, 232],
   ],
-  [
-    [274, 168],
-    [236, 172],
-    [198, 168],
-    [160, 162],
-    [122, 156],
-    [96, 152],
-  ],
+];
+// The dirt road west off the highway to Granite Gorge, from the highway end.
+export const DIRT: Pt[] = [
+  [274, 168],
+  [236, 172],
+  [198, 168],
+  [160, 162],
+  [122, 156],
+  [96, 152],
 ];
 export const BLOCKS: [number, number, number, number][] = [
   [222, 400, 30, 20],
@@ -174,11 +176,17 @@ export function rasterMap(
 }
 
 // The drive between two places, as a path along the roads through the junction. Old Town
-// is off the spur; everything else sits beside the highway and joins it level with its pin.
+// is off the spur, Granite Gorge at the end of the dirt road; everything else sits beside
+// the highway and joins it level with its pin.
 function legPts(id: string, pins: Record<string, { x: number; y: number }>): Pt[] {
   const p = pins[id]!;
   const [, jy] = JUNCTION;
   if (id === 'diner') return [[p.x, p.y], ...SPUR.slice().reverse()];
+  if (id === 'gorge') {
+    const [, dy] = DIRT[0]!;
+    const along = ROAD.filter((q) => q[1] >= dy && q[1] < jy).reverse();
+    return [[p.x, p.y], ...DIRT.slice().reverse(), [roadX(dy), dy], ...along];
+  }
   const along =
     p.y > jy
       ? ROAD.filter((q) => q[1] <= p.y && q[1] > jy)

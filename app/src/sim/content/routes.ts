@@ -70,7 +70,15 @@ export interface RouteDef {
   rest: { at: number; radius: number } | null;
   // Clips, in moves. Boulders have none: you land on pads.
   bolts: number[];
+  // A sandbag (or a soft touch): the grade it really climbs at, which the rules use. The
+  // listed grade is what the guidebook says (v0.956's trueGrade).
+  trueGrade?: number;
+  // Unclimbed: the first to send it names it (v0.956's open projects).
+  open?: true;
 }
+
+// The grade a line really climbs at.
+export const effGrade = (r: RouteDef): number => r.trueGrade ?? r.grade;
 
 // v0.956's sport table: index 0 is 5.10a, 4 is 5.12a, 18 is 5.16a. The scale is squeezed
 // at both ends, as it was.
@@ -283,10 +291,21 @@ export function libraryBoulder(
   grade: number,
   type: Style,
   place: string,
-  shape: { moves: number; from: number; to: number; cruxName: string; heightFt: number; line: string },
+  shape: {
+    moves: number;
+    from: number;
+    to: number;
+    cruxName: string;
+    heightFt: number;
+    line: string;
+    trueGrade?: number;
+    open?: true;
+  },
 ): RouteDef {
   const [a, b] = LIBRARY[type];
   return {
+    ...(shape.trueGrade !== undefined ? { trueGrade: shape.trueGrade } : {}),
+    ...(shape.open ? { open: true as const } : {}),
     id,
     name,
     grade,
@@ -309,6 +328,50 @@ export function libraryBoulder(
     beta: { A1: a, A2: b },
     rest: null,
     bolts: [],
+  };
+}
+
+// A sport route from the library: two cruxes, each with its style's pair of sequences (the
+// second earned by falling twice), a rest between them, and bolts all the way.
+export function librarySport(
+  id: string,
+  name: string,
+  grade: number,
+  type: Style,
+  place: string,
+  shape: {
+    moves: number;
+    heightFt: number;
+    line: string;
+    rest: number;
+    a: { style: Style; name: string; from: number; to: number; win: string };
+    b: { style: Style; name: string; from: number; to: number; win: string };
+  },
+): RouteDef {
+  const [a1, a2] = LIBRARY[shape.a.style];
+  const [b1, b2] = LIBRARY[shape.b.style];
+  const crux = (c: typeof shape.a, k: 'A' | 'B') => ({
+    id: k,
+    name: c.name,
+    from: c.from,
+    to: c.to,
+    win: c.win,
+    beta: [`${k}1`, `${k}2`],
+  });
+  return {
+    id,
+    name,
+    grade,
+    disc: 'sport',
+    type,
+    place,
+    moves: shape.moves,
+    heightFt: shape.heightFt,
+    line: shape.line,
+    cruxes: [crux(shape.a, 'A'), crux(shape.b, 'B')],
+    beta: { A1: a1, A2: a2, B1: b1, B2: { ...b2, unlock: { falls: 2, line: b2.unlock?.line ?? '' } } },
+    rest: { at: shape.rest, radius: 0.8 },
+    bolts: boltsFor(shape.moves),
   };
 }
 
@@ -578,14 +641,140 @@ const crimpfest = libraryBoulder('crimpfest', 'Crimpfest', 4, 'crimp', 'road', {
   line: 'Six moves on edges you can barely see.',
 });
 
+// The rest of v0.956's Roadside: a crack, the highball that tests your head, everyone's
+// project, and the line nobody's done. Trad Arête waits for a gear system.
+const fingerCrack = libraryBoulder('fingercrack', 'Finger Crack', 4, 'crack', 'road', {
+  moves: 6,
+  from: 2.2,
+  to: 4.0,
+  cruxName: 'The seam',
+  heightFt: 13,
+  line: 'A finger crack up a split block. Tape helps; so does not thinking about it.',
+});
+const highball = libraryBoulder('highball', 'Highball Arête', 5, 'technical', 'road', {
+  moves: 8,
+  from: 5.0,
+  to: 6.8,
+  cruxName: 'The top',
+  heightFt: 18,
+  line: 'Eight moves up a clean arête, and the crux is where the pads stop helping.',
+});
+const theProject = libraryBoulder('project', 'The Project', 6, 'power', 'road', {
+  moves: 6,
+  from: 2.6,
+  to: 4.4,
+  cruxName: 'The big move',
+  heightFt: 12,
+  line: 'Everyone’s project. The chalk says so.',
+});
+const roadsideOpen = libraryBoulder('rsopen', 'The open project', 7, 'dyno', 'road', {
+  moves: 6,
+  from: 3.4,
+  to: 4.8,
+  cruxName: 'The leap',
+  heightFt: 13,
+  line: 'Nobody’s done it. The chalk stops at the fourth move.',
+  open: true,
+});
+
+// ---- Granite Gorge: v0.956's second crag, shaded, two hours out ----
+
+const gSlab = libraryBoulder('gslab', 'Granite Slab', 5, 'technical', 'gorge', {
+  moves: 7,
+  from: 3.2,
+  to: 5.0,
+  cruxName: 'The smear',
+  heightFt: 14,
+  line: 'A slab in the shade. Trust your feet or don’t bother.',
+});
+const gSerenity = libraryBoulder('gserenity', 'Serenity Crack', 6, 'crack', 'gorge', {
+  moves: 7,
+  from: 2.8,
+  to: 4.8,
+  cruxName: 'The flare',
+  heightFt: 15,
+  line: 'A perfect crack that pinches shut two-thirds of the way up.',
+});
+const gPinch = libraryBoulder('gpinch', 'The Pinch', 6, 'power', 'gorge', {
+  moves: 5,
+  from: 1.8,
+  to: 3.4,
+  cruxName: 'The pinch',
+  heightFt: 12,
+  line: 'One hold. You squeeze it or you don’t.',
+});
+const gDyno = libraryBoulder('gdyno', 'Gorge Dyno', 7, 'dyno', 'gorge', {
+  moves: 5,
+  from: 2.6,
+  to: 3.8,
+  cruxName: 'The throw',
+  heightFt: 13,
+  line: 'A committing throw off bad feet. The guidebook says V7.',
+  trueGrade: 8,
+});
+const gCathedral = libraryBoulder('gcathedral', 'Crimp Cathedral', 8, 'crimp', 'gorge', {
+  moves: 8,
+  from: 3.6,
+  to: 6.2,
+  cruxName: 'The nave',
+  heightFt: 16,
+  line: 'A tall wall of razor crimps. People drive in from three states for it.',
+});
+const gOpen = libraryBoulder('gopen', 'The Gorge project', 9, 'crimp', 'gorge', {
+  moves: 7,
+  from: 3.0,
+  to: 5.6,
+  cruxName: 'The blank bit',
+  heightFt: 14,
+  line: 'Unclimbed. Better climbers than you have tried, which is what they all say.',
+  open: true,
+});
+const gIntro = librarySport('gintro', 'Gorge Intro', 5, 'crimp', 'gorge', {
+  moves: 20,
+  heightFt: 70,
+  line: 'The Gorge’s way of saying hello: twenty moves of edges.',
+  rest: 11,
+  a: { style: 'crimp', name: 'The first edges', from: 6.2, to: 8.4, win: 'Onto the good ledge.' },
+  b: { style: 'technical', name: 'The slab finish', from: 14.6, to: 16.8, win: 'Chains.' },
+});
+const gClassic = librarySport('gclassic', 'Gorge Classic', 6, 'power', 'gorge', {
+  moves: 22,
+  heightFt: 80,
+  line: 'Steep, shaded and famous. It earns it.',
+  rest: 12.6,
+  a: { style: 'power', name: 'The overlap', from: 7.4, to: 9.4, win: 'Over it.' },
+  b: { style: 'crimp', name: 'The headwall', from: 16.8, to: 19.0, win: 'Chains in reach.' },
+});
+const gPowerEnd = librarySport('gpe', 'Power Endurance', 8, 'power', 'gorge', {
+  moves: 26,
+  heightFt: 90,
+  line: 'The name is the whole description.',
+  rest: 14,
+  a: { style: 'power', name: 'The roof', from: 8.0, to: 10.2, win: 'Through the roof.' },
+  b: { style: 'endurance', name: 'The long finish', from: 18.4, to: 21.6, win: 'Chains. Barely.' },
+});
+
 export const ROUTES: Record<string, RouteDef> = {
   warm: warmBoulder,
   dyno,
   crimpfest,
+  fingercrack: fingerCrack,
+  highball,
+  project: theProject,
+  rsopen: roadsideOpen,
   warmup,
   roadside,
   pump,
   testpiece,
+  gslab: gSlab,
+  gserenity: gSerenity,
+  gpinch: gPinch,
+  gdyno: gDyno,
+  gcathedral: gCathedral,
+  gopen: gOpen,
+  gintro: gIntro,
+  gclassic: gClassic,
+  gpe: gPowerEnd,
 };
 
 // Said when you come off between cruxes with nothing left in your arms.

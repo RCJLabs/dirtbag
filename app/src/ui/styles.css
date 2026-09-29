@@ -646,6 +646,41 @@ button.pill:disabled {
   border-style: dashed;
 }
 
+/* ---- a first ascent: the grade call, the name, and names on offer ---- */
+.fa {
+  margin: 0;
+}
+.fa .calls {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.fa .calls .beta {
+  margin: 0;
+}
+.fa .field {
+  margin-top: 12px;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.chip {
+  cursor: pointer;
+  padding: 5px 10px;
+  background: none;
+  color: var(--u-ink);
+  border: 1.5px solid color-mix(in srgb, var(--u-ink) 30%, transparent);
+  border-radius: 999px;
+  font: 600 calc(12.5px * var(--u-fs)) / 1.2 var(--u-mono);
+}
+.chip[aria-pressed='true'] {
+  border-color: var(--u-ink);
+  background: color-mix(in srgb, var(--u-btn) 22%, transparent);
+}
+
 /* ---- making your climber ---- */
 .create {
   position: absolute;

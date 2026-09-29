@@ -9,12 +9,12 @@ import { routeById, routesAt } from './content/gym';
 import { CLINIC_LINE, FIRST_FREE_LINE, HEALED_LINE, HURT_LINE } from './content/injuries';
 import { ACTS, PLACES, road, TEXT_VALUES } from './content/places';
 import { PEOPLE, TALK } from './content/people';
-import { SEND_NAME, gradeLabel, type RouteDef } from './content/routes';
+import { SEND_NAME, effGrade, gradeLabel, gradeName, type RouteDef } from './content/routes';
 import { BODY, CLIMB, DAY, INJURY, LOAD, MONEY } from './dials';
 import { fill, money } from './format';
 import { whereIs } from './presence';
 import type { Action, Delta, GameEvent, GameState, Result, RouteLog, SendStyle, Skills } from './types';
-import { conditions } from './weather';
+import { conditionsAt, seasonOf } from './weather';
 
 // The message log keeps this many lines; older ones fall off the front.
 export const LOG_MAX = 200;
@@ -37,6 +37,7 @@ export function newGame(seed: string): GameState {
     injury: null,
     hurt: 0,
     routes: {},
+    firsts: {},
     people: {},
     log: [],
   };
@@ -91,7 +92,9 @@ export function goBlocked(s: GameState, r: RouteDef): string | null {
     if (s.min >= 22 * 60) return 'Send City is closed';
     if (!s.today.includes('pass')) return 'Buy a day pass at the desk first';
   } else {
-    if (!conditions(s.seed, s.day).open) return 'The rock is soaked';
+    const c = conditionsAt(s.seed, s.day, r.place);
+    if (c.closed) return c.closed;
+    if (!c.open) return 'The rock is soaked';
     if (s.min >= CLIMB.darkFrom) return 'Too dark to climb';
     if (r.disc === 'sport' && !belayer(s)) return 'Nobody here to belay you';
   }
@@ -304,7 +307,10 @@ export function act(s0: GameState, a: Action): Result {
 
     case 'travel': {
       const r = road(s.at, a.to);
-      if (!r || !PLACES[a.to]) return refuse("There's no road there.");
+      const to = PLACES[a.to];
+      if (!r || !to) return refuse("There's no road there.");
+      if (to.minGrade !== undefined && gradeOf(s.climber.skills) < to.minGrade)
+        return refuse(`${to.name}: ${to.locked ?? 'not yet.'}`);
       // A maxed-out card never strands you: you drive on what's in the tank.
       const declined = r.cash > 0 && headroom(s) < r.cash;
       spend({ min: r.min, cash: declined ? 0 : -r.cash, energy: r.min >= 30 ? -BODY.driveEnergy : 0 });
@@ -337,7 +343,18 @@ export function act(s0: GameState, a: Action): Result {
       L.goesToday += 1;
       const who = r.disc === 'sport' ? belayer(s) : null;
       if (who) climbedWith(who);
-      if (r.place !== 'gym' && s.min >= conditions(s.seed, s.day).greaseFrom && !s.today.includes('grease')) {
+      // A sandbag shows itself on your first go.
+      if (L.goes === 1 && r.trueGrade !== undefined && r.trueGrade !== r.grade)
+        line(
+          r.trueGrade > r.grade
+            ? `That's no ${gradeLabel(r)}. Locals have been sandbagging it.`
+            : `That's no ${gradeLabel(r)}. It's soft, and you're not complaining.`,
+        );
+      if (
+        r.place !== 'gym' &&
+        s.min >= conditionsAt(s.seed, s.day, r.place).greaseFrom &&
+        !s.today.includes('grease')
+      ) {
         s.today.push('grease');
         line("Sun's on the wall. Everything feels greasy.");
       }
@@ -376,6 +393,8 @@ export function act(s0: GameState, a: Action): Result {
         L.sent ??= { day: s.day, go: L.goes, style };
         L.sentToday = true;
         events.push({ k: 'sent', route: a.route, style, go: L.goes });
+        if (r.open && !s.firsts[r.id] && L.sent.day === s.day && L.sent.go === L.goes)
+          events.push({ k: 'fa', route: r.id });
         note(`${SEND_NAME[style]}: ${r.name}, ${gradeLabel(r)}, on go ${L.goes}.`);
       } else if (res.fellAt) {
         const crux = r.cruxes.find((c) => c.id === res.fellAt);
@@ -391,7 +410,7 @@ export function act(s0: GameState, a: Action): Result {
       const before = gradeOf(s.climber.skills);
       const styles = res.tried.map((b) => r.beta[b]?.style).filter((x): x is NonNullable<typeof x> => !!x);
       const go: GoSummary = {
-        grade: r.grade,
+        grade: effGrade(r),
         sent: res.sent,
         progress: res.hi / r.moves,
         type: r.type,
@@ -427,6 +446,75 @@ export function act(s0: GameState, a: Action): Result {
       }
       break;
     }
+
+    case 'name': {
+      const r = routeOfId(s, a.route);
+      if (!r?.open || !s.routes[a.route]?.sent) return refuse("That line isn't yours to name.");
+      if (s.firsts[a.route]) return refuse("You've named it already.");
+      const name = a.name.trim().slice(0, FA_NAME_MAX).trim();
+      if (name.length < 2) return refuse('Give it a name.');
+      s.firsts[a.route] = { name, call: a.call, day: s.day };
+      const called = gradeName(r.disc, r.grade + a.call);
+      line(
+        a.call > 0
+          ? `First ascent: ${name}, called stout at ${called}. Let them find out.`
+          : a.call < 0
+            ? `First ascent: ${name}, called soft at ${called}. Nobody argues with a humble call.`
+            : `First ascent: ${name}, ${called}. That's on the map now.`,
+      );
+      break;
+    }
   }
   return { state: s, events };
+}
+
+export const FA_NAME_MAX = 28;
+
+// What a line's called: its first ascensionist's name for it, or the guidebook's.
+export const lineName = (s: GameState, r: RouteDef): string => s.firsts[r.id]?.name ?? r.name;
+
+// The grade a line goes by: its first ascensionist's call once it has one, and a "?" on an
+// open line nobody's done, the way guidebooks mark a grade no one has confirmed.
+export function lineGrade(s: GameState, r: RouteDef): string {
+  const fa = s.firsts[r.id];
+  if (fa) return gradeName(r.disc, r.grade + fa.call);
+  return r.open && !s.routes[r.id]?.sent ? `${gradeLabel(r)}?` : gradeLabel(r);
+}
+
+const WORDS = [
+  'Zero',
+  'One',
+  'Two',
+  'Three',
+  'Four',
+  'Five',
+  'Six',
+  'Seven',
+  'Eight',
+  'Nine',
+  'Ten',
+  'Eleven',
+  'Twelve',
+];
+const NOUN: Record<RouteDef['type'], string> = {
+  crimp: 'Edge',
+  power: 'Pull',
+  dyno: 'Leap',
+  endurance: 'Long Way Up',
+  technical: 'Dance',
+  crack: 'Crack',
+};
+
+// Names to offer for a first ascent, from your record: yours, how long it took, the
+// season, and what the week's been like.
+export function faSuggestions(s: GameState, r: RouteDef): string[] {
+  const first = s.climber.name.split(/\s+/)[0] || 'Nobody';
+  const goes = s.routes[r.id]?.goes ?? 1;
+  const season = seasonOf(s.day);
+  return [
+    `${first}’s ${NOUN[r.type]}`,
+    goes <= 1 ? 'First Try, Somehow' : goes < WORDS.length ? `Go ${WORDS[goes]}` : `Go ${goes}`,
+    `The ${season[0]!.toUpperCase()}${season.slice(1)} Project`,
+    s.cash < 0 ? 'Rent’s Due' : s.routes.pump?.told.includes('B2') ? 'Hazel Was Right' : 'Coffee Money',
+  ];
 }

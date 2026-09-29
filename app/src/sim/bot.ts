@@ -15,7 +15,7 @@ import {
 } from './climb';
 import { isNight, unmet } from './cond';
 import { routesAt } from './content/gym';
-import { ACTS, road } from './content/places';
+import { ACTS, PLACES, road } from './content/places';
 import type { RouteDef } from './content/routes';
 import { CLIMB, DAY, LOAD, MONEY } from './dials';
 import { cold, ratio } from './body';
@@ -290,8 +290,18 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     if (s.fed < 70) tryAct('lot.cook');
     work();
     // The crag when it's dry and there's something there to try; the gym otherwise.
+    // Roadside first, the Gorge once it's open to you and there's nothing new at Roadside,
+    // the gym when the rock's wet or done.
     const open = conditions(s.seed, s.day).open;
-    const place = open && choose('road') ? 'road' : choose('gym') ? 'gym' : null;
+    const gorge = gradeOf(s.climber.skills) >= (PLACES.gorge?.minGrade ?? 99);
+    const place =
+      open && choose('road')
+        ? 'road'
+        : open && gorge && choose('gorge')
+          ? 'gorge'
+          : choose('gym')
+            ? 'gym'
+            : null;
     let where = place ? 'tired' : 'nothing';
     if (place && s.min < 16 * 60 && s.energy >= 30 && s.skin >= 25) {
       travel(place);

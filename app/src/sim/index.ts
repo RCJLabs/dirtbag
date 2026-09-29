@@ -14,6 +14,10 @@ export {
   talkStart,
   goesToday,
   routeOfId,
+  lineGrade,
+  lineName,
+  faSuggestions,
+  FA_NAME_MAX,
   LOG_MAX,
   NAME_MAX,
 } from './game';
@@ -48,7 +52,7 @@ export {
   gains,
 } from './climber';
 export type { Style, Start, GoSummary } from './climber';
-export { skyOn, forecast, conditions, seasonOf, SKY_NAME, SEASON_DAYS } from './weather';
+export { skyOn, forecast, conditions, conditionsAt, seasonOf, SKY_NAME, SEASON_DAYS } from './weather';
 export type { Sky, Season, Conditions } from './weather';
 export { whereIs, around } from './presence';
 export { ratio, zone, daysOff, cold, goLoad, projected } from './body';
@@ -63,7 +67,17 @@ export * from './format';
 export { DAY, MONEY, BODY, CLIMB, LOAD, INJURY } from './dials';
 export { PLACES, ACTS, ROADS, road, TEXT_VALUES } from './content/places';
 export type { PlaceDef, ActDef, RoadDef } from './content/places';
-export { ROUTES, LIBRARY, PUMPED, SEND_NAME, gradeName, gradeLabel, libraryBoulder } from './content/routes';
+export {
+  ROUTES,
+  LIBRARY,
+  PUMPED,
+  SEND_NAME,
+  gradeName,
+  gradeLabel,
+  effGrade,
+  libraryBoulder,
+  librarySport,
+} from './content/routes';
 export type { RouteDef, CruxDef, BetaDef, Verb, Disc } from './content/routes';
 export { GYM, WEEK_DAYS, weekOf, gymSet, routeById, routesAt } from './content/gym';
 export { TALK, PEOPLE, THINGS } from './content/people';

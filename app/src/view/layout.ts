@@ -7,8 +7,9 @@ import { whereIs, type GameState } from '../sim';
 export const W = 360;
 export const H = 740;
 
-// Scenes are 960 px wide side-on worlds with the ground at 560, framed at 1.3x so people
-// read on a phone, with the ground line at screen y 612.
+// Scenes are side-on worlds with the ground at 560, framed at 1.3x so people read on a
+// phone, with the ground line at screen y 612. Each is as wide as its place needs; WW is
+// the width of the ones that don't say.
 export const WW = 960;
 export const GND = 560;
 export const Z = 1.3;
@@ -38,25 +39,71 @@ export interface Hot {
 export interface SceneLayout {
   // The place this scene is.
   place: string;
+  width: number;
   spawn: number;
   hint: string;
   hots: Hot[];
 }
 
-// Roadside's sport lines on the wall, left to right, with the numbers on their tags.
-export const BASE_ROUTES = [
-  { n: 1, x: 420, route: 'warmup' },
-  { n: 2, x: 560, route: 'roadside' },
-  { n: 3, x: 700, route: 'pump' },
-  { n: 4, x: 840, route: 'testpiece' },
-];
+// A crag, side on: its wall (from its foot on the left to where it ends, which may be off
+// the scene), the sport lines on it left to right with the numbers on their tags, and the
+// boulders on the talus in front: centre, width, height.
+export interface CragSpec {
+  width: number;
+  wall: [number, number];
+  lines: { n: number; x: number; route: string }[];
+  boulders: { x: number; w: number; h: number; route: string }[];
+  // Where the crag's sign stands.
+  sign: number;
+  hint: string;
+}
 
-// Its boulders, on the talus at the foot of the wall: centre, width, height.
-export const BOULDERS = [
-  { x: 340, w: 68, h: 50, route: 'warm' },
-  { x: 490, w: 60, h: 46, route: 'dyno' },
-  { x: 630, w: 74, h: 58, route: 'crimpfest' },
-];
+export const CRAGS: Record<string, CragSpec> = {
+  // Roadside's wall ends in a boulder field: v0.956's crack, highball, project and the
+  // line nobody's done sit past the last bolts.
+  crag: {
+    width: 1400,
+    wall: [262, 1010],
+    lines: [
+      { n: 1, x: 420, route: 'warmup' },
+      { n: 2, x: 560, route: 'roadside' },
+      { n: 3, x: 700, route: 'pump' },
+      { n: 4, x: 840, route: 'testpiece' },
+    ],
+    boulders: [
+      { x: 340, w: 68, h: 50, route: 'warm' },
+      { x: 490, w: 60, h: 46, route: 'dyno' },
+      { x: 630, w: 74, h: 58, route: 'crimpfest' },
+      { x: 1000, w: 72, h: 60, route: 'fingercrack' },
+      { x: 1110, w: 78, h: 96, route: 'highball' },
+      { x: 1220, w: 80, h: 62, route: 'project' },
+      { x: 1320, w: 66, h: 54, route: 'rsopen' },
+    ],
+    sign: 272,
+    hint: 'Boulders on the talus, ropes on the wall',
+  },
+  // The Gorge: granite in the shade, three bolted lines up the canyon wall, boulders on
+  // its floor either side.
+  gorge: {
+    width: 1340,
+    wall: [300, 1360],
+    lines: [
+      { n: 1, x: 560, route: 'gintro' },
+      { n: 2, x: 820, route: 'gclassic' },
+      { n: 3, x: 1080, route: 'gpe' },
+    ],
+    boulders: [
+      { x: 380, w: 96, h: 46, route: 'gslab' },
+      { x: 480, w: 62, h: 70, route: 'gserenity' },
+      { x: 680, w: 72, h: 56, route: 'gpinch' },
+      { x: 950, w: 70, h: 62, route: 'gdyno' },
+      { x: 1180, w: 88, h: 84, route: 'gcathedral' },
+      { x: 1270, w: 70, h: 64, route: 'gopen' },
+    ],
+    sign: 272,
+    hint: 'The canyon floor’s all boulders. The bolts need a belayer.',
+  },
+};
 
 // Send City: the desk by the door, then six problems along the wall, V0 to V5.
 export const DESK_X = 170;
@@ -72,9 +119,29 @@ const wallHot = (x: number, use: Use, half = 26, y0 = 110): Hot => ({
   use,
 });
 
+// A crag's scene: the van on the left, then its boulders and lines.
+function cragScene(place: string, c: CragSpec): SceneLayout {
+  return {
+    place,
+    width: c.width,
+    spawn: 180,
+    hint: c.hint,
+    hots: [
+      { x0: 34, x1: 234, y0: 440, y1: GND + 8, stand: 196, face: -1, use: { sheet: 'cragVan' } },
+      // Boulders first: they stand in front of the wall, so a tap on one is for it.
+      ...c.boulders.map((b) => wallHot(b.x, { route: b.route }, b.w / 2, GND - b.h - 16)),
+      ...c.lines.map((r) => wallHot(r.x, { route: r.route })),
+    ],
+  };
+}
+
+// How wide a scene is.
+export const widthOf = (scene: string): number => SCENES[scene]?.width ?? WW;
+
 export const SCENES: Record<string, SceneLayout> = {
   lot: {
     place: 'lot',
+    width: WW,
     spawn: 300,
     hint: 'Tap anywhere to walk',
     hots: [
@@ -92,19 +159,11 @@ export const SCENES: Record<string, SceneLayout> = {
       { x0: 700, x1: 860, y0: 450, y1: GND + 8, stand: 688, face: 1, use: { thing: 'hazel-van' } },
     ],
   },
-  crag: {
-    place: 'road',
-    spawn: 180,
-    hint: 'Boulders on the talus, ropes on the wall',
-    hots: [
-      { x0: 34, x1: 234, y0: 440, y1: GND + 8, stand: 196, face: -1, use: { sheet: 'cragVan' } },
-      // Boulders first: they stand in front of the wall, so a tap on one is for it.
-      ...BOULDERS.map((b) => wallHot(b.x, { route: b.route }, b.w / 2, GND - b.h - 16)),
-      ...BASE_ROUTES.map((r) => wallHot(r.x, { route: r.route })),
-    ],
-  },
+  crag: cragScene('road', CRAGS.crag!),
+  gorge: cragScene('gorge', CRAGS.gorge!),
   gym: {
     place: 'gym',
+    width: WW,
     spawn: 70,
     hint: 'Day pass at the desk. New problems every week.',
     hots: [
@@ -164,17 +223,26 @@ export const HEAD_Y = GND - 66;
 export const WAKE_X = 340;
 
 // The map: live pins by place id (label side, and what kind of place colours the pin), and
-// the valley's other places, dimmed.
+// the valley's other places, dimmed. Granite Gorge sits on the western cliff band, at the
+// end of the dirt road.
 export type PinKind = 'camp' | 'town' | 'crag';
-export const MAP_PINS: Record<string, { x: number; y: number; side: 1 | -1; kind: PinKind }> = {
+export interface Pin {
+  x: number;
+  y: number;
+  side: 1 | -1;
+  kind: PinKind;
+  // Nudges the label up or down, off a road that runs beside the pin.
+  dy?: number;
+}
+export const MAP_PINS: Record<string, Pin> = {
   lot: { x: 262, y: 612, side: 1, kind: 'camp' },
   diner: { x: 96, y: 458, side: 1, kind: 'town' },
   gym: { x: 282, y: 414, side: -1, kind: 'town' },
   cafe: { x: 282, y: 476, side: -1, kind: 'town' },
   road: { x: 292, y: 220, side: -1, kind: 'crag' },
+  gorge: { x: 96, y: 150, side: 1, kind: 'crag', dy: -16 },
 };
 export const DIM_PINS: [number, number][] = [
   [266, 334],
   [78, 612],
-  [84, 150],
 ];

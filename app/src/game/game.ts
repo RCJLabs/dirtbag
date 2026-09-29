@@ -8,6 +8,7 @@ import {
   goResult,
   gradeLabel,
   isNight,
+  lineName,
   newGame,
   PEOPLE,
   PLACES,
@@ -38,7 +39,7 @@ import {
   spotHot,
   VW,
   WAKE_X,
-  WW,
+  widthOf,
   Z,
   type Hot,
   type Use,
@@ -59,6 +60,17 @@ export type SheetId =
   | { k: 'beta'; route: string }
   | { k: 'fall'; route: string; fall: FallRun; notes: string[]; gains: Partial<Skills> }
   | { k: 'sent'; route: string; style: SendStyle; go: number; gains: Partial<Skills>; notes: string[] }
+  // A first ascent to name: straight after the send (then the send card), or later from
+  // the wall if you walked off without naming it.
+  | {
+      k: 'fa';
+      route: string;
+      style: SendStyle;
+      go: number;
+      gains: Partial<Skills>;
+      notes: string[];
+      from: 'send' | 'wall';
+    }
   | { k: 'you' }
   | { k: 'week' }
   | { k: 'settings' }
@@ -291,7 +303,7 @@ export class Game {
     const layout = SCENES[scene]!;
     const px = x ?? layout.spawn;
     Object.assign(this.player, { x: px, tx: px, dir: 1, speed: 0, onArrive: null });
-    this.cam = clamp(px - VW / 2, 0, WW - VW);
+    this.cam = clamp(px - VW / 2, 0, widthOf(scene) - VW);
     this.att = null;
     this.set({
       view: 'scene',
@@ -347,13 +359,17 @@ export class Game {
 
   // ---- scenes: walking and using things ----
 
+  private sceneW(): number {
+    return widthOf(this.ui.get().scene);
+  }
+
   // A scene's hotspots: its fixed things, plus whoever's there right now.
   private hots(scene: string): Hot[] {
     return [...SCENES[scene]!.hots, ...presentIn(this.state, scene).map(spotHot)];
   }
 
   private walkTo(x: number, then: (() => void) | null): void {
-    this.player.tx = clamp(x, 24, WW - 24);
+    this.player.tx = clamp(x, 24, this.sceneW() - 24);
     this.player.onArrive = then;
     if (this.ui.get().hint) this.set({ hint: null });
   }
@@ -428,7 +444,7 @@ export class Game {
     }
     this.hush();
     this.keysWalking = true;
-    this.walkTo(dir < 0 ? 24 : WW - 24, null);
+    this.walkTo(dir < 0 ? 24 : this.sceneW() - 24, null);
   }
 
   useNearest(): void {
@@ -591,21 +607,36 @@ export class Game {
     const ev = this.dispatch({ t: 'done', route, result: goResult(a) });
     const sent = ev.find((e): e is Extract<GameEvent, { k: 'sent' }> => e.k === 'sent');
     const go = sent?.go ?? this.state.routes[route]?.goes ?? 1;
-    this.set({ stamp: `${r.name} · ${gradeLabel(r)} · go ${go}` });
+    this.set({ stamp: `${lineName(this.state, r)} · ${gradeLabel(r)} · go ${go}` });
     const gains = gainsIn(ev);
     const notes = ev.flatMap((e) => (e.k === 'injured' ? [e.text] : []));
+    const style = sent?.style ?? 'redpoint';
+    const fa = ev.some((e) => e.k === 'fa');
     window.setTimeout(
       () => {
         this.set({
           stamp: null,
           climbing: false,
-          sheet: sent
-            ? { k: 'sent', route, style: sent.style, go: sent.go, gains, notes }
-            : { k: 'sent', route, style: 'redpoint', go, gains, notes },
+          sheet: fa
+            ? { k: 'fa', route, style, go, gains, notes, from: 'send' }
+            : { k: 'sent', route, style, go, gains, notes },
         });
       },
       this.still ? 1200 : 2600,
     );
+  }
+
+  // Name a first ascent and call its grade. Named straight after the send, the send card
+  // follows; named later, you're back at the wall.
+  nameLine(name: string, call: -1 | 0 | 1): void {
+    const sh = this.ui.get().sheet;
+    if (sh?.k !== 'fa') return;
+    const ev = this.dispatch({ t: 'name', route: sh.route, name, call });
+    if (ev.some((e) => e.k === 'refused')) return;
+    const { route, style, go, gains, notes } = sh;
+    this.set({
+      sheet: sh.from === 'send' ? { k: 'sent', route, style, go, gains, notes } : { k: 'beta', route },
+    });
   }
 
   // ---- starting over ----
@@ -664,7 +695,7 @@ export class Game {
       }
       if (was > 0 && p.speed === 0 && Math.round(p.x) !== this.state.x) this.dispatch({ t: 'stand', x: p.x });
     }
-    this.cam += (clamp(p.x - VW / 2, 0, WW - VW) - this.cam) * Math.min(1, dt * 5);
+    this.cam += (clamp(p.x - VW / 2, 0, this.sceneW() - VW) - this.cam) * Math.min(1, dt * 5);
   }
 
   frame(t: number, px: number): Frame {

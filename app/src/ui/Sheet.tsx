@@ -1,4 +1,4 @@
-import { Fragment, useLayoutEffect, useRef } from 'react';
+import { Fragment, useLayoutEffect, useRef, useState } from 'react';
 import {
   average,
   betaScale,
@@ -14,12 +14,16 @@ import {
   conditions,
   costLabel,
   dayFactor,
+  FA_NAME_MAX,
+  faSuggestions,
   goBlocked,
   goCost,
-  gradeLabel,
+  gradeName,
   gradeOf,
   headroom,
   knowsBeta,
+  lineGrade,
+  lineName,
   MIX,
   MONEY,
   money,
@@ -76,6 +80,8 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
   const body =
     id.k === 'beta' ? (
       <BetaBody game={game} route={id.route} s={state} />
+    ) : id.k === 'fa' ? (
+      <FaBody game={game} route={id.route} s={state} />
     ) : id.k === 'you' ? (
       <YouBody game={game} s={state} />
     ) : id.k === 'week' ? (
@@ -86,7 +92,7 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
   if (body)
     return (
       <div className="sheet" id="sheet" role="dialog" aria-labelledby="sheet-title" ref={ref}>
-        <Close game={game} />
+        {id.k !== 'fa' && <Close game={game} />}
         {body}
       </div>
     );
@@ -138,14 +144,39 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
   const cost =
     `${costLabel({ min: c.min })} · ${bodyNote({ energy: c.energy, skin: c.skin })}` +
     (dayFactor(s, r).grease ? ' · sun on the wall, smaller windows' : '');
+  const log = s.routes[route];
+  const unnamed = r.open && log?.sent && !s.firsts[route];
   return (
     <>
       <h3 id="sheet-title">
-        {r.name} · {gradeLabel(r)}
+        {lineName(s, r)} · {lineGrade(s, r)}
       </h3>
       <p className="sub">
         {r.line} {goes ? `Go ${goes + 1} today.` : 'First go today.'} Tap the wall to reopen this.
       </p>
+      {r.open && !log?.sent && (
+        <p className="note">Open project: nobody’s sent it. Send it and it’s yours to name.</p>
+      )}
+      {unnamed && log.sent && (
+        <button
+          type="button"
+          className="opt"
+          onClick={() =>
+            game.openSheet({
+              k: 'fa',
+              route,
+              style: log.sent!.style,
+              go: log.sent!.go,
+              gains: {},
+              notes: [],
+              from: 'wall',
+            })
+          }
+        >
+          <span>Name your first ascent</span>
+          <span className="c" />
+        </button>
+      )}
       {r.cruxes.map((cx, n) => (
         <Fragment key={cx.id}>
           <p className="crux">
@@ -199,6 +230,81 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
         <small>{cost}</small>
       </button>
     </>
+  );
+}
+
+// v0.956's grade calls for a first ascent: a number under, at, or over what it felt like.
+const CALLS: [-1 | 0 | 1, string][] = [
+  [-1, 'Call it soft'],
+  [0, 'Call it true'],
+  [1, 'Call it stout'],
+];
+
+// A first ascent: call the grade and give it a name. The names on offer come from your
+// record; any of them, or your own, goes on the map.
+function FaBody({ game, route, s }: { game: Game; route: string; s: GameState }) {
+  const r = routeOfId(s, route);
+  const [names] = useState(() => (r ? faSuggestions(s, r) : []));
+  const [name, setName] = useState(names[0] ?? '');
+  const [call, setCall] = useState<-1 | 0 | 1>(0);
+  if (!r) return null;
+  const ok = name.trim().length >= 2;
+  const grade = gradeName(r.disc, r.grade + call);
+  return (
+    <form
+      className="fa"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (ok) game.nameLine(name, call);
+      }}
+    >
+      <h3 id="sheet-title">First ascent</h3>
+      <p className="sub">
+        Nobody’s climbed this {r.disc === 'sport' ? 'route' : 'line'} before you. It’s yours to name, and to
+        grade.
+      </p>
+      <p className="crux">The grade</p>
+      <div role="radiogroup" aria-label="The grade" className="calls">
+        {CALLS.map(([c, word]) => (
+          <button
+            type="button"
+            key={c}
+            className="beta choice"
+            role="radio"
+            aria-checked={call === c}
+            onClick={() => setCall(c)}
+          >
+            <span className="dot" />
+            <span>{gradeName(r.disc, r.grade + c)}</span>
+            <small>{word}</small>
+          </button>
+        ))}
+      </div>
+      <label className="field">
+        <span>The name</span>
+        <input
+          id="fa-name"
+          value={name}
+          maxLength={FA_NAME_MAX}
+          autoComplete="off"
+          spellCheck={false}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </label>
+      <div className="chips">
+        {names.map((n) => (
+          <button type="button" key={n} className="chip" aria-pressed={name === n} onClick={() => setName(n)}>
+            {n}
+          </button>
+        ))}
+      </div>
+      <button type="submit" className="go" disabled={!ok}>
+        Put it on the map
+        <small>
+          {name.trim() || 'No name yet'}, {grade}
+        </small>
+      </button>
+    </form>
   );
 }
 

@@ -43,6 +43,8 @@ export interface GameState {
   // Injuries so far: the first one's bill is waived.
   hurt: number;
   routes: Record<string, RouteLog>;
+  // Lines you put up first, by route id: what you named them and how you called the grade.
+  firsts: Record<string, FirstAscent>;
   // The people you climb with, by id.
   people: Record<string, PersonLog>;
   // The message log: every line the game has told you, newest last.
@@ -79,6 +81,13 @@ export interface RouteLog {
   hi: number;
   sent: SendRecord | null;
   sentToday: boolean;
+}
+
+export interface FirstAscent {
+  name: string;
+  // Soft, true or stout: your grade call against the listed grade (v0.956's FA call).
+  call: -1 | 0 | 1;
+  day: number;
 }
 
 export interface PersonLog {
@@ -120,7 +129,8 @@ export type Action =
   | { t: 'pick'; route: string; crux: string; beta: string }
   | { t: 'go'; route: string }
   | { t: 'rest'; route: string }
-  | { t: 'done'; route: string; result: GoResult };
+  | { t: 'done'; route: string; result: GoResult }
+  | { t: 'name'; route: string; name: string; call: -1 | 0 | 1 };
 
 // What a finished go hands back to the game.
 export interface GoResult {
@@ -143,6 +153,8 @@ export type GameEvent =
   | { k: 'sent'; route: string; style: SendStyle; go: number }
   // What a go taught you, and your grade if it moved.
   | { k: 'skills'; gains: Partial<Skills>; grade: number | null }
+  // The first ascent of an open line: it's yours to name.
+  | { k: 'fa'; route: string }
   // A go that hurt you, with the line that says so (logged, and shown on the go's sheet).
   | { k: 'injured'; kind: string; tier: 1 | 2 | 3; days: number; text: string }
   // A conversation moves to another node, or ends (null).

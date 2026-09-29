@@ -2,7 +2,8 @@
 // at 0.2, mid hills at 0.5, the ground at 1.0), flat shapes and no outlines. Each layer is
 // painted once per scene and time of day, then scrolled.
 
-import { BASE_ROUTES, BOULDERS, GND, H, W, WW } from '../layout';
+import { ROUTES } from '../../sim';
+import { CRAGS, GND, H, W, WW, type CragSpec } from '../layout';
 import { lerp, lin, mk, poly, rad, rr, trace, type G, type Pt } from '../kit/geom';
 import { fbm, mulberry32 } from '../kit/noise';
 import { chair, pineShape, popTop, rock, vanBody, vanWindows } from '../shapes';
@@ -107,6 +108,34 @@ const SP: Record<Tod, Palette> = {
   },
 };
 
+// Granite Gorge: the canyon's in shade all day. The sky's a pale strip over the far wall,
+// the rock is cool grey granite, and the trees are pines.
+const GORGE: Palette = {
+  sky: [
+    [0, '#B9D2DC'],
+    [0.6, '#DCE4DE'],
+    [1, '#ECE3CD'],
+  ],
+  orb: '#FFF6E0',
+  orbX: 292,
+  orbY: 70,
+  far2: '#A3B3BA',
+  far: '#8798A2',
+  mid: '#5F7569',
+  midTree: '#3E594B',
+  trees: '#294236',
+  ground: '#5B584F',
+  ground2: '#4E4B44',
+  track: '#6C685E',
+  van: '#E6DCC4',
+  trim: '#2F6F73',
+  glass: '#6F8C98',
+  wall: '#A7AEB6',
+  wallShade: '#838B96',
+  wallDark: '#454C57',
+  talus: '#8B8D8A',
+};
+
 // The poster never outlines anything: shapes are fills, lines are plain strokes.
 function fill(g: G, draw: (g: G) => void, col: string): void {
   g.beginPath();
@@ -180,15 +209,17 @@ const toGround = (w: number, pts: Pt[]) => (g: G) => {
   g.closePath();
 };
 
-function paintFar(P: Palette, w: number, seed: number): HTMLCanvasElement {
+// The far ridges; in a canyon, the far wall stands twice as tall.
+function paintFar(P: Palette, w: number, seed: number, canyon = false): HTMLCanvasElement {
   const [c, g] = mk(w, H, 1.5);
-  fill(g, toGround(w, ridgeLine(w, GND - 150, 95, seed, 0.011, true)), P.far2);
+  const k = canyon ? 2.2 : 1;
+  fill(g, toGround(w, ridgeLine(w, GND - 150 * k, 95 * k, seed, 0.011, true)), P.far2);
   g.fillStyle = lin(g, 0, GND - 190, 0, GND, [
     [0, 'rgba(255,255,255,0)'],
     [1, 'rgba(255,255,255,.22)'],
   ]);
   g.fillRect(0, GND - 190, w, 200);
-  fill(g, toGround(w, ridgeLine(w, GND - 92, 72, seed + 3, 0.015, true)), P.far);
+  fill(g, toGround(w, ridgeLine(w, GND - 92 * k, 72 * k, seed + 3, 0.015, true)), P.far);
   return c;
 }
 
@@ -383,18 +414,40 @@ function paintLotGround(P: Palette, tod: Tod): HTMLCanvasElement {
 }
 
 const CRAG_VAN = { x: 34, w: 200, h: 82 };
-const WALL_EDGE: Pt[] = [
-  [300, GND],
-  [292, 470],
-  [276, 380],
-  [288, 300],
-  [268, 210],
-  [282, 120],
-  [262, 40],
-  [270, -20],
-  [WW + 20, -20],
-  [WW + 20, GND],
-];
+
+// How a crag's rock is painted: Roadside's banded sandstone, or the Gorge's granite.
+type Rock = 'sandstone' | 'granite';
+
+// The wall's outline: a ragged left edge from its foot, and either the scene's right edge
+// or, where the wall ends, a top that steps down into the talus.
+function wallEdge(c: CragSpec): Pt[] {
+  const [x0, x1] = c.wall;
+  const left: Pt[] = [
+    [x0 + 38, GND],
+    [x0 + 30, 470],
+    [x0 + 14, 380],
+    [x0 + 26, 300],
+    [x0 + 6, 210],
+    [x0 + 20, 120],
+    [x0, 40],
+    [x0 + 8, -20],
+  ];
+  const right: Pt[] =
+    x1 >= c.width
+      ? [
+          [c.width + 20, -20],
+          [c.width + 20, GND],
+        ]
+      : [
+          [x1 - 260, -20],
+          [x1 - 180, 40],
+          [x1 - 120, 130],
+          [x1 - 64, 250],
+          [x1 - 22, 380],
+          [x1 + 20, GND],
+        ];
+  return [...left, ...right];
+}
 
 function routeWiggle(x: number, seed: number): Pt[] {
   const r = mulberry32(seed);
@@ -403,45 +456,33 @@ function routeWiggle(x: number, seed: number): Pt[] {
   return pts;
 }
 
-function paintCragGround(P: Palette): HTMLCanvasElement {
-  const [c, g] = mk(WW, H, 2);
-  const r = mulberry32(21);
-  juniper(g, 18, GND - 4, 1.6, P.trees);
-  juniper(g, 250, GND - 2, 1.3, P.trees);
-  fill(g, (gg) => poly(gg, WALL_EDGE, true), P.wall!);
-  g.save();
-  g.beginPath();
-  poly(g, WALL_EDGE, true);
-  g.clip();
+function sandstone(g: G, P: Palette, c: CragSpec, r: () => number): void {
+  const [x0, x1] = c.wall;
   const shade: Pt[] = [
     [640, -20],
-    [WW + 20, -20],
-    [WW + 20, GND],
+    [x1 + 20, -20],
+    [x1 + 20, GND],
     [600, GND],
   ];
   fill(g, (gg) => poly(gg, shade, true), P.wallShade!);
-  for (let i = 0; i < 22; i++) {
+  for (let i = 0; i < 30; i++) {
     g.fillStyle = r() < 0.5 ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.07)';
-    g.fillRect(290 + r() * 680, -10, 4 + r() * 16, GND);
+    g.fillRect(x0 + 28 + r() * (x1 - x0), -10, 4 + r() * 16, GND);
   }
   // Bedding planes, then a darker foot where the wall meets the talus.
   g.strokeStyle = 'rgba(40,40,48,.22)';
   g.lineWidth = 1.6;
   for (const by of [150, 290, 420]) {
     g.beginPath();
-    for (let x = 270; x <= WW + 20; x += 20) g.lineTo(x, by + Math.sin(x * 0.03 + by) * 5 + (r() - 0.5) * 3);
+    for (let x = x0 + 8; x <= x1 + 20; x += 20)
+      g.lineTo(x, by + Math.sin(x * 0.03 + by) * 5 + (r() - 0.5) * 3);
     g.stroke();
   }
-  g.fillStyle = lin(g, 0, GND - 60, 0, GND, [
-    [0, 'rgba(40,36,34,0)'],
-    [1, 'rgba(40,36,34,.28)'],
-  ]);
-  g.fillRect(260, GND - 60, WW, 60);
   g.fillStyle = P.wallDark!;
   g.beginPath();
   g.moveTo(600, 26);
-  g.lineTo(WW + 20, 14);
-  g.lineTo(WW + 20, 58);
+  g.lineTo(x1 + 20, 14);
+  g.lineTo(x1 + 20, 58);
   g.lineTo(640, 60);
   g.closePath();
   g.fill();
@@ -450,8 +491,167 @@ function paintCragGround(P: Palette): HTMLCanvasElement {
     for (let y = GND; y > -10; y -= 30) pts.push([cx + (r() - 0.5) * 12, y]);
     stroke(g, (gg) => trace(gg, pts, false), 'rgba(40,40,48,.45)', 2.2);
   }
+}
+
+// Granite: broad panels split by joints, big arching sheets peeling off the face, black
+// streaks where water runs off the rim, and lichen.
+function granite(g: G, P: Palette, c: CragSpec, r: () => number): void {
+  const [x0, x1] = c.wall;
+  const right = Math.min(x1, c.width) + 20;
+  for (let x = x0 + 30; x < right;) {
+    const w = 90 + r() * 150;
+    const lean = (r() - 0.5) * 50;
+    const k = r();
+    const tone = k < 0.4 ? 'rgba(24,28,36,.06)' : k < 0.75 ? 'rgba(24,28,36,.15)' : 'rgba(150,136,110,.14)';
+    fill(
+      g,
+      (gg) =>
+        poly(
+          gg,
+          [
+            [x, -20],
+            [x + w, -20],
+            [x + w + lean, GND],
+            [x + lean * 0.4, GND],
+          ],
+          true,
+        ),
+      tone,
+    );
+    const joint: Pt[] = [];
+    for (let y = -20; y <= GND; y += 40)
+      joint.push([x + w + (lean * (y + 20)) / (GND + 20) + (r() - 0.5) * 8, y]);
+    // A dark line with a lit lip beside it, so the panels read as planes.
+    stroke(g, (gg) => trace(gg, joint, false), 'rgba(34,38,46,.6)', 2.2);
+    const lip: Pt[] = joint.map(([jx, jy]) => [jx + 2.5, jy]);
+    stroke(g, (gg) => trace(gg, lip, false), 'rgba(236,238,236,.45)', 1.2);
+    x += w;
+  }
+  // A shaded corner system, left of the steep line.
+  fill(
+    g,
+    (gg) =>
+      poly(
+        gg,
+        [
+          [930, -20],
+          [1010, -20],
+          [990, GND],
+          [946, GND],
+        ],
+        true,
+      ),
+    P.wallShade!,
+  );
+  for (let i = 0; i < 7; i++) {
+    const cx = x0 + 80 + r() * (right - x0 - 140);
+    const cy = 120 + r() * 320;
+    const rad = 50 + r() * 70;
+    const a0 = Math.PI * (1.25 + r() * 0.1);
+    const a1 = a0 + Math.PI * (0.3 + r() * 0.12);
+    g.lineCap = 'round';
+    g.strokeStyle = 'rgba(38,42,50,.5)';
+    g.lineWidth = 2.2;
+    g.beginPath();
+    g.arc(cx, cy + rad, rad, a0, a1);
+    g.stroke();
+    g.strokeStyle = 'rgba(255,255,255,.4)';
+    g.lineWidth = 1.4;
+    g.beginPath();
+    g.arc(cx, cy + rad + 3.5, rad, a0, a1);
+    g.stroke();
+  }
+  for (let i = 0; i < 16; i++) {
+    const x = x0 + 40 + r() * (right - x0 - 60);
+    const w = 4 + r() * 9;
+    const len = 200 + r() * 300;
+    g.fillStyle = lin(g, 0, 60, 0, 60 + len, [
+      [0, 'rgba(34,38,46,.28)'],
+      [1, 'rgba(34,38,46,0)'],
+    ]);
+    g.fillRect(x, -10, w, len + 70);
+  }
+  for (let i = 0; i < 40; i++) {
+    g.fillStyle = r() < 0.7 ? 'rgba(150,172,112,.4)' : 'rgba(214,196,120,.34)';
+    g.beginPath();
+    g.ellipse(x0 + 30 + r() * (right - x0), 100 + r() * 420, 3 + r() * 9, 2 + r() * 5, 0, 0, 6.2832);
+    g.fill();
+  }
+  // The roof Power Endurance goes through.
+  g.fillStyle = P.wallDark!;
+  g.beginPath();
+  g.moveTo(1030, 236);
+  g.lineTo(1150, 226);
+  g.lineTo(1150, 252);
+  g.lineTo(1040, 258);
+  g.closePath();
+  g.fill();
+  g.strokeStyle = 'rgba(255,255,255,.45)';
+  g.lineWidth = 1.6;
+  g.beginPath();
+  g.moveTo(1030, 236);
+  g.lineTo(1150, 226);
+  g.stroke();
+}
+
+// Behind-the-boulders trees: junipers at Roadside, pines in the Gorge.
+const TREES: Record<string, [number, number][]> = {
+  crag: [
+    [18, 1.6],
+    [250, 1.3],
+    [1166, 1.5],
+    [1384, 1.4],
+  ],
+  gorge: [
+    [18, 210],
+    [96, 170],
+    [250, 150],
+  ],
+};
+
+// The talus: rocks at the wall's foot, between the boulders.
+const TALUS: Record<string, [number, number, number][]> = {
+  crag: [
+    [410, 26, 14],
+    [560, 22, 12],
+    [770, 50, 26],
+    [918, 40, 22],
+    [1056, 24, 12],
+    [1270, 22, 10],
+  ],
+  gorge: [
+    [620, 34, 16],
+    [760, 26, 12],
+    [880, 44, 22],
+    [1030, 30, 14],
+    [1320, 40, 20],
+  ],
+};
+
+function paintCragGround(P: Palette, id: string, kind: Rock): HTMLCanvasElement {
+  const spec = CRAGS[id]!;
+  const w = spec.width;
+  const [c, g] = mk(w, H, 2);
+  const r = mulberry32(21);
+  for (const [x, k] of TREES[id] ?? []) {
+    if (kind === 'granite') fill(g, (gg) => pineShape(gg, x, GND + 4, k), P.trees);
+    else juniper(g, x, GND - 4, k, P.trees);
+  }
+  const edge = wallEdge(spec);
+  fill(g, (gg) => poly(gg, edge, true), P.wall!);
+  g.save();
+  g.beginPath();
+  poly(g, edge, true);
+  g.clip();
+  if (kind === 'granite') granite(g, P, spec, r);
+  else sandstone(g, P, spec, r);
+  g.fillStyle = lin(g, 0, GND - 60, 0, GND, [
+    [0, 'rgba(40,36,34,0)'],
+    [1, 'rgba(40,36,34,.28)'],
+  ]);
+  g.fillRect(spec.wall[0] - 2, GND - 60, w, 60);
   // The sport lines, chalked up the wall, their bolts dotted along them.
-  for (const rt of BASE_ROUTES) {
+  for (const rt of spec.lines) {
     const pts = routeWiggle(rt.x, rt.n * 7);
     g.strokeStyle = 'rgba(247,235,208,.9)';
     g.lineWidth = 1.8;
@@ -467,54 +667,112 @@ function paintCragGround(P: Palette): HTMLCanvasElement {
     }
   }
   g.restore();
-  fill(g, (gg) => gg.rect(-10, GND - 6, WW + 20, H), P.ground);
+  fill(g, (gg) => gg.rect(-10, GND - 6, w + 20, H), P.ground);
   g.fillStyle = P.track;
-  g.fillRect(0, GND + 6, WW, 22);
-  for (const [x, w, h] of [
-    [410, 26, 14],
-    [560, 22, 12],
-    [770, 50, 26],
-    [918, 40, 22],
-  ] as const)
-    fill(g, (gg) => rock(gg, x, GND - h * 0.2, w, h), P.talus!);
-  for (const b of BOULDERS) paintBoulder(g, b.x, b.w, b.h, b.route);
+  g.fillRect(0, GND + 6, w, 22);
+  for (const [x, tw, th] of TALUS[id] ?? []) fill(g, (gg) => rock(gg, x, GND - th * 0.2, tw, th), P.talus!);
+  for (const b of spec.boulders) paintBoulder(g, b, kind);
   const cv = CRAG_VAN;
   drawVan(g, cv.x, GND - cv.h - cv.h * 0.19, cv.w, cv.h, { body: P.van, trim: P.trim, glass: P.glass });
-  fill(g, (gg) => gg.rect(270, GND - 52, 4, 52), '#6B4A30');
-  fill(g, (gg) => gg.rect(252, GND - 58, 40, 16), '#7A5A3A');
-  fill(g, (gg) => rr(gg, 718, GND - 15, 20, 15, 5), '#C8553F');
+  // The sign, and a pad someone left at the foot of the wall.
+  fill(g, (gg) => gg.rect(spec.sign - 2, GND - 52, 4, 52), '#6B4A30');
+  fill(g, (gg) => gg.rect(spec.sign - 20, GND - 58, 40, 16), '#7A5A3A');
+  if (id === 'crag') fill(g, (gg) => rr(gg, 718, GND - 15, 20, 15, 5), '#C8553F');
   return c;
 }
 
-// A boulder on the talus, side on: a lit face, a shaded side, chalk, and a pad in front.
-function paintBoulder(g: G, x: number, w: number, h: number, id: string): void {
-  const r = mulberry32([...id].reduce((a, c) => a + c.charCodeAt(0), 0));
+// Boulder colours by rock: lit face and shaded side.
+const BOULDER_ROCK: Record<Rock, [string, string]> = {
+  sandstone: ['#BDB5A5', '#9C968B'],
+  granite: ['#C3C6C6', '#969BA1'],
+};
+
+// A boulder on the talus, side on: an angular block with a lit face and a shaded side,
+// chalk, and a pad in front. Its line shows in its shape: steep problems lean out, an
+// arête has its edge, a crack its split, a crimp line its edges.
+function paintBoulder(g: G, spot: CragSpec['boulders'][number], kind: Rock): void {
+  const { x, w, h, route: id } = spot;
+  const type = ROUTES[id]?.type;
+  const r = mulberry32([...id].reduce((a, c) => a * 31 + c.charCodeAt(0), 7) >>> 0);
   const l = x - w / 2;
   const rt = x + w / 2;
   const b = GND + 4;
   const t = b - h;
-  const shape = (gg: G) => {
-    gg.moveTo(l, b);
-    gg.quadraticCurveTo(l - 5, t + h * 0.3, l + w * 0.2, t + 3 + r() * 4);
-    gg.quadraticCurveTo(x, t - 5, rt - w * 0.2, t + 2 + r() * 4);
-    gg.quadraticCurveTo(rt + 5, t + h * 0.35, rt, b);
-    gg.closePath();
-  };
-  fill(g, shape, '#BDB5A5');
+  const lean = type === 'power' || type === 'dyno' ? w * 0.16 : 0;
+  const top: Pt = [x + (r() - 0.5) * w * 0.2 + lean, t - 2 + r() * 4];
+  const pts: Pt[] = [
+    [l, b],
+    [l - 3 + r() * 5, t + h * (0.4 + r() * 0.15)],
+    [l + w * (0.12 + r() * 0.1) + lean * 0.4, t + 3 + r() * 6],
+    top,
+    [rt - w * (0.1 + r() * 0.1) + lean, t + 4 + r() * 8],
+    [rt + lean * 0.7 + 2, t + h * (0.3 + r() * 0.2)],
+    [rt, b],
+  ];
+  const [lit, dark] = BOULDER_ROCK[kind];
+  g.lineJoin = 'round';
+  g.fillStyle = lit;
+  g.strokeStyle = lit;
+  g.lineWidth = 3;
+  g.beginPath();
+  poly(g, pts, true);
+  g.fill();
+  g.stroke();
   g.save();
   g.beginPath();
-  shape(g);
+  poly(g, pts, true);
   g.clip();
-  g.fillStyle = '#9C968B';
-  g.fillRect(x + w * 0.16, t - 10, w, h + 20);
+  // The shaded side, from the summit down; an arête puts it on a sharp diagonal.
+  const edge = type === 'technical' ? l + w * 0.34 : x + w * 0.12;
+  fill(
+    g,
+    (gg) =>
+      poly(
+        gg,
+        [
+          [top[0], t - 12],
+          [rt + 30, t - 12],
+          [rt + 30, b + 10],
+          [edge, b + 10],
+        ],
+        true,
+      ),
+    dark,
+  );
+  if (type === 'technical')
+    stroke(g, (gg) => trace(gg, [top, [edge, b + 4]], false), 'rgba(255,255,255,.5)', 1.4);
+  if (type === 'crack') {
+    const cx = x - w * 0.05;
+    const split: Pt[] = [];
+    for (let y = t - 4; y <= b; y += h / 5) split.push([cx + (r() - 0.5) * 5, y]);
+    stroke(g, (gg) => trace(gg, split, false), 'rgba(34,32,36,.75)', 2.4);
+  }
+  if (type === 'crimp') {
+    g.strokeStyle = 'rgba(40,40,46,.35)';
+    g.lineWidth = 1.2;
+    for (let k = 0; k < 5; k++) {
+      const ex = l + w * (0.12 + r() * 0.4);
+      const ey = t + h * (0.2 + r() * 0.6);
+      g.beginPath();
+      g.moveTo(ex, ey);
+      g.lineTo(ex + 5 + r() * 5, ey - 1);
+      g.stroke();
+    }
+  }
+  if (kind === 'granite') {
+    g.fillStyle = 'rgba(40,40,46,.2)';
+    for (let k = 0; k < Math.round((w * h) / 90); k++) g.fillRect(l + r() * w, t + r() * h, 1.4, 1.4);
+  }
   g.fillStyle = 'rgba(255,255,255,.55)';
   for (let k = 0; k < 4; k++) {
     g.beginPath();
-    g.ellipse(x - w * 0.12 + (r() - 0.5) * w * 0.3, b - h * (0.3 + k * 0.17), 2.6, 1.8, 0, 0, 6.2832);
+    g.ellipse(x - w * 0.14 + (r() - 0.5) * w * 0.26, b - h * (0.3 + k * 0.16), 2.6, 1.8, 0, 0, 6.2832);
     g.fill();
   }
+  g.fillStyle = 'rgba(40,36,34,.18)';
+  g.fillRect(l - 10, b - 8, w + 20, 12);
   g.restore();
-  fill(g, (gg) => gg.rect(x - w / 2 - 6, GND - 1, w + 12, 7), id === 'dyno' ? '#C8553F' : '#3F7F6A');
+  fill(g, (gg) => gg.rect(x - w / 2 - 6, GND - 1, w + 12, 7), type === 'dyno' ? '#C8553F' : '#3F7F6A');
 }
 
 export interface Layer {
@@ -541,15 +799,18 @@ export function sceneArt(id: string, tod: Tod): SceneArt {
     while (cache.size > 2) cache.delete(cache.keys().next().value!);
     return a;
   }
-  const crag = id === 'crag';
-  const P = SP[crag ? 'day' : tod];
-  const lw = (p: number) => 360 + (WW - 360) * p;
+  const crag = CRAGS[id];
+  const gorge = id === 'gorge';
+  const P = gorge ? GORGE : SP[crag ? 'day' : tod];
+  const w = crag?.width ?? WW;
+  const lw = (p: number) => 360 + (w - 360) * p;
+  const seed = gorge ? 17 : crag ? 11 : 5;
   a = {
     sky: paintSky(P, crag ? 'day' : tod),
     layers: [
-      { p: 0.2, w: lw(0.2), c: paintFar(P, lw(0.2), crag ? 11 : 5) },
-      { p: 0.5, w: lw(0.5), c: paintMid(P, lw(0.5), crag ? 13 : 7, crag) },
-      { p: 1, w: WW, c: crag ? paintCragGround(P) : paintLotGround(P, tod) },
+      { p: 0.2, w: lw(0.2), c: paintFar(P, lw(0.2), seed, gorge) },
+      { p: 0.5, w: lw(0.5), c: paintMid(P, lw(0.5), seed + 2, !!crag && !gorge) },
+      { p: 1, w, c: crag ? paintCragGround(P, id, gorge ? 'granite' : 'sandstone') : paintLotGround(P, tod) },
     ],
   };
   cache.set(key, a);

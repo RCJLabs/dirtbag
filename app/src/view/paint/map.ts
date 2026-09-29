@@ -5,12 +5,13 @@ import { mk, rgb, trace, type G } from '../kit/geom';
 import { fbm, grain, mulberry32 } from '../kit/noise';
 import { H, W } from '../layout';
 import { lpTree } from '../shapes';
-import { BLOCKS, CREEK, hAt, LOT_RECT, rasterMap, RIVER, ROAD, SPUR, TRAILS } from '../valley';
+import { BLOCKS, CREEK, DIRT, hAt, LOT_RECT, rasterMap, RIVER, ROAD, SPUR, TRAILS } from '../valley';
 
 const PO = {
   bands: ['#D9C98D', '#BCC287', '#91AE7D', '#6F9273', '#8D8A7B', '#B3AEA3'],
   water: '#4E87A8',
   road: '#F5E6C4',
+  dirt: '#D9BF8C',
   edge: '#2F2A26',
   tree: '#2C4A3B',
   treeLit: '#46684F',
@@ -68,6 +69,17 @@ function paintMap(g: G): void {
     const h = hAt(x, y);
     if (h < 34 || h > 98 || fbm(x * 0.03, y * 0.03, 8) < 0.5) continue;
     lpTree(g, x, y, 3 + r() * 2.2, PO.tree, PO.treeLit, 2.2);
+  }
+  // The dirt road to the Gorge: narrower, and the colour of dirt.
+  for (const [w, col] of [
+    [4, PO.edge],
+    [2, PO.dirt],
+  ] as const) {
+    g.strokeStyle = col;
+    g.lineWidth = w;
+    g.beginPath();
+    trace(g, DIRT, false);
+    g.stroke();
   }
   for (const [w, col] of [
     [6, PO.edge],

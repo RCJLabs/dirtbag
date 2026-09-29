@@ -25,7 +25,7 @@ const played = () => {
 const V1 = readFileSync(new URL('./fixtures/save-v1.json', import.meta.url), 'utf8');
 const V2 = readFileSync(new URL('./fixtures/save-v2.json', import.meta.url), 'utf8');
 // What R2's migration adds to any older save.
-const R2_BODY = { load: { acute: 20, chronic: 20, today: 0 }, injury: null, hurt: 0 };
+const R2_BODY = { load: { acute: 20, chronic: 20, today: 0 }, injury: null, hurt: 0, firsts: {} };
 
 describe('saves', () => {
   it('round-trip a played game exactly', () => {

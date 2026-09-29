@@ -1,7 +1,9 @@
-// A Roadside boulder face-on, in the poster style: the view when you look up at a problem.
-// The main wall stands behind it in the haze; pads at its foot. Each boulder's shape is
-// seeded from its id, so the three look like three rocks.
+// A boulder face-on, in the poster style: the view when you look up at a problem. At
+// Roadside the main wall stands behind it in the warm haze; in the Gorge it's granite, with
+// the canyon wall and its pines behind in the shade. Pads at its foot. Each boulder's shape
+// is seeded from its id, so no two look alike, and a crack line has its crack.
 
+import type { RouteDef } from '../../sim';
 import { lin, mk, spline, type G, type Pt } from '../kit/geom';
 import { mulberry32 } from '../kit/noise';
 import { H, W } from '../layout';
@@ -44,19 +46,64 @@ export function boulderTopo(id: string, heightFt: number): Pt[] {
   return spline(pts, 10);
 }
 
-function paint(g: G, id: string, heightFt: number): void {
+// Each crag's colours: sky, the sun, the wall behind, its trees, the ground, the rock.
+interface Look {
+  sky: [string, string];
+  sun: string;
+  back: string;
+  haze: string;
+  trees: string;
+  talus: string;
+  ground: string;
+  stones: string;
+  face: string;
+  side: string;
+  speckle: boolean;
+}
+const LOOKS: Record<string, Look> = {
+  road: {
+    sky: ['#F2CF96', '#EFA46C'],
+    sun: '#FCEBC8',
+    back: '#D9B8A0',
+    haze: 'rgba(120,110,120,.18)',
+    trees: '#B49B82',
+    talus: '#8A7865',
+    ground: '#6B5A48',
+    stones: '#7E6A55',
+    face: '#C3BAA9',
+    side: '#9C968B',
+    speckle: false,
+  },
+  gorge: {
+    sky: ['#B9D2DC', '#E4E6DA'],
+    sun: '#FFF6E0',
+    back: '#A9B3BA',
+    haze: 'rgba(90,100,116,.2)',
+    trees: '#3E594B',
+    talus: '#7D7F7C',
+    ground: '#5B584F',
+    stones: '#6C685E',
+    face: '#C3C6C6',
+    side: '#969BA1',
+    speckle: true,
+  },
+};
+
+function paint(g: G, route: RouteDef): void {
+  const { id, heightFt } = route;
+  const L = LOOKS[route.place] ?? LOOKS.road!;
   const r = mulberry32(seedOf(id) + 11);
   g.fillStyle = lin(g, 0, 0, 0, 320, [
-    [0, '#F2CF96'],
-    [1, '#EFA46C'],
+    [0, L.sky[0]],
+    [1, L.sky[1]],
   ]);
   g.fillRect(0, 0, W, H);
-  g.fillStyle = '#FCEBC8';
+  g.fillStyle = L.sun;
   g.beginPath();
   g.arc(292, 74, 22, 0, 6.2832);
   g.fill();
-  // The main wall, hazy behind.
-  g.fillStyle = '#D9B8A0';
+  // The wall behind, hazy.
+  g.fillStyle = L.back;
   g.beginPath();
   g.moveTo(-4, 150);
   for (let x = 0; x <= W + 8; x += 24) g.lineTo(x, 118 + Math.sin(x * 0.05 + 1) * 12 + r() * 8);
@@ -64,9 +111,9 @@ function paint(g: G, id: string, heightFt: number): void {
   g.lineTo(-4, 420);
   g.closePath();
   g.fill();
-  g.fillStyle = 'rgba(120,110,120,.18)';
+  g.fillStyle = L.haze;
   g.fillRect(210, 110, W, 320);
-  g.fillStyle = '#B49B82';
+  g.fillStyle = L.trees;
   for (const [x, y, s] of [
     [30, 430, 1.4],
     [330, 424, 1.2],
@@ -76,11 +123,11 @@ function paint(g: G, id: string, heightFt: number): void {
     coniferPath(g, x, y, s);
     g.fill();
   }
-  g.fillStyle = '#8A7865';
+  g.fillStyle = L.talus;
   g.fillRect(-4, 420, W + 8, H);
-  g.fillStyle = '#6B5A48';
+  g.fillStyle = L.ground;
   g.fillRect(-4, FLOOR_Y + 10, W + 8, H);
-  g.fillStyle = '#7E6A55';
+  g.fillStyle = L.stones;
   for (let i = 0; i < 16; i++) {
     g.beginPath();
     rock(g, r() * W, FLOOR_Y + 24 + r() * 150, 14 + r() * 26, 8 + r() * 10);
@@ -98,11 +145,11 @@ function paint(g: G, id: string, heightFt: number): void {
   }
   face.lineTo(o[o.length - 1]![0], o[o.length - 1]![1]);
   face.closePath();
-  g.fillStyle = '#C3BAA9';
+  g.fillStyle = L.face;
   g.fill(face);
   g.save();
   g.clip(face);
-  g.fillStyle = '#9C968B';
+  g.fillStyle = L.side;
   g.beginPath();
   g.moveTo(W * 0.66, 0);
   g.lineTo(W, 0);
@@ -139,6 +186,26 @@ function paint(g: G, id: string, heightFt: number): void {
       y += 16 + r() * 14;
       g.lineTo(x, y);
     }
+    g.stroke();
+  }
+  // Granite's speckle, and a crack line's crack, following where the hands go.
+  if (L.speckle) {
+    g.fillStyle = 'rgba(40,40,46,.2)';
+    for (let k = 0; k < 500; k++)
+      g.fillRect(r() * W, lipY(heightFt) + r() * (FLOOR_Y - lipY(heightFt)), 1.6, 1.6);
+  }
+  if (route.type === 'crack') {
+    const up = boulderTopo(id, heightFt);
+    g.strokeStyle = 'rgba(34,32,36,.8)';
+    g.lineWidth = 3.2;
+    g.lineJoin = 'round';
+    g.beginPath();
+    g.moveTo(W / 2 + 6, FLOOR_Y - 10);
+    for (let i = 0; i < up.length; i += 4) {
+      const [x, y] = up[i]!;
+      g.lineTo(x + 6 + (r() - 0.5) * 6, y - REACH + 14);
+    }
+    g.lineTo(W / 2 + 6, lipY(heightFt) - 4);
     g.stroke();
   }
   g.fillStyle = 'rgba(40,36,34,.22)';
@@ -189,13 +256,13 @@ function paint(g: G, id: string, heightFt: number): void {
 
 const cache = new Map<string, HTMLCanvasElement>();
 
-export function boulderArt(id: string, heightFt: number): HTMLCanvasElement {
-  let c = cache.get(id);
+export function boulderArt(route: RouteDef): HTMLCanvasElement {
+  let c = cache.get(route.id);
   if (!c) {
     const [cv, g] = mk(W, H, 2);
-    paint(g, id, heightFt);
+    paint(g, route);
     c = cv;
-    cache.set(id, c);
+    cache.set(route.id, c);
   }
   return c;
 }

@@ -5,8 +5,10 @@ import {
   belayer,
   CLIMB,
   conditions,
+  conditionsAt,
   gradeLabel,
   isNight,
+  lineGrade,
   picks,
   PLACES,
   ROUTES,
@@ -17,8 +19,7 @@ import {
 } from '../sim';
 import { rad, type G, type Pt } from './kit/geom';
 import {
-  BASE_ROUTES,
-  BOULDERS,
+  CRAGS,
   DIM_PINS,
   GND,
   H,
@@ -26,6 +27,7 @@ import {
   OY,
   presentIn,
   PROBLEM_X,
+  SCENES,
   W,
   Z,
   type PinKind,
@@ -78,7 +80,8 @@ const wet = (s: GameState) => conditions(s.seed, s.day).sky === 'rain';
 function renderScene(g: G, f: Frame): void {
   const s = f.state;
   const lot = f.scene === 'lot';
-  const crag = f.scene === 'crag';
+  const crag = CRAGS[f.scene];
+  const place = SCENES[f.scene]?.place ?? s.at;
   const gym = f.scene === 'gym';
   const night = lot && isNight(s.min);
   const art = sceneArt(f.scene, lot ? (night ? 'night' : 'morning') : 'day');
@@ -92,18 +95,21 @@ function renderScene(g: G, f: Frame): void {
     if (night) drawLights(g, LIGHTS, cam);
     drawDog(g, f.scout.x - cam, GND + 5, 1, f.t, f.scout.wag);
   }
-  if (crag)
-    label(g, 'poster', PLACES.road!.name.toUpperCase(), 272 - cam, GND - 46, {
+  // The crag's sign, with a closure notice pinned under it when the season shuts it; then
+  // the tags on the rock, and the people in front of them.
+  if (crag) {
+    const sign = crag.sign - cam;
+    label(g, 'poster', PLACES[place]!.name.toUpperCase(), sign, GND - 46, {
       size: 7.5,
       color: '#F3E6CB',
       halo: '#7A5A3A',
     });
-  // Tags on the rock and the tape, then the people in front of them.
-  if (crag) {
-    for (const r of BASE_ROUTES)
+    if (conditionsAt(s.seed, s.day, place).closed)
+      label(g, 'poster', 'CLOSED', sign, GND - 30, { size: 7.5, color: '#FFFFFF', halo: ACC.comic });
+    for (const r of crag.lines)
       routeTag(g, r.x - cam, GND - 100, r.n, gradeLabel(ROUTES[r.route]!), true, !!s.routes[r.route]?.sent);
-    for (const b of BOULDERS)
-      boulderTag(g, b.x - cam, GND - b.h - 12, gradeLabel(ROUTES[b.route]!), !!s.routes[b.route]?.sent);
+    for (const b of crag.boulders)
+      boulderTag(g, b.x - cam, GND - b.h - 12, lineGrade(s, ROUTES[b.route]!), !!s.routes[b.route]?.sent);
   }
   if (gym)
     routesAt(s.seed, 'gym', s.day).forEach((r, n) =>
@@ -179,7 +185,7 @@ function renderMap(g: G, f: Frame): void {
     g.strokeStyle = INK;
     g.lineWidth = 2;
     g.stroke();
-    label(g, 'comic', PLACES[id]?.name ?? id, p.x + p.side * 17, p.y + 5, {
+    label(g, 'comic', PLACES[id]?.name ?? id, p.x + p.side * 17, p.y + 5 + (p.dy ?? 0), {
       size: 15,
       align: p.side > 0 ? 'left' : 'right',
     });

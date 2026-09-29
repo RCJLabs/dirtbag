@@ -10,11 +10,11 @@
 // Pump, afternoon sun and thin skin shrink the window when the crux starts.
 
 import { margin, pumpFactor, windowFactor } from './climber';
-import { PUMPED, type BetaDef, type CruxDef, type RouteDef, type Verb } from './content/routes';
+import { effGrade, PUMPED, type BetaDef, type CruxDef, type RouteDef, type Verb } from './content/routes';
 import { cold } from './body';
 import { BODY, CLIMB, LOAD } from './dials';
 import type { GameState, GoResult } from './types';
-import { conditions } from './weather';
+import { conditionsAt } from './weather';
 
 export type Phase = 'climb' | 'crux' | 'fall' | 'lowered' | 'sent';
 
@@ -118,7 +118,7 @@ export function dayFactor(s: GameState, r: RouteDef): { windows: number; grease:
   // A hard line before you've warmed up.
   const body = weak * (cold(s, r) ? LOAD.coldWindows : 1);
   if (r.place === 'gym') return { windows: body, grease: false };
-  const c = conditions(s.seed, s.day);
+  const c = conditionsAt(s.seed, s.day, r.place);
   const grease = s.min >= c.greaseFrom;
   return { windows: c.windows * (grease ? CLIMB.greaseFactor : 1) * body, grease };
 }
@@ -128,7 +128,7 @@ export function dayFactor(s: GameState, r: RouteDef): { windows: number; grease:
 export function betaScale(s: GameState, r: RouteDef, beta: string): number {
   const b = r.beta[beta];
   if (!b) return 1;
-  return windowFactor(margin(s.climber.skills, b.style, r.grade)) * dayFactor(s, r).windows;
+  return windowFactor(margin(s.climber.skills, b.style, effGrade(r))) * dayFactor(s, r).windows;
 }
 
 // Called after the 'go' action has charged the go's costs.
@@ -140,7 +140,7 @@ export function startAttempt(s: GameState, r: RouteDef): Attempt {
     route: r.id,
     def: r,
     pick,
-    mods: { crux, pump: pumpFactor(s.climber.skills, r.grade) },
+    mods: { crux, pump: pumpFactor(s.climber.skills, effGrade(r)) },
     pos: 0,
     pump: 0,
     hold: false,

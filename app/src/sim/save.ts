@@ -40,11 +40,12 @@ export const MIGRATIONS: Record<number, Migration> = {
       people: {},
     };
   },
-  // v2 (R1) -> v3 (R2): training load, seeded at a moderate day's load as a new game's is;
-  // no injury, and none so far.
+  // v2 (R1) -> v3 (R2): training load, seeded at a light day's load as a new game's is; no
+  // injury, and none so far; no first ascents. (v3 grows with R2 until R2's build ships;
+  // from then on it's history like the rest.)
   2: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
-    return { ...x, load: { acute: 20, chronic: 20, today: 0 }, injury: null, hurt: 0 };
+    return { ...x, load: { acute: 20, chronic: 20, today: 0 }, injury: null, hurt: 0, firsts: {} };
   },
 };
 
@@ -133,6 +134,17 @@ export function validate(x: unknown): string[] {
     'injury',
   );
   need(isInt(x.hurt) && x.hurt >= 0, 'hurt');
+  need(
+    isObj(x.firsts) &&
+      Object.values(x.firsts).every(
+        (f) =>
+          isObj(f) &&
+          typeof f.name === 'string' &&
+          (f.call === -1 || f.call === 0 || f.call === 1) &&
+          isInt(f.day),
+      ),
+    'firsts',
+  );
   if (!isObj(x.people)) err.push('people');
   else for (const [id, p] of Object.entries(x.people)) need(isPerson(p), `people.${id}`);
   if (!isObj(x.routes)) err.push('routes');

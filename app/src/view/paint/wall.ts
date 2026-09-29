@@ -1,9 +1,9 @@
-// The walls you look up at. Roadside's main wall, face on, carries the four sport lines,
-// each drawn from its topo; its boulders and Send City's problems have close-up walls of
-// their own (boulder.ts, gym.ts). Whatever the wall, a route is mapped from moves (the
-// sim's unit) to points along its line here, so the rules never see a pixel.
+// The walls you look up at. Roadside's main wall and the Gorge's granite, face on, carry
+// their sport lines, each drawn from its topo; boulders and Send City's problems have
+// close-up walls of their own (boulder.ts, gym.ts). Whatever the wall, a route is mapped
+// from moves (the sim's unit) to points along its line here, so the rules never see a pixel.
 
-import type { RouteDef } from '../../sim';
+import { ROUTES, type RouteDef } from '../../sim';
 import { arcTable, atLen, lin, mk, poly, spline, trace, type G, type Pt } from '../kit/geom';
 import { mulberry32 } from '../kit/noise';
 import { H, W } from '../layout';
@@ -93,8 +93,40 @@ const CRAG_TREES: [number, number, number][] = [
 // Your belayer stands on the talus a step left of the route's first moves.
 const BELAY_Y = 586;
 
-// Each route's line on this wall, bottom to top, keyed by route id.
+// Each route's line on its wall, bottom to top, keyed by route id. The Gorge's lines are
+// taller, and their features sit where their cruxes are: the Classic's overlap a third of
+// the way up, the roof on Power Endurance just past it.
 const TOPO_PTS: Record<string, Pt[]> = {
+  gintro: [
+    [70, 538],
+    [64, 470],
+    [78, 400],
+    [70, 330],
+    [82, 262],
+    [74, 190],
+    [80, 124],
+  ],
+  gclassic: [
+    [180, 540],
+    [186, 470],
+    [172, 410],
+    [190, 372],
+    [184, 300],
+    [176, 226],
+    [188, 160],
+    [182, 118],
+  ],
+  gpe: [
+    [292, 540],
+    [284, 480],
+    [296, 430],
+    [276, 398],
+    [288, 368],
+    [300, 320],
+    [292, 250],
+    [300, 180],
+    [296, 116],
+  ],
   warmup: [
     [64, 536],
     [58, 470],
@@ -166,7 +198,7 @@ export const slotOf = (id: string): number => Math.max(0, Number(id.split('-')[2
 
 // The wall a route is on, and its line there.
 export function wallOf(r: RouteDef): Wall {
-  if (r.disc === 'sport') return { art: wallArt(r.id), topo: TOPO[r.id]!, big: false };
+  if (r.disc === 'sport') return { art: wallArt(r.place, r.id), topo: TOPO[r.id]!, big: false };
   const key = r.place === 'gym' ? `gym:${slotOf(r.id)}:${r.heightFt}` : r.id;
   let w = close.get(key);
   if (!w) {
@@ -177,7 +209,7 @@ export function wallOf(r: RouteDef): Wall {
             topo: topoOf(gymTopo(slotOf(r.id), r.heightFt)),
             big: true,
           }
-        : { art: boulderArt(r.id, r.heightFt), topo: topoOf(boulderTopo(r.id, r.heightFt)), big: true };
+        : { art: boulderArt(r), topo: topoOf(boulderTopo(r.id, r.heightFt)), big: true };
     close.set(key, w);
   }
   return w;
@@ -221,7 +253,7 @@ function boltDots(g: G, t: Topo): void {
   g.stroke();
 }
 
-function paintWall(g: G, selected: string): void {
+function paintRoadside(g: G): void {
   g.fillStyle = lin(g, 0, 0, 0, 150, [
     [0, '#F2CF96'],
     [1, '#EFA46C'],
@@ -297,10 +329,139 @@ function paintWall(g: G, selected: string): void {
     coniferPath(g, tx, ty, s);
     g.fill();
   }
+}
 
-  // Other lines dashed with their bolts; yours solid, its bolts drawn live as you clip them.
+// The Gorge's canyon wall: a strip of sky over the far rim, then granite to the talus, in
+// shade all day. A corner system splits the face; the Classic's overlap and the roof on
+// Power Endurance stand out dark.
+const G_TOP: Pt[] = [
+  [-4, 74],
+  [40, 66],
+  [96, 78],
+  [150, 60],
+  [214, 70],
+  [262, 56],
+  [318, 66],
+  [364, 58],
+];
+const G_WALL: Pt[] = [...G_TOP, [364, BASE_Y], [-4, BASE_Y]];
+
+function paintGorge(g: G): void {
+  g.fillStyle = lin(g, 0, 0, 0, 90, [
+    [0, '#B9D2DC'],
+    [1, '#E4E6DA'],
+  ]);
+  g.fillRect(0, 0, W, H);
+  g.fillStyle = '#A3B3BA';
+  g.beginPath();
+  g.moveTo(-4, 52);
+  for (let x = 0; x <= W + 8; x += 30) g.lineTo(x, 40 + Math.sin(x * 0.04) * 8);
+  g.lineTo(W + 4, 120);
+  g.lineTo(-4, 120);
+  g.closePath();
+  g.fill();
+
+  g.save();
+  g.beginPath();
+  poly(g, G_WALL, true);
+  g.clip();
+  g.fillStyle = '#B4B9BE';
+  g.fillRect(0, 0, W, H);
+  // The corner, and the shaded side of it.
+  g.fillStyle = '#8C949D';
+  g.beginPath();
+  g.moveTo(222, 0);
+  g.lineTo(W, 0);
+  g.lineTo(W, H);
+  g.lineTo(238, H);
+  g.closePath();
+  g.fill();
+  g.strokeStyle = 'rgba(38,42,50,.55)';
+  g.lineWidth = 2.6;
+  g.beginPath();
+  trace(
+    g,
+    [
+      [222, 60],
+      [228, 200],
+      [224, 340],
+      [236, 540],
+    ],
+    false,
+  );
+  g.stroke();
+  const r = mulberry32(93);
+  for (let i = 0; i < 14; i++) {
+    const x = r() * W;
+    const len = 120 + r() * 260;
+    g.fillStyle = lin(g, 0, 50, 0, 50 + len, [
+      [0, 'rgba(38,42,50,.3)'],
+      [1, 'rgba(38,42,50,0)'],
+    ]);
+    g.fillRect(x, 50, 5 + r() * 10, len);
+  }
+  g.strokeStyle = 'rgba(58,62,70,.4)';
+  g.lineWidth = 1.5;
+  g.lineCap = 'round';
+  for (let i = 0; i < 9; i++) {
+    const x = 20 + r() * 300;
+    const y = 120 + r() * 360;
+    const k = 16 + r() * 30;
+    g.beginPath();
+    g.moveTo(x, y);
+    g.quadraticCurveTo(x + k * 0.7, y - k * 0.25, x + k, y + k * 0.9);
+    g.stroke();
+  }
+  for (let i = 0; i < 70; i++) {
+    g.fillStyle = r() < 0.7 ? 'rgba(168,186,136,.3)' : 'rgba(214,200,140,.26)';
+    g.beginPath();
+    g.ellipse(r() * W, 80 + r() * 450, 2 + r() * 6, 1.5 + r() * 4, 0, 0, 6.2832);
+    g.fill();
+  }
+  // The overlap on the Classic, and the roof on Power Endurance, each with its shadow.
+  for (const [x0, x1, y, d] of [
+    [150, 214, 380, 10],
+    [252, 352, 404, 22],
+  ] as const) {
+    g.fillStyle = '#4A515B';
+    g.beginPath();
+    g.moveTo(x0, y);
+    g.lineTo(x1, y - 4);
+    g.lineTo(x1, y + d);
+    g.lineTo(x0 + 8, y + d * 0.6);
+    g.closePath();
+    g.fill();
+    g.strokeStyle = '#D2D6D8';
+    g.lineWidth = 2;
+    g.beginPath();
+    g.moveTo(x0, y);
+    g.lineTo(x1, y - 4);
+    g.stroke();
+  }
+  g.fillStyle = 'rgba(40,40,46,.16)';
+  for (let k = 0; k < 400; k++) g.fillRect(r() * W, 70 + r() * 470, 1.3, 1.3);
+  g.restore();
+
+  g.fillStyle = '#5B584F';
+  g.fillRect(-4, BASE_Y, W + 8, H - BASE_Y);
+  g.fillStyle = '#8B8D8A';
+  for (const t of TALUS) {
+    g.beginPath();
+    rock(g, ...t);
+    g.fill();
+  }
+  g.fillStyle = '#294236';
+  for (const [tx, ty, sc] of CRAG_TREES) {
+    g.beginPath();
+    coniferPath(g, tx, ty, sc * 1.2);
+    g.fill();
+  }
+}
+
+// Other lines dashed with their bolts; yours solid, its bolts drawn live as you clip them.
+function paintLines(g: G, place: string, selected: string): void {
   for (const [id, t] of Object.entries(TOPO)) {
-    if (id === selected) continue;
+    if (id === selected || ROUTES[id]?.place !== place) continue;
     g.strokeStyle = '#F7EBD0';
     g.lineWidth = 1.5;
     g.setLineDash([4, 3]);
@@ -320,11 +481,13 @@ function paintWall(g: G, selected: string): void {
 
 const cache = new Map<string, HTMLCanvasElement>();
 
-export function wallArt(selected: string): HTMLCanvasElement {
+export function wallArt(place: string, selected: string): HTMLCanvasElement {
   let c = cache.get(selected);
   if (!c) {
     const [cv, g] = mk(W, H, 2);
-    paintWall(g, selected);
+    if (place === 'gorge') paintGorge(g);
+    else paintRoadside(g);
+    paintLines(g, place, selected);
     c = cv;
     cache.set(selected, c);
   }

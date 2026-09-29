@@ -12,9 +12,18 @@ import type { Need } from '../cond';
 import { DAY, MONEY } from '../dials';
 import { clockShort } from '../format';
 import type { Delta, Skills } from '../types';
+import type { Season } from '../weather';
 
 export interface PlaceDef {
   name: string;
+  // A crag you can't drive to until you climb this grade (v0.956's minGrade), and what the
+  // card says until then.
+  minGrade?: number;
+  locked?: string;
+  // A season it's closed, and why (v0.956's closedSeason).
+  closed?: { season: Season; why: string };
+  // Shaded rock stays cool: no afternoon grease, and heat doesn't hurt it.
+  shaded?: true;
   // The side-view scene you walk around in, or null for a card-only place.
   scene: string | null;
   // The map card's line when you're elsewhere, and when you're here.
@@ -61,6 +70,17 @@ export const PLACES: Record<string, PlaceDef> = {
     away: 'Granite. Seven lines, from a V2 warm-up to The Pump.',
     here: "You're parked here.",
     acts: [],
+  },
+  gorge: {
+    name: 'Granite Gorge',
+    scene: 'gorge',
+    away: 'Classic granite, two hours out and in the shade. Harder lines.',
+    here: 'The canyon’s cool even at noon.',
+    acts: [],
+    minGrade: 4,
+    locked: 'V5 and up. It’s no place to learn: come back when you’re climbing V4.',
+    closed: { season: 'spring', why: 'Closed for nesting raptors till summer' },
+    shaded: true,
   },
   gym: {
     name: 'Send City',
@@ -188,6 +208,12 @@ export const ROADS: RoadDef[] = [
   { a: 'road', b: 'gym', min: 70, cash: 12 },
   { a: 'road', b: 'diner', min: 70, cash: 12 },
   { a: 'road', b: 'cafe', min: 65, cash: 12 },
+  // The Gorge: v0.956's two hours and 22% of a tank each way.
+  { a: 'gorge', b: 'lot', min: 120, cash: 22 },
+  { a: 'gorge', b: 'road', min: 70, cash: 12 },
+  { a: 'gorge', b: 'gym', min: 125, cash: 22 },
+  { a: 'gorge', b: 'diner', min: 125, cash: 22 },
+  { a: 'gorge', b: 'cafe', min: 125, cash: 22 },
 ];
 
 export const road = (a: string, b: string): RoadDef | undefined =>

@@ -6,13 +6,16 @@ import {
   ACTS,
   BODY,
   bodyNote,
+  conditionsAt,
   costLabel,
   DAY,
   fill,
   goBlocked,
-  gradeLabel,
+  gradeOf,
   headroom,
   isNight,
+  lineGrade,
+  lineName,
   MONEY,
   PLACES,
   restCost,
@@ -26,6 +29,7 @@ import {
   type Skills,
 } from '../sim';
 import type { Game, SheetId } from '../game/game';
+import { CRAGS } from '../view/layout';
 
 export interface Row {
   label: string;
@@ -136,12 +140,35 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       const p = PLACES[id.id]!;
       const here = s.at === id.id;
       const sub = fill(here ? p.here : p.away, TEXT_VALUES);
-      if (!here) return { title: p.name, sub, close: true, rows: [driveRow(game, s, id.id, 'Drive here')] };
+      // A crag that's shut for the season says so before you burn the gas; one that's
+      // above your grade doesn't let you go at all.
+      const shut = conditionsAt(s.seed, s.day, id.id).closed;
+      const notes = shut ? [`${shut}.`] : undefined;
+      if (!here) {
+        const locked = p.minGrade !== undefined && gradeOf(s.climber.skills) < p.minGrade;
+        const drive = driveRow(game, s, id.id, 'Drive here');
+        return {
+          title: p.name,
+          sub,
+          close: true,
+          notes: locked ? [p.locked ?? 'Not yet.'] : notes,
+          rows: [locked ? { ...drive, off: true, note: undefined } : drive],
+        };
+      }
       if (p.scene) {
         const scene = p.scene;
-        const label =
-          scene === 'crag' ? 'Walk to the wall' : scene === 'gym' ? 'Walk in' : 'Walk back to the van';
-        return { title: p.name, sub, close: true, rows: [{ label, run: () => game.enterScene(scene) }] };
+        const label = CRAGS[scene]
+          ? 'Walk to the wall'
+          : scene === 'gym'
+            ? 'Walk in'
+            : 'Walk back to the van';
+        return {
+          title: p.name,
+          sub,
+          close: true,
+          notes,
+          rows: [{ label, run: () => game.enterScene(scene) }],
+        };
       }
       // A card-only place: you're here until you drive somewhere, so there's no close.
       const onward = Object.keys(PLACES).filter((o) => o !== id.id && road(id.id, o));
@@ -192,7 +219,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       const gained = gainsLine(id.gains);
       return {
         title: SEND_NAME[id.style],
-        sub: `${r.name}, ${gradeLabel(r)}, on go ${id.go}.${r.disc === 'sport' ? " Rent's still due." : ''}`,
+        sub: `${lineName(s, r)}, ${lineGrade(s, r)}, on go ${id.go}.${r.disc === 'sport' ? " Rent's still due." : ''}`,
         close: false,
         notes: [...id.notes, ...(gained ? [gained] : [])],
         rows: [
