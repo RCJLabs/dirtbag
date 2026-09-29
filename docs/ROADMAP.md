@@ -1251,7 +1251,7 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 **Unreal.** On hold, by Evan's call, until the conversion to the new game is done. Spec changes are still logged, per CLAUDE.md.
 
-**Status (29 Sep 2026): 12.1 and 12.2 built.**
+**Status (29 Sep 2026): 12.1 to 12.3 built.**
 - The sim already kept a log of the last 200 lines in the save (`LOG_MAX`), with nothing showing it. The Journal shows it: your body in the HUD, or the goal pill, opens it, on "You" (the old "you" sheet) or "Lately" (the log, by day, newest first).
 - A line over 30 words (`TOAST_WORDS`) goes on a card, "Right" to put it down, that waits until nothing else is open, as the end of Act I's card already did. None of today's toasted lines is that long: the longest texts are Sage's beats, which are speech bubbles.
 - The e2e opens the log on day two and watches every toast of the run, reloads included; it fails on one over 30 words.
@@ -1268,6 +1268,19 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The e2e** plays a first morning at 1280 × 800 after the portrait run: the screen's width and docking, Hazel's bubble over her, the Journal's button, the map's card docked clear of the valley, the drive, the Warm Boulder's wall and climb panel, and turning the window to portrait and back mid-go.
 - **Not covered in landscape yet:** the gym and the board, the plan, the send card, the diner and the night. They use the same sheets and scenes, so they should work, but the bot hasn't played them there. Nobody has played it on a real Steam Deck or tablet, and the wide map's paint time on slow hardware isn't measured.
 - **Criterion 2** is met on what the e2e covers; the rest of it is the list above.
+
+12.3, keyboard and access:
+- **The keyboard reaches the canvas.** Each thing in a scene (on screen) and each pin on the map has an invisible, labelled button over it: Tab lands on it with a ring, Enter walks you over and uses it, and a screen reader says what it is ("Warm Boulder, V2, sent"). A pointer passes straight through to the canvas, so taps don't change. Things off screen get a button once you walk them into view with the arrow keys; Enter still uses whatever's nearest. The things in scenes gained names in the content for it.
+- **Escape** puts down what's open, the most recent first: a conversation, a sheet with a close button, then the map. **Enter at the wall** brings its beta sheet back, as a tap does.
+- **One focus ring** on every control, 3 px, from a kit colour.
+- **Contrast.** `npm run check` computes every text-on-ground pairing in the kit against WCAG AA. The accent red was 3.9:1 on the paper and is now `#ce422a`, 4.6:1: the same red, a shade deeper. The check fails on the old one.
+- **Text at 1.3×.** The larger setting was about 1.15×, a size step; it's now 1.3× for all panel text, and panels reflow to fit. The HUD's pills stay at their size: a portrait HUD has no room to grow.
+- **Low by shape.** A meter running low, a load bar running hot and the pump bar get stripes as well as red, for every player rather than behind a colourblind switch. Sent tags on the rock already say SENT.
+- **The e2e plays a day by keyboard alone**, at the larger text, in a browser of its own that fails on any pointer event: making a climber, walking to Hazel and talking, the journal and Escape, the map by M and a pin by Tab, the drive, a go on the Warm Boulder on the space bar, the drive home, lying around till dark, and bed. At each step it checks nothing runs off the screen or scrolls sideways.
+- **Toasts on the map** go to the band between Roadside and Send City, which no pin crosses, when no sheet is open; lines held during a drive are said after you arrive, not over the map. The e2e's toast check now counts map pins as controls. A thing in a scene isn't counted: a sport line's tap area is the whole wall, no lane misses it, and a toast never takes a tap.
+- **Fixed on the way:** the screen's `wide` class was set by hand and React dropped it whenever the screen's other classes changed (a setting, or now the map), so a wide screen could stop docking its sheets.
+- **Not covered by keyboard in the e2e:** the gym, the board, the plan, the send card, naming a first ascent, and Settings. They're ordinary buttons, so Tab reaches them, but the bot hasn't played them that way. Nobody has tried it with a real screen reader.
+- **Criterion 3** is met on what the keyboard day covers.
 
 ---
 
@@ -1594,3 +1607,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Every send after a line's first is now a repeat, by Evan's call; it was named "Redpoint" however many times you'd sent it. The log keeps the first send's style, so saves don't change.
 - 2026-09-29 — Phase 12.1: the Journal. Your body in the HUD opens it: you as a climber, and "Lately", the sim's 200-line log that nothing showed until now. A line over 30 words goes on a card, not a toast, and the e2e fails on any toast longer. Day three's taps don't move.
 - 2026-09-29 — Phase 12.2: the wide screen. A landscape window widens the screen to up to 1248 across instead of framing a phone: scenes and skies show more, the map paints ridged country around the valley, walls close up are panels over their crag, and sheets dock at the right from 1080 across. Toasts moved off the HUD, and the e2e checks every one against every control. A landscape morning joins the e2e.
+- 2026-09-29 — Phase 12.3: keyboard and access. Scenes' things and the map's pins take the keyboard and a screen reader, Escape puts things down, one focus ring, text at a true 1.3×, low meters striped, and the accent deepened to pass the new WCAG AA check in `npm run check`. The e2e plays a day by keyboard alone at the larger text.

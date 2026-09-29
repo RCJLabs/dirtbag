@@ -7,6 +7,7 @@ import { ClimbPanel } from './ClimbPanel';
 import { Create } from './Create';
 import { Goal } from './Goal';
 import { PlanChip } from './PlanChip';
+import { Hots } from './Hots';
 import { Hud } from './Hud';
 import { Sheet } from './Sheet';
 
@@ -32,7 +33,6 @@ export function App({ game }: { game: Game }) {
       const k = Math.min(r.width / w, r.height / H);
       sc.style.setProperty('--k', k.toFixed(4));
       sc.style.setProperty('--w', `${w}px`);
-      sc.classList.toggle('wide', w >= WIDE);
       // Backing pixels to match the device, capped: past 3x nobody can tell.
       px = Math.min(3, Math.max(1, k * (window.devicePixelRatio || 1)));
       cv.width = Math.round(w * px);
@@ -68,10 +68,23 @@ export function App({ game }: { game: Game }) {
       const a = document.activeElement;
       const onButton = a instanceof HTMLButtonElement;
       const u = game.ui.get();
+      // Escape puts down whatever's open, the most recent first: a conversation, a sheet
+      // that has a close button, then the map, back to where you are.
+      if (e.key === 'Escape') {
+        const x = document.querySelector<HTMLButtonElement>('#sheet .x');
+        if (u.talk) game.hush();
+        else if (x) x.click();
+        else if (!u.sheet && u.view === 'map' && game.navLabel(u) === 'Close') game.nav();
+        return;
+      }
       if (u.view === 'wall') {
         if (u.climbing && hold(e) && a?.id !== 'hold') {
           e.preventDefault();
           if (!e.repeat) game.press(true);
+        } else if (!u.climbing && !u.sheet && hold(e) && !onButton) {
+          // The wall again, as a tap on it does: its beta sheet.
+          e.preventDefault();
+          game.tap(0, 0);
         }
         return;
       }
@@ -106,13 +119,22 @@ export function App({ game }: { game: Game }) {
   return (
     <div className="stage" ref={stage}>
       <div
-        className={`screen${ui.settings.text === 'large' ? ' large' : ''}${ui.still ? ' still' : ''}`}
+        className={[
+          'screen',
+          ui.settings.text === 'large' && 'large',
+          ui.still && 'still',
+          ui.view === 'map' && 'on-map',
+          ui.w >= WIDE && 'wide',
+        ]
+          .filter(Boolean)
+          .join(' ')}
         id="scr"
         ref={screen}
       >
         <canvas id="cv" ref={canvas} aria-label="Game scene" />
         <div className="ui">
           <Hud game={game} ui={ui} />
+          <Hots game={game} ui={ui} />
           {ui.talk && <Bubble game={game} talk={ui.talk.talk} node={ui.talk.node} />}
           {ui.sheet && <Sheet game={game} id={ui.sheet} ui={ui} />}
           {ui.climbing && <ClimbPanel game={game} />}

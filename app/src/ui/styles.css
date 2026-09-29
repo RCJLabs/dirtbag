@@ -49,7 +49,8 @@ body {
   /* The comic kit. */
   --u-bg: #fffdf5;
   --u-ink: #1b1b1f;
-  --u-acc: #d8553f;
+  /* Deep enough for small text on the paper: 4.6:1 (npm run check holds the kit to AA). */
+  --u-acc: #ce422a;
   --u-dim: #5e5a52;
   --u-font: 'Patrick Hand SC', 'Patrick Hand', cursive;
   --u-mono: 'Patrick Hand', cursive;
@@ -58,13 +59,18 @@ body {
   --u-shadow: 4px 4px 0 #1b1b1f;
   --u-btn: #f2c84b;
   --u-btnInk: #1b1b1f;
-  --u-fs: 1.08;
+  /* Text size: --u-k is the player's setting, 1 or 1.3; panel text scales by it. */
+  --u-k: 1;
+  --u-fs: calc(1.08 * var(--u-k));
   --u-hudBg: #fffdf5;
   --u-hudInk: #1b1b1f;
+  /* Rain on the forecast, and the keyboard's ring. */
+  --u-rain: #2f5e8c;
+  --u-focus: #2b6c84;
 }
 /* Settings: larger text scales every panel's type; less motion drops the fades. */
 .screen.large {
-  --u-fs: 1.24;
+  --u-k: 1.3;
 }
 .screen.still .fade {
   transition: none;
@@ -198,7 +204,7 @@ button.pill:disabled {
 }
 .who {
   margin: 0 0 4px;
-  font: 700 12px/1 var(--u-mono);
+  font: 700 calc(12px * var(--u-k)) / 1 var(--u-mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--u-dim);
@@ -421,7 +427,7 @@ button.pill:disabled {
 }
 .go small {
   display: block;
-  font: 500 12px/1.2 var(--u-mono);
+  font: 500 calc(12px * var(--u-k)) / 1.2 var(--u-mono);
   letter-spacing: 0;
   margin-top: 3px;
   opacity: 0.85;
@@ -451,12 +457,12 @@ button.pill:disabled {
   font: 700 calc(21px * var(--u-fs)) / 1 var(--u-font);
 }
 .c-route .g {
-  font: 600 14px/1 var(--u-mono);
+  font: 600 calc(14px * var(--u-k)) / 1 var(--u-mono);
   color: var(--u-acc);
 }
 .c-route .t {
   margin-left: auto;
-  font: 500 12px/1 var(--u-mono);
+  font: 500 calc(12px * var(--u-k)) / 1 var(--u-mono);
   color: var(--u-dim);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -467,7 +473,7 @@ button.pill:disabled {
   gap: 8px;
   align-items: center;
   margin: 10px 0 6px;
-  font: 600 11.5px/1 var(--u-mono);
+  font: 600 calc(11.5px * var(--u-k)) / 1 var(--u-mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -626,7 +632,7 @@ button.pill:disabled {
 }
 .stamp span {
   display: block;
-  font: 600 13px/1.3 var(--u-mono);
+  font: 600 calc(13px * var(--u-k)) / 1.3 var(--u-mono);
   color: var(--u-ink);
   margin-top: 4px;
 }
@@ -637,7 +643,7 @@ button.pill:disabled {
   bottom: 22px;
   margin: 0;
   text-align: center;
-  font: 600 14px/1.2 var(--u-mono);
+  font: 600 calc(14px * var(--u-k)) / 1.2 var(--u-mono);
   color: #ffffff;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
   pointer-events: none !important;
@@ -674,6 +680,12 @@ button.pill:disabled {
 /* A plan being run, under the HUD: above any sheet, and toasts make room for it. */
 .ui:has(.plan-chip) .toast {
   top: 110px;
+}
+/* The map's pins run from top to bottom; the band between Roadside (to y 236) and Send City
+   (from y 398) is clear of them, so a toast on the open map goes there. A sheet on the
+   map covers the bottom, and a toast keeps to the top. */
+.screen.on-map .ui:not(:has(.sheet)) .toast {
+  top: 248px;
 }
 .plan-chip {
   position: absolute;
@@ -748,7 +760,7 @@ button.pill:disabled {
   border-radius: var(--u-rad);
   box-shadow: 2px 2px 0 var(--u-ink);
   padding: 6px 10px;
-  font: 600 13px/1 var(--u-mono);
+  font: 600 calc(13px * var(--u-k)) / 1 var(--u-mono);
 }
 .fade {
   position: absolute;
@@ -834,7 +846,7 @@ button.pill:disabled {
   color: var(--u-acc);
 }
 .days li[data-sky='rain'] .sky {
-  color: #2f5e8c;
+  color: var(--u-rain);
 }
 .days small {
   grid-column: 1/-1;
@@ -991,18 +1003,6 @@ button.pill:disabled {
   background: var(--u-ink);
 }
 
-.hold:focus-visible,
-.sheet button:focus-visible,
-.bubble button:focus-visible,
-.navb:focus-visible,
-button.pill:focus-visible,
-.start:focus-visible,
-.create .go:focus-visible,
-.restart:focus-visible {
-  outline: 2px solid #2b6c84;
-  outline-offset: 2px;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .fade {
     transition: none;
@@ -1028,4 +1028,49 @@ button.pill:focus-visible,
 }
 .screen.wide .climb {
   max-width: 344px;
+}
+
+/* ---- larger text ----
+   Pills that sit on one line at the normal size may wrap at 1.3x rather than run off the
+   screen. */
+.screen.large .goal,
+.screen.large .plan-chip {
+  white-space: normal;
+}
+
+/* ---- low, said by shape as well as colour ----
+   A meter running low, and a load bar running hot, get stripes, so the warning doesn't
+   rest on telling red from black. */
+.meters i.low::after,
+.skills i.hot::after,
+.c-bar i.hot {
+  background-image: repeating-linear-gradient(-45deg, transparent 0 2px, rgba(255, 253, 245, 0.55) 2px 3.5px);
+}
+
+/* ---- keyboard ----
+   Everything you can press shows where the keyboard is: the same ring on every control. */
+.screen button:focus-visible,
+.screen input:focus-visible {
+  outline: 3px solid var(--u-focus);
+  outline-offset: 2px;
+}
+
+/* The things in a scene and the pins on the map, for the keyboard and screen readers: an
+   invisible button over each, which a pointer passes straight through to the canvas. */
+.hot {
+  position: absolute;
+  padding: 0;
+  margin: 0;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  color: transparent;
+  left: var(--x);
+  top: var(--y);
+  width: var(--bw);
+  height: var(--bh);
+  pointer-events: none !important;
+}
+.hot.pin {
+  border-radius: 50%;
 }

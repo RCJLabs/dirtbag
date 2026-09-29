@@ -442,6 +442,28 @@ export class Game {
   }
 
   // A scene's hotspots: its fixed things, plus whoever's there right now.
+  // What you can walk up to and use in the scene you're in.
+  hotsHere(): Hot[] {
+    const u = this.ui.get();
+    return u.view === 'scene' ? this.hots(u.scene) : [];
+  }
+
+  // Walk up to a thing and use it, as a tap on it does.
+  useHot(h: Hot): void {
+    if (this.busy || this.ui.get().view !== 'scene') return;
+    this.hush();
+    this.walkTo(h.stand, () => {
+      this.player.dir = h.face;
+      this.use(h.use);
+    });
+  }
+
+  // A pin on the map, pressed: its card, as a tap on it does.
+  openPin(id: string): void {
+    if (this.busy || this.trip || this.ui.get().view !== 'map') return;
+    this.openSheet({ k: 'place', id });
+  }
+
   private hots(scene: string): Hot[] {
     return [...SCENES[scene]!.hots, ...presentIn(this.state, scene).map(spotHot)];
   }
@@ -620,10 +642,14 @@ export class Game {
     this.held = null;
     this.set({ driving: false });
     this.sync();
-    for (const l of lines) this.toast(l);
+    // What you learned on the way is said where you get to, not over the map's pins.
+    const say = () => lines.forEach((l) => this.toast(l));
     const scene = PLACES[trip.to]?.scene;
-    if (scene) this.enterScene(scene);
-    else this.openSheet({ k: 'place', id: trip.to });
+    if (scene) this.fadeTo(() => (this.enter(scene), say()));
+    else {
+      this.openSheet({ k: 'place', id: trip.to });
+      say();
+    }
     if (this.run) this.later(() => this.planStep(), FADE_MS + PLAN_BEAT);
   }
 
