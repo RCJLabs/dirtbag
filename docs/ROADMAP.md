@@ -61,7 +61,7 @@
 | 8 Choose the look | Done: the Mix. Its tokens and components are built in R0–R1. The Steam capsule art moves to Phase 15. |
 | 9 Climber on the wall | Reshaped as beta-then-send and built from R0. Its Done-when criteria gate R2. |
 | 10 Crags as places | Built on the rebuild (the board, conditions you can see, Moonstone) and closed by Evan's call. Its testers' criterion carries. |
-| 11 Valley map | Built on the rebuild (the taps, place cards, adding a place, the daily plan) and closed by Evan's call. Criteria 2 to 5 pass; its testers' criterion carries. Ships in 0.961.0. |
+| 11 Valley map | Built on the rebuild (the taps, place cards, adding a place, the daily plan) and closed by Evan's call. Criteria 2 to 5 pass; its testers' criterion carries. Released in 0.961.0 with Phase 10. |
 | 12 UI system | Folded into the rebuild (R0–R2). The current milestone: what's left of it gets planned on the rebuild next. |
 | 13–20 | Unchanged in intent. They target the new build. |
 
@@ -1174,6 +1174,10 @@ There's no joystick, zone graph or tileset to retire. What's left, in slices:
 
 **Status (29 Sep 2026): 11.1 to 11.4 built; closed by Evan's call, shipping as 0.961.0 with Phase 10.** Criterion 1 (testers) carries, as Phase 10's did. The marker moved to Phase 12.
 
+**Released (29 Sep 2026).** Evan published `v0.961.0` on `main` (`afab5a5`, the merge of PR #12) at 17:36 UTC, carrying Phase 10 and Phase 11.
+- Deploy run 2 passed its checks and its live check: the site serves this commit, and the live smoke test passed.
+- The Play update (Actions → Build TWA (AAB), then the upload with 0.961.0's "What's new" from `docs/STORE.md`) is Evan's step.
+
 **Status before closing: 11.1 to 11.4 built.** Criteria 2 and 3 pass on the build, counted by the e2e: 3 taps at most for a trip from a scene, day three in 20, and day four by the plan in 13. Criterion 4 passes (the smoke test). Criterion 5 passes by a dry run: a card-only place was 13 lines of data and a pin, with the tests naming each missing piece, and its front is the illustration the criterion leaves out. Criterion 1 carries to the testers.
 
 ---
@@ -1541,3 +1545,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 11.4, by Evan's call: the daily plan. Yesterday, as you played it, is today's plan: one tap runs its drives and errands, it waits while you climb, and it stops at the first thing the day refuses, saying why. You plan on the van and edit by where, then what; bed stays last. The e2e runs day four as a plan in 13 taps (day three took 20), and day five's plan stops at the café.
 - 2026-09-29 — 0.960.0 released: Evan published `v0.960.0` on `main`, and Deploy run 1 went green, live check included. `v0.956.0` is left untagged on purpose, because its push would deploy v0.956; creating it on `e098332` is the rollback. The docs now say so.
 - 2026-09-29 — Phase 11 closed by Evan's call: criteria 2 to 5 pass on the build, and criterion 1 (testers) carries. Phase 10 and 11 ship together as 0.961.0, with the store's "What's new" and the full description updated for them. CURRENT MILESTONE moved to Phase 12; what the rebuild left of it gets planned next.
+- 2026-09-29 — 0.961.0 released: Evan published `v0.961.0` on `main` (`afab5a5`), and Deploy run 2 went green, live check included. Phase 10 and 11 are live; the Play update is Evan's.
