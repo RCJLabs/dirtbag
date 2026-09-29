@@ -103,6 +103,27 @@ export const CRAGS: Record<string, CragSpec> = {
     sign: 272,
     hint: 'The canyon floor’s all boulders. The bolts need a belayer.',
   },
+  // Moonstone: sand, sky and quartzite boulders the size of houses, and a spire in the
+  // middle with two bolted lines on it.
+  moon: {
+    width: 1400,
+    wall: [620, 1040],
+    lines: [
+      { n: 1, x: 680, route: 'mspire' },
+      { n: 2, x: 750, route: 'mmoon' },
+    ],
+    boulders: [
+      { x: 380, w: 92, h: 150, route: 'marete' },
+      { x: 500, w: 80, h: 90, route: 'mmantel' },
+      { x: 590, w: 70, h: 84, route: 'megg' },
+      { x: 850, w: 84, h: 104, route: 'mhueco' },
+      { x: 970, w: 96, h: 132, route: 'msplitter' },
+      { x: 1110, w: 116, h: 78, route: 'mroof' },
+      { x: 1262, w: 104, h: 150, route: 'mopen' },
+    ],
+    sign: 272,
+    hint: 'Highballs on the sand. The spire needs a belayer.',
+  },
 };
 
 // Send City: the desk by the door, then six problems along the wall, V0 to V5, and past the
@@ -165,6 +186,7 @@ export const SCENES: Record<string, SceneLayout> = {
   },
   crag: cragScene('road', CRAGS.crag!),
   gorge: cragScene('gorge', CRAGS.gorge!),
+  moon: cragScene('moon', CRAGS.moon!),
   gym: {
     place: 'gym',
     width: GYM_W,
@@ -266,6 +288,8 @@ export const MAP_PINS: Record<string, Pin> = {
   cafe: { x: 282, y: 476, side: -1, kind: 'town' },
   road: { x: 292, y: 220, side: -1, kind: 'crag' },
   gorge: { x: 96, y: 150, side: 1, kind: 'crag', dy: -16 },
+  // Out of the valley where the highway leaves it, north past Roadside.
+  moon: { x: 336, y: 100, side: -1, kind: 'crag' },
 };
 export const DIM_PINS: [number, number][] = [
   [266, 334],

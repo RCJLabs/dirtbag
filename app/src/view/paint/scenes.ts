@@ -136,6 +136,34 @@ const GORGE: Palette = {
   talus: '#8B8D8A',
 };
 
+// Moonstone: a high desert noon. Pale sky, mesas gone violet with distance, sand, and
+// quartzite that's nearly white where the sun's on it.
+const DESERT: Palette = {
+  sky: [
+    [0, '#9CC3D9'],
+    [0.6, '#E3E4D6'],
+    [1, '#F3DDB8'],
+  ],
+  orb: '#FFF4DA',
+  orbX: 96,
+  orbY: 78,
+  far2: '#C9A7A0',
+  far: '#B38C84',
+  mid: '#C9A77E',
+  midTree: '#6E7A55',
+  trees: '#5E6B48',
+  ground: '#D8BE92',
+  ground2: '#C9AC7F',
+  track: '#BFA073',
+  van: '#E6DCC4',
+  trim: '#2F6F73',
+  glass: '#6F8C98',
+  wall: '#E4D8C6',
+  wallShade: '#C2AE9C',
+  wallDark: '#8E7666',
+  talus: '#CDB58F',
+};
+
 // The poster never outlines anything: shapes are fills, lines are plain strokes.
 function fill(g: G, draw: (g: G) => void, col: string): void {
   g.beginPath();
@@ -415,8 +443,9 @@ function paintLotGround(P: Palette, tod: Tod): HTMLCanvasElement {
 
 const CRAG_VAN = { x: 34, w: 200, h: 82 };
 
-// How a crag's rock is painted: Roadside's banded sandstone, or the Gorge's granite.
-type Rock = 'sandstone' | 'granite';
+// How a crag's rock is painted: Roadside's banded sandstone, the Gorge's granite, or
+// Moonstone's quartzite.
+type Rock = 'sandstone' | 'granite' | 'quartzite';
 
 // The wall's outline: a ragged left edge from its foot, and either the scene's right edge
 // or, where the wall ends, a top that steps down into the talus.
@@ -594,7 +623,54 @@ function granite(g: G, P: Palette, c: CragSpec, r: () => number): void {
   g.stroke();
 }
 
-// Behind-the-boulders trees: junipers at Roadside, pines in the Gorge.
+// Quartzite: pale, hard and fractured square, with rust where water has run over it and a
+// darker shaded side on the spire.
+function quartzite(g: G, P: Palette, c: CragSpec, r: () => number): void {
+  const [x0, x1] = c.wall;
+  fill(
+    g,
+    (gg) =>
+      poly(
+        gg,
+        [
+          [x0 + 110, -20],
+          [x1 + 30, -20],
+          [x1 + 30, GND],
+          [x0 + 170, GND],
+        ],
+        true,
+      ),
+    P.wallShade!,
+  );
+  // Fractures: long horizontals and short verticals, so the rock reads as blocks.
+  g.strokeStyle = 'rgba(96,74,62,.4)';
+  g.lineWidth = 1.6;
+  for (let y = 40; y < GND; y += 46 + r() * 30) {
+    g.beginPath();
+    g.moveTo(x0, y);
+    for (let x = x0; x <= x1 + 30; x += 30) g.lineTo(x, y + (r() - 0.5) * 6);
+    g.stroke();
+    for (let k = 0; k < 4; k++) {
+      const vx = x0 + 20 + r() * (x1 - x0);
+      g.beginPath();
+      g.moveTo(vx, y);
+      g.lineTo(vx + (r() - 0.5) * 6, y + 24 + r() * 20);
+      g.stroke();
+    }
+  }
+  for (let i = 0; i < 12; i++) {
+    const x = x0 + 30 + r() * (x1 - x0 - 40);
+    const len = 80 + r() * 200;
+    const top = r() * 260;
+    g.fillStyle = lin(g, 0, top, 0, top + len, [
+      [0, 'rgba(176,96,52,.28)'],
+      [1, 'rgba(176,96,52,0)'],
+    ]);
+    g.fillRect(x, top, 5 + r() * 10, len);
+  }
+}
+
+// Behind-the-boulders trees: junipers at Roadside and Moonstone, pines in the Gorge.
 const TREES: Record<string, [number, number][]> = {
   crag: [
     [18, 1.6],
@@ -607,6 +683,12 @@ const TREES: Record<string, [number, number][]> = {
     [96, 170],
     [250, 150],
   ],
+  moon: [
+    [16, 1.2],
+    [262, 0.9],
+    [1180, 1.1],
+    [1370, 1.3],
+  ],
 };
 
 // The talus: rocks at the wall's foot, between the boulders.
@@ -618,6 +700,12 @@ const TALUS: Record<string, [number, number, number][]> = {
     [918, 40, 22],
     [1056, 24, 12],
     [1270, 22, 10],
+  ],
+  moon: [
+    [446, 24, 10],
+    [720, 30, 12],
+    [1040, 22, 10],
+    [1340, 26, 12],
   ],
   gorge: [
     [620, 34, 16],
@@ -644,6 +732,7 @@ function paintCragGround(P: Palette, id: string, kind: Rock): HTMLCanvasElement 
   poly(g, edge, true);
   g.clip();
   if (kind === 'granite') granite(g, P, spec, r);
+  else if (kind === 'quartzite') quartzite(g, P, spec, r);
   else sandstone(g, P, spec, r);
   g.fillStyle = lin(g, 0, GND - 60, 0, GND, [
     [0, 'rgba(40,36,34,0)'],
@@ -685,6 +774,7 @@ function paintCragGround(P: Palette, id: string, kind: Rock): HTMLCanvasElement 
 const BOULDER_ROCK: Record<Rock, [string, string]> = {
   sandstone: ['#BDB5A5', '#9C968B'],
   granite: ['#C3C6C6', '#969BA1'],
+  quartzite: ['#EDE3D3', '#C4B19E'],
 };
 
 // A boulder on the talus, side on: an angular block with a lit face and a shaded side,
@@ -801,16 +891,18 @@ export function sceneArt(id: string, tod: Tod): SceneArt {
   }
   const crag = CRAGS[id];
   const gorge = id === 'gorge';
-  const P = gorge ? GORGE : SP[crag ? 'day' : tod];
+  const moon = id === 'moon';
+  const P = gorge ? GORGE : moon ? DESERT : SP[crag ? 'day' : tod];
   const w = crag?.width ?? WW;
   const lw = (p: number) => 360 + (w - 360) * p;
-  const seed = gorge ? 17 : crag ? 11 : 5;
+  const seed = gorge ? 17 : moon ? 23 : crag ? 11 : 5;
+  const rock: Rock = gorge ? 'granite' : moon ? 'quartzite' : 'sandstone';
   a = {
     sky: paintSky(P, crag ? 'day' : tod),
     layers: [
       { p: 0.2, w: lw(0.2), c: paintFar(P, lw(0.2), seed, gorge) },
       { p: 0.5, w: lw(0.5), c: paintMid(P, lw(0.5), seed + 2, !!crag && !gorge) },
-      { p: 1, w, c: crag ? paintCragGround(P, id, gorge ? 'granite' : 'sandstone') : paintLotGround(P, tod) },
+      { p: 1, w, c: crag ? paintCragGround(P, id, rock) : paintLotGround(P, tod) },
     ],
   };
   cache.set(key, a);

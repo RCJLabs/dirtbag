@@ -236,6 +236,9 @@ export const CLIMB = {
   // sun at its own time (sunOn). Long enough that where you start matters: Roadside's
   // warm-ups keep their shade two hours past its projects.
   sunSweep: 120,
+  // Desert rock is sunbaked and sharp-edged: every window at a desert crag is scaled by
+  // this. v0.956 took 0.08 off the odds there; seeping's 0.07 became 0.92 the same way.
+  desertFactor: 0.92,
   // Moves per second while you hold. About a move and a half: fast enough that pump, not
   // boredom, is what makes you let go.
   climbRate: 1.53,

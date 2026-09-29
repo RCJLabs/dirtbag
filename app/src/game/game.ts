@@ -525,6 +525,11 @@ export class Game {
     this.dispatch({ t: 'act', act: id });
   }
 
+  // Pay for a trip once (Moonstone's haul): the place card rebuilds with the drive on it.
+  unlock(place: string): void {
+    this.dispatch({ t: 'unlock', place });
+  }
+
   travel(to: string): void {
     if (this.trip) return;
     const from = this.state.at;

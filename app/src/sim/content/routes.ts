@@ -758,6 +758,85 @@ const gPowerEnd = librarySport('gpe', 'Power Endurance', 8, 'power', 'gorge', {
   b: { style: 'endurance', name: 'The long finish', from: 18.4, to: 21.6, win: 'Chains. Barely.' },
 });
 
+// ---- Moonstone Boulders: v0.956's desert highball crag, three hours out ----
+// v0.956 named two lines Highball Arête, one here and one at Roadside; this one is the Tall
+// Arête, so a log or a card can't mix them up.
+
+const mArete = libraryBoulder('marete', 'Tall Arête', 6, 'technical', 'moon', {
+  moves: 9,
+  from: 5.6,
+  to: 7.4,
+  cruxName: 'The top',
+  heightFt: 22,
+  line: 'An arête as tall as a house, and the hard part is at the top of it.',
+});
+const mMantel = libraryBoulder('mmantel', 'Moonstone Mantel', 7, 'power', 'moon', {
+  moves: 5,
+  from: 3.0,
+  to: 4.4,
+  cruxName: 'The mantel',
+  heightFt: 16,
+  line: 'Five moves to the lip, then the mantel everybody gets wrong the first time.',
+});
+const mEgg = libraryBoulder('megg', 'The Egg', 8, 'dyno', 'moon', {
+  moves: 5,
+  from: 2.4,
+  to: 3.6,
+  cruxName: 'The throw',
+  heightFt: 15,
+  line: 'A smooth egg of quartzite: one hold, one throw, one sloper to catch.',
+});
+const mHueco = libraryBoulder('mhueco', 'Hueco Pockets', 9, 'crimp', 'moon', {
+  moves: 7,
+  from: 3.2,
+  to: 5.0,
+  cruxName: 'The pockets',
+  heightFt: 17,
+  line: 'Pockets all the way up. The guidebook says V9. The guidebook is generous.',
+  trueGrade: 8,
+});
+const mSplitter = libraryBoulder('msplitter', 'Moonstone Splitter', 8, 'crack', 'moon', {
+  moves: 8,
+  from: 4.0,
+  to: 6.0,
+  cruxName: 'The flare',
+  heightFt: 20,
+  line: 'A splitter up a boulder the size of a van. Tape up.',
+});
+const mRoof = libraryBoulder('mroof', 'Lunar Roof', 11, 'power', 'moon', {
+  moves: 9,
+  from: 4.4,
+  to: 7.0,
+  cruxName: 'The lip',
+  heightFt: 14,
+  line: 'Nine moves out the roof in the dark under the boulder, and then the lip.',
+});
+const mOpen = libraryBoulder('mopen', 'The Moonstone project', 12, 'power', 'moon', {
+  moves: 8,
+  from: 3.6,
+  to: 6.2,
+  cruxName: 'The last hard move',
+  heightFt: 22,
+  line: 'Nobody’s done it. The chalk stops two-thirds of the way up a very tall boulder.',
+  open: true,
+});
+const mSpire = librarySport('mspire', 'Desert Spire', 8, 'dyno', 'moon', {
+  moves: 24,
+  heightFt: 90,
+  line: 'A lone spire of quartzite, bolted to its summit. The jump is halfway.',
+  rest: 13,
+  a: { style: 'dyno', name: 'The jump', from: 9.0, to: 10.8, win: 'Stuck it.' },
+  b: { style: 'technical', name: 'The summit block', from: 18.6, to: 21.2, win: 'Chains, and the view.' },
+});
+const mMoon = librarySport('mmoon', 'Moonlight Arête', 10, 'technical', 'moon', {
+  moves: 28,
+  heightFt: 110,
+  line: 'An arête that catches the moon. Climb it by day anyway.',
+  rest: 15.4,
+  a: { style: 'technical', name: 'The arête', from: 8.4, to: 11.0, win: 'Off the arête.' },
+  b: { style: 'crimp', name: 'The headwall', from: 20.2, to: 23.6, win: 'Chains.' },
+});
+
 export const ROUTES: Record<string, RouteDef> = {
   warm: warmBoulder,
   dyno,
@@ -779,6 +858,15 @@ export const ROUTES: Record<string, RouteDef> = {
   gintro: gIntro,
   gclassic: gClassic,
   gpe: gPowerEnd,
+  marete: mArete,
+  mmantel: mMantel,
+  megg: mEgg,
+  mhueco: mHueco,
+  msplitter: mSplitter,
+  mroof: mRoof,
+  mopen: mOpen,
+  mspire: mSpire,
+  mmoon: mMoon,
 };
 
 // Said when you come off between cruxes with nothing left in your arms.

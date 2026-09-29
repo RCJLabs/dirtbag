@@ -153,6 +153,27 @@ const TOPO_PTS: Record<string, Pt[]> = {
     [236, 250],
     [230, 178],
   ],
+  // Moonstone's spire: the Desert Spire up its face, Moonlight Arête up its right edge.
+  mspire: [
+    [128, 538],
+    [122, 470],
+    [134, 400],
+    [128, 330],
+    [140, 262],
+    [150, 196],
+    [162, 130],
+    [178, 86],
+  ],
+  mmoon: [
+    [302, 538],
+    [294, 470],
+    [286, 400],
+    [278, 330],
+    [266, 262],
+    [252, 196],
+    [238, 132],
+    [222, 86],
+  ],
   testpiece: [
     [290, 538],
     [298, 470],
@@ -390,6 +411,108 @@ const G_TOP: Pt[] = [
 ];
 const G_WALL: Pt[] = [...G_TOP, [364, BASE_Y], [-4, BASE_Y]];
 
+// Moonstone's spire, face-on: a quartzite tower against a desert sky, square-fractured and
+// rust-streaked, with sand and scrub at its foot.
+const M_WALL: Pt[] = [
+  [30, BASE_Y],
+  [44, 420],
+  [70, 300],
+  [92, 190],
+  [118, 110],
+  [150, 70],
+  [190, 56],
+  [226, 70],
+  [252, 110],
+  [274, 200],
+  [298, 320],
+  [320, 440],
+  [338, BASE_Y],
+];
+
+function paintMoon(g: G): void {
+  g.fillStyle = lin(g, 0, 0, 0, 300, [
+    [0, '#9CC3D9'],
+    [1, '#F3DDB8'],
+  ]);
+  g.fillRect(0, 0, W, H);
+  g.fillStyle = '#C9A7A0';
+  g.beginPath();
+  g.moveTo(-4, 250);
+  g.lineTo(40, 250);
+  g.lineTo(52, 228);
+  g.lineTo(120, 228);
+  g.lineTo(132, 250);
+  g.lineTo(250, 250);
+  g.lineTo(262, 236);
+  g.lineTo(330, 236);
+  g.lineTo(342, 256);
+  g.lineTo(W + 4, 256);
+  g.lineTo(W + 4, BASE_Y);
+  g.lineTo(-4, BASE_Y);
+  g.closePath();
+  g.fill();
+
+  g.save();
+  g.beginPath();
+  poly(g, M_WALL, true);
+  g.clip();
+  g.fillStyle = '#E4D8C6';
+  g.fillRect(0, 0, W, H);
+  g.fillStyle = '#C2AE9C';
+  g.beginPath();
+  g.moveTo(210, 0);
+  g.lineTo(W, 0);
+  g.lineTo(W, H);
+  g.lineTo(250, H);
+  g.closePath();
+  g.fill();
+  const r = mulberry32(131);
+  g.strokeStyle = 'rgba(96,74,62,.42)';
+  g.lineWidth = 1.5;
+  for (let y = 90; y < BASE_Y; y += 34 + r() * 26) {
+    g.beginPath();
+    g.moveTo(0, y);
+    for (let x = 0; x <= W; x += 24) g.lineTo(x, y + (r() - 0.5) * 5);
+    g.stroke();
+    for (let k = 0; k < 3; k++) {
+      const vx = 40 + r() * 280;
+      g.beginPath();
+      g.moveTo(vx, y);
+      g.lineTo(vx + (r() - 0.5) * 5, y + 18 + r() * 16);
+      g.stroke();
+    }
+  }
+  for (let i = 0; i < 10; i++) {
+    const x = 40 + r() * 280;
+    const top = 60 + r() * 200;
+    const len = 90 + r() * 200;
+    g.fillStyle = lin(g, 0, top, 0, top + len, [
+      [0, 'rgba(176,96,52,.3)'],
+      [1, 'rgba(176,96,52,0)'],
+    ]);
+    g.fillRect(x, top, 5 + r() * 9, len);
+  }
+  g.restore();
+
+  g.fillStyle = '#D8BE92';
+  g.fillRect(-4, BASE_Y, W + 8, H - BASE_Y);
+  g.fillStyle = '#C9AC7F';
+  for (let i = 0; i < 14; i++) {
+    g.beginPath();
+    rock(g, r() * W, BASE_Y + 20 + r() * 160, 12 + r() * 20, 6 + r() * 8);
+    g.fill();
+  }
+  g.fillStyle = '#6E7A55';
+  for (const [tx, ty, sc] of [
+    [14, BASE_Y + 4, 1.2],
+    [348, BASE_Y + 2, 1],
+  ] as const) {
+    g.beginPath();
+    g.ellipse(tx, ty - 8 * sc, 18 * sc, 10 * sc, 0, 0, 6.2832);
+    g.fill();
+  }
+}
+
 function paintGorge(g: G): void {
   g.fillStyle = lin(g, 0, 0, 0, 90, [
     [0, '#B9D2DC'],
@@ -538,6 +661,7 @@ export function wallArt(place: string, selected: string): HTMLCanvasElement {
 
 function paintWall(g: G, place: string, selected: string): void {
   if (place === 'gorge') paintGorge(g);
+  else if (place === 'moon') paintMoon(g);
   else paintRoadside(g);
   paintLines(g, place, selected);
 }
@@ -546,7 +670,8 @@ function paintWall(g: G, place: string, selected: string): void {
 // the boulder itself, so weather drawn on the rock stays off the sky.
 export function rockPath(g: G, r: RouteDef): void {
   g.beginPath();
-  if (r.disc === 'sport') poly(g, r.place === 'gorge' ? G_WALL : WALLPOLY, true);
+  if (r.disc === 'sport')
+    poly(g, r.place === 'gorge' ? G_WALL : r.place === 'moon' ? M_WALL : WALLPOLY, true);
   else poly(g, boulderOutline(r), true);
 }
 

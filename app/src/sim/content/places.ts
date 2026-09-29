@@ -25,6 +25,12 @@ export interface PlaceDef {
   closed?: { season: Season; why: string };
   // Shaded rock stays cool: no afternoon grease, and heat doesn't hurt it.
   shaded?: true;
+  // Desert rock: sunbaked, every window a little tighter (CLIMB.desertFactor).
+  desert?: true;
+  // A trip you pay for once, in cash, before you can drive it (v0.956's unlockCost), and
+  // a permit paid on every trip in (v0.956's permit).
+  unlock?: number;
+  permit?: number;
   // A sunny crag's lines in the order the afternoon sun reaches them, from one end of the
   // crag to the other, talus boulders and wall lines alike. The scene's layout must agree
   // (view/sun.test.ts), so the shade line you see crosses each line as it starts to grease.
@@ -109,6 +115,24 @@ export const PLACES: Record<string, PlaceDef> = {
     locked: 'V5 and up. It’s no place to learn: come back when you’re climbing V4.',
     closed: { season: 'spring', why: 'Closed for nesting raptors till summer' },
     shaded: true,
+  },
+  // v0.956's third crag, "a fabled desert highball mecca, a real road trip out": V6 to
+  // get in, a haul to pay for once, and a permit every trip.
+  moon: {
+    name: 'Moonstone Boulders',
+    crag: true,
+    scene: 'moon',
+    away: 'Quartzite highballs out in the desert. A real road trip.',
+    here: 'Sand, sky, and boulders the size of houses.',
+    acts: [],
+    minGrade: 6,
+    locked: 'Tall, hard and a long way out. Come back when you’re climbing V6.',
+    unlock: 400,
+    permit: 20,
+    desert: true,
+    // The sun comes round the far end first, like Roadside's: the project out past the
+    // roof loses its shade first, the arête by the van keeps it longest.
+    sun: ['mopen', 'mroof', 'msplitter', 'mhueco', 'mmoon', 'mspire', 'megg', 'mmantel', 'marete'],
   },
   gym: {
     name: 'Send City',
@@ -264,6 +288,14 @@ export const ROADS: RoadDef[] = [
   { a: 'gorge', b: 'gym', min: 125, cash: 22 },
   { a: 'gorge', b: 'diner', min: 125, cash: 22 },
   { a: 'gorge', b: 'cafe', min: 125, cash: 22 },
+  // Moonstone: v0.956's three hours and 30% of a tank from the Lot, north up the highway
+  // past Roadside and out of the valley.
+  { a: 'moon', b: 'lot', min: 180, cash: 30 },
+  { a: 'moon', b: 'road', min: 120, cash: 20 },
+  { a: 'moon', b: 'gorge', min: 190, cash: 32 },
+  { a: 'moon', b: 'gym', min: 175, cash: 29 },
+  { a: 'moon', b: 'diner', min: 180, cash: 30 },
+  { a: 'moon', b: 'cafe', min: 175, cash: 29 },
 ];
 
 export const road = (a: string, b: string): RoadDef | undefined =>

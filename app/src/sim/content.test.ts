@@ -114,6 +114,11 @@ describe('content', () => {
     expect(b1[0]!.line).toContain(`${BOARD_WEEKS} weeks`);
   });
 
+  it("a place that's shut to you says the grade that opens it", () => {
+    for (const [id, p] of Object.entries(PLACES))
+      if (p.minGrade !== undefined) expect(p.locked, id).toContain(`V${p.minGrade}`);
+  });
+
   it('every sunny crag lists all its lines, once each, in the path the sun takes', () => {
     for (const [id, p] of Object.entries(PLACES)) {
       if (!p.crag || p.shaded) {

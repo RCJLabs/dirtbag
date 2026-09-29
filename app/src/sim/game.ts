@@ -48,6 +48,7 @@ export function newGame(seed: string): GameState {
     trips: 0,
     dog: null,
     goals: 0,
+    unlocked: [],
     log: [],
   };
 }
@@ -449,7 +450,14 @@ export function act(s0: GameState, a: Action): Result {
       if (!r || !to) return refuse("There's no road there.");
       if (to.minGrade !== undefined && gradeOf(s.climber.skills) < to.minGrade)
         return refuse(`${to.name}: ${to.locked ?? 'not yet.'}`);
-      // A maxed-out card never strands you: you drive on what's in the tank.
+      if (to.unlock && !s.unlocked.includes(a.to))
+        return refuse(`${to.name} is a trip you haven't paid for yet: ${money(to.unlock)}, once.`);
+      // A maxed-out card never strands you: you drive on what's in the tank. A permit isn't
+      // gas: the ranger doesn't take fumes.
+      const permit = to.permit ?? 0;
+      if (permit && headroom(s) < permit)
+        return refuse(`${to.name} needs a ${money(permit)} permit, and the card won't cover it.`);
+      spend({ cash: -permit });
       const declined = r.cash > 0 && headroom(s) < r.cash;
       spend({ min: r.min, cash: declined ? 0 : -r.cash, energy: r.min >= 30 ? -BODY.driveEnergy : 0 });
       s.at = a.to;
@@ -457,6 +465,7 @@ export function act(s0: GameState, a: Action): Result {
       if (declined) line("The card's declined at the pump. You make it on fumes.");
       else if (r.cash >= 12) line(`Gas, ${money(r.cash)}. The van starts on the second try.`);
       else if (r.cash > 0) line(`Gas, ${money(r.cash)}.`);
+      if (permit) line(`Permit, ${money(permit)}. The ranger doesn't look up.`);
       // Every drive with Scout is a ride-along; out at the crag he gets up to something.
       if (s.dog) s.dog.bond = Math.min(100, s.dog.bond + DOG.rideBond);
       if (to.crag) {
@@ -467,6 +476,20 @@ export function act(s0: GameState, a: Action): Result {
           line(dogLine(s, 'crag')!);
         }
       }
+      break;
+    }
+
+    // A trip you pay for once (v0.956's road-trip unlock): cash in hand, not the card.
+    case 'unlock': {
+      const p = PLACES[a.place];
+      if (!p?.unlock) return refuse("There's nothing to pay for there.");
+      if (s.unlocked.includes(a.place)) return refuse(`${p.name} is already yours.`);
+      if (p.minGrade !== undefined && gradeOf(s.climber.skills) < p.minGrade)
+        return refuse(`${p.name}: ${p.locked ?? 'not yet.'}`);
+      if (s.cash < p.unlock) return refuse(`${p.name} runs ${money(p.unlock)}, in hand. Keep saving.`);
+      spend({ cash: -p.unlock });
+      s.unlocked.push(a.place);
+      line(`Pads, water jugs and a guidebook, ${money(p.unlock)}. ${p.name} is on your map for good.`);
       break;
     }
 

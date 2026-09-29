@@ -454,7 +454,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 3 ||
+  saved?.v !== 4 ||
   st.climber?.name !== 'Robin' ||
   st.climber.start !== 'technician' ||
   !st.routes.warm?.sent ||

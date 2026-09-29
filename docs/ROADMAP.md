@@ -967,6 +967,27 @@ The full diagnosis is in the audit, under *The map and the look*.
       - Reckless bots' injuries read 7 of 144 (5%, small numbers); moderate bots', 0.
       - The bots don't plan around the shade, so the gain goes to a player who does.
 - **10.3, Moonstone Boulders**, v0.956's next crag: desert quartzite, opens at V6, a permit to climb. Its scene and topos drawn in code, highballs with pad and spotter decisions (the audit's idea for its identity), and its road on the map. It's where Act II would start.
+  - *As built (10.3a, Moonstone as a place):* 10.3 is in two parts: the place first, then highballs (10.3b).
+    - **v0.956's terms.**
+      - It opens at V6 (`minGrade`).
+      - You pay $400 once, in cash in hand and not on the card, to open the trip for good. v0.956's unlockCost, "a $400 haul"; here it buys pads, water jugs and a guidebook. It's paid from the place card, and the game remembers it in a new `unlocked` list.
+      - A $20 permit on every trip in. Unlike gas, it won't go on a maxed card.
+      - Three hours and $30 of gas from the Lot, north up the highway past Roadside (two hours from there).
+    - **Desert rock:** every window at Moonstone is × 0.92 (`CLIMB.desertFactor`), v0.956's desert −0.08 translated the way seeping's −0.07 was. It's sunny, so the sun crosses it as at Roadside.
+    - **v0.956's nine lines:**
+      - boulders: Tall Arête V6 (v0.956 called it Highball Arête, like a Roadside line, so it's renamed), Moonstone Mantel V7, The Egg V8, Hueco Pockets V9 (climbs like V8, as in v0.956), Moonstone Splitter V8, Lunar Roof V11, and an open V12 project;
+      - sport lines on a spire: Desert Spire (5.13a) and Moonlight Arête (5.13c).
+      - The highballs are drawn up to 22 ft.
+    - **Save v4.** `unlocked` is new, so 0.960.0's saves (v3) migrate with none paid for. The migration is tested against a real v3 save written by 0.960.0's code.
+    - **On screen.**
+      - The scene: a desert noon, violet mesas, sand, and pale quartzite. A spire, square-fractured and rust-streaked, carries the two bolted lines, and the boulders stand on the sand.
+      - Close-ups: desert boulders with scrub behind them, and the spire face-on.
+      - A map pin where the highway leaves the valley.
+      - The place card sells the haul, then shows the drive with gas and permit together.
+    - **Open.**
+      - The spire's two lines need a belayer, and nobody's schedule brings anyone to Moonstone yet. They're climbable data waiting on a road-trip partner, as the Gorge's bolts waited on Sage.
+      - The bots don't go there. It's past the first month for all of them, so the harness is unchanged.
+      - There's still no V10 boulder anywhere in the game, and v0.956 had none here either (criterion 3).
 
 **Done when, on the rebuild** *[proposed; replaces the criteria above until Evan rules]*:
 1. The gym and every crag in the game read as places: their own scene, lines drawn from data, and conditions you can see (shade, wet, closed).
@@ -1376,3 +1397,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — R3 merged (PR #11) and closed by Evan's call with the release carried as his steps (the v0.956.0 and v0.960.0 tags, then the Play upload). CURRENT MILESTONE moved to Phase 10, planned on the rebuild: the board at Send City, conditions you can see, and Moonstone Boulders.
 - 2026-09-29 — Phase 10.1: the board at Send City. Four problems, V4–V7, that stay up four weeks, on a new seed stream logged for Unreal. It has its own scene, sheet, face-on wall and e2e step. "Nothing new to try" in the harness falls from about half the runs to 3 of 144; the season targets still pass.
 - 2026-09-29 — Phase 10.2: conditions you can see. The sun crosses Roadside end to end in two hours and greases each line as it arrives (proposed). The scene and walls show its edge, wet rock shows after rain, and the map tags closed and soaked crags. The season targets pass.
+- 2026-09-29 — Phase 10.3a: Moonstone Boulders as a place. v0.956's terms: V6, a $400 haul paid once, a $20 permit each trip. Nine lines, a desert scene with a quartzite spire, its road and map pin. Save v4 adds the trips you've paid for, migrated from a real v3 save. Highballs (10.3b) are next.

@@ -83,6 +83,7 @@ export function conditionsAt(
   const c = conditions(seed, day);
   const p = PLACES[place];
   const closed = p?.closed && seasonOf(day) === p.closed.season ? p.closed.why : null;
+  if (p?.desert) return { ...c, closed, windows: c.windows * CLIMB.desertFactor };
   if (!p?.shaded) return { ...c, closed };
   return {
     ...c,

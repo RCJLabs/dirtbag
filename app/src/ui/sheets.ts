@@ -25,6 +25,7 @@ import {
   lineGrade,
   lineName,
   MONEY,
+  money,
   PLACES,
   restCost,
   road,
@@ -106,12 +107,36 @@ function actRow(game: Game, s: GameState, id: string): Row {
 
 function driveRow(game: Game, s: GameState, to: string, label: string): Row {
   const r = road(s.at, to)!;
-  const declined = r.cash > 0 && headroom(s) < r.cash;
+  const permit = PLACES[to]?.permit ?? 0;
+  const declined = r.cash > 0 && headroom(s) < r.cash + permit;
+  if (permit && headroom(s) < permit)
+    return {
+      label,
+      cost: costLabel({ min: r.min, cash: -(r.cash + permit) }, 'gas and permit'),
+      note: `The ${money(permit)} permit won't go on the card.`,
+      off: true,
+      run: () => game.travel(to),
+    };
   return {
     label,
-    cost: costLabel({ min: r.min, cash: -r.cash }, 'gas'),
+    cost: costLabel({ min: r.min, cash: -(r.cash + permit) }, permit ? 'gas and permit' : 'gas'),
     note: declined ? "The card won't take the gas. You'd be running on fumes." : undefined,
     run: () => game.travel(to),
+  };
+}
+
+// A trip you pay for once, in cash in hand: what it buys, and what's short.
+function unlockRow(game: Game, s: GameState, id: string): Row {
+  const cost = PLACES[id]!.unlock!;
+  const short = s.cash < cost;
+  return {
+    label: 'Buy the haul for the trip',
+    cost: costLabel({ cash: -cost }),
+    note: short
+      ? `Pads, water jugs and a guidebook. You need ${money(cost)} in hand, not on the card.`
+      : 'Pads, water jugs and a guidebook. Pay once, and the trip is yours.',
+    off: short,
+    run: () => game.unlock(id),
   };
 }
 
@@ -196,12 +221,17 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       if (!here) {
         const locked = p.minGrade !== undefined && gradeOf(s.climber.skills) < p.minGrade;
         const drive = driveRow(game, s, id.id, 'Drive here');
+        const unpaid = !!p.unlock && !s.unlocked.includes(id.id);
         return {
           title: p.name,
           sub,
           close: true,
           notes: locked ? [p.locked ?? 'Not yet.'] : notes,
-          rows: [locked ? { ...drive, off: true, note: undefined } : drive],
+          rows: locked
+            ? [{ ...drive, off: true, note: undefined }]
+            : unpaid
+              ? [unlockRow(game, s, id.id)]
+              : [drive],
         };
       }
       if (p.scene) {

@@ -67,6 +67,50 @@ describe('Granite Gorge', () => {
   });
 });
 
+describe('Moonstone Boulders', () => {
+  const refused = (s: GameState, a: Action) => {
+    const e = act(s, a).events.find((x) => x.k === 'refused');
+    return e?.k === 'refused' ? e.why : null;
+  };
+
+  it('opens at V6, and only once you have paid for the haul, in cash', () => {
+    expect(refused(at(5, { cash: 500 }), { t: 'unlock', place: 'moon' })).toMatch(/V6/);
+    expect(refused(at(6, { cash: 500 }), { t: 'travel', to: 'moon' })).toMatch(/haven't paid for yet: \$400/);
+    // The card doesn't count: it's cash in hand or nothing.
+    expect(refused(at(6, { cash: 399 }), { t: 'unlock', place: 'moon' })).toMatch(/\$400, in hand/);
+    const paid = play(at(6, { cash: 450 }), { t: 'unlock', place: 'moon' });
+    expect(paid.state).toMatchObject({ cash: 50, unlocked: ['moon'] });
+    expect(lines(paid.events)[0]).toMatch(/on your map for good/);
+    expect(refused(paid.state, { t: 'unlock', place: 'moon' })).toMatch(/already yours/);
+    expect(refused(at(6), { t: 'unlock', place: 'road' })).toMatch(/nothing to pay for/);
+  });
+
+  it('charges a permit every trip in, and won’t let the card pay it', () => {
+    const s = at(6, { cash: 100, unlocked: ['moon'] });
+    const r = play(s, { t: 'travel', to: 'moon' });
+    expect(r.state.cash).toBe(100 - 30 - 20);
+    expect(r.state.at).toBe('moon');
+    expect(lines(r.events)).toContain("Permit, $20. The ranger doesn't look up.");
+    // Back out and in again: another permit.
+    const again = play(r.state, { t: 'travel', to: 'road' }, { t: 'travel', to: 'moon' });
+    expect(again.state.cash).toBe(50 - 20 - 20 - 20);
+    expect(refused(at(6, { cash: -1000, unlocked: ['moon'] }), { t: 'travel', to: 'moon' })).toMatch(
+      /\$20 permit, and the card won't cover it/,
+    );
+  });
+
+  it('bakes: every window a little tighter in the desert, and the sun crosses it', () => {
+    const day = days(2, 60).find(
+      (d) => conditions('crags', d).sky === 'fair' && !conditions('crags', d).seeping,
+    )!;
+    expect(conditionsAt('crags', day, 'moon').windows).toBeCloseTo(conditions('crags', day).windows * 0.92);
+    const s = at(8, { at: 'moon', day, min: 10 * 60, unlocked: ['moon'] });
+    expect(betaScale(s, ROUTES.megg!, 'A1')).toBeLessThan(
+      betaScale({ ...s, at: 'road' }, { ...ROUTES.megg!, place: 'road' }, 'A1'),
+    );
+  });
+});
+
 describe('sandbags', () => {
   it('climb at their true grade, and show it on your first go', () => {
     const s = at(5, { at: 'gorge', min: 10 * 60 });
