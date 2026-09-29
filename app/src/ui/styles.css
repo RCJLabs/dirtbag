@@ -809,6 +809,26 @@ button.pill:disabled {
   border-top: 1px solid color-mix(in srgb, var(--u-ink) 20%, transparent);
   font: 600 calc(14px * var(--u-fs)) / 1.2 var(--u-mono);
 }
+.log {
+  list-style: none;
+  margin: 2px 0 6px;
+  padding: 0;
+}
+.log li {
+  display: grid;
+  grid-template-columns: 62px 1fr;
+  gap: 8px;
+  padding: 5px 0;
+  border-top: 1px solid color-mix(in srgb, var(--u-ink) 20%, transparent);
+  font: 500 calc(13px * var(--u-fs)) / 1.3 var(--u-mono);
+}
+.log b {
+  font-weight: 600;
+  color: var(--u-dim);
+}
+.pages {
+  margin: 2px 0 8px;
+}
 .days .sky {
   color: var(--u-acc);
 }

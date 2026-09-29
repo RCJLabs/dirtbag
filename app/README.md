@@ -23,6 +23,7 @@ This is the game as it ships from 0.960.0 (the roadmap's R3): the first season, 
   - Pump you can see: the climber shakes and the screen's edges close in.
   - Climbers move at a pace set by their grade.
 - **The send card:** a PNG of your line, drawn on the device, to save or share.
+- **The journal** (Phase 12.1, after 0.961.0): tap your body in the HUD. You as a climber, and "Lately": the last 200 things that happened, in full. A line too long for a toast comes on a card instead.
 - **v0.956's players:** v0.956 retired at 0.960.0. Someone who played it is told so, can keep their old career as a file, and can carry on under their old name, their climbing capped at V3.
 - **The shell:** the game installs and plays offline.
 

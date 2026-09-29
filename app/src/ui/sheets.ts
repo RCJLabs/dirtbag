@@ -9,6 +9,7 @@ import {
   BOARD_WEEKS,
   BODY,
   bodyNote,
+  clock,
   clockShort,
   conditionsAt,
   costLabel,
@@ -402,6 +403,15 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         rows: [actRow(game, s, 'lot.kibble'), actRow(game, s, 'lot.play')],
       };
     }
+
+    // Too long for a toast: it waits on a card, and stays in the journal.
+    case 'note':
+      return {
+        title: `Day ${id.day} · ${clock(id.min)}`,
+        sub: id.text,
+        close: false,
+        rows: [{ label: 'Right', run: () => game.closeSheet() }],
+      };
 
     case 'act':
       return {

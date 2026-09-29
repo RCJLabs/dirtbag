@@ -46,6 +46,17 @@ await page.addInitScript(() => {
 });
 
 const problems = [];
+// Phase 12: no toast runs past 30 words. Every toast the run shows is watched, not just the
+// ones the bot looks for, across reloads.
+await page.exposeFunction('longToast', (t) => problems.push(`a toast over 30 words: ${t}`));
+await page.addInitScript(() => {
+  let last = '';
+  new MutationObserver(() => {
+    const t = document.getElementById('toast')?.textContent?.trim() ?? '';
+    if (t !== last && t.split(/\s+/).length > 30) window.longToast(t);
+    last = t;
+  }).observe(document, { subtree: true, childList: true, characterData: true });
+});
 page.on('pageerror', (e) => problems.push(`uncaught: ${e.message}`));
 page.on('console', (m) => m.type() === 'error' && problems.push(`console.error: ${m.text()}`));
 page.on('requestfailed', (r) => problems.push(`request failed: ${r.url()}`));
@@ -492,6 +503,20 @@ await page.reload({ waitUntil: 'load' });
 await expectText('#h-time', /^Day 2 · 7:10 AM$/, 'clock after reload');
 await expectText('#h-cash', /^\$41$/, 'cash after reload');
 if (await page.locator('#create').count()) await fail('the climber screen came back after a reload');
+
+console.log('The journal');
+// Your body in the HUD opens your journal; "Lately" has yesterday in full, newest first.
+await click('#h-you');
+await expectText('#sheet-title', /^Robin/, 'the journal');
+await click('#j-lately');
+const days = await until('the log', () =>
+  page.evaluate(() => [...document.querySelectorAll('#log .crux')].map((e) => e.textContent).join(', ')),
+);
+if (!days.startsWith('Day 2, Day 1')) await fail(`the log's days: ${days}`);
+log(`lately: ${days}`);
+await expectText('#log', /Van spot, \$18\. Morning comes anyway\./, 'last night, in full');
+await shot('journal');
+await click('#sheet .x');
 
 // ---- day two ----
 

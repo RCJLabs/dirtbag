@@ -1,7 +1,7 @@
 import { clock, gradeOf, money } from '../sim';
 import type { Game, Ui } from '../game/game';
 
-// Day and time (tap for the forecast), money, your body (tap for you as a climber), and the
+// Day and time (tap for the forecast), money, your body (tap for your journal), and the
 // one navigation button.
 export function Hud({ game, ui }: { game: Game; ui: Ui }) {
   const { day, min, cash, energy, skin, fed } = ui.hud;
@@ -29,8 +29,8 @@ export function Hud({ game, ui }: { game: Game; ui: Ui }) {
         className="pill meters"
         id="h-you"
         disabled={busy}
-        aria-label={`V${gradeOf(ui.state.climber.skills)}. Energy ${Math.round(energy)}, skin ${Math.round(skin)}, food ${Math.round(fed)}.`}
-        onClick={() => game.openSheet({ k: 'you' })}
+        aria-label={`V${gradeOf(ui.state.climber.skills)}. Energy ${Math.round(energy)}, skin ${Math.round(skin)}, food ${Math.round(fed)}. Your journal.`}
+        onClick={() => game.openSheet({ k: 'journal', page: 'you' })}
       >
         <Meter name="Energy" id="m-en" v={energy} />
         <Meter name="Skin" id="m-sk" v={skin} />

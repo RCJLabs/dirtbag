@@ -56,6 +56,12 @@ import { createStore, type Store } from './store';
 
 export type View = 'scene' | 'map' | 'wall';
 
+export type JournalPage = 'you' | 'lately';
+
+// Past this many words a line goes on a card, not a toast: nobody reads 40 words in the
+// few seconds a toast stays up.
+export const TOAST_WORDS = 30;
+
 export type SheetId =
   | { k: 'van' }
   | { k: 'cragVan' }
@@ -89,7 +95,10 @@ export type SheetId =
     }
   | { k: 'dog' }
   | { k: 'act' }
-  | { k: 'you' }
+  // Your journal: you as a climber, or the log of what's happened lately.
+  | { k: 'journal'; page: JournalPage }
+  // A line too long for a toast, on a card you put down yourself.
+  | { k: 'note'; text: string; day: number; min: number }
   | { k: 'week' }
   | { k: 'settings' }
   | { k: 'restart' }
@@ -183,9 +192,9 @@ export class Game {
   private toastN = 0;
   private toastShown = 0;
   private keysWalking = false;
-  // The end of an act waits until you're back in a scene with nothing open, so it never
-  // lands on top of the send that finished it.
-  private actCard = false;
+  // Cards wait until nothing else is open, so one never lands on top of the send that
+  // caused it. The end of an act also waits until you're back in a scene.
+  private cards: SheetId[] = [];
   // Today as you've played it, to offer as tomorrow's plan; and a plan being run.
   private today: PlanStep[] = [];
   private run: { steps: PlanStep[]; i: number } | null = null;
@@ -234,12 +243,12 @@ export class Game {
     for (const e of r.events) {
       if (e.k === 'line') this.toast(e.text);
       else if (e.k === 'refused') this.toast(e.why);
-      else if (e.k === 'act') this.actCard = true;
+      else if (e.k === 'act') this.cards.push({ k: 'act' });
     }
     if (changed) this.noteComings(before);
     if (changed && !persist.save(this.state)) this.toast("Couldn't save. The browser's storage may be full.");
     this.sync();
-    this.maybeActCard();
+    this.maybeCard();
     return r.events;
   }
 
@@ -270,6 +279,11 @@ export class Game {
   // A line gets its full time on screen when nothing's waiting behind it, and just enough
   // to read when something is, so a quick player never reads news from two actions ago.
   toast(text: string): void {
+    if (words(text) > TOAST_WORDS) {
+      this.cards.push({ k: 'note', text, day: this.state.day, min: this.state.min });
+      this.maybeCard();
+      return;
+    }
     if (this.held) {
       this.held.lines.push(text);
       return;
@@ -353,7 +367,7 @@ export class Game {
     });
     this.fast.set({ cam: this.cam, att: null });
     if (x !== undefined && x !== this.state.x) this.dispatch({ t: 'stand', x });
-    this.maybeActCard();
+    this.maybeCard();
   }
 
   enterScene(scene: string, x?: number): void {
@@ -389,14 +403,16 @@ export class Game {
 
   closeSheet(): void {
     this.set({ sheet: null });
-    this.maybeActCard();
+    this.maybeCard();
   }
 
-  private maybeActCard(): void {
+  private maybeCard(): void {
     const u = this.ui.get();
-    if (!this.actCard || u.view !== 'scene' || u.sheet || u.talk || u.climbing) return;
-    this.actCard = false;
-    this.set({ sheet: { k: 'act' } });
+    const next = this.cards[0];
+    if (!next || u.sheet || u.talk || u.climbing || u.driving) return;
+    if (u.view !== 'scene' && (next.k === 'act' || u.view !== 'map')) return;
+    this.cards.shift();
+    this.set({ sheet: next });
   }
 
   hush(): void {
@@ -523,7 +539,7 @@ export class Game {
     }
     const next = ev.find((e): e is Extract<GameEvent, { k: 'talk' }> => e.k === 'talk');
     this.set({ talk: next?.node ? { talk: t.talk, node: next.node } : null });
-    this.maybeActCard();
+    this.maybeCard();
   }
 
   // ---- places and the map ----
@@ -907,3 +923,5 @@ function gainsIn(ev: GameEvent[]): Partial<Skills> {
   const e = ev.find((x): x is Extract<GameEvent, { k: 'skills' }> => x.k === 'skills');
   return e?.gains ?? {};
 }
+
+export const words = (text: string): number => text.split(/\s+/).filter(Boolean).length;

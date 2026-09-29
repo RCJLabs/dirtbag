@@ -1243,13 +1243,20 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Landscape widens the world.** The screen stays 740 logical pixels tall and grows as wide as the window allows, so a landscape screen shows more of each scene rather than a phone column with panels beside it. Sheets become a side panel in landscape, so the scene stays in view.
 
 **Slices.**
-- **12.1 Text surfaces.** The Journal and its message log: the last 200 events in full, kept beside the save like settings (no save version bump). A line over about 30 words goes to a card you dismiss, never a toast; a test holds every content line to that, and the e2e opens the log. Criteria 4 and 5.
+- **12.1 Text surfaces.** The Journal and its message log: the last 200 events in full. A line over about 30 words goes to a card you dismiss, never a toast, and the e2e opens the log. Criteria 4 and 5.
 - **12.2 The wide screen.** The logical width follows the window, 360 at the least and capped around 16:9. Scenes show more of themselves and pad past their ends; the HUD, goal pill and hints lay out on the width; sheets dock to the right in landscape. Then the map, whose valley needs painting wider, and the wall, board and gym views, which are composed for portrait. The e2e plays at 360 × 740 and at 1280 × 800. Criterion 2. The biggest slice: about 1–2 weeks [INFERRED].
 - **12.3 Keyboard and access.** Map pins and scene hotspots reachable by keyboard, Escape to close, visible focus; the e2e plays a day without the pointer. `npm run check` computes the kit's contrast against WCAG AA. Text at 1.3× by reflow. Meters that say low by shape as well as colour. Criterion 3 and the accessibility scope.
 - **12.4 Tonight.** The rebuild has far fewer meters than v0.956: tonight's cost, runway, the next bill, injury risk and tomorrow's forecast, on the van at night.
 - **12.5 The last inline styles**, and `check` fails on new ones. Criterion 1.
 
 **Unreal.** On hold, by Evan's call, until the conversion to the new game is done. Spec changes are still logged, per CLAUDE.md.
+
+**Status (29 Sep 2026): 12.1 built.**
+- The sim already kept a log of the last 200 lines in the save (`LOG_MAX`), with nothing showing it. The Journal shows it: your body in the HUD, or the goal pill, opens it, on "You" (the old "you" sheet) or "Lately" (the log, by day, newest first).
+- A line over 30 words (`TOAST_WORDS`) goes on a card, "Right" to put it down, that waits until nothing else is open, as the end of Act I's card already did. None of today's toasted lines is that long: the longest texts are Sage's beats, which are speech bubbles.
+- The e2e opens the log on day two and watches every toast of the run, reloads included; it fails on one over 30 words.
+- The Journal is the body pill rather than a new HUD button: a portrait HUD has about 55 px free, and "Journal" doesn't fit there. In landscape (12.2) it can get its own.
+- What the log doesn't hold: people coming and going, what a thing in a scene says when you tap it, and refusals. Those are toasts only. Criterion 5 reads "events"; these aren't in the sim's log, and adding them there would be a sim change.
 
 ---
 
@@ -1574,3 +1581,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — 0.961.0 released: Evan published `v0.961.0` on `main` (`afab5a5`), and Deploy run 2 went green, live check included. Phase 10 and 11 are live; the Play update is Evan's.
 - 2026-09-29 — Phase 12 planned on the rebuild, with Evan's calls: a Journal instead of the five tabs, and landscape widens the world rather than framing a phone column. Slices 12.1 (text surfaces) to 12.5. Unreal is on hold until the conversion is done.
 - 2026-09-29 — Every send after a line's first is now a repeat, by Evan's call; it was named "Redpoint" however many times you'd sent it. The log keeps the first send's style, so saves don't change.
+- 2026-09-29 — Phase 12.1: the Journal. Your body in the HUD opens it: you as a climber, and "Lately", the sim's 200-line log that nothing showed until now. A line over 30 words goes on a card, not a toast, and the e2e fails on any toast longer. Day three's taps don't move.

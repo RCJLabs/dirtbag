@@ -16,6 +16,7 @@ import {
   bodyNote,
   BODY,
   CLIMB,
+  clock,
   clockShort,
   conditions,
   conditionsAt,
@@ -57,12 +58,13 @@ import {
   TIER_NAME,
   type Conditions,
   type GameState,
+  type LogLine,
   type PersonLog,
   type RouteDef,
   type Season,
   type Verb,
 } from '../sim';
-import type { Game, SheetId, Ui } from '../game/game';
+import type { Game, JournalPage, SheetId, Ui } from '../game/game';
 import { legacyFile, saveLegacyFile } from '../game/legacy';
 import type { Settings } from '../game/persist';
 import { paintHeader } from '../view/header';
@@ -93,7 +95,7 @@ const winBars = (w: number) => (w >= 0.14 ? 3 : w >= 0.09 ? 2 : w >= 0.055 ? 1 :
 export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
   const ref = useRef<HTMLDivElement>(null);
   const state = ui.state;
-  const kind = id.k === 'place' ? `place:${id.id}` : id.k;
+  const kind = id.k === 'place' ? `place:${id.id}` : id.k === 'journal' ? `journal:${id.page}` : id.k;
   // A new sheet starts at the top with its first live button focused, for keyboards.
   useLayoutEffect(() => {
     const el = ref.current;
@@ -110,8 +112,8 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
       <BetaBody game={game} route={id.route} s={state} />
     ) : id.k === 'fa' ? (
       <FaBody game={game} route={id.route} s={state} />
-    ) : id.k === 'you' ? (
-      <YouBody game={game} s={state} />
+    ) : id.k === 'journal' ? (
+      <JournalBody game={game} page={id.page} s={state} />
     ) : id.k === 'week' ? (
       <WeekBody game={game} s={state} />
     ) : id.k === 'settings' ? (
@@ -620,6 +622,64 @@ function billsWhen(day: number): string {
   return n === 1 ? 'tonight' : `in ${n} nights`;
 }
 
+// Your journal: you as a climber, and what's happened lately. The log is the sim's own,
+// kept in the save, newest first.
+function JournalBody({ game, page, s }: { game: Game; page: JournalPage; s: GameState }) {
+  return (
+    <>
+      <h3 id="sheet-title">{s.climber.name || 'You'}</h3>
+      <div className="chips pages">
+        {JOURNAL_PAGES.map(([p, label]) => (
+          <button
+            type="button"
+            key={p}
+            className="chip"
+            id={`j-${p}`}
+            aria-pressed={page === p}
+            onClick={() => game.openSheet({ k: 'journal', page: p })}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {page === 'you' ? <YouBody game={game} s={s} /> : <LatelyBody s={s} />}
+    </>
+  );
+}
+
+const JOURNAL_PAGES: [JournalPage, string][] = [
+  ['you', 'You'],
+  ['lately', 'Lately'],
+];
+
+function LatelyBody({ s }: { s: GameState }) {
+  if (!s.log.length) return <p className="sub">Nothing yet. Give it a day.</p>;
+  const byDay: [number, LogLine[]][] = [];
+  for (let i = s.log.length - 1; i >= 0; i--) {
+    const l = s.log[i]!;
+    const last = byDay[byDay.length - 1];
+    if (last?.[0] === l.day) last[1].push(l);
+    else byDay.push([l.day, [l]]);
+  }
+  return (
+    <div id="log">
+      {byDay.map(([day, lines]) => (
+        <Fragment key={day}>
+          <p className="crux">Day {day}</p>
+          <ul className="log">
+            {lines.map((l, i) => (
+              <li key={i}>
+                <b>{clock(l.min)}</b>
+                <span>{l.text}</span>
+              </li>
+            ))}
+          </ul>
+        </Fragment>
+      ))}
+    </div>
+  );
+}
+
 function YouBody({ game, s }: { game: Game; s: GameState }) {
   const c = s.climber;
   const g = gradeOf(c.skills);
@@ -628,7 +688,6 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
   const bills = MONEY.registration + MONEY.insurance;
   return (
     <>
-      <h3 id="sheet-title">{c.name || 'You'}</h3>
       <p className="sub">
         {startName(c.start)}, climbing V{g}. V{g + 1} comes at an average of {needFor(g + 1).toFixed(1)}{' '}
         across the five; you're at {average(c.skills).toFixed(1)}.
