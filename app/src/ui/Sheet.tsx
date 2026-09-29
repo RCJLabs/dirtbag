@@ -44,7 +44,7 @@ import {
   seasonOf,
   SKILLS,
   SKY_NAME,
-  STARTS,
+  startName,
   tierOf,
   TIER_NAME,
   type Conditions,
@@ -54,6 +54,7 @@ import {
   type Verb,
 } from '../sim';
 import type { Game, SheetId, Ui } from '../game/game';
+import { legacyFile, saveLegacyFile } from '../game/legacy';
 import type { Settings } from '../game/persist';
 import { CARD, cardPng } from '../view/paint/card';
 import { cardFile, cardOf, cardText } from './card';
@@ -469,8 +470,8 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
     <>
       <h3 id="sheet-title">{c.name || 'You'}</h3>
       <p className="sub">
-        {STARTS[c.start]?.name ?? 'A climber'}, climbing V{g}. V{g + 1} comes at an average of{' '}
-        {needFor(g + 1).toFixed(1)} across the five; you're at {average(c.skills).toFixed(1)}.
+        {startName(c.start)}, climbing V{g}. V{g + 1} comes at an average of {needFor(g + 1).toFixed(1)}{' '}
+        across the five; you're at {average(c.skills).toFixed(1)}.
       </p>
       <ul className="skills">
         {SKILLS.map((k) => (
@@ -689,6 +690,26 @@ function SettingsBody({ game, settings }: { game: Game; settings: Settings }) {
         {choice('text', 'normal', 'Normal')}
         {choice('text', 'large', 'Large')}
       </div>
+      <OldCareer />
+    </>
+  );
+}
+
+// v0.956's saves, still in this browser after the old game retired: kept as a file on request.
+function OldCareer() {
+  const [there] = useState(() => legacyFile() !== null);
+  const [kept, setKept] = useState(false);
+  if (!there) return null;
+  return (
+    <>
+      <p className="crux">v0.956</p>
+      <button type="button" className="opt" id="s-export" onClick={() => setKept(saveLegacyFile())}>
+        <span>{kept ? 'Saved. Keep it somewhere safe.' : 'Save your v0.956 career'}</span>
+        <span className="c" />
+        <small>
+          The old game is retired, but its saves are still in this browser. This keeps them as a file.
+        </small>
+      </button>
     </>
   );
 }

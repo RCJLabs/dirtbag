@@ -313,9 +313,30 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 - **Point the site pipeline at the new build:** check, smoke test, stage, deploy and the TWA. The version moves past 0.956, and the new service worker deletes the old cache.
 - **Store copy:** listing, screenshots, and "What's new" in the game's voice.
 
+**Decided (29 Sep 2026, Evan):**
+- **v0.956 retires, and its saves are exported.** The site and the Play app become the rebuild; v0.956 isn't kept at `/classic/`. A v0.956 player keeps their career as a file, and can carry on in the rebuild under their old name, with their climbing capped.
+- **The version is 0.960.0.** It continues the 0.9xx line: the rebuild ships a first season, not the finished game.
+
+**Plan (29 Sep 2026):**
+- **R3.1, the retirement path, in the rebuild:**
+  - v0.956 kept everything in `localStorage` under `dirtbag-` keys: the career it was playing (`dirtbag-save-v3`), three manual slots, and the last "What's new" seen. The rebuild's keys are `dirtbag.`, so nothing collides.
+  - When a v0.956 career is found, the creation screen says v0.956 has retired. It offers the career as a file (every `dirtbag-` key, byte for byte), prefills the old name, and offers "As you were": your own skills, capped.
+  - Settings keeps the download for later. Nothing ever deletes v0.956's keys.
+- **R3.2, the site becomes the rebuild:**
+  - The version moves to 0.960.0.
+  - The site is staged from `app/dist`, and check, smoke, size and deploy follow it.
+  - The rebuild's worker ships as `service-worker.js`, so a returning player's browser updates in place and drops v0.956's cache.
+  - The TWA manifest follows the new build.
+  - v0.956's files leave the tree; the `v0.956.0` tag keeps them for a rollback.
+- **R3.3:** store copy, "What's new", and the docs.
+
 **Done when.**
 1. A tag deploys the new build and the Play app updates.
 2. A v0.956 player who opens the site isn't stranded: their career is still playable or exported.
+
+*As built (R3.1):*
+- The notice, the file (`dirtbag-v0956-career.json`: the format, when, and every `dirtbag-` key as v0.956 wrote it), the prefilled name, and "As you were". The e2e bot plays a v0.956 player in a browser of their own and checks all four, and that the old keys are untouched.
+- *[proposed]* A carried climber comes across at no more than V3, scaled so their shape survives (strong fingers stay strong). V3 is the middle of Act I: a veteran skips the gym basics but still has the act's top grade and Dex's race to earn. The rebuild has nothing above V9 to climb anyway. Under the cap, they come across as they were. The You sheet calls them "An old hand".
 
 **Depends on:** R2. **Effort:** ~1–2 weeks.
 
@@ -1263,3 +1284,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — R2 send card: a first send gets a card painted on the device from the line's own wall and topo (name, grade, how it went, the crag and the day, you at the top, a ribbon for a first ascent), to share or save as a PNG. Nothing is uploaded. The wall, boulder and gym painters now paint into any canvas, so the card is crisp at its size.
 - 2026-09-29 — R2 targets: the harness checks Phase 6's first-season targets and passes all four. Its bots now log time on the rock, what it taught them, and any stuck night. It also found wet days in week four with nothing new to try once the gym set is done. R2 is built; criteria 1 and 2 wait on watchers and testers.
 - 2026-09-29 — R2 closed by Evan's call: criteria 1 and 2 accepted as tested and watched; the proposed design calls stand as built until he rules. CURRENT MILESTONE moved to R3.
+- 2026-09-29 — R3 decided (Evan): v0.956 retires with its saves exported, and the rebuild ships as 0.960.0. R3.1: the rebuild tells a v0.956 player the old game has retired, keeps their career as a file, and lets them come across under their old name, capped at V3 (proposed).

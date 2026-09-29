@@ -3,7 +3,7 @@
 // stand still. The UI stages the events; it never edits the state itself.
 
 import { cold, daysOff, freshLoad, goLoad, projected, ratio, rollInjury } from './body';
-import { gains, gradeOf, STARTS, type GoSummary } from './climber';
+import { CARRIED, carried, gains, gradeOf, STARTS, type GoSummary } from './climber';
 import { headroom, holds, leadOver, unmet } from './cond';
 import { dexHurt, dexSeason, gradeOfPerson } from './curves';
 import { routeById, routesAt } from './content/gym';
@@ -381,8 +381,14 @@ export function act(s0: GameState, a: Action): Result {
     case 'create': {
       if (s.climber.name) return refuse('You already are who you are.');
       const name = a.name.trim().slice(0, NAME_MAX).trim();
-      const start = STARTS[a.start];
       if (!name) return refuse('You need a name.');
+      if (a.carry) {
+        const skills = carried(a.carry);
+        if (!skills) return refuse("That climber didn't make it across.");
+        s.climber = { name, start: CARRIED, skills };
+        break;
+      }
+      const start = STARTS[a.start];
       if (!start) return refuse('Pick how you climb.');
       s.climber = { name, start: a.start, skills: { ...start.skills } };
       break;

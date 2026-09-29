@@ -295,8 +295,9 @@ export class Game {
     this.set({ settings, still: stillFor(settings, this.systemStill) });
   }
 
-  create(name: string, start: string): void {
-    const ev = this.dispatch({ t: 'create', name, start });
+  // `carry`: a v0.956 climber's skills, to come across as they were (the sim caps them).
+  create(name: string, start: string, carry?: Skills): void {
+    const ev = this.dispatch(carry ? { t: 'create', name, start, carry } : { t: 'create', name, start });
     if (ev.some((e) => e.k === 'refused')) return;
     this.set({ hint: SCENES[this.ui.get().scene]?.hint ?? null });
   }

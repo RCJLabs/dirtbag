@@ -180,6 +180,15 @@ export const DOG = {
   tiers: [0, 30, 70],
 };
 
+// A climber carried over from v0.956, which retired at R3 (Evan's call: retire it, export
+// saves). Their five skills come across as they were, but no higher than this grade, scaled
+// so their shape (strong fingers, weak head) survives. [proposed] V3 is the middle of Act I:
+// a veteran skips the gym basics but still has the act's top grade and Dex's race to earn,
+// and the rebuild has nothing to climb above V9 anyway.
+export const LEGACY = {
+  capGrade: 3,
+};
+
 // Injuries: v0.956's three tiers and how long each keeps you off. The clinic is a copay
 // (your weekly insurance pays the rest), and your first injury costs only time (Phase 6).
 export const INJURY = {
