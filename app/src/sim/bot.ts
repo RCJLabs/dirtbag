@@ -91,17 +91,19 @@ export function carefulHands(): (a: Attempt, i: number) => boolean {
 
 // Human-ish hands, for a first read on difficulty: a throw let go of and a foot tapped with
 // the scatter of a practised thumb (about 50 ms either way), and a tension band tracked
-// from what the eye saw 200 ms ago. The numbers are guesses, not measurements: R2 fits
-// them to playtests.
+// from what the eye saw about 200 ms ago, sharper on some goes than others. A fixed lag
+// made tension all-or-nothing: every band wider than the lag's wobble held, and every
+// narrower one fell. The numbers are guesses, not measurements: R2 fits them to playtests.
 export interface HandsSpread {
   // Standard deviations, in meter units: the load meter fills 0.85 a second and the timing
   // marker sweeps 1.6, so 0.045 and 0.08 are both about 50 ms.
   load: number;
   timing: number;
-  // Steps of lag on the tension band.
+  // Steps of lag on the tension band, and how much it varies from go to go.
   lag: number;
+  lagSd: number;
 }
-export const HUMAN: HandsSpread = { load: 0.045, timing: 0.08, lag: 12 };
+export const HUMAN: HandsSpread = { load: 0.045, timing: 0.08, lag: 12, lagSd: 4 };
 
 export function humanHands(rng: Rng, spread: HandsSpread = HUMAN): (a: Attempt, i: number) => boolean {
   const seen: Attempt[] = [];
@@ -111,11 +113,12 @@ export function humanHands(rng: Rng, spread: HandsSpread = HUMAN): (a: Attempt, 
     return (u - 3) / Math.SQRT1_2;
   };
   const base = carefulHands();
+  const lag = Math.min(24, Math.max(4, Math.round(spread.lag + gauss() * spread.lagSd)));
   let aim: { crux: string; at: number } | null = null;
   let lastTap = -99;
   return (a, i) => {
     seen.push(a);
-    if (seen.length > spread.lag + 1) seen.shift();
+    if (seen.length > lag + 1) seen.shift();
     const v = a.crux;
     if (a.phase !== 'crux' || !v) {
       aim = null;

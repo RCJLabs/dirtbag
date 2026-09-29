@@ -4,6 +4,22 @@
 
 import type { Style } from './climber';
 
+// How a crux's window scales with your margin: your level in the beta's style, less the
+// line's grade. Under your level windows open 24% a grade, but never past 1.4, so a crux
+// never stops being one. Over it they close by e^(0.9 x margin), to about 40% a grade.
+// Against the harness's human-ish hands, a one-crux boulder then goes about 60% a go one
+// grade over, 15% at two, 5% at three and never at four; a sport line with two cruxes and
+// the pump, 10-30% a go one grade over. v0.956 made the point with a cliff (odds capped
+// at 13% 1.5 grades short, 3% at 2.5); this is its slope without the hidden step. R1's
+// floor of 0.4 let a V4 send the Gorge's V9 with enough goes.
+export const WINDOW = {
+  easier: 0.24,
+  widest: 1.4,
+  harder: 0.9,
+  // A floor only so a window is never zero; nothing holds one this narrow.
+  narrowest: 0.002,
+};
+
 export const DAY = {
   // The first morning starts at 7:40. Hazel is already at the fire with the coffee.
   firstMin: 7 * 60 + 40,

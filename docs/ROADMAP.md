@@ -211,12 +211,12 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
     - Sport: Gorge Intro 5.12b, Gorge Classic 5.12c and Power Endurance 5.13a.
     - Gorge Trad waits for gear.
 - **Load and injury** (v0.956's model, with Phase 6's fixes):
-  - **Load:** each go adds (12 + 2g) in the gym and (18 + 2g) outside, times the share of the line climbed. At sleep, acute and chronic load update as exponentially weighted averages (α 1/4 and 1/14).
+  - **Load:** each go adds its energy cost × (1 + grade/9) × (0.6 + 0.4 × the share of the line climbed). At sleep, acute and chronic load update as exponentially weighted averages (α 1/4 and 1/14). *Deviation:* v0.956 added (12 + 2g) in the gym and (18 + 2g) outside for goes two hours long; these goes take minutes, so load follows each go's effort.
   - **The ratio (acute over chronic)** gates you:
     - over 1.3, each go carries v0.956's injury risk;
     - over 1.5, gains drop to 60%;
     - over 1.7, you're fried and can't climb.
-  - **Injuries:** out 2–4, 6–9 or 13–18 days by tier. Tier 2 costs $180 at the clinic and tier 3 costs $850.
+  - **Injuries:** out 2–4, 6–9 or 13–18 days by tier. *Deviation:* the clinic takes a copay, $45 for tier 2 and $210 for tier 3, because the weekly insurance pays the rest; v0.956 charged $180 and $850.
   - *Fixes:*
     - chronic load starts seeded, so the first week can't spike it;
     - an unwarmed hard go carries v0.956's ×1.6, and an easy go first warms you up;
@@ -226,6 +226,10 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 - **Projects and first ascents:**
   - Open lines are first-ascended by you. You name them from a list built from your record, and call the grade soft, true or stout, as in v0.956.
   - Dex can race you for one.
+- **Windows above your grade** *(a fix the harness found)*:
+  - R1's window scale bottomed out at 0.4 two and a half grades over, so a V4 could send the Gorge's V9 with enough goes.
+  - Over your level, windows now close by e^(0.9 × margin): about 40% a grade.
+  - With the harness's human-ish hands, a boulder goes about 60% a go one grade over, 15% at two, 5% at three and never at four.
 - **Partners and bonds** (v0.956's):
   - Tiers: Stranger 0, Acquaintance 1, Regular 3, Partner 5, Ride-or-Die 7.
   - Bond is +1 a day climbing together (Phase 6's cap), and a partner turns up more as the tier rises.
@@ -1207,3 +1211,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — R2 harness: bots with human-ish hands play whole seasons under three strategies and report grade, runway, injuries and when content runs out (`npm run harness`).
 - 2026-09-29 — R2 load and injury: v0.956's acute:chronic model with Phase 6's fixes (seeded chronic load, warm-ups, seeded rolls, a free first injury). Save v3.
 - 2026-09-29 — R2 crags: Roadside's other four lines, its open project yours to first-ascend, name and grade; Granite Gorge (opens at V4, shut in spring, shaded all day, one sandbag), with its own scene, wall and map road. The harness then showed a V4 bot sending the Gorge's V9: windows above your grade were far too wide, fixed in the next commit.
+- 2026-09-29 — R2 windows: above your grade they now close about 40% a grade (R1's floor let a V4 send the Gorge's V9), and the harness's hands vary their reaction time from go to go, so tension cruxes stop being all-or-nothing. The bots' displayed grade at day 42 drops from V5 to V4; their first V5 project comes around day 14. R2's rules so far are logged in Dirtbag-UE's spec log.

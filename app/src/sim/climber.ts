@@ -3,6 +3,7 @@
 // There is no odds roll: your skills set how wide each crux's window is.
 
 import type { Skills, SkillId } from './types';
+import { WINDOW } from './dials';
 
 // The six styles a route or a sequence can ask for.
 export type Style = 'crimp' | 'power' | 'endurance' | 'technical' | 'dyno' | 'crack';
@@ -69,10 +70,12 @@ export const mix = (s: Skills, style: Style): number => {
 // How far above (+) or below (−) a grade you climb in a style, in grades.
 export const margin = (s: Skills, style: Style, grade: number): number => levelOf(mix(s, style)) - grade;
 
-// A window's width against your margin. v0.956's windows about halved from level to two
-// grades over; below your level they open up, but never so far that a crux stops being
-// one.
-export const windowFactor = (m: number): number => Math.min(1.4, Math.max(0.4, 1 + 0.24 * m));
+// A window's width against your margin: open below your level, closing fast above it
+// (WINDOW says why).
+export const windowFactor = (m: number): number =>
+  m >= 0
+    ? Math.min(WINDOW.widest, 1 + WINDOW.easier * m)
+    : Math.max(WINDOW.narrowest, Math.exp(WINDOW.harder * m));
 
 // Endurance (with technique, as the endurance style) sets how fast you pump against the
 // route's grade: a fit climber on an easy route barely pumps, and a stamina-poor climber
