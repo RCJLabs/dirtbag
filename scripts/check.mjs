@@ -89,6 +89,20 @@ check('privacy.html exists', () => {
   if (!exists('privacy.html')) fail('the Play listing links the privacy page');
 });
 
+// --- the store copy fits Play's limits --------------------------------------------------------
+check("docs/STORE.md fits Play's limits", () => {
+  const md = read('docs/STORE.md');
+  const LIMIT = { short: 80, full: 4000, 'whats-new': 500 };
+  const out = Object.entries(LIMIT).map(([key, max]) => {
+    const block = md.match(new RegExp('```text ' + key + '\\n([\\s\\S]*?)\\n```'));
+    if (!block) fail(`no \`\`\`text ${key} block`);
+    const n = [...block[1]].length;
+    if (n > max) fail(`${key} is ${n} characters; Play allows ${max}`);
+    return `${key} ${n}/${max}`;
+  });
+  return out.join(', ');
+});
+
 // --- the Play build can still verify the domain ----------------------------------------------------
 check('TWA host matches CNAME and assetlinks.json names the app', () => {
   const twa = json('twa-manifest.json');

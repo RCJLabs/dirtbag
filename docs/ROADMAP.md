@@ -361,6 +361,20 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
   2. push `v0.960.0` to deploy;
   3. once it's live, run Build TWA and upload the bundle to Play.
 
+*As built (R3.3):*
+- `docs/STORE.md` holds the Play listing for 0.960.0, in the game's voice: an 80-character short description, the full description, and "What's new". The order follows the audit (the life, then the climbing, then the promise); every fact in it is checked against the build. `npm run check` holds each block to Play's limit.
+- Eight 1080 × 1920 screenshots from the 0.960.0 build, listed there with captions. They were delivered with the release work rather than committed, since they're binary.
+
+**Status (29 Sep 2026): built; the release is Evan's.**
+- Criterion 2 is built and tested before the deploy:
+  - the e2e bot plays a v0.956 player who keeps their career and comes across;
+  - a local crossover with v0.956's own files shows an installed browser swapping to the rebuild within seconds, offline included.
+- Criterion 1 needs the release steps this session can't take. Tag pushes are refused here, and the Play Console is Evan's.
+  1. Push `v0.956.0` on the commit before the switch, so a rollback has a target.
+  2. Push `v0.960.0` to deploy the rebuild. Deploy then checks the live site serves this commit and its worker.
+  3. Once it's live, run Build TWA and upload the bundle, with the "What's new" from `docs/STORE.md`.
+- R3 closes when both tags are out and the Play app has updated. Then check the live crossover once: on a phone that has v0.956 installed, the first launch after the deploy may still show v0.956; the next shows the rebuild and the retirement notice.
+
 **Depends on:** R2. **Effort:** ~1–2 weeks.
 
 **Risks of the rebuild.**
@@ -1309,3 +1323,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — R2 closed by Evan's call: criteria 1 and 2 accepted as tested and watched; the proposed design calls stand as built until he rules. CURRENT MILESTONE moved to R3.
 - 2026-09-29 — R3 decided (Evan): v0.956 retires with its saves exported, and the rebuild ships as 0.960.0. R3.1: the rebuild tells a v0.956 player the old game has retired, keeps their career as a file, and lets them come across under their old name, capped at V3 (proposed).
 - 2026-09-29 — R3.2: the site becomes the game's build, at 0.960.0. The build's worker takes v0.956's name and clears its cache, and a local crossover test shows a v0.956 browser swapping to the rebuild within seconds, offline included. Smoke, check, stage, CI and Deploy follow the build. v0.956's files leave the tree; its tag keeps them.
+- 2026-09-29 — R3.3: the Play listing and "What's new" for 0.960.0 in `docs/STORE.md`, held to Play's limits by `npm run check`, and eight screenshots from the build. R3 is built; the tags and the Play upload are Evan's.
