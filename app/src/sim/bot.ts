@@ -13,12 +13,12 @@ import {
   stepAttempt,
   type Attempt,
 } from './climb';
-import { holds, isNight, unmet } from './cond';
+import { headroom, holds, isNight, unmet } from './cond';
 import { routesAt } from './content/gym';
 import { ACTS, PLACES, road } from './content/places';
 import { TALK } from './content/people';
 import type { RouteDef } from './content/routes';
-import { CLIMB, DAY, LOAD, MONEY } from './dials';
+import { BODY, CLIMB, DAY, LOAD, MONEY } from './dials';
 import { cold, ratio } from './body';
 import { gradeOf, average } from './climber';
 import { act, faSuggestions, goBlocked, knowsBeta, newGame, talkStart } from './game';
@@ -58,6 +58,12 @@ export interface DaySummary {
   // Where the day's climbing was: a place, "tired" (too spent to go), or "nothing" (no line
   // left within reach anywhere).
   where: string;
+  // Minutes on the rock (goes and the rests between them), and the skill they taught, summed
+  // over all five: what climbing's worth an hour, against a setting shift's.
+  climbMin: number;
+  climbGain: number;
+  // A night the rules count as failure: going to bed hungry, or with the card nearly maxed.
+  stuck: boolean;
 }
 
 // How a bot spends its days. The climber works only when the money's nearly gone; the
@@ -209,6 +215,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   const run: BotRun = { state: s, actions: [], refused: [], sends: [], injuries: [], lines: [], days: [] };
   let workMin = 0;
   let hardest = -1;
+  let climbMin = 0;
+  let climbGain = 0;
 
   const go = (a: Action): boolean => {
     const r = act(s, a);
@@ -223,6 +231,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       if (e.k === 'line') run.lines.push(`day ${s.day}: ${e.text}`);
       if (e.k === 'sent') run.sends.push(`day ${s.day}: ${e.route} (${e.style})`);
       if (e.k === 'injured') run.injuries.push(`day ${s.day}: ${e.kind} (tier ${e.tier})`);
+      if (e.k === 'skills' && a.t === 'done') climbGain += Object.values(e.gains).reduce((n, g) => n + g, 0);
       // A first ascent gets the first name on offer, called true.
       if (e.k === 'fa') {
         const line = routesAt(s.seed, s.at, s.day).find((x) => x.id === e.route);
@@ -318,6 +327,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   function day() {
     workMin = 0;
     hardest = -1;
+    climbMin = 0;
+    climbGain = 0;
     travel('lot');
     if (s.fed < 70) tryAct('lot.cook');
     work();
@@ -338,7 +349,9 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     if (place && s.min < 16 * 60 && s.energy >= 30 && s.skin >= 25) {
       travel(place);
       if (place === 'gym') tryAct('gym.pass');
+      const t = s.min;
       session();
+      climbMin += s.min - t;
       where = place;
     }
     travel('lot');
@@ -360,6 +373,9 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       workMin,
       hardest,
       where,
+      climbMin,
+      climbGain: Math.round(climbGain * 100) / 100,
+      stuck: s.fed < BODY.hungryBelow || headroom(s) < MONEY.vanSpot,
     });
     tryAct('lot.sleep');
   }

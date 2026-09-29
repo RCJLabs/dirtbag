@@ -282,11 +282,24 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
   - first-month injuries under 35% for a warmed-up, moderate player;
   - climbing out-teaches setting shifts;
   - a median climber is on a V5 project by day 28.
+  - *As measured (R2.5, 12 seeds × 28 days × every start and strategy; `npm run harness` prints these):*
+    - ✓ Runway, balanced: median 2.3, 2.3, 2.6 and 3.4 days at days 7, 14, 21 and 28; the most any run had was 5.1. No stuck nights (hungry, or the card nearly maxed) and no refusals, for any strategy.
+    - ✓ Injuries: 0 of 144 moderate runs in the first month; 4 of 144 cold, reckless ones (3%). *Caveat:* that passes with room to spare, and may be too gentle for the body to register as a trade-off. A playtest question.
+    - ✓ Climbing against setting: an hour on the rock teaches 5.8–12.4 skill points (V0–V4), and a setting shift 0.75. The bots end the month at a median V3, so "every grade" means V0–V4 here.
+    - ✓ First V5 go: median day 18–18.5 for every strategy.
+    - *Found on the way:* by the fourth week about half the bots hit a wet day with the week's six gym problems sent and nothing new to try. A player can lap, rest or work. More gym problems, or a harder circuit once you've sent the set, would close it: Evan's call.
 
 **Done when.**
 1. Phase 9's criteria pass on the new wall: a watcher can tell how close a go was; a pumped go feels tense; two climbers play the same route differently.
 2. Phase 7's first-hour criteria pass.
 3. The harness shows a working climber still facing a "can I afford this week off?" choice at the end of the season.
+
+**Status (29 Sep 2026).** Built: R2.1 to R2.5.
+- Criterion 3 passes in the harness (above).
+- Criteria 1 and 2 need people. Everything they test is built:
+  - for Phase 9's watchers: the reach bar, the chalk band, the pump shake and vignette, and pace;
+  - for Phase 7's testers: the first hour, with Act I's goals on screen.
+- R2 stays the CURRENT MILESTONE until watchers and testers have played it.
 
 **Depends on:** R1 and Phase 5. **Effort:** ~6–10 weeks.
 
@@ -1247,3 +1260,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — R2 Act I: v0.956's first-season quest as the demo's goal ladder, in its words and with its rewards, a "Next" pill on screen, and an end-of-act card; it ends at V4, the night Dex's race begins.
 - 2026-09-29 — R2 wall feel (Phase 9): the fall sheet draws how far a go got against your best; a chalk band and an X on the wall; pumped climbers shake and the screen's edges close in; and, proposed, climbers move through a line at a pace set by how far over or under its grade they are. Fixed "A 11-foot catch".
 - 2026-09-29 — R2 send card: a first send gets a card painted on the device from the line's own wall and topo (name, grade, how it went, the crag and the day, you at the top, a ribbon for a first ascent), to share or save as a PNG. Nothing is uploaded. The wall, boulder and gym painters now paint into any canvas, so the card is crisp at its size.
+- 2026-09-29 — R2 targets: the harness checks Phase 6's first-season targets and passes all four. Its bots now log time on the rock, what it taught them, and any stuck night. It also found wet days in week four with nothing new to try once the gym set is done. R2 is built; criteria 1 and 2 wait on watchers and testers.
