@@ -64,8 +64,9 @@
 | 11 Valley map | Built on the rebuild (the taps, place cards, adding a place, the daily plan) and closed by Evan's call. Criteria 2 to 5 pass; its testers' criterion carries. Released in 0.961.0 with Phase 10. |
 | 12 UI system | Built on the rebuild (the Journal, the wide screen, keyboard and access, Tonight, no inline styles) and closed by Evan's call. The flows the e2e doesn't play in landscape or by keyboard carry to playtesting. |
 | 13 Sound and feel | Built on the rebuild (effects and ambience made in code, the licence ledger, credits) and closed by Evan's call. Criterion 4 (music) carries with the music decision; criteria 1 and 2 wait on an ear. |
-| 14 Desktop and Steam | The current milestone. |
-| 15–20 | Unchanged in intent. They target the new build. |
+| 14 Desktop and Steam, 15 Demo and store page | Moved after Phase 18 by Evan's call: the full game first. |
+| 16 The spine | The current milestone. |
+| 17–20 | Unchanged in intent. They target the new build. The order from here: 16, 17, 18, then 14, 15, then 19 and 20. |
 
 ## The rebuild track
 
@@ -407,8 +408,8 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 | A. Make it safe to change | 1–4 | Source control, a safety net, load time, and pulling the simulation out of the UI | 8–14 weeks |
 | B. Decide what the game is | 5–7 | Design bible and cut list, core-loop retune, the first hour | 5–8 weeks |
 | C. Make it look like the game it is | 8–13 | Art direction, the climbing screen, crags, the town, the UI system, sound | 18–29 weeks |
-| D. Get it in front of people | 14–15 | Desktop/Steam build, then the demo, store page and festival | 4–6 weeks |
 | E. Make the full game worth paying for | 16–18 | Story spine and ending, the people, careers and jobs | 11–17 weeks |
+| D. Get it in front of people | 14–15 | Desktop/Steam build, then the demo, store page and festival: after the full game, by Evan's call | 4–6 weeks |
 | F. Ship | 19–20 | Monetization, store readiness, beta, launch and after | 5–8 weeks |
 
 That adds up to about 51–82 weeks, roughly 12–19 months [INFERRED].
@@ -1345,7 +1346,7 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **13.3 The licence ledger and credits.** Every sound and where it came from; a check that nothing unlisted ships; a credits screen.
 - **13.4 Music**, when Evan decides.
 
-**Status (29 Sep 2026): 13.1 to 13.3 built; closed by Evan's call.** Criterion 4 carries with music (13.4), which is parked; criteria 1 and 2 are met in code and tests and still wait on someone listening. The marker moved to Phase 14.
+**Status (29 Sep 2026): 13.1 to 13.3 built; closed by Evan's call.** Criterion 4 carries with music (13.4), which is parked; criteria 1 and 2 are met in code and tests and still wait on someone listening. The marker moved to Phase 16 (Phases 14 and 15 now come after 18).
 - `src/audio/`: `cues.ts` names what each thing sounds like, `sound.ts` makes it. 23 cues: around the valley (a tap, steps, a speech bubble, the map, the van, eating, money in and out, bed, resting, the dog) and on the wall (pulling on, each move, each clip, the crux, clearing it, each crux verb as your hands play it, a throw's rising charge and release, breath as the pump builds, the fall, the landing, the send).
 - An act sounds like what it does to you, from its data, so a new act has a sound without anyone choosing one. A test holds every act and every crux verb to one.
 - Settings: sound on, quiet or off; vibration on or off. The sound suspends while the app is hidden. The ambience bus already ducks under dialogue, ready for 13.2.
@@ -1368,69 +1369,9 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 ---
 
-## Stage D — Get it in front of people
-
-### Phase 14 — Desktop and Steam build   **<<< CURRENT MILESTONE**
-
-**Goal.** A Steam build that plays well with mouse, keyboard or gamepad on Windows, macOS, Linux and Steam Deck.
-
-**Why.** Steam is the main revenue bet in the market research. Today the game is portrait-only and touch-only, with no keyboard or gamepad input and no Back handling. It also relies on system emoji fonts.
-
-**Scope.**
-- **Electron wrapper.** Electron over Tauri: it's the same Chromium the game is tuned on, with more reliable media on Linux and Deck.
-- **Save files** in the user-data folder for Steam Cloud (Auto-Cloud).
-- **Input.**
-  - Keyboard: WASD and arrows to move, plus hotkeys for the five hubs.
-  - Gamepad: full navigation and minigame mappings.
-  - Rebinding.
-- **Steamworks** via `steamworks.js`. Map the Record Book to Steam achievements; they don't need a server.
-- **Window modes**, a quit option, and bundled icon fonts.
-- **A Deck compatibility pass**, targeting "Verified".
-- **Build flags** make one codebase produce the demo and the full game.
-
-**Done when.**
-1. A controller-only playthrough of Act I is possible.
-2. The build runs at 60 fps on a Deck.
-3. Achievements and Cloud work in the Steam dev branch.
-4. The demo build contains no full-game content, checked by a content diff in CI.
-
-**Depends on:** Phase 12. **Effort:** ~2–3 weeks. **Main risk:** input edge cases in minigames. Test each verb on each device.
-
----
-
-### Phase 15 — The demo, the store page and Next Fest
-
-**Goal.** A polished free first season on web, Steam and Play, a store page that converts, and one well-timed Next Fest.
-
-**Why.** For a solo developer, wishlists and a strong demo decide launch success. The free web build is already the right funnel; Stick RPG and A Dark Room grew this way.
-
-**Scope.**
-- **The demo** is Act I, ending on the hook from Phase 5. Saves carry into the full game through export/import (no server).
-- **The Steam page:**
-  - capsule and key art (from Phase 8);
-  - a 60–90 s trailer that shows the loop (van → shift → crag → send → fire) with the climbing screen as the hero;
-  - screenshots;
-  - short and long descriptions in the game's voice, leading with the life, then the climbing, then the promise (free first season, no ads, offline).
-- **Next Fest.** Target June 2027 as a stretch, October 2027 as safe; register by the deadline. Localize the store page and demo text into 2–3 languages if the budget allows. Cairn's localized demo kept it featured after English featuring ended.
-- **Press kit, and outreach to climbing media and creators:**
-  - outlets: Climbing, Gripped, UKClimbing, PlanetMountain;
-  - mid-tier creators such as Bouldering Bobat, Hannah Morris, Catalyst, Hooper's Beta;
-  - life-sim and cozy streamers, and Stick RPG nostalgia channels.
-- **Physical-world hooks:** gym QR posters and film-tour screenings (REEL ROCK, Banff, Kendal).
-
-**Done when.**
-1. The demo is live on web and Steam, and on Play as a free download.
-2. At least 7,000 wishlists before Next Fest (the "Popular Upcoming" threshold) [benchmark].
-3. The press kit is sent to ≥30 outlets and creators.
-4. Crash-free demo sessions on the Play and Steam dashboards exceed 99%.
-
-**Depends on:** Phases 7–14. **Effort:** ~2–3 weeks. **Main risk:** timing. There's one Next Fest per game; don't burn it on an unfinished demo.
-
----
-
 ## Stage E — Make the full game worth paying for
 
-### Phase 16 — The spine: story, acts and endings
+### Phase 16 — The spine: story, acts and endings   **<<< CURRENT MILESTONE**
 
 **Goal.** A written main story across five acts with a real ending. Epilogues are built from the player's actual history, and legacy makes the next generation feel like a continuation.
 
@@ -1531,6 +1472,68 @@ Players will ask "what am I working towards?" by hour 3.
 4. Gym profit is withdrawable.
 
 **Depends on:** Phases 5–6, 9 and 12. **Effort:** ~4–6 weeks. **Main risk:** re-sprawl. Every addition must replace something on the cut list.
+
+---
+
+## Stage D — Get it in front of people
+
+*Moved here by Evan's call (29 Sep 2026): the whole game gets built first, and the Steam build, the demo and the store page come after it. The phase numbers stay as they were, so older references still find them.*
+
+### Phase 14 — Desktop and Steam build
+
+**Goal.** A Steam build that plays well with mouse, keyboard or gamepad on Windows, macOS, Linux and Steam Deck.
+
+**Why.** Steam is the main revenue bet in the market research. Today the game is portrait-only and touch-only, with no keyboard or gamepad input and no Back handling. It also relies on system emoji fonts.
+
+**Scope.**
+- **Electron wrapper.** Electron over Tauri: it's the same Chromium the game is tuned on, with more reliable media on Linux and Deck.
+- **Save files** in the user-data folder for Steam Cloud (Auto-Cloud).
+- **Input.**
+  - Keyboard: WASD and arrows to move, plus hotkeys for the five hubs.
+  - Gamepad: full navigation and minigame mappings.
+  - Rebinding.
+- **Steamworks** via `steamworks.js`. Map the Record Book to Steam achievements; they don't need a server.
+- **Window modes**, a quit option, and bundled icon fonts.
+- **A Deck compatibility pass**, targeting "Verified".
+- **Build flags** make one codebase produce the demo and the full game.
+
+**Done when.**
+1. A controller-only playthrough of Act I is possible.
+2. The build runs at 60 fps on a Deck.
+3. Achievements and Cloud work in the Steam dev branch.
+4. The demo build contains no full-game content, checked by a content diff in CI.
+
+**Depends on:** Phase 12. **Effort:** ~2–3 weeks. **Main risk:** input edge cases in minigames. Test each verb on each device.
+
+---
+
+### Phase 15 — The demo, the store page and Next Fest
+
+**Goal.** A polished free first season on web, Steam and Play, a store page that converts, and one well-timed Next Fest.
+
+**Why.** For a solo developer, wishlists and a strong demo decide launch success. The free web build is already the right funnel; Stick RPG and A Dark Room grew this way.
+
+**Scope.**
+- **The demo** is Act I, ending on the hook from Phase 5. Saves carry into the full game through export/import (no server).
+- **The Steam page:**
+  - capsule and key art (from Phase 8);
+  - a 60–90 s trailer that shows the loop (van → shift → crag → send → fire) with the climbing screen as the hero;
+  - screenshots;
+  - short and long descriptions in the game's voice, leading with the life, then the climbing, then the promise (free first season, no ads, offline).
+- **Next Fest.** Target June 2027 as a stretch, October 2027 as safe; register by the deadline. Localize the store page and demo text into 2–3 languages if the budget allows. Cairn's localized demo kept it featured after English featuring ended.
+- **Press kit, and outreach to climbing media and creators:**
+  - outlets: Climbing, Gripped, UKClimbing, PlanetMountain;
+  - mid-tier creators such as Bouldering Bobat, Hannah Morris, Catalyst, Hooper's Beta;
+  - life-sim and cozy streamers, and Stick RPG nostalgia channels.
+- **Physical-world hooks:** gym QR posters and film-tour screenings (REEL ROCK, Banff, Kendal).
+
+**Done when.**
+1. The demo is live on web and Steam, and on Play as a free download.
+2. At least 7,000 wishlists before Next Fest (the "Popular Upcoming" threshold) [benchmark].
+3. The press kit is sent to ≥30 outlets and creators.
+4. Crash-free demo sessions on the Play and Steam dashboards exceed 99%.
+
+**Depends on:** Phases 7–14. **Effort:** ~2–3 weeks. **Main risk:** timing. There's one Next Fest per game; don't burn it on an unfinished demo.
 
 ---
 
@@ -1667,4 +1670,5 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 12 closed by Evan's call: criteria 1, 4 and 5 met; 2 and 3 met for what the e2e plays, the rest carried to playtesting. CURRENT MILESTONE moved to Phase 13, sound and feel; it gets planned on the rebuild next.
 - 2026-09-29 — Phase 13 planned on the rebuild, with Evan's calls: effects and ambience made in code, CC0 recordings where they fall flat, music parked, and effects shippable without it. 13.1: the sound engine and a sound for every verb, volume and vibration in Settings, silent while hidden. The e2e hears 20 of the 23 cues.
 - 2026-09-29 — Phase 13.2 and 13.3: every place has ambience, from its data, turned by the hour and the sky; the licence ledger lists all 34 sounds, `npm run check` fails on unlisted audio, and Settings has credits. A click in 13.1's effects (envelopes starting at full volume) is fixed.
-- 2026-09-29 — Phase 13 closed by Evan's call: criteria 1–3 met, criterion 4 carried with the parked music decision. CURRENT MILESTONE moved to Phase 14, the desktop and Steam build; it gets planned on the rebuild next.
+- 2026-09-29 — Phase 13 closed by Evan's call: criteria 1–3 met, criterion 4 carried with the parked music decision. CURRENT MILESTONE moved to Phase 14, the desktop and Steam build.
+- 2026-09-29 — Evan's call: finish building the game before the Steam build and the demo. Phases 14 and 15 (Stage D) move after Phase 18, keeping their numbers; the order is now 16, 17, 18, 14, 15, 19, 20. CURRENT MILESTONE moved to Phase 16, the spine: story, acts and endings.
