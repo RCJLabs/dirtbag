@@ -38,7 +38,7 @@ body {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 360px;
+  width: var(--w, 360px);
   height: 740px;
   transform: translate(-50%, -50%) scale(var(--k, 1));
   overflow: hidden;
@@ -74,7 +74,7 @@ body {
   position: absolute;
   left: 0;
   top: 0;
-  width: 360px;
+  width: var(--w, 360px);
   height: 740px;
   touch-action: none;
   cursor: pointer;
@@ -588,10 +588,11 @@ button.pill:disabled {
 }
 
 /* ---- toasts, the stamp, hints ---- */
+/* Under the HUD's tallest pill (your body, to 65px), never over it. */
 .toast {
   position: absolute;
   left: 50%;
-  top: 60px;
+  top: 70px;
   transform: translateX(-50%);
   width: max-content;
   max-width: 300px;
@@ -672,12 +673,12 @@ button.pill:disabled {
 }
 /* A plan being run, under the HUD: above any sheet, and toasts make room for it. */
 .ui:has(.plan-chip) .toast {
-  top: 102px;
+  top: 110px;
 }
 .plan-chip {
   position: absolute;
   left: 50%;
-  top: 62px;
+  top: 70px;
   transform: translateX(-50%);
   display: flex;
   gap: 7px;
@@ -1006,4 +1007,25 @@ button.pill:focus-visible,
   .fade {
     transition: none;
   }
+}
+
+/* ---- wider than portrait ----
+   Panels composed for a phone keep a phone's width and centre on a wider screen. From
+   WIDE (layout.ts) up, sheets dock at the right under the HUD, and the world stays in view
+   beside them. */
+.sheet,
+.climb,
+.create {
+  max-width: 520px;
+  margin: 0 auto;
+}
+.screen.wide .sheet {
+  left: auto;
+  top: 64px;
+  bottom: auto;
+  width: 360px;
+  max-height: calc(100% - 72px);
+}
+.screen.wide .climb {
+  max-width: 344px;
 }

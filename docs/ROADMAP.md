@@ -1251,12 +1251,23 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 **Unreal.** On hold, by Evan's call, until the conversion to the new game is done. Spec changes are still logged, per CLAUDE.md.
 
-**Status (29 Sep 2026): 12.1 built.**
+**Status (29 Sep 2026): 12.1 and 12.2 built.**
 - The sim already kept a log of the last 200 lines in the save (`LOG_MAX`), with nothing showing it. The Journal shows it: your body in the HUD, or the goal pill, opens it, on "You" (the old "you" sheet) or "Lately" (the log, by day, newest first).
 - A line over 30 words (`TOAST_WORDS`) goes on a card, "Right" to put it down, that waits until nothing else is open, as the end of Act I's card already did. None of today's toasted lines is that long: the longest texts are Sage's beats, which are speech bubbles.
 - The e2e opens the log on day two and watches every toast of the run, reloads included; it fails on one over 30 words.
 - The Journal is the body pill rather than a new HUD button: a portrait HUD has about 55 px free, and "Journal" doesn't fit there. In landscape (12.2) it can get its own.
 - What the log doesn't hold: people coming and going, what a thing in a scene says when you tap it, and refusals. Those are toasts only. Criterion 5 reads "events"; these aren't in the sim's log, and adding them there would be a sim change.
+
+12.2, the wide screen:
+- **The screen.** It stays 740 logical pixels tall and is as wide as the window's shape: 360 in portrait (unchanged), 555 on a tablet held upright, 987 at 4:3, 1184 on a Steam Deck or a 16:10 laptop. It stops at `W_MAX`, 1248: the Lot, the narrowest scene, at the scenes' zoom, so no scene shows past its ends (a test holds every scene to it). A 16:9 monitor gets a sliver of frame each side.
+- **Scenes** show more of themselves: 911 world pixels of the Lot's 960 on a Steam Deck, against 277 in portrait. The far layers are painted wide enough for it. Skies are painted as wide as the widest screen with the portrait stretch in the middle, their glow at one pixel to one, and the sun, moon and stars drawn live, crisp at any size. The gym's back wall repeats its trusses, windows and lamps outward.
+- **The map** is painted wider around the same valley: past the portrait map's edges the valley walls crest and fall away into ridged country, with no seam, and the highway runs on north. Pins, drives and taps are the valley's, in the middle. The wide map is painted only once a screen is wider than portrait, so phones don't pay for it.
+- **Walls close up** stay composed for portrait. On a wider screen the wall is a comic panel down the middle, over the crag you looked up from, dimmed and without you in it. Repainting every wall wider would mean recomposing about a dozen hand-placed topos; the panel keeps them as they are. If it reads as a phone column on a Steam Deck, this is the part to revisit.
+- **Panels.** From 1080 across (`WIDE`), sheets dock at the right under the HUD, clear of the valley and of a wall's panel, and the world stays in view. Below that, sheets, the climb panel and the climber screen keep a phone's proportions, centred. A wide HUD gives the Journal its own button.
+- **Toasts** moved down 10 px: they sat 5 px over the body pill, and the plan chip 3 px. The e2e now checks every toast of the run against every live control, and fails on an overlap; at the old spot it found 26.
+- **The e2e** plays a first morning at 1280 × 800 after the portrait run: the screen's width and docking, Hazel's bubble over her, the Journal's button, the map's card docked clear of the valley, the drive, the Warm Boulder's wall and climb panel, and turning the window to portrait and back mid-go.
+- **Not covered in landscape yet:** the gym and the board, the plan, the send card, the diner and the night. They use the same sheets and scenes, so they should work, but the bot hasn't played them there. Nobody has played it on a real Steam Deck or tablet, and the wide map's paint time on slow hardware isn't measured.
+- **Criterion 2** is met on what the e2e covers; the rest of it is the list above.
 
 ---
 
@@ -1582,3 +1593,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 12 planned on the rebuild, with Evan's calls: a Journal instead of the five tabs, and landscape widens the world rather than framing a phone column. Slices 12.1 (text surfaces) to 12.5. Unreal is on hold until the conversion is done.
 - 2026-09-29 — Every send after a line's first is now a repeat, by Evan's call; it was named "Redpoint" however many times you'd sent it. The log keeps the first send's style, so saves don't change.
 - 2026-09-29 — Phase 12.1: the Journal. Your body in the HUD opens it: you as a climber, and "Lately", the sim's 200-line log that nothing showed until now. A line over 30 words goes on a card, not a toast, and the e2e fails on any toast longer. Day three's taps don't move.
+- 2026-09-29 — Phase 12.2: the wide screen. A landscape window widens the screen to up to 1248 across instead of framing a phone: scenes and skies show more, the map paints ridged country around the valley, walls close up are panels over their crag, and sheets dock at the right from 1080 across. Toasts moved off the HUD, and the e2e checks every one against every control. A landscape morning joins the e2e.

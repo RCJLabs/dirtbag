@@ -40,7 +40,7 @@ import {
   presentIn,
   SCENES,
   spotHot,
-  VW,
+  W,
   WAKE_X,
   widthOf,
   Z,
@@ -48,7 +48,7 @@ import {
   type Use,
 } from '../view/layout';
 import { mapArt } from '../view/paint/map';
-import { render, type Frame } from '../view/render';
+import { mapLeft, render, type Frame } from '../view/render';
 import { drivePath } from '../view/valley';
 import * as persist from './persist';
 import { loadPlans, noted, savePlans, SLEEP, wipePlans, type PlanStep, type Plans } from './plan';
@@ -129,6 +129,8 @@ export interface Ui {
   wallRoute: string;
   settings: persist.Settings;
   still: boolean;
+  // The screen's width in logical pixels: W in portrait, wider on a wider window.
+  w: number;
   // The plan you've made, and yesterday as you played it.
   plans: Plans;
   // A plan being run: its steps, the one it's on, whether it's waiting while you climb, and
@@ -181,6 +183,8 @@ export class Game {
   private player = { x: 300, tx: 300, dir: 1, phase: 0, speed: 0, onArrive: null as (() => void) | null };
   private scout = { x: 436, wag: 0 };
   private cam = 0;
+  // How much of a scene the screen sees across, in world pixels.
+  private vw = W / Z;
   private att: Attempt | null = null;
   private acc = 0;
   private trip: Trip | null = null;
@@ -221,12 +225,24 @@ export class Game {
       wallRoute: 'pump',
       settings,
       still: stillFor(settings, this.systemStill),
+      w: W,
       plans: loadPlans(),
       plan: null,
     });
     this.fast = createStore<Fast>({ cam: 0, att: null });
     if (home?.scene) this.enter(home.scene, this.state.x ?? undefined);
     if (b.note) this.toast(b.note);
+  }
+
+  // The window changed shape: the screen is `w` logical pixels wide now. The camera keeps
+  // you where you were, inside the scene.
+  resize(w: number): void {
+    if (w === this.ui.get().w) return;
+    this.vw = w / Z;
+    this.set({ w });
+    const u = this.ui.get();
+    if (u.view === 'scene') this.cam = clamp(this.player.x - this.vw / 2, 0, this.sceneW() - this.vw);
+    this.fast.set({ ...this.fast.get(), cam: this.cam });
   }
 
   get still(): boolean {
@@ -354,7 +370,7 @@ export class Game {
     const layout = SCENES[scene]!;
     const px = x ?? layout.spawn;
     Object.assign(this.player, { x: px, tx: px, dir: 1, speed: 0, onArrive: null });
-    this.cam = clamp(px - VW / 2, 0, widthOf(scene) - VW);
+    this.cam = clamp(px - this.vw / 2, 0, widthOf(scene) - this.vw);
     this.att = null;
     this.set({
       view: 'scene',
@@ -485,8 +501,10 @@ export class Game {
     else if (u.view === 'wall' && !u.climbing && !u.sheet) this.openSheet({ k: 'beta', route: u.wallRoute });
   }
 
-  private tapMap(sx: number, sy: number): void {
+  private tapMap(x: number, sy: number): void {
     if (this.trip) return;
+    // The valley sits in the middle of a wide screen.
+    const sx = x - mapLeft(this.ui.get().w);
     const near = Object.entries(MAP_PINS)
       .map(([id, p]) => ({ id, d: Math.hypot(p.x - sx, p.y - sy) }))
       .sort((a, b) => a.d - b.d)[0];
@@ -880,7 +898,7 @@ export class Game {
       }
       if (was > 0 && p.speed === 0 && Math.round(p.x) !== this.state.x) this.dispatch({ t: 'stand', x: p.x });
     }
-    this.cam += (clamp(p.x - VW / 2, 0, this.sceneW() - VW) - this.cam) * Math.min(1, dt * 5);
+    this.cam += (clamp(p.x - this.vw / 2, 0, this.sceneW() - this.vw) - this.cam) * Math.min(1, dt * 5);
   }
 
   frame(t: number, px: number): Frame {
@@ -898,6 +916,7 @@ export class Game {
       scene: u.scene,
       cam: this.cam,
       t,
+      w: u.w,
       px,
       still: u.still,
       player: this.player,

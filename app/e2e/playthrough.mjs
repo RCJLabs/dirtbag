@@ -17,6 +17,10 @@
 // runs one the day won't allow.
 // Then a v0.956 player, in a browser of their own: the retirement notice, their career kept
 // as a file, and coming across as they were.
+// Last, a first morning on a landscape window (Phase 12): the screen widens rather than
+// letterboxing, sheets dock at the right, the map's valley sits in the middle of more
+// country, a wall close up is a panel over its crag, and turning the window to portrait
+// and back mid-go keeps the game where it was.
 import { mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
@@ -31,41 +35,59 @@ const server = await startServer({ root: join(APP, 'dist') });
 const browser = await chromium.launch(
   process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : { channel: 'chromium' },
 );
-const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
 // The seed a new climber's valley rolls is pinned, so day three's weather is the same every
 // run: prime, and Roadside open. The game rolls it from eight random bytes; anything else
 // that asks for random bytes still gets them.
 const SEED = 'dirtbag-qc6qki1m66opy';
-await page.addInitScript(() => {
-  const real = crypto.getRandomValues.bind(crypto);
-  crypto.getRandomValues = (a) => {
-    if (!(a instanceof Uint32Array) || a.length !== 2) return real(a);
-    a.set([1592590338, 3517427878]);
-    return a;
-  };
-});
-
 const problems = [];
-// Phase 12: no toast runs past 30 words. Every toast the run shows is watched, not just the
-// ones the bot looks for, across reloads.
-await page.exposeFunction('longToast', (t) => problems.push(`a toast over 30 words: ${t}`));
-await page.addInitScript(() => {
-  let last = '';
-  new MutationObserver(() => {
-    const t = document.getElementById('toast')?.textContent?.trim() ?? '';
-    if (t !== last && t.split(/\s+/).length > 30) window.longToast(t);
-    last = t;
-  }).observe(document, { subtree: true, childList: true, characterData: true });
-});
-page.on('pageerror', (e) => problems.push(`uncaught: ${e.message}`));
-page.on('console', (m) => m.type() === 'error' && problems.push(`console.error: ${m.text()}`));
-page.on('requestfailed', (r) => problems.push(`request failed: ${r.url()}`));
-// data: and this page's own blob: URLs (the send card's image) never touch the network.
-page.on('request', (r) => {
-  const u = r.url();
-  if (!u.startsWith(server.url) && !u.startsWith('data:') && !u.startsWith(`blob:${server.url}`))
-    problems.push(`left the site: ${u}`);
-});
+
+// A page the bot plays on, watched for everything the run fails on. `who` names it in a
+// problem.
+async function playPage(viewport, deviceScaleFactor, who = '') {
+  const p = await browser.newPage({ viewport, deviceScaleFactor });
+  await p.addInitScript(() => {
+    const real = crypto.getRandomValues.bind(crypto);
+    crypto.getRandomValues = (a) => {
+      if (!(a instanceof Uint32Array) || a.length !== 2) return real(a);
+      a.set([1592590338, 3517427878]);
+      return a;
+    };
+  });
+  // Phase 12: no toast runs past 30 words, and none lands on a control you could tap. Every
+  // toast the run shows is watched, not just the ones the bot looks for, across reloads.
+  await p.exposeFunction('badToast', (why) => problems.push(`${who}${why}`));
+  await p.addInitScript(() => {
+    let last = '';
+    new MutationObserver(() => {
+      const el = document.getElementById('toast');
+      const t = el?.textContent?.trim() ?? '';
+      if (t === last) return;
+      last = t;
+      if (!el) return;
+      if (t.split(/\s+/).length > 30) window.badToast(`a toast over 30 words: ${t}`);
+      const a = el.getBoundingClientRect();
+      for (const c of document.querySelectorAll('button:not(:disabled), input, [role="radio"]')) {
+        const b = c.getBoundingClientRect();
+        if (!b.width || a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top)
+          continue;
+        window.badToast(`a toast over ${c.id ? `#${c.id}` : c.textContent?.trim().slice(0, 30)}: ${t}`);
+      }
+    }).observe(document, { subtree: true, childList: true, characterData: true });
+  });
+  p.on('pageerror', (e) => problems.push(`${who}uncaught: ${e.message}`));
+  p.on('console', (m) => m.type() === 'error' && problems.push(`${who}console.error: ${m.text()}`));
+  p.on('requestfailed', (r) => problems.push(`${who}request failed: ${r.url()}`));
+  // data: and this page's own blob: URLs (the send card's image) never touch the network.
+  p.on('request', (r) => {
+    const u = r.url();
+    if (!u.startsWith(server.url) && !u.startsWith('data:') && !u.startsWith(`blob:${server.url}`))
+      problems.push(`${who}left the site: ${u}`);
+  });
+  return p;
+}
+
+// Every helper below plays on `page`; the landscape morning at the end swaps it.
+let page = await playPage({ width: 390, height: 844 }, 2);
 
 let n = 0;
 const shot = (name) => page.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-${name}.png`) });
@@ -107,10 +129,10 @@ async function expectText(sel, re, what) {
 // isn't counted: that's the climbing itself.
 let taps = 0;
 
-// Taps on the game screen in its own 360 x 740 logical pixels.
+// Taps on the game screen in its own logical pixels: 740 tall, and 360 across in portrait.
 async function tapAt(x, y) {
   const box = await page.locator('#cv').boundingBox();
-  const k = box.width / 360;
+  const k = box.height / 740;
   await page.mouse.click(box.x + x * k, box.y + y * k);
   taps++;
 }
@@ -799,6 +821,97 @@ console.log('A v0.956 player');
     `came across: ${me.name}, V${grade}, fingers still the strength (${me.skills.fingers} vs head ${me.skills.head})`,
   );
   await ctx.close();
+}
+
+console.log('A landscape window');
+// A Steam Deck's shape, 1280 x 800: the screen is 740 tall and 1184 across.
+{
+  const portrait = page;
+  page = await playPage({ width: 1280, height: 800 }, 1, 'landscape: ');
+  const screen = () =>
+    page.evaluate(() => {
+      const s = document.getElementById('scr');
+      return {
+        w: parseFloat(getComputedStyle(s).getPropertyValue('--w')),
+        wide: s.classList.contains('wide'),
+      };
+    });
+  // Where something is, in the screen's logical pixels.
+  const where = (sel) =>
+    page.evaluate((q) => {
+      const r = document.querySelector(q)?.getBoundingClientRect();
+      const c = document.getElementById('cv').getBoundingClientRect();
+      const k = c.height / 740;
+      return r && { x0: (r.left - c.left) / k, x1: (r.right - c.left) / k, y0: (r.top - c.top) / k };
+    }, sel);
+
+  await page.goto(server.url, { waitUntil: 'load' });
+  await until('the climber screen', () => page.locator('#create').count());
+  const sc = await screen();
+  if (sc.w !== 1184 || !sc.wide) await fail(`the landscape screen: ${JSON.stringify(sc)}`);
+  log(`screen: ${sc.w} across, sheets docked`);
+  await page.fill('#c-name', 'Robin');
+  await click('#c-technician');
+  await click('#c-go', 'Start');
+  await until('the climber screen to go', async () => !(await page.locator('#create').count()));
+  await wait(400);
+  await shot('landscape-lot');
+
+  // The Lot is 960 wide and the screen sees 911 of it: Hazel at 586 is on screen from the
+  // start, and a tap on her walks you over and talks.
+  await tapAt(586 * Z, screenY(530));
+  await expectText('#bubble', /staring at The Pump/, 'Hazel, in landscape');
+  const bubble = await where('#bubble');
+  if (!bubble || bubble.x0 < 586 * Z - 300 || bubble.x1 > 586 * Z + 300)
+    await fail(`Hazel's bubble isn't over her: ${JSON.stringify(bubble)}`);
+  await click('#bubble button', 'Ask about the roof');
+  await click('#bubble button', 'Got it');
+
+  // The journal has a button of its own on a wide HUD.
+  await click('#h-journal', 'Journal');
+  await expectText('#log', /heel-hook the lip/, 'the journal, from its button');
+  await click('#sheet .x');
+
+  // The map's valley sits in the middle; a sheet docks at the right, clear of it.
+  await openMap();
+  const left = (1184 - 360) / 2;
+  await tapAt(left + 292, 220);
+  await expectText('#sheet', /Roadside Crag/, 'place card, in landscape');
+  const card = await where('#sheet');
+  if (!card || card.x0 < left + 360 || Math.abs(card.x1 - 1176) > 2 || card.y0 < 60)
+    await fail(`the card isn't docked clear of the valley: ${JSON.stringify(card)}`);
+  await header('the card’s header, in landscape');
+  await shot('landscape-map');
+  await click('#sheet .opt', 'Drive here');
+  await until('the crag, in landscape', async () => (await text('#hint'))?.includes('Boulders on the talus'));
+  await wait(400);
+  await shot('landscape-crag');
+
+  // The camera stays at the crag's left end: the Warm Boulder's at 340.
+  await tapAt(340 * Z, screenY(540));
+  await expectText('#sheet', /Warm Boulder · V2/, 'beta sheet, in landscape');
+  await shot('landscape-wall');
+  await click('#sheet .go');
+  await until('the climb panel', () => page.locator('#climb').count());
+  const panelAt = await where('#climb');
+  if (!panelAt || panelAt.x0 < left || panelAt.x1 > left + 360)
+    await fail(`the climb panel isn't under the wall: ${JSON.stringify(panelAt)}`);
+  // Turn the window to portrait and back, mid-go: the go carries on.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await until('a portrait screen', async () => (await screen()).w === 360);
+  await wait(300);
+  await shot('landscape-turned');
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await until('landscape again', async () => (await screen()).w === 1184);
+  await climb();
+  const after = await until(
+    'the go to end',
+    async () => (await text('#stamp')) || (await text('#sheet')),
+    15_000,
+  );
+  log(`the go, turned and back: ${after.slice(0, 60)}`);
+  await page.close();
+  page = portrait;
 }
 
 if (problems.length) await fail(`${problems.length} problem(s) during play`);

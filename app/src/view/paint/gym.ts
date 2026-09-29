@@ -57,16 +57,22 @@ function holdsFor(slot: number, x: number, y0: number, y1: number): { at: Pt; s:
 
 // ---- the scene: a sky layer (the building's back wall) and the room ----
 
-export function paintGymBack(): HTMLCanvasElement {
-  const [c, g] = mk(W, H, 2);
+// The back wall stays put while you walk, like a sky, and like a sky it's `w` wide with the
+// portrait screen's stretch in the middle: the trusses, windows and lamps repeat either side.
+export function paintGymBack(w: number): HTMLCanvasElement {
+  const [c, g] = mk(w, H, 2);
+  const pad = (w - W) / 2;
+  // The first repeat of a pattern `step` apart that starts at `x` on the portrait screen.
+  const from = (x: number, step: number) => x - Math.ceil(pad / step) * step;
+  g.translate(pad, 0);
   g.fillStyle = '#E6DCC7';
-  g.fillRect(0, 0, W, H);
+  g.fillRect(-pad, 0, w, H);
   g.fillStyle = STEEL;
-  g.fillRect(0, 0, W, 132);
+  g.fillRect(-pad, 0, w, 132);
   // Roof trusses.
   g.strokeStyle = '#50555F';
   g.lineWidth = 3;
-  for (let x = -40; x < W + 40; x += 60) {
+  for (let x = from(-40, 60); x < W + pad + 40; x += 60) {
     g.beginPath();
     g.moveTo(x, 132);
     g.lineTo(x + 30, 40);
@@ -74,13 +80,13 @@ export function paintGymBack(): HTMLCanvasElement {
     g.stroke();
   }
   g.fillStyle = '#2E323B';
-  g.fillRect(0, 124, W, 10);
+  g.fillRect(-pad, 124, w, 10);
   // High windows, then the lamps.
   g.fillStyle = '#BFD6DF';
-  for (let x = 14; x < W; x += 86) g.fillRect(x, 150, 64, 34);
+  for (let x = from(14, 86); x < W + pad; x += 86) g.fillRect(x, 150, 64, 34);
   g.fillStyle = '#E6DCC7';
-  for (let x = 14; x < W; x += 86) g.fillRect(x + 30, 150, 4, 34);
-  for (const x of [60, 180, 300]) {
+  for (let x = from(14, 86); x < W + pad; x += 86) g.fillRect(x + 30, 150, 4, 34);
+  for (let x = from(60, 120); x < W + pad + 130; x += 120) {
     g.strokeStyle = '#2B2A33';
     g.lineWidth = 1.2;
     g.beginPath();

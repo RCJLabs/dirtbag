@@ -2,7 +2,7 @@ import { clock, gradeOf, money } from '../sim';
 import type { Game, Ui } from '../game/game';
 
 // Day and time (tap for the forecast), money, your body (tap for your journal), and the
-// one navigation button.
+// one navigation button. A screen with room for it gets the journal its own button too.
 export function Hud({ game, ui }: { game: Game; ui: Ui }) {
   const { day, min, cash, energy, skin, fed } = ui.hud;
   // Nothing to navigate until you've made your climber.
@@ -36,6 +36,17 @@ export function Hud({ game, ui }: { game: Game; ui: Ui }) {
         <Meter name="Skin" id="m-sk" v={skin} />
         <Meter name="Food" id="m-fd" v={fed} />
       </button>
+      {ui.w >= JOURNAL_BUTTON && (
+        <button
+          type="button"
+          className="pill"
+          id="h-journal"
+          disabled={busy}
+          onClick={() => game.openSheet({ k: 'journal', page: 'lately' })}
+        >
+          Journal
+        </button>
+      )}
       {nav && (
         <button
           type="button"
@@ -50,6 +61,10 @@ export function Hud({ game, ui }: { game: Game; ui: Ui }) {
     </div>
   );
 }
+
+// How wide the screen must be before the journal gets a button of its own. A portrait
+// HUD has about 55 px to spare, and the word doesn't fit.
+const JOURNAL_BUTTON = 480;
 
 function Meter({ name, id, v }: { name: string; id: string; v: number }) {
   return (

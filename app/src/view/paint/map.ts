@@ -5,7 +5,19 @@ import { mk, rgb, trace, type G } from '../kit/geom';
 import { fbm, grain, mulberry32 } from '../kit/noise';
 import { H, W } from '../layout';
 import { lpTree } from '../shapes';
-import { BLOCKS, CREEK, hAt, LOT_RECT, rasterMap, RIVER, ROAD, SIDE_ROADS, TRAILS } from '../valley';
+import {
+  BLOCKS,
+  CREEK,
+  hAt,
+  LOT_RECT,
+  MAP_PAD,
+  rasterMap,
+  RIVER,
+  ROAD,
+  ROAD_NORTH,
+  SIDE_ROADS,
+  TRAILS,
+} from '../valley';
 
 const PO = {
   bands: ['#D9C98D', '#BCC287', '#91AE7D', '#6F9273', '#8D8A7B', '#B3AEA3'],
@@ -43,14 +55,26 @@ function houses(g: G): void {
   }
 }
 
-function paintMap(g: G): void {
+const forest = (g: G, x: number, y: number, r: () => number) => {
+  const h = hAt(x, y);
+  if (h < 34 || h > 98 || fbm(x * 0.03, y * 0.03, 8) < 0.5) return;
+  lpTree(g, x, y, 3 + r() * 2.2, PO.tree, PO.treeLit, 2.2);
+};
+
+// The map in its own x: the portrait valley from 0 to W, and `pad` of high country either
+// side of it.
+function paintMap(g: G, pad: number): void {
   const bands = PO.bands.map(rgb);
   const water = rgb(PO.water);
-  rasterMap(g, (_x, _y, _h, s, b, lake) => {
-    if (lake) return water;
-    const f = s < 0.44 ? 0.8 : s > 0.74 ? 1.08 : 1;
-    return bands[b]!.map((v) => v * f);
-  });
+  rasterMap(
+    g,
+    (_x, _y, _h, s, b, lake) => {
+      if (lake) return water;
+      const f = s < 0.44 ? 0.8 : s > 0.74 ? 1.08 : 1;
+      return bands[b]!.map((v) => v * f);
+    },
+    pad,
+  );
   g.lineCap = 'round';
   g.lineJoin = 'round';
   g.strokeStyle = PO.water;
@@ -63,12 +87,15 @@ function paintMap(g: G): void {
   trace(g, CREEK, false);
   g.stroke();
   const r = mulberry32(55);
-  for (let i = 0; i < 1500; i++) {
-    const x = r() * W;
-    const y = 70 + r() * 620;
-    const h = hAt(x, y);
-    if (h < 34 || h > 98 || fbm(x * 0.03, y * 0.03, 8) < 0.5) continue;
-    lpTree(g, x, y, 3 + r() * 2.2, PO.tree, PO.treeLit, 2.2);
+  for (let i = 0; i < 1500; i++) forest(g, r() * W, 70 + r() * 620, r);
+  // The high country's woods, as thick as the valley's.
+  if (pad) {
+    const rs = mulberry32(56);
+    const n = Math.round((1500 * 2 * pad) / W);
+    for (let i = 0; i < n; i++) {
+      const u = rs() * 2 * pad;
+      forest(g, u < pad ? u - pad : W + u - pad, 70 + rs() * 620, rs);
+    }
   }
   // Dirt side roads, like the Gorge's: narrower, and the colour of dirt.
   const sides = Object.values(SIDE_ROADS);
@@ -87,7 +114,11 @@ function paintMap(g: G): void {
     [6, PO.edge],
     [3.6, PO.road],
   ] as const)
-    for (const rd of [ROAD, ...sides.filter((r) => !r.dirt).map((r) => r.pts)]) {
+    for (const rd of [
+      ROAD,
+      ...(pad ? [ROAD_NORTH] : []),
+      ...sides.filter((r) => !r.dirt).map((r) => r.pts),
+    ]) {
       g.strokeStyle = col;
       g.lineWidth = w;
       g.beginPath();
@@ -114,17 +145,31 @@ function paintMap(g: G): void {
   ] as const)
     g.fillRect(x, y, 7, 4);
   grain(g, 63, 0.05);
+  if (pad) {
+    g.save();
+    g.translate(-pad, 0);
+    grain(g, 64, 0.05, pad);
+    g.translate(pad + W, 0);
+    grain(g, 65, 0.05, pad);
+    g.restore();
+  }
 }
 
-let cached: HTMLCanvasElement | null = null;
+// Painted maps: the portrait one, and the wide one once a screen's wider than portrait.
+const cached = new Map<number, HTMLCanvasElement>();
 
-// The painted map, made on first use. It's the one slow painting (the terrain is shaded
-// per pixel), so the game warms it up while you're still in the Lot.
-export function mapArt(): HTMLCanvasElement {
-  if (!cached) {
-    const [c, g] = mk(W, H, 2);
-    paintMap(g);
-    cached = c;
+// The painted map for a screen `w` wide, made on first use, with the portrait valley in its
+// middle. It's the one slow painting (the terrain is shaded per pixel), so the game warms it
+// up while you're still in the Lot. Any wider screen gets the widest map, cropped.
+export function mapArt(w = W): HTMLCanvasElement {
+  const pad = w > W ? MAP_PAD : 0;
+  let c = cached.get(pad);
+  if (!c) {
+    let g: G;
+    [c, g] = mk(W + 2 * pad, H, 2);
+    g.translate(pad, 0);
+    paintMap(g, pad);
+    cached.set(pad, c);
   }
-  return cached;
+  return c;
 }

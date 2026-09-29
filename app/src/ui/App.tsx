@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { Game } from '../game/game';
 import { useStore } from '../game/store';
-import { H, W } from '../view/layout';
+import { H, screenWidth, WIDE } from '../view/layout';
 import { Bubble } from './Bubble';
 import { ClimbPanel } from './ClimbPanel';
 import { Create } from './Create';
@@ -10,8 +10,9 @@ import { PlanChip } from './PlanChip';
 import { Hud } from './Hud';
 import { Sheet } from './Sheet';
 
-// The screen: a 360 x 740 logical phone screen scaled to fit the window, the world on a
-// canvas underneath and the panels on top. The canvas draws every frame; React redraws the
+// The screen: 740 logical pixels tall, scaled to fit the window, and as wide as the window's
+// shape allows: 360 in portrait, up to W_MAX in landscape. The world is on a canvas
+// underneath and the panels are on top. The canvas draws every frame; React redraws the
 // panels only when the game says something changed.
 export function App({ game }: { game: Game }) {
   const ui = useStore(game.ui);
@@ -27,12 +28,16 @@ export function App({ game }: { game: Game }) {
     let px = 2;
     const fit = () => {
       const r = st.getBoundingClientRect();
-      const k = Math.min(r.width / W, r.height / H);
+      const w = screenWidth(r.width / Math.max(1, r.height));
+      const k = Math.min(r.width / w, r.height / H);
       sc.style.setProperty('--k', k.toFixed(4));
+      sc.style.setProperty('--w', `${w}px`);
+      sc.classList.toggle('wide', w >= WIDE);
       // Backing pixels to match the device, capped: past 3x nobody can tell.
       px = Math.min(3, Math.max(1, k * (window.devicePixelRatio || 1)));
-      cv.width = Math.round(W * px);
+      cv.width = Math.round(w * px);
       cv.height = Math.round(H * px);
+      game.resize(w);
     };
     const ro = new ResizeObserver(fit);
     ro.observe(st);
@@ -51,7 +56,7 @@ export function App({ game }: { game: Game }) {
 
     const down = (e: PointerEvent) => {
       const r = cv.getBoundingClientRect();
-      const k = r.width / W;
+      const k = r.height / H;
       game.tap((e.clientX - r.left) / k, (e.clientY - r.top) / k);
     };
     cv.addEventListener('pointerdown', down);

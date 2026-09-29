@@ -3,7 +3,7 @@
 // painted once per scene and time of day, then scrolled.
 
 import { ROUTES } from '../../sim';
-import { CRAGS, GND, H, W, WW, type CragSpec, GYM_W } from '../layout';
+import { CRAGS, GND, H, W, W_MAX, WW, Z, type CragSpec, GYM_W } from '../layout';
 import { lerp, lin, mk, poly, rad, rr, trace, type G, type Pt } from '../kit/geom';
 import { fbm, mulberry32 } from '../kit/noise';
 import { chair, pineShape, popTop, rock, vanBody, vanWindows } from '../shapes';
@@ -186,9 +186,18 @@ function stroke(g: G, draw: (g: G) => void, col: string, w: number): void {
   g.stroke();
 }
 
+// Skies are painted as wide as the widest screen, with the portrait screen's stretch in the
+// middle, so a wider screen sees more sky around the same sun. What's soft in a sky (the
+// gradient and the glow) is painted at one pixel to one; what's sharp (the sun or moon and
+// the stars) is drawn over it each frame, crisp at any size.
+export const SKY_W = W_MAX;
+export const SKY_PAD = (SKY_W - W) / 2;
+
+// The stars, in sky pixels, as thick as ever: 150 to a portrait screen's width.
 export const STARS: [number, number, number][] = (() => {
   const r = mulberry32(77);
-  return Array.from({ length: 150 }, () => [r() * W, r() * 420, r() < 0.12 ? 1.6 : r() * 0.9 + 0.4]);
+  const n = Math.round((150 * SKY_W) / W);
+  return Array.from({ length: n }, () => [r() * SKY_W, r() * 420, r() < 0.12 ? 1.6 : r() * 0.9 + 0.4]);
 })();
 
 export function ridgeLine(
@@ -218,27 +227,39 @@ function yOn(pts: Pt[], x: number): number {
 }
 
 function paintSky(P: Palette, tod: Tod): HTMLCanvasElement {
-  const [c, g] = mk(W, H, 2);
+  const [c, g] = mk(SKY_W, H, 1);
   const night = tod === 'night';
   g.fillStyle = lin(g, 0, 0, 0, GND, P.sky);
-  g.fillRect(0, 0, W, H);
-  g.fillStyle = rad(g, P.orbX, P.orbY, 0, 110, [
+  g.fillRect(0, 0, SKY_W, H);
+  g.fillStyle = rad(g, SKY_PAD + P.orbX, P.orbY, 0, 110, [
     [0, night ? 'rgba(242,233,216,.22)' : 'rgba(255,243,214,.6)'],
     [1, 'rgba(255,243,214,0)'],
   ]);
-  g.fillRect(0, 0, W, H);
-  if (night)
+  g.fillRect(0, 0, SKY_W, H);
+  return c;
+}
+
+// The sharp part of a sky, in sky pixels.
+function skyMarks(P: Palette, tod: Tod): SkyMarks {
+  const night = tod === 'night';
+  return { orb: { x: SKY_PAD + P.orbX, y: P.orbY, r: night ? 15 : 24, color: P.orb }, stars: night };
+}
+
+// Draws a sky's sun or moon and stars onto `g`, which maps sky pixels by `k` from (x0, y0).
+export function drawSkyMarks(g: G, m: SkyMarks, x0: number, y0: number, k: number): void {
+  if (m.stars)
     for (const [x, y, s] of STARS) {
       if (y > 380) continue;
       g.fillStyle = `rgba(242,233,216,${Math.min(1, 0.25 + s * 0.5).toFixed(2)})`;
-      const d = s > 1.2 ? 1.8 : 1.1;
-      g.fillRect(x, y, d, d);
+      const d = (s > 1.2 ? 1.8 : 1.1) * k;
+      g.fillRect((x - x0) * k, (y - y0) * k, d, d);
     }
-  g.fillStyle = P.orb;
-  g.beginPath();
-  g.arc(P.orbX, P.orbY, night ? 15 : 24, 0, 6.2832);
-  g.fill();
-  return c;
+  if (m.orb) {
+    g.fillStyle = m.orb.color;
+    g.beginPath();
+    g.arc((m.orb.x - x0) * k, (m.orb.y - y0) * k, m.orb.r * k, 0, 6.2832);
+    g.fill();
+  }
 }
 
 const toGround = (w: number, pts: Pt[]) => (g: G) => {
@@ -881,17 +902,24 @@ export interface Layer {
   w: number;
   c: HTMLCanvasElement;
 }
+export interface SkyMarks {
+  orb: { x: number; y: number; r: number; color: string } | null;
+  stars: boolean;
+}
 export interface SceneArt {
+  // What's behind the layers and stays put on screen: a sky, or the gym's back wall. It is
+  // SKY_W wide and H tall in sky pixels, however many canvas pixels that is.
   sky: HTMLCanvasElement;
+  marks: SkyMarks;
   layers: Layer[];
 }
 
 const cache = new Map<string, SceneArt>();
 
-// The widest stretch of a scene anything shows at once, in world pixels: a place card's
-// header, which sees about twice what the screen does. The far layers are painted wide
-// enough for it wherever it looks; the screen sees the same pixels it always did.
-export const SEEN = 600;
+// The widest stretch of a scene anything shows at once, in world pixels: the widest screen,
+// which sees about three times what a portrait one does, or a place card's header, about
+// twice. The far layers are painted wide enough for it wherever it looks.
+export const SEEN = Math.max(600, W_MAX / Z);
 
 // The painted layers for a scene at a time of day. Two are kept: the one you're in and the
 // one you just left, so walking back doesn't repaint. A place card's header paints from a
@@ -907,7 +935,12 @@ export function sceneArt(id: string, tod: Tod, keep = true): SceneArt {
 }
 
 function paintArt(id: string, tod: Tod): SceneArt {
-  if (id === 'gym') return { sky: paintGymBack(), layers: [{ p: 1, w: GYM_W, c: paintGymGround() }] };
+  if (id === 'gym')
+    return {
+      sky: paintGymBack(SKY_W),
+      marks: { orb: null, stars: false },
+      layers: [{ p: 1, w: GYM_W, c: paintGymGround() }],
+    };
   const crag = CRAGS[id];
   const gorge = id === 'gorge';
   const moon = id === 'moon';
@@ -918,6 +951,7 @@ function paintArt(id: string, tod: Tod): SceneArt {
   const rock: Rock = gorge ? 'granite' : moon ? 'quartzite' : 'sandstone';
   return {
     sky: paintSky(P, crag ? 'day' : tod),
+    marks: skyMarks(P, crag ? 'day' : tod),
     layers: [
       { p: 0.2, w: lw(0.2), c: paintFar(P, lw(0.2), seed, gorge) },
       { p: 0.5, w: lw(0.5), c: paintMid(P, lw(0.5), seed + 2, !!crag && !gorge) },
