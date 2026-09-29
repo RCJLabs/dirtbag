@@ -55,7 +55,7 @@ import {
 } from '../sim';
 import type { Game, SheetId, Ui } from '../game/game';
 import type { Settings } from '../game/persist';
-import { buildSheet, SKILL_NAME } from './sheets';
+import { buildSheet, SKILL_NAME, type ListSpec } from './sheets';
 
 export const VERB_TEXT: Record<Verb, string> = {
   load: 'Hold to load, let go in the band',
@@ -116,6 +116,7 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
     <div className="sheet" id="sheet" role="dialog" aria-labelledby="sheet-title" ref={ref}>
       {spec.close && <Close game={game} />}
       <h3 id="sheet-title">{spec.title}</h3>
+      {spec.reach && <Reach {...spec.reach} />}
       {spec.sub && <p className="sub">{spec.sub}</p>}
       {spec.notes?.map((n) => (
         <p className="note" key={n}>
@@ -134,6 +135,32 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
         ))}
       </ul>
     </div>
+  );
+}
+
+// How far a go got, drawn: the line from the ground to the top, its cruxes shaded, this go
+// filled in and your best before it marked. A watcher reads it without the numbers.
+function Reach({ moves, cruxes, go, best }: NonNullable<ListSpec['reach']>) {
+  const pct = (m: number) => `${Math.max(0, Math.min(100, (m / moves) * 100)).toFixed(1)}%`;
+  const say =
+    best === null
+      ? 'Your first go on it.'
+      : go > best
+        ? 'Your highest yet.'
+        : go === best
+          ? 'Level with your best.'
+          : 'Short of your best.';
+  return (
+    <>
+      <div className="reach" id="reach" role="img" aria-label={`${say} This go against your best.`}>
+        <i className="r-go" style={{ width: pct(go) }} />
+        {cruxes.map(([a, b]) => (
+          <i key={a} className="r-cx" style={{ left: pct(a), width: pct(b - a) }} />
+        ))}
+        {!!best && <i className="r-best" style={{ left: pct(best) }} />}
+      </div>
+      <p className="reach-say">{say}</p>
+    </>
   );
 }
 

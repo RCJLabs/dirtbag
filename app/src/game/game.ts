@@ -60,7 +60,7 @@ export type SheetId =
   | { k: 'desk' }
   | { k: 'place'; id: string }
   | { k: 'beta'; route: string }
-  | { k: 'fall'; route: string; fall: FallRun; notes: string[]; gains: Partial<Skills> }
+  | { k: 'fall'; route: string; fall: FallRun; notes: string[]; gains: Partial<Skills>; best: number | null }
   | { k: 'sent'; route: string; style: SendStyle; go: number; gains: Partial<Skills>; notes: string[] }
   // A first ascent to name: straight after the send (then the send card), or later from
   // the wall if you walked off without naming it.
@@ -617,11 +617,17 @@ export class Game {
   private finishFall(): void {
     const a = this.att!;
     const route = a.route;
+    // Your best before this go, to show this one against; none if this was your first.
+    const log = this.state.routes[route];
+    const best = log && log.goes > 1 ? log.hi : null;
     const ev = this.dispatch({ t: 'done', route, result: goResult(a) });
     const notes = ev.flatMap((e) =>
       (e.k === 'learned' && e.how === 'fall') || e.k === 'injured' ? [e.text] : [],
     );
-    this.set({ climbing: false, sheet: { k: 'fall', route, fall: a.fall!, notes, gains: gainsIn(ev) } });
+    this.set({
+      climbing: false,
+      sheet: { k: 'fall', route, fall: a.fall!, notes, gains: gainsIn(ev), best },
+    });
   }
 
   private finishSend(): void {

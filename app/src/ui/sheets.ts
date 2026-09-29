@@ -50,7 +50,13 @@ export interface ListSpec {
   rows: Row[];
   close: boolean;
   notes?: string[];
+  // How far a go got, in moves, against your best before it (none on a first go), with the
+  // cruxes shaded.
+  reach?: { moves: number; cruxes: [number, number][]; go: number; best: number | null };
 }
+
+// "An 8-foot", "an 11-foot", "an 18-foot": said, those numbers start with a vowel.
+const aFoot = (ft: number) => `${/^(8|1[18]$)/.test(String(ft)) ? 'An' : 'A'} ${ft}-foot`;
 
 export const SKILL_NAME: Record<keyof Skills, string> = {
   power: 'Power',
@@ -197,12 +203,18 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       const hi = s.routes[id.route]?.hi ?? 0;
       const how =
         r.disc === 'boulder'
-          ? `A ${id.fall.ft}-foot drop to the pads from move ${id.fall.move} of ${r.moves}.`
-          : `A ${id.fall.ft}-foot catch at move ${id.fall.move} of ${r.moves}.`;
+          ? `${aFoot(id.fall.ft)} drop to the pads from move ${id.fall.move} of ${r.moves}.`
+          : `${aFoot(id.fall.ft)} catch at move ${id.fall.move} of ${r.moves}.`;
       const why = goBlocked(s, r);
       const gained = gainsLine(id.gains);
       return {
         title: `Off at ${where}`,
+        reach: {
+          moves: r.moves,
+          cruxes: r.cruxes.map((c): [number, number] => [c.from, c.to]),
+          go: id.fall.move,
+          best: id.best,
+        },
         sub: `${id.fall.text} ${how} High point: move ${hi}.`,
         close: false,
         notes: [...id.notes, ...(gained ? [gained] : [])],

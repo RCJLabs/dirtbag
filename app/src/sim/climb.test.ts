@@ -182,7 +182,7 @@ describe('a go on The Pump', () => {
   });
 
   it('fixes the day at the tie-in: the sun, the weather and your hunger', () => {
-    expect(tiedIn().mods).toEqual({ crux: { A: DAY1, B: DAY1 }, pump: 1 });
+    expect(tiedIn().mods).toEqual({ crux: { A: DAY1, B: DAY1 }, pump: 1, speed: 1 });
     const sunny = tiedIn(atCrag(15 * 60));
     expect(sunny.grease).toBe(true);
     expect(sunny.mods.crux.A).toBeCloseTo(DAY1 * CLIMB.greaseFactor);
@@ -203,6 +203,31 @@ describe('a go on The Pump', () => {
     });
     expect(weak.mods.crux.A!).toBeLessThan(DAY1);
     expect(weak.mods.pump).toBeGreaterThan(1);
+  });
+
+  it('moves each climber at their own pace, so the same line plays out differently', () => {
+    const strong = tiedIn({
+      ...atCrag(),
+      climber: {
+        ...atCrag().climber,
+        skills: { power: 400, fingers: 400, endurance: 400, technique: 400, head: 400 },
+      },
+    });
+    const weak = tiedIn({
+      ...atCrag(),
+      climber: { ...atCrag().climber, skills: newGame('t').climber.skills },
+    });
+    expect(strong.mods.speed).toBe(CLIMB.pace.max);
+    expect(weak.mods.speed).toBeLessThan(1);
+    expect(weak.mods.speed).toBeGreaterThanOrEqual(CLIMB.pace.min);
+    // A second of climbing: the stronger one is further up, and no more pumped for it.
+    const climb = (a: Attempt) => {
+      let x = attemptInput(a, true).att;
+      for (let i = 0; i < 60; i++) x = stepAttempt(x).att;
+      return x;
+    };
+    expect(climb(strong).pos).toBeGreaterThan(climb(weak).pos);
+    expect(climb(strong).pump).toBeLessThanOrEqual(climb(weak).pump);
   });
 
   it('judges a throw on release: short, long, or held too long', () => {

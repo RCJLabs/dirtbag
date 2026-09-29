@@ -53,7 +53,7 @@ import { mapArt } from './paint/map';
 import { drawBelayerBack, drawClimber, drawDog, drawPerson, INK, LOOK } from './paint/people';
 import { BIG } from './paint/scale';
 import { FIRE_X, LIGHTS, sceneArt } from './paint/scenes';
-import { belayAt, onRoute, wallOf } from './paint/wall';
+import { belayAt, onRoute, routeStretch, wallOf } from './paint/wall';
 
 export interface Frame {
   state: GameState;
@@ -242,6 +242,20 @@ function renderWall(g: G, f: Frame): void {
     });
   }
 
+  // What this go has climbed, chalked onto the line as a soft band under the rope, so a
+  // watcher can see how far it got against your flag and the top.
+  const reach = f.att ? (f.att.fall ? f.att.fall.from : f.att.pos) : 0;
+  if (reach > 0.05) {
+    g.strokeStyle = 'rgba(255,255,255,.34)';
+    g.lineWidth = wall.big ? 11 : 7;
+    g.lineCap = 'round';
+    g.lineJoin = 'round';
+    g.beginPath();
+    routeStretch(r, 0, reach).forEach(([px, py], i) => (i ? g.lineTo(px, py) : g.moveTo(px, py)));
+    g.stroke();
+    g.lineCap = 'butt';
+  }
+
   const pos = f.att?.pos ?? 0;
   const [x, y] = onRoute(r, pos);
   const falling = f.att?.phase === 'fall';
@@ -277,6 +291,20 @@ function renderWall(g: G, f: Frame): void {
     }
   }
 
+  // Where it came off. On a close-up wall the climber covers the spot; the flag and the
+  // fall sheet's bar say it there.
+  if (f.att?.fall && !wall.big) {
+    const [fx, fy] = onRoute(r, f.att.fall.from);
+    g.strokeStyle = ACC.comic;
+    g.lineWidth = 2.4;
+    g.beginPath();
+    g.moveTo(fx - 5, fy - 5);
+    g.lineTo(fx + 5, fy + 5);
+    g.moveTo(fx + 5, fy - 5);
+    g.lineTo(fx - 5, fy + 5);
+    g.stroke();
+  }
+
   // Your high point, flagged.
   const hi = log?.hi ?? 0;
   if (hi > 0 && hi < r.moves) {
@@ -298,12 +326,34 @@ function renderWall(g: G, f: Frame): void {
     g.stroke();
   }
   const stride = falling ? 0 : Math.sin(pos * Math.PI);
+  // Pumped arms shake: nothing under half a bar, then more and more as it fills. Only while
+  // you're on the wall: once you're off or at the chains, it's over.
+  const pump = f.att && (f.att.phase === 'climb' || f.att.phase === 'crux') ? f.att.pump : 0;
+  const shake = f.still ? 0 : Math.pow(Math.max(0, pump - 55) / 45, 1.5) * (wall.big ? 4 : 2.2);
+  const sx = x + Math.sin(f.t * 43) * shake;
+  const sy = y + Math.cos(f.t * 37) * shake * 0.6;
   if (wall.big) {
     g.save();
-    g.translate(x, y);
+    g.translate(sx, sy);
     g.scale(BIG, BIG);
     drawClimber(g, LOOK.you!, 0, 0, stride, falling);
     g.restore();
-  } else drawClimber(g, LOOK.you!, x, y, stride, falling);
+  } else drawClimber(g, LOOK.you!, sx, sy, stride, falling);
   if (r.place !== 'gym' && wet(s)) drawRain(g, W, H, f.t, f.still);
+  // And the world narrows: the edges close in as the bar fills, pulsing near the top. The
+  // gradient is squashed to the screen's shape so the sides close in as much as the ends.
+  if (pump > 45) {
+    const beat = f.still || pump < 80 ? 1 : 0.85 + 0.15 * Math.sin(f.t * 8);
+    const a = Math.min(0.7, Math.pow((pump - 45) / 55, 1.2) * 0.7) * beat;
+    const k = H / W;
+    g.save();
+    g.translate(W / 2, H * 0.42);
+    g.scale(1, k);
+    g.fillStyle = rad(g, 0, 0, W * 0.2, W * 0.78, [
+      [0, 'rgba(30,8,8,0)'],
+      [1, `rgba(30,8,8,${a.toFixed(3)})`],
+    ]);
+    g.fillRect(-W / 2, -0.42 * W, W, W);
+    g.restore();
+  }
 }

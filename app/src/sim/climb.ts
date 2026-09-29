@@ -52,7 +52,7 @@ export interface Attempt {
   pick: Record<string, string>;
   // Fixed at the tie-in: each crux's window scale (your skills against its grade, the rock,
   // your hunger), and how fast you pump (your endurance against the route).
-  mods: { crux: Record<string, number>; pump: number };
+  mods: { crux: Record<string, number>; pump: number; speed: number };
   // Moves climbed, fractional.
   pos: number;
   pump: number;
@@ -131,6 +131,12 @@ export function betaScale(s: GameState, r: RouteDef, beta: string): number {
   return windowFactor(margin(s.climber.skills, b.style, effGrade(r))) * dayFactor(s, r).windows;
 }
 
+// How fast you move through a line: your level in its style against its grade.
+export function paceFor(s: GameState, r: RouteDef): number {
+  const P = CLIMB.pace;
+  return clamp(1 + P.perGrade * margin(s.climber.skills, r.type, effGrade(r)), P.min, P.max);
+}
+
 // Called after the 'go' action has charged the go's costs.
 export function startAttempt(s: GameState, r: RouteDef): Attempt {
   const pick = picks(s, r);
@@ -140,7 +146,7 @@ export function startAttempt(s: GameState, r: RouteDef): Attempt {
     route: r.id,
     def: r,
     pick,
-    mods: { crux, pump: pumpFactor(s.climber.skills, effGrade(r)) },
+    mods: { crux, pump: pumpFactor(s.climber.skills, effGrade(r)), speed: paceFor(s, r) },
     pos: 0,
     pump: 0,
     hold: false,
@@ -315,7 +321,7 @@ export function stepAttempt(att: Attempt, dt: number = STEP): Step {
 
   if (a.phase === 'climb') {
     if (a.hold) {
-      a.pos += CLIMB.climbRate * dt;
+      a.pos += CLIMB.climbRate * a.mods.speed * dt;
       a.pump += CLIMB.pumpClimb * a.mods.pump * dt;
       for (const c of r.cruxes) {
         if (!a.done.includes(c.id) && a.pos >= c.from) {

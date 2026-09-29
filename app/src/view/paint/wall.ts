@@ -221,6 +221,18 @@ export function onRoute(r: RouteDef, moves: number): Pt {
   return atLen(t.d, t.L, (moves / (r.moves || 1)) * t.len);
 }
 
+// The stretch of a route's line from one point to another, in moves: what a go climbed.
+export function routeStretch(r: RouteDef, from: number, to: number): Pt[] {
+  const t = wallOf(r).topo;
+  const per = t.len / (r.moves || 1);
+  const a = Math.min(r.moves, Math.max(0, from)) * per;
+  const b = Math.min(r.moves, Math.max(from, to)) * per;
+  const pts: Pt[] = [atLen(t.d, t.L, a)];
+  for (let i = 0; i < t.d.length; i++) if (t.L[i]! > a && t.L[i]! < b) pts.push(t.d[i]!);
+  pts.push(atLen(t.d, t.L, b));
+  return pts;
+}
+
 // Where the belayer stands for a sport route.
 export function belayAt(r: RouteDef): Pt {
   const [x] = wallOf(r).topo.d[0]!;

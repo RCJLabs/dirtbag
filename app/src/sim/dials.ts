@@ -226,6 +226,10 @@ export const CLIMB = {
   // Moves per second while you hold. About a move and a half: fast enough that pump, not
   // boredom, is what makes you let go.
   climbRate: 1.53,
+  // Pace: above a line's grade you move through it faster, below it slower, 8% a grade, so
+  // one route plays out differently for two climbers (Phase 9). Fewer seconds on the wall
+  // means less pump for the same moves.
+  pace: { perGrade: 0.08, min: 0.8, max: 1.25 },
   // Pump per second: while climbing, while hanging on a normal hold, at a rest, in a crux.
   // Hanging still pays some back, so letting go is never wasted; a real rest pays back 3x.
   pumpClimb: 8.5,

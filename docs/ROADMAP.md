@@ -264,6 +264,11 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 - **Phase 9 on the wall:**
   - How close a go was: this go's high point against your best, on the fall sheet and on the wall.
   - Pump you can feel: the climber shakes and the view tightens as the bar fills.
+  - *As built (R2.5):*
+    - The fall sheet draws the go as a bar: the line from the ground to the top, the cruxes underlined, this go filled in and your best before it ticked. Under it: "Your highest yet", "Level with your best", "Short of your best", or "Your first go on it". No numbers.
+    - On the wall, a chalk band follows what this go has climbed, under the rope, and an X marks where it came off. (On a close-up boulder the climber covers the spot, so the flag and the bar carry it.)
+    - Past 55 pump the climber shakes, harder as it fills. Past 45 the screen's edges darken, pulsing past 80. The pump bar pulses once it's hot. Reduced motion keeps the darkening and drops the shake and the pulse.
+    - *[proposed]* Pace: you move through a line 8% faster for each grade you're over it, and 8% slower for each grade under, from 0.8× to 1.25×. Fewer seconds on the wall means less pump for the same moves, so the same route plays out differently for two climbers. v0.956 had no climb speed. The harness (12 seeds × 28 days) shows no measurable change to the season: same grades at every checkpoint, first V5 go around days 17.5–20.
 - **The harness** (Phase 4's bots on the new sim):
   - Strategies: climber, worker and balanced, over 28- and 56-day runs.
   - It reports grade curves, runway (days you could go without working), injuries and when content runs out.
@@ -1235,3 +1240,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — R2 rival: Dex Calloway on his own seeded curve (streaks, a stretch hurt, a peak), met over your first V4, and v0.956's first-ascent race for the open project, set off once you're climbing V4. The harness bot learned to pick beta by how forgiving it is for its hands, to take the dare, and to name its first ascents; bot runs now keep every line.
 - 2026-09-29 — R2 Scout: the Lot's stray picks you on your tenth trip out. Kibble, the stick and ride-alongs at v0.956's numbers and in its words; he sits by the van at the crag and has a row on the You sheet. R2.4 (people) is built; R2.5 (Act I, the send card, the wall's feel, tuning, docs) is next.
 - 2026-09-29 — R2 Act I: v0.956's first-season quest as the demo's goal ladder, in its words and with its rewards, a "Next" pill on screen, and an end-of-act card; it ends at V4, the night Dex's race begins.
+- 2026-09-29 — R2 wall feel (Phase 9): the fall sheet draws how far a go got against your best; a chalk band and an X on the wall; pumped climbers shake and the screen's edges close in; and, proposed, climbers move through a line at a pace set by how far over or under its grade they are. Fixed "A 11-foot catch".
