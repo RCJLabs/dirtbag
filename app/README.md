@@ -54,9 +54,9 @@ npm run harness        # bots play whole seasons; prints the tables and Phase 6'
 | `src/sim/story.ts`, `content/story.ts` | Act I: the goal ladder, as data, and how far along it you are. |
 | `src/sim/curves.ts` | Other climbers' grades over the season: Sage's steady climb, and Dex's streaks, injury and peak. |
 | `src/sim/dials.ts` | Every tunable number, with what it means and why it's set there. |
-| `src/view/` | The painters and the frame renderer: scenes, the map, the wall, people. Reads state, never changes it. |
+| `src/view/` | The painters and the frame renderer: scenes, the map, the wall, people. Reads state, never changes it. `header.ts` draws a place card's header from the place's scene, or from its front in `paint/fronts.ts` for a place without one. |
 | `src/game/` | The game loop, input, walking, driving and the attempt's timing; saves to localStorage. `legacy.ts` reads a retired v0.956 career and keeps it as a file, never writing to it. |
-| `src/ui/` | React panels: HUD, speech bubbles, sheets, the climb panel, the goal pill. `card.ts` words the send card; `view/paint/card.ts` paints it. |
+| `src/ui/` | React panels: HUD, speech bubbles, sheets, the climb panel, the goal pill. `card.ts` words the send card; `view/paint/card.ts` paints it. `who.ts` words a place card's "Who's around". |
 | `build/pwa.ts` | The installable shell, made at build time: the manifest and icons (drawn in code, `favicon.ico` too), and a service worker that precaches exactly this build. The worker is `service-worker.js`, v0.956's name, so a browser that installed v0.956 swaps workers in place, and it clears v0.956's cache. |
 | `e2e/playthrough.mjs` | The bot that plays three days in the browser, on a pinned seed, and checks the game starts offline. It counts the taps on every trip and on day three, against Phase 11's budgets. |
 

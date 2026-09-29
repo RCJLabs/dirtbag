@@ -9,6 +9,7 @@ import {
   BOARD_WEEKS,
   BODY,
   bodyNote,
+  clockShort,
   conditionsAt,
   costLabel,
   DOG,
@@ -44,6 +45,7 @@ import {
 } from '../sim';
 import type { Game, SheetId } from '../game/game';
 import { CRAGS } from '../view/layout';
+import { whoAround, type Who } from './who';
 
 export interface Row {
   label: string;
@@ -62,6 +64,10 @@ export interface ListSpec {
   // How far a go got, in moves, against your best before it (none on a first go), with the
   // cruxes shaded.
   reach?: { moves: number; cruxes: [number, number][]; go: number; best: number | null };
+  // A place card's header: the place drawn as you'd find it at that minute, and said.
+  head?: { place: string; min: number; say: string };
+  // Who's around then.
+  who?: Who;
 }
 
 // A card of a line you've sent, to keep: from its sent sheet, or later from its beta sheet.
@@ -225,6 +231,10 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     case 'place': {
       const p = PLACES[id.id]!;
       const here = s.at === id.id;
+      // The card shows the place as you'd find it: now if you're here, or after the drive.
+      const min = here ? s.min : s.min + (road(s.at, id.id)?.min ?? 0);
+      const head = { place: id.id, min, say: `${p.name}, ${clockShort(min)}.` };
+      const who = p.scene ? whoAround(s, id.id, min) : undefined;
       const sub = fill(here ? p.here : p.away, {
         ...TEXT_VALUES,
         lines: Object.values(ROUTES).filter((r) => r.place === id.id).length,
@@ -244,6 +254,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           title: p.name,
           sub,
           close: true,
+          head,
+          who,
           notes: locked ? [p.locked ?? 'Not yet.'] : notes,
           rows: locked
             ? [{ ...drive, off: true, note: undefined }]
@@ -263,6 +275,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           title: p.name,
           sub,
           close: true,
+          head,
+          who,
           notes,
           rows: [{ label, run: () => game.enterScene(scene) }],
         };
@@ -273,6 +287,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         title: p.name,
         sub,
         close: false,
+        head,
         rows: [
           ...p.acts.map((a) => actRow(game, s, a)),
           ...onward.map((o) =>

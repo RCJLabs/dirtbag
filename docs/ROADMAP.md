@@ -61,7 +61,7 @@
 | 8 Choose the look | Done: the Mix. Its tokens and components are built in R0–R1. The Steam capsule art moves to Phase 15. |
 | 9 Climber on the wall | Reshaped as beta-then-send and built from R0. Its Done-when criteria gate R2. |
 | 10 Crags as places | Built on the rebuild (the board, conditions you can see, Moonstone) and closed by Evan's call. Its testers' criterion carries. |
-| 11 Valley map | Reshaped: the map plus side-view scenes, drawn in code (no Tiled, no tilesets). The current milestone: 11.1 (count the taps) is built, and criteria 2 and 3 pass. |
+| 11 Valley map | Reshaped: the map plus side-view scenes, drawn in code (no Tiled, no tilesets). The current milestone: 11.1 (count the taps) and 11.2 (place cards) are built, and criteria 2 and 3 pass. |
 | 12 UI system | Folded into the rebuild (R0–R2). |
 | 13–20 | Unchanged in intent. They target the new build. |
 
@@ -1102,6 +1102,23 @@ There's no joystick, zone graph or tileset to retire. What's left, in slices:
       - The harness doesn't move: all four targets pass, the first V5 go comes on days 19–19.5, and the injury counts are the same.
     - **The e2e** now plays three days on a pinned seed, so day three is prime and Roadside is open. Day two ends with the drive home and one tap to dark. Day three takes 20 taps. The run fails on a loop over 20, or a trip over three taps from a scene.
 - **11.2, place cards.** Each card gets a header drawn from the place itself, and "Who's around": the people there now (partners, regulars, Dex). So before the drive you know whether there's a belayer, or a spotter for a highball.
+  - *As built (11.2):*
+    - **Read at the hour you'd arrive.** A card shows the place as you'd find it: now if you're there, otherwise after the drive. People keep hours, so "now" would promise a belayer who's gone by the time you park.
+    - **Who's around** lists everyone who'll be there between then and the end of the day, with when: "Hazel, till 5 PM", "Sage, from 9 AM till 6 PM", "Hazel, till 8 AM, and from 5 PM".
+      - Someone you haven't met is "someone you haven't met". You know Hazel from the first morning.
+      - The sim reads each person's day a minute at a time (`staysAt`), so an invite's odd minute counts.
+      - Only places with a scene list it. Nobody's day takes them to the diner or the café, and their regulars, Otis and Wren, are in those cards' own words.
+    - **One more line at a crag with ropes or highballs**, on what the people there mean for you:
+      - "A belayer and a spotter till 6 PM", "A belayer from 9 AM", or "Nobody to belay you: boulders only".
+      - Partners whose stays overlap count as one stretch.
+    - **The header**, a band at the top of the card:
+      - A place with a scene is drawn from it, at the hour you'd arrive: whoever's there, the sun's edge, the wet, the night. It's framed where its people stand, through the same renderer as the screen with a wider view.
+      - A scene's layers take 100–200 ms to paint here, more on a phone. So each header's painted background is kept per scene, time of day and size; only what's drawn over it changes with the hour. The card shows first and the header after, and drawing one never pushes the scene you're in out of its cache.
+      - The diner and the café get fronts drawn in code: Otis in a booth with the paper, Wren on the bar. They're lit after dark, and it rains on them when it rains.
+      - The scenes' far layers are now painted wide enough for a header's view. The screen sees the same pixels as before.
+      - A layout test holds every place to a header (a scene or a front), and every scene to somewhere for its people to stand.
+    - **The e2e** checks that the café's front and Roadside's header paint. It reads Roadside's card on day two ("Hazel, till 5 PM", then a belayer and a spotter till 5) and Send City's ("Someone you haven't met, from 9 AM till 6 PM"). Trips stay at 3 taps from a scene, and day three at 20.
+    - The download grows 2.8 KB, to 201 KB of the 250 KB budget.
 - **11.3, adding a place is documented work.**
   - Roads become a graph: a place needs roads to its neighbours only, and a trip anywhere else is the quickest way through them. Today every pair of places needs its own hand-typed road; Moonstone needed six.
   - A checklist goes in `app/README.md`.
@@ -1115,7 +1132,7 @@ There's no joystick, zone graph or tileset to retire. What's left, in slices:
 4. The clock doesn't move while you're idle: true, and checked by the smoke test.
 5. A new place without a scene takes under an hour: a checklist, the road graph and CI's checks make it a data change plus a pin.
 
-**Status (29 Sep 2026): 11.1 built.** Criteria 2 and 3 pass on the build, counted by the e2e: 3 taps at most for a trip from a scene, and day three in 20. Criterion 4 passes (the smoke test). Criterion 1 carries to the testers; 5 waits on 11.3.
+**Status (29 Sep 2026): 11.1 and 11.2 built.** Criteria 2 and 3 pass on the build, counted by the e2e: 3 taps at most for a trip from a scene, and day three in 20. Criterion 4 passes (the smoke test). Criterion 1 carries to the testers; 5 waits on 11.3.
 
 ---
 
@@ -1477,3 +1494,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Evan's calls: the board runs a grade stiff, criterion 3 is scoped to Act I (V0–V9), and highball risk stays as built. With the stiff board, the harness reads 0 runs in 144 with nothing new to try. Phase 10's criteria 1–3 pass; 4 waits on testers.
 - 2026-09-29 — Phase 10 closed by Evan's call: criteria 1–3 pass on the build, and criterion 4 (testers) carries. CURRENT MILESTONE moved to Phase 11, planned on the rebuild: count the taps, place cards, adding a place as documented work, and the daily agenda.
 - 2026-09-29 — Phase 11.1: count the taps. On a pinned seed, the e2e bot counts every trip (3 taps at most from a scene, 2 by the crag's van) and a day-3 loop. The loop took 32 taps, 12 of them waiting for bed at 6 PM. Bed now opens at dark (5 PM), and lying around till dark is one tap (proposed). Day three: 20 taps. Criteria 2 and 3 pass; the season targets don't move.
+- 2026-09-29 — Phase 11.2: place cards. Every card has a header showing the place as you'd find it after the drive: its scene, with whoever's there, the light, the wet and the night; the diner and the café get fronts drawn in code. Places with a scene list who's around then, and till when. At a crag with ropes or highballs, a line says whether that means a belayer or a spotter. The e2e checks both.

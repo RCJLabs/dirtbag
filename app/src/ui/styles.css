@@ -70,7 +70,7 @@ body {
   transition: none;
 }
 
-.screen canvas {
+.screen > canvas {
   position: absolute;
   left: 0;
   top: 0;
@@ -303,6 +303,35 @@ button.pill:disabled {
 /* A row under the sheet's main button. */
 .opt.after {
   margin-top: 10px;
+}
+/* A place card's header: the place, drawn as you'd find it. */
+.place-head {
+  display: block;
+  width: 100%;
+  height: 128px;
+  margin: 9px 0 2px;
+  border: var(--u-border);
+  border-radius: var(--u-rad);
+}
+/* Who's around when you'd get there. */
+.around {
+  margin: 8px 0 9px;
+  font: 500 calc(12.5px * var(--u-fs)) / 1.35 var(--u-mono);
+}
+.around p {
+  margin: 0;
+}
+.around .around-h {
+  font: 700 calc(11px * var(--u-fs)) / 1.3 var(--u-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--u-dim);
+  margin-bottom: 2px;
+}
+.around .cover {
+  margin-top: 3px;
+  font-weight: 600;
+  color: var(--u-acc);
 }
 /* The send card's preview: the full-size PNG, shown at a size the sheet can hold. */
 .card-img {

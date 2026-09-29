@@ -1,7 +1,6 @@
 // Things drawn every frame on top of the painted layers: the fire, the string lights,
 // labels, route tags and the van on the map.
 
-import { VW } from '../layout';
 import { lin, rad, rr, type G } from '../kit/geom';
 import { mulberry32, vnoise } from '../kit/noise';
 import { INK } from './people';
@@ -44,7 +43,7 @@ export function label(
 // Someone with something to say: a little speech balloon with three dots over their head,
 // bobbing unless motion is off.
 export function speechMark(g: G, x: number, y: number, t: number, still: boolean): void {
-  if (x < -30 || x > VW + 30) return;
+  if (x < -30) return;
   const by = y - (still ? 0 : Math.abs(Math.sin(t * 2.6)) * 2.5);
   g.fillStyle = CREAM;
   g.strokeStyle = INK;
@@ -116,7 +115,7 @@ export function drawLights(g: G, pts: readonly [number, number][], cam: number):
   g.save();
   pts.forEach((p, i) => {
     const x = p[0] - cam;
-    if (x < -10 || x > VW + 10) return;
+    if (x < -10) return;
     const c = ['#FFD27A', '#FF9A6A', '#9FD3FF'][i % 3]!;
     g.shadowColor = c;
     g.shadowBlur = 9;
@@ -138,7 +137,7 @@ export function routeTag(
   open: boolean,
   sent: boolean,
 ): void {
-  if (x < -30 || x > VW + 30) return;
+  if (x < -30) return;
   g.beginPath();
   g.arc(x, y, 9.5, 0, 6.2832);
   g.fillStyle = open ? ACC.poster : '#F3E6CB';
@@ -156,7 +155,7 @@ export function routeTag(
 
 // A boulder's tag: its grade on a chalk-white card on top of the rock.
 export function boulderTag(g: G, x: number, y: number, grade: string, sent: boolean): void {
-  if (x < -30 || x > VW + 30) return;
+  if (x < -30) return;
   g.fillStyle = '#F3E6CB';
   g.strokeStyle = '#1E2B2B';
   g.lineWidth = 1.5;
@@ -172,7 +171,7 @@ export function boulderTag(g: G, x: number, y: number, grade: string, sent: bool
 
 // A gym problem's start tape: its colour, its grade, and SENT once you've done it.
 export function tapeTag(g: G, x: number, y: number, col: string, grade: string, sent: boolean): void {
-  if (x < -30 || x > VW + 30) return;
+  if (x < -30) return;
   g.fillStyle = col;
   g.fillRect(x - 15, y - 8, 30, 15);
   g.font = `800 12px ${FONT.poster}`;

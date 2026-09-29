@@ -65,6 +65,7 @@ import {
 import type { Game, SheetId, Ui } from '../game/game';
 import { legacyFile, saveLegacyFile } from '../game/legacy';
 import type { Settings } from '../game/persist';
+import { paintHeader } from '../view/header';
 import { CARD, cardPng } from '../view/paint/card';
 import { cardFile, cardOf, cardText } from './card';
 import { buildSheet, SKILL_NAME, type ListSpec } from './sheets';
@@ -130,6 +131,7 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
     <div className="sheet" id="sheet" role="dialog" aria-labelledby="sheet-title" ref={ref}>
       {spec.close && <Close game={game} />}
       <h3 id="sheet-title">{spec.title}</h3>
+      {spec.head && <PlaceHead s={state} {...spec.head} />}
       {spec.reach && <Reach {...spec.reach} />}
       {spec.sub && <p className="sub">{spec.sub}</p>}
       {spec.notes?.map((n) => (
@@ -137,6 +139,7 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
           {n}
         </p>
       ))}
+      {spec.who && <WhoList {...spec.who} />}
       <ul>
         {spec.rows.map((r) => (
           <li key={r.label}>
@@ -148,6 +151,35 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+// A place card's header: the place drawn as you'd find it, painted after the card is up so
+// the card never waits on it. Repainted as the state moves; its back is kept.
+function PlaceHead({ s, place, min, say }: { s: GameState } & NonNullable<ListSpec['head']>) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const c = ref.current;
+    const g = c?.getContext('2d');
+    if (!c || !g || !c.clientWidth) return;
+    const px = Math.min(3, window.devicePixelRatio || 1);
+    c.width = Math.round(c.clientWidth * px);
+    c.height = Math.round(c.clientHeight * px);
+    paintHeader(g, { ...s, min }, place, c.clientWidth, c.clientHeight, px);
+  }, [s, place, min]);
+  return <canvas ref={ref} className="place-head" id="place-head" role="img" aria-label={say} />;
+}
+
+// Who's around when you'd get there, and whether that means a belayer or a spotter.
+function WhoList({ at, lines, cover }: NonNullable<ListSpec['who']>) {
+  return (
+    <div className="around" id="around">
+      <p className="around-h">Who’s around at {clockShort(at)}</p>
+      {lines.map((l) => (
+        <p key={l}>{l}</p>
+      ))}
+      {cover && <p className="cover">{cover}</p>}
     </div>
   );
 }

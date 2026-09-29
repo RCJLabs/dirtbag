@@ -77,7 +77,8 @@ export {
   SEASON_DAYS,
 } from './weather';
 export type { Sky, Season, Conditions } from './weather';
-export { whereIs, whereNow, around, tierOf, PARTNERS } from './presence';
+export { whereIs, whereNow, around, tierOf, PARTNERS, staysAt, knows, DAY_END } from './presence';
+export type { Stay } from './presence';
 export { gradeOfPerson, dexHurt } from './curves';
 export { ratio, zone, daysOff, cold, goLoad, projected } from './body';
 export type { Zone } from './body';

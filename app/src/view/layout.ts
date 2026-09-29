@@ -43,6 +43,9 @@ export interface SceneLayout {
   spawn: number;
   hint: string;
   hots: Hot[];
+  // Where the place card's header looks: the middle of what it shows, where the people
+  // who'd be there stand.
+  frame: number;
 }
 
 // A crag, side on: its wall (from its foot on the left to where it ends, which may be off
@@ -56,6 +59,8 @@ export interface CragSpec {
   // Where the crag's sign stands.
   sign: number;
   hint: string;
+  // The middle of its place card's header.
+  frame: number;
 }
 
 export const CRAGS: Record<string, CragSpec> = {
@@ -81,6 +86,8 @@ export const CRAGS: Record<string, CragSpec> = {
     ],
     sign: 272,
     hint: 'Boulders on the talus, ropes on the wall',
+    // The belay under The Pump, Sage by the Testpiece and Dex in the boulder field.
+    frame: 930,
   },
   // The Gorge: granite in the shade, three bolted lines up the canyon wall, boulders on
   // its floor either side.
@@ -102,6 +109,8 @@ export const CRAGS: Record<string, CragSpec> = {
     ],
     sign: 272,
     hint: 'The canyon floor’s all boulders. The bolts need a belayer.',
+    // Sage on belay under the first line, and the classic.
+    frame: 760,
   },
   // Moonstone: sand, sky and quartzite boulders the size of houses, and a spire in the
   // middle with two bolted lines on it.
@@ -123,6 +132,8 @@ export const CRAGS: Record<string, CragSpec> = {
     ],
     sign: 272,
     hint: 'Highballs on the sand. The spire needs a belayer.',
+    // The spire, with a highball either side.
+    frame: 760,
   },
 };
 
@@ -151,6 +162,7 @@ function cragScene(place: string, c: CragSpec): SceneLayout {
     width: c.width,
     spawn: 180,
     hint: c.hint,
+    frame: c.frame,
     hots: [
       { x0: 34, x1: 234, y0: 440, y1: GND + 8, stand: 196, face: -1, use: { sheet: 'cragVan' } },
       // Boulders first: they stand in front of the wall, so a tap on one is for it.
@@ -169,6 +181,8 @@ export const SCENES: Record<string, SceneLayout> = {
     width: WW,
     spawn: 300,
     hint: 'Tap anywhere to walk',
+    // The van, the fire and whoever's at it.
+    frame: 440,
     hots: [
       { x0: 112, x1: 330, y0: 430, y1: GND + 8, stand: 300, face: -1, use: { sheet: 'van' } },
       { x0: 494, x1: 546, y0: GND - 44, y1: GND + 12, stand: 500, face: 1, use: { thing: 'fire' } },
@@ -192,6 +206,8 @@ export const SCENES: Record<string, SceneLayout> = {
     width: GYM_W,
     spawn: 70,
     hint: 'Day pass at the desk. New problems every week.',
+    // The desk, Sage's corner and the wall.
+    frame: 470,
     hots: [
       {
         x0: DESK_X - 56,
@@ -244,6 +260,8 @@ export const SPOTS: Record<string, Spot[]> = {
     { who: 'sage', x: 610, face: -1, pose: 'belay', talk: 'sage' },
     { who: 'dex', x: 1236, face: -1, pose: 'stand', talk: 'dex' },
   ],
+  // Nobody's day brings them out here, but Dex stays wherever he first saw you send a V4.
+  moon: [{ who: 'dex', x: 1190, face: -1, pose: 'stand', talk: 'dex' }],
 };
 
 // Who's in a scene right now: the people whose day puts them at its place.

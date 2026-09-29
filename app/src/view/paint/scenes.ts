@@ -11,7 +11,7 @@ import { paintGymBack, paintGymGround } from './gym';
 
 export type Tod = 'morning' | 'night' | 'day';
 
-interface Palette {
+export interface Palette {
   sky: [number, string][];
   orb: string;
   orbX: number;
@@ -108,6 +108,10 @@ const SP: Record<Tod, Palette> = {
   },
 };
 
+// The valley's colours at a time of day, for what's drawn in it that isn't a scene: the
+// fronts of the places you only see as a card.
+export const valley = (tod: Tod): Palette => SP[tod];
+
 // Granite Gorge: the canyon's in shade all day. The sky's a pale strip over the far wall,
 // the rock is cool grey granite, and the trees are pines.
 const GORGE: Palette = {
@@ -187,7 +191,14 @@ export const STARS: [number, number, number][] = (() => {
   return Array.from({ length: 150 }, () => [r() * W, r() * 420, r() < 0.12 ? 1.6 : r() * 0.9 + 0.4]);
 })();
 
-function ridgeLine(w: number, base: number, amp: number, seed: number, freq: number, sharp = false): Pt[] {
+export function ridgeLine(
+  w: number,
+  base: number,
+  amp: number,
+  seed: number,
+  freq: number,
+  sharp = false,
+): Pt[] {
   const pts: Pt[] = [];
   for (let x = -12; x <= w + 12; x += 8) {
     let n = fbm(x * freq, seed * 0.37, seed);
@@ -877,27 +888,35 @@ export interface SceneArt {
 
 const cache = new Map<string, SceneArt>();
 
+// The widest stretch of a scene anything shows at once, in world pixels: a place card's
+// header, which sees about twice what the screen does. The far layers are painted wide
+// enough for it wherever it looks; the screen sees the same pixels it always did.
+export const SEEN = 600;
+
 // The painted layers for a scene at a time of day. Two are kept: the one you're in and the
-// one you just left, so walking back doesn't repaint.
-export function sceneArt(id: string, tod: Tod): SceneArt {
+// one you just left, so walking back doesn't repaint. A place card's header paints from a
+// scene without keeping it (`keep` false), so looking at the map never pushes out yours.
+export function sceneArt(id: string, tod: Tod, keep = true): SceneArt {
   const key = id === 'gym' ? id : `${id}:${tod}`;
-  let a = cache.get(key);
-  if (a) return a;
-  if (id === 'gym') {
-    a = { sky: paintGymBack(), layers: [{ p: 1, w: GYM_W, c: paintGymGround() }] };
+  const a = cache.get(key) ?? paintArt(id, tod);
+  if (keep && !cache.has(key)) {
     cache.set(key, a);
     while (cache.size > 2) cache.delete(cache.keys().next().value!);
-    return a;
   }
+  return a;
+}
+
+function paintArt(id: string, tod: Tod): SceneArt {
+  if (id === 'gym') return { sky: paintGymBack(), layers: [{ p: 1, w: GYM_W, c: paintGymGround() }] };
   const crag = CRAGS[id];
   const gorge = id === 'gorge';
   const moon = id === 'moon';
   const P = gorge ? GORGE : moon ? DESERT : SP[crag ? 'day' : tod];
   const w = crag?.width ?? WW;
-  const lw = (p: number) => 360 + (w - 360) * p;
+  const lw = (p: number) => SEEN + (w - SEEN) * p;
   const seed = gorge ? 17 : moon ? 23 : crag ? 11 : 5;
   const rock: Rock = gorge ? 'granite' : moon ? 'quartzite' : 'sandstone';
-  a = {
+  return {
     sky: paintSky(P, crag ? 'day' : tod),
     layers: [
       { p: 0.2, w: lw(0.2), c: paintFar(P, lw(0.2), seed, gorge) },
@@ -905,7 +924,4 @@ export function sceneArt(id: string, tod: Tod): SceneArt {
       { p: 1, w, c: crag ? paintCragGround(P, id, rock) : paintLotGround(P, tod) },
     ],
   };
-  cache.set(key, a);
-  while (cache.size > 2) cache.delete(cache.keys().next().value!);
-  return a;
 }

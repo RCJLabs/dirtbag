@@ -1,8 +1,10 @@
 // The staging's side of "content is data": every crag line the rules know has one place on
-// screen, in the scene of its crag, and every place has a pin on the map.
+// screen, in the scene of its crag, and every place has a pin on the map and a header on
+// its card.
 import { describe, expect, it } from 'vitest';
 import { PLACES, ROUTES } from '../sim';
-import { CRAGS, MAP_PINS, SCENES, widthOf } from './layout';
+import { hasHeader } from './header';
+import { CRAGS, MAP_PINS, SCENES, SPOTS, widthOf } from './layout';
 
 describe('the crags on screen', () => {
   it('put every crag line in its place’s scene, once', () => {
@@ -37,5 +39,15 @@ describe('the crags on screen', () => {
   it('pin every place on the map', () => {
     for (const id of Object.keys(PLACES)) expect(MAP_PINS[id], id).toBeDefined();
     for (const s of Object.values(SCENES)) expect(PLACES[s.place], s.place).toBeDefined();
+  });
+
+  it('give every place a header: its scene, framed inside it, or a front of its own', () => {
+    for (const id of Object.keys(PLACES)) expect(hasHeader(id), id).toBe(true);
+    for (const [id, s] of Object.entries(SCENES)) {
+      expect(s.frame, id).toBeGreaterThan(0);
+      expect(s.frame, id).toBeLessThan(s.width);
+    }
+    // Anyone whose day can bring them to a scene has somewhere to stand in it.
+    for (const id of Object.keys(SCENES)) expect(SPOTS[id], id).toBeDefined();
   });
 });

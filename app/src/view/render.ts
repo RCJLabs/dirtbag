@@ -31,7 +31,6 @@ import {
   presentIn,
   PROBLEM_X,
   SCENES,
-  VW,
   W,
   Z,
   type PinKind,
@@ -55,7 +54,7 @@ import { TAPE } from './paint/gym';
 import { mapArt } from './paint/map';
 import { drawBelayerBack, drawClimber, drawDog, drawPerson, INK, LOOK } from './paint/people';
 import { BIG } from './paint/scale';
-import { FIRE_X, LIGHTS, sceneArt } from './paint/scenes';
+import { FIRE_X, LIGHTS, sceneArt, type SceneArt, type Tod } from './paint/scenes';
 import { belayAt, onRoute, rockPath, routeStretch, wallOf } from './paint/wall';
 import { sceneSun, sunLight, wallSun, wetness } from './sun';
 
@@ -89,28 +88,78 @@ const wet = (s: GameState, place: string) => conditionsAt(s.seed, s.day, place).
 const WET_SEED = 57;
 const wetSeed = (id: string) => [...id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, WET_SEED);
 
+// Where a scene is seen from: the screen, or a place card's header. Its size in logical
+// pixels, the world's zoom and where the world's top sits, and device pixels a logical one.
+export interface Eye {
+  w: number;
+  h: number;
+  z: number;
+  oy: number;
+  px: number;
+}
+
+// The Lot has a morning and a night; the crags and the gym look the same all day.
+export const todAt = (scene: string, min: number): Tod =>
+  scene === 'lot' ? (isNight(min) ? 'night' : 'morning') : 'day';
+
 function renderScene(g: G, f: Frame): void {
-  const s = f.state;
-  const lot = f.scene === 'lot';
-  const crag = CRAGS[f.scene];
-  const place = SCENES[f.scene]?.place ?? s.at;
-  const gym = f.scene === 'gym';
-  const night = lot && isNight(s.min);
-  const art = sceneArt(f.scene, lot ? (night ? 'night' : 'morning') : 'day');
-  const cam = f.cam;
-  g.drawImage(art.sky, 0, 0, W, H);
-  g.save();
-  g.setTransform(f.px * Z, 0, 0, f.px * Z, 0, f.px * OY);
+  const eye: Eye = { w: W, h: H, z: Z, oy: OY, px: f.px };
+  sceneBack(g, sceneArt(f.scene, todAt(f.scene, f.state.min)), f.cam, eye);
+  sceneLive(g, f.state, f.scene, f.cam, eye, f);
+}
+
+// The painted part of a scene: its sky, then its layers, each moved by the camera as far as
+// its distance says. An eye on a band of the world sees the band of sky the screen shows
+// behind it.
+export function sceneBack(g: G, art: SceneArt, cam: number, eye: Eye): void {
+  const sky = art.sky;
+  const k = sky.height / H;
+  g.setTransform(eye.px, 0, 0, eye.px, 0, 0);
+  g.drawImage(
+    sky,
+    0,
+    (OY - (eye.oy * Z) / eye.z) * k,
+    sky.width,
+    (eye.h / eye.z) * Z * k,
+    0,
+    0,
+    eye.w,
+    eye.h,
+  );
+  g.setTransform(eye.px * eye.z, 0, 0, eye.px * eye.z, 0, eye.px * eye.oy);
   for (const L of art.layers) g.drawImage(L.c, -cam * L.p, 0, L.w, H);
+  g.setTransform(eye.px, 0, 0, eye.px, 0, 0);
+}
+
+// Who's with you: on the screen, you and Scout. A place card's header shows the place
+// without you.
+interface Company {
+  t: number;
+  still: boolean;
+  player?: Frame['player'];
+  scout?: Frame['scout'];
+}
+
+// The live part of a scene, over its painted back: the fire, the light and the wet on the
+// rock, the tags, and the people there at the state's hour.
+export function sceneLive(g: G, s: GameState, scene: string, cam: number, eye: Eye, f: Company): void {
+  const lot = scene === 'lot';
+  const crag = CRAGS[scene];
+  const place = SCENES[scene]?.place ?? s.at;
+  const gym = scene === 'gym';
+  const night = lot && isNight(s.min);
+  const vw = eye.w / eye.z;
+  g.save();
+  g.setTransform(eye.px * eye.z, 0, 0, eye.px * eye.z, 0, eye.px * eye.oy);
   if (lot) {
     drawFire(g, FIRE_X - cam, GND + 1, f.t, night, f.still);
     if (night) drawLights(g, LIGHTS, cam);
-    drawDog(g, f.scout.x - cam, GND + 5, 1, f.t, f.scout.wag);
+    if (f.scout) drawDog(g, f.scout.x - cam, GND + 5, 1, f.t, f.scout.wag);
   }
   // The day on the rock: the sun's edge crossing the crag, and the wet after rain.
   if (crag) {
-    const sun = sceneSun(s, f.scene);
-    if (sun) drawSun(g, sun.x - cam, sun.lit, -10, VW + 10, -40, H + 40, sunLight(s.min));
+    const sun = sceneSun(s, scene);
+    if (sun) drawSun(g, sun.x - cam, sun.lit, -10, vw + 10, -40, H + 40, sunLight(s.min));
     const w = wetness(s, place);
     if (w)
       drawWet(
@@ -124,7 +173,7 @@ function renderScene(g: G, f: Frame): void {
       );
   }
   // Scout rode out with you: he's by the van.
-  if (crag && s.dog) drawDog(g, 238 - cam, GND + 5, 1, f.t, 0);
+  if (crag && s.dog && f.scout) drawDog(g, 238 - cam, GND + 5, 1, f.t, 0);
   // The crag's sign, with a closure notice pinned under it when the season shuts it; then
   // the tags on the rock, and the people in front of them.
   if (crag) {
@@ -155,31 +204,35 @@ function renderScene(g: G, f: Frame): void {
         tapeTag(g, BOARD_X0 + 25 + n * 50 - cam, GND - 16, '#2B2825', gradeLabel(r), !!s.routes[r.id]?.sent),
       );
   }
-  for (const p of presentIn(s, f.scene)) {
+  for (const p of presentIn(s, scene)) {
     drawPerson(g, LOOK[p.who]!, { x: p.x - cam, y: GND, dir: p.face, pose: p.pose, t: f.t });
     // They've something to tell you.
     const opener = talkStart(s, p.talk);
     if (opener && TALK[p.talk]?.nodes[opener]?.calls) speechMark(g, p.x - cam, HEAD_Y - 10, f.t, f.still);
   }
   const p = f.player;
-  drawPerson(g, LOOK.you!, {
-    x: p.x - cam,
-    y: GND,
-    dir: p.dir,
-    phase: p.phase,
-    speed: p.speed,
-    pose: p.speed > 0.05 ? 'walk' : 'stand',
-    t: f.t,
-  });
+  if (p)
+    drawPerson(g, LOOK.you!, {
+      x: p.x - cam,
+      y: GND,
+      dir: p.dir,
+      phase: p.phase,
+      speed: p.speed,
+      pose: p.speed > 0.05 ? 'walk' : 'stand',
+      t: f.t,
+    });
   g.restore();
+  g.setTransform(eye.px, 0, 0, eye.px, 0, 0);
   if (night) {
-    g.fillStyle = rad(g, W / 2, H * 0.55, H * 0.18, H * 0.72, [
+    // Sized by the longer side, so a wide header darkens at its ends as the tall screen does.
+    const r = Math.max(eye.w, eye.h);
+    g.fillStyle = rad(g, eye.w / 2, eye.h * 0.55, r * 0.18, r * 0.72, [
       [0, 'rgba(0,0,0,0)'],
       [1, 'rgba(0,0,14,.42)'],
     ]);
-    g.fillRect(0, 0, W, H);
+    g.fillRect(0, 0, eye.w, eye.h);
   }
-  if (!gym && wet(s, place)) drawRain(g, W, H, f.t, f.still);
+  if (!gym && wet(s, place)) drawRain(g, eye.w, eye.h, f.t, f.still);
 }
 
 const PIN_FILL: Record<PinKind, string> = { crag: ACC.comic, camp: '#9CC77E', town: CREAM };

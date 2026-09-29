@@ -235,18 +235,38 @@ const trips = [];
 
 // A trip from a scene: the map, the pin, the drive. Phase 11 holds every trip to two taps
 // from the map, so three from a scene; the card between pin and drive stays, since it shows
-// the cost, the weather and who's there. `onMap` runs on the map, uncounted.
-async function driveFrom(what, pin, card, onMap) {
+// the cost, the weather and who's there. `onMap` runs on the map and `onCard` on the card,
+// neither of them counted.
+async function driveFrom(what, pin, card, { onMap, onCard } = {}) {
   const t0 = taps;
-  await click('#b-nav', 'Map');
-  await until('the map', async () => (await text('#b-nav')) === 'Close');
-  await wait(450); // taps during a fade are ignored, as they are for a player
+  await openMap();
   if (onMap) await onMap();
   await tapAt(...pin);
   await expectText('#sheet', card, 'place card');
+  if (onCard) await onCard();
   await click('#sheet .opt', 'Drive here');
   counted(what, taps - t0, 3);
 }
+
+async function openMap() {
+  await click('#b-nav', 'Map');
+  await until('the map', async () => (await text('#b-nav')) === 'Close');
+  await wait(450); // taps during a fade are ignored, as they are for a player
+}
+
+// A place card's header, painted: enough of the canvas has something on it. It's painted
+// after the card is up, so this waits for it.
+const header = (what) =>
+  until(what, () =>
+    page.evaluate(() => {
+      const c = document.querySelector('#place-head');
+      const d = c?.width ? c.getContext('2d')?.getImageData(0, 0, c.width, c.height).data : null;
+      if (!d) return false;
+      let n = 0;
+      for (let i = 3; i < d.length; i += 4 * 101) if (d[i]) n++;
+      return n > d.length / (4 * 101) / 2 ? `${c.width}×${c.height}` : false;
+    }),
+  );
 
 // A drive offered on the card in front of you (a card-only place, or the van): its tap is
 // the whole trip.
@@ -313,7 +333,11 @@ await click('#bubble button', 'Got it');
 await expectText('#toast', /New beta: heel-hook the lip/, 'toast');
 
 console.log('A double at the café');
-await driveFrom('the Lot to the café', PIN.cafe, /Coffee Shop/, () => shot('map'));
+await driveFrom('the Lot to the café', PIN.cafe, /Coffee Shop/, {
+  onMap: () => shot('map'),
+  // A place you only see as a card has its front drawn: the café, with Wren at the window.
+  onCard: async () => log(`the café's front: ${await header("the café's front")}`),
+});
 await expectText('#sheet', /Wren is on the bar/, 'at the café');
 await click('#sheet .opt', 'Pick up a double');
 await expectText('#h-cash', /^\$96$/, 'paid');
@@ -434,8 +458,29 @@ if (await page.locator('#create').count()) await fail('the climber screen came b
 
 // ---- day two ----
 
+console.log('Place cards');
+// Before the drive, a card shows the place as you'd find it, and who'd be there. Day two is
+// fair: Roadside at 8:10 AM has Hazel till five, so a belayer and a spotter till then.
+await openMap();
+await tapAt(292, 220);
+await expectText(
+  '#around',
+  /around at 8:10 AM.*Hazel, till 5 PM.*A belayer and a spotter till 5 PM\./,
+  "who's around at Roadside",
+);
+log(`Roadside's header: ${await header("Roadside's header")}`);
+await shot('card-road');
+await click('#sheet .x');
+await click('#b-nav', 'Close');
+await until('the Lot', async () => (await text('#b-nav')) === 'Map');
+
 console.log('Send City');
-await driveFrom('the Lot to Send City', PIN.gym, /Send City/);
+// Sage's there from nine, but you haven't met her yet.
+await driveFrom(
+  'the Lot to Send City',
+  PIN.gym,
+  /Send City.*around at 7:22 AM.*Someone you haven't met, from 9 AM till 6 PM/,
+);
 await until('the gym', async () => (await text('#hint'))?.includes('Day pass at the desk'));
 await wait(400);
 await shot('gym');

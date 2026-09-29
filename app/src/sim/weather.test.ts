@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { whereIs, around } from './presence';
+import { newGame } from './game';
+import { whereIs, around, staysAt, knows, DAY_END } from './presence';
 import { CLIMB } from './dials';
 import { PLACES } from './content/places';
 import {
@@ -119,5 +120,27 @@ describe('where people are', () => {
     }
     expect(seen).toBeGreaterThan(90);
     expect(seen).toBeLessThan(130);
+  });
+
+  it("reads a place's day ahead: who'll be there, from when and till when", () => {
+    const s = newGame('t');
+    // Day one is prime: Hazel is at Roadside from 8 to 5, and at the Lot either side of it.
+    expect(staysAt(s, 'road', s.min)).toEqual([{ who: 'hazel', from: 8 * 60, till: 17 * 60 }]);
+    expect(staysAt(s, 'lot', s.min)).toEqual([
+      { who: 'hazel', from: s.min, till: 8 * 60 },
+      { who: 'hazel', from: 17 * 60, till: DAY_END },
+    ]);
+    // Day two, Sage is at the gym from 9 to 6, met or not; you know Hazel from the start.
+    expect(staysAt({ ...s, day: 2 }, 'gym', 7 * 60 + 22)).toEqual([
+      { who: 'sage', from: 9 * 60, till: 18 * 60 },
+    ]);
+    expect(knows(s, 'hazel')).toBe(true);
+    expect(knows(s, 'sage')).toBe(false);
+    expect(knows({ ...s, people: { sage: { bond: 1, last: 0 } } }, 'sage')).toBe(true);
+    // An invite starts the minute it's made.
+    const sage = { bond: 3, last: 0, since: 2, invite: { day: 5, place: 'gorge', from: 11 * 60 + 23 } };
+    expect(staysAt({ ...s, day: 5, people: { sage } }, 'gorge', 11 * 60)).toEqual([
+      { who: 'sage', from: 11 * 60 + 23, till: 18 * 60 },
+    ]);
   });
 });
