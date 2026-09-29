@@ -1,0 +1,21 @@
+{
+  // The sim's own check: no DOM and no Node types, so a rule that reaches for the page, the
+  // storage or the wall clock fails to compile here even if it compiles in the app.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023"],
+    "types": [],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["src/sim/**/*.ts"],
+  "exclude": ["src/sim/**/*.test.ts"]
+}

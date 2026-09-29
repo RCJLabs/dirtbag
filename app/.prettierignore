@@ -1,0 +1,8 @@
+dist/
+node_modules/
+package-lock.json
+e2e-artifacts/
+*.md
+
+# Saves written by old builds, kept byte for byte.
+src/sim/fixtures/

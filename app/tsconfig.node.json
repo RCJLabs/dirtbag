@@ -1,0 +1,17 @@
+{
+  // Tests and build config. The DOM's types are here for tests of the game layer (with a fake
+  // window); the sim's own sources are held to tsconfig.sim.json, which has none.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["vite.config.ts", "build/**/*.ts", "harness/**/*.ts", "src/env.d.ts", "src/**/*.test.ts"]
+}

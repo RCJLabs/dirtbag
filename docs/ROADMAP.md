@@ -9,9 +9,329 @@
 
 **The plan in one line.** Stop adding features. Make the codebase safe to change. Decide what the game is. Show the climbing. Deepen only what matters. Then ship a free first season and a paid full game, with Steam as the main bet.
 
+**Update, 28 Sep 2026: the game is being rebuilt.** The look, the camera and the climbing are decided, and together they replace enough of the game that it is being rebuilt in a new codebase rather than refactored. Read [Direction and the rebuild](#direction-and-the-rebuild) first. Phases it supersedes or reshapes carry a note at the top; the rest still apply to the new build.
+
 **Effort figures** are full-time-equivalent weeks for one developer working at the current AI-assisted pace. They are estimates [INFERRED], not commitments. Commissioned art and music have their own lead times and can run in parallel.
 
+## Direction and the rebuild
+
+*Decided by Evan on 28 Sep 2026, after three rounds of look-book mockups and a playable feel slice.*
+
+**The four decisions:**
+1. **Tone: scrappy survival with a sport core.** Every day is a trade between earning and climbing, all season, not just in week 1 (the audit found the trade dies by day 12–15 today). The attempt is the star; the life around it feeds it and threatens it.
+2. **Camera: side-view scenes joined by a valley map.**
+   - Scenes exist where people are: the Lot, crag bases, later the gym. You tap to walk up to people and things.
+   - Minor places are cards on the map.
+   - No joystick and no commute. The clock moves only on actions and travel, never while you stand still.
+3. **Climbing: beta, then send.**
+   - Before a go you pick beta for each crux, and the beta sets the move you play there:
+     - a tension hold: hold and release to keep a marker in a moving band;
+     - a timing tap: tap twice on the beat;
+     - a hold-to-load throw: charge, then let go in the band.
+   - Between cruxes you hold to climb. Pump builds, and rests pay it back.
+   - Pump, afternoon sun and thin skin narrow every window.
+   - Better beta is earned: by falling at a crux, by watching someone, or by asking the right person.
+4. **Look: the Mix.**
+   - Park-poster landscapes: flat layers, no outlines.
+   - Comic people and panels: clear line, one ink weight, speech bubbles.
+   - All of it is drawn in code, so there are no sprite packs and no licence questions over the art.
+   - Music stays the "Bitwise" album until Phase 13.
+
+**Why rebuild instead of refactor.** The plan below assumed the v0.956 source would land in a repo and be refactored in place (Phase 4's strangler pattern). The four decisions replace the renderer, the world, the map and the climbing screen, which is most of what that refactor would have kept. What's worth keeping is underneath: grades, body, money, people, content and voice. The rebuild ports those.
+
+**What doesn't change.**
+- v0.956 is the spec. Its balance, content, names and voice are ported, not reinvented, except where the four decisions change them.
+- v0.956 stays live and untouched until the rebuild's first season replaces it (R3).
+
+**Where the rebuild lives.** In `app/` in this repo. It has its own package and lockfile and sits outside the site allowlist, so nothing about the live game changes until R3.
+- A public repo is fine for the art now that it's code.
+- The catch: anyone can build the full game from public source. Decide before Phase 19 whether paid content stays out of this repo.
+
+### What the rebuild does to the phases
+
+| Phase | Status |
+|---|---|
+| 1 Source of truth | Closed. The release pipeline is done. The v0.956 source is still wanted as a reference for porting, but it no longer blocks anything. The first tag deploy is still Evan's to run. |
+| 2 Safety net | Its save, crash and determinism rules become the rebuild's foundation (R0). The v0.956 hotfix batch needs the old source; without it, v0.956 stays as it is until R3. |
+| 3 Cut the load | Superseded. The new build has no sprites or base64 music; a size budget runs in CI instead. |
+| 4 Sim out of the UI | Superseded. The new sim is separate from day one. The balance harness moves to R2. |
+| 5 Design bible | Still needed. It runs alongside R1, and R2 needs it. This section is its first page. |
+| 6 Retune the loop | Still needed, on the new sim, in R2. |
+| 7 The first hour | Becomes R1's target. |
+| 8 Choose the look | Done: the Mix. Its tokens and components are built in R0–R1. The Steam capsule art moves to Phase 15. |
+| 9 Climber on the wall | Reshaped as beta-then-send and built from R0. Its Done-when criteria gate R2. |
+| 10 Crags as places | Unchanged in intent. It follows R2, on the new build. |
+| 11 Valley map | Reshaped: the map plus side-view scenes, drawn in code (no Tiled, no tilesets). |
+| 12 UI system | Folded into the rebuild (R0–R2). |
+| 13–20 | Unchanged in intent. They target the new build. |
+
+## The rebuild track
+
+Effort figures are rough [INFERRED], as elsewhere in this plan.
+
+### R0 — Foundation
+
+**Status (28 Sep 2026): done.** All five criteria pass, and CI's new `app` job ran green on GitHub (run 7). What's in `app/`:
+- **The sim.** 51 tests, including the Unreal golden vectors, and a replay test that plays a go twice from the same inputs and gets the same result.
+- **The build.** 156.5 KB for a player to download, fonts included. v0.956 is 9.8 MB gzipped, but it also carries music and much more content, so the two sizes aren't a like-for-like comparison.
+- **The bot.** It plays day 1 through to day 2 and reloads.
+
+What R0 still fakes is listed in `app/README.md`. The biggest item: climber stats don't affect a go yet (that's R1).
+
+**Goal.** The feel slice's content, running on the architecture the whole game will use.
+
+**Scope.**
+- **`app/`:** Vite, TypeScript, React for the panels over a canvas world, and Vitest. Versions are pinned.
+- **`src/sim`, the rules, engine-free:**
+  - No DOM, no `Math.random`, no wall clock. The sim's own tsconfig has no DOM types, and a test scans for the rest.
+  - The seeded RNG uses the same algorithm and golden vectors as `Dirtbag-UE/Sim/DirtbagRng`, so a seed means the same thing in both games.
+  - One door into the state: `act(state, action) → {state, events}`. The clock moves only there.
+  - The attempt is a fixed-step model, so a go replays exactly from its inputs.
+  - Content is data: places, acts, routes, beta, and people's lines. Cost labels are derived from the numbers, because the audit found hand-written hints drifting from the rules.
+  - Every tunable is a dial with a comment on what it means.
+  - Saves are versioned, with a migration registry. A corrupt save is quarantined, never replaced.
+- **`src/view`:** the Mix painters (poster layers, the comic rig, the map, the wall), ported from the slice.
+- **`src/ui`:** React HUD, bubbles, sheets, the climb panel and the toast lane.
+- **Fonts are self-hosted**, since nothing may leave the site.
+- **CI:** typecheck, unit tests, build, size budget, and a headless bot that plays the slice on the built app.
+
+**Out of scope.** New content, balance, sound, the PWA shell (R1), deploying (R3).
+
+**Done when.**
+1. A fresh clone plus `npm ci && npm run build` in `app/` builds the game, and CI runs everything green.
+2. The bot plays it through with no errors and no cross-origin requests: Hazel's tip, the drive, a fall at crux 1 that reveals the rock-over, the send, a diner shift, the evening at the fire, sleep, and a reload that comes back to the same morning.
+3. Unit tests cover the RNG golden vectors (matching the Unreal harness), the clock and money, beta unlocks, attempt replay, and save round-trip, migration and quarantine.
+4. Nothing in `src/sim` can touch the DOM, `Math.random` or the wall clock, and CI enforces it.
+5. A player downloads under 250 KB, fonts included.
+
+### R1 — The first week
+
+**Goal.** Phase 7's first hour, and a week you'd want to play, on the new build.
+
+**Scope.**
+- **Places:** the Lot, the Diner (shifts), the gym (Send City: plastic, V0–V4, beta-then-send on problems), Roadside Crag with 6–8 lines, and a card or two (Coffee Shop, Gear Shop).
+- **People:** Hazel, one partner, Scout.
+- **Body v1:** energy, skin, food and sleep; the week's bills; debt with a floor.
+- **Climber v1:** v0.956's five skills (power, fingers, technique, endurance, head) set the windows and the pump rate, and mileage builds them. This is where two climbers start playing the same route differently.
+- **Conditions v1:** weather and the shade window each day, from the seeded RNG.
+- **The app shell:** manifest, service worker with a hashed precache, install; resume mid-day after a reload; settings (reduced motion, text size).
+- **Creation:** a name and a quick start.
+
+**Plan (28 Sep 2026), from the audit and the v0.956 bundle.** Numbers are v0.956's unless marked as a deviation. Every deviation is logged here and, where it touches the spec, in the Unreal repo's `concepts/2D-SPEC-LOG.md`.
+
+- **Your climber:**
+  - v0.956's five skills and grade curve: grade = floor((−8 + √(64 + 9.6·average)) / 4.8).
+  - Its four starts: Boulderer 12/10/4/5/6, Rope Gun 5/5/13/5/11, Technician 5/9/5/13/7 and All-Rounder 8s (power/fingers/endurance/technique/head). Plus a name.
+  - Each beta has a style (crimp, power, endurance, technical, dyno, crack). The style's 65/35 skill mix, against the crux's grade, sets the window: about half as wide two grades over your head, and at most 1.4× below it.
+  - Endurance sets the pump rate.
+  - Every go earns skill through v0.956's XP formula and its diminishing curve: the route's style takes 60%, the beta you tried 40%.
+  - *Deviation:* goes here are shorter than v0.956's two hours, so each teaches 60% as much, and a lap of a line you've sent teaches 30% of that. The lap discount stands in for v0.956's staleness until R2 ports it.
+- **Places:**
+  - The Lot.
+  - Roadside Crag with v0.956's own lines. Three boulders: Warm Boulder V2, The Dyno V3, Crimpfest V4. Four sport routes: Roadside Warmup 5.11b, Roadside Route 5.11d, The Pump 5.12a, Local Testpiece 5.12b.
+  - Send City: a side-view gym, with six problems (V0–V5) that change each week from the seed, styled and named from v0.956's lists.
+  - *Deviation:* v0.956 drew a problem's name and style separately, so "Dyno Lunge" could be a crimp problem. Here each name belongs to the style it describes.
+  - The Diner, for food, as in v0.956.
+  - The Coffee Shop, with 3-hour shifts at $28, and coffee.
+- **The Pump becomes the first week's project.** It's a V4-equivalent. The first outdoor send is a V2 boulder or the 5.11b.
+- **Sage**, v0.956's technical, beta-sharing partner, turns up at the gym or the crag on some days. Climbing with Sage lets you watch a go: the third way to earn beta, after falling and asking.
+- **Body:**
+  - Fed, which is v0.956's hunger: −15 a night, −3 to −6 a go, −8 a shift. Under 35 your windows shrink, down to 70% at 0, and at 0 you can't climb. Work never needs food, so there's always a way back.
+  - You eat at the Diner or cook at the van.
+  - Energy and skin as now; sleep brings them back.
+- **Money:**
+  - $18 a night at the Lot, plus registration ($45) and insurance ($25) every seventh night.
+  - *Deviation:* no game over. What you can't cover goes on the card, up to a $150 limit. Past it, purchases are declined and you sleep rough in the pullout with less energy back. The van still runs on fumes, so you're never stranded. Bills land regardless.
+- **Conditions:**
+  - The first season is fall, the send season.
+  - Each day's weather is drawn from v0.956's weights (prime, fair, hot, rain) by the seeded generator, with a three-day forecast.
+  - Rain closes the crag, which makes it a gym day. Hot days grease the wall from noon. Prime days widen the windows.
+- **Deviations from the feel slice:**
+  - The diner shift moves to the Coffee Shop, where v0.956 had it.
+  - The gym sells a day pass ($14) rather than charging v0.956's $5 a go.
+- **Shell:**
+  - A name-and-start screen.
+  - Settings (reduced motion, text size), kept outside the save so starting over doesn't reset them.
+  - A manifest and a service worker.
+  - Resume where you were.
+- **The week in tests:** a bot plays seven days on the sim alone, and a replay test checks that the same seed and inputs give the same week.
+
+**Done when.**
+1. A seven-day loop plays start to finish, and the bot finishes a week.
+2. 4 of 5 testers reach their first outdoor send within 20 minutes, unassisted.
+3. A reload or an Android kill resumes in the same place, mid-day.
+4. The same seed and the same inputs replay the same week.
+
+**Status (29 Sep 2026): built; closed by Evan's call with two checks carried.**
+- Evan moved on to R2 on 29 Sep. The two checks that need people go with it:
+  - #2 (testers) folds into R2's criterion #2, the first-hour test.
+  - The Android half of #3 moves to R3, when the rebuild ships in the Play app.
+- The notes below are as of 28 Sep.
+- **Passing:**
+  - #1 and #4, in `week.test.ts`: the bot plays seven days for every start on several seeds, with nothing refused. The same seed and inputs rebuild the same week.
+  - The reload half of #3, in the e2e: it plays two days, reloads mid-morning, and starts again offline.
+- **Open:**
+  - #2, the testers.
+  - The Android half of #3: the rebuild has no TWA build yet.
+- **What the bot says, as a first read:**
+  - With human-ish hands (guessed, not measured), the first outdoor send comes on day 1 in 77 of 80 seeded weeks.
+  - The Pump goes in week one about a third of the time: 10 of 20 weeks for the Boulderer, 2 of 20 for the Technician.
+  - Perfect hands onsight almost everything, so difficulty is human precision against the window floor.
+  - Content runs out around day 3 for a keen player. R2's second crag is needed.
+
+**Depends on:** R0; Phase 5 alongside. **Effort:** ~3–5 weeks.
+
+### R2 — The first season
+
+**Goal.** The free demo Phase 5 defines, on the new build, balanced by bots rather than by feel.
+
+**Scope.**
+- Act I: from plastic to the first V5 project. Roadside Crag and Granite Gorge; the Lot at night; the dog offer; one partner arc; the rival's first appearance; the send card.
+- Port the v0.956 systems the design bible keeps: load and injury, projects and first ascents, partners and bonds. The v0.956 source makes this exact; without it, port from the audit's line references into the prettified bundle.
+- The balance harness (Phase 4's bots, on the new sim) and Phase 6's targets for a season.
+
+**Plan (29 Sep 2026), from the audit and the v0.956 bundle.**
+- Numbers and text are v0.956's unless marked.
+- Phase 5's design bible isn't written. Where R2 needs a design call from it, the call is marked *[proposed]*: the build uses it until Evan rules.
+
+- **Act I, the demo** *[proposed, from Phase 5's draft]*:
+  - It runs from the first morning to your first V5 project, over fall and into winter (about four weeks).
+  - It ends when you tie into a V5. The hook is Dex's challenge: a race for Roadside's open project.
+  - Where the demo stops is Evan's call. Nothing in the rebuild locks until Phase 19.
+  - *As built (R2.5):* Act I is v0.956's "Your First Season" quest, in its words:
+    - Its five stages: $60 in hand, 3 sends anywhere, 2 outside, regulars with someone (v0.956 wanted 15 reputation, which the rebuild doesn't have), and climbing V4.
+    - Its skill and cash rewards, and a card at the end.
+    - It ends at V4, as v0.956's did, and the same night Dex's race starts: that's the hook.
+    - A "Next" pill keeps the current goal on screen (Phase 7: say what you want to do next).
+- **Places:**
+  - **Roadside gets the rest of v0.956's lines:**
+    - Finger Crack V4 (crack);
+    - Highball Arête V5 (technical): the act's project, tall enough to test your head;
+    - The Project V6 (power);
+    - the open project, a V7 dyno you first-ascend and name.
+    - Trad Arête waits for a gear system.
+  - **Granite Gorge, v0.956's second crag:**
+    - Access: it opens at V4 (v0.956's gate), it's 2 h out and shaded, and it's closed in spring for nesting raptors.
+    - Boulders: Granite Slab V5, The Pinch V6, Serenity Crack V6, Gorge Dyno V7 (really V8: a sandbag), Crimp Cathedral V8, and an open project V9.
+    - Sport: Gorge Intro 5.12b, Gorge Classic 5.12c and Power Endurance 5.13a.
+    - Gorge Trad waits for gear.
+- **Load and injury** (v0.956's model, with Phase 6's fixes):
+  - **Load:** each go adds its energy cost × (1 + grade/9) × (0.6 + 0.4 × the share of the line climbed). At sleep, acute and chronic load update as exponentially weighted averages (α 1/4 and 1/14). *Deviation:* v0.956 added (12 + 2g) in the gym and (18 + 2g) outside for goes two hours long; these goes take minutes, so load follows each go's effort.
+  - **The ratio (acute over chronic)** gates you:
+    - over 1.3, each go carries v0.956's injury risk;
+    - over 1.5, gains drop to 60%;
+    - over 1.7, you're fried and can't climb.
+  - **Injuries:** out 2–4, 6–9 or 13–18 days by tier. *Deviation:* the clinic takes a copay, $45 for tier 2 and $210 for tier 3, because the weekly insurance pays the rest; v0.956 charged $180 and $850.
+  - *Fixes:*
+    - chronic load starts seeded, so the first week can't spike it;
+    - an unwarmed hard go carries v0.956's ×1.6, and an easy go first warms you up;
+    - injury rolls come from the seeded session stream, so a replay replays them;
+    - your first injury costs time, not money.
+  - **On screen:** the You sheet shows load, and the beta sheet warns when your fingers are talking.
+- **Projects and first ascents:**
+  - Open lines are first-ascended by you. You name them from a list built from your record, and call the grade soft, true or stout, as in v0.956.
+  - Dex can race you for one.
+- **Windows above your grade** *(a fix the harness found)*:
+  - R1's window scale bottomed out at 0.4 two and a half grades over, so a V4 could send the Gorge's V9 with enough goes.
+  - Over your level, windows now close by e^(0.9 × margin): about 40% a grade.
+  - With the harness's human-ish hands, a boulder goes about 60% a go one grade over, 15% at two, 5% at three and never at four.
+- **Partners and bonds** (v0.956's):
+  - Tiers: Stranger 0, Acquaintance 1, Regular 3, Partner 5, Ride-or-Die 7.
+  - Bond is +1 a day climbing together (Phase 6's cap), and a partner turns up more as the tier rises.
+  - Partners' grades track yours: Sage moves a grade every 20 days.
+  - Sage's four-beat arc uses v0.956's text, at bonds 1, 3, 5 and 7, at least five days apart (Phase 6's spacing).
+  - *As built (R2.4):*
+    - A day counts toward the bond when you climb where a partner you've met is, not only on belay.
+    - Each tier adds 7% to a partner's odds of turning up (v0.956: 11% on a lower base), so Ride-or-Die Sage turns up five days in six.
+    - *[proposed]* Sage's guiding stint lasts a week, not v0.956's 16 days, so her arc fits Act I; her lines say less about how long.
+    - *[proposed]* The blessing at beat two gives bond, since the rebuild has no reputation; the last beat needs real rock and takes two hours.
+    - *[proposed]* A Regular will come out to the Gorge if you ask before 1 PM on a dry day, and belay you there.
+    - The bots reach beat three around day 21 and the last beat between days 28 and 35.
+- **The rival, Dex Calloway** (v0.956's: power, a nemesis):
+  - *Fix (Phase 6):* his own seeded curve, with streaks, injuries and a peak, instead of v0.956's rubber band one grade ahead.
+  - He first shows up when you send your first V4. He races you for the open project at the act's end.
+  - *As built (R2.4):*
+    - His curve: V5 around week three, a grade every three weeks or so after, a peak of V9–11 from the seed, two to three weeks off hurt, and good and bad weeks of about half a grade.
+    - He's out two days in five (the crag when it's dry, else the gym), and he's where he saw your first V4 for the rest of that day.
+    - Sage's grade moves as v0.956's did, a grade every 20 days from V4.
+    - v0.956's overnight lines say when you pass Dex or he pulls ahead, when you pass Sage, and when Dex gets hurt and comes back.
+    - *[proposed]* The race starts the night you're climbing V4 (when the Gorge opens, near the act's end), for v0.956's five days. If he wins, he names the line from v0.956's rival list, and your send becomes a second ascent. Bots that take the dare win about two races in three. Triggers tried first, a first V5 or V6 send outside, caught bots three grades short, and they lost every race.
+- **The dog** *[proposed adaptation]*:
+  - v0.956 offers a stray after your tenth crag trip. Here the stray is Scout, who's been asleep at the Lot all along; after your tenth trip out, he picks you.
+  - Kibble ($6), play (bond) and ride-alongs. The bond perks come later.
+  - *As built (R2.4):* v0.956's numbers: kibble fills him and adds 3 bond; the stick is an hour, once a day, for 10; every drive adds 2; a night takes 22 food. v0.956's crag and drive lines, by bond and hunger, with "they" made "he". He picks you on your tenth trip out, and you take him on at the Lot.
+- **The send card:** on a first send, a card drawn on the device (the topo, your line, grade, style, date) to save or share. No server.
+  - *As built (R2.5):*
+    - A 1080 × 1920 PNG (a phone screen's shape, which is what stories and chats want). The line's own wall is repainted at the card's size, cropped to the line, with the line drawn as a guidebook photo-topo and you at the top. Under it: the name in the poster lettering; the grade and how it went ("Redpoint, go 6"); the crag and "Day 18, winter"; your name. A first ascent adds a corner ribbon and "First ascent: <you>"; one Dex got first reads "First ascent: Dex Calloway · Second: <you>".
+    - Offered on the sent sheet after a line's first send, and any time after from a sent line's beta sheet.
+    - "Send it on" uses the phone's share sheet where it takes files; "Save the image" downloads the PNG. The card shows as an image, so a long press saves it too. Nothing is uploaded; the e2e bot opens a card and still sees no off-site request.
+    - *[proposed]* The card's footer letters "DIRTBAG" and dirtbag.rcjlabs.com, so a shared card says where it's from.
+- **Phase 9 on the wall:**
+  - How close a go was: this go's high point against your best, on the fall sheet and on the wall.
+  - Pump you can feel: the climber shakes and the view tightens as the bar fills.
+  - *As built (R2.5):*
+    - The fall sheet draws the go as a bar: the line from the ground to the top, the cruxes underlined, this go filled in and your best before it ticked. Under it: "Your highest yet", "Level with your best", "Short of your best", or "Your first go on it". No numbers.
+    - On the wall, a chalk band follows what this go has climbed, under the rope, and an X marks where it came off. (On a close-up boulder the climber covers the spot, so the flag and the bar carry it.)
+    - Past 55 pump the climber shakes, harder as it fills. Past 45 the screen's edges darken, pulsing past 80. The pump bar pulses once it's hot. Reduced motion keeps the darkening and drops the shake and the pulse.
+    - *[proposed]* Pace: you move through a line 8% faster for each grade you're over it, and 8% slower for each grade under, from 0.8× to 1.25×. Fewer seconds on the wall means less pump for the same moves, so the same route plays out differently for two climbers. v0.956 had no climb speed. The harness (12 seeds × 28 days) shows no measurable change to the season: same grades at every checkpoint, first V5 go around days 17.5–20.
+- **The harness** (Phase 4's bots on the new sim):
+  - Strategies: climber, worker and balanced, over 28- and 56-day runs.
+  - It reports grade curves, runway (days you could go without working), injuries and when content runs out.
+- **Season targets** (Phase 6's, for the first season):
+  - a working climber can't take a week off at days 7, 14, 21 and 28 (runway under 7 days), but is never stuck;
+  - first-month injuries under 35% for a warmed-up, moderate player;
+  - climbing out-teaches setting shifts;
+  - a median climber is on a V5 project by day 28.
+  - *As measured (R2.5, 12 seeds × 28 days × every start and strategy; `npm run harness` prints these):*
+    - ✓ Runway, balanced: median 2.3, 2.3, 2.6 and 3.4 days at days 7, 14, 21 and 28; the most any run had was 5.1. No stuck nights (hungry, or the card nearly maxed) and no refusals, for any strategy.
+    - ✓ Injuries: 0 of 144 moderate runs in the first month; 4 of 144 cold, reckless ones (3%). *Caveat:* that passes with room to spare, and may be too gentle for the body to register as a trade-off. A playtest question.
+    - ✓ Climbing against setting: an hour on the rock teaches 5.8–12.4 skill points (V0–V4), and a setting shift 0.75. The bots end the month at a median V3, so "every grade" means V0–V4 here.
+    - ✓ First V5 go: median day 18–18.5 for every strategy.
+    - *Found on the way:* by the fourth week about half the bots hit a wet day with the week's six gym problems sent and nothing new to try. A player can lap, rest or work. More gym problems, or a harder circuit once you've sent the set, would close it: Evan's call.
+
+**Done when.**
+1. Phase 9's criteria pass on the new wall: a watcher can tell how close a go was; a pumped go feels tense; two climbers play the same route differently.
+2. Phase 7's first-hour criteria pass.
+3. The harness shows a working climber still facing a "can I afford this week off?" choice at the end of the season.
+
+**Status (29 Sep 2026): done; criteria 1 and 2 by Evan's call.** Built: R2.1 to R2.5.
+- Criterion 3 passes in the harness (above).
+- Criteria 1 and 2 (Phase 9's watchers, Phase 7's first hour) were accepted by Evan on 29 Sep as tested and watched. What they covered:
+  - Phase 9: the reach bar, the chalk band, the pump shake and vignette, and pace;
+  - Phase 7: the first hour, with Act I's goals on screen.
+- The design calls marked *[proposed]* above stand as built until Evan rules on them: Sage's week away, the blessing's bond, the race's V4 trigger, Act I's "regular" stage, pace, and the card's footer.
+- Carried open: injuries may be too gentle in the first month, and wet days in week four can leave nothing new to try (both above).
+
+**Depends on:** R1 and Phase 5. **Effort:** ~6–10 weeks.
+
+### R3 — Switch-over   **<<< CURRENT MILESTONE**
+
+**Goal.** The new build becomes dirtbag.rcjlabs.com and the Play app.
+
+**Scope.**
+- **Decide what happens to v0.956 players** (Evan's call). Either keep v0.956 playable at `/classic/` under its own service-worker scope, or retire it with notice and a save export.
+- **Point the site pipeline at the new build:** check, smoke test, stage, deploy and the TWA. The version moves past 0.956, and the new service worker deletes the old cache.
+- **Store copy:** listing, screenshots, and "What's new" in the game's voice.
+
+**Done when.**
+1. A tag deploys the new build and the Play app updates.
+2. A v0.956 player who opens the site isn't stranded: their career is still playable or exported.
+
+**Depends on:** R2. **Effort:** ~1–2 weeks.
+
+**Risks of the rebuild.**
+- **It stalls at "almost as good as the old one".** That is how rewrites usually fail. Mitigations:
+  - v0.956 stays live and untouched until R3;
+  - R3 ships at the first season, not at full parity;
+  - every milestone is playable;
+  - rules are ported from v0.956's numbers, not redesigned, except where the four decisions change them.
+- **Time.** Code-drawn art saves the commissions and the asset pipeline, but re-implementing the systems spends most of that back. Expect the 12–19 month total to hold rather than shrink [INFERRED].
+- **Old saves.** v0.956 saves don't map onto the new state: the economy, places and climbing all differ. The default is a fresh start. Carrying over name and grade as a legacy import is possible [proposed, Evan's call].
+- **Public source.** See "Where the rebuild lives" above.
+
 ## How the phases fit together
+
+*The table and figures below predate the rebuild. The rebuild track replaces most of Stages A and C.*
 
 | Stage | Phases | Purpose | Rough effort |
 |---|---|---|---|
@@ -37,9 +357,14 @@ That adds up to about 51–82 weeks, roughly 12–19 months [INFERRED].
 ---
 ## Stage A — Make it safe to change
 
-### Phase 1 — Source of truth   **<<< CURRENT MILESTONE**
+### Phase 1 — Source of truth
 
-**Status (28 Sep 2026): in progress.** The release pipeline is built. The source is still missing.
+**Status (28 Sep 2026): closed by the rebuild.** The release pipeline is built. The rebuild changes what the open items below are worth:
+- Items 1–3 were about building v0.956 from its source. The new build is built from source in CI by construction, and R0 drives its version from `package.json`. The v0.956 source is still worth putting somewhere private, as a reference for porting rules exactly in R2.
+- Item 4 is done: Pages builds from Actions and the environment accepts tags. What remains is Evan pushing the first `v0.956.0` tag, which exercises `deploy.yml`.
+- Item 5 still stands before the next store release.
+
+The status as it stood before the rebuild:
 
 **Done**, in this repo:
 - **CI (`ci.yml`), on every push:**
@@ -108,6 +433,8 @@ Criterion 4 (the smoke test runs green in CI) is met.
 
 ### Phase 2 — The safety net: saves, crashes, determinism, hotfixes
 
+*Rebuild note: the save, crash and determinism rules become R0's foundation. The hotfix batch needs the v0.956 source.*
+
 **Goal.** No player can lose a save to a bug again, and the known bugs that break trust are fixed.
 
 **Why.** The audit reproduced two ways to lose everything:
@@ -168,6 +495,8 @@ Several bugs also corrupt progression or economy, including a skill clamp that t
 
 ### Phase 3 — Cut the load
 
+*Rebuild note: superseded. The new build has no sprites or base64 music; R0 adds a size budget to CI.*
+
 **Goal.** First load on a mid-range phone goes from ~11 s to under 3 s, and deploys stop costing each player 10–20 MB.
 
 **Why.** Today the page is 15.3 MB (9.8 MB gzipped), and nothing paints until all of it arrives. Every zone change stalls for 150–470 ms at 4× CPU throttling. Renderer memory reaches ~400 MB, which risks Android killing the TWA.
@@ -195,6 +524,8 @@ Several bugs also corrupt progression or economy, including a skill clamp that t
 ---
 
 ### Phase 4 — Pull the sim out of the UI
+
+*Rebuild note: superseded. The new sim is separate from day one; the balance harness moves to R2.*
 
 **Goal.** A React-free, TypeScript simulation core that runs in Node, holds all the game rules, and is covered by tests and balance bots. The UI becomes a view over it.
 
@@ -360,6 +691,8 @@ The Stick RPG hook — every day is a trade between earning and climbing — onl
 
 ### Phase 7 — The first hour
 
+*Rebuild note: this becomes R1's target, on the new build.*
+
 **Goal.** A new player understands the game, feels the fantasy, and sends outside inside 20 minutes, without being shown 28 panels or 40 numeric choices first.
 
 **Why.** Today a new player sees all of this before ever climbing:
@@ -411,6 +744,8 @@ The tutorial also points at the weakest job, which the sim shows going into debt
 
 ### Phase 8 — Choose the look
 
+*Rebuild note: done. The look is the Mix: park-poster landscapes with comic people and panels, drawn in code. Tokens and components are built in R0–R1; the Steam capsule art moves to Phase 15.*
+
 **Goal.** Pick one art direction, one scale, one palette and one UI kit, and make every later screen follow them. Every asset must be owned, or licensed on clean terms.
 
 **Why.** The current world has three structural problems:
@@ -451,6 +786,8 @@ The full diagnosis is in the audit, under *The map and the look*.
 ---
 
 ### Phase 9 — Put the climber on the wall
+
+*Rebuild note: reshaped as beta-then-send (see Direction) and built from R0. The criteria below gate R2.*
 
 **Goal.** The attempt, the heart of the game, becomes something you watch and drive. You see the line on its topo, the climber moving hold to hold, pump you can see, and falls that land.
 
@@ -534,6 +871,8 @@ The full diagnosis is in the audit, under *The map and the look*.
 
 ### Phase 11 — Replace the joystick town with a valley map
 
+*Rebuild note: reshaped. The map stays; the two walkable scenes become side-view scenes wherever people are, drawn in code rather than from a tileset.*
+
 **Goal.** Every place is readable at a glance and reachable in one or two taps, and building the world stops being a construction project.
 
 **Why.**
@@ -579,6 +918,8 @@ The full diagnosis is in the audit, under *The map and the look*.
 ---
 
 ### Phase 12 — The UI system and the desktop layout
+
+*Rebuild note: folded into the rebuild, R0–R2.*
 
 **Goal.** Every screen is built from one component kit, works in portrait on a phone and in landscape on a desktop, meets basic accessibility, and gives the writing surfaces that respect it.
 
@@ -902,3 +1243,23 @@ Players will ask "what am I working towards?" by hour 3.
   - Duplicate `/music` removed; favicon added; `CLAUDE.md` and `README.md` written.
   - The Play build's SDK setup was broken by Google removing the `tools` package; now fixed.
   - The marker stays on Phase 1, because the source is still missing.
+- 2026-09-28 — Direction decided (tone, camera, climbing, look) and the rebuild track added (R0–R3). Phase 1 closed; affected phases annotated. CURRENT MILESTONE moved to R0.
+- 2026-09-28 — R0 built in `app/`. The feel slice now runs on an engine-free sim (seeded RNG matching Unreal, fixed-step attempts, versioned saves with quarantine) under the Mix renderer. CI job added. The marker stays on R0 until that job is green on GitHub.
+- 2026-09-28 — R0 done: the `app` job is green on GitHub. CURRENT MILESTONE moved to R1.
+- 2026-09-28 — Characters redrawn as solid comic figures (one outline per figure, cuffed beanie, hemmed sleeves and trousers).
+- 2026-09-28 — R1 sim: v0.956's skills, starts and XP; beta styles set the windows; Roadside's seven lines; Send City's weekly set; fed, bills and the card; seeded weather; Sage's schedule and lessons. Save v2 with a migration tested against a real R0 save.
+- 2026-09-28 — R1 on screen: Send City, boulders and their close-ups, people by their hours, rain, the creation screen, You and forecast sheets, settings. The e2e bot plays two days.
+- 2026-09-28 — R1 shell and week: the manifest, icons drawn in code, and a generated service worker (the e2e restarts offline); the week bot and the replay test. Criteria #1 and #4 pass. #2 (testers) and the Android half of #3 wait on people and a device, so the marker stays on R1.
+- 2026-09-29 — R1 closed by Evan's call: testers fold into R2's first-hour criterion, and the Android check moves to R3. CURRENT MILESTONE moved to R2. R2's plan written from the audit and the v0.956 bundle, with the design calls R2 needs from Phase 5 marked as proposals.
+- 2026-09-29 — R2 harness: bots with human-ish hands play whole seasons under three strategies and report grade, runway, injuries and when content runs out (`npm run harness`).
+- 2026-09-29 — R2 load and injury: v0.956's acute:chronic model with Phase 6's fixes (seeded chronic load, warm-ups, seeded rolls, a free first injury). Save v3.
+- 2026-09-29 — R2 crags: Roadside's other four lines, its open project yours to first-ascend, name and grade; Granite Gorge (opens at V4, shut in spring, shaded all day, one sandbag), with its own scene, wall and map road. The harness then showed a V4 bot sending the Gorge's V9: windows above your grade were far too wide, fixed in the next commit.
+- 2026-09-29 — R2 windows: above your grade they now close about 40% a grade (R1's floor let a V4 send the Gorge's V9), and the harness's hands vary their reaction time from go to go, so tension cruxes stop being all-or-nothing. The bots' displayed grade at day 42 drops from V5 to V4; their first V5 project comes around day 14. R2's rules so far are logged in Dirtbag-UE's spec log.
+- 2026-09-29 — R2 partners: v0.956's bond tiers, earned a day at a time climbing where a partner is; partners who turn up more as the bond grows; Sage's four-beat arc in v0.956's words, five days apart, with a week away guiding; and asking her out to belay at the Gorge. A speech mark shows when someone has something to say; the You sheet lists the people you've met.
+- 2026-09-29 — R2 rival: Dex Calloway on his own seeded curve (streaks, a stretch hurt, a peak), met over your first V4, and v0.956's first-ascent race for the open project, set off once you're climbing V4. The harness bot learned to pick beta by how forgiving it is for its hands, to take the dare, and to name its first ascents; bot runs now keep every line.
+- 2026-09-29 — R2 Scout: the Lot's stray picks you on your tenth trip out. Kibble, the stick and ride-alongs at v0.956's numbers and in its words; he sits by the van at the crag and has a row on the You sheet. R2.4 (people) is built; R2.5 (Act I, the send card, the wall's feel, tuning, docs) is next.
+- 2026-09-29 — R2 Act I: v0.956's first-season quest as the demo's goal ladder, in its words and with its rewards, a "Next" pill on screen, and an end-of-act card; it ends at V4, the night Dex's race begins.
+- 2026-09-29 — R2 wall feel (Phase 9): the fall sheet draws how far a go got against your best; a chalk band and an X on the wall; pumped climbers shake and the screen's edges close in; and, proposed, climbers move through a line at a pace set by how far over or under its grade they are. Fixed "A 11-foot catch".
+- 2026-09-29 — R2 send card: a first send gets a card painted on the device from the line's own wall and topo (name, grade, how it went, the crag and the day, you at the top, a ribbon for a first ascent), to share or save as a PNG. Nothing is uploaded. The wall, boulder and gym painters now paint into any canvas, so the card is crisp at its size.
+- 2026-09-29 — R2 targets: the harness checks Phase 6's first-season targets and passes all four. Its bots now log time on the rock, what it taught them, and any stuck night. It also found wet days in week four with nothing new to try once the gym set is done. R2 is built; criteria 1 and 2 wait on watchers and testers.
+- 2026-09-29 — R2 closed by Evan's call: criteria 1 and 2 accepted as tested and watched; the proposed design calls stand as built until he rules. CURRENT MILESTONE moved to R3.

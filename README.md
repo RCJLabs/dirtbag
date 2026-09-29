@@ -6,7 +6,9 @@ A climbing life-sim. Live out of your van, work shifts, and push your grade from
 
 ## What's in this repository
 
-The live web build and its release pipeline. The game's source code is not here.
+Two things:
+- **The live game (v0.956)** and its release pipeline. v0.956's source code is not here.
+- **The rebuild, in `app/`.** The same game rebuilt from source with a new look (park-poster landscapes, comic people, all drawn in code), side-view scenes joined by a map, and beta-then-send climbing. It isn't deployed yet; the roadmap's rebuild track takes it to the point where it replaces v0.956.
 
 | Path | What it is |
 |---|---|
@@ -16,7 +18,8 @@ The live web build and its release pipeline. The game's source code is not here.
 | `.well-known/assetlinks.json`, `twa-manifest.json`, `twa/` | Google Play wrapper (TWA): domain verification, config, pinned build tools |
 | `.github/workflows/` | CI, deploy on tag, Play bundle build |
 | `scripts/` | Checks, smoke test, size report, build compare, deploy staging |
-| `docs/` | The v0.956 audit and the 20-phase roadmap |
+| `docs/` | The v0.956 audit and the roadmap |
+| `app/` | The rebuild: sim, renderer, UI, tests. Its own package; see [`app/README.md`](app/README.md) |
 
 ## Working on it
 
@@ -27,6 +30,8 @@ npm run check   # version agrees everywhere, referenced files exist, TWA link in
 npm run smoke   # boots the game headless and plays the first minute
 npm run size    # what a player downloads, by part
 ```
+
+The rebuild has its own commands in [`app/README.md`](app/README.md).
 
 ## Releasing
 
@@ -44,10 +49,12 @@ npm run size    # what a player downloads, by part
 
 ## Status
 
-v0.956.0. The roadmap is in [`docs/ROADMAP.md`](docs/ROADMAP.md); its current milestone is Phase 1, "Source of truth". CI, tag deploys, a single version source and a pinned Play toolchain are in place. Getting the source into a repository is still open.
+The live game is v0.956.0. The roadmap is in [`docs/ROADMAP.md`](docs/ROADMAP.md). Its current milestone is R3, the switch-over: the rebuild in `app/` replaces v0.956 on the site and in the Play app. R0–R2 are done: the rebuild plays a first season, Act I, from gym plastic to your first V5 project. CI, tag deploys, a single version source and a pinned Play toolchain are in place for the live game.
 
 ## Credits
 
 - **Music:** "Bitwise" by tcarisland, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-- **Art:** LimeZu asset packs, used under their license. The asset files are not for redistribution.
+- **Art (v0.956):** LimeZu asset packs, used under their license. The asset files are not for redistribution.
+- **Art (the rebuild):** drawn in code, no asset packs.
+- **Fonts (the rebuild):** Patrick Hand, Patrick Hand SC and Big Shoulders Display, [SIL Open Font License](https://openfontlicense.org), self-hosted.
 - **Game:** © RCJ Labs.
