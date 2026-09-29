@@ -8,6 +8,7 @@ This is the game as it ships from 0.960.0 (the roadmap's R3): the first season, 
   - Roadside Crag: seven boulders and four sport lines, including an open project you first-ascend, name and grade.
   - Granite Gorge: it opens at V4 and shuts in spring. Six boulders and three sport lines, one of them a sandbag.
   - Moonstone Boulders (Phase 10.3, after 0.960.0): desert quartzite up the highway, from V6. You pay once for the haul and a permit every trip. Seven boulders, highballs among them, and two sport lines on a spire that nobody comes out to belay yet.
+  - Highballs (Phase 10.3b, proposed): a fall off a tall boulder can land you badly, more from higher. The haul's pads and a partner spotting each halve it, and the beta sheet shows the odds.
   - Send City: a weekly set, V0 to V5, and a board whose four problems, V4 to V7, stay up four weeks (Phase 10.1, after 0.960.0).
   - The Diner and the Coffee Shop.
 - **Conditions you can see** (Phase 10.2, after 0.960.0): the sun crosses Roadside from its far end to the road over two hours, greasing each line as it gets there, and you can see its edge coming. Wet rock after rain, and closed or soaked crags tagged on the map.

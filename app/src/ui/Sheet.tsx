@@ -21,6 +21,10 @@ import {
   conditionsAt,
   costLabel,
   dayFactor,
+  belayer,
+  fallFt,
+  landingChance,
+  morePads,
   DOG,
   DOG_TIER_NAME,
   dogTier,
@@ -196,6 +200,20 @@ function rockNote(s: GameState, r: RouteDef): string {
   return light + (c.seeping ? ' · damp from the rain' : '');
 }
 
+// A highball's landing, before you go: how far a fall from its crux is, what's under you,
+// who's spotting, and the odds that come of it [proposed].
+function landingNote(s: GameState, r: RouteDef): string {
+  const c = r.cruxes[0];
+  const at = c ? (c.from + c.to) / 2 : r.moves;
+  const ft = Math.round(fallFt(r, at));
+  const who = belayer(s);
+  const pads = morePads(s) ? 'The haul’s pads' : 'One pad';
+  const spot = who ? `${PEOPLE[who]?.name ?? 'a friend'} spotting` : 'nobody spotting';
+  const p = landingChance(s, r, at);
+  const odds = p > 0 ? `about 1 in ${Math.max(2, Math.round(1 / p))} lands badly` : 'you’ll land fine';
+  return `Highball: a fall from the crux is ${ft} ft. ${pads}, ${spot}: ${odds}.`;
+}
+
 // Pick your beta for each crux, then tie in. Beta you haven't earned shows as a locked card
 // with a hint about where to find it. Each card's window is its real width for you today:
 // your skills in its style against the grade, the rock and your hunger.
@@ -220,6 +238,7 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
       {r.open && !log?.sent && !s.firsts[route] && (
         <p className="note">Open project: nobody’s sent it. Send it and it’s yours to name.</p>
       )}
+      {r.highball && <p className="note">{landingNote(s, r)}</p>}
       {s.race?.route === route && (
         <p className="note">
           Dex is racing you for it: {s.race.until - s.day + 1} day{s.race.until === s.day ? '' : 's'} left.

@@ -21,7 +21,7 @@ import type { RouteDef } from './content/routes';
 import { BODY, CLIMB, DAY, LOAD, MONEY } from './dials';
 import { cold, ratio } from './body';
 import { gradeOf, average } from './climber';
-import { act, faSuggestions, goBlocked, knowsBeta, newGame, talkStart } from './game';
+import { act, faSuggestions, goBlocked, knowsBeta, landingChance, newGame, talkStart } from './game';
 import { whereNow } from './presence';
 import type { Action, GameState, GoResult } from './types';
 import type { Rng } from './rng';
@@ -65,6 +65,15 @@ export interface DaySummary {
   // A night the rules count as failure: going to bed hungry, or with the card nearly maxed.
   stuck: boolean;
 }
+
+// A careful climber reads a highball's landing odds the way they read the load warning: they
+// won't work one while a fall from its crux lands badly more than 1 time in 20, so they wait
+// for someone to spot them. A reckless one doesn't look.
+const HIGHBALL_ODDS = 0.05;
+const cruxLanding = (s: GameState, r: RouteDef): number => {
+  const c = r.cruxes[0];
+  return landingChance(s, r, c ? (c.from + c.to) / 2 : r.moves);
+};
 
 // How a bot spends its days. The climber works only when the money's nearly gone; the
 // balanced one keeps a cushion; the worker takes every shift going and climbs after.
@@ -196,8 +205,9 @@ export interface WeekOpts {
   days?: number;
   start?: string;
   strategy?: Strategy;
-  // A moderate climber warms up and stops for the day when their body starts talking (the
-  // load ratio over 1.3); a reckless one does neither.
+  // A moderate climber warms up, stops for the day when their body starts talking (the
+  // load ratio over 1.3), and waits for a spotter on a highball; a reckless one does none
+  // of that.
   reckless?: boolean;
   // Hands for each go; perfect ones by default.
   hands?: () => (a: Attempt, i: number) => boolean;
@@ -286,6 +296,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     };
     const lines = routesAt(s.seed, place, s.day)
       .filter((r) => !goBlocked(there, r) && !s.routes[r.id]?.sent && (s.routes[r.id]?.goesToday ?? 0) < 3)
+      .filter((r) => opts.reckless || cruxLanding(there, r) <= HIGHBALL_ODDS)
       .map((r) => ({ r, w: bestBeta(there, r).worst }))
       .sort((a, b) => a.r.grade - b.r.grade);
     // Dex's dare comes first: a player racing him works the line he's after.

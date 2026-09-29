@@ -31,6 +31,8 @@ export interface PlaceDef {
   // a permit paid on every trip in (v0.956's permit).
   unlock?: number;
   permit?: number;
+  // The haul you paid for includes crash pads: every highball lands softer (HIGHBALL.pads).
+  pads?: true;
   // A sunny crag's lines in the order the afternoon sun reaches them, from one end of the
   // crag to the other, talus boulders and wall lines alike. The scene's layout must agree
   // (view/sun.test.ts), so the shade line you see crosses each line as it starts to grease.
@@ -129,6 +131,7 @@ export const PLACES: Record<string, PlaceDef> = {
     locked: 'Tall, hard and a long way out. Come back when you’re climbing V6.',
     unlock: 400,
     permit: 20,
+    pads: true,
     desert: true,
     // The sun comes round the far end first, like Roadside's: the project out past the
     // roof loses its shade first, the arête by the van keeps it longest.

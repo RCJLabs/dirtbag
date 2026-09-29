@@ -7,18 +7,35 @@ import { CARRIED, carried, gains, gradeOf, STARTS, type GoSummary } from './clim
 import { headroom, holds, leadOver, unmet } from './cond';
 import { dexHurt, dexSeason, gradeOfPerson } from './curves';
 import { routeById, routesAt } from './content/gym';
-import { CLINIC_LINE, FIRST_FREE_LINE, HEALED_LINE, HURT_LINE } from './content/injuries';
+import {
+  CLINIC_LINE,
+  FIRST_FREE_LINE,
+  HEALED_LINE,
+  HURT_LINE,
+  LANDING_LINE,
+  LANDING_NAME,
+} from './content/injuries';
 import { ACTS, PLACES, road, TEXT_VALUES } from './content/places';
 import { DOG_LINES, DOG_OFFER } from './content/dog';
 import { PEOPLE, RACE_ROUTE, RIVAL_FA_NAMES, TALK } from './content/people';
 import { ACT_I_END } from './content/story';
 import { SEND_NAME, effGrade, gradeLabel, gradeName, type RouteDef } from './content/routes';
-import { BODY, CLIMB, DAY, DOG, INJURY, LOAD, MONEY, RIVAL } from './dials';
+import { BODY, CLIMB, DAY, DOG, HIGHBALL, INJURY, LOAD, MONEY, RIVAL } from './dials';
 import { fill, money, skillsNote } from './format';
 import { PARTNERS, tierOf, whereNow } from './presence';
-import { hashSeed } from './rng';
+import { hashSeed, Rng } from './rng';
 import { aimMet, currentGoal } from './story';
-import type { Action, Delta, GameEvent, GameState, Result, RouteLog, SendStyle, Skills } from './types';
+import type {
+  Action,
+  Delta,
+  GameEvent,
+  GameState,
+  Injury,
+  Result,
+  RouteLog,
+  SendStyle,
+  Skills,
+} from './types';
 import { conditionsAt, seasonOf, sunOn } from './weather';
 
 // The message log keeps this many lines; older ones fall off the front.
@@ -95,6 +112,37 @@ export const restCost = (r: RouteDef): number => CLIMB.restMin[r.disc];
 export function belayer(s: GameState): string | null {
   for (const who of PARTNERS) if (whereNow(s, who) === s.at) return who;
   return null;
+}
+
+// ---- highballs [proposed] ----
+
+// Whether the pads you own are more than the one every boulderer has: the Moonstone haul's.
+export const morePads = (s: GameState): boolean => s.unlocked.some((id) => PLACES[id]?.pads);
+
+// How far you'd fall from `moves` up a boulder, in feet.
+export const fallFt = (r: RouteDef, moves: number): number =>
+  r.heightFt * Math.min(1, Math.max(0, moves) / (r.moves || 1));
+
+// The chance a fall from `moves` up a highball lands you badly: nothing up to the safe
+// height, then more with every foot, less with the haul's pads and a partner spotting.
+export function landingChance(s: GameState, r: RouteDef, moves: number): number {
+  if (!r.highball) return 0;
+  const over = fallFt(r, moves) - HIGHBALL.safeFt;
+  if (over <= 0) return 0;
+  return HIGHBALL.perFoot * over * (morePads(s) ? HIGHBALL.pads : 1) * (belayer(s) ? HIGHBALL.spotter : 1);
+}
+
+// Rolls a fall's landing. `n` numbers the go within the day, as the injury roll does, on its
+// own label so the two never share a draw.
+export function rollLanding(s: GameState, r: RouteDef, moves: number, n: number): Injury | null {
+  const p = landingChance(s, r, moves);
+  if (p <= 0) return null;
+  const rng = Rng.fromStream(s.seed, 'session').derive(`landing-${s.day}-${n}`);
+  if (rng.next() >= p) return null;
+  const over = fallFt(r, moves) - HIGHBALL.safeFt;
+  const tier: 1 | 2 | 3 = over >= HIGHBALL.tier3 ? 3 : over >= HIGHBALL.tier2 ? 2 : 1;
+  const [lo, hi] = INJURY.days[tier - 1]!;
+  return { kind: LANDING_NAME[tier - 1]!, tier, until: s.day + 1 + rng.int(lo, hi) };
 }
 
 // A pick from a list that holds for the day: the same line if you ask twice.
@@ -553,7 +601,10 @@ export function act(s0: GameState, a: Action): Result {
       );
       s.load.today = round2(s.load.today + load);
       const goN = Object.values(s.routes).reduce((t, x) => t + x.goesToday, 0);
-      const hurt = rollInjury(s, r, load, wasCold, goN);
+      // Overuse first; failing that, a fall off a highball can land you badly.
+      const strain = rollInjury(s, r, load, wasCold, goN);
+      const landed = strain || res.sent ? null : rollLanding(s, r, res.hi, goN);
+      const hurt = strain ?? landed;
       if (!s.today.includes('warm')) s.today.push('warm');
       s.skin = clamp100(s.skin - Math.max(0, res.skin));
       L.hi = Math.max(L.hi, Math.min(r.moves, Math.max(0, Math.floor(res.hi))));
@@ -609,7 +660,7 @@ export function act(s0: GameState, a: Action): Result {
         s.injury = hurt;
         const days = hurt.until - s.day - 1;
         const kind = hurt.kind;
-        const text = fill(HURT_LINE[hurt.tier - 1]!, {
+        const text = fill((landed ? LANDING_LINE : HURT_LINE)[hurt.tier - 1]!, {
           route: r.name,
           kind,
           Kind: kind[0]!.toUpperCase() + kind.slice(1),

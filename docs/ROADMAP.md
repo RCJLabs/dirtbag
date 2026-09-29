@@ -988,12 +988,31 @@ The full diagnosis is in the audit, under *The map and the look*.
       - The spire's two lines need a belayer, and nobody's schedule brings anyone to Moonstone yet. They're climbable data waiting on a road-trip partner, as the Gorge's bolts waited on Sage.
       - The bots don't go there. It's past the first month for all of them, so the harness is unchanged.
       - There's still no V10 boulder anywhere in the game, and v0.956 had none here either (criterion 3).
+  - *As built (10.3b, highballs):* all of it is *[proposed]*. v0.956 had no highball rule, only a generic "close call" for climbing without a pad, and a shop upsell for "a second crashpad for highballs".
+    - **The rule.**
+      - A `highball` flag goes on the tall boulders: Roadside's Highball Arête (18 ft, whose own line says the crux is where the pads stop helping), and Moonstone's Tall Arête, Splitter and project.
+      - A fall off one can land badly. Nothing up to 8 ft; above that, each foot adds 1.2% (`HIGHBALL`), so a fall from 16 ft is about 1 in 10 and from 22 ft about 1 in 6.
+      - The Moonstone haul's pads halve it. A partner there to spot you (`belayer`) halves it again.
+      - A bad landing is an ankle, using v0.956's ankle names: jammed, rolled, broken, by how far over 8 ft you fell. Its days off and clinic bill are an injury's.
+      - It rolls on its own label in the session stream, and only when overuse didn't already hurt you on that go.
+    - **The decisions** are these: whether to own the pads, whether to wait for someone to spot you, and whether to go at all. The beta sheet shows the odds before you pull on ("a fall from the crux is 16 ft. The haul's pads, nobody spotting: about 1 in 21 lands badly").
+    - **Not built: pad placement.** Every boulder here has one crux, so the pads always belong under it, and there's nothing to choose. If Evan wants placement, it needs boulders with two places to fall first.
+    - **The harness.** Moderate bots now wait for a spotter while a crux fall is worse than 1 in 20. Reckless bots don't.
+      - With Hazel spotting at Roadside, careful bots still come off Highball Arête enough that 10 of 144 runs end the month with a jammed ankle (7%; it was 0). Reckless bots: 15 of 144.
+      - The target (under 35%) passes, and so do the other three.
+      - R2 found 0% might be "too gentle to register as a trade-off". Whether 7% is right is a tuning call: the per-foot rate is one dial.
 
 **Done when, on the rebuild** *[proposed; replaces the criteria above until Evan rules]*:
 1. The gym and every crag in the game read as places: their own scene, lines drawn from data, and conditions you can see (shade, wet, closed).
 2. Any day of the first season, in any weather, has something new to try: the harness's "nothing new to try" reads 0.
 3. There are lines at every grade from V0 to the top of the content.
 4. Testers can point at where they want to go and say why (conditions, style, a project).
+
+**Status (29 Sep 2026): 10.1–10.3 built; the marker stays.**
+1. Met on the build: the gym, Roadside, the Gorge and Moonstone each have a scene, lines drawn from data, and conditions you can see.
+2. Not met. A few runs still hit a day with nothing to try. Since 10.3b these are mostly injury days, which the harness counts as nothing to try.
+3. Not met: there's no V10 boulder anywhere. Sport goes to grade 10 at Moonstone, and v0.956 had no V10 boulder at these crags either.
+4. Needs testers.
 
 ---
 
@@ -1398,3 +1417,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 10.1: the board at Send City. Four problems, V4–V7, that stay up four weeks, on a new seed stream logged for Unreal. It has its own scene, sheet, face-on wall and e2e step. "Nothing new to try" in the harness falls from about half the runs to 3 of 144; the season targets still pass.
 - 2026-09-29 — Phase 10.2: conditions you can see. The sun crosses Roadside end to end in two hours and greases each line as it arrives (proposed). The scene and walls show its edge, wet rock shows after rain, and the map tags closed and soaked crags. The season targets pass.
 - 2026-09-29 — Phase 10.3a: Moonstone Boulders as a place. v0.956's terms: V6, a $400 haul paid once, a $20 permit each trip. Nine lines, a desert scene with a quartzite spire, its road and map pin. Save v4 adds the trips you've paid for, migrated from a real v3 save. Highballs (10.3b) are next.
+- 2026-09-29 — Phase 10.3b: highballs (proposed). A fall off a tall boulder can land you badly, by height, halved by the Moonstone haul's pads and again by a partner spotting. The beta sheet shows the odds. Careful bots wait for a spotter; 7% of moderate runs now end month one with a jammed ankle. Phase 10's slices are built; its criteria 2–4 aren't met, so the marker stays.

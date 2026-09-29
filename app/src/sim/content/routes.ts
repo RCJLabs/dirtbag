@@ -77,6 +77,8 @@ export interface RouteDef {
   open?: true;
   // On Send City's board: the gym's steep panel, whose problems stay up for weeks.
   board?: true;
+  // A boulder tall enough that a fall off it is a real fall: it can land you badly (HIGHBALL).
+  highball?: true;
 }
 
 // The grade a line really climbs at.
@@ -303,6 +305,7 @@ export function libraryBoulder(
     trueGrade?: number;
     open?: true;
     board?: true;
+    highball?: true;
   },
 ): RouteDef {
   const [a, b] = LIBRARY[type];
@@ -310,6 +313,7 @@ export function libraryBoulder(
     ...(shape.trueGrade !== undefined ? { trueGrade: shape.trueGrade } : {}),
     ...(shape.open ? { open: true as const } : {}),
     ...(shape.board ? { board: true as const } : {}),
+    ...(shape.highball ? { highball: true as const } : {}),
     id,
     name,
     grade,
@@ -662,6 +666,7 @@ const highball = libraryBoulder('highball', 'Highball Arête', 5, 'technical', '
   cruxName: 'The top',
   heightFt: 18,
   line: 'Eight moves up a clean arête, and the crux is where the pads stop helping.',
+  highball: true,
 });
 const theProject = libraryBoulder('project', 'The Project', 6, 'power', 'road', {
   moves: 6,
@@ -769,6 +774,7 @@ const mArete = libraryBoulder('marete', 'Tall Arête', 6, 'technical', 'moon', {
   cruxName: 'The top',
   heightFt: 22,
   line: 'An arête as tall as a house, and the hard part is at the top of it.',
+  highball: true,
 });
 const mMantel = libraryBoulder('mmantel', 'Moonstone Mantel', 7, 'power', 'moon', {
   moves: 5,
@@ -802,6 +808,7 @@ const mSplitter = libraryBoulder('msplitter', 'Moonstone Splitter', 8, 'crack', 
   cruxName: 'The flare',
   heightFt: 20,
   line: 'A splitter up a boulder the size of a van. Tape up.',
+  highball: true,
 });
 const mRoof = libraryBoulder('mroof', 'Lunar Roof', 11, 'power', 'moon', {
   moves: 9,
@@ -819,6 +826,7 @@ const mOpen = libraryBoulder('mopen', 'The Moonstone project', 12, 'power', 'moo
   heightFt: 22,
   line: 'Nobody’s done it. The chalk stops two-thirds of the way up a very tall boulder.',
   open: true,
+  highball: true,
 });
 const mSpire = librarySport('mspire', 'Desert Spire', 8, 'dyno', 'moon', {
   moves: 24,

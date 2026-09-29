@@ -4,7 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { betaScale } from './climb';
 import { needFor } from './climber';
 import { ROUTES } from './content/routes';
-import { act, faSuggestions, goBlocked, lineGrade, lineName, newGame } from './game';
+import { HIGHBALL } from './dials';
+import { act, belayer, faSuggestions, goBlocked, landingChance, lineGrade, lineName, newGame } from './game';
 import type { Action, GameEvent, GameState } from './types';
 import { conditions, conditionsAt, skyOn } from './weather';
 
@@ -108,6 +109,50 @@ describe('Moonstone Boulders', () => {
     expect(betaScale(s, ROUTES.megg!, 'A1')).toBeLessThan(
       betaScale({ ...s, at: 'road' }, { ...ROUTES.megg!, place: 'road' }, 'A1'),
     );
+  });
+});
+
+describe('highballs [proposed]', () => {
+  it('can land you badly off a fall: more from higher, less with the haul’s pads and a spotter', () => {
+    const tall = ROUTES.marete!;
+    const s = at(8, { at: 'moon', min: 10 * 60 });
+    // A boulder that isn't a highball, and a fall from under the safe height, land fine.
+    expect(landingChance(s, ROUTES.megg!, 5)).toBe(0);
+    expect(landingChance(s, tall, 3)).toBe(0);
+    const top = landingChance(s, tall, tall.moves);
+    expect(top).toBeCloseTo(HIGHBALL.perFoot * (tall.heightFt - HIGHBALL.safeFt));
+    expect(landingChance(s, tall, 6)).toBeLessThan(top);
+    expect(landingChance({ ...s, unlocked: ['moon'] }, tall, tall.moves)).toBeCloseTo(top * HIGHBALL.pads);
+    // Roadside's Highball Arête: Hazel's there in the morning to spot you, gone by evening.
+    const hb = ROUTES.highball!;
+    const morning = at(5, { at: 'road', day: 1, min: 9 * 60 });
+    const evening = { ...morning, min: 17 * 60 };
+    expect(belayer(morning)).toBe('hazel');
+    expect(belayer(evening)).toBeNull();
+    expect(landingChance(morning, hb, hb.moves)).toBeCloseTo(
+      landingChance(evening, hb, hb.moves) * HIGHBALL.spotter,
+    );
+  });
+
+  it('turns a bad landing into an ankle, worst from the top, and never on a send', () => {
+    const tall = ROUTES.marete!;
+    const fall = { sent: false, hi: tall.moves, fellAt: 'A', tried: ['A1'], skin: 0 };
+    const kinds: string[] = [];
+    for (const day of days(1, 80)) {
+      if (!conditions('crags', day).open) continue;
+      const s = at(8, { at: 'moon', day, min: 10 * 60 });
+      const r = play(s, { t: 'go', route: 'marete' }, { t: 'done', route: 'marete', result: fall });
+      for (const e of r.events) if (e.k === 'injured') kinds.push(e.kind);
+      const sent = play(
+        s,
+        { t: 'go', route: 'marete' },
+        { t: 'done', route: 'marete', result: { ...fall, sent: true } },
+      );
+      expect(sent.events.some((e) => e.k === 'injured')).toBe(false);
+    }
+    // A fall from 22 ft is 14 over the safe height: a broken ankle, about one fall in six.
+    expect(kinds.length).toBeGreaterThan(3);
+    expect(new Set(kinds)).toEqual(new Set(['broken ankle']));
   });
 });
 
