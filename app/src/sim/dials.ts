@@ -130,6 +130,36 @@ export const ARC = {
   sageAway: 7,
 };
 
+// People's grades, on curves of their own from the seed. v0.956 pinned partners to your
+// grade and kept the rival one ahead of you whatever you did; Phase 6 gives each their own.
+export const CURVES = {
+  // Sage moves a grade every 20 days (v0.956's rate for her), from V4.
+  sage: { start: 4.3, perDay: 1 / 20, peak: 13 },
+  // Dex is V5 when you meet him around week three, and a grade better every three weeks
+  // or so after: a climber putting the work in can catch him.
+  dex: { start: 5, perDay: 0.045 },
+};
+
+// Dex Calloway, v0.956's rival: power, a bitter nemesis.
+export const RIVAL = {
+  // His ceiling, drawn from the seed.
+  peak: [9, 11],
+  // A stretch off hurt (v0.956's blown pulley): when it starts, and how long.
+  hurtFrom: [35, 75],
+  hurtDays: [14, 24],
+  // Streaks: how far a good or bad few weeks moves him, in grades.
+  streak: 0.4,
+  // Out on two days in five: mostly the crag when it's dry, else the gym.
+  out: 0.4,
+  crag: 0.7,
+  // The first-ascent race for the open project: he moves once you're climbing this grade
+  // (when the Gorge opens, around Act I's end), and gives you this many days (v0.956's
+  // five). Bots that take the dare win about two races in three; at V3 they won one in
+  // nine, and firing on a first V5 or V6 send caught them three grades short.
+  raceGrade: 4,
+  raceDays: 5,
+};
+
 // Injuries: v0.956's three tiers and how long each keeps you off. The clinic is a copay
 // (your weekly insurance pays the rest), and your first injury costs only time (Phase 6).
 export const INJURY = {

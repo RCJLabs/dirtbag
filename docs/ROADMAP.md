@@ -245,6 +245,12 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 - **The rival, Dex Calloway** (v0.956's: power, a nemesis):
   - *Fix (Phase 6):* his own seeded curve, with streaks, injuries and a peak, instead of v0.956's rubber band one grade ahead.
   - He first shows up when you send your first V4. He races you for the open project at the act's end.
+  - *As built (R2.4):*
+    - His curve: V5 around week three, a grade every three weeks or so after, a peak of V9–11 from the seed, two to three weeks off hurt, and good and bad weeks of about half a grade.
+    - He's out two days in five (the crag when it's dry, else the gym), and he's where he saw your first V4 for the rest of that day.
+    - Sage's grade moves as v0.956's did, a grade every 20 days from V4.
+    - v0.956's overnight lines say when you pass Dex or he pulls ahead, when you pass Sage, and when Dex gets hurt and comes back.
+    - *[proposed]* The race starts the night you're climbing V4 (when the Gorge opens, near the act's end), for v0.956's five days. If he wins, he names the line from v0.956's rival list, and your send becomes a second ascent. Bots that take the dare win about two races in three. Triggers tried first, a first V5 or V6 send outside, caught bots three grades short, and they lost every race.
 - **The dog** *[proposed adaptation]*:
   - v0.956 offers a stray after your tenth crag trip. Here the stray is Scout, who's been asleep at the Lot all along; after your tenth trip out, he picks you.
   - Kibble ($6), play (bond) and ride-alongs. The bond perks come later.
@@ -1220,3 +1226,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — R2 crags: Roadside's other four lines, its open project yours to first-ascend, name and grade; Granite Gorge (opens at V4, shut in spring, shaded all day, one sandbag), with its own scene, wall and map road. The harness then showed a V4 bot sending the Gorge's V9: windows above your grade were far too wide, fixed in the next commit.
 - 2026-09-29 — R2 windows: above your grade they now close about 40% a grade (R1's floor let a V4 send the Gorge's V9), and the harness's hands vary their reaction time from go to go, so tension cruxes stop being all-or-nothing. The bots' displayed grade at day 42 drops from V5 to V4; their first V5 project comes around day 14. R2's rules so far are logged in Dirtbag-UE's spec log.
 - 2026-09-29 — R2 partners: v0.956's bond tiers, earned a day at a time climbing where a partner is; partners who turn up more as the bond grows; Sage's four-beat arc in v0.956's words, five days apart, with a week away guiding; and asking her out to belay at the Gorge. A speech mark shows when someone has something to say; the You sheet lists the people you've met.
+- 2026-09-29 — R2 rival: Dex Calloway on his own seeded curve (streaks, a stretch hurt, a peak), met over your first V4, and v0.956's first-ascent race for the open project, set off once you're climbing V4. The harness bot learned to pick beta by how forgiving it is for its hands, to take the dare, and to name its first ascents; bot runs now keep every line.

@@ -15,6 +15,7 @@ import {
   routeOfId,
   routesAt,
   talkStart,
+  TALK,
   type Attempt,
   type GameState,
 } from '../sim';
@@ -120,8 +121,9 @@ function renderScene(g: G, f: Frame): void {
     );
   for (const p of presentIn(s, f.scene)) {
     drawPerson(g, LOOK[p.who]!, { x: p.x - cam, y: GND, dir: p.face, pose: p.pose, t: f.t });
-    // A beat of their story is waiting on you.
-    if (talkStart(s, p.talk)?.startsWith('beat-')) speechMark(g, p.x - cam, HEAD_Y - 10, f.t, f.still);
+    // They've something to tell you.
+    const opener = talkStart(s, p.talk);
+    if (opener && TALK[p.talk]?.nodes[opener]?.calls) speechMark(g, p.x - cam, HEAD_Y - 10, f.t, f.still);
   }
   const p = f.player;
   drawPerson(g, LOOK.you!, {

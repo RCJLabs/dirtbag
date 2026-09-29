@@ -43,6 +43,8 @@ export interface TalkOpt {
 export interface TalkNode {
   text: string;
   opts: TalkOpt[];
+  // They've something to tell you: the scene shows a speech mark over them.
+  calls?: true;
 }
 
 export interface TalkDef {
@@ -53,15 +55,40 @@ export interface TalkDef {
 
 export interface PersonDef {
   name: string;
+  full?: string;
   // Beta they know, and will show you, at these places.
   shows?: string[];
+  // Not a partner: someone who climbs against you. What they're like, in v0.956's words.
+  rival?: string;
 }
 
 export const PEOPLE: Record<string, PersonDef> = {
   hazel: { name: 'Hazel' },
   // v0.956's Sage: technical, and the partner whose perk was beta.
   sage: { name: 'Sage', shows: ['road', 'gym'] },
+  // v0.956's default rival.
+  dex: { name: 'Dex', full: 'Dex Calloway', rival: 'A power monster, a bitter nemesis.' },
 };
+
+// The race Dex sets you at the end of Act I, and what he calls the line if he wins it:
+// v0.956's rival names, picked by the seed.
+export const RACE_ROUTE = 'rsopen';
+export const RIVAL_FA_NAMES = [
+  'Dead Reckoning',
+  'The Long Con',
+  'Salt',
+  'Hollow Point',
+  'Cold Start',
+  'Bad Blood',
+  'Iron Age',
+  'Nightshade',
+  'Static',
+  'Slack Tide',
+  'The Reckoning',
+  'Quarry',
+  'Bitter End',
+  'Last Call',
+];
 
 const SIT: TalkOpt[] = [
   { label: 'Sit a while', primary: true, fx: { act: 'lot.sit' } },
@@ -168,6 +195,7 @@ export const TALK: Record<string, TalkDef> = {
       },
       done: { text: "That's all you get from me today. Go climb.", opts: [{ label: 'Fair' }] },
       'beat-1': {
+        calls: true,
         text: 'Sage doesn\'t say much. She just watches you flail at a sequence, points two feet left, and suddenly it\'s trivial. "You were fighting it." She climbs like water finding the easy way down.',
         opts: [
           {
@@ -178,6 +206,7 @@ export const TALK: Record<string, TalkDef> = {
         ],
       },
       'beat-2': {
+        calls: true,
         text: 'Sage is sitting on her pad, turning her phone over and over. "Got the call: a guiding stint up in the Bugaboos. Real money, real alpine." She looks genuinely torn. "Tell me straight."',
         opts: [
           {
@@ -202,6 +231,7 @@ export const TALK: Record<string, TalkDef> = {
         ],
       },
       'beat-3': {
+        calls: true,
         text: 'Sage is back from the Bugaboos, browner and leaner, with granite in her hands. She drops her pack and grins. "Missed this rock. Missed this crew." Then she steps onto your project and flashes the crux you\'ve been stuck on, just to show you it goes.',
         opts: [
           {
@@ -216,6 +246,7 @@ export const TALK: Record<string, TalkDef> = {
         ],
       },
       'beat-4': {
+        calls: true,
         text: 'That long technical testpiece Sage always eyed: today\'s the day. She reads it move by move, you trade leads, every foot placement dialed. At the chains she bumps your fist. "Couldn\'t have done it without you. Either of us."',
         opts: [
           {
@@ -232,6 +263,49 @@ export const TALK: Record<string, TalkDef> = {
           },
           { label: "Not today, I'm spent" },
         ],
+      },
+    },
+  },
+  // Dex sizes you up. His lines are v0.956's: he met you over your first V4, the race is
+  // his dare, and the rest depends on who's climbing harder.
+  dex: {
+    who: 'dex',
+    start: [
+      { when: { metToday: 'dex' }, node: 'meet' },
+      { when: { racing: true }, node: 'race' },
+      { when: { lead: 'dex/1' }, node: 'behind' },
+      { when: { trail: 'dex/2' }, node: 'ahead' },
+      { node: 'even' },
+    ],
+    nodes: {
+      meet: {
+        calls: true,
+        text: 'Dex Calloway eyes you from the boulders. "Heard you sent your first V{grade}." A beat. "...Nice." Looks like it cost him something to say.',
+        opts: [
+          { label: 'Nod back', primary: true },
+          { label: '"Who\'s asking?"', next: 'who' },
+        ],
+      },
+      who: {
+        text: '"Dex." Like you should know. "Dex Calloway. I\'ll see you out here."',
+        opts: [{ label: 'Guess you will' }],
+      },
+      race: {
+        calls: true,
+        text: 'Dex nods at the open project. "{left} {left|day|days}, {name}. Then it\'s got my name on it."',
+        opts: [{ label: '"We\'ll see."' }],
+      },
+      behind: {
+        text: 'Dex watches you pull on, jaw tight. "...You\'ve been climbing well. Don\'t get comfortable."',
+        opts: [{ label: 'Fair' }],
+      },
+      ahead: {
+        text: 'Dex smirks from the boulders. "Still working that V{grade}? I sent it last season, kid."',
+        opts: [{ label: 'Let your climbing answer' }],
+      },
+      even: {
+        text: 'Dex gives you a nod and goes back to brushing holds. "May the best climber send."',
+        opts: [{ label: 'Nod back' }],
       },
     },
   },

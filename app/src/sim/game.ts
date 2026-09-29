@@ -4,15 +4,17 @@
 
 import { cold, daysOff, freshLoad, goLoad, projected, ratio, rollInjury } from './body';
 import { gains, gradeOf, STARTS, type GoSummary } from './climber';
-import { headroom, holds, unmet } from './cond';
+import { headroom, holds, leadOver, unmet } from './cond';
+import { dexHurt, dexSeason, gradeOfPerson } from './curves';
 import { routeById, routesAt } from './content/gym';
 import { CLINIC_LINE, FIRST_FREE_LINE, HEALED_LINE, HURT_LINE } from './content/injuries';
 import { ACTS, PLACES, road, TEXT_VALUES } from './content/places';
-import { PEOPLE, TALK } from './content/people';
+import { PEOPLE, RACE_ROUTE, RIVAL_FA_NAMES, TALK } from './content/people';
 import { SEND_NAME, effGrade, gradeLabel, gradeName, type RouteDef } from './content/routes';
-import { BODY, CLIMB, DAY, INJURY, LOAD, MONEY } from './dials';
+import { BODY, CLIMB, DAY, INJURY, LOAD, MONEY, RIVAL } from './dials';
 import { fill, money, skillsNote } from './format';
 import { PARTNERS, tierOf, whereNow } from './presence';
+import { hashSeed } from './rng';
 import type { Action, Delta, GameEvent, GameState, Result, RouteLog, SendStyle, Skills } from './types';
 import { conditionsAt, seasonOf } from './weather';
 
@@ -39,6 +41,7 @@ export function newGame(seed: string): GameState {
     routes: {},
     firsts: {},
     people: {},
+    race: null,
     log: [],
   };
 }
@@ -123,6 +126,17 @@ export function knowsBeta(s: GameState, route: string, crux: string, beta: strin
   return c.beta[0] === beta || !!s.routes[route]?.known.includes(beta);
 }
 
+// The numbers a conversation's words can use: goes today, your name and grade, and the
+// days left in a race.
+export function talkValues(s: GameState): Record<string, string | number> {
+  return {
+    goes: goesToday(s),
+    name: s.climber.name,
+    grade: gradeOf(s.climber.skills),
+    left: s.race ? Math.max(0, s.race.until - s.day + 1) : 0,
+  };
+}
+
 export function talkStart(s: GameState, talk: string): string | null {
   return TALK[talk]?.start.find((e) => !e.when || holds(s, e.when))?.node ?? null;
 }
@@ -179,6 +193,7 @@ export function act(s0: GameState, a: Action): Result {
   };
   const sleep = () => {
     const ended = s.day;
+
     const hungry = s.fed < BODY.hungryBelow;
     const rough = headroom(s) < MONEY.vanSpot;
     if (!rough) s.cash -= MONEY.vanSpot;
@@ -214,6 +229,60 @@ export function act(s0: GameState, a: Action): Result {
       const bills = MONEY.registration + MONEY.insurance;
       s.cash -= bills;
       line(`Registration and insurance: $${bills}. The week's bills don't care about your card.`);
+    }
+    rivalNight(ended);
+  };
+  // Overnight news about the people you know: Dex's race, his season, and who's climbing
+  // harder than whom.
+  const rivalNight = (ended: number) => {
+    const dex = s.people.dex;
+    const race = s.race;
+    if (race && ended >= race.until) {
+      s.race = null;
+      const r = routeOfId(s, race.route);
+      if (r && !s.routes[race.route]?.sent && !s.firsts[race.route]) {
+        const name = RIVAL_FA_NAMES[hashSeed(`${s.seed}:${race.route}`) % RIVAL_FA_NAMES.length]!;
+        s.firsts[race.route] = { name, call: 0, day: ended, by: 'dex' };
+        line(
+          `Dex opened the line at ${PLACES[r.place]?.name ?? 'the crag'}. He calls it "${name}" (${gradeLabel(r)}). That first ascent was there for you. It carries his name now, and it always will.`,
+        );
+      }
+    }
+    // He moves on the line once you're climbing well enough to take it from him.
+    const open = routeOfId(s, RACE_ROUTE);
+    const ready = gradeOf(s.climber.skills) >= RIVAL.raceGrade;
+    if (!s.race && dex && open && ready && !s.firsts[RACE_ROUTE] && !s.routes[RACE_ROUTE]?.sent) {
+      s.race = { route: RACE_ROUTE, until: ended + RIVAL.raceDays };
+      line(
+        `Word is Dex is eyeing an unclaimed line at ${PLACES[open.place]?.name ?? 'the crag'} (${gradeLabel(open)}): get the first ascent before he does, or it's his forever. ${RIVAL.raceDays} days.`,
+      );
+    }
+    if (dex) {
+      if (dexHurt(s.seed, s.day) && !dexHurt(s.seed, ended)) {
+        const d = dexSeason(s.seed);
+        const weeks = Math.round((d.hurtTo - d.hurtFrom) / 7);
+        line(
+          `Word from the gym: Dex blew a pulley. Out for ${weeks} weeks, they're saying. The benchmark just stopped moving.`,
+        );
+      } else if (!dexHurt(s.seed, s.day) && dexHurt(s.seed, ended))
+        line('Dex is quietly back on the wall, picking up right where he left off.');
+    }
+    // Who's ahead, reckoned overnight. You pass Sage once; Dex, as often as it happens.
+    for (const who of ['sage', 'dex']) {
+      const p = s.people[who];
+      if (!p) continue;
+      const ahead = leadOver(s, who) > 0;
+      if (who === 'sage' && ahead && p.ahead === false)
+        line(
+          'You climb harder than Sage now. She noticed before you did, and she is completely fine about it, which somehow makes it worse.',
+        );
+      if (who === 'dex' && p.ahead !== undefined && ahead !== p.ahead)
+        line(
+          ahead
+            ? "You've passed Dex. Don't get comfortable."
+            : `Dex pulled back ahead of you, climbing V${gradeOfPerson(s.seed, 'dex', s.day)} now.`,
+        );
+      p.ahead = ahead;
     }
   };
   const runAct = (id: string): string | null => {
@@ -430,6 +499,15 @@ export function act(s0: GameState, a: Action): Result {
         events.push({ k: 'sent', route: a.route, style, go: L.goes });
         if (r.open && !s.firsts[r.id] && L.sent.day === s.day && L.sent.go === L.goes)
           events.push({ k: 'fa', route: r.id });
+        if (s.race?.route === a.route) {
+          s.race = null;
+          line(`You sent it before Dex could. That one's yours.`);
+        }
+        // Your first V4 gets noticed: Dex is here for the rest of the day, and he'll say so.
+        if (r.grade >= 4 && !s.people.dex) {
+          s.people.dex = { bond: 0, last: 0, since: s.day, invite: { day: s.day, place: s.at, from: s.min } };
+          line('Somebody was watching that.');
+        }
         note(`${SEND_NAME[style]}: ${r.name}, ${gradeLabel(r)}, on go ${L.goes}.`);
       } else if (res.fellAt) {
         const crux = r.cruxes.find((c) => c.id === res.fellAt);

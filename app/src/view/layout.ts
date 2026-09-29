@@ -195,10 +195,19 @@ export const SPOTS: Record<string, Spot[]> = {
   crag: [
     { who: 'hazel', x: 760, face: -1, pose: 'belay', talk: 'hazel-crag' },
     { who: 'sage', x: 904, face: -1, pose: 'stand', talk: 'sage' },
+    // Dex works the boulder field, by the project.
+    { who: 'dex', x: 1168, face: 1, pose: 'stand', talk: 'dex' },
   ],
-  gym: [{ who: 'sage', x: 292, face: 1, pose: 'stand', talk: 'sage' }],
-  // Out at the Gorge only when you've asked, and then on belay under the first line.
-  gorge: [{ who: 'sage', x: 610, face: -1, pose: 'belay', talk: 'sage' }],
+  gym: [
+    { who: 'sage', x: 292, face: 1, pose: 'stand', talk: 'sage' },
+    { who: 'dex', x: 880, face: -1, pose: 'stand', talk: 'dex' },
+  ],
+  // Out at the Gorge only when you've asked, and then on belay under the first line. Dex
+  // turns up here only the day he's watched your first V4 go.
+  gorge: [
+    { who: 'sage', x: 610, face: -1, pose: 'belay', talk: 'sage' },
+    { who: 'dex', x: 1236, face: -1, pose: 'stand', talk: 'dex' },
+  ],
 };
 
 // Who's in a scene right now: the people whose day puts them at its place.

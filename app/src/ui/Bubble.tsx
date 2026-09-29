@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
-import { fill, goesToday, holds, PEOPLE, TALK } from '../sim';
+import { fill, holds, PEOPLE, TALK, talkValues } from '../sim';
 import type { Game } from '../game/game';
 import { useStore } from '../game/store';
 import { HEAD_Y, OY, SPOTS, W, Z } from '../view/layout';
@@ -36,7 +36,7 @@ export function Bubble({ game, talk, node }: { game: Game; talk: string; node: s
   return (
     <div className="bubble" id="bubble" role="dialog" aria-live="polite" ref={ref}>
       <p className="who">{PEOPLE[def.who]?.name}</p>
-      <p>{fill(n.text, { goes: goesToday(ui.state), name: ui.state.climber.name })}</p>
+      <p>{fill(n.text, talkValues(ui.state))}</p>
       {opts.length > 0 && (
         <div className="acts">
           {opts.map(({ o, i }) => (

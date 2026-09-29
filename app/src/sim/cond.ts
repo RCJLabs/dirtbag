@@ -3,6 +3,7 @@
 
 import { gradeOf } from './climber';
 import { PLACES } from './content/places';
+import { gradeOfPerson } from './curves';
 import { ARC, DAY, MONEY } from './dials';
 import { clockShort, fill } from './format';
 import type { GameState } from './types';
@@ -30,7 +31,21 @@ export interface Cond {
   grade?: number; // your grade is at least this
   open?: string; // that place's rock is climbable today
   outside?: boolean; // true: at a crag; false: anywhere else
+  metToday?: string; // you met this person today
+  racing?: boolean; // a first-ascent race is on
+  lead?: string; // "who/n": you climb at least n grades harder than them
+  trail?: string; // "who/n": they climb at least n grades harder than you
 }
+
+// How many grades you climb above someone today (negative when they're ahead).
+export function leadOver(s: GameState, who: string): number {
+  return gradeOf(s.climber.skills) - (gradeOfPerson(s.seed, who, s.day) ?? 0);
+}
+
+const ref = (r: string): [string, number] => {
+  const [who, n] = r.split('/');
+  return [who ?? '', Number(n)];
+};
 
 // A condition an act needs, with the line shown when it fails. `why` may use {t}, the
 // clock time in the condition, so the words can't drift from the number.
@@ -76,6 +91,16 @@ export function holds(s: GameState, c: Cond): boolean {
     if (!k.open || k.closed) return false;
   }
   if (c.outside !== undefined && !!PLACES[s.at]?.crag !== c.outside) return false;
+  if (c.metToday !== undefined && s.people[c.metToday]?.since !== s.day) return false;
+  if (c.racing !== undefined && !!s.race !== c.racing) return false;
+  if (c.lead !== undefined) {
+    const [who, n] = ref(c.lead);
+    if (leadOver(s, who) < n) return false;
+  }
+  if (c.trail !== undefined) {
+    const [who, n] = ref(c.trail);
+    if (-leadOver(s, who) < n) return false;
+  }
   return true;
 }
 

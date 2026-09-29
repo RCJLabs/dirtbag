@@ -41,11 +41,18 @@ export const MIGRATIONS: Record<number, Migration> = {
     };
   },
   // v2 (R1) -> v3 (R2): training load, seeded at a light day's load as a new game's is; no
-  // injury, and none so far; no first ascents. (v3 grows with R2 until R2's build ships;
+  // injury, and none so far; no first ascents, and no race on. (v3 grows with R2 until R2's build ships;
   // from then on it's history like the rest.)
   2: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
-    return { ...x, load: { acute: 20, chronic: 20, today: 0 }, injury: null, hurt: 0, firsts: {} };
+    return {
+      ...x,
+      load: { acute: 20, chronic: 20, today: 0 },
+      injury: null,
+      hurt: 0,
+      firsts: {},
+      race: null,
+    };
   },
 };
 
@@ -141,10 +148,13 @@ export function validate(x: unknown): string[] {
           isObj(f) &&
           typeof f.name === 'string' &&
           (f.call === -1 || f.call === 0 || f.call === 1) &&
-          isInt(f.day),
+          isInt(f.day) &&
+          (f.by === undefined || typeof f.by === 'string'),
       ),
     'firsts',
   );
+  const race = x.race;
+  need(race === null || (isObj(race) && typeof race.route === 'string' && isInt(race.until)), 'race');
   if (!isObj(x.people)) err.push('people');
   else for (const [id, p] of Object.entries(x.people)) need(isPerson(p), `people.${id}`);
   if (!isObj(x.routes)) err.push('routes');
@@ -180,6 +190,7 @@ const isPerson = (x: unknown): x is PersonLog =>
   optInt(x.arc) &&
   optInt(x.beatDay) &&
   optInt(x.away) &&
+  (x.ahead === undefined || typeof x.ahead === 'boolean') &&
   (x.invite === undefined ||
     (isObj(x.invite) &&
       isInt(x.invite.day) &&

@@ -47,6 +47,8 @@ export interface GameState {
   firsts: Record<string, FirstAscent>;
   // The people you climb with, by id.
   people: Record<string, PersonLog>;
+  // A first-ascent race with Dex: the line, and the last day you have to send it.
+  race: { route: string; until: number } | null;
   // The message log: every line the game has told you, newest last.
   log: LogLine[];
 }
@@ -85,6 +87,8 @@ export interface RouteLog {
 
 export interface FirstAscent {
   name: string;
+  // Who got it, when it wasn't you.
+  by?: string;
   // Soft, true or stout: your grade call against the listed grade (v0.956's FA call).
   call: -1 | 0 | 1;
   day: number;
@@ -104,6 +108,8 @@ export interface PersonLog {
   away?: number;
   // You asked them out somewhere today: they're there from `from` till their day ends.
   invite?: { day: number; place: string; from: number };
+  // Whether you climbed harder than them at the last night's reckoning.
+  ahead?: boolean;
 }
 
 export type SendStyle = 'onsight' | 'flash' | 'redpoint';

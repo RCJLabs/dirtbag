@@ -21,7 +21,7 @@ import type { RouteDef } from './content/routes';
 import { CLIMB, DAY, LOAD, MONEY } from './dials';
 import { cold, ratio } from './body';
 import { gradeOf, average } from './climber';
-import { act, goBlocked, knowsBeta, newGame, talkStart } from './game';
+import { act, faSuggestions, goBlocked, knowsBeta, newGame, talkStart } from './game';
 import { whereNow } from './presence';
 import type { Action, GameState, GoResult } from './types';
 import type { Rng } from './rng';
@@ -35,6 +35,8 @@ export interface BotRun {
   refused: string[];
   sends: string[];
   injuries: string[];
+  // Every line the game said, with its day: the state's own log keeps only the last 200.
+  lines: string[];
   // One line per day, taken at bedtime.
   days: DaySummary[];
 }
@@ -159,7 +161,14 @@ export function playGo(s: GameState, r: RouteDef, hands = carefulHands()): GoRes
   return goResult(a);
 }
 
-// The widest window you'd have at each crux with the beta you know, and the beta for it.
+// How forgiving a window is for hands like these: a throw's band against its scatter, and
+// a foot's against the timing's, which needs two good taps. Comparing raw widths across
+// verbs had the bot taking the wider timing beta on dynos that the throw sent three times
+// as often.
+const VERB_SPREAD: Record<string, number> = { load: HUMAN.load, timing: HUMAN.timing * 1.6, tension: 0.06 };
+
+// The best window you'd have at each crux with the beta you know, and the beta for it.
+// `worst` is the tightest crux's window, in load-verb terms.
 function bestBeta(s: GameState, r: RouteDef): { picks: [string, string][]; worst: number } {
   const picks: [string, string][] = [];
   let worst = Infinity;
@@ -167,7 +176,8 @@ function bestBeta(s: GameState, r: RouteDef): { picks: [string, string][]; worst
     let best = { id: c.beta[0]!, w: -1 };
     for (const id of c.beta) {
       if (!knowsBeta(s, r.id, c.id, id)) continue;
-      const w = r.beta[id]!.w * betaScale(s, r, id);
+      const b = r.beta[id]!;
+      const w = ((b.w * betaScale(s, r, id)) / (VERB_SPREAD[b.verb] ?? HUMAN.load)) * HUMAN.load;
       if (w > best.w) best = { id, w };
     }
     picks.push([c.id, best.id]);
@@ -196,7 +206,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   const hands = opts.hands ?? carefulHands;
   const strategy = opts.strategy ?? 'balanced';
   let s = newGame(seed);
-  const run: BotRun = { state: s, actions: [], refused: [], sends: [], injuries: [], days: [] };
+  const run: BotRun = { state: s, actions: [], refused: [], sends: [], injuries: [], lines: [], days: [] };
   let workMin = 0;
   let hardest = -1;
 
@@ -210,8 +220,14 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     s = r.state;
     run.actions.push(a);
     for (const e of r.events) {
+      if (e.k === 'line') run.lines.push(`day ${s.day}: ${e.text}`);
       if (e.k === 'sent') run.sends.push(`day ${s.day}: ${e.route} (${e.style})`);
       if (e.k === 'injured') run.injuries.push(`day ${s.day}: ${e.kind} (tier ${e.tier})`);
+      // A first ascent gets the first name on offer, called true.
+      if (e.k === 'fa') {
+        const line = routesAt(s.seed, s.at, s.day).find((x) => x.id === e.route);
+        if (line) go({ t: 'name', route: e.route, name: faSuggestions(s, line)[0]!, call: 0 });
+      }
     }
     return true;
   };
@@ -263,6 +279,9 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       .filter((r) => !goBlocked(there, r) && !s.routes[r.id]?.sent && (s.routes[r.id]?.goesToday ?? 0) < 3)
       .map((r) => ({ r, w: bestBeta(there, r).worst }))
       .sort((a, b) => a.r.grade - b.r.grade);
+    // Dex's dare comes first: a player racing him works the line he's after.
+    const race = s.race && lines.find((l) => l.r.id === s.race!.route);
+    if (race) return race.r;
     const easy = lines.find((l) => l.w >= 0.045);
     if (easy) return easy.r;
     return lines.sort((a, b) => b.w - a.w)[0]?.r ?? null;

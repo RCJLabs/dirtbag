@@ -3,7 +3,8 @@
 // asked. Like the weather, nothing is stored: tomorrow's schedule is already decided by the
 // seed and your bond, you just don't know it yet.
 
-import { BOND } from './dials';
+import { dexHurt } from './curves';
+import { BOND, RIVAL } from './dials';
 import { Rng } from './rng';
 import type { GameState, PersonLog } from './types';
 import { conditions } from './weather';
@@ -32,9 +33,23 @@ function sage(seed: string, day: number, min: number, p?: PersonLog): string | n
   return r.chance(0.6) ? 'road' : 'gym';
 }
 
+// Dex is nowhere until he's noticed you, and then where you met him for the rest of that
+// day. After that he's out about two days in five, at the crag when it's dry and the gym
+// when it isn't, and nowhere while he's hurt.
+function dex(seed: string, day: number, min: number, p?: PersonLog): string | null {
+  if (!p || min < 10 * 60 || min >= 17 * 60) return null;
+  if (p.invite?.day === day) return min >= p.invite.from ? p.invite.place : null;
+  if (dexHurt(seed, day)) return null;
+  const r = Rng.fromStream(seed, 'events').derive(`dex-${day}`);
+  if (!r.chance(RIVAL.out)) return null;
+  if (!conditions(seed, day).open) return 'gym';
+  return r.chance(RIVAL.crag) ? 'road' : 'gym';
+}
+
 export function whereIs(seed: string, who: string, day: number, min: number, p?: PersonLog): string | null {
   if (who === 'hazel') return hazel(seed, day, min);
   if (who === 'sage') return sage(seed, day, min, p);
+  if (who === 'dex') return dex(seed, day, min, p);
   return null;
 }
 

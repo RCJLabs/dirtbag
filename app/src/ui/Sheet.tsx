@@ -20,6 +20,7 @@ import {
   goCost,
   gradeName,
   gradeOf,
+  gradeOfPerson,
   headroom,
   knowsBeta,
   lineGrade,
@@ -159,8 +160,18 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
       <p className="sub">
         {r.line} {goes ? `Go ${goes + 1} today.` : 'First go today.'} Tap the wall to reopen this.
       </p>
-      {r.open && !log?.sent && (
+      {r.open && !log?.sent && !s.firsts[route] && (
         <p className="note">Open project: nobody’s sent it. Send it and it’s yours to name.</p>
+      )}
+      {s.race?.route === route && (
+        <p className="note">
+          Dex is racing you for it: {s.race.until - s.day + 1} day{s.race.until === s.day ? '' : 's'} left.
+        </p>
+      )}
+      {s.firsts[route]?.by && (
+        <p className="sub">
+          First ascent: {PEOPLE[s.firsts[route]!.by!]?.full ?? 'somebody else'}. The second’s still going.
+        </p>
       )}
       {unnamed && log.sent && (
         <button
@@ -405,8 +416,8 @@ function PeopleRows({ s }: { s: GameState }) {
         {met.map(([id, p]) => (
           <li key={id}>
             <b>{PEOPLE[id]!.name}</b>
-            <span className="sky">{TIER_NAME[tierOf(p.bond)]}</span>
-            <small>{personNote(s, p)}</small>
+            <span className="sky">{PEOPLE[id]!.rival ? 'Rival' : TIER_NAME[tierOf(p.bond)]}</span>
+            <small>{personNote(s, id, p)}</small>
           </li>
         ))}
       </ul>
@@ -414,15 +425,24 @@ function PeopleRows({ s }: { s: GameState }) {
   );
 }
 
-function personNote(s: GameState, p: PersonLog): string {
-  if (p.away !== undefined && s.day < p.away) {
-    const n = p.away - s.day;
-    return `Away, back in ${n} day${n > 1 ? 's' : ''}.`;
+const days = (n: number) => `${n} day${n === 1 ? '' : 's'}`;
+
+function personNote(s: GameState, id: string, p: PersonLog): string {
+  const g = gradeOfPerson(s.seed, id, s.day);
+  const climbs = g === null ? '' : `Climbs V${g}. `;
+  const def = PEOPLE[id]!;
+  if (def.rival) {
+    const race = s.race && routeOfId(s, s.race.route);
+    if (race)
+      return `${climbs}Racing you for ${race.name.replace(/^The /, 'the ')}: ${days(s.race!.until - s.day + 1)} left.`;
+    return `${climbs}${def.rival}`;
   }
-  if (p.invite?.day === s.day) return `Meeting you at ${PLACES[p.invite.place]?.name ?? 'the crag'} today.`;
-  if (p.last === s.day) return 'Climbed together today.';
-  if (p.last > 0) return `Last climbed together on day ${p.last}.`;
-  return 'You haven’t climbed together yet.';
+  if (p.away !== undefined && s.day < p.away) return `Away, back in ${days(p.away - s.day)}.`;
+  if (p.invite?.day === s.day)
+    return `${climbs}Meeting you at ${PLACES[p.invite.place]?.name ?? 'the crag'} today.`;
+  if (p.last === s.day) return `${climbs}Climbed together today.`;
+  if (p.last > 0) return `${climbs}Last climbed together on day ${p.last}.`;
+  return `${climbs}You haven’t climbed together yet.`;
 }
 
 const SEASON: Record<Season, [string, string]> = {

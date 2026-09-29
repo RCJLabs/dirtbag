@@ -23,7 +23,8 @@ export interface Look {
   hair: string;
   // A slouch beanie, or bare-headed.
   hat: string | null;
-  sleeve: 'short' | 'long';
+  // A tee, a long-sleeve, or a tank top.
+  sleeve: 'short' | 'long' | 'none';
   pony?: boolean;
   // Hair tie.
   tie?: string;
@@ -49,6 +50,16 @@ export const LOOK: Record<string, Look> = {
     sleeve: 'long',
     pony: true,
     tie: '#B23A2C',
+  },
+  // Dex: power, and he knows it. Charcoal tank, oxblood pants, a buzz cut.
+  dex: {
+    skin: '#D39B72',
+    shirt: '#34343C',
+    pants: '#7A2F2A',
+    shoe: '#1F1F24',
+    hair: '#1E1612',
+    hat: null,
+    sleeve: 'none',
   },
   // Sage: technical, patient, reads everything first. Green tee, plum pants, copper hair.
   sage: {
@@ -340,6 +351,13 @@ export function drawPerson(
         { p: fore.p, fill: shirt },
       ]);
       ink(g, fore.hem, 0.85);
+    } else if (L.sleeve === 'none') {
+      // Bare arms, and a power climber's shoulders.
+      inked(g, [
+        { p: capsule(s, 2.75, e, 2.1), fill: skin },
+        { p: capsule(e, 2.1, w, 1.6), fill: skin },
+        { p: hand, fill: skin },
+      ]);
     } else {
       const mid = 0.55;
       const sleeveEnd: Pt = [s[0] + (e[0] - s[0]) * mid, s[1] + (e[1] - s[1]) * mid];
