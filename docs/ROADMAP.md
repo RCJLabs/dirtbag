@@ -62,8 +62,9 @@
 | 9 Climber on the wall | Reshaped as beta-then-send and built from R0. Its Done-when criteria gate R2. |
 | 10 Crags as places | Built on the rebuild (the board, conditions you can see, Moonstone) and closed by Evan's call. Its testers' criterion carries. |
 | 11 Valley map | Built on the rebuild (the taps, place cards, adding a place, the daily plan) and closed by Evan's call. Criteria 2 to 5 pass; its testers' criterion carries. Released in 0.961.0 with Phase 10. |
-| 12 UI system | Partly folded into the rebuild (R0–R2). The current milestone, planned on the rebuild: a Journal instead of tabs, the message log, and a screen that widens for landscape. |
-| 13–20 | Unchanged in intent. They target the new build. |
+| 12 UI system | Built on the rebuild (the Journal, the wide screen, keyboard and access, Tonight, no inline styles) and closed by Evan's call. The flows the e2e doesn't play in landscape or by keyboard carry to playtesting. |
+| 13 Sound and feel | The current milestone. |
+| 14–20 | Unchanged in intent. They target the new build. |
 
 ## The rebuild track
 
@@ -1182,7 +1183,7 @@ There's no joystick, zone graph or tileset to retire. What's left, in slices:
 
 ---
 
-### Phase 12 — The UI system and the desktop layout   **<<< CURRENT MILESTONE**
+### Phase 12 — The UI system and the desktop layout
 
 *Rebuild note: folded into the rebuild, R0–R2.*
 
@@ -1251,7 +1252,7 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 **Unreal.** On hold, by Evan's call, until the conversion to the new game is done. Spec changes are still logged, per CLAUDE.md.
 
-**Status (29 Sep 2026): 12.1 to 12.5 built. Closing is Evan's call; where each criterion stands is at the end.**
+**Status (29 Sep 2026): 12.1 to 12.5 built; closed by Evan's call.** Criteria 1, 4 and 5 are met; 2 and 3 are met for what the e2e plays, and the rest of their flows carry to playtesting, as does a real Steam Deck, tablet and screen reader. Where each criterion stands is at the end of this section. The marker moved to Phase 13.
 - The sim already kept a log of the last 200 lines in the save (`LOG_MAX`), with nothing showing it. The Journal shows it: your body in the HUD, or the goal pill, opens it, on "You" (the old "you" sheet) or "Lately" (the log, by day, newest first).
 - A line over 30 words (`TOAST_WORDS`) goes on a card, "Right" to put it down, that waits until nothing else is open, as the end of Act I's card already did. None of today's toasted lines is that long: the longest texts are Sage's beats, which are speech bubbles.
 - The e2e opens the log on day two and watches every toast of the run, reloads included; it fails on one over 30 words.
@@ -1299,7 +1300,7 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 ---
 
-### Phase 13 — Sound and feel
+### Phase 13 — Sound and feel   **<<< CURRENT MILESTONE**
 
 **Goal.** Every action has feedback, the world has ambience, and the music is owned or cleanly licensed for a paid release.
 
@@ -1624,3 +1625,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 12.2: the wide screen. A landscape window widens the screen to up to 1248 across instead of framing a phone: scenes and skies show more, the map paints ridged country around the valley, walls close up are panels over their crag, and sheets dock at the right from 1080 across. Toasts moved off the HUD, and the e2e checks every one against every control. A landscape morning joins the e2e.
 - 2026-09-29 — Phase 12.3: keyboard and access. Scenes' things and the map's pins take the keyboard and a screen reader, Escape puts things down, one focus ring, text at a true 1.3×, low meters striped, and the accent deepened to pass the new WCAG AA check in `npm run check`. The e2e plays a day by keyboard alone at the larger text.
 - 2026-09-29 — Phase 12.4 and 12.5: the van says what tonight will do (from `tonight()`, which sleep is held to), and inline styles are down to custom properties, checked by `npm run check`. Phase 12's slices are all built; closing it is Evan's call.
+- 2026-09-29 — Phase 12 closed by Evan's call: criteria 1, 4 and 5 met; 2 and 3 met for what the e2e plays, the rest carried to playtesting. CURRENT MILESTONE moved to Phase 13, sound and feel; it gets planned on the rebuild next.
