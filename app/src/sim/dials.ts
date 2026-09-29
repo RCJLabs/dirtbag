@@ -291,3 +291,45 @@ export const CLIMB = {
   // A cleared crux puts you this far past its top.
   clearCrux: 0.13,
 };
+
+// Your kit (Phase 21.1): v0.956's gear, cut to what a go can feel. Its wear was per two-hour
+// attempt; a go here is minutes and a day holds ten of them, so wear per go is a fraction.
+export const KIT = {
+  shoes: {
+    // v0.956: new shoes $140, a resole $35. A resole puts rubber back, not a new last.
+    price: 140,
+    resole: 35,
+    resoleTo: 90,
+    // Everyone starts in the shoes they drove out in: worn at 40 in about 80 goes, a week
+    // and a bit of climbing, so the first resole lands after Act I's first goals.
+    startAt: 60,
+    // Condition lost per go, and more on harder lines (v0.956's 1 + 0.035 per grade). About
+    // 200 goes from a resole to worn: three weeks of climbing.
+    wear: 0.25,
+    perGrade: 0.035,
+    // Under `worn` every window is this much narrower; under `blown`, much narrower. Technical
+    // lines, all footwork, feel it twice.
+    worn: 40,
+    blown: 15,
+    wornWindows: 0.95,
+    blownWindows: 0.87,
+  },
+  chalk: {
+    // A block for $8 lasts 60 goes; the bag starts half full. Without it, sweaty hands.
+    price: 8,
+    uses: 60,
+    startWith: 30,
+    without: 0.95,
+  },
+  tape: {
+    // A roll for $4 wraps six crack goes, and halves the skin a crack takes.
+    price: 4,
+    uses: 6,
+    skin: 0.5,
+  },
+  // A pad of your own: with the one everyone has, that's two, and a highball's landing
+  // halves as the Moonstone haul's pads do (HIGHBALL.pads).
+  pad: { price: 180 },
+  // The swap meet at the shop on weekends: v0.956's 55% of new, in fair shape.
+  used: { share: 0.55, condition: 60 },
+};

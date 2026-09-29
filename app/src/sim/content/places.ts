@@ -10,7 +10,7 @@
 // back: there's no game over, only a bad week.
 
 import type { Need } from '../cond';
-import { DAY, DOG, MONEY } from '../dials';
+import { DAY, DOG, KIT, MONEY } from '../dials';
 import { DOG_LINES, DOG_OFFER } from './dog';
 import { clockShort } from '../format';
 import type { Delta, Skills } from '../types';
@@ -89,6 +89,8 @@ export interface ActDef {
   dog?: { adopt?: true; fill?: true; bond?: number };
   // A line picked by the day, instead of the same one every time.
   saysOneOf?: string[];
+  // What it does to your kit: sets an item to this (condition, or 1 for owned), or adds uses.
+  gear?: { id: string; set?: number; add?: number };
 }
 
 export interface RoadDef {
@@ -180,6 +182,24 @@ export const PLACES: Record<string, PlaceDef> = {
     away: 'Old Town. The special, and bottomless coffee.',
     here: 'Old Town. Otis is reading the paper.',
     acts: ['diner.meal', 'diner.coffee'],
+  },
+  // Phase 21.1: where your kit comes from. A resole bench in the back, and on weekends the
+  // swap meet out front.
+  shop: {
+    name: 'The Gear Shop',
+    scene: null,
+    ambience: { room: 0.3, murmur: 0.25, clinks: 0.1 },
+    away: 'Midtown. Shoes, chalk, pads, and a resole bench in the back.',
+    here: "A bell on the door. Two guys by the cams, arguing about a route neither's done.",
+    acts: [
+      'shop.resole',
+      'shop.chalk',
+      'shop.tape',
+      'shop.shoes',
+      'shop.pad',
+      'shop.usedShoes',
+      'shop.usedPad',
+    ],
   },
   cafe: {
     name: 'Coffee Shop',
@@ -283,6 +303,68 @@ export const ACTS: Record<string, ActDef> = {
     needs: [{ pay: 4 }],
     says: 'Wren makes it strong.',
   },
+  // The gear shop (Phase 21.1). Prices, wear and what a block lasts are KIT's.
+  'shop.resole': {
+    label: 'Resole your shoes',
+    cost: { min: 10, cash: -KIT.shoes.resole },
+    needs: [
+      { has: 'shoes', why: 'Nothing to resole.' },
+      { gearBelow: `shoes/${KIT.shoes.resoleTo}`, why: 'Your rubber has life in it yet.' },
+      { pay: KIT.shoes.resole },
+    ],
+    gear: { id: 'shoes', set: KIT.shoes.resoleTo },
+    says: "Fresh rubber. For a day they'll feel like someone else's.",
+  },
+  'shop.chalk': {
+    label: 'A block of chalk',
+    cost: { min: 5, cash: -KIT.chalk.price },
+    needs: [{ pay: KIT.chalk.price }],
+    gear: { id: 'chalk', add: KIT.chalk.uses },
+    says: 'You crush half of it into the bag before you reach the door.',
+  },
+  'shop.tape': {
+    label: 'A roll of tape',
+    cost: { min: 5, cash: -KIT.tape.price },
+    needs: [{ pay: KIT.tape.price }],
+    gear: { id: 'tape', add: KIT.tape.uses },
+    says: 'Athletic tape. For cracks, and for pretending your tips are fine.',
+  },
+  'shop.shoes': {
+    label: 'New shoes',
+    cost: { min: 20, cash: -KIT.shoes.price },
+    needs: [{ gearBelow: 'shoes/100', why: 'Yours are new.' }, { pay: KIT.shoes.price }],
+    gear: { id: 'shoes', set: 100 },
+    says: "They pinch. They'll give.",
+  },
+  'shop.pad': {
+    label: 'A second pad',
+    cost: { min: 10, cash: -KIT.pad.price },
+    needs: [{ hasNot: 'pad', why: 'Two pads is plenty to carry.' }, { pay: KIT.pad.price }],
+    gear: { id: 'pad', set: 1 },
+    says: 'A second pad on the roof rack. Highballs look shorter already.',
+  },
+  'shop.usedShoes': {
+    label: 'Used shoes, from the swap meet',
+    cost: { min: 20, cash: -Math.round(KIT.used.share * KIT.shoes.price) },
+    needs: [
+      { weekend: true, why: 'The swap meet is weekends.' },
+      { gearBelow: `shoes/${KIT.used.condition}`, why: 'Yours are better than anything on the table.' },
+      { pay: Math.round(KIT.used.share * KIT.shoes.price) },
+    ],
+    gear: { id: 'shoes', set: KIT.used.condition },
+    says: 'Somebody else broke them in. Somebody with your feet, almost.',
+  },
+  'shop.usedPad': {
+    label: 'A used pad, from the swap meet',
+    cost: { min: 10, cash: -Math.round(KIT.used.share * KIT.pad.price) },
+    needs: [
+      { weekend: true, why: 'The swap meet is weekends.' },
+      { hasNot: 'pad', why: 'Two pads is plenty to carry.' },
+      { pay: Math.round(KIT.used.share * KIT.pad.price) },
+    ],
+    gear: { id: 'pad', set: 1 },
+    says: 'The foam is tired and the cover is duct tape. It still lands.',
+  },
   'gym.pass': {
     label: 'Buy a day pass',
     cost: { min: 5, cash: -MONEY.dayPass },
@@ -317,6 +399,9 @@ export const ROADS: RoadDef[] = [
   { a: 'cafe', b: 'gym', min: 5, cash: 0 },
   { a: 'cafe', b: 'diner', min: 8, cash: 1 },
   { a: 'gym', b: 'diner', min: 10, cash: 1 },
+  // The gear shop: a block from the café, on the way in from the Lot.
+  { a: 'shop', b: 'cafe', min: 4, cash: 0 },
+  { a: 'shop', b: 'lot', min: 9, cash: 1 },
   { a: 'road', b: 'lot', min: 60, cash: 12 },
   { a: 'road', b: 'cafe', min: 65, cash: 12 },
   { a: 'road', b: 'diner', min: 70, cash: 12 },

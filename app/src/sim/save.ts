@@ -6,10 +6,11 @@
 // turns an old state into the new shape, and add a test that loads a real old save.
 
 import { CARRIED, STARTS } from './climber';
+import { GEAR } from './content/gear';
 import { PLACES } from './content/places';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -62,6 +63,12 @@ export const MIGRATIONS: Record<number, Migration> = {
   3: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, unlocked: [] };
+  },
+  // v4 (0.961.0) -> v5 (Phase 21.1): the kit a new climber starts with, the shoes they drove
+  // out in and half a bag of chalk, for climbers who were already out here.
+  4: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, gear: { shoes: 60, chalk: 30 } };
   },
 };
 
@@ -167,6 +174,13 @@ export function validate(x: unknown): string[] {
   need(isInt(x.trips) && x.trips >= 0, 'trips');
   need(isInt(x.goals) && x.goals >= 0, 'goals');
   need(isStrs(x.unlocked) && x.unlocked.every((id) => id in PLACES), 'unlocked');
+  need(
+    isObj(x.gear) &&
+      Object.entries(x.gear).every(
+        ([id, n]) => id in GEAR && isNum(n) && n >= 0 && (GEAR[id]!.kind !== 'wears' || n <= 100),
+      ),
+    'gear',
+  );
   const dog = x.dog;
   const pct = (v: unknown) => isNum(v) && v >= 0 && v <= 100;
   need(

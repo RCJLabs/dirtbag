@@ -56,6 +56,8 @@ export interface GameState {
   goals: number;
   // Trips you've paid to open for good, by place id (v0.956's unlocked): Moonstone's haul.
   unlocked: string[];
+  // Your kit, by id in content/gear.ts: condition, uses left, or 1 for owned (Phase 21.1).
+  gear: Record<string, number>;
   // The message log: every line the game has told you, newest last.
   log: LogLine[];
 }

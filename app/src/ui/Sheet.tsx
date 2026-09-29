@@ -30,6 +30,8 @@ import {
   DOG_TIER_NAME,
   dogTier,
   FA_NAME_MAX,
+  GEAR,
+  KIT,
   faSuggestions,
   goBlocked,
   goCost,
@@ -74,6 +76,7 @@ import { CARD, cardPng } from '../view/paint/card';
 import { cardFile, cardOf, cardText } from './card';
 import { buildSheet, SKILL_NAME, type ListSpec } from './sheets';
 import { CREDITS } from './credits';
+import { kitNote, kitState } from './kit';
 import { vars } from './vars';
 
 export const VERB_TEXT: Record<Verb, string> = {
@@ -355,7 +358,7 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
   const pick = picks(s, r);
   const goes = s.routes[route]?.goesToday ?? 0;
   const why = goBlocked(s, r);
-  const c = goCost(r);
+  const c = goCost(r, s);
   const cost = `${costLabel({ min: c.min })} · ${bodyNote({ energy: c.energy, skin: c.skin })}${rockNote(s, r)}`;
   const log = s.routes[route];
   const unnamed = r.open && log?.sent && !s.firsts[route];
@@ -448,6 +451,11 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
       )}
       {!why && ratio(s.load) > LOAD.risk && (
         <p className="note">Your body’s talking: a go now could tweak something.</p>
+      )}
+      {!why && kitNote(s, r) && (
+        <p className="note" id="kit-note">
+          {kitNote(s, r)}
+        </p>
       )}
       <button type="button" className="go" disabled={!!why} onClick={() => game.go()}>
         {why ?? (r.disc === 'sport' ? 'Tie in and go' : 'Pull on')}
@@ -769,6 +777,7 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
       </p>
       <p className="crux">Load</p>
       <LoadRow s={s} />
+      <KitRows s={s} />
       <PeopleRows s={s} />
       <p className="crux">Money</p>
       <p className="sub">
@@ -783,6 +792,32 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
             <span className="c" />
           </button>
         </li>
+      </ul>
+    </>
+  );
+}
+
+// Your kit: what you've got and how it's holding up. Shoes show their rubber as a bar.
+function KitRows({ s }: { s: GameState }) {
+  const owned = Object.entries(s.gear).filter(([id, n]) => GEAR[id] && (n > 0 || GEAR[id]!.kind !== 'owned'));
+  return (
+    <>
+      <p className="crux">Kit</p>
+      <ul className="skills" id="kit">
+        {owned.map(([id, n]) => (
+          <li key={id} title={GEAR[id]!.what}>
+            <span>{GEAR[id]!.name}</span>
+            {GEAR[id]!.kind === 'wears' ? (
+              <i
+                className={n < KIT.shoes.worn ? 'hot' : undefined}
+                style={vars({ '--v': (n / 100).toFixed(3) })}
+              />
+            ) : (
+              <i className="none" />
+            )}
+            <b>{kitState(id, n)}</b>
+          </li>
+        ))}
       </ul>
     </>
   );

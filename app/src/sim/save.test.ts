@@ -26,6 +26,7 @@ const played = () => {
 const V1 = readFileSync(new URL('./fixtures/save-v1.json', import.meta.url), 'utf8');
 const V2 = readFileSync(new URL('./fixtures/save-v2.json', import.meta.url), 'utf8');
 const V3 = readFileSync(new URL('./fixtures/save-v3.json', import.meta.url), 'utf8');
+const V4 = readFileSync(new URL('./fixtures/save-v4.json', import.meta.url), 'utf8');
 // What R2's migration adds to any older save.
 const R2_BODY = {
   load: { acute: 20, chronic: 20, today: 0 },
@@ -39,6 +40,8 @@ const R2_BODY = {
 };
 // And Phase 10.3's: no trips paid for.
 const P10 = { unlocked: [] };
+// And Phase 21.1's: the kit you drove out with.
+const P21 = { gear: { shoes: 60, chalk: 30 } };
 
 describe('saves', () => {
   it('round-trip a played game exactly', () => {
@@ -93,6 +96,7 @@ describe('saves', () => {
       people: {},
       ...R2_BODY,
       ...P10,
+      ...P21,
     });
     // And it plays on: the new rules accept it.
     const made = act(r.state, { t: 'create', name: 'Sam', start: 'boulderer' });
@@ -105,7 +109,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(2);
-    expect(r.state).toEqual({ ...JSON.parse(V2).state, ...R2_BODY, ...P10 });
+    expect(r.state).toEqual({ ...JSON.parse(V2).state, ...R2_BODY, ...P10, ...P21 });
     expect(act(r.state, { t: 'travel', to: 'lot' }).events.some((e) => e.k === 'refused')).toBe(false);
   });
 
@@ -114,8 +118,17 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(3);
-    expect(r.state).toEqual({ ...JSON.parse(V3).state, ...P10 });
+    expect(r.state).toEqual({ ...JSON.parse(V3).state, ...P10, ...P21 });
     expect(act(r.state, { t: 'travel', to: 'road' }).events.some((e) => e.k === 'refused')).toBe(false);
+  });
+
+  it('load a real 0.961.0 save: everything kept, and the kit you drove out with', () => {
+    const r = fromSave(V4);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(4);
+    expect(r.state).toEqual({ ...JSON.parse(V4).state, ...P21 });
+    expect(act(r.state, { t: 'travel', to: 'lot' }).events.some((e) => e.k === 'refused')).toBe(false);
   });
 
   // These pretend a longer history: a v1 file that stored `money` where the state now has
@@ -125,7 +138,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(4);
+    expect(SAVE_VERSION).toBe(5);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

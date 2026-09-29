@@ -818,6 +818,9 @@ button.pill:disabled {
   text-align: right;
   font-weight: 600;
 }
+.skills i.none {
+  visibility: hidden;
+}
 .skills i.hot::after {
   background: var(--u-acc);
 }

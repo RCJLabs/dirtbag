@@ -13,6 +13,7 @@ import { margin, pumpFactor, windowFactor } from './climber';
 import { effGrade, PUMPED, type BetaDef, type CruxDef, type RouteDef, type Verb } from './content/routes';
 import { cold } from './body';
 import { BODY, CLIMB, LOAD } from './dials';
+import { kitFactor } from './kit';
 import type { GameState, GoResult } from './types';
 import { conditionsAt, sunOn } from './weather';
 
@@ -128,7 +129,11 @@ export function dayFactor(s: GameState, r: RouteDef): { windows: number; grease:
 export function betaScale(s: GameState, r: RouteDef, beta: string): number {
   const b = r.beta[beta];
   if (!b) return 1;
-  return windowFactor(margin(s.climber.skills, b.style, effGrade(r))) * dayFactor(s, r).windows;
+  return (
+    windowFactor(margin(s.climber.skills, b.style, effGrade(r))) *
+    dayFactor(s, r).windows *
+    kitFactor(s, b.style)
+  );
 }
 
 // How fast you move through a line: your level in its style against its grade.

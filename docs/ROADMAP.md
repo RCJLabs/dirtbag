@@ -1402,6 +1402,15 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 **Depends on:** Phases 9–11 (on the rebuild). **Effort:** ~8–12 weeks [INFERRED]; 21.4's crags are most of it (a scene and a topo each). **Main risk:** content volume. Each crag goes through the checklist in `app/README.md`.
 
+**Status (29 Sep 2026): 21.1 built.** Evan's calls: every climber starts with worn shoes and half a bag of chalk; a sport go still borrows the belayer's rope; the kit is sold at a new gear shop in town; wear shows on the You page and the beta sheet.
+- **The kit** (`sim/content/gear.ts`, `sim/kit.ts`, numbers in `KIT`): shoes that wear by the go and the grade, chalk by the block, tape for cracks, and a second pad. The rack, the rope and the hangboard come with the slices that use them (21.2, 21.3, 21.5), so nothing is sold before it does anything.
+- **What it does to a go:** worn shoes make every crux 5% tighter and blown ones 13%, twice that on technical lines, and an empty chalk bag 5% more. It goes through the same factor as your skills and the day, so the beta sheet's window bars show it. Tape takes half the skin a crack costs, pulling on included. A second pad halves a highball's landing, as Moonstone's haul does.
+- **The gear shop** (a card-only place a block from the café, with its own front and ambience): a resole when the rubber needs it, new shoes, chalk, tape, a pad; on weekends the swap meet sells used shoes and pads at 55%. It went through "Adding a place", and the tests named each missing piece until it was done.
+- **Save v5,** migrated from a real 0.961.0 save (v4): climbers already out here get the starting kit.
+- **The bots** stop at the shop for a resole and chalk when they can afford it. Phase 6's four targets still pass; the runway medians fell a little (days 14–28: 2.0, 2.0, 2.6 days, from 2.3, 2.5, 3.4), which is the kit costing something.
+- **The e2e** drives from the café to the shop on day five, buys chalk and reads the kit on the You page. Day three's taps and day four's plan don't move.
+- **Not in yet:** the rope, the rack and the hangboard (their slices); gear for trad (21.2).
+
 ---
 
 ### Phase 22 — The life: the van, the body, food, the hustle, and the games
@@ -1754,3 +1763,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 13 closed by Evan's call: criteria 1–3 met, criterion 4 carried with the parked music decision. CURRENT MILESTONE moved to Phase 14, the desktop and Steam build.
 - 2026-09-29 — Evan's call: finish building the game before the Steam build and the demo. Phases 14 and 15 (Stage D) move after Phase 18, keeping their numbers; the order is now 16, 17, 18, 14, 15, 19, 20. CURRENT MILESTONE moved to Phase 16, the spine: story, acts and endings.
 - 2026-09-29 — A gap check of v0.956 against the rebuild and the phases left found systems nothing covered. Evan's calls: three phases added before Phase 16, numbered 21 (the climber: gear, trad, training, crags past Act I, walls and expeditions), 22 (the life: van, body, food, the hustle, events, and the games) and 23 (who you are: origins, paths, stances, the Record Book); and blackjack, hold'em, liar's dice, horseshoes and busking come back from the cut list (trivia and a garden maybe). The order is now 21, 22, 23, 16, 17, 18, 14, 15, 19, 20. CURRENT MILESTONE moved to Phase 21.
+- 2026-09-29 — Phase 21.1: your kit. Shoes that wear, chalk, tape and a second pad; worn kit tightens every crux through the same factor the beta sheet shows; a gear shop in town with resoles and a weekend swap meet; save v5 from a real 0.961.0 save; bots keep their kit up and Phase 6's targets still pass.

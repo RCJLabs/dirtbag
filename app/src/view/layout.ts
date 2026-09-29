@@ -320,6 +320,8 @@ export const MAP_PINS: Record<string, Pin> = {
   diner: { x: 96, y: 458, side: 1, kind: 'town' },
   gym: { x: 282, y: 414, side: -1, kind: 'town' },
   cafe: { x: 282, y: 476, side: -1, kind: 'town' },
+  // The gear shop: on the highway into Midtown, a block short of the café.
+  shop: { x: 240, y: 540, side: 1, kind: 'town' },
   road: { x: 292, y: 220, side: -1, kind: 'crag' },
   gorge: { x: 96, y: 150, side: 1, kind: 'crag', dy: -16 },
   // Out of the valley where the highway leaves it, north past Roadside.

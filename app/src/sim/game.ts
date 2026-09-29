@@ -19,6 +19,8 @@ import { ACTS, PLACES, road, TEXT_VALUES, type ActDef } from './content/places';
 import { DOG_LINES, DOG_OFFER } from './content/dog';
 import { PEOPLE, RACE_ROUTE, RIVAL_FA_NAMES, TALK } from './content/people';
 import { ACT_I_END } from './content/story';
+import { START_KIT } from './content/gear';
+import { has, tapedSkin, wearKit } from './kit';
 import { SEND_NAME, effGrade, gradeLabel, gradeName, type RouteDef } from './content/routes';
 import { BODY, CLIMB, DAY, DOG, HIGHBALL, INJURY, LOAD, MONEY, RIVAL } from './dials';
 import { fill, money, skillsNote } from './format';
@@ -67,6 +69,7 @@ export function newGame(seed: string): GameState {
     dog: null,
     goals: 0,
     unlocked: [],
+    gear: { ...START_KIT },
     log: [],
   };
 }
@@ -100,10 +103,12 @@ export const routeOfId = (s: GameState, id: string): RouteDef | undefined => rou
 // ---- queries the UI shares with the rules, so a button never offers what act() refuses ----
 
 // What one go on this line costs you.
-export function goCost(r: RouteDef): Required<Pick<Delta, 'min' | 'energy' | 'fed' | 'skin'>> {
+// What a go costs you. Given your state, tape on a crack takes its share off the skin.
+export function goCost(r: RouteDef, s?: GameState): Required<Pick<Delta, 'min' | 'energy' | 'fed' | 'skin'>> {
   const kind = r.place === 'gym' ? 'gym' : r.disc;
   const c = CLIMB.go[kind];
-  const skin = Math.round(CLIMB.skin[r.type] * (r.place === 'gym' ? 1 : CLIMB.rockSkin));
+  const bare = CLIMB.skin[r.type] * (r.place === 'gym' ? 1 : CLIMB.rockSkin);
+  const skin = Math.round(s ? tapedSkin(s, r, bare) : bare);
   return { min: c.min, energy: -c.energy, fed: -c.fed, skin: -skin };
 }
 
@@ -128,8 +133,9 @@ export function belayer(s: GameState): string | null {
 
 // ---- highballs [proposed] ----
 
-// Whether the pads you own are more than the one every boulderer has: the Moonstone haul's.
-export const morePads = (s: GameState): boolean => s.unlocked.some((id) => PLACES[id]?.pads);
+// Whether the pads you own are more than the one every boulderer has: the Moonstone haul's,
+// or one you bought.
+export const morePads = (s: GameState): boolean => has(s, 'pad') || s.unlocked.some((id) => PLACES[id]?.pads);
 
 // How far you'd fall from `moves` up a boulder, in feet.
 export const fallFt = (r: RouteDef, moves: number): number =>
@@ -388,6 +394,7 @@ export function act(s0: GameState, a: Action): Result {
     if (d.dog?.adopt) s.dog = { name: 'Scout', since: s.day, fed: 60, bond: 0 };
     if (s.dog && d.dog?.fill) s.dog.fed = 100;
     if (s.dog && d.dog?.bond) s.dog.bond = Math.min(100, s.dog.bond + d.dog.bond);
+    if (d.gear) s.gear[d.gear.id] = d.gear.set ?? (s.gear[d.gear.id] ?? 0) + (d.gear.add ?? 0);
     if (d.says) line(d.says);
     if (d.saysOneOf) line(ofDay(s, id, d.saysOneOf));
     return null;
@@ -568,7 +575,7 @@ export function act(s0: GameState, a: Action): Result {
       if (!r || r.place !== s.at) return refuse("That line isn't here.");
       const why = goBlocked(s, r);
       if (why) return refuse(`${why}.`);
-      spend(goCost(r));
+      spend(goCost(r, s));
       const L = logOf(s, a.route);
       L.goes += 1;
       L.goesToday += 1;
@@ -620,7 +627,8 @@ export function act(s0: GameState, a: Action): Result {
       const landed = strain || res.sent ? null : rollLanding(s, r, res.hi, goN);
       const hurt = strain ?? landed;
       if (!s.today.includes('warm')) s.today.push('warm');
-      s.skin = clamp100(s.skin - Math.max(0, res.skin));
+      s.skin = clamp100(s.skin - Math.max(0, tapedSkin(s, r, res.skin)));
+      for (const l of wearKit(s, r)) line(l);
       L.hi = Math.max(L.hi, Math.min(r.moves, Math.max(0, Math.floor(res.hi))));
       if (res.sent) {
         // The log keeps how the first send went; any send after it is a repeat.

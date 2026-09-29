@@ -18,7 +18,7 @@ import { routesAt } from './content/gym';
 import { ACTS, PLACES, road } from './content/places';
 import { TALK } from './content/people';
 import type { RouteDef } from './content/routes';
-import { BODY, CLIMB, LOAD, MONEY } from './dials';
+import { BODY, CLIMB, KIT, LOAD, MONEY } from './dials';
 import { cold, freshLoad, ratio } from './body';
 import { gradeOf, average } from './climber';
 import { act, faSuggestions, goBlocked, knowsBeta, landingChance, newGame, talkStart } from './game';
@@ -267,6 +267,17 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     workMin += s.min - t;
   }
 
+  // Keeps the kit up, as a careful player would once the shop's line tells them: a resole
+  // when the rubber's going and there's money for it past the cushion, chalk when it's low.
+  function kit() {
+    const resole = (s.gear.shoes ?? 0) < KIT.shoes.worn + 5 && s.cash >= KIT.shoes.resole + CUSHION[strategy];
+    const chalk = (s.gear.chalk ?? 0) < 5 && s.cash >= KIT.chalk.price;
+    if (!resole && !chalk) return;
+    travel('shop');
+    if (resole) tryAct('shop.resole');
+    if (chalk) tryAct('shop.chalk');
+  }
+
   // Talks to Sage when she's here: her lesson once a day, and whatever beat of her arc is
   // due (the first answer, like a player who doesn't read).
   function maybeSage() {
@@ -363,6 +374,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     travel('lot');
     if (s.fed < 70) tryAct('lot.cook');
     work();
+    kit();
     // The crag when it's dry and there's something there to try; the gym otherwise.
     // Roadside first, the Gorge once it's open to you and there's nothing new at Roadside,
     // the gym when the rock's wet or done.

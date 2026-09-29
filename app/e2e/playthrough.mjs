@@ -290,7 +290,7 @@ async function walk(dx) {
 // ---- trips ----
 
 // Where the map's pins are, on the game screen (view/layout.ts, MAP_PINS).
-const PIN = { lot: [262, 612], diner: [96, 458], gym: [282, 414], cafe: [282, 476] };
+const PIN = { lot: [262, 612], diner: [96, 458], gym: [282, 414], cafe: [282, 476], shop: [240, 540] };
 const trips = [];
 
 // A trip from a scene: the map, the pin, the drive. Phase 11 holds every trip to two taps
@@ -659,8 +659,9 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 4 ||
+  saved?.v !== 5 ||
   st.seed !== SEED ||
+  !(st.gear?.shoes > 0 && st.gear.shoes < 60) ||
   st.climber?.name !== 'Robin' ||
   st.climber.start !== 'technician' ||
   !st.routes.warm?.sent ||
@@ -777,16 +778,31 @@ await expectText('#plan-chip', /Plan stopped.*Shifts start by 3 PM/, 'the plan s
 await shot('plan-stopped');
 await click('#plan-chip .plan-x');
 
+console.log('The gear shop');
+// Phase 21.1: the shop has a front, sells a block of chalk, and the kit shows on the You
+// page: the shoes you drove out in, and the chalk.
+await expectText('#sheet', /Drive to The Gear Shop/, 'the café’s card');
+await driveOn('the café to the gear shop', 'Drive to The Gear Shop');
+await header('the shop’s front');
+await expectText('#sheet', /A block of chalk/, 'at the shop');
+const before = await text('#h-cash');
+await click('#sheet .opt', 'A block of chalk');
+await expectText('#toast', /You crush half of it/, 'chalk bought');
+log(`cash ${before} → ${await text('#h-cash')}`);
+await shot('gear-shop');
+await click('#h-you');
+await expectText('#kit', /Shoes.*Chalk\d+ left/, 'the kit');
+
 console.log('What it sounded like');
 log(`heard: ${[...heard].sort().join(', ')}`);
 log(`ambience: ${[...beds].sort().join(', ')}`);
 // The places the five days go; beds.test.ts holds the Gorge and Moonstone to theirs.
-const quiet = ['cafe', 'diner', 'gym', 'lot', 'map', 'road'].filter((b) => !beds.has(b));
+const quiet = ['cafe', 'diner', 'gym', 'lot', 'map', 'road', 'shop'].filter((b) => !beds.has(b));
 if (quiet.length) await fail(`no ambience at: ${quiet.join(', ')}`);
-// Everything the five days do. Paying, Scout and a hold-to-load's charge and throw aren't
-// in them; cues.test.ts holds those to having a sound.
+// Everything the five days do. Scout and a hold-to-load's charge and throw aren't in them;
+// cues.test.ts holds those to having a sound.
 const HEARD =
-  'breath cleared clip crux drive earn eat fell grip land move paper pullon rest send slap sleep step talk tap';
+  'breath cleared clip crux drive earn eat fell grip land move paper pay pullon rest send slap sleep step talk tap';
 const silent = HEARD.split(' ').filter((c) => !heard.has(c));
 if (silent.length) await fail(`never heard: ${silent.join(', ')}`);
 

@@ -38,7 +38,14 @@ export interface Cond {
   dog?: boolean; // you have a dog
   dogOffer?: boolean; // Scout's ready to pick you
   dogFedBelow?: number; // your dog's food is under this
+  has?: string; // you own this gear (content/gear.ts), with some left
+  hasNot?: string; // you don't
+  gearBelow?: string; // "id/n": that gear's condition or uses are under n
+  weekend?: boolean; // true: only on a weekend (the swap meet); false: only on a weekday
 }
+
+// The last two days of every seven are the weekend: the week's bills land on its last night.
+export const isWeekend = (day: number): boolean => day % 7 === 6 || day % 7 === 0;
 
 // How many grades you climb above someone today (negative when they're ahead).
 export function leadOver(s: GameState, who: string): number {
@@ -107,6 +114,13 @@ export function holds(s: GameState, c: Cond): boolean {
   if (c.dog !== undefined && !!s.dog !== c.dog) return false;
   if (c.dogOffer !== undefined && dogOffered(s) !== c.dogOffer) return false;
   if (c.dogFedBelow !== undefined && !(s.dog && s.dog.fed < c.dogFedBelow)) return false;
+  if (c.has !== undefined && !((s.gear[c.has] ?? 0) > 0)) return false;
+  if (c.hasNot !== undefined && (s.gear[c.hasNot] ?? 0) > 0) return false;
+  if (c.gearBelow !== undefined) {
+    const [id, n] = ref(c.gearBelow);
+    if (!((s.gear[id] ?? 0) < n)) return false;
+  }
+  if (c.weekend !== undefined && isWeekend(s.day) !== c.weekend) return false;
   return true;
 }
 
