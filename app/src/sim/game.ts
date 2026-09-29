@@ -7,19 +7,36 @@ import { CARRIED, carried, gains, gradeOf, STARTS, type GoSummary } from './clim
 import { headroom, holds, leadOver, unmet } from './cond';
 import { dexHurt, dexSeason, gradeOfPerson } from './curves';
 import { routeById, routesAt } from './content/gym';
-import { CLINIC_LINE, FIRST_FREE_LINE, HEALED_LINE, HURT_LINE } from './content/injuries';
-import { ACTS, PLACES, road, TEXT_VALUES } from './content/places';
+import {
+  CLINIC_LINE,
+  FIRST_FREE_LINE,
+  HEALED_LINE,
+  HURT_LINE,
+  LANDING_LINE,
+  LANDING_NAME,
+} from './content/injuries';
+import { ACTS, PLACES, road, TEXT_VALUES, type ActDef } from './content/places';
 import { DOG_LINES, DOG_OFFER } from './content/dog';
 import { PEOPLE, RACE_ROUTE, RIVAL_FA_NAMES, TALK } from './content/people';
 import { ACT_I_END } from './content/story';
 import { SEND_NAME, effGrade, gradeLabel, gradeName, type RouteDef } from './content/routes';
-import { BODY, CLIMB, DAY, DOG, INJURY, LOAD, MONEY, RIVAL } from './dials';
+import { BODY, CLIMB, DAY, DOG, HIGHBALL, INJURY, LOAD, MONEY, RIVAL } from './dials';
 import { fill, money, skillsNote } from './format';
 import { PARTNERS, tierOf, whereNow } from './presence';
-import { hashSeed } from './rng';
+import { hashSeed, Rng } from './rng';
 import { aimMet, currentGoal } from './story';
-import type { Action, Delta, GameEvent, GameState, Result, RouteLog, SendStyle, Skills } from './types';
-import { conditionsAt, seasonOf } from './weather';
+import type {
+  Action,
+  Delta,
+  GameEvent,
+  GameState,
+  Injury,
+  Result,
+  RouteLog,
+  SendStyle,
+  Skills,
+} from './types';
+import { conditionsAt, seasonOf, sunOn } from './weather';
 
 // The message log keeps this many lines; older ones fall off the front.
 export const LOG_MAX = 200;
@@ -48,6 +65,7 @@ export function newGame(seed: string): GameState {
     trips: 0,
     dog: null,
     goals: 0,
+    unlocked: [],
     log: [],
   };
 }
@@ -90,10 +108,52 @@ export function goCost(r: RouteDef): Required<Pick<Delta, 'min' | 'energy' | 'fe
 
 export const restCost = (r: RouteDef): number => CLIMB.restMin[r.disc];
 
+// What an act costs you now. One that runs till a time of day costs its hourly rate for
+// every hour it takes.
+export function actCost(s: GameState, d: ActDef): Delta {
+  if (d.until === undefined) return d.cost;
+  const min = Math.max(0, d.until - s.min);
+  const out: Delta = { min };
+  for (const k of ['cash', 'energy', 'skin', 'fed'] as const)
+    if (d.cost[k]) out[k] = Math.round((d.cost[k] * min) / 60);
+  return out;
+}
+
 // Who'd belay you on a rope here, now.
 export function belayer(s: GameState): string | null {
   for (const who of PARTNERS) if (whereNow(s, who) === s.at) return who;
   return null;
+}
+
+// ---- highballs [proposed] ----
+
+// Whether the pads you own are more than the one every boulderer has: the Moonstone haul's.
+export const morePads = (s: GameState): boolean => s.unlocked.some((id) => PLACES[id]?.pads);
+
+// How far you'd fall from `moves` up a boulder, in feet.
+export const fallFt = (r: RouteDef, moves: number): number =>
+  r.heightFt * Math.min(1, Math.max(0, moves) / (r.moves || 1));
+
+// The chance a fall from `moves` up a highball lands you badly: nothing up to the safe
+// height, then more with every foot, less with the haul's pads and a partner spotting.
+export function landingChance(s: GameState, r: RouteDef, moves: number): number {
+  if (!r.highball) return 0;
+  const over = fallFt(r, moves) - HIGHBALL.safeFt;
+  if (over <= 0) return 0;
+  return HIGHBALL.perFoot * over * (morePads(s) ? HIGHBALL.pads : 1) * (belayer(s) ? HIGHBALL.spotter : 1);
+}
+
+// Rolls a fall's landing. `n` numbers the go within the day, as the injury roll does, on its
+// own label so the two never share a draw.
+export function rollLanding(s: GameState, r: RouteDef, moves: number, n: number): Injury | null {
+  const p = landingChance(s, r, moves);
+  if (p <= 0) return null;
+  const rng = Rng.fromStream(s.seed, 'session').derive(`landing-${s.day}-${n}`);
+  if (rng.next() >= p) return null;
+  const over = fallFt(r, moves) - HIGHBALL.safeFt;
+  const tier: 1 | 2 | 3 = over >= HIGHBALL.tier3 ? 3 : over >= HIGHBALL.tier2 ? 2 : 1;
+  const [lo, hi] = INJURY.days[tier - 1]!;
+  return { kind: LANDING_NAME[tier - 1]!, tier, until: s.day + 1 + rng.int(lo, hi) };
 }
 
 // A pick from a list that holds for the day: the same line if you ask twice.
@@ -321,7 +381,7 @@ export function act(s0: GameState, a: Action): Result {
       sleep();
       return null;
     }
-    spend(d.cost);
+    spend(actCost(s, d));
     for (const f of d.sets ?? []) if (!s.today.includes(f)) s.today.push(f);
     if (d.trains) train(d.trains);
     if (d.dog?.adopt) s.dog = { name: 'Scout', since: s.day, fed: 60, bond: 0 };
@@ -449,7 +509,14 @@ export function act(s0: GameState, a: Action): Result {
       if (!r || !to) return refuse("There's no road there.");
       if (to.minGrade !== undefined && gradeOf(s.climber.skills) < to.minGrade)
         return refuse(`${to.name}: ${to.locked ?? 'not yet.'}`);
-      // A maxed-out card never strands you: you drive on what's in the tank.
+      if (to.unlock && !s.unlocked.includes(a.to))
+        return refuse(`${to.name} is a trip you haven't paid for yet: ${money(to.unlock)}, once.`);
+      // A maxed-out card never strands you: you drive on what's in the tank. A permit isn't
+      // gas: the ranger doesn't take fumes.
+      const permit = to.permit ?? 0;
+      if (permit && headroom(s) < permit)
+        return refuse(`${to.name} needs a ${money(permit)} permit, and the card won't cover it.`);
+      spend({ cash: -permit });
       const declined = r.cash > 0 && headroom(s) < r.cash;
       spend({ min: r.min, cash: declined ? 0 : -r.cash, energy: r.min >= 30 ? -BODY.driveEnergy : 0 });
       s.at = a.to;
@@ -457,6 +524,7 @@ export function act(s0: GameState, a: Action): Result {
       if (declined) line("The card's declined at the pump. You make it on fumes.");
       else if (r.cash >= 12) line(`Gas, ${money(r.cash)}. The van starts on the second try.`);
       else if (r.cash > 0) line(`Gas, ${money(r.cash)}.`);
+      if (permit) line(`Permit, ${money(permit)}. The ranger doesn't look up.`);
       // Every drive with Scout is a ride-along; out at the crag he gets up to something.
       if (s.dog) s.dog.bond = Math.min(100, s.dog.bond + DOG.rideBond);
       if (to.crag) {
@@ -467,6 +535,20 @@ export function act(s0: GameState, a: Action): Result {
           line(dogLine(s, 'crag')!);
         }
       }
+      break;
+    }
+
+    // A trip you pay for once (v0.956's road-trip unlock): cash in hand, not the card.
+    case 'unlock': {
+      const p = PLACES[a.place];
+      if (!p?.unlock) return refuse("There's nothing to pay for there.");
+      if (s.unlocked.includes(a.place)) return refuse(`${p.name} is already yours.`);
+      if (p.minGrade !== undefined && gradeOf(s.climber.skills) < p.minGrade)
+        return refuse(`${p.name}: ${p.locked ?? 'not yet.'}`);
+      if (s.cash < p.unlock) return refuse(`${p.name} runs ${money(p.unlock)}, in hand. Keep saving.`);
+      spend({ cash: -p.unlock });
+      s.unlocked.push(a.place);
+      line(`Pads, water jugs and a guidebook, ${money(p.unlock)}. ${p.name} is on your map for good.`);
       break;
     }
 
@@ -493,20 +575,18 @@ export function act(s0: GameState, a: Action): Result {
       const who = r.disc === 'sport' ? belayer(s) : null;
       if (who) climbedWith(who);
       for (const w of PARTNERS) if (w !== who && s.people[w] && whereNow(s, w) === s.at) climbedWith(w);
-      // A sandbag shows itself on your first go.
+      // A sandbag shows itself on your first go; on the board, everyone saw it coming.
       if (L.goes === 1 && r.trueGrade !== undefined && r.trueGrade !== r.grade)
         line(
-          r.trueGrade > r.grade
-            ? `That's no ${gradeLabel(r)}. Locals have been sandbagging it.`
-            : `That's no ${gradeLabel(r)}. It's soft, and you're not complaining.`,
+          r.board
+            ? `Board grades: that's no ${gradeLabel(r)}. Nobody on the mats is surprised.`
+            : r.trueGrade > r.grade
+              ? `That's no ${gradeLabel(r)}. Locals have been sandbagging it.`
+              : `That's no ${gradeLabel(r)}. It's soft, and you're not complaining.`,
         );
-      if (
-        r.place !== 'gym' &&
-        s.min >= conditionsAt(s.seed, s.day, r.place).greaseFrom &&
-        !s.today.includes('grease')
-      ) {
+      if (r.place !== 'gym' && s.min >= sunOn(s.seed, s.day, r.place, r.id) && !s.today.includes('grease')) {
         s.today.push('grease');
-        line("Sun's on the wall. Everything feels greasy.");
+        line("Sun's on this line now. Everything feels greasy.");
       }
       break;
     }
@@ -534,7 +614,10 @@ export function act(s0: GameState, a: Action): Result {
       );
       s.load.today = round2(s.load.today + load);
       const goN = Object.values(s.routes).reduce((t, x) => t + x.goesToday, 0);
-      const hurt = rollInjury(s, r, load, wasCold, goN);
+      // Overuse first; failing that, a fall off a highball can land you badly.
+      const strain = rollInjury(s, r, load, wasCold, goN);
+      const landed = strain || res.sent ? null : rollLanding(s, r, res.hi, goN);
+      const hurt = strain ?? landed;
       if (!s.today.includes('warm')) s.today.push('warm');
       s.skin = clamp100(s.skin - Math.max(0, res.skin));
       L.hi = Math.max(L.hi, Math.min(r.moves, Math.max(0, Math.floor(res.hi))));
@@ -590,7 +673,7 @@ export function act(s0: GameState, a: Action): Result {
         s.injury = hurt;
         const days = hurt.until - s.day - 1;
         const kind = hurt.kind;
-        const text = fill(HURT_LINE[hurt.tier - 1]!, {
+        const text = fill((landed ? LANDING_LINE : HURT_LINE)[hurt.tier - 1]!, {
           route: r.name,
           kind,
           Kind: kind[0]!.toUpperCase() + kind.slice(1),

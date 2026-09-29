@@ -23,6 +23,14 @@ export const INJURY_NAME: Record<Area, [string, string, string]> = {
   leg: ['tight hamstring', 'tweaked knee', 'meniscus tear'],
 };
 
+// A bad landing off a highball, tier 1, 2, 3: v0.956's ankle names.
+export const LANDING_NAME: [string, string, string] = ['jammed ankle', 'rolled ankle', 'broken ankle'];
+export const LANDING_LINE: [string, string, string] = [
+  'You come off high on {route} and land half on the pad. A {kind}: {days} days off.',
+  'Off the top of {route}, and the pad isn’t where you land. {Kind}. {days} days off, and a clinic visit.',
+  'A long way down off {route}, and nothing soft at the bottom. {Kind}. {days} days, and the clinic isn’t cheap.',
+];
+
 // Said when it happens: {route}, {kind} (capitalised at the start of a sentence as {Kind}),
 // {days}. And when it's healed.
 export const HURT_LINE: [string, string, string] = [

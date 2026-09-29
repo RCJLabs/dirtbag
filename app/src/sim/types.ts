@@ -54,6 +54,8 @@ export interface GameState {
   dog: DogLog | null;
   // Act I's goals done, in order.
   goals: number;
+  // Trips you've paid to open for good, by place id (v0.956's unlocked): Moonstone's haul.
+  unlocked: string[];
   // The message log: every line the game has told you, newest last.
   log: LogLine[];
 }
@@ -155,6 +157,7 @@ export type Action =
   | { t: 'act'; act: string }
   | { t: 'say'; talk: string; node: string; opt: number }
   | { t: 'travel'; to: string }
+  | { t: 'unlock'; place: string }
   | { t: 'stand'; x: number }
   | { t: 'pick'; route: string; crux: string; beta: string }
   | { t: 'go'; route: string }

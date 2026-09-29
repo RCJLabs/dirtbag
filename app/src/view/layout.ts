@@ -19,7 +19,7 @@ export const VW = W / Z;
 // What tapping a thing in a scene does. A gym problem is named by its place on the wall,
 // since the set (and so its id) changes every week.
 export type Use =
-  | { sheet: 'van' | 'cragVan' | 'desk' }
+  | { sheet: 'van' | 'cragVan' | 'desk' | 'board' }
   | { talk: string }
   | { thing: string; wag?: true }
   | { route: string }
@@ -43,6 +43,9 @@ export interface SceneLayout {
   spawn: number;
   hint: string;
   hots: Hot[];
+  // Where the place card's header looks: the middle of what it shows, where the people
+  // who'd be there stand.
+  frame: number;
 }
 
 // A crag, side on: its wall (from its foot on the left to where it ends, which may be off
@@ -56,6 +59,8 @@ export interface CragSpec {
   // Where the crag's sign stands.
   sign: number;
   hint: string;
+  // The middle of its place card's header.
+  frame: number;
 }
 
 export const CRAGS: Record<string, CragSpec> = {
@@ -81,6 +86,8 @@ export const CRAGS: Record<string, CragSpec> = {
     ],
     sign: 272,
     hint: 'Boulders on the talus, ropes on the wall',
+    // The belay under The Pump, Sage by the Testpiece and Dex in the boulder field.
+    frame: 930,
   },
   // The Gorge: granite in the shade, three bolted lines up the canyon wall, boulders on
   // its floor either side.
@@ -102,12 +109,41 @@ export const CRAGS: Record<string, CragSpec> = {
     ],
     sign: 272,
     hint: 'The canyon floor’s all boulders. The bolts need a belayer.',
+    // Sage on belay under the first line, and the classic.
+    frame: 760,
+  },
+  // Moonstone: sand, sky and quartzite boulders the size of houses, and a spire in the
+  // middle with two bolted lines on it.
+  moon: {
+    width: 1400,
+    wall: [620, 1040],
+    lines: [
+      { n: 1, x: 680, route: 'mspire' },
+      { n: 2, x: 750, route: 'mmoon' },
+    ],
+    boulders: [
+      { x: 380, w: 92, h: 150, route: 'marete' },
+      { x: 500, w: 80, h: 90, route: 'mmantel' },
+      { x: 590, w: 70, h: 84, route: 'megg' },
+      { x: 850, w: 84, h: 104, route: 'mhueco' },
+      { x: 970, w: 96, h: 132, route: 'msplitter' },
+      { x: 1110, w: 116, h: 78, route: 'mroof' },
+      { x: 1262, w: 104, h: 150, route: 'mopen' },
+    ],
+    sign: 272,
+    hint: 'Highballs on the sand. The spire needs a belayer.',
+    // The spire, with a highball either side.
+    frame: 760,
   },
 };
 
-// Send City: the desk by the door, then six problems along the wall, V0 to V5.
+// Send City: the desk by the door, then six problems along the wall, V0 to V5, and past the
+// end of the wall the board, where the hard problems live.
 export const DESK_X = 170;
 export const PROBLEM_X = [384, 474, 564, 654, 744, 834];
+export const BOARD_X0 = 990;
+export const BOARD_X1 = 1190;
+export const GYM_W = 1250;
 
 const wallHot = (x: number, use: Use, half = 26, y0 = 110): Hot => ({
   x0: x - half,
@@ -126,6 +162,7 @@ function cragScene(place: string, c: CragSpec): SceneLayout {
     width: c.width,
     spawn: 180,
     hint: c.hint,
+    frame: c.frame,
     hots: [
       { x0: 34, x1: 234, y0: 440, y1: GND + 8, stand: 196, face: -1, use: { sheet: 'cragVan' } },
       // Boulders first: they stand in front of the wall, so a tap on one is for it.
@@ -144,6 +181,8 @@ export const SCENES: Record<string, SceneLayout> = {
     width: WW,
     spawn: 300,
     hint: 'Tap anywhere to walk',
+    // The van, the fire and whoever's at it.
+    frame: 440,
     hots: [
       { x0: 112, x1: 330, y0: 430, y1: GND + 8, stand: 300, face: -1, use: { sheet: 'van' } },
       { x0: 494, x1: 546, y0: GND - 44, y1: GND + 12, stand: 500, face: 1, use: { thing: 'fire' } },
@@ -161,11 +200,14 @@ export const SCENES: Record<string, SceneLayout> = {
   },
   crag: cragScene('road', CRAGS.crag!),
   gorge: cragScene('gorge', CRAGS.gorge!),
+  moon: cragScene('moon', CRAGS.moon!),
   gym: {
     place: 'gym',
-    width: WW,
+    width: GYM_W,
     spawn: 70,
     hint: 'Day pass at the desk. New problems every week.',
+    // The desk, Sage's corner and the wall.
+    frame: 470,
     hots: [
       {
         x0: DESK_X - 56,
@@ -177,6 +219,16 @@ export const SCENES: Record<string, SceneLayout> = {
         use: { sheet: 'desk' },
       },
       ...PROBLEM_X.map((x, n) => wallHot(x, { problem: n }, 34, GND - 210)),
+      // The board lists its problems: pick one and it lights up.
+      {
+        x0: BOARD_X0,
+        x1: BOARD_X1,
+        y0: GND - 220,
+        y1: GND + 8,
+        stand: (BOARD_X0 + BOARD_X1) / 2 - 40,
+        face: 1,
+        use: { sheet: 'board' },
+      },
     ],
   },
 };
@@ -208,6 +260,8 @@ export const SPOTS: Record<string, Spot[]> = {
     { who: 'sage', x: 610, face: -1, pose: 'belay', talk: 'sage' },
     { who: 'dex', x: 1236, face: -1, pose: 'stand', talk: 'dex' },
   ],
+  // Nobody's day brings them out here, but Dex stays wherever he first saw you send a V4.
+  moon: [{ who: 'dex', x: 1190, face: -1, pose: 'stand', talk: 'dex' }],
 };
 
 // Who's in a scene right now: the people whose day puts them at its place.
@@ -252,6 +306,8 @@ export const MAP_PINS: Record<string, Pin> = {
   cafe: { x: 282, y: 476, side: -1, kind: 'town' },
   road: { x: 292, y: 220, side: -1, kind: 'crag' },
   gorge: { x: 96, y: 150, side: 1, kind: 'crag', dy: -16 },
+  // Out of the valley where the highway leaves it, north past Roadside.
+  moon: { x: 336, y: 100, side: -1, kind: 'crag' },
 };
 export const DIM_PINS: [number, number][] = [
   [266, 334],

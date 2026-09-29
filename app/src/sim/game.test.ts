@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { gains, gradeOf, needFor, STARTS } from './climber';
 import { gymSet } from './content/gym';
+import { ACTS } from './content/places';
 import { ROUTES } from './content/routes';
 import { BODY, CLIMB, DAY, MONEY } from './dials';
-import { act, goBlocked, goCost, lessonAt, LOG_MAX, NAME_MAX, newGame, talkStart } from './game';
+import { act, actCost, goBlocked, goCost, lessonAt, LOG_MAX, NAME_MAX, newGame, talkStart } from './game';
 import type { Action, GameEvent, GameState, GoResult } from './types';
-import { skyOn } from './weather';
+import { skyOn, sunOn } from './weather';
 
 const lines = (ev: GameEvent[]) => ev.flatMap((e) => (e.k === 'line' ? [e.text] : []));
 const refusal = (ev: GameEvent[]) => ev.find((e) => e.k === 'refused');
@@ -122,7 +123,7 @@ describe('the day', () => {
       k: 'refused',
       why: "Not yet. The day's still going.",
     });
-    const evening = at(s, 'lot', DAY.bedFrom);
+    const evening = at(s, 'lot', DAY.nightFrom);
     const tired = { ...evening, energy: 40, skin: 30, fed: 60, cash: 10, today: ['coffee'] };
     tired.routes = { pump: { ...emptyRoute(), goesToday: 3, sentToday: true } };
     const slept = play(tired, { t: 'act', act: 'lot.sleep' });
@@ -140,8 +141,33 @@ describe('the day', () => {
     expect(lines(slept.events)).toEqual([`Van spot, $${MONEY.vanSpot}. You're $8 in the hole.`]);
   });
 
+  it('lies around till dark in one tap, at the hourly rate, and turns in from dark', () => {
+    // Back from the crag at 1:13 PM, the day done.
+    const back = { ...at(newGame('t'), 'lot', 13 * 60 + 13), energy: 50 };
+    const rest = ACTS['lot.rest']!;
+    const hours = (DAY.nightFrom - back.min) / 60;
+    expect(actCost(back, rest)).toEqual({
+      min: DAY.nightFrom - back.min,
+      energy: Math.round(rest.cost.energy! * hours),
+    });
+    const lay = play(back, { t: 'act', act: 'lot.rest' });
+    expect(lay.state).toMatchObject({
+      min: DAY.nightFrom,
+      energy: 50 + Math.round(rest.cost.energy! * hours),
+    });
+    expect(lines(lay.events)).toEqual([rest.says]);
+    // Dark: the fire's lit, so no more lying around, and bed is open.
+    expect(refusal(act(lay.state, { t: 'act', act: 'lot.rest' }).events)).toMatchObject({
+      why: "It's evening. The fire's lit.",
+    });
+    expect(refusal(act({ ...back, min: DAY.nightFrom - 1 }, { t: 'act', act: 'lot.sleep' }).events)?.k).toBe(
+      'refused',
+    );
+    expect(play(lay.state, { t: 'act', act: 'lot.sleep' }).state.day).toBe(2);
+  });
+
   it('sleeps worse hungry, rough when the card is full, and pays the bills every seventh night', () => {
-    const night = at(newGame('t'), 'lot', DAY.bedFrom);
+    const night = at(newGame('t'), 'lot', DAY.nightFrom);
     const hungry = play({ ...night, energy: 20, fed: 10 }, { t: 'act', act: 'lot.sleep' });
     expect(hungry.state.energy).toBe(20 + BODY.sleepEnergy - BODY.hungryNight);
     expect(lines(hungry.events)).toContain('You went to bed hungry, and it shows.');
@@ -330,11 +356,20 @@ describe('goes and sends', () => {
     expect(talkStart(red.state, 'hazel-crag')).toBe('sent');
   });
 
-  it('warns about the sun once a day, when a go starts after the rock greases', () => {
-    const r = play(crag(15 * 60), { t: 'go', route: 'warm' }, { t: 'go', route: 'warm' });
-    expect(lines(r.events).filter((l) => l.startsWith("Sun's on the wall"))).toHaveLength(1);
+  it('warns about the sun once a day, when a go starts on a line the sun has reached', () => {
+    // By 4 on a prime day the sun has the whole wall, the Warm Boulder last.
+    const r = play(crag(16 * 60), { t: 'go', route: 'warm' }, { t: 'go', route: 'warm' });
+    expect(lines(r.events).filter((l) => l.startsWith("Sun's on"))).toHaveLength(1);
     const morning = play(crag(), { t: 'go', route: 'warm' });
     expect(lines(morning.events)).toEqual([]);
+    // The sun reaches the far boulders first and the Warm Boulder by the road last: at the
+    // same minute, one's greasy and the other's still in the shade.
+    const t = sunOn('t', 1, 'road', 'fingercrack');
+    expect(sunOn('t', 1, 'road', 'warm')).toBeGreaterThan(t);
+    expect(lines(play(crag(t), { t: 'go', route: 'fingercrack' }).events)).toContain(
+      "Sun's on this line now. Everything feels greasy.",
+    );
+    expect(lines(play(crag(t), { t: 'go', route: 'warm' }).events)).toEqual([]);
   });
 });
 

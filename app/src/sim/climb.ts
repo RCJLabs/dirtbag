@@ -14,7 +14,7 @@ import { effGrade, PUMPED, type BetaDef, type CruxDef, type RouteDef, type Verb 
 import { cold } from './body';
 import { BODY, CLIMB, LOAD } from './dials';
 import type { GameState, GoResult } from './types';
-import { conditionsAt } from './weather';
+import { conditionsAt, sunOn } from './weather';
 
 export type Phase = 'climb' | 'crux' | 'fall' | 'lowered' | 'sent';
 
@@ -119,7 +119,7 @@ export function dayFactor(s: GameState, r: RouteDef): { windows: number; grease:
   const body = weak * (cold(s, r) ? LOAD.coldWindows : 1);
   if (r.place === 'gym') return { windows: body, grease: false };
   const c = conditionsAt(s.seed, s.day, r.place);
-  const grease = s.min >= c.greaseFrom;
+  const grease = s.min >= sunOn(s.seed, s.day, r.place, r.id);
   return { windows: c.windows * (grease ? CLIMB.greaseFactor : 1) * body, grease };
 }
 

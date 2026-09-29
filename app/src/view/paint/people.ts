@@ -61,6 +61,28 @@ export const LOOK: Record<string, Look> = {
     hat: null,
     sleeve: 'none',
   },
+  // Wren, on the bar at the coffee shop: the teal apron, sleeves pushed up, hair tied back.
+  wren: {
+    skin: '#B77E5A',
+    shirt: '#2F6F73',
+    pants: '#3A3440',
+    shoe: '#2B2A33',
+    hair: '#2B1D16',
+    hat: null,
+    sleeve: 'long',
+    pony: true,
+    tie: '#E9A23B',
+  },
+  // Otis, at the diner with the paper: a flannel shirt and grey hair.
+  otis: {
+    skin: '#E0B08F',
+    shirt: '#8A4B3C',
+    pants: '#4B4F5E',
+    shoe: '#2B2A33',
+    hair: '#C9C4BA',
+    hat: null,
+    sleeve: 'long',
+  },
   // Sage: technical, patient, reads everything first. Green tee, plum pants, copper hair.
   sage: {
     skin: '#C98E6B',

@@ -26,11 +26,11 @@ export const DAY = {
   // Wake at 7:10: early enough for the morning shade at the crag, late enough that a lie-in
   // isn't a choice you have to make.
   wakeMin: 7 * 60 + 10,
-  // From 5 PM the Lot is a night scene: the fire's lit and Hazel is back.
+  // From 5 PM the Lot is a night scene: the fire's lit, Hazel is back, and you can turn in.
+  // Bed was 6 PM, to make a bad day harder to skip. All it made harder was the evening:
+  // Phase 11's count found 12 of a day-3 loop's 32 taps spent waiting for bed.
   nightFrom: 17 * 60,
   nightUntil: 5 * 60,
-  // Bed from 6 PM. Any earlier and skipping the rest of a bad day is too easy.
-  bedFrom: 18 * 60,
 };
 
 export const MONEY = {
@@ -200,6 +200,21 @@ export const INJURY = {
   clinic: [0, 45, 210],
 };
 
+// Highballs [proposed]: a fall from high on a tall boulder can land badly. Up to safeFt a
+// fall onto a pad is a normal boulder fall; every foot above it adds perFoot to the chance
+// of a bad landing, with one pad and nobody spotting. So a fall from 16 ft is about 1 in 10,
+// from 22 ft about 1 in 6. The Moonstone haul's pads halve it, and a partner spotting you
+// halves it again. How far over safeFt you fell sets how bad: tier 2 from `tier2` ft over,
+// tier 3 from `tier3`.
+export const HIGHBALL = {
+  safeFt: 8,
+  perFoot: 0.012,
+  pads: 0.5,
+  spotter: 0.5,
+  tier2: 6,
+  tier3: 12,
+};
+
 export const CLIMB = {
   // What one go costs, by kind. A sport go is tying in, climbing and lowering off; a
   // boulder go is a few minutes on the pads. v0.956 charged 18 energy and 2 hours for a
@@ -229,9 +244,16 @@ export const CLIMB = {
   minSkin: 12,
   // Too dark to climb from 7 PM.
   darkFrom: 19 * 60,
-  // Once the sun is on the wall (when depends on the day's weather) every window shrinks
-  // by a fifth. It makes the morning worth driving out for.
+  // Once the sun is on a line (when depends on the day's weather, and on where the line
+  // is) every window on it shrinks by a fifth. It makes the morning worth driving out for.
   greaseFactor: 0.8,
+  // The sun crosses a sunny crag's wall in two hours, end to end, so each line gets the
+  // sun at its own time (sunOn). Long enough that where you start matters: Roadside's
+  // warm-ups keep their shade two hours past its projects.
+  sunSweep: 120,
+  // Desert rock is sunbaked and sharp-edged: every window at a desert crag is scaled by
+  // this. v0.956 took 0.08 off the odds there; seeping's 0.07 became 0.92 the same way.
+  desertFactor: 0.92,
   // Moves per second while you hold. About a move and a half: fast enough that pump, not
   // boredom, is what makes you let go.
   climbRate: 1.53,

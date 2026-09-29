@@ -2,34 +2,62 @@
 // reference resolves, routes are physically sane, and every talk node is reachable.
 import { describe, expect, it } from 'vitest';
 import { MIX } from './climber';
-import { gymSet, routeById, routesAt, weekOf } from './content/gym';
-import { ACTS, PLACES, ROADS } from './content/places';
+import {
+  gymSet,
+  routeById,
+  routesAt,
+  weekOf,
+  boardSet,
+  blockOf,
+  BOARD_WEEKS,
+  WEEK_DAYS,
+} from './content/gym';
+import { ACTS, PLACES, road, ROADS, TEXT_VALUES } from './content/places';
+import { fill } from './format';
 import { PEOPLE, TALK, THINGS } from './content/people';
 import { ROUTES, type RouteDef } from './content/routes';
 
 const STYLES = Object.keys(MIX);
-// The fixed lines, and the gym's first two months for two seeds.
+// The fixed lines, and the gym's first two months (the wall and the board) for two seeds.
 const everyRoute: RouteDef[] = [
   ...Object.values(ROUTES),
   ...['a', 'b'].flatMap((seed) => [1, 2, 3, 4, 5, 6, 7, 8].flatMap((w) => gymSet(seed, w))),
+  ...['a', 'b'].flatMap((seed) => [1, 2].flatMap((b) => boardSet(seed, b))),
 ];
 
 describe('content', () => {
-  it('places list real acts, each act belongs to a place, and every two places share one road', () => {
+  it('places list real acts, and each act belongs to a place', () => {
     for (const p of Object.values(PLACES)) for (const a of p.acts) expect(ACTS, a).toHaveProperty([a]);
     for (const id of Object.keys(ACTS)) expect(PLACES, id).toHaveProperty([id.split('.')[0]!]);
+  });
+
+  it('joins every place to every other by road, with no road going to waste', () => {
     const ids = Object.keys(PLACES);
+    const seen = new Set<string>();
     for (const r of ROADS) {
-      expect(PLACES).toHaveProperty([r.a]);
-      expect(PLACES).toHaveProperty([r.b]);
+      expect(PLACES, r.a).toHaveProperty([r.a]);
+      expect(PLACES, r.b).toHaveProperty([r.b]);
+      const k = [r.a, r.b].sort().join('-');
+      expect(r.a, k).not.toBe(r.b);
+      expect(seen.has(k), `two roads ${k}`).toBe(false);
+      seen.add(k);
+      // Each road is the quickest way between its own ends: one that isn't, nobody drives.
+      expect(road(r.a, r.b), k).toMatchObject({ min: r.min, cash: r.cash });
     }
     for (const a of ids)
-      for (const b of ids)
-        if (a < b)
-          expect(
-            ROADS.filter((r) => [r.a, r.b].sort().join() === [a, b].join()),
-            `${a}-${b}`,
-          ).toHaveLength(1);
+      for (const b of ids) {
+        if (a === b) continue;
+        const there = road(a, b);
+        expect(there, `${a} to ${b}`).toBeDefined();
+        expect(road(b, a), `${b} to ${a}`).toMatchObject({ min: there!.min, cash: there!.cash });
+      }
+  });
+
+  it("keeps v0.956's drives from the Lot, the far crags by way of Roadside", () => {
+    expect(road('lot', 'road')).toEqual({ min: 60, cash: 12, via: [] });
+    expect(road('lot', 'gorge')).toEqual({ min: 120, cash: 22, via: ['road'] });
+    expect(road('lot', 'moon')).toEqual({ min: 180, cash: 30, via: ['road'] });
+    expect(road('lot', 'lot')).toBeUndefined();
   });
 
   it('routes are climbable in order, and every beta is defined and styled', () => {
@@ -71,8 +99,9 @@ describe('content', () => {
     expect(new Set(w1.map((r) => r.name)).size).toBe(6);
     expect(gymSet('a', 1)).toBe(w1);
     expect(gymSet('a', 2).map((r) => r.name)).not.toEqual(w1.map((r) => r.name));
-    expect(routesAt('a', 'gym', 7)).toBe(w1);
-    expect(routesAt('a', 'gym', 8)).toBe(gymSet('a', 2));
+    // The gym's lines are the week's wall, then the board.
+    expect(routesAt('a', 'gym', 7).slice(0, 6)).toEqual(w1);
+    expect(routesAt('a', 'gym', 8).slice(0, 6)).toEqual(gymSet('a', 2));
     expect(weekOf(1)).toBe(1);
     expect(weekOf(8)).toBe(2);
     expect(routesAt('a', 'road', 1).map((r) => r.id)).toEqual(
@@ -82,6 +111,51 @@ describe('content', () => {
     );
     expect(routeById('a', 'sc-99-7')).toBeUndefined();
     expect(routeById('a', 'nope')).toBeUndefined();
+  });
+
+  it('the board sets four hard problems, V4 to V7, that stay up four weeks', () => {
+    const b1 = boardSet('a', 1);
+    expect(b1.map((r) => r.grade)).toEqual([4, 5, 6, 7]);
+    // And they climb a grade stiff, as boards do.
+    expect(b1.map((r) => r.trueGrade)).toEqual([5, 6, 7, 8]);
+    expect(b1.every((r) => r.board && r.place === 'gym' && r.disc === 'boulder')).toBe(true);
+    expect(new Set(b1.map((r) => r.name)).size).toBe(4);
+    // Up from the first morning to the last day of the fourth week, then reset.
+    const lastDay = WEEK_DAYS * BOARD_WEEKS;
+    expect(blockOf(1)).toBe(1);
+    expect(blockOf(lastDay)).toBe(1);
+    expect(blockOf(lastDay + 1)).toBe(2);
+    expect(routesAt('a', 'gym', 1).slice(6)).toEqual(b1);
+    expect(routesAt('a', 'gym', lastDay).slice(6)).toEqual(b1);
+    expect(boardSet('a', 2).map((r) => r.name)).not.toEqual(b1.map((r) => r.name));
+    // An old problem still resolves, for its log.
+    expect(routeById('a', 'bd-1-3')).toBe(b1[2]);
+    expect(routeById('a', 'bd-1-9')).toBeUndefined();
+    expect(b1[0]!.line).toContain(`${BOARD_WEEKS} weeks`);
+  });
+
+  it('place cards fill every number they mention from the data', () => {
+    for (const [id, p] of Object.entries(PLACES))
+      for (const text of [p.away, p.here])
+        expect(fill(text, { ...TEXT_VALUES, lines: 1 }), id).not.toMatch(/\{/);
+  });
+
+  it("a place that's shut to you says the grade that opens it", () => {
+    for (const [id, p] of Object.entries(PLACES))
+      if (p.minGrade !== undefined) expect(p.locked, id).toContain(`V${p.minGrade}`);
+  });
+
+  it('every sunny crag lists all its lines, once each, in the path the sun takes', () => {
+    for (const [id, p] of Object.entries(PLACES)) {
+      if (!p.crag || p.shaded) {
+        expect(p.sun, id).toBeUndefined();
+        continue;
+      }
+      const lines = Object.values(ROUTES)
+        .filter((r) => r.place === id)
+        .map((r) => r.id);
+      expect([...(p.sun ?? [])].sort(), id).toEqual(lines.sort());
+    }
   });
 
   it('talk resolves: people, nodes, acts and beta', () => {

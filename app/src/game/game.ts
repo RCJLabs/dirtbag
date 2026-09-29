@@ -50,6 +50,7 @@ import { mapArt } from '../view/paint/map';
 import { render, type Frame } from '../view/render';
 import { drivePath } from '../view/valley';
 import * as persist from './persist';
+import { loadPlans, noted, savePlans, SLEEP, wipePlans, type PlanStep, type Plans } from './plan';
 import { createStore, type Store } from './store';
 
 export type View = 'scene' | 'map' | 'wall';
@@ -58,6 +59,7 @@ export type SheetId =
   | { k: 'van' }
   | { k: 'cragVan' }
   | { k: 'desk' }
+  | { k: 'board' }
   | { k: 'place'; id: string }
   | { k: 'beta'; route: string }
   | { k: 'fall'; route: string; fall: FallRun; notes: string[]; gains: Partial<Skills>; best: number | null }
@@ -89,7 +91,8 @@ export type SheetId =
   | { k: 'you' }
   | { k: 'week' }
   | { k: 'settings' }
-  | { k: 'restart' };
+  | { k: 'restart' }
+  | { k: 'plan' };
 
 export interface Hud {
   day: number;
@@ -116,6 +119,11 @@ export interface Ui {
   wallRoute: string;
   settings: persist.Settings;
   still: boolean;
+  // The plan you've made, and yesterday as you played it.
+  plans: Plans;
+  // A plan being run: its steps, the one it's on, whether it's waiting while you climb, and
+  // why it stopped, if the day refused it.
+  plan: { steps: PlanStep[]; i: number; waiting: boolean; stopped: string | null } | null;
 }
 
 export interface Fast {
@@ -132,6 +140,8 @@ interface Trip {
 }
 
 const FADE_MS = 230;
+// A plan's pause between steps: long enough to read what the last one said.
+const PLAN_BEAT = 700;
 const WALK_SPEED = 118;
 const hudOf = (s: GameState): Hud => ({
   day: s.day,
@@ -175,6 +185,9 @@ export class Game {
   // The end of an act waits until you're back in a scene with nothing open, so it never
   // lands on top of the send that finished it.
   private actCard = false;
+  // Today as you've played it, to offer as tomorrow's plan; and a plan being run.
+  private today: PlanStep[] = [];
+  private run: { steps: PlanStep[]; i: number } | null = null;
 
   constructor(opts: { still?: boolean } = {}) {
     this.systemStill = !!opts.still;
@@ -198,6 +211,8 @@ export class Game {
       wallRoute: 'pump',
       settings,
       still: stillFor(settings, this.systemStill),
+      plans: loadPlans(),
+      plan: null,
     });
     this.fast = createStore<Fast>({ cam: 0, att: null });
     if (home?.scene) this.enter(home.scene, this.state.x ?? undefined);
@@ -512,30 +527,44 @@ export class Game {
 
   // ---- places and the map ----
 
-  doAct(id: string): void {
-    if (id === 'lot.sleep') {
+  // Returns why the day refused it, if it did. Sleep plays out after a fade.
+  doAct(id: string): string | null {
+    if (id === SLEEP) {
       this.closeSheet();
       this.fadeTo(() => {
         const ev = this.dispatch({ t: 'act', act: id });
-        if (!ev.some((e) => e.k === 'refused')) this.enter('lot', WAKE_X);
+        if (ev.some((e) => e.k === 'refused')) return;
+        this.dayDone();
+        this.enter('lot', WAKE_X);
       });
-      return;
+      return null;
     }
-    this.dispatch({ t: 'act', act: id });
+    const ev = this.dispatch({ t: 'act', act: id });
+    const no = ev.find((e) => e.k === 'refused');
+    if (no?.k === 'refused') return no.why;
+    this.today = noted(this.today, { place: this.state.at, act: id });
+    return null;
   }
 
-  travel(to: string): void {
-    if (this.trip) return;
+  // Pay for a trip once (Moonstone's haul): the place card rebuilds with the drive on it.
+  unlock(place: string): void {
+    this.dispatch({ t: 'unlock', place });
+  }
+
+  // Returns why the drive was refused, if it was.
+  travel(to: string): string | null {
+    if (this.trip) return null;
     const from = this.state.at;
     const hud = hudOf(this.state);
     this.held = { hud, lines: [] };
     const ev = this.dispatch({ t: 'travel', to });
-    if (ev.some((e) => e.k === 'refused')) {
+    const no = ev.find((e) => e.k === 'refused');
+    if (no?.k === 'refused') {
       const lines = this.held.lines;
       this.held = null;
       this.sync();
       for (const l of lines) this.toast(l);
-      return;
+      return no.why;
     }
     this.hush();
     const pts = drivePath(from, to, MAP_PINS);
@@ -546,6 +575,7 @@ export class Game {
     };
     if (this.ui.get().view !== 'map') this.fadeTo(start);
     else start();
+    return null;
   }
 
   private arrive(): void {
@@ -559,6 +589,7 @@ export class Game {
     const scene = PLACES[trip.to]?.scene;
     if (scene) this.enterScene(scene);
     else this.openSheet({ k: 'place', id: trip.to });
+    if (this.run) this.later(() => this.planStep(), FADE_MS + PLAN_BEAT);
   }
 
   // ---- the wall ----
@@ -582,6 +613,7 @@ export class Game {
     if (!r) return;
     const ev = this.dispatch({ t: 'go', route });
     if (ev.some((e) => e.k === 'refused')) return;
+    this.today = noted(this.today, { place: this.state.at, climb: true });
     this.att = startAttempt(this.state, r);
     this.acc = 0;
     this.fast.set({ cam: this.cam, att: this.att });
@@ -612,8 +644,13 @@ export class Game {
       r?.place === 'gym'
         ? routesAt(this.state.seed, 'gym', this.state.day).findIndex((p) => p.id === route)
         : -1;
+    // The board's problems all start under the board.
     const hot = SCENES[scene]!.hots.find((h) =>
-      'route' in h.use ? h.use.route === route : 'problem' in h.use && h.use.problem === slot,
+      r?.board
+        ? 'sheet' in h.use && h.use.sheet === 'board'
+        : 'route' in h.use
+          ? h.use.route === route
+          : 'problem' in h.use && h.use.problem === slot,
     );
     this.enterScene(scene, hot?.stand);
   }
@@ -692,12 +729,94 @@ export class Game {
     this.closeSheet();
     this.fadeTo(() => {
       persist.wipe();
+      wipePlans();
+      this.today = [];
+      this.run = null;
+      this.set({ plans: { plan: [], yesterday: [] }, plan: null });
       this.state = newGame(freshSeed());
       persist.save(this.state);
       this.toasts = [];
       this.sync();
       this.enter('lot');
     });
+  }
+
+  // ---- the plan (Phase 11.4): a day's drives and errands, run in one go ----
+
+  setPlan(plan: PlanStep[]): void {
+    const plans = { ...this.ui.get().plans, plan };
+    if (!savePlans(plans)) this.toast("Couldn't keep the plan in this browser.");
+    this.set({ plans });
+  }
+
+  runPlan(steps: PlanStep[]): void {
+    if (this.run || !steps.length) return;
+    this.run = { steps, i: 0 };
+    this.closeSheet();
+    this.showPlan(false);
+    this.later(() => this.planStep(), 0);
+  }
+
+  // On from a climb, to the rest of the plan.
+  goOn(): void {
+    const r = this.run;
+    if (!r || !this.ui.get().plan?.waiting) return;
+    r.i++;
+    this.showPlan(false);
+    this.planStep();
+  }
+
+  stopPlan(): void {
+    this.run = null;
+    this.set({ plan: null });
+  }
+
+  private later(fn: () => void, ms = PLAN_BEAT): void {
+    window.setTimeout(fn, this.still ? 0 : ms);
+  }
+
+  private showPlan(waiting: boolean, stopped: string | null = null): void {
+    const r = this.run;
+    if (r) this.set({ plan: { steps: r.steps, i: r.i, waiting, stopped } });
+  }
+
+  // One step: drive to its place if you're not there (arrival comes back here), then its
+  // act, or wait while you climb. The first thing the day refuses ends the plan, and says so.
+  private planStep(): void {
+    const r = this.run;
+    if (!r) return;
+    if (this.busy || this.trip) return this.later(() => this.planStep(), 80);
+    const step = r.steps[r.i];
+    if (!step) return this.planEnd(null);
+    if (this.state.at !== step.place) {
+      const why = this.travel(step.place);
+      if (why) this.planEnd(why);
+      return;
+    }
+    if (step.climb) return this.showPlan(true);
+    const why = this.doAct(step.act!);
+    if (why) return this.planEnd(why);
+    // Bed ends the day, and the plan with it.
+    if (step.act === SLEEP) return this.planEnd(null);
+    r.i++;
+    this.showPlan(false);
+    this.later(() => this.planStep());
+  }
+
+  private planEnd(why: string | null): void {
+    if (why) this.showPlan(false, why);
+    else this.set({ plan: null });
+    this.run = null;
+  }
+
+  // The day's done: it's tomorrow's plan, if you don't make another.
+  private dayDone(): void {
+    const yesterday = noted(this.today, { place: 'lot', act: SLEEP });
+    this.today = [];
+    const plans = { ...this.ui.get().plans, yesterday };
+    savePlans(plans);
+    this.set({ plans });
+    if (this.run && this.run.steps[this.run.i]?.act !== SLEEP) this.planEnd(null);
   }
 
   // ---- the frame loop ----

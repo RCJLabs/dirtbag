@@ -9,7 +9,7 @@ import { CARRIED, STARTS } from './climber';
 import { PLACES } from './content/places';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -57,6 +57,11 @@ export const MIGRATIONS: Record<number, Migration> = {
       dog: null,
       goals: 0,
     };
+  },
+  // v3 (0.960.0) -> v4 (Phase 10.3): no trips paid for yet. Moonstone opens on its own terms.
+  3: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, unlocked: [] };
   },
 };
 
@@ -161,6 +166,7 @@ export function validate(x: unknown): string[] {
   need(race === null || (isObj(race) && typeof race.route === 'string' && isInt(race.until)), 'race');
   need(isInt(x.trips) && x.trips >= 0, 'trips');
   need(isInt(x.goals) && x.goals >= 0, 'goals');
+  need(isStrs(x.unlocked) && x.unlocked.every((id) => id in PLACES), 'unlocked');
   const dog = x.dog;
   const pct = (v: unknown) => isNum(v) && v >= 0 && v <= 100;
   need(

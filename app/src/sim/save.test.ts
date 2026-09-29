@@ -21,9 +21,11 @@ const played = () => {
   return s;
 };
 
-// Saves written by earlier builds, kept byte for byte: R0's (v1) and R1's (v2).
+// Saves written by earlier builds, kept byte for byte: R0's (v1), R1's (v2) and 0.960.0's
+// (v3).
 const V1 = readFileSync(new URL('./fixtures/save-v1.json', import.meta.url), 'utf8');
 const V2 = readFileSync(new URL('./fixtures/save-v2.json', import.meta.url), 'utf8');
+const V3 = readFileSync(new URL('./fixtures/save-v3.json', import.meta.url), 'utf8');
 // What R2's migration adds to any older save.
 const R2_BODY = {
   load: { acute: 20, chronic: 20, today: 0 },
@@ -35,6 +37,8 @@ const R2_BODY = {
   dog: null,
   goals: 0,
 };
+// And Phase 10.3's: no trips paid for.
+const P10 = { unlocked: [] };
 
 describe('saves', () => {
   it('round-trip a played game exactly', () => {
@@ -88,6 +92,7 @@ describe('saves', () => {
       },
       people: {},
       ...R2_BODY,
+      ...P10,
     });
     // And it plays on: the new rules accept it.
     const made = act(r.state, { t: 'create', name: 'Sam', start: 'boulderer' });
@@ -100,8 +105,17 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(2);
-    expect(r.state).toEqual({ ...JSON.parse(V2).state, ...R2_BODY });
+    expect(r.state).toEqual({ ...JSON.parse(V2).state, ...R2_BODY, ...P10 });
     expect(act(r.state, { t: 'travel', to: 'lot' }).events.some((e) => e.k === 'refused')).toBe(false);
+  });
+
+  it('load a real 0.960.0 save: everything kept, and no trips paid for', () => {
+    const r = fromSave(V3);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(3);
+    expect(r.state).toEqual({ ...JSON.parse(V3).state, ...P10 });
+    expect(act(r.state, { t: 'travel', to: 'road' }).events.some((e) => e.k === 'refused')).toBe(false);
   });
 
   // These pretend a longer history: a v1 file that stored `money` where the state now has
@@ -111,7 +125,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(3);
+    expect(SAVE_VERSION).toBe(4);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

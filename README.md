@@ -8,7 +8,7 @@ A climbing life-sim. Live out of your van, work shifts, and push your grade from
 
 - **The game, in `app/`**, built from source: park-poster landscapes and comic people all drawn in code, side-view scenes joined by a map, and beta-then-send climbing. From 0.960.0 on, its build is the site.
 - **The release pipeline** that checks it, stages it, smoke-tests it, deploys it on a tag, and wraps it for Google Play.
-- **v0.956**, the game it replaced, retired at 0.960.0. It isn't in the tree any more; the `v0.956.0` tag keeps it.
+- **v0.956**, the game it replaced, retired at 0.960.0. It isn't in the tree any more; commit `e098332` keeps it.
 
 | Path | What it is |
 |---|---|
@@ -44,7 +44,7 @@ The game has its own commands (tests, types, the e2e bot, the balance harness) i
    - confirms the live site serves this commit, and smoke-tests it.
 4. For a Play update, wait until the deploy is live: the bundle build fetches its icons from the site. Then run **Actions → Build TWA (AAB)** and upload the bundle in the Play Console. The build takes the version from `package.json`, and fails if the Android target SDK is below Play's current floor.
 
-**Rolling back:** run the Deploy workflow by hand on the previous tag. `v0.956.0` brings back v0.956, with its own files and its own copy of the workflow. Players' saves from both games stay in their browsers either way.
+**Rolling back:** run the Deploy workflow by hand on the previous release's tag. v0.956 has no tag yet: creating `v0.956.0` on commit `e098332` deploys it, with its own files and its own copy of the workflow, so create that tag only to roll back. Players' saves from both games stay in their browsers either way.
 
 **One-time setup before the first tag deploy** (repo Settings):
 - **Pages → Build and deployment → Source:** set to "GitHub Actions". Until you do, Pages keeps deploying `main` the old way.
@@ -52,7 +52,7 @@ The game has its own commands (tests, types, the e2e bot, the balance harness) i
 
 ## Status
 
-The live site is v0.956.0 until the `v0.960.0` tag deploys the rebuilt game. That switch-over is R3, the roadmap's current milestone ([`docs/ROADMAP.md`](docs/ROADMAP.md)). R0–R2 are done: the game plays a first season, Act I, from gym plastic to your first V5 project. A v0.956 player who opens the new game is told v0.956 has retired, can keep their career as a file, and can carry on under their old name.
+The live site is 0.960.0, the rebuilt game (R3), released 29 Sep 2026: a first season, Act I, from gym plastic to your first V5 project. It stays 0.960.0 until the `v0.961.0` tag deploys Phase 10 (Send City's board, conditions you can see, Moonstone Boulders) and Phase 11 (the valley's roads, place cards, the daily plan). A v0.956 player who opens the new game is told v0.956 has retired, can keep their career as a file, and can carry on under their old name. The current milestone is Phase 12, the UI system and the desktop layout ([`docs/ROADMAP.md`](docs/ROADMAP.md)).
 
 ## Credits
 

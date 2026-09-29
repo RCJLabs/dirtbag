@@ -18,10 +18,10 @@ import { routesAt } from './content/gym';
 import { ACTS, PLACES, road } from './content/places';
 import { TALK } from './content/people';
 import type { RouteDef } from './content/routes';
-import { BODY, CLIMB, DAY, LOAD, MONEY } from './dials';
-import { cold, ratio } from './body';
+import { BODY, CLIMB, LOAD, MONEY } from './dials';
+import { cold, freshLoad, ratio } from './body';
 import { gradeOf, average } from './climber';
-import { act, faSuggestions, goBlocked, knowsBeta, newGame, talkStart } from './game';
+import { act, faSuggestions, goBlocked, knowsBeta, landingChance, newGame, talkStart } from './game';
 import { whereNow } from './presence';
 import type { Action, GameState, GoResult } from './types';
 import type { Rng } from './rng';
@@ -55,8 +55,9 @@ export interface DaySummary {
   workMin: number;
   // The hardest grade index you tied in on today, or -1.
   hardest: number;
-  // Where the day's climbing was: a place, "tired" (too spent to go), or "nothing" (no line
-  // left within reach anywhere).
+  // Where the day's climbing was: a place; "tired" (too spent to go); "resting" (the body
+  // said no, with unsent lines still out there); or "nothing" (no line left within reach
+  // anywhere).
   where: string;
   // Minutes on the rock (goes and the rests between them), and the skill they taught, summed
   // over all five: what climbing's worth an hour, against a setting shift's.
@@ -65,6 +66,15 @@ export interface DaySummary {
   // A night the rules count as failure: going to bed hungry, or with the card nearly maxed.
   stuck: boolean;
 }
+
+// A careful climber reads a highball's landing odds the way they read the load warning: they
+// won't work one while a fall from its crux lands badly more than 1 time in 20, so they wait
+// for someone to spot them. A reckless one doesn't look.
+const HIGHBALL_ODDS = 0.05;
+const cruxLanding = (s: GameState, r: RouteDef): number => {
+  const c = r.cruxes[0];
+  return landingChance(s, r, c ? (c.from + c.to) / 2 : r.moves);
+};
 
 // How a bot spends its days. The climber works only when the money's nearly gone; the
 // balanced one keeps a cushion; the worker takes every shift going and climbs after.
@@ -196,8 +206,9 @@ export interface WeekOpts {
   days?: number;
   start?: string;
   strategy?: Strategy;
-  // A moderate climber warms up and stops for the day when their body starts talking (the
-  // load ratio over 1.3); a reckless one does neither.
+  // A moderate climber warms up, stops for the day when their body starts talking (the
+  // load ratio over 1.3), and waits for a spotter on a highball; a reckless one does none
+  // of that.
   reckless?: boolean;
   // Hands for each go; perfect ones by default.
   hands?: () => (a: Attempt, i: number) => boolean;
@@ -286,6 +297,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     };
     const lines = routesAt(s.seed, place, s.day)
       .filter((r) => !goBlocked(there, r) && !s.routes[r.id]?.sent && (s.routes[r.id]?.goesToday ?? 0) < 3)
+      .filter((r) => opts.reckless || cruxLanding(there, r) <= HIGHBALL_ODDS)
       .map((r) => ({ r, w: bestBeta(there, r).worst }))
       .sort((a, b) => a.r.grade - b.r.grade);
     // Dex's dare comes first: a player racing him works the line he's after.
@@ -294,6 +306,25 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     const easy = lines.find((l) => l.w >= 0.045);
     if (easy) return easy.r;
     return lines.sort((a, b) => b.w - a.w)[0]?.r ?? null;
+  }
+
+  // Whether a place has an unsent line the day allows (weather, closures, the light, a
+  // belayer, the pass) for a fresh, unhurt body: what "nothing new to try" is about. Grade
+  // gates count, so the Gorge isn't fresh before V4.
+  function fresh(place: string): boolean {
+    const p = PLACES[place];
+    if (p?.minGrade !== undefined && gradeOf(s.climber.skills) < p.minGrade) return false;
+    const body: GameState = {
+      ...s,
+      at: place,
+      today: place === 'gym' ? [...s.today, 'pass'] : s.today,
+      energy: 100,
+      skin: 100,
+      fed: 100,
+      injury: null,
+      load: freshLoad(),
+    };
+    return routesAt(s.seed, place, s.day).some((r) => !s.routes[r.id]?.sent && !goBlocked(body, r));
   }
 
   // The easiest thing here to warm up on, sent or not.
@@ -345,7 +376,9 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
           : choose('gym')
             ? 'gym'
             : null;
-    let where = place ? 'tired' : 'nothing';
+    // Nothing to climb isn't the same as nothing new to try: a hurt or spent climber still
+    // has unsent lines out there, and only a day without any counts as the content running out.
+    let where = place ? 'tired' : ['road', 'gorge', 'gym'].some(fresh) ? 'resting' : 'nothing';
     if (place && s.min < 16 * 60 && s.energy >= 30 && s.skin >= 25) {
       travel(place);
       if (place === 'gym') tryAct('gym.pass');
@@ -360,7 +393,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     // Scout: taken on when he picks you, fed when his bowl's low. No stick: bots are busy.
     tryAct('lot.adopt');
     if (s.dog && s.dog.fed < 40) tryAct('lot.kibble');
-    while (s.min < DAY.bedFrom) if (!tryAct(isNight(s.min) ? 'lot.sit' : 'lot.rest')) break;
+    if (!isNight(s.min)) tryAct('lot.rest');
     run.days.push({
       day: s.day,
       cash: s.cash,

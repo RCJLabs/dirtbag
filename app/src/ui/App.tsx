@@ -6,6 +6,7 @@ import { Bubble } from './Bubble';
 import { ClimbPanel } from './ClimbPanel';
 import { Create } from './Create';
 import { Goal } from './Goal';
+import { PlanChip } from './PlanChip';
 import { Hud } from './Hud';
 import { Sheet } from './Sheet';
 
@@ -137,6 +138,7 @@ export function App({ game }: { game: Game }) {
             </div>
           )}
           <Goal game={game} ui={ui} />
+          <PlanChip game={game} ui={ui} />
           {ui.hint && !ui.sheet && !ui.talk && (
             <p className="hint" id="hint">
               {ui.hint}

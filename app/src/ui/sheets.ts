@@ -5,36 +5,48 @@
 import {
   ACT_I_END,
   ACTS,
+  blockOf,
+  BOARD_WEEKS,
   BODY,
   bodyNote,
+  clockShort,
   conditionsAt,
   costLabel,
-  DAY,
   DOG,
   DOG_OFFER,
   DOG_TIER_NAME,
   dogTier,
   fill,
   goBlocked,
+  gradeLabel,
   gradeOf,
   headroom,
   isNight,
   lineGrade,
   lineName,
   MONEY,
+  money,
   PLACES,
   restCost,
+  actCost,
   road,
+  ROUTES,
   routeOfId,
+  routesAt,
   SEND_NAME,
   SKILLS,
   TEXT_VALUES,
   unmet,
+  WEEK_DAYS,
   type GameState,
+  type RouteDef,
   type Skills,
+  type Sky,
 } from '../sim';
 import type { Game, SheetId } from '../game/game';
 import { CRAGS } from '../view/layout';
+import { whoAround, type Who } from './who';
+import { planLine } from '../game/plan';
 
 export interface Row {
   label: string;
@@ -53,6 +65,10 @@ export interface ListSpec {
   // How far a go got, in moves, against your best before it (none on a first go), with the
   // cruxes shaded.
   reach?: { moves: number; cruxes: [number, number][]; go: number; best: number | null };
+  // A place card's header: the place drawn as you'd find it at that minute, and said.
+  head?: { place: string; min: number; say: string };
+  // Who's around then.
+  who?: Who;
 }
 
 // A card of a line you've sent, to keep: from its sent sheet, or later from its beta sheet.
@@ -84,14 +100,15 @@ export function gainsLine(g: Partial<Skills>): string {
 function actRow(game: Game, s: GameState, id: string): Row {
   const a = ACTS[id]!;
   const why = unmet(s, a.needs);
-  let note = [bodyNote(a.cost), a.note && fill(a.note, TEXT_VALUES)].filter(Boolean).join('. ');
+  const cost = actCost(s, a);
+  let note = [bodyNote(cost), a.note && fill(a.note, TEXT_VALUES)].filter(Boolean).join('. ');
   if (a.sleep && !why) {
     if (headroom(s) < MONEY.vanSpot) note = "The card won't cover the spot: a cold night in the pullout.";
     if (s.fed < BODY.hungryBelow) note += ' You’ll sleep hungry.';
   }
   return {
     label: a.label,
-    cost: costLabel(a.cost, a.sleep ? 'van spot' : ''),
+    cost: costLabel(cost, a.sleep ? 'van spot' : ''),
     note: why ?? note,
     off: !!why,
     run: () => game.doAct(id),
@@ -100,14 +117,55 @@ function actRow(game: Game, s: GameState, id: string): Row {
 
 function driveRow(game: Game, s: GameState, to: string, label: string): Row {
   const r = road(s.at, to)!;
-  const declined = r.cash > 0 && headroom(s) < r.cash;
+  const permit = PLACES[to]?.permit ?? 0;
+  const declined = r.cash > 0 && headroom(s) < r.cash + permit;
+  if (permit && headroom(s) < permit)
+    return {
+      label,
+      cost: costLabel({ min: r.min, cash: -(r.cash + permit) }, 'gas and permit'),
+      note: `The ${money(permit)} permit won't go on the card.`,
+      off: true,
+      run: () => game.travel(to),
+    };
   return {
     label,
-    cost: costLabel({ min: r.min, cash: -r.cash }, 'gas'),
+    cost: costLabel({ min: r.min, cash: -(r.cash + permit) }, permit ? 'gas and permit' : 'gas'),
     note: declined ? "The card won't take the gas. You'd be running on fumes." : undefined,
     run: () => game.travel(to),
   };
 }
+
+// A trip you pay for once, in cash in hand: what it buys, and what's short.
+function unlockRow(game: Game, s: GameState, id: string): Row {
+  const cost = PLACES[id]!.unlock!;
+  const short = s.cash < cost;
+  return {
+    label: 'Buy the haul for the trip',
+    cost: costLabel({ cash: -cost }),
+    note: short
+      ? `Pads, water jugs and a guidebook. You need ${money(cost)} in hand, not on the card.`
+      : 'Pads, water jugs and a guidebook. Pay once, and the trip is yours.',
+    off: short,
+    run: () => game.unlock(id),
+  };
+}
+
+// Where you stand on a problem: sent and how, how close you've got, or not touched yet.
+function problemNote(s: GameState, r: RouteDef): string {
+  const log = s.routes[r.id];
+  if (log?.sent) return `${SEND_NAME[log.sent.style]}, day ${log.sent.day}.`;
+  if (log?.goes) return `${log.goes} go${log.goes > 1 ? 'es' : ''}. Your best: move ${log.hi} of ${r.moves}.`;
+  return `${r.type[0]!.toUpperCase()}${r.type.slice(1)}, ${r.moves} moves. Not tried.`;
+}
+
+// Out of the valley, the sky's its own: what it's doing there today.
+const SKY_OUT: Record<Sky, string> = {
+  prime: 'Out there today: cold and dry. The best friction.',
+  fair: 'Out there today: fair.',
+  hot: 'Out there today: hot. Greasy by lunch.',
+  rain: 'Out there today: rain. The rock’s soaked.',
+};
+const skyNote = (sky: Sky): string => SKY_OUT[sky];
 
 const mapRow = (game: Game): Row => ({
   label: 'Open the map',
@@ -119,18 +177,32 @@ const mapRow = (game: Game): Row => ({
 
 export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | null {
   switch (id.k) {
-    case 'van':
+    case 'van': {
+      const { plan, yesterday } = game.ui.get().plans;
       return {
         title: 'Your van',
-        sub: s.min >= DAY.bedFrom ? 'Bed made. Mostly.' : `Home, for ${TEXT_VALUES.spot} a night at the Lot.`,
+        sub: isNight(s.min) ? 'Bed made. Mostly.' : `Home, for ${TEXT_VALUES.spot} a night at the Lot.`,
         close: true,
         rows: [
           actRow(game, s, 'lot.cook'),
           ...(isNight(s.min) ? [] : [actRow(game, s, 'lot.rest')]),
           actRow(game, s, 'lot.sleep'),
+          ...(plan.length
+            ? [{ label: 'Run the plan', note: `${planLine(plan)}.`, run: () => game.runPlan(plan) }]
+            : []),
+          {
+            label: 'Plan the day',
+            note: plan.length
+              ? undefined
+              : yesterday.length
+                ? 'It starts from yesterday, as you played it.'
+                : 'Drives, shifts and meals in one go. It waits while you climb.',
+            run: () => game.openSheet({ k: 'plan' }),
+          },
           mapRow(game),
         ],
       };
+    }
 
     case 'cragVan': {
       const back = road(s.at, 'lot');
@@ -154,23 +226,57 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         rows: [actRow(game, s, 'gym.pass'), actRow(game, s, 'gym.set'), mapRow(game)],
       };
 
+    case 'board': {
+      const probs = routesAt(s.seed, 'gym', s.day).filter((r) => r.board);
+      // Days until the next set goes up: the day after this block's last.
+      const next = blockOf(s.day) * WEEK_DAYS * BOARD_WEEKS + 1 - s.day;
+      return {
+        title: 'The board',
+        sub: `The steep panel in the back: ${probs.length} problems, ${gradeLabel(probs[0]!)} to ${gradeLabel(probs.at(-1)!)}, lit on the grid. Board grades run stiff, and they stay up ${BOARD_WEEKS} weeks. A new set goes up ${next === 1 ? 'tomorrow' : `in ${next} days`}.`,
+        close: true,
+        rows: probs.map((r) => ({
+          label: r.name,
+          cost: gradeLabel(r),
+          note: problemNote(s, r),
+          run: () => game.lookUp(r.id),
+        })),
+      };
+    }
+
     case 'place': {
       const p = PLACES[id.id]!;
       const here = s.at === id.id;
-      const sub = fill(here ? p.here : p.away, TEXT_VALUES);
+      // The card shows the place as you'd find it: now if you're here, or after the drive.
+      const min = here ? s.min : s.min + (road(s.at, id.id)?.min ?? 0);
+      const head = { place: id.id, min, say: `${p.name}, ${clockShort(min)}.` };
+      const who = p.scene ? whoAround(s, id.id, min) : undefined;
+      const sub = fill(here ? p.here : p.away, {
+        ...TEXT_VALUES,
+        lines: Object.values(ROUTES).filter((r) => r.place === id.id).length,
+      });
       // A crag that's shut for the season says so before you burn the gas; one that's
-      // above your grade doesn't let you go at all.
-      const shut = conditionsAt(s.seed, s.day, id.id).closed;
-      const notes = shut ? [`${shut}.`] : undefined;
+      // above your grade doesn't let you go at all. One out of the valley has its own
+      // weather, so its card says what it's doing out there.
+      const here_ = conditionsAt(s.seed, s.day, id.id);
+      const shut = here_.closed;
+      const sky = PLACES[id.id]?.ownSky ? [skyNote(here_.sky)] : [];
+      const notes = shut || sky.length ? [...(shut ? [`${shut}.`] : []), ...sky] : undefined;
       if (!here) {
         const locked = p.minGrade !== undefined && gradeOf(s.climber.skills) < p.minGrade;
         const drive = driveRow(game, s, id.id, 'Drive here');
+        const unpaid = !!p.unlock && !s.unlocked.includes(id.id);
         return {
           title: p.name,
           sub,
           close: true,
+          head,
+          who,
           notes: locked ? [p.locked ?? 'Not yet.'] : notes,
-          rows: [locked ? { ...drive, off: true, note: undefined } : drive],
+          rows: locked
+            ? [{ ...drive, off: true, note: undefined }]
+            : unpaid
+              ? [unlockRow(game, s, id.id)]
+              : [drive],
         };
       }
       if (p.scene) {
@@ -184,6 +290,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           title: p.name,
           sub,
           close: true,
+          head,
+          who,
           notes,
           rows: [{ label, run: () => game.enterScene(scene) }],
         };
@@ -194,6 +302,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         title: p.name,
         sub,
         close: false,
+        head,
         rows: [
           ...p.acts.map((a) => actRow(game, s, a)),
           ...onward.map((o) =>

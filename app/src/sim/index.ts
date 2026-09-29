@@ -8,7 +8,11 @@ export {
   goBlocked,
   goCost,
   restCost,
+  actCost,
   belayer,
+  landingChance,
+  fallFt,
+  morePads,
   lessonAt,
   knowsBeta,
   talkStart,
@@ -61,9 +65,20 @@ export {
   gains,
 } from './climber';
 export type { Style, Start, GoSummary } from './climber';
-export { skyOn, forecast, conditions, conditionsAt, seasonOf, SKY_NAME, SEASON_DAYS } from './weather';
+export {
+  skyOn,
+  skyAt,
+  forecast,
+  conditions,
+  conditionsAt,
+  sunOn,
+  seasonOf,
+  SKY_NAME,
+  SEASON_DAYS,
+} from './weather';
 export type { Sky, Season, Conditions } from './weather';
-export { whereIs, whereNow, around, tierOf, PARTNERS } from './presence';
+export { whereIs, whereNow, around, tierOf, PARTNERS, staysAt, knows, DAY_END } from './presence';
+export type { Stay } from './presence';
 export { gradeOfPerson, dexHurt } from './curves';
 export { ratio, zone, daysOff, cold, goLoad, projected } from './body';
 export type { Zone } from './body';
@@ -74,9 +89,9 @@ export type { LoadResult, Migration, SaveFile } from './save';
 export { Rng, hashSeed, mulberry32 } from './rng';
 export type { Stream } from './rng';
 export * from './format';
-export { DAY, MONEY, BODY, CLIMB, LOAD, INJURY, BOND, ARC, DOG, LEGACY } from './dials';
+export { DAY, MONEY, BODY, CLIMB, LOAD, INJURY, HIGHBALL, BOND, ARC, DOG, LEGACY } from './dials';
 export { PLACES, ACTS, ROADS, road, TEXT_VALUES } from './content/places';
-export type { PlaceDef, ActDef, RoadDef } from './content/places';
+export type { PlaceDef, ActDef, RoadDef, Trip } from './content/places';
 export {
   ROUTES,
   LIBRARY,
@@ -89,7 +104,17 @@ export {
   librarySport,
 } from './content/routes';
 export type { RouteDef, CruxDef, BetaDef, Verb, Disc } from './content/routes';
-export { GYM, WEEK_DAYS, weekOf, gymSet, routeById, routesAt } from './content/gym';
+export {
+  GYM,
+  WEEK_DAYS,
+  BOARD_WEEKS,
+  weekOf,
+  blockOf,
+  gymSet,
+  boardSet,
+  routeById,
+  routesAt,
+} from './content/gym';
 export { TALK, PEOPLE, THINGS, RACE_ROUTE } from './content/people';
 export { DOG_OFFER, DOG_TIER_NAME } from './content/dog';
 export { ACT_I, ACT_I_END } from './content/story';

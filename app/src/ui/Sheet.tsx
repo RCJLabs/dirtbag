@@ -15,10 +15,16 @@ import {
   type Zone,
   bodyNote,
   BODY,
+  CLIMB,
   clockShort,
   conditions,
+  conditionsAt,
   costLabel,
   dayFactor,
+  belayer,
+  fallFt,
+  landingChance,
+  morePads,
   DOG,
   DOG_TIER_NAME,
   dogTier,
@@ -44,18 +50,23 @@ import {
   seasonOf,
   SKILLS,
   SKY_NAME,
+  skyAt,
   startName,
+  sunOn,
   tierOf,
   TIER_NAME,
   type Conditions,
   type GameState,
   type PersonLog,
+  type RouteDef,
   type Season,
   type Verb,
 } from '../sim';
 import type { Game, SheetId, Ui } from '../game/game';
 import { legacyFile, saveLegacyFile } from '../game/legacy';
 import type { Settings } from '../game/persist';
+import { paintHeader } from '../view/header';
+import { planLine, stepLabel, stepsAt, withStep, type PlanStep } from '../game/plan';
 import { CARD, cardPng } from '../view/paint/card';
 import { cardFile, cardOf, cardText } from './card';
 import { buildSheet, SKILL_NAME, type ListSpec } from './sheets';
@@ -107,6 +118,8 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
       <SettingsBody game={game} settings={ui.settings} />
     ) : id.k === 'card' ? (
       <CardBody game={game} id={id} s={state} />
+    ) : id.k === 'plan' ? (
+      <PlanBody game={game} ui={ui} />
     ) : null;
   if (body)
     return (
@@ -121,6 +134,7 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
     <div className="sheet" id="sheet" role="dialog" aria-labelledby="sheet-title" ref={ref}>
       {spec.close && <Close game={game} />}
       <h3 id="sheet-title">{spec.title}</h3>
+      {spec.head && <PlaceHead s={state} {...spec.head} />}
       {spec.reach && <Reach {...spec.reach} />}
       {spec.sub && <p className="sub">{spec.sub}</p>}
       {spec.notes?.map((n) => (
@@ -128,6 +142,7 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
           {n}
         </p>
       ))}
+      {spec.who && <WhoList {...spec.who} />}
       <ul>
         {spec.rows.map((r) => (
           <li key={r.label}>
@@ -139,6 +154,123 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+// The day's plan: its steps, each one out with a tap, and more added by where, then what. A
+// plan you haven't made yet starts from yesterday, as you played it.
+function PlanBody({ game, ui }: { game: Game; ui: Ui }) {
+  const { plan, yesterday } = ui.plans;
+  const steps = plan.length ? plan : yesterday;
+  const fromYesterday = !plan.length && yesterday.length > 0;
+  // null: the steps; '': where the next one is; a place: what to do there.
+  const [adding, setAdding] = useState<string | null>(null);
+  const opt = (label: string, run: () => void, cost = '', idAttr?: string) => (
+    <li key={label + cost}>
+      <button type="button" className="opt" id={idAttr} onClick={run}>
+        <span>{label}</span>
+        <span className="c">{cost}</span>
+      </button>
+    </li>
+  );
+  if (adding === '')
+    return (
+      <>
+        <h3 id="sheet-title">Where?</h3>
+        <ul>
+          {Object.entries(PLACES).map(([id, p]) => opt(p.name, () => setAdding(id)))}
+          {opt('Back', () => setAdding(null))}
+        </ul>
+      </>
+    );
+  if (adding)
+    return (
+      <>
+        <h3 id="sheet-title">{PLACES[adding]?.name}</h3>
+        <ul>
+          {stepsAt(ui.state, adding).map((st) =>
+            opt(stepLabel(st), () => {
+              game.setPlan(withStep(steps, st));
+              setAdding(null);
+            }),
+          )}
+          {opt('Back', () => setAdding(''))}
+        </ul>
+      </>
+    );
+  return (
+    <>
+      <h3 id="sheet-title">The plan</h3>
+      <p className="sub">
+        {fromYesterday
+          ? 'Yesterday, as you played it. Change what you like.'
+          : steps.length
+            ? 'Run in one go. It waits while you climb, and stops at anything the day won’t allow.'
+            : 'Nothing yet. Add a step, or play a day and it’s here tomorrow.'}
+      </p>
+      {steps.length > 0 && (
+        <ol className="plan" id="plan">
+          {steps.map((st: PlanStep, i) => (
+            <li key={`${i}-${st.place}-${st.act ?? 'climb'}`}>
+              <span>
+                {PLACES[st.place]?.name} · {stepLabel(st)}
+              </span>
+              <button
+                type="button"
+                className="plan-x"
+                aria-label={`Take out step ${i + 1}`}
+                onClick={() => game.setPlan(steps.filter((_, j) => j !== i))}
+              >
+                ✕
+              </button>
+            </li>
+          ))}
+        </ol>
+      )}
+      <ul>
+        {steps.length > 0 &&
+          opt(
+            'Run it',
+            () => {
+              if (fromYesterday) game.setPlan(steps);
+              game.runPlan(steps);
+            },
+            '',
+            'plan-run',
+          )}
+        {opt('Add a step', () => setAdding(''))}
+        {plan.length > 0 && opt('Clear it', () => game.setPlan([]))}
+      </ul>
+    </>
+  );
+}
+
+// A place card's header: the place drawn as you'd find it, painted after the card is up so
+// the card never waits on it. Repainted as the state moves; its back is kept.
+function PlaceHead({ s, place, min, say }: { s: GameState } & NonNullable<ListSpec['head']>) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const c = ref.current;
+    const g = c?.getContext('2d');
+    if (!c || !g || !c.clientWidth) return;
+    const px = Math.min(3, window.devicePixelRatio || 1);
+    c.width = Math.round(c.clientWidth * px);
+    c.height = Math.round(c.clientHeight * px);
+    paintHeader(g, { ...s, min }, place, c.clientWidth, c.clientHeight, px);
+  }, [s, place, min]);
+  return <canvas ref={ref} className="place-head" id="place-head" role="img" aria-label={say} />;
+}
+
+// Who's around when you'd get there, and whether that means a belayer or a spotter.
+function WhoList({ at, lines, cover }: NonNullable<ListSpec['who']>) {
+  return (
+    <div className="around" id="around">
+      <p className="around-h">Who’s around at {clockShort(at)}</p>
+      {lines.map((l) => (
+        <p key={l}>{l}</p>
+      ))}
+      {cover && <p className="cover">{cover}</p>}
     </div>
   );
 }
@@ -177,6 +309,35 @@ function Close({ game }: { game: Game }) {
   );
 }
 
+// What the day's doing to a line outdoors: in the sun already, or in the shade and till
+// when; and damp, the day after rain. Nothing on a day of rain: the rock's shut.
+function rockNote(s: GameState, r: RouteDef): string {
+  if (r.place === 'gym') return '';
+  const c = conditionsAt(s.seed, s.day, r.place);
+  if (!c.open) return '';
+  const sun = sunOn(s.seed, s.day, r.place, r.id);
+  const light = dayFactor(s, r).grease
+    ? ' · in the sun, smaller windows'
+    : sun < CLIMB.darkFrom
+      ? ` · in the shade till ${clockShort(sun)}`
+      : '';
+  return light + (c.seeping ? ' · damp from the rain' : '');
+}
+
+// A highball's landing, before you go: how far a fall from its crux is, what's under you,
+// who's spotting, and the odds that come of it [proposed].
+function landingNote(s: GameState, r: RouteDef): string {
+  const c = r.cruxes[0];
+  const at = c ? (c.from + c.to) / 2 : r.moves;
+  const ft = Math.round(fallFt(r, at));
+  const who = belayer(s);
+  const pads = morePads(s) ? 'The haul’s pads' : 'One pad';
+  const spot = who ? `${PEOPLE[who]?.name ?? 'a friend'} spotting` : 'nobody spotting';
+  const p = landingChance(s, r, at);
+  const odds = p > 0 ? `about 1 in ${Math.max(2, Math.round(1 / p))} lands badly` : 'you’ll land fine';
+  return `Highball: a fall from the crux is ${ft} ft. ${pads}, ${spot}: ${odds}.`;
+}
+
 // Pick your beta for each crux, then tie in. Beta you haven't earned shows as a locked card
 // with a hint about where to find it. Each card's window is its real width for you today:
 // your skills in its style against the grade, the rock and your hunger.
@@ -187,9 +348,7 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
   const goes = s.routes[route]?.goesToday ?? 0;
   const why = goBlocked(s, r);
   const c = goCost(r);
-  const cost =
-    `${costLabel({ min: c.min })} · ${bodyNote({ energy: c.energy, skin: c.skin })}` +
-    (dayFactor(s, r).grease ? ' · sun on the wall, smaller windows' : '');
+  const cost = `${costLabel({ min: c.min })} · ${bodyNote({ energy: c.energy, skin: c.skin })}${rockNote(s, r)}`;
   const log = s.routes[route];
   const unnamed = r.open && log?.sent && !s.firsts[route];
   return (
@@ -203,6 +362,7 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
       {r.open && !log?.sent && !s.firsts[route] && (
         <p className="note">Open project: nobody’s sent it. Send it and it’s yours to name.</p>
       )}
+      {r.highball && <p className="note">{landingNote(s, r)}</p>}
       {s.race?.route === route && (
         <p className="note">
           Dex is racing you for it: {s.race.until - s.day + 1} day{s.race.until === s.day ? '' : 's'} left.
@@ -619,18 +779,20 @@ const SEASON: Record<Season, [string, string]> = {
   summer: ['Summer', 'Hot. Climb early, or climb plastic.'],
 };
 
+// The day at Roadside: the sun crosses its wall from the first line to the last.
 function skyLine(c: Conditions): string {
   const t = clockShort(c.greaseFrom);
+  const all = clockShort(c.greaseFrom + CLIMB.sunSweep);
   const wet = c.seeping ? ' Still seeping from the rain.' : '';
   switch (c.sky) {
     case 'rain':
       return "The crag's shut. The gym isn't.";
     case 'prime':
-      return `Cold and dry: the best friction. Sun on the wall from ${t}.${wet}`;
+      return `Cold and dry: the best friction. The sun crosses the wall from ${t} to ${all}.${wet}`;
     case 'hot':
-      return `Greasy from ${t}.${wet}`;
+      return `Greasy from ${t}, and the whole wall by ${all}.${wet}`;
     default:
-      return `Sun on the wall from ${t}.${wet}`;
+      return `The sun crosses the wall from ${t} to ${all}.${wet}`;
   }
 }
 
@@ -645,11 +807,16 @@ function WeekBody({ s }: { game: Game; s: GameState }) {
       <ul className="days">
         {[0, 1, 2].map((i) => {
           const c = conditions(s.seed, s.day + i);
+          // A trip you've paid for out of the valley has its own sky: worth knowing before
+          // three hours of gas.
+          const away = s.unlocked
+            .filter((id) => PLACES[id]?.ownSky)
+            .map((id) => `${PLACES[id]!.name}: ${SKY_NAME[skyAt(s.seed, s.day + i, id)].toLowerCase()}.`);
           return (
             <li key={i} data-sky={c.sky}>
               <b>{i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : `Day ${s.day + i}`}</b>
               <span className="sky">{SKY_NAME[c.sky]}</span>
-              <small>{skyLine(c)}</small>
+              <small>{[skyLine(c), ...away].join(' ')}</small>
             </li>
           );
         })}

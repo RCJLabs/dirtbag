@@ -3,8 +3,11 @@
 import { describe, expect, it } from 'vitest';
 import { betaScale } from './climb';
 import { needFor } from './climber';
+import { routeById } from './content/gym';
+import { road } from './content/places';
 import { ROUTES } from './content/routes';
-import { act, faSuggestions, goBlocked, lineGrade, lineName, newGame } from './game';
+import { HIGHBALL } from './dials';
+import { act, belayer, faSuggestions, goBlocked, landingChance, lineGrade, lineName, newGame } from './game';
 import type { Action, GameEvent, GameState } from './types';
 import { conditions, conditionsAt, skyOn } from './weather';
 
@@ -59,11 +62,104 @@ describe('Granite Gorge', () => {
     expect(conditions('crags', hot).windows).toBeLessThan(1);
     expect(conditionsAt('crags', hot, 'gorge')).toMatchObject({ windows: 1, greaseFrom: 24 * 60 });
     const r = play(at(5, { at: 'gorge', min: 16 * 60 }), { t: 'go', route: 'gslab' });
-    expect(lines(r.events).some((l) => l.startsWith("Sun's on the wall"))).toBe(false);
+    expect(lines(r.events).some((l) => l.startsWith("Sun's on"))).toBe(false);
   });
 
   it('keeps its sport routes for when someone comes to belay', () => {
     expect(goBlocked(at(5, { at: 'gorge', min: 10 * 60 }), ROUTES.gintro!)).toBe('Nobody here to belay you');
+  });
+});
+
+describe('Moonstone Boulders', () => {
+  const refused = (s: GameState, a: Action) => {
+    const e = act(s, a).events.find((x) => x.k === 'refused');
+    return e?.k === 'refused' ? e.why : null;
+  };
+
+  it('opens at V6, and only once you have paid for the haul, in cash', () => {
+    expect(refused(at(5, { cash: 500 }), { t: 'unlock', place: 'moon' })).toMatch(/V6/);
+    expect(refused(at(6, { cash: 500 }), { t: 'travel', to: 'moon' })).toMatch(/haven't paid for yet: \$400/);
+    // The card doesn't count: it's cash in hand or nothing.
+    expect(refused(at(6, { cash: 399 }), { t: 'unlock', place: 'moon' })).toMatch(/\$400, in hand/);
+    const paid = play(at(6, { cash: 450 }), { t: 'unlock', place: 'moon' });
+    expect(paid.state).toMatchObject({ cash: 50, unlocked: ['moon'] });
+    expect(lines(paid.events)[0]).toMatch(/on your map for good/);
+    expect(refused(paid.state, { t: 'unlock', place: 'moon' })).toMatch(/already yours/);
+    expect(refused(at(6), { t: 'unlock', place: 'road' })).toMatch(/nothing to pay for/);
+  });
+
+  it('charges a permit every trip in, and won’t let the card pay it', () => {
+    const s = at(6, { cash: 100, unlocked: ['moon'] });
+    const r = play(s, { t: 'travel', to: 'moon' });
+    expect(r.state.cash).toBe(100 - road('lot', 'moon')!.cash - 20);
+    expect(r.state.at).toBe('moon');
+    expect(lines(r.events)).toContain("Permit, $20. The ranger doesn't look up.");
+    // Back out and in again: another permit.
+    const again = play(r.state, { t: 'travel', to: 'road' }, { t: 'travel', to: 'moon' });
+    const gas = road('moon', 'road')!.cash;
+    expect(again.state.cash).toBe(r.state.cash - gas - gas - 20);
+    expect(refused(at(6, { cash: -1000, unlocked: ['moon'] }), { t: 'travel', to: 'moon' })).toMatch(
+      /\$20 permit, and the card won't cover it/,
+    );
+  });
+
+  it('bakes: every window a little tighter in the desert, and the sun crosses it', () => {
+    // A fair day both in the valley and out there, so the rock is all that differs.
+    const fair = (d: number) =>
+      conditions('crags', d).sky === 'fair' &&
+      !conditions('crags', d).seeping &&
+      conditionsAt('crags', d, 'moon').sky === 'fair' &&
+      !conditionsAt('crags', d, 'moon').seeping;
+    const day = days(2, 200).find(fair)!;
+    expect(conditionsAt('crags', day, 'moon').windows).toBeCloseTo(conditions('crags', day).windows * 0.92);
+    const s = at(8, { at: 'moon', day, min: 10 * 60, unlocked: ['moon'] });
+    expect(betaScale(s, ROUTES.megg!, 'A1')).toBeLessThan(
+      betaScale({ ...s, at: 'road' }, { ...ROUTES.megg!, place: 'road' }, 'A1'),
+    );
+  });
+});
+
+describe('highballs [proposed]', () => {
+  it('can land you badly off a fall: more from higher, less with the haul’s pads and a spotter', () => {
+    const tall = ROUTES.marete!;
+    const s = at(8, { at: 'moon', min: 10 * 60 });
+    // A boulder that isn't a highball, and a fall from under the safe height, land fine.
+    expect(landingChance(s, ROUTES.megg!, 5)).toBe(0);
+    expect(landingChance(s, tall, 3)).toBe(0);
+    const top = landingChance(s, tall, tall.moves);
+    expect(top).toBeCloseTo(HIGHBALL.perFoot * (tall.heightFt - HIGHBALL.safeFt));
+    expect(landingChance(s, tall, 6)).toBeLessThan(top);
+    expect(landingChance({ ...s, unlocked: ['moon'] }, tall, tall.moves)).toBeCloseTo(top * HIGHBALL.pads);
+    // Roadside's Highball Arête: Hazel's there in the morning to spot you, gone by evening.
+    const hb = ROUTES.highball!;
+    const morning = at(5, { at: 'road', day: 1, min: 9 * 60 });
+    const evening = { ...morning, min: 17 * 60 };
+    expect(belayer(morning)).toBe('hazel');
+    expect(belayer(evening)).toBeNull();
+    expect(landingChance(morning, hb, hb.moves)).toBeCloseTo(
+      landingChance(evening, hb, hb.moves) * HIGHBALL.spotter,
+    );
+  });
+
+  it('turns a bad landing into an ankle, worst from the top, and never on a send', () => {
+    const tall = ROUTES.marete!;
+    const fall = { sent: false, hi: tall.moves, fellAt: 'A', tried: ['A1'], skin: 0 };
+    const kinds: string[] = [];
+    for (const day of days(1, 80)) {
+      if (!conditionsAt('crags', day, 'moon').open) continue;
+      const s = at(8, { at: 'moon', day, min: 10 * 60 });
+      const r = play(s, { t: 'go', route: 'marete' }, { t: 'done', route: 'marete', result: fall });
+      for (const e of r.events) if (e.k === 'injured') kinds.push(e.kind);
+      const sent = play(
+        s,
+        { t: 'go', route: 'marete' },
+        { t: 'done', route: 'marete', result: { ...fall, sent: true } },
+      );
+      expect(sent.events.some((e) => e.k === 'injured')).toBe(false);
+    }
+    // A fall from 22 ft is 14 over the safe height: a broken ankle, about one fall in six.
+    expect(kinds.length).toBeGreaterThan(3);
+    expect(new Set(kinds)).toEqual(new Set(['broken ankle']));
   });
 });
 
@@ -78,6 +174,16 @@ describe('sandbags', () => {
     expect(lines(first.events)).toContain("That's no V7. Locals have been sandbagging it.");
     const second = play(first.state, { t: 'rest', route: 'gdyno' }, { t: 'go', route: 'gdyno' });
     expect(lines(second.events).some((l) => l.includes('sandbagging'))).toBe(false);
+  });
+
+  it('run a grade stiff on the board, which nobody finds surprising', () => {
+    const s = at(6, { at: 'gym', min: 10 * 60, today: ['warm', 'pass'] });
+    const b = routeById('crags', 'bd-1-2')!;
+    expect(b.trueGrade).toBe(b.grade + 1);
+    const first = play(s, { t: 'go', route: b.id });
+    expect(lines(first.events)).toContain(
+      `Board grades: that's no V${b.grade}. Nobody on the mats is surprised.`,
+    );
   });
 });
 

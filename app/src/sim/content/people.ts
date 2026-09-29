@@ -56,6 +56,8 @@ export interface TalkDef {
 export interface PersonDef {
   name: string;
   full?: string;
+  // Someone you know from the first morning, before you've said a word to them.
+  known?: true;
   // Beta they know, and will show you, at these places.
   shows?: string[];
   // Not a partner: someone who climbs against you. What they're like, in v0.956's words.
@@ -63,7 +65,8 @@ export interface PersonDef {
 }
 
 export const PEOPLE: Record<string, PersonDef> = {
-  hazel: { name: 'Hazel' },
+  // Parked next to you, with the coffee on, since before the game began.
+  hazel: { name: 'Hazel', known: true },
   // v0.956's Sage: technical, and the partner whose perk was beta.
   sage: { name: 'Sage', shows: ['road', 'gym'] },
   // v0.956's default rival.

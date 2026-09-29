@@ -32,6 +32,9 @@ function outline(id: string, heightFt: number): Pt[] {
   ];
 }
 
+// The boulder's outline on its close-up, for anything drawn on the rock alone.
+export const boulderOutline = (r: RouteDef): Pt[] => outline(r.id, r.heightFt);
+
 // Where the climber's hips go: feet on the pads to hands on the lip, wandering a little.
 export function boulderTopo(id: string, heightFt: number): Pt[] {
   const r = mulberry32(seedOf(id) + 3);
@@ -59,6 +62,8 @@ interface Look {
   face: string;
   side: string;
   speckle: boolean;
+  // Desert scrub behind it instead of pines.
+  scrub?: true;
 }
 const LOOKS: Record<string, Look> = {
   road: {
@@ -86,6 +91,20 @@ const LOOKS: Record<string, Look> = {
     face: '#C3C6C6',
     side: '#969BA1',
     speckle: true,
+  },
+  moon: {
+    sky: ['#9CC3D9', '#F3DDB8'],
+    sun: '#FFF4DA',
+    back: '#C9A7A0',
+    haze: 'rgba(214,186,160,.2)',
+    trees: '#6E7A55',
+    talus: '#CDB58F',
+    ground: '#D8BE92',
+    stones: '#BFA073',
+    face: '#EDE3D3',
+    side: '#C4B19E',
+    speckle: false,
+    scrub: true,
   },
 };
 
@@ -121,7 +140,8 @@ export function paintBoulderArt(g: G, route: RouteDef): void {
     [110, 436, 0.9],
   ] as const) {
     g.beginPath();
-    coniferPath(g, x, y, s);
+    if (L.scrub) g.ellipse(x, y - 8 * s, 16 * s, 9 * s, 0, 0, 6.2832);
+    else coniferPath(g, x, y, s);
     g.fill();
   }
   g.fillStyle = L.talus;

@@ -60,9 +60,9 @@
 | 7 The first hour | Becomes R1's target. |
 | 8 Choose the look | Done: the Mix. Its tokens and components are built in R0–R1. The Steam capsule art moves to Phase 15. |
 | 9 Climber on the wall | Reshaped as beta-then-send and built from R0. Its Done-when criteria gate R2. |
-| 10 Crags as places | Unchanged in intent. It follows R2, on the new build. |
-| 11 Valley map | Reshaped: the map plus side-view scenes, drawn in code (no Tiled, no tilesets). |
-| 12 UI system | Folded into the rebuild (R0–R2). |
+| 10 Crags as places | Built on the rebuild (the board, conditions you can see, Moonstone) and closed by Evan's call. Its testers' criterion carries. |
+| 11 Valley map | Built on the rebuild (the taps, place cards, adding a place, the daily plan) and closed by Evan's call. Criteria 2 to 5 pass; its testers' criterion carries. Ships in 0.961.0. |
+| 12 UI system | Folded into the rebuild (R0–R2). The current milestone: what's left of it gets planned on the rebuild next. |
 | 13–20 | Unchanged in intent. They target the new build. |
 
 ## The rebuild track
@@ -304,7 +304,7 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 
 **Depends on:** R1 and Phase 5. **Effort:** ~6–10 weeks.
 
-### R3 — Switch-over   **<<< CURRENT MILESTONE**
+### R3 — Switch-over
 
 **Goal.** The new build becomes dirtbag.rcjlabs.com and the Play app.
 
@@ -365,7 +365,16 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 - `docs/STORE.md` holds the Play listing for 0.960.0, in the game's voice: an 80-character short description, the full description, and "What's new". The order follows the audit (the life, then the climbing, then the promise); every fact in it is checked against the build. `npm run check` holds each block to Play's limit.
 - Eight 1080 × 1920 screenshots from the 0.960.0 build, listed there with captions. They were delivered with the release work rather than committed, since they're binary.
 
-**Status (29 Sep 2026): built; the release is Evan's.**
+**Released (29 Sep 2026).** Evan published `v0.960.0` on `main` (`59bd69e`) at 16:17 UTC.
+- Deploy run 1 passed its checks, and its live check: the site serves this commit and the rebuild's worker, and the live smoke test passed. Evan reports the release steps done.
+- `v0.956.0` stays untagged on purpose. That tag's push deploys v0.956, so creating it on `e098332` is the rollback, not a safety step.
+- The live crossover on a phone that had v0.956 installed is the one check left.
+
+**Status (29 Sep 2026): built and merged (PR #11); closed by Evan's call with the release carried.** Evan moved on to Phase 10 the same day; the release steps below stay his, and R3's criterion 1 is met when they're done.
+
+*The notes below are from before the merge.*
+
+**Status before the merge: built; the release is Evan's.**
 - Criterion 2 is built and tested before the deploy:
   - the e2e bot plays a v0.956 player who keeps their career and comes across;
   - a local crossover with v0.956's own files shows an installed browser swapping to the rebuild within seconds, offline included.
@@ -419,7 +428,7 @@ That adds up to about 51–82 weeks, roughly 12–19 months [INFERRED].
 
 **Status (28 Sep 2026): closed by the rebuild.** The release pipeline is built. The rebuild changes what the open items below are worth:
 - Items 1–3 were about building v0.956 from its source. The new build is built from source in CI by construction, and R0 drives its version from `package.json`. The v0.956 source is still worth putting somewhere private, as a reference for porting rules exactly in R2.
-- Item 4 is done: Pages builds from Actions and the environment accepts tags. What remains is Evan pushing the first `v0.956.0` tag, which exercises `deploy.yml`.
+- Item 4 is done: Pages builds from Actions and the environment accepts tags. The first tag deploy was `v0.960.0`, on 29 Sep 2026 (Deploy run 1, green).
 - Item 5 still stands before the next store release.
 
 The status as it stood before the rebuild:
@@ -925,6 +934,111 @@ The full diagnosis is in the audit, under *The map and the look*.
 
 **Depends on:** Phases 8–9. **Effort:** ~3–5 weeks. **Main risk:** art volume. A topo is line work over one drawing per crag.
 
+**On the rebuild (plan, 29 Sep 2026).** The scope above was written for v0.956's nine crags up to V17. The rebuilt game has the gym, Roadside Crag and Granite Gorge, and a first season that tops out at V9. Phase 10 grows it a place at a time, in slices:
+- **10.1, the board at Send City.** A steep board beside the weekly wall, with harder problems (V4–V7) that stay up four weeks: v0.956's "persistent gym walls". It fills the gap R2's harness found, where by week four about half the bots hit a wet day with the week's set done and nothing new to try.
+  - *As built (10.1):*
+    - **The board.** Four problems, V4 to V7 left to right, each a one-crux library boulder of 6–9 moves drawn from steep styles: power and crimp twice as often as dyno and technical. All four reset together every four weeks (`BOARD_WEEKS`).
+    - **Ids and saves.** Ids are `bd-{block}-{n}` on a new seed stream, `worldgen` → `sendcity-board-{block}`, logged for Unreal. An old id still resolves for its log. The state's shape doesn't change.
+    - **On screen.**
+      - The gym scene runs on past the wall to the board: a dark panel with a lit grid, its grades on the kicker, and "RESET EVERY 4 WEEKS" (from `BOARD_WEEKS`).
+      - Its sheet lists the four problems: where you stand on each, and the days until the next set.
+      - Face-on, a problem is its lit holds: green start, blue hands, yellow feet, a purple finish.
+      - Down from a board problem, you land under the board.
+      - The e2e bot opens the board and a problem, and checks where "Down" puts you.
+    - **The harness** (12 seeds × 28 days × every start and strategy):
+      - "Nothing new to try" went from 4–10 runs of every 12 to 3 of 144. In those 3, the climber had sent all four board problems by day 26–27; the next set goes up on day 29.
+      - The median climber ends the month at V4, where it was V3.
+      - The first V5 go comes about a day later (days 19–20), because the bots work the board's V4 first.
+      - All four season targets still pass.
+    - **Board grades run a grade stiff** (Evan's call, 29 Sep 2026). As first built, they climbed like the wall's: board V4s and wall V4s were both sent at a median climber grade of V3, and 3 runs sent the V7 at V4.
+      - Now each board problem climbs like the grade above its label (`BOARD_STIFF`), as real boards run.
+      - It says so on your first go: "Board grades: that's no V5. Nobody on the mats is surprised."
+      - The board's card warns you before you pull on.
+    - **The store copy** (`docs/STORE.md`) describes 0.960.0, which has no board. It gains the board with the release that carries it.
+- **10.2, conditions you can see.** The shade line crossing the wall through the day (the prime window made visible), wet streaks after rain, and closures on the map.
+  - *As built (10.2):*
+    - *[proposed]* **The sun crosses a crag a line at a time.** It's a rules change, so the shade line can be honest.
+      - Before, every line at a crag greased at the same minute. Now the sun takes two hours (`CLIMB.sunSweep`) to cross Roadside from the boulder field's far end to the road, and each line greases when it arrives (`sunOn`).
+      - The crossing is centred on R1's single times (3 PM prime, 2 fair, noon hot), so the average line keeps its old time. `greaseFrom` now means the sun's first minute on the wall.
+      - The Gorge stays in the shade.
+      - Why this way round: the far end's projects lose their shade first, so projecting is a morning job, and the warm-ups by the road keep theirs longest, for someone who arrives after a shift. Run left to right first, the sun made day one's Warm Boulder greasy when the e2e bot got there at 2:53 PM, after a double shift.
+    - **On screen.**
+      - In the crag scene, warm light on the side the sun has crossed, with an edge that passes each line's foot at its sun time. A view test holds the scene's layout to the sun's path.
+      - On a route's wall, the same edge crosses its sport lines, or the boulder's close-up.
+      - Wet rock: darker and streaked the day after rain, more so in it.
+      - On the map, CLOSED (the season) and SOAKED (rain) under a crag's pin.
+      - The beta sheet says "in the shade till 4 PM", "in the sun, smaller windows", or "damp from the rain". The forecast gives the sun's crossing ("from 1 PM to 3 PM").
+      - The e2e bot checks the Warm Boulder's shade on day one.
+    - **The harness** (12 seeds × 28 days):
+      - All four season targets pass. The first V5 go is at day 19 for every strategy.
+      - 1 run of 144 has a day with nothing new to try.
+      - Reckless bots' injuries read 7 of 144 (5%, small numbers); moderate bots', 0.
+      - The bots don't plan around the shade, so the gain goes to a player who does.
+- **10.3, Moonstone Boulders**, v0.956's next crag: desert quartzite, opens at V6, a permit to climb. Its scene and topos drawn in code, highballs with pad and spotter decisions (the audit's idea for its identity), and its road on the map. It's where Act II would start.
+  - *As built (10.3a, Moonstone as a place):* 10.3 is in two parts: the place first, then highballs (10.3b).
+    - **v0.956's terms.**
+      - It opens at V6 (`minGrade`).
+      - You pay $400 once, in cash in hand and not on the card, to open the trip for good. v0.956's unlockCost, "a $400 haul"; here it buys pads, water jugs and a guidebook. It's paid from the place card, and the game remembers it in a new `unlocked` list.
+      - A $20 permit on every trip in. Unlike gas, it won't go on a maxed card.
+      - Three hours and $30 of gas from the Lot, north up the highway past Roadside (two hours from there).
+    - **Desert rock:** every window at Moonstone is × 0.92 (`CLIMB.desertFactor`), v0.956's desert −0.08 translated the way seeping's −0.07 was. It's sunny, so the sun crosses it as at Roadside.
+    - **v0.956's nine lines:**
+      - boulders: Tall Arête V6 (v0.956 called it Highball Arête, like a Roadside line, so it's renamed), Moonstone Mantel V7, The Egg V8, Hueco Pockets V9 (climbs like V8, as in v0.956), Moonstone Splitter V8, Lunar Roof V11, and an open V12 project;
+      - sport lines on a spire: Desert Spire (5.13a) and Moonlight Arête (5.13c).
+      - The highballs are drawn up to 22 ft.
+    - **Save v4.** `unlocked` is new, so 0.960.0's saves (v3) migrate with none paid for. The migration is tested against a real v3 save written by 0.960.0's code.
+    - **On screen.**
+      - The scene: a desert noon, violet mesas, sand, and pale quartzite. A spire, square-fractured and rust-streaked, carries the two bolted lines, and the boulders stand on the sand.
+      - Close-ups: desert boulders with scrub behind them, and the spire face-on.
+      - A map pin where the highway leaves the valley.
+      - The place card sells the haul, then shows the drive with gas and permit together.
+    - **Open.**
+      - The spire's two lines need a belayer, and nobody's schedule brings anyone to Moonstone yet. They're climbable data waiting on a road-trip partner, as the Gorge's bolts waited on Sage.
+      - The bots don't go there. It's past the first month for all of them, so the harness is unchanged.
+      - There's still no V10 boulder anywhere in the game, and v0.956 had none here either (criterion 3).
+  - *As built (10.3b, highballs):* new design, kept as built by Evan's call (29 Sep 2026), month-one risk and all. v0.956 had no highball rule, only a generic "close call" for climbing without a pad, and a shop upsell for "a second crashpad for highballs".
+    - **The rule.**
+      - A `highball` flag goes on the tall boulders: Roadside's Highball Arête (18 ft, whose own line says the crux is where the pads stop helping), and Moonstone's Tall Arête, Splitter and project.
+      - A fall off one can land badly. Nothing up to 8 ft; above that, each foot adds 1.2% (`HIGHBALL`), so a fall from 16 ft is about 1 in 10 and from 22 ft about 1 in 6.
+      - The Moonstone haul's pads halve it. A partner there to spot you (`belayer`) halves it again.
+      - A bad landing is an ankle, using v0.956's ankle names: jammed, rolled, broken, by how far over 8 ft you fell. Its days off and clinic bill are an injury's.
+      - It rolls on its own label in the session stream, and only when overuse didn't already hurt you on that go.
+    - **The decisions** are these: whether to own the pads, whether to wait for someone to spot you, and whether to go at all. The beta sheet shows the odds before you pull on ("a fall from the crux is 16 ft. The haul's pads, nobody spotting: about 1 in 21 lands badly").
+    - **Not built: pad placement.** Every boulder here has one crux, so the pads always belong under it, and there's nothing to choose. If Evan wants placement, it needs boulders with two places to fall first.
+    - **The harness.** Moderate bots now wait for a spotter while a crux fall is worse than 1 in 20. Reckless bots don't.
+      - With Hazel spotting at Roadside, careful bots still come off Highball Arête enough that 10 of 144 runs end the month with a jammed ankle (7%; it was 0). Reckless bots: 15 of 144.
+      - The target (under 35%) passes, and so do the other three.
+      - R2 found 0% might be "too gentle to register as a trade-off". Whether 7% is right is a tuning call: the per-foot rate is one dial.
+
+**Done when, on the rebuild** *[proposed; replaces the criteria above until Evan rules]*:
+1. The gym and every crag in the game read as places: their own scene, lines drawn from data, and conditions you can see (shade, wet, closed).
+2. Any day of the first season, in any weather, has something new to try: the harness's "nothing new to try" reads 0.
+3. There are lines at every grade the first season reaches, V0 to V9. (Scoped to Act I by Evan's call, 29 Sep 2026: Moonstone is where Act II starts, and more crags come in later phases.)
+4. Testers can point at where they want to go and say why (conditions, style, a project).
+
+**Status (29 Sep 2026): 10.1–10.3 built; closed by Evan's call.** Criteria 1–3 pass on the build. Criterion 4 (testers) carries to the first tester round. The marker moved to Phase 11.
+1. Met: the gym, Roadside, the Gorge and Moonstone each have a scene, lines drawn from data, and conditions you can see.
+2. Met: 0 runs in 144 have a day with nothing new to try.
+   - The harness counts only content running out. Before, a day the body kept you off the rock counted as nothing to try; now it's "resting", since the lines were still there.
+   - The last run it caught was a V4 climber who had cleared the gym by day 25, the board's V7 included, then got a wet day. With the board a grade stiff, that V7 is a month-two project.
+3. Met, as scoped: every boulder grade from V0 to V9 has lines. The weekly set covers V0–V5, Roadside V2–V7, the board V4–V7 and the Gorge V5–V9.
+4. Needs testers.
+
+With the stiff board, the harness (12 seeds × 28 days) shows:
+- All four season targets pass.
+- The first V5 go comes at day 19–19.5, but a few runs (up to 2 of 12 in some starts) don't tie into a V5 by day 28.
+- An hour on the rock at V4 teaches 8.3 skill points, down from 10.1, since the board's V5 now climbs like a V6.
+- Careful first-month injuries read 8 of 144 (6%); reckless, 15 of 144.
+
+*As built (follow-ups, 29 Sep 2026):*
+- **Moonstone's own sky.** v0.956 rolled every crag's weather from its climate. Out of the valley, Moonstone now gets its own sky, as a new place flag `ownSky`:
+  - the season's odds, shifted by v0.956's desert terms (12 points more heat, 10 less rain, 2 less prime), on its own seed label;
+  - over a year it rains less and bakes more than the valley, so a wet day at home can be a dry one out there.
+  - Its place card says what it's doing ("Out there today: fair."), and once it's paid for, the forecast adds it to each day.
+  - The Gorge keeps the valley's sky, which R2's season was tuned on; v0.956 rolled it apart too. v0.956's desert "soft after rain" and "washed clean" aren't carried: the day after rain seeps as it does in the valley.
+- **The harness** counts a day the body kept you off the rock as "resting", not "nothing".
+- **Roadside's card** said "Seven lines" of eleven. The count now comes from the data (`{lines}`), and a content check holds every place card's text to the placeholders it can fill.
+
 ---
 
 ### Phase 11 — Replace the joystick town with a valley map
@@ -973,9 +1087,98 @@ The full diagnosis is in the audit, under *The map and the look*.
 
 **Depends on:** Phase 8, ideally with Phase 4's UI state machine. **Effort:** ~4–6 weeks. **Main risk:** losing the charm of wandering. Put ambience and people into the camps, the cards and the map: animated weather, night, season, and the van moving along the road.
 
+**On the rebuild (plan, 29 Sep 2026).** Most of the scope above is already how the rebuild works:
+- a valley map drawn in code, with labelled pins;
+- tap a pin, then drive: the van runs along the road for a fixed time and gas;
+- side-view scenes you tap to walk around;
+- a clock that moves only on actions and travel (criterion 4, which the smoke test already checks).
+
+There's no joystick, zone graph or tileset to retire. What's left, in slices:
+- **11.1, count the taps.** The e2e bot counts its taps on every trip and on a scripted day-3 loop (a shift, the crag, three goes, back, dinner, bed), and reports them against criteria 2 and 3. Anything over gets fixed.
+  - *As built (11.1):*
+    - **What counts:** every tap, click, key and walk the player makes, but not the hold button, which is the climbing itself. Picking a line, Go and walking off all count, so the loop's three goes cost 9 taps.
+    - **The first count**, on the build as it was:
+      - Trips: 3 taps from a scene by the map (Map, pin, drive), 2 by the crag's van, 1 from a card-only place's own card. Criterion 2 held as built.
+      - The day-3 loop: 32 taps. 12 of them waited for bed at 6 PM after getting home at 1 PM: four "Lie around in the van" at an hour each, the walk to the fire, two sits there, and the walk back. The other 20 were the day.
+    - *[proposed]* **Bed once it's dark, and one tap to get there.**
+      - Bed opens at 5 PM, when the Lot turns to night and the fire's lit, not 6. The hour between could only be filled at the fire, on foot.
+      - "Lie around till dark" takes the rest of the afternoon in one tap, at the old 4 energy an hour. Acts gain an `until` time, and `actCost` prices them the same for the rules and the button.
+      - The trade: 6 PM made a bad day harder to skip, but only by taps. Skipping a day still costs what it did: the $18 spot, a shift not worked, a day of the season.
+      - The harness doesn't move: all four targets pass, the first V5 go comes on days 19–19.5, and the injury counts are the same.
+    - **The e2e** now plays three days on a pinned seed, so day three is prime and Roadside is open. Day two ends with the drive home and one tap to dark. Day three takes 20 taps. The run fails on a loop over 20, or a trip over three taps from a scene.
+- **11.2, place cards.** Each card gets a header drawn from the place itself, and "Who's around": the people there now (partners, regulars, Dex). So before the drive you know whether there's a belayer, or a spotter for a highball.
+  - *As built (11.2):*
+    - **Read at the hour you'd arrive.** A card shows the place as you'd find it: now if you're there, otherwise after the drive. People keep hours, so "now" would promise a belayer who's gone by the time you park.
+    - **Who's around** lists everyone who'll be there between then and the end of the day, with when: "Hazel, till 5 PM", "Sage, from 9 AM till 6 PM", "Hazel, till 8 AM, and from 5 PM".
+      - Someone you haven't met is "someone you haven't met". You know Hazel from the first morning.
+      - The sim reads each person's day a minute at a time (`staysAt`), so an invite's odd minute counts.
+      - Only places with a scene list it. Nobody's day takes them to the diner or the café, and their regulars, Otis and Wren, are in those cards' own words.
+    - **One more line at a crag with ropes or highballs**, on what the people there mean for you:
+      - "A belayer and a spotter till 6 PM", "A belayer from 9 AM", or "Nobody to belay you: boulders only".
+      - Partners whose stays overlap count as one stretch.
+    - **The header**, a band at the top of the card:
+      - A place with a scene is drawn from it, at the hour you'd arrive: whoever's there, the sun's edge, the wet, the night. It's framed where its people stand, through the same renderer as the screen with a wider view.
+      - A scene's layers take 100–200 ms to paint here, more on a phone. So each header's painted background is kept per scene, time of day and size; only what's drawn over it changes with the hour. The card shows first and the header after, and drawing one never pushes the scene you're in out of its cache.
+      - The diner and the café get fronts drawn in code: Otis in a booth with the paper, Wren on the bar. They're lit after dark, and it rains on them when it rains.
+      - The scenes' far layers are now painted wide enough for a header's view. The screen sees the same pixels as before.
+      - A layout test holds every place to a header (a scene or a front), and every scene to somewhere for its people to stand.
+    - **The e2e** checks that the café's front and Roadside's header paint. It reads Roadside's card on day two ("Hazel, till 5 PM", then a belayer and a spotter till 5) and Send City's ("Someone you haven't met, from 9 AM till 6 PM"). Trips stay at 3 taps from a scene, and day three at 20.
+    - The download grows 2.8 KB, to 201 KB of the 250 KB budget.
+- **11.3, adding a place is documented work.**
+  - Roads become a graph: a place needs roads to its neighbours only, and a trip anywhere else is the quickest way through them. Today every pair of places needs its own hand-typed road; Moonstone needed six.
+  - A checklist goes in `app/README.md`.
+  - CI checks that every place has a pin, a card, roads that reach everywhere, and a scene (or none, on purpose).
+  - *As built (11.3):*
+    - **Roads are a graph.** Each place has roads to its neighbours only: 11 roads, down from one for every pair (21). A drive anywhere else is the quickest way through them, by time, then by gas (`road`).
+      - The network: town's six streets; the highway up to Roadside from the Lot, the café and the diner; and one road each for the far crags. The Gorge's dirt road and the desert road to Moonstone both leave the highway at Roadside.
+      - Every trip made daily keeps its cost: town hops, town to Roadside and back, and v0.956's drives from the Lot to the Gorge (two hours, $22) and to Moonstone (three hours, $30).
+      - Nine rare trips change, all to or from the Gorge or Moonstone:
+        - Roadside to the Gorge: 60 min and $10 (was 70 and $12).
+        - Roadside to Moonstone: $18 (was $20).
+        - The gym to Moonstone: 190 min (was 175). The café and the diner to Moonstone: 10 min longer.
+        - The gym and the diner to the Gorge: 5 min longer.
+        - The Gorge to Moonstone: 180 min and $28 (was 190 and $32).
+      - The harness reads the same on every target, and all of the e2e's clock and cash checks hold.
+    - **Drives on the map follow the roads.** A place off the highway declares its side road in `SIDE_ROADS`: Old Town's spur, the Gorge's dirt road. A drive runs out along one side road, along the highway, and in along the other. Before, every drive went through the Old Town junction, so Roadside to Moonstone ran south to town and back.
+    - **A checklist** in `app/README.md`, "Adding a place": the place, its acts, its roads, its lines, its pin and side road, its picture (a scene with its header frame, or a front), its people, the checks, the logs.
+    - **CI's checks**, by name:
+      - `content.test.ts`: every road joins two real places, once, and is the quickest way between its own ends (else nobody drives it). Every place reaches every other, the same both ways. v0.956's drives from the Lot keep their terms.
+      - `layout.test.ts`: a pin and a header for every place, and a scene that's the place's own. Side roads start on the highway. Drives go pin to pin without running past either end or skipping road.
+    - **A dry run of the checklist**, in a scratch copy that was then thrown away: a card-only "Gear Shop" in Midtown.
+      - The data was 13 lines in `places.ts` (the place, one act, one road to the café), plus a one-line pin and a stand-in front.
+      - With the data alone, the tests failed by name on the missing pin and header.
+      - With the pin, they failed on a pin too far off the highway for a straight street. That failure now says to give it a side road.
+      - Then everything passed, and the place worked in the game: its card, the drive there, and a drive from it to every other place, all worked out from its one road.
+      - The front, the illustration, is the slow part, and the criterion leaves it out. The run was mine, not a person's, so its speed says nothing about theirs. What it shows is that the steps are complete and each gap gets named.
+- **11.4, the daily agenda** (optional in the scope above): plan a day as a sequence ("shift → diner → gym → van") and run it, stopping at the first thing the day refuses.
+  - *As built (11.4, Evan's call to build it):*
+    - **A plan is a list of steps**: a place, and an act there (a shift, a meal, cooking, lying around, bed) or a climb. It runs in one go:
+      - it drives to each place and does each act through `act()`, as a tap would, so the rules never know a plan ran them;
+      - it waits at a climb while you climb, and **Go on** runs the rest;
+      - it stops at the first thing the day refuses and says why. Bed ends the day, and the plan with it.
+    - **Yesterday is the plan.** The game notes each day as you play it: every act, and a climb once a visit. "Plan the day", on the van, opens on yesterday. Take steps out, add them by where and then what; bed always stays last. "Run the plan" repeats it the next morning.
+    - **What you can plan** comes from the data: a place's acts, and climbing where there's something to climb. It leaves out the moment Scout picks you, and a dog's errands when you have no dog.
+    - **The plan lives beside the save**, like the settings (`dirtbag.plan`). The save's shape doesn't change. Starting over forgets it.
+    - **A chip under the HUD** shows the step it's on, **Go on** after a climb, and why it stopped. It sits above any sheet, because a card-only place always has its card open.
+    - **The e2e:**
+      - Day four runs day three again as a plan: 13 taps, against day three's 20. That's 3 to start it, 9 for the three goes, and 1 to go on.
+      - Day five lies around till dark, then runs the plan, which stops at the café: "Shifts start by 3 PM."
+    - Size: 203 KB of the 250 KB budget.
+
+**Done when, on the rebuild** *[proposed; replaces the criteria above until Evan rules]*:
+1. 4 of 5 testers find any destination within 5 seconds. This carries to the tester round.
+2. Any destination is two taps from the map (the pin, then the drive), and so three from a scene. The card between pin and drive shows the cost, the weather and who's there, so it stays. The e2e bot counts it.
+3. A day-3 loop takes 20 taps or fewer, not counting the climbing itself. The e2e bot counts it.
+4. The clock doesn't move while you're idle: true, and checked by the smoke test.
+5. A new place without a scene takes under an hour: a checklist, the road graph and CI's checks make it a data change plus a pin.
+
+**Status (29 Sep 2026): 11.1 to 11.4 built; closed by Evan's call, shipping as 0.961.0 with Phase 10.** Criterion 1 (testers) carries, as Phase 10's did. The marker moved to Phase 12.
+
+**Status before closing: 11.1 to 11.4 built.** Criteria 2 and 3 pass on the build, counted by the e2e: 3 taps at most for a trip from a scene, day three in 20, and day four by the plan in 13. Criterion 4 passes (the smoke test). Criterion 5 passes by a dry run: a card-only place was 13 lines of data and a pin, with the tests naming each missing piece, and its front is the illustration the criterion leaves out. Criterion 1 carries to the testers.
+
 ---
 
-### Phase 12 — The UI system and the desktop layout
+### Phase 12 — The UI system and the desktop layout   **<<< CURRENT MILESTONE**
 
 *Rebuild note: folded into the rebuild, R0–R2.*
 
@@ -1324,3 +1527,17 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — R3 decided (Evan): v0.956 retires with its saves exported, and the rebuild ships as 0.960.0. R3.1: the rebuild tells a v0.956 player the old game has retired, keeps their career as a file, and lets them come across under their old name, capped at V3 (proposed).
 - 2026-09-29 — R3.2: the site becomes the game's build, at 0.960.0. The build's worker takes v0.956's name and clears its cache, and a local crossover test shows a v0.956 browser swapping to the rebuild within seconds, offline included. Smoke, check, stage, CI and Deploy follow the build. v0.956's files leave the tree; its tag keeps them.
 - 2026-09-29 — R3.3: the Play listing and "What's new" for 0.960.0 in `docs/STORE.md`, held to Play's limits by `npm run check`, and eight screenshots from the build. R3 is built; the tags and the Play upload are Evan's.
+- 2026-09-29 — R3 merged (PR #11) and closed by Evan's call with the release carried as his steps (the v0.956.0 and v0.960.0 tags, then the Play upload). CURRENT MILESTONE moved to Phase 10, planned on the rebuild: the board at Send City, conditions you can see, and Moonstone Boulders.
+- 2026-09-29 — Phase 10.1: the board at Send City. Four problems, V4–V7, that stay up four weeks, on a new seed stream logged for Unreal. It has its own scene, sheet, face-on wall and e2e step. "Nothing new to try" in the harness falls from about half the runs to 3 of 144; the season targets still pass.
+- 2026-09-29 — Phase 10.2: conditions you can see. The sun crosses Roadside end to end in two hours and greases each line as it arrives (proposed). The scene and walls show its edge, wet rock shows after rain, and the map tags closed and soaked crags. The season targets pass.
+- 2026-09-29 — Phase 10.3a: Moonstone Boulders as a place. v0.956's terms: V6, a $400 haul paid once, a $20 permit each trip. Nine lines, a desert scene with a quartzite spire, its road and map pin. Save v4 adds the trips you've paid for, migrated from a real v3 save. Highballs (10.3b) are next.
+- 2026-09-29 — Phase 10.3b: highballs (proposed). A fall off a tall boulder can land you badly, by height, halved by the Moonstone haul's pads and again by a partner spotting. The beta sheet shows the odds. Careful bots wait for a spotter; 7% of moderate runs now end month one with a jammed ankle. Phase 10's slices are built; its criteria 2–4 aren't met, so the marker stays.
+- 2026-09-29 — Phase 10 follow-ups: Moonstone gets its own desert sky (v0.956's per-crag weather), on its card and the forecast. The harness counts only content, not injuries, as "nothing new to try": 1 run in 144 is left, and it hinges on the board-stiffness call. Roadside's card counts its lines from the data.
+- 2026-09-29 — Evan's calls: the board runs a grade stiff, criterion 3 is scoped to Act I (V0–V9), and highball risk stays as built. With the stiff board, the harness reads 0 runs in 144 with nothing new to try. Phase 10's criteria 1–3 pass; 4 waits on testers.
+- 2026-09-29 — Phase 10 closed by Evan's call: criteria 1–3 pass on the build, and criterion 4 (testers) carries. CURRENT MILESTONE moved to Phase 11, planned on the rebuild: count the taps, place cards, adding a place as documented work, and the daily agenda.
+- 2026-09-29 — Phase 11.1: count the taps. On a pinned seed, the e2e bot counts every trip (3 taps at most from a scene, 2 by the crag's van) and a day-3 loop. The loop took 32 taps, 12 of them waiting for bed at 6 PM. Bed now opens at dark (5 PM), and lying around till dark is one tap (proposed). Day three: 20 taps. Criteria 2 and 3 pass; the season targets don't move.
+- 2026-09-29 — Phase 11.2: place cards. Every card has a header showing the place as you'd find it after the drive: its scene, with whoever's there, the light, the wet and the night; the diner and the café get fronts drawn in code. Places with a scene list who's around then, and till when. At a crag with ropes or highballs, a line says whether that means a belayer or a spotter. The e2e checks both.
+- 2026-09-29 — Phase 11.3: adding a place is documented work. Roads are a graph: 11 roads to neighbours instead of one for every pair, and a drive is the quickest way through them. Daily trips and v0.956's drives from the Lot keep their costs. Nine rare trips to or from the Gorge and Moonstone shift; Roadside to the Gorge is now an hour and $10. Drives on the map follow the roads, so Roadside to Moonstone no longer runs south through town. An "Adding a place" checklist is in `app/README.md`, and the tests name what a place is missing.
+- 2026-09-29 — Phase 11.4, by Evan's call: the daily plan. Yesterday, as you played it, is today's plan: one tap runs its drives and errands, it waits while you climb, and it stops at the first thing the day refuses, saying why. You plan on the van and edit by where, then what; bed stays last. The e2e runs day four as a plan in 13 taps (day three took 20), and day five's plan stops at the café.
+- 2026-09-29 — 0.960.0 released: Evan published `v0.960.0` on `main`, and Deploy run 1 went green, live check included. `v0.956.0` is left untagged on purpose, because its push would deploy v0.956; creating it on `e098332` is the rollback. The docs now say so.
+- 2026-09-29 — Phase 11 closed by Evan's call: criteria 2 to 5 pass on the build, and criterion 1 (testers) carries. Phase 10 and 11 ship together as 0.961.0, with the store's "What's new" and the full description updated for them. CURRENT MILESTONE moved to Phase 12; what the rebuild left of it gets planned next.
