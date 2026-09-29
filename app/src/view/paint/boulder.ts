@@ -89,7 +89,8 @@ const LOOKS: Record<string, Look> = {
   },
 };
 
-function paint(g: G, route: RouteDef): void {
+// A boulder painted into any context: the wall view's cached art, or the send card.
+export function paintBoulderArt(g: G, route: RouteDef): void {
   const { id, heightFt } = route;
   const L = LOOKS[route.place] ?? LOOKS.road!;
   const r = mulberry32(seedOf(id) + 11);
@@ -260,7 +261,7 @@ export function boulderArt(route: RouteDef): HTMLCanvasElement {
   let c = cache.get(route.id);
   if (!c) {
     const [cv, g] = mk(W, H, 2);
-    paint(g, route);
+    paintBoulderArt(g, route);
     c = cv;
     cache.set(route.id, c);
   }

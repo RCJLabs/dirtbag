@@ -1,4 +1,4 @@
-import { Fragment, useLayoutEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   ACT_I,
   ACT_I_END,
@@ -55,6 +55,8 @@ import {
 } from '../sim';
 import type { Game, SheetId, Ui } from '../game/game';
 import type { Settings } from '../game/persist';
+import { CARD, cardPng } from '../view/paint/card';
+import { cardFile, cardOf, cardText } from './card';
 import { buildSheet, SKILL_NAME, type ListSpec } from './sheets';
 
 export const VERB_TEXT: Record<Verb, string> = {
@@ -102,11 +104,13 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
       <WeekBody game={game} s={state} />
     ) : id.k === 'settings' ? (
       <SettingsBody game={game} settings={ui.settings} />
+    ) : id.k === 'card' ? (
+      <CardBody game={game} id={id} s={state} />
     ) : null;
   if (body)
     return (
       <div className="sheet" id="sheet" role="dialog" aria-labelledby="sheet-title" ref={ref}>
-        {id.k !== 'fa' && <Close game={game} />}
+        {id.k !== 'fa' && id.k !== 'card' && <Close game={game} />}
         {body}
       </div>
     );
@@ -280,6 +284,96 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
         {why ?? (r.disc === 'sport' ? 'Tie in and go' : 'Pull on')}
         <small>{cost}</small>
       </button>
+      {log?.sent && !unnamed && (
+        <button
+          type="button"
+          className="opt after"
+          onClick={() => game.openSheet({ k: 'card', route, back: { k: 'beta', route } })}
+        >
+          <span>Keep a card of it</span>
+          <span className="c" />
+        </button>
+      )}
+    </>
+  );
+}
+
+// The send card: painted here from the save, shown as an image (so a long press saves it
+// too), with a share button where the phone can share files, and a plain download.
+function CardBody({ game, id, s }: { game: Game; id: Extract<SheetId, { k: 'card' }>; s: GameState }) {
+  const [card] = useState(() => cardOf(s, id.route));
+  const [png, setPng] = useState<{ file: File; url: string } | null>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    if (!card) return;
+    let live = true;
+    let url = '';
+    cardPng(card).then(
+      (blob) => {
+        if (!live) return;
+        url = URL.createObjectURL(blob);
+        setPng({ file: new File([blob], cardFile(card), { type: 'image/png' }), url });
+      },
+      () => live && setFailed(true),
+    );
+    return () => {
+      live = false;
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [card]);
+  if (!card) return null;
+  const shareable =
+    !!png && typeof navigator.canShare === 'function' && navigator.canShare({ files: [png.file] });
+  const save = () => {
+    if (!png) return;
+    const a = document.createElement('a');
+    a.href = png.url;
+    a.download = png.file.name;
+    a.click();
+  };
+  return (
+    <>
+      <h3 id="sheet-title">A card of it</h3>
+      {png ? (
+        <img
+          id="card"
+          className="card-img"
+          src={png.url}
+          alt={cardText(card)}
+          width={CARD.w * CARD.k}
+          height={CARD.h * CARD.k}
+        />
+      ) : (
+        <p className="sub">{failed ? 'It wouldn’t draw. The send still counts.' : 'Drawing it…'}</p>
+      )}
+      <ul>
+        {shareable && (
+          <li>
+            <button
+              type="button"
+              className="opt"
+              onClick={() =>
+                navigator.share({ files: [png.file], title: card.name, text: cardText(card) }).catch(() => {})
+              }
+            >
+              <span>Send it on</span>
+              <span className="c" />
+            </button>
+          </li>
+        )}
+        <li>
+          <button type="button" className="opt" disabled={!png} onClick={save}>
+            <span>Save the image</span>
+            <span className="c" />
+          </button>
+        </li>
+        <li>
+          <button type="button" className="opt" onClick={() => game.openSheet(id.back)}>
+            <span>Back</span>
+            <span className="c" />
+          </button>
+        </li>
+      </ul>
     </>
   );
 }

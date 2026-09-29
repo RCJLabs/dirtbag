@@ -55,6 +55,13 @@ export interface ListSpec {
   reach?: { moves: number; cruxes: [number, number][]; go: number; best: number | null };
 }
 
+// A card of a line you've sent, to keep: from its sent sheet, or later from its beta sheet.
+export const cardRow = (game: Game, back: SheetId & { route: string }): Row => ({
+  label: 'Keep a card of it',
+  note: 'The line on its wall, the grade and the day, drawn here to save or send on.',
+  run: () => game.openSheet({ k: 'card', route: back.route, back }),
+});
+
 // "An 8-foot", "an 11-foot", "an 18-foot": said, those numbers start with a vowel.
 const aFoot = (ft: number) => `${/^(8|1[18]$)/.test(String(ft)) ? 'An' : 'A'} ${ft}-foot`;
 
@@ -249,6 +256,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
                   : 'Walk down the back',
             run: () => game.walkOff(),
           },
+          ...(id.first ? [cardRow(game, id)] : []),
         ],
       };
     }

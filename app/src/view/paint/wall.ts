@@ -8,8 +8,8 @@ import { arcTable, atLen, lin, mk, poly, spline, trace, type G, type Pt } from '
 import { mulberry32 } from '../kit/noise';
 import { H, W } from '../layout';
 import { coniferPath, rock } from '../shapes';
-import { boulderArt, boulderTopo } from './boulder';
-import { gymTopo, gymWallArt } from './gym';
+import { boulderArt, boulderTopo, paintBoulderArt } from './boulder';
+import { gymTopo, gymWallArt, paintGymWall } from './gym';
 
 const SKY: Pt[] = [
   [-4, 130],
@@ -497,11 +497,23 @@ export function wallArt(place: string, selected: string): HTMLCanvasElement {
   let c = cache.get(selected);
   if (!c) {
     const [cv, g] = mk(W, H, 2);
-    if (place === 'gorge') paintGorge(g);
-    else paintRoadside(g);
-    paintLines(g, place, selected);
+    paintWall(g, place, selected);
     c = cv;
     cache.set(selected, c);
   }
   return c;
+}
+
+function paintWall(g: G, place: string, selected: string): void {
+  if (place === 'gorge') paintGorge(g);
+  else paintRoadside(g);
+  paintLines(g, place, selected);
+}
+
+// A route's wall, painted into any context in wall units: what the wall view caches at 2x,
+// for the send card to paint at its own size.
+export function paintRouteArt(g: G, r: RouteDef): void {
+  if (r.disc === 'sport') paintWall(g, r.place, r.id);
+  else if (r.place === 'gym') paintGymWall(g, slotOf(r.id), r.heightFt);
+  else paintBoulderArt(g, r);
 }

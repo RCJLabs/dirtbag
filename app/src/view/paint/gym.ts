@@ -259,6 +259,14 @@ export function gymWallArt(slot: number, heightFt: number): HTMLCanvasElement {
   const hit = walls.get(key);
   if (hit) return hit;
   const [c, g] = mk(W, H, 2);
+  paintGymWall(g, slot, heightFt);
+  walls.set(key, c);
+  return c;
+}
+
+// A problem's stretch of the gym wall, painted into any context (the wall view's cached art,
+// or the send card at its own size).
+export function paintGymWall(g: G, slot: number, heightFt: number): void {
   const top = finishY(heightFt) - 60;
   g.fillStyle = '#E6DCC7';
   g.fillRect(0, 0, W, H);
@@ -309,6 +317,4 @@ export function gymWallArt(slot: number, heightFt: number): HTMLCanvasElement {
   g.fillRect(0, FLOOR_Y, W, 6);
   g.fillStyle = 'rgba(20,30,50,.35)';
   for (const x of [60, 180, 300]) g.fillRect(x, FLOOR_Y, 2, H - FLOOR_Y);
-  walls.set(key, c);
-  return c;
 }

@@ -7,8 +7,8 @@
 //
 // Two days. Day one: make a climber (Act I's first goal on screen), Hazel's tip about the
 // roof, a double at the café (the goal done), the drive out, an onsight of the Warm
-// Boulder, a fall on The Pump that shows you the rock-over, dinner, the fire, sleep, and a
-// reload that comes back to the same morning.
+// Boulder and its card, a fall on The Pump that shows you the rock-over, dinner, the fire,
+// sleep, and a reload that comes back to the same morning.
 // Day two: Send City, a setting shift, Sage turning up and showing you a problem's trick,
 // and a flash with it.
 import { mkdirSync, rmSync } from 'node:fs';
@@ -31,9 +31,11 @@ const problems = [];
 page.on('pageerror', (e) => problems.push(`uncaught: ${e.message}`));
 page.on('console', (m) => m.type() === 'error' && problems.push(`console.error: ${m.text()}`));
 page.on('requestfailed', (r) => problems.push(`request failed: ${r.url()}`));
+// data: and this page's own blob: URLs (the send card's image) never touch the network.
 page.on('request', (r) => {
-  if (!r.url().startsWith(server.url) && !r.url().startsWith('data:'))
-    problems.push(`left the site: ${r.url()}`);
+  const u = r.url();
+  if (!u.startsWith(server.url) && !u.startsWith('data:') && !u.startsWith(`blob:${server.url}`))
+    problems.push(`left the site: ${u}`);
 });
 
 let n = 0;
@@ -281,6 +283,25 @@ await expectText('#sheet', go1(goes), 'result');
 // Every extra go on the boulder is a rest and a go: the rest of the day's clock moves by it.
 const late = (goes - 1) * 20;
 await shot('sent-warm');
+
+// A first send gets a card: painted on the device at full size, shown, and back again.
+await click('#sheet .opt', 'Keep a card of it');
+const card = await until('the card', () =>
+  page.evaluate(() => {
+    const img = document.querySelector('#card');
+    return img?.complete && img.naturalWidth ? [img.naturalWidth, img.naturalHeight, img.alt] : null;
+  }),
+);
+if (
+  card[0] !== 1080 ||
+  card[1] !== 1920 ||
+  !/^Warm Boulder, V2\. Onsight\. Roadside Crag, day 1, fall\.$/.test(card[2])
+)
+  await fail(`the card: ${JSON.stringify(card)}`);
+log(`card: ${card[0]}×${card[1]}, "${card[2]}"`);
+await shot('card-warm');
+await click('#sheet .opt', 'Back');
+await expectText('#sheet', go1(goes), 'back on the send');
 await click('#sheet .opt', 'Walk down the back');
 
 console.log('The Pump: come off the crimps on purpose');

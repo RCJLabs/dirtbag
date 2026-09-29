@@ -300,6 +300,21 @@ button.pill:disabled {
   opacity: 0.5;
   cursor: default;
 }
+/* A row under the sheet's main button. */
+.opt.after {
+  margin-top: 10px;
+}
+/* The send card's preview: the full-size PNG, shown at a size the sheet can hold. */
+.card-img {
+  display: block;
+  height: min(42vh, 380px);
+  width: auto;
+  max-width: 100%;
+  margin: 6px auto 12px;
+  border: var(--u-border);
+  border-radius: var(--u-rad);
+  box-shadow: var(--u-shadow);
+}
 .crux {
   margin: 8px 0 2px;
   font: 700 calc(11px * var(--u-fs)) / 1 var(--u-mono);

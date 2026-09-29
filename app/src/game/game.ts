@@ -61,7 +61,18 @@ export type SheetId =
   | { k: 'place'; id: string }
   | { k: 'beta'; route: string }
   | { k: 'fall'; route: string; fall: FallRun; notes: string[]; gains: Partial<Skills>; best: number | null }
-  | { k: 'sent'; route: string; style: SendStyle; go: number; gains: Partial<Skills>; notes: string[] }
+  // `first`: the line's first send, which gets a card.
+  | {
+      k: 'sent';
+      route: string;
+      style: SendStyle;
+      go: number;
+      gains: Partial<Skills>;
+      notes: string[];
+      first: boolean;
+    }
+  // The send card, and the sheet to go back to.
+  | { k: 'card'; route: string; back: SheetId }
   // A first ascent to name: straight after the send (then the send card), or later from
   // the wall if you walked off without naming it.
   | {
@@ -642,6 +653,8 @@ export class Game {
     const notes = ev.flatMap((e) => (e.k === 'injured' ? [e.text] : []));
     const style = sent?.style ?? 'redpoint';
     const fa = ev.some((e) => e.k === 'fa');
+    const log = this.state.routes[route];
+    const first = !!log?.sent && log.sent.go === log.goes;
     window.setTimeout(
       () => {
         this.set({
@@ -649,7 +662,7 @@ export class Game {
           climbing: false,
           sheet: fa
             ? { k: 'fa', route, style, go, gains, notes, from: 'send' }
-            : { k: 'sent', route, style, go, gains, notes },
+            : { k: 'sent', route, style, go, gains, notes, first },
         });
       },
       this.still ? 1200 : 2600,
@@ -665,7 +678,10 @@ export class Game {
     if (ev.some((e) => e.k === 'refused')) return;
     const { route, style, go, gains, notes } = sh;
     this.set({
-      sheet: sh.from === 'send' ? { k: 'sent', route, style, go, gains, notes } : { k: 'beta', route },
+      sheet:
+        sh.from === 'send'
+          ? { k: 'sent', route, style, go, gains, notes, first: true }
+          : { k: 'beta', route },
     });
   }
 

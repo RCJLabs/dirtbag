@@ -261,6 +261,11 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
   - Kibble ($6), play (bond) and ride-alongs. The bond perks come later.
   - *As built (R2.4):* v0.956's numbers: kibble fills him and adds 3 bond; the stick is an hour, once a day, for 10; every drive adds 2; a night takes 22 food. v0.956's crag and drive lines, by bond and hunger, with "they" made "he". He picks you on your tenth trip out, and you take him on at the Lot.
 - **The send card:** on a first send, a card drawn on the device (the topo, your line, grade, style, date) to save or share. No server.
+  - *As built (R2.5):*
+    - A 1080 × 1920 PNG (a phone screen's shape, which is what stories and chats want). The line's own wall is repainted at the card's size, cropped to the line, with the line drawn as a guidebook photo-topo and you at the top. Under it: the name in the poster lettering; the grade and how it went ("Redpoint, go 6"); the crag and "Day 18, winter"; your name. A first ascent adds a corner ribbon and "First ascent: <you>"; one Dex got first reads "First ascent: Dex Calloway · Second: <you>".
+    - Offered on the sent sheet after a line's first send, and any time after from a sent line's beta sheet.
+    - "Send it on" uses the phone's share sheet where it takes files; "Save the image" downloads the PNG. The card shows as an image, so a long press saves it too. Nothing is uploaded; the e2e bot opens a card and still sees no off-site request.
+    - *[proposed]* The card's footer letters "DIRTBAG" and dirtbag.rcjlabs.com, so a shared card says where it's from.
 - **Phase 9 on the wall:**
   - How close a go was: this go's high point against your best, on the fall sheet and on the wall.
   - Pump you can feel: the climber shakes and the view tightens as the bar fills.
@@ -1241,3 +1246,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — R2 Scout: the Lot's stray picks you on your tenth trip out. Kibble, the stick and ride-alongs at v0.956's numbers and in its words; he sits by the van at the crag and has a row on the You sheet. R2.4 (people) is built; R2.5 (Act I, the send card, the wall's feel, tuning, docs) is next.
 - 2026-09-29 — R2 Act I: v0.956's first-season quest as the demo's goal ladder, in its words and with its rewards, a "Next" pill on screen, and an end-of-act card; it ends at V4, the night Dex's race begins.
 - 2026-09-29 — R2 wall feel (Phase 9): the fall sheet draws how far a go got against your best; a chalk band and an X on the wall; pumped climbers shake and the screen's edges close in; and, proposed, climbers move through a line at a pace set by how far over or under its grade they are. Fixed "A 11-foot catch".
+- 2026-09-29 — R2 send card: a first send gets a card painted on the device from the line's own wall and topo (name, grade, how it went, the crag and the day, you at the top, a ribbon for a first ascent), to share or save as a PNG. Nothing is uploaded. The wall, boulder and gym painters now paint into any canvas, so the card is crisp at its size.
