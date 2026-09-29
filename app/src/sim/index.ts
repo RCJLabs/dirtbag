@@ -45,6 +45,11 @@ export {
   SKILLS,
   MIX,
   STARTS,
+  CARRIED,
+  CARRIED_NAME,
+  startName,
+  carried,
+  asSkills,
   needFor,
   levelOf,
   average,
@@ -69,7 +74,7 @@ export type { LoadResult, Migration, SaveFile } from './save';
 export { Rng, hashSeed, mulberry32 } from './rng';
 export type { Stream } from './rng';
 export * from './format';
-export { DAY, MONEY, BODY, CLIMB, LOAD, INJURY, BOND, ARC, DOG } from './dials';
+export { DAY, MONEY, BODY, CLIMB, LOAD, INJURY, BOND, ARC, DOG, LEGACY } from './dials';
 export { PLACES, ACTS, ROADS, road, TEXT_VALUES } from './content/places';
 export type { PlaceDef, ActDef, RoadDef } from './content/places';
 export {

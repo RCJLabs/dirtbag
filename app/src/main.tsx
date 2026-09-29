@@ -21,10 +21,17 @@ for (const f of ['800 12px "Big Shoulders Display"', '15px "Patrick Hand SC"', '
 // The service worker makes the game start with no connection. Built only for production
 // (in dev every reload should hit the server), and only on the installable page, the one
 // that links the manifest: an embedded copy has no worker to register.
+// register() on a worker that's already registered doesn't look for a new one, and the
+// browser's own look can wait a day. So every launch asks: a page served by an older worker
+// (v0.956's, after R3's switch-over, or last week's build) hands over within seconds.
 if (import.meta.env.PROD && 'serviceWorker' in navigator && document.querySelector('link[rel="manifest"]'))
   window.addEventListener(
     'load',
-    () => void navigator.serviceWorker.register('./sw.js').catch(() => undefined),
+    () =>
+      void navigator.serviceWorker
+        .register('./service-worker.js')
+        .then((r) => r.update())
+        .catch(() => undefined),
   );
 
 createRoot(document.getElementById('root')!).render(

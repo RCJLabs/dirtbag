@@ -11,7 +11,9 @@
 // sleep, and a reload that comes back to the same morning.
 // Day two: Send City, a setting shift, Sage turning up and showing you a problem's trick,
 // and a flash with it.
-import { mkdirSync, rmSync } from 'node:fs';
+// Then a v0.956 player, in a browser of their own: the retirement notice, their career kept
+// as a file, and coming across as they were.
+import { mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
 import { startServer } from '../../scripts/lib/serve.mjs';
@@ -449,6 +451,81 @@ await expectText('#h-time', /^Day 2 · 1[12]:\d\d AM$/, 'clock offline');
 await expectText('#h-cash', /^\$68$/, 'cash offline');
 await shot('offline');
 await page.context().setOffline(false);
+
+console.log('A v0.956 player');
+// v0.956 retired at R3. Someone who played it opens the new game in a browser that still
+// holds their career: they're told, they can keep it as a file, and they come across as
+// they were, capped. Their old keys are left exactly as they were.
+{
+  const career = {
+    name: 'Robin Vance',
+    day: 212,
+    skills: { power: 180, fingers: 220, endurance: 150, technique: 170, head: 90 },
+    needs: { cash: 3120 },
+  };
+  const ctx = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    deviceScaleFactor: 2,
+    acceptDownloads: true,
+  });
+  await ctx.addInitScript((c) => {
+    if (localStorage.getItem('dirtbag-save-v3') === null) {
+      localStorage.setItem('dirtbag-save-v3', JSON.stringify(c));
+      localStorage.setItem('dirtbag-whatsnew-seen', '0.956.0');
+    }
+  }, career);
+  const vet = await ctx.newPage();
+  vet.on('pageerror', (e) => problems.push(`v0.956 player: uncaught: ${e.message}`));
+  vet.on(
+    'console',
+    (m) => m.type() === 'error' && problems.push(`v0.956 player: console.error: ${m.text()}`),
+  );
+  vet.on('request', (r) => {
+    const u = r.url();
+    if (!u.startsWith(server.url) && !u.startsWith('data:') && !u.startsWith(`blob:${server.url}`))
+      problems.push(`v0.956 player left the site: ${u}`);
+  });
+  await vet.goto(server.url, { waitUntil: 'load' });
+  await vet.waitForSelector('#legacy', { timeout: 10_000 });
+  const seen = await vet.evaluate(() => ({
+    notice: document.querySelector('#legacy h3')?.textContent,
+    name: document.querySelector('#c-name')?.value,
+    carry: document.querySelector('#c-carry')?.getAttribute('aria-checked'),
+    line: document.querySelector('#c-carry small')?.textContent,
+  }));
+  log(`notice: ${seen.notice} · name ${seen.name} · ${seen.line}`);
+  if (
+    seen.notice !== 'v0.956 has retired' ||
+    seen.name !== 'Robin Vance' ||
+    seen.carry !== 'true' ||
+    !/^You were climbing V6\. You come back at V3/.test(seen.line ?? '')
+  )
+    await fail(`the retirement notice: ${JSON.stringify(seen)}`);
+  await vet.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-v0956-player.png`) });
+  const [dl] = await Promise.all([vet.waitForEvent('download'), vet.click('#c-export')]);
+  const file = JSON.parse(readFileSync(await dl.path(), 'utf8'));
+  if (
+    dl.suggestedFilename() !== 'dirtbag-v0956-career.json' ||
+    file.keys?.['dirtbag-save-v3'] !== JSON.stringify(career)
+  )
+    await fail(`the exported career: ${dl.suggestedFilename()} ${JSON.stringify(file).slice(0, 200)}`);
+  log(`kept: ${dl.suggestedFilename()}, ${Object.keys(file.keys).length} keys`);
+  await vet.click('#c-go');
+  const me = await vet
+    .waitForFunction(() => JSON.parse(localStorage.getItem('dirtbag.save') ?? 'null')?.state?.climber, null, {
+      timeout: 10_000,
+    })
+    .then((h) => h.jsonValue());
+  const avg = Object.values(me.skills).reduce((a, b) => a + b, 0) / 5;
+  const grade = Math.floor((-8 + Math.sqrt(64 + 9.6 * avg)) / 4.8);
+  const old = await vet.evaluate(() => localStorage.getItem('dirtbag-save-v3'));
+  if (me.name !== 'Robin Vance' || me.start !== 'v0956' || grade !== 3 || old !== JSON.stringify(career))
+    await fail(`came across as ${JSON.stringify(me)} (V${grade}); old save ${old ? 'kept' : 'gone'}`);
+  log(
+    `came across: ${me.name}, V${grade}, fingers still the strength (${me.skills.fingers} vs head ${me.skills.head})`,
+  );
+  await ctx.close();
+}
 
 if (problems.length) await fail(`${problems.length} problem(s) during play`);
 await browser.close();

@@ -150,7 +150,8 @@ export interface Delta {
 }
 
 export type Action =
-  | { t: 'create'; name: string; start: string }
+  // `carry`: a v0.956 climber's skills, when they come across rather than picking a start.
+  | { t: 'create'; name: string; start: string; carry?: Skills }
   | { t: 'act'; act: string }
   | { t: 'say'; talk: string; node: string; opt: number }
   | { t: 'travel'; to: string }

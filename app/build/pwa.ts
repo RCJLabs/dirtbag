@@ -130,6 +130,22 @@ export function iconPng(size: number, maskable = false): Buffer {
   ]);
 }
 
+// Browsers still ask for /favicon.ico wherever a page doesn't say otherwise (bookmarks, the
+// tab strip on some); an ICO holding one PNG is enough for all of them.
+export function ico(png: Buffer): Buffer {
+  const head = Buffer.alloc(22);
+  head.writeUInt16LE(0, 0); // reserved
+  head.writeUInt16LE(1, 2); // an icon
+  head.writeUInt16LE(1, 4); // one image
+  head[6] = 32; // width
+  head[7] = 32; // height
+  head.writeUInt16LE(1, 10); // colour planes
+  head.writeUInt16LE(32, 12); // bits per pixel
+  head.writeUInt32LE(png.length, 14);
+  head.writeUInt32LE(22, 18); // where the PNG starts
+  return Buffer.concat([head, png]);
+}
+
 // ---- the manifest ----
 
 const ICONS = [
@@ -163,8 +179,12 @@ const MANIFEST = {
 // ---- the service worker ----
 
 // Cache-first for this build's files; a navigation offline gets the cached page. Caches
-// from other rebuild builds go when this one activates. v0.956's cache ("dirtbag-v…") is
-// left alone: it's the live site's until R3 retires it.
+// from other rebuild builds go when this one activates, and so does v0.956's ("dirtbag-v…",
+// about 10 MB), which R3 retired.
+//
+// It ships as service-worker.js, the name v0.956's worker had, so a browser that installed
+// v0.956 finds new bytes at the URL it already checks and swaps workers in place: the next
+// launch is the rebuild. Nothing reloads a page that's open; an old session plays out.
 const worker = (
   cache: string,
   files: string[],
@@ -186,7 +206,11 @@ self.addEventListener('activate', (e) => {
     caches
       .keys()
       .then((keys) =>
-        Promise.all(keys.filter((k) => k.startsWith('dirtbag-app-') && k !== CACHE).map((k) => caches.delete(k))),
+        Promise.all(
+          keys
+            .filter((k) => (k.startsWith('dirtbag-app-') && k !== CACHE) || /^dirtbag-v\\d+$/.test(k))
+            .map((k) => caches.delete(k)),
+        ),
       )
       .then(() => self.clients.claim()),
   );
@@ -217,6 +241,7 @@ export function pwa(): Plugin {
     generateBundle(_, bundle) {
       const extra = new Map<string, string | Buffer>([
         ['manifest.webmanifest', `${JSON.stringify(MANIFEST, null, 2)}\n`],
+        ['favicon.ico', ico(iconPng(32))],
         ...ICONS.map((i): [string, Buffer] => [i.src, iconPng(i.size, i.purpose === 'maskable')]),
       ]);
       for (const [fileName, source] of extra) this.emitFile({ type: 'asset', fileName, source });
@@ -238,7 +263,7 @@ export function pwa(): Plugin {
       const files = ['./', ...names.map((n) => `./${n}`)];
       this.emitFile({
         type: 'asset',
-        fileName: 'sw.js',
+        fileName: 'service-worker.js',
         source: worker(`dirtbag-app-${h.digest('hex').slice(0, 10)}`, files),
       });
     },

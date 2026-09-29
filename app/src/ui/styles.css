@@ -811,6 +811,22 @@ button.pill:disabled {
   user-select: text;
   -webkit-user-select: text;
 }
+/* A v0.956 player's first sight of the rebuild: the old game's retired; their career keeps. */
+.legacy {
+  margin: 0 0 12px;
+  padding: 9px 11px 4px;
+  border: 2px solid var(--u-ink);
+  border-radius: var(--u-rad);
+  background: color-mix(in srgb, var(--u-acc) 9%, transparent);
+}
+.legacy h3 {
+  margin: 0 0 4px;
+  font: 700 calc(19px * var(--u-fs)) / 1.1 var(--u-font);
+}
+.legacy p {
+  margin: 0 0 6px;
+  font: 500 calc(13px * var(--u-fs)) / 1.35 var(--u-mono);
+}
 .starts {
   display: grid;
   gap: 6px;

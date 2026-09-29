@@ -3,7 +3,7 @@
 // There is no odds roll: your skills set how wide each crux's window is.
 
 import type { Skills, SkillId } from './types';
-import { WINDOW } from './dials';
+import { LEGACY, WINDOW } from './dials';
 
 // The six styles a route or a sequence can ask for.
 export type Style = 'crimp' | 'power' | 'endurance' | 'technical' | 'dyno' | 'crack';
@@ -51,6 +51,15 @@ export const STARTS: Record<string, Start> = {
   },
 };
 
+// A climber who came across from v0.956 rather than picking a start: their own skills, as
+// far as the cap allows.
+export const CARRIED = 'v0956';
+export const CARRIED_NAME = 'An old hand';
+
+// What a start is called: one of the four, or someone back from v0.956.
+export const startName = (id: string): string =>
+  STARTS[id]?.name ?? (id === CARRIED ? CARRIED_NAME : 'A climber');
+
 // The grade curve: a skill average of 8g + 2.4g² climbs grade g. V1 is 10, V3 46, V5 100.
 export const needFor = (g: number): number => 8 * g + 2.4 * g * g;
 
@@ -58,6 +67,33 @@ export const needFor = (g: number): number => 8 * g + 2.4 * g * g;
 export const levelOf = (skill: number): number => (-8 + Math.sqrt(64 + 9.6 * Math.max(0, skill))) / 4.8;
 
 export const average = (s: Skills): number => (s.power + s.fingers + s.endurance + s.technique + s.head) / 5;
+
+// Five skills, whole and non-negative, read from something that isn't trusted (an old save
+// from v0.956); null if it doesn't read as that.
+export function asSkills(k: unknown): Skills | null {
+  if (typeof k !== 'object' || k === null) return null;
+  const v = k as Record<string, unknown>;
+  const s: Skills = { power: 0, fingers: 0, endurance: 0, technique: 0, head: 0 };
+  for (const id of SKILLS) {
+    const x = v[id];
+    if (typeof x !== 'number' || !Number.isFinite(x) || x < 0) return null;
+    s[id] = x;
+  }
+  return s;
+}
+
+// A v0.956 climber's skills as they come across: scaled down to the cap if they climbed
+// harder than it, in their own shape. Null if they don't read as five skills.
+export function carried(k: unknown): Skills | null {
+  const s = asSkills(k);
+  if (!s) return null;
+  // Just over the cap's threshold, so rounding can't drop it a grade.
+  const most = needFor(LEGACY.capGrade) + 0.05;
+  const avg = average(s);
+  const f = avg > most ? most / avg : 1;
+  for (const id of SKILLS) s[id] = Math.round(s[id] * f * 100) / 100;
+  return s;
+}
 
 // Your displayed grade, as in v0.956: the average of all five, head included.
 export const gradeOf = (s: Skills): number => Math.min(18, Math.floor(levelOf(average(s))));

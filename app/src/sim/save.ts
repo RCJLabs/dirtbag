@@ -5,7 +5,7 @@
 // Changing the shape of GameState means: bump SAVE_VERSION, register MIGRATIONS[old] that
 // turns an old state into the new shape, and add a test that loads a real old save.
 
-import { STARTS } from './climber';
+import { CARRIED, STARTS } from './climber';
 import { PLACES } from './content/places';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
@@ -183,7 +183,7 @@ function validateClimber(x: unknown): string[] {
   if (!isObj(x)) return ['not an object'];
   const err: string[] = [];
   if (typeof x.name !== 'string') err.push('name');
-  if (typeof x.start !== 'string' || !(x.start in STARTS)) err.push('start');
+  if (typeof x.start !== 'string' || !(x.start in STARTS || x.start === CARRIED)) err.push('start');
   const k = x.skills;
   if (!isObj(k)) err.push('skills');
   else
