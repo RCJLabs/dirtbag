@@ -2,14 +2,16 @@
 // money and body only move here, and only because of an action. Nothing ticks while you
 // stand still. The UI stages the events; it never edits the state itself.
 
+import { cold, daysOff, freshLoad, goLoad, projected, ratio, rollInjury } from './body';
 import { gains, gradeOf, STARTS, type GoSummary } from './climber';
 import { headroom, holds, unmet } from './cond';
 import { routeById, routesAt } from './content/gym';
+import { CLINIC_LINE, FIRST_FREE_LINE, HEALED_LINE, HURT_LINE } from './content/injuries';
 import { ACTS, PLACES, road, TEXT_VALUES } from './content/places';
 import { PEOPLE, TALK } from './content/people';
 import { SEND_NAME, gradeLabel, type RouteDef } from './content/routes';
-import { BODY, CLIMB, DAY, MONEY } from './dials';
-import { money } from './format';
+import { BODY, CLIMB, DAY, INJURY, LOAD, MONEY } from './dials';
+import { fill, money } from './format';
 import { whereIs } from './presence';
 import type { Action, Delta, GameEvent, GameState, Result, RouteLog, SendStyle, Skills } from './types';
 import { conditions } from './weather';
@@ -31,6 +33,9 @@ export function newGame(seed: string): GameState {
     x: null,
     today: [],
     climber: { name: '', start: 'allrounder', skills: { ...STARTS.allrounder!.skills } },
+    load: freshLoad(),
+    injury: null,
+    hurt: 0,
     routes: {},
     people: {},
     log: [],
@@ -90,6 +95,9 @@ export function goBlocked(s: GameState, r: RouteDef): string | null {
     if (s.min >= CLIMB.darkFrom) return 'Too dark to climb';
     if (r.disc === 'sport' && !belayer(s)) return 'Nobody here to belay you';
   }
+  const off = daysOff(s);
+  if (off > 0) return `Your ${s.injury!.kind} needs ${off} more day${off > 1 ? 's' : ''}`;
+  if (ratio(s.load) > LOAD.fried) return "You're fried. Your body wants a rest day";
   if (s.fed <= 0) return "You're running on empty";
   if (s.energy < CLIMB.minEnergy) return 'Too tired to try';
   if (s.skin < CLIMB.minSkin) return 'Your skin is done for today';
@@ -167,6 +175,9 @@ export function act(s0: GameState, a: Action): Result {
     s.energy = clamp100(s.energy + rest);
     s.skin = clamp100(s.skin + BODY.sleepSkin);
     s.fed = clamp100(s.fed - BODY.nightFed);
+    // The day's load folds into the averages.
+    const p = projected(s.load);
+    s.load = { acute: round2(p.acute), chronic: round2(p.chronic), today: 0 };
     s.today = [];
     for (const r of Object.values(s.routes)) {
       r.goesToday = 0;
@@ -182,6 +193,10 @@ export function act(s0: GameState, a: Action): Result {
           : `Van spot, ${TEXT_VALUES.spot}. Morning comes anyway.`,
       );
     if (hungry) line('You went to bed hungry, and it shows.');
+    if (s.injury && s.day >= s.injury.until) {
+      line(fill(HEALED_LINE, { kind: s.injury.kind }));
+      s.injury = null;
+    }
     if (ended % 7 === 0) {
       const bills = MONEY.registration + MONEY.insurance;
       s.cash -= bills;
@@ -342,6 +357,18 @@ export function act(s0: GameState, a: Action): Result {
       const L = logOf(s, a.route);
       const res = a.result;
       const lap = L.sent !== null;
+      // What the go put through you, and whether it cost you: judged on the state it was
+      // climbed in, before it counts as your warm-up.
+      const wasCold = cold(s, r);
+      const load = goLoad(
+        CLIMB.go[r.place === 'gym' ? 'gym' : r.disc].energy,
+        r.grade,
+        res.sent ? 1 : res.hi / r.moves,
+      );
+      s.load.today = round2(s.load.today + load);
+      const goN = Object.values(s.routes).reduce((t, x) => t + x.goesToday, 0);
+      const hurt = rollInjury(s, r, load, wasCold, goN);
+      if (!s.today.includes('warm')) s.today.push('warm');
       s.skin = clamp100(s.skin - Math.max(0, res.skin));
       L.hi = Math.max(L.hi, Math.min(r.moves, Math.max(0, Math.floor(res.hi))));
       if (res.sent) {
@@ -371,14 +398,33 @@ export function act(s0: GameState, a: Action): Result {
         styles,
       };
       const got = gains(s.climber.skills, go);
+      // Spiked over your usual load, your body keeps less of what the go taught.
+      const spent = ratio(s.load) > LOAD.slow ? LOAD.slowGains : 1;
       for (const k of Object.keys(got) as (keyof Skills)[]) {
         const gym = r.place === 'gym' && (k === 'technique' || k === 'endurance') ? CLIMB.gymSpecialty : 1;
-        got[k] = round2(got[k]! * CLIMB.learn * (lap ? CLIMB.repeatLearn : 1) * gym);
+        got[k] = round2(got[k]! * CLIMB.learn * (lap ? CLIMB.repeatLearn : 1) * gym * spent);
       }
       train(got);
       const after = gradeOf(s.climber.skills);
       events.push({ k: 'skills', gains: got, grade: after > before ? after : null });
       if (after > before) line(`Something clicks. You're climbing V${after} now.`);
+      if (hurt) {
+        s.injury = hurt;
+        const days = hurt.until - s.day - 1;
+        const kind = hurt.kind;
+        const text = fill(HURT_LINE[hurt.tier - 1]!, {
+          route: r.name,
+          kind,
+          Kind: kind[0]!.toUpperCase() + kind.slice(1),
+          days,
+        });
+        events.push({ k: 'injured', kind, tier: hurt.tier, days, text });
+        note(text);
+        const bill = s.hurt === 0 ? 0 : INJURY.clinic[hurt.tier - 1]!;
+        if (hurt.tier > 1) line(bill ? fill(CLINIC_LINE, { cost: money(bill) }) : FIRST_FREE_LINE);
+        if (bill) spend({ cash: -bill });
+        s.hurt += 1;
+      }
       break;
     }
   }

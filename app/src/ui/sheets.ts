@@ -194,7 +194,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         title: SEND_NAME[id.style],
         sub: `${r.name}, ${gradeLabel(r)}, on go ${id.go}.${r.disc === 'sport' ? " Rent's still due." : ''}`,
         close: false,
-        notes: gained ? [gained] : [],
+        notes: [...id.notes, ...(gained ? [gained] : [])],
         rows: [
           {
             label:

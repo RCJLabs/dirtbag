@@ -54,6 +54,52 @@ export const BODY = {
   driveEnergy: 3,
 };
 
+// Training load: v0.956's acute:chronic model (docs/audit/climbing.md §2.12). Each go adds
+// load; at sleep, acute and chronic load move toward the day's total as exponentially
+// weighted averages. Their ratio is how far you've spiked over what your body is used to.
+export const LOAD = {
+  // Phase 6's fix for v0.956's cold start (both averages at zero, so any first week was a
+  // spike): both begin at a light day's load. A first week of full days still ramps you into
+  // the warning zone, so the load teaches rest days; it just can't ambush you.
+  start: 20,
+  // v0.956's smoothing: acute tracks the last four days, chronic the last fortnight.
+  acuteRate: 1 / 4,
+  chronicRate: 1 / 14,
+  // Below this chronic load the ratio isn't meaningful (v0.956: 6).
+  minChronic: 6,
+  // v0.956's lines: over 1.3 every go risks an injury, over 1.5 you learn at 60%, over 1.7
+  // you're fried and can't climb.
+  risk: 1.3,
+  slow: 1.5,
+  fried: 1.7,
+  slowGains: 0.6,
+  // v0.956's risk per go over the line: 0.3 per 0.1 of ratio, capped at 40%. Its goes were
+  // two hours; these are minutes, so the risk scales by the go's load against a v0.956-sized
+  // go (about 10 of these units).
+  riskSlope: 0.3,
+  riskCap: 0.4,
+  perGo: 10,
+  // A hard go before you've warmed up: v0.956's ×1.6 risk, and every window 10% narrower.
+  coldRisk: 1.6,
+  coldWindows: 0.9,
+  // Risk by the style of the line (v0.956's: crimps and cracks are hardest on fingers).
+  typeRisk: { crimp: 1.5, power: 1.2, dyno: 1.2, crack: 1.3, endurance: 1, technical: 1 } as Record<
+    Style,
+    number
+  >,
+};
+
+// Injuries: v0.956's three tiers and how long each keeps you off. The clinic is a copay
+// (your weekly insurance pays the rest), and your first injury costs only time (Phase 6).
+export const INJURY = {
+  days: [
+    [2, 4],
+    [6, 9],
+    [13, 18],
+  ] as [number, number][],
+  clinic: [0, 45, 210],
+};
+
 export const CLIMB = {
   // What one go costs, by kind. A sport go is tying in, climbing and lowering off; a
   // boulder go is a few minutes on the pads. v0.956 charged 18 energy and 2 hours for a

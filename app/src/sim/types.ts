@@ -37,11 +37,31 @@ export interface GameState {
   // Flags that last until you sleep ("had Hazel's coffee", "worked a shift").
   today: string[];
   climber: Climber;
+  // Training load, and what it's done to you.
+  load: Load;
+  injury: Injury | null;
+  // Injuries so far: the first one's bill is waived.
+  hurt: number;
   routes: Record<string, RouteLog>;
   // The people you climb with, by id.
   people: Record<string, PersonLog>;
   // The message log: every line the game has told you, newest last.
   log: LogLine[];
+}
+
+export interface Load {
+  // Exponentially weighted averages of daily load (v0.956's acute:chronic model), and today's
+  // running total, folded in at sleep.
+  acute: number;
+  chronic: number;
+  today: number;
+}
+
+export interface Injury {
+  kind: string;
+  tier: 1 | 2 | 3;
+  // The day you can climb again.
+  until: number;
 }
 
 export interface RouteLog {
@@ -123,6 +143,8 @@ export type GameEvent =
   | { k: 'sent'; route: string; style: SendStyle; go: number }
   // What a go taught you, and your grade if it moved.
   | { k: 'skills'; gains: Partial<Skills>; grade: number | null }
+  // A go that hurt you, with the line that says so (logged, and shown on the go's sheet).
+  | { k: 'injured'; kind: string; tier: 1 | 2 | 3; days: number; text: string }
   // A conversation moves to another node, or ends (null).
   | { k: 'talk'; node: string | null }
   // The action wasn't allowed; `why` says so in the game's voice.

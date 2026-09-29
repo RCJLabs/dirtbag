@@ -13,21 +13,23 @@ import {
 } from './climb';
 import { needFor } from './climber';
 import { PUMPED, ROUTES } from './content/routes';
-import { BODY, CLIMB } from './dials';
+import { BODY, CLIMB, LOAD } from './dials';
 import { act, newGame } from './game';
 import type { GameState } from './types';
 
 const pump = ROUTES.pump!;
 const warm = ROUTES.warm!;
 
-// A climber whose skills sit exactly at The Pump's grade in every style, at the crag on a
-// prime morning: skills and pump rate factor out, so these tests see the mechanics alone.
+// A climber whose skills sit exactly at The Pump's grade in every style, warmed up at the
+// crag on a prime morning: skills, pump rate and the cold factor out, so these tests see the
+// mechanics alone.
 const fit = needFor(pump.grade);
 function atCrag(min = 9 * 60): GameState {
   return {
     ...newGame('t'),
     at: 'road',
     min,
+    today: ['warm'],
     climber: {
       name: 'Test',
       start: 'allrounder',
@@ -189,6 +191,9 @@ describe('a go on The Pump', () => {
     expect(dayFactor({ ...atCrag(), fed: BODY.weakBelow }, pump).windows).toBeCloseTo(DAY1);
     // Plastic doesn't care about the weather.
     expect(dayFactor({ ...atCrag(), at: 'gym' }, { ...warm, place: 'gym' }).windows).toBe(1);
+    // A hard line before you've warmed up: narrower; an easy one isn't.
+    expect(dayFactor({ ...atCrag(), today: [] }, pump).windows).toBeCloseTo(DAY1 * LOAD.coldWindows);
+    expect(dayFactor({ ...atCrag(), today: [] }, warm).windows).toBeCloseTo(DAY1);
   });
 
   it('works to your skills: a weaker climber gets narrower windows and pumps faster', () => {

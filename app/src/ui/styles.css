@@ -589,7 +589,7 @@ button.pill:disabled {
 }
 .skills li {
   display: grid;
-  grid-template-columns: 78px 1fr 38px;
+  grid-template-columns: 78px 1fr auto;
   align-items: center;
   gap: 8px;
   padding: 3px 0;
@@ -613,6 +613,12 @@ button.pill:disabled {
 .skills b {
   text-align: right;
   font-weight: 600;
+}
+.skills i.hot::after {
+  background: var(--u-acc);
+}
+.skills li:has(i.hot) b {
+  color: var(--u-acc);
 }
 .days li {
   display: grid;

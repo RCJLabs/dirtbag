@@ -2,6 +2,12 @@ import { Fragment, useLayoutEffect, useRef } from 'react';
 import {
   average,
   betaScale,
+  cold,
+  daysOff,
+  LOAD,
+  ratio,
+  zone,
+  type Zone,
   bodyNote,
   BODY,
   clockShort,
@@ -37,6 +43,15 @@ export const VERB_TEXT: Record<Verb, string> = {
   load: 'Hold to load, let go in the band',
   tension: 'Hold and release to stay in the band',
   timing: 'Tap when the marker crosses the band',
+};
+
+// Your load, in your body's words.
+const LOAD_WORD: Record<Zone, [string, string]> = {
+  easy: ['Fresh', 'You could give your body more than you are.'],
+  steady: ['Steady', 'About what your body’s used to.'],
+  talking: ['Talking', 'Every hard go now risks a tweak. A rest day brings it down.'],
+  slow: ['Overreached', 'You’re keeping less of what you learn, and the tweak risk is high.'],
+  fried: ['Fried', 'Nothing more until you’ve rested.'],
 };
 
 // How a window reads on the beta card, from its real width for you today: one to three
@@ -173,6 +188,12 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
           </div>
         </Fragment>
       ))}
+      {!why && cold(s, r) && (
+        <p className="note">Cold: you haven’t warmed up, so every window’s narrower. Something easy first.</p>
+      )}
+      {!why && ratio(s.load) > LOAD.risk && (
+        <p className="note">Your body’s talking: a go now could tweak something.</p>
+      )}
       <button type="button" className="go" disabled={!!why} onClick={() => game.go()}>
         {why ?? (r.disc === 'sport' ? 'Tie in and go' : 'Pull on')}
         <small>{cost}</small>
@@ -214,6 +235,8 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
         Energy {Math.round(s.energy)}, skin {Math.round(s.skin)}, food {Math.round(s.fed)}.
         {s.fed < BODY.weakBelow ? ` Under ${BODY.weakBelow} food, every window shrinks.` : ''}
       </p>
+      <p className="crux">Load</p>
+      <LoadRow s={s} />
       <p className="crux">Money</p>
       <p className="sub">
         {s.cash >= 0 ? `${money(s.cash)} cash.` : `${money(-s.cash)} on the card.`}{' '}
@@ -228,6 +251,33 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
           </button>
         </li>
       </ul>
+    </>
+  );
+}
+
+function LoadRow({ s }: { s: GameState }) {
+  const r = ratio(s.load);
+  const z = zone(r);
+  const [word, what] = LOAD_WORD[z];
+  const off = daysOff(s);
+  return (
+    <>
+      <ul className="skills">
+        <li>
+          <span>This week</span>
+          <i
+            className={r > LOAD.risk ? 'hot' : undefined}
+            style={{ ['--v' as string]: Math.min(1, r / LOAD.fried).toFixed(3) }}
+          />
+          <b>{word}</b>
+        </li>
+      </ul>
+      <p className="sub">
+        {what}
+        {s.injury && off > 0
+          ? ` Your ${s.injury.kind} needs ${off} more day${off > 1 ? 's' : ''} off the rock.`
+          : ''}
+      </p>
     </>
   );
 }

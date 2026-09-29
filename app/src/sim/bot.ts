@@ -17,7 +17,8 @@ import { isNight, unmet } from './cond';
 import { routesAt } from './content/gym';
 import { ACTS, road } from './content/places';
 import type { RouteDef } from './content/routes';
-import { CLIMB, DAY, MONEY } from './dials';
+import { CLIMB, DAY, LOAD, MONEY } from './dials';
+import { cold, ratio } from './body';
 import { gradeOf, average } from './climber';
 import { act, goBlocked, knowsBeta, newGame, talkStart } from './game';
 import { whereIs } from './presence';
@@ -32,6 +33,7 @@ export interface BotRun {
   // a rule that leaves no way forward.
   refused: string[];
   sends: string[];
+  injuries: string[];
   // One line per day, taken at bedtime.
   days: DaySummary[];
 }
@@ -174,6 +176,9 @@ export interface WeekOpts {
   days?: number;
   start?: string;
   strategy?: Strategy;
+  // A moderate climber warms up and stops for the day when their body starts talking (the
+  // load ratio over 1.3); a reckless one does neither.
+  reckless?: boolean;
   // Hands for each go; perfect ones by default.
   hands?: () => (a: Attempt, i: number) => boolean;
 }
@@ -187,7 +192,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   const hands = opts.hands ?? carefulHands;
   const strategy = opts.strategy ?? 'balanced';
   let s = newGame(seed);
-  const run: BotRun = { state: s, actions: [], refused: [], sends: [], days: [] };
+  const run: BotRun = { state: s, actions: [], refused: [], sends: [], injuries: [], days: [] };
   let workMin = 0;
   let hardest = -1;
 
@@ -200,7 +205,10 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     }
     s = r.state;
     run.actions.push(a);
-    for (const e of r.events) if (e.k === 'sent') run.sends.push(`day ${s.day}: ${e.route} (${e.style})`);
+    for (const e of r.events) {
+      if (e.k === 'sent') run.sends.push(`day ${s.day}: ${e.route} (${e.style})`);
+      if (e.k === 'injured') run.injuries.push(`day ${s.day}: ${e.kind} (tier ${e.tier})`);
+    }
     return true;
   };
   // Only asks for an act when its needs hold, like a player reading a greyed-out button.
@@ -247,12 +255,23 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     return lines.sort((a, b) => b.w - a.w)[0]?.r ?? null;
   }
 
+  // The easiest thing here to warm up on, sent or not.
+  function warmUp(): RouteDef | null {
+    return (
+      routesAt(s.seed, s.at, s.day)
+        .filter((r) => !goBlocked(s, r))
+        .sort((a, b) => a.grade - b.grade)[0] ?? null
+    );
+  }
+
   function session() {
     for (let n = 0; n < 30; n++) {
       if (s.energy < 25 || s.skin < 22 || s.min >= 17 * 60) return;
+      if (!opts.reckless && ratio(s.load) > LOAD.risk) return;
       maybeSage();
-      const r = choose();
-      if (!r) return;
+      const next = choose();
+      if (!next) return;
+      const r = !opts.reckless && !s.today.includes('warm') && cold(s, next) ? (warmUp() ?? next) : next;
       for (const [crux, beta] of bestBeta(s, r).picks)
         if ((s.routes[r.id]?.pick[crux] ?? r.cruxes.find((c) => c.id === crux)!.beta[0]) !== beta)
           go({ t: 'pick', route: r.id, crux, beta });

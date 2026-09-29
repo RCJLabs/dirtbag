@@ -58,7 +58,7 @@ export type SheetId =
   | { k: 'place'; id: string }
   | { k: 'beta'; route: string }
   | { k: 'fall'; route: string; fall: FallRun; notes: string[]; gains: Partial<Skills> }
-  | { k: 'sent'; route: string; style: SendStyle; go: number; gains: Partial<Skills> }
+  | { k: 'sent'; route: string; style: SendStyle; go: number; gains: Partial<Skills>; notes: string[] }
   | { k: 'you' }
   | { k: 'week' }
   | { k: 'settings' }
@@ -578,7 +578,9 @@ export class Game {
     const a = this.att!;
     const route = a.route;
     const ev = this.dispatch({ t: 'done', route, result: goResult(a) });
-    const notes = ev.flatMap((e) => (e.k === 'learned' && e.how === 'fall' ? [e.text] : []));
+    const notes = ev.flatMap((e) =>
+      (e.k === 'learned' && e.how === 'fall') || e.k === 'injured' ? [e.text] : [],
+    );
     this.set({ climbing: false, sheet: { k: 'fall', route, fall: a.fall!, notes, gains: gainsIn(ev) } });
   }
 
@@ -591,14 +593,15 @@ export class Game {
     const go = sent?.go ?? this.state.routes[route]?.goes ?? 1;
     this.set({ stamp: `${r.name} · ${gradeLabel(r)} · go ${go}` });
     const gains = gainsIn(ev);
+    const notes = ev.flatMap((e) => (e.k === 'injured' ? [e.text] : []));
     window.setTimeout(
       () => {
         this.set({
           stamp: null,
           climbing: false,
           sheet: sent
-            ? { k: 'sent', route, style: sent.style, go: sent.go, gains }
-            : { k: 'sent', route, style: 'redpoint', go, gains },
+            ? { k: 'sent', route, style: sent.style, go: sent.go, gains, notes }
+            : { k: 'sent', route, style: 'redpoint', go, gains, notes },
         });
       },
       this.still ? 1200 : 2600,

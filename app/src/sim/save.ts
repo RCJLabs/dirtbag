@@ -9,7 +9,7 @@ import { STARTS } from './climber';
 import { PLACES } from './content/places';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -39,6 +39,12 @@ export const MIGRATIONS: Record<number, Migration> = {
       },
       people: {},
     };
+  },
+  // v2 (R1) -> v3 (R2): training load, seeded at a moderate day's load as a new game's is;
+  // no injury, and none so far.
+  2: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, load: { acute: 20, chronic: 20, today: 0 }, injury: null, hurt: 0 };
   },
 };
 
@@ -106,6 +112,27 @@ export function validate(x: unknown): string[] {
   need(x.x === null || isNum(x.x), 'x');
   need(isStrs(x.today), 'today');
   err.push(...validateClimber(x.climber).map((e) => `climber.${e}`));
+  const l = x.load;
+  need(
+    isObj(l) &&
+      isNum(l.acute) &&
+      l.acute >= 0 &&
+      isNum(l.chronic) &&
+      l.chronic >= 0 &&
+      isNum(l.today) &&
+      l.today >= 0,
+    'load',
+  );
+  const inj = x.injury;
+  need(
+    inj === null ||
+      (isObj(inj) &&
+        typeof inj.kind === 'string' &&
+        (inj.tier === 1 || inj.tier === 2 || inj.tier === 3) &&
+        isInt(inj.until)),
+    'injury',
+  );
+  need(isInt(x.hurt) && x.hurt >= 0, 'hurt');
   if (!isObj(x.people)) err.push('people');
   else for (const [id, p] of Object.entries(x.people)) need(isPerson(p), `people.${id}`);
   if (!isObj(x.routes)) err.push('routes');

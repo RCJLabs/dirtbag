@@ -18,6 +18,7 @@ export interface SeasonOpts {
   days: number;
   // Human-ish hands (seeded per go) or careful ones.
   human: boolean;
+  reckless?: boolean;
 }
 
 export function season(seed: string, o: SeasonOpts): BotRun {
@@ -26,6 +27,7 @@ export function season(seed: string, o: SeasonOpts): BotRun {
     start: o.start,
     strategy: o.strategy,
     days: o.days,
+    reckless: o.reckless,
     hands: o.human ? () => humanHands(Rng.fromStream(seed, 'session').derive(`bot-go-${n++}`)) : undefined,
   });
 }
@@ -61,6 +63,10 @@ export function checkpoints(run: BotRun, at: number[]): Checkpoint[] {
 // The first day the bot tied into a line of this grade or harder, or null.
 export const firstTry = (run: BotRun, grade: number): number | null =>
   run.days.find((d) => d.hardest >= grade)?.day ?? null;
+
+// The first day an injury landed, or null.
+export const firstInjury = (run: BotRun): number | null =>
+  run.injuries.length ? Number(/^day (\d+)/.exec(run.injuries[0]!)?.[1]) : null;
 
 // The first day there was nothing left within reach anywhere, or null.
 export const contentOut = (run: BotRun): number | null =>

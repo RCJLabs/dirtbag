@@ -3,7 +3,7 @@
 import { it } from 'vitest';
 import type { Strategy } from '../src/sim/bot';
 import { STARTS } from '../src/sim/climber';
-import { checkpoints, contentOut, firstTry, median, season } from '../src/sim/harness';
+import { checkpoints, contentOut, firstInjury, firstTry, median, season } from '../src/sim/harness';
 
 const SEEDS = Number(process.env.SEEDS ?? 12);
 const DAYS = Number(process.env.DAYS ?? 28);
@@ -16,9 +16,9 @@ it('season', { timeout: 600_000 }, () => {
   for (const strategy of ['climber', 'balanced', 'worker'] as Strategy[]) {
     out(`## ${strategy}\n`);
     out(
-      `| start | refused | ${AT.map((d) => `d${d} grade · $ · runway · worked`).join(' | ')} | first V5 go | nothing left |`,
+      `| start | refused | ${AT.map((d) => `d${d} grade · $ · runway · worked`).join(' | ')} | first V5 go | nothing left | hurt by d28 | reckless |`,
     );
-    out(`|---|---|${AT.map(() => '---').join('|')}|---|---|`);
+    out(`|---|---|${AT.map(() => '---').join('|')}|---|---|---|---|`);
     for (const start of Object.keys(STARTS)) {
       const runs = Array.from({ length: SEEDS }, (_, k) =>
         season(`h-${start}-${k}`, { start, strategy, days: DAYS, human: true }),
@@ -31,8 +31,12 @@ it('season', { timeout: 600_000 }, () => {
       const v5 = runs.map((r) => firstTry(r, 5) ?? 99);
       const out5 = runs.map((r) => contentOut(r) ?? 99);
       const refused = runs.reduce((n, r) => n + r.refused.length, 0);
+      const hurt = runs.filter((r) => (firstInjury(r) ?? 99) <= 28).length;
+      const wild = Array.from({ length: SEEDS }, (_, k) =>
+        season(`h-${start}-${k}`, { start, strategy, days: Math.min(DAYS, 28), human: true, reckless: true }),
+      ).filter((r) => (firstInjury(r) ?? 99) <= 28).length;
       out(
-        `| ${start} | ${refused} | ${cells.join(' | ')} | ${median(v5) >= 99 ? '–' : `day ${median(v5)}`} (${v5.filter((d) => d < 99).length}/${SEEDS}) | ${median(out5) >= 99 ? '–' : `day ${median(out5)}`} |`,
+        `| ${start} | ${refused} | ${cells.join(' | ')} | ${median(v5) >= 99 ? '–' : `day ${median(v5)}`} (${v5.filter((d) => d < 99).length}/${SEEDS}) | ${median(out5) >= 99 ? '–' : `day ${median(out5)}`} | ${hurt}/${SEEDS} | ${wild}/${SEEDS} |`,
       );
     }
     out('');

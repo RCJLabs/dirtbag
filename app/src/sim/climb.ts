@@ -11,7 +11,8 @@
 
 import { margin, pumpFactor, windowFactor } from './climber';
 import { PUMPED, type BetaDef, type CruxDef, type RouteDef, type Verb } from './content/routes';
-import { BODY, CLIMB } from './dials';
+import { cold } from './body';
+import { BODY, CLIMB, LOAD } from './dials';
 import type { GameState, GoResult } from './types';
 import { conditions } from './weather';
 
@@ -111,13 +112,15 @@ export function picks(s: GameState, r: RouteDef): Record<string, string> {
 }
 
 // What the day does to every window: the rock's conditions and the sun (outdoors only),
-// and hunger.
+// hunger, and whether you've warmed up.
 export function dayFactor(s: GameState, r: RouteDef): { windows: number; grease: boolean } {
   const weak = s.fed < BODY.weakBelow ? 1 - (0.3 * (BODY.weakBelow - s.fed)) / BODY.weakBelow : 1;
-  if (r.place === 'gym') return { windows: weak, grease: false };
+  // A hard line before you've warmed up.
+  const body = weak * (cold(s, r) ? LOAD.coldWindows : 1);
+  if (r.place === 'gym') return { windows: body, grease: false };
   const c = conditions(s.seed, s.day);
   const grease = s.min >= c.greaseFrom;
-  return { windows: c.windows * (grease ? CLIMB.greaseFactor : 1) * weak, grease };
+  return { windows: c.windows * (grease ? CLIMB.greaseFactor : 1) * body, grease };
 }
 
 // A beta's scale for you, today: your skills in its style against the route's grade, and

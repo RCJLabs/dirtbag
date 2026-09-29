@@ -21,8 +21,11 @@ const played = () => {
   return s;
 };
 
-// A save written by R0's build (save v1), kept byte for byte.
+// Saves written by earlier builds, kept byte for byte: R0's (v1) and R1's (v2).
 const V1 = readFileSync(new URL('./fixtures/save-v1.json', import.meta.url), 'utf8');
+const V2 = readFileSync(new URL('./fixtures/save-v2.json', import.meta.url), 'utf8');
+// What R2's migration adds to any older save.
+const R2_BODY = { load: { acute: 20, chronic: 20, today: 0 }, injury: null, hurt: 0 };
 
 describe('saves', () => {
   it('round-trip a played game exactly', () => {
@@ -75,11 +78,21 @@ describe('saves', () => {
         skills: { power: 8, fingers: 8, endurance: 8, technique: 8, head: 8 },
       },
       people: {},
+      ...R2_BODY,
     });
     // And it plays on: the new rules accept it.
     const made = act(r.state, { t: 'create', name: 'Sam', start: 'boulderer' });
     expect(made.events).toEqual([]);
     expect(MIGRATIONS[1]).toBeTypeOf('function');
+  });
+
+  it('load a real R1 save: a climber, bonds and all, with R2’s body added', () => {
+    const r = fromSave(V2);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(2);
+    expect(r.state).toEqual({ ...JSON.parse(V2).state, ...R2_BODY });
+    expect(act(r.state, { t: 'travel', to: 'lot' }).events.some((e) => e.k === 'refused')).toBe(false);
   });
 
   // These pretend a longer history: a v1 file that stored `money` where the state now has
@@ -89,7 +102,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(2);
+    expect(SAVE_VERSION).toBe(3);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;
