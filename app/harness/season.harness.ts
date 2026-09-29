@@ -35,8 +35,8 @@ it('season', { timeout: 600_000 }, () => {
         return `V${f1(median(c.map((x) => x.grade)))} · $${median(c.map((x) => x.cash)).toFixed(0)} · ${f1(median(c.map((x) => x.runway)))}d · ${f1(median(c.map((x) => x.workDays)))}/7`;
       });
       const v5 = runs.map((r) => firstTry(r, 5) ?? 99);
-      // Runs that hit a day with nothing unsent within reach (so far, always a wet day with
-      // the week's gym set done), and from when.
+      // Runs that hit a day with nothing unsent within reach for an unhurt climber (so far,
+      // always a wet day with the gym's lines done), and from when.
       const dry = runs.map((r) => contentOut(r)).filter((d): d is number => d !== null);
       const refused = runs.reduce((n, r) => n + r.refused.length, 0);
       const hurt = runs.filter((r) => (firstInjury(r) ?? 99) <= 28).length;

@@ -1,5 +1,6 @@
 // Places, the things you can do there, and the roads between them. Text may use {spot},
-// {wake}, {pass} and {cash}; they're filled from the dials so no number is typed twice.
+// {wake}, {pass} and {cash}, filled from the dials, and a place card {lines}, its count of
+// lines, so no number is typed twice.
 //
 // Prices and shifts are v0.956's where it had them: the diner meal ($10, +50 fed), a café
 // shift (3 h, $28), setting at Send City (4 h, $28, and it trains technique).
@@ -27,6 +28,8 @@ export interface PlaceDef {
   shaded?: true;
   // Desert rock: sunbaked, every window a little tighter (CLIMB.desertFactor).
   desert?: true;
+  // Out of the valley: its own weather, rolled from its climate (v0.956's per-crag skies).
+  ownSky?: true;
   // A trip you pay for once, in cash, before you can drive it (v0.956's unlockCost), and
   // a permit paid on every trip in (v0.956's permit).
   unlock?: number;
@@ -87,7 +90,7 @@ export const PLACES: Record<string, PlaceDef> = {
     name: 'Roadside Crag',
     crag: true,
     scene: 'crag',
-    away: 'Granite. Seven lines, from a V2 warm-up to The Pump.',
+    away: 'Granite. {lines} lines, from a V2 warm-up to The Pump.',
     here: "You're parked here.",
     acts: [],
     // The sun comes round the far end first: the projects out in the boulder field lose
@@ -133,6 +136,7 @@ export const PLACES: Record<string, PlaceDef> = {
     permit: 20,
     pads: true,
     desert: true,
+    ownSky: true,
     // The sun comes round the far end first, like Roadside's: the project out past the
     // roof loses its shade first, the arête by the van keeps it longest.
     sun: ['mopen', 'mroof', 'msplitter', 'mhueco', 'mmoon', 'mspire', 'megg', 'mmantel', 'marete'],

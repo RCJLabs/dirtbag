@@ -12,7 +12,8 @@ import {
   BOARD_WEEKS,
   WEEK_DAYS,
 } from './content/gym';
-import { ACTS, PLACES, ROADS } from './content/places';
+import { ACTS, PLACES, ROADS, TEXT_VALUES } from './content/places';
+import { fill } from './format';
 import { PEOPLE, TALK, THINGS } from './content/people';
 import { ROUTES, type RouteDef } from './content/routes';
 
@@ -112,6 +113,12 @@ describe('content', () => {
     expect(routeById('a', 'bd-1-3')).toBe(b1[2]);
     expect(routeById('a', 'bd-1-9')).toBeUndefined();
     expect(b1[0]!.line).toContain(`${BOARD_WEEKS} weeks`);
+  });
+
+  it('place cards fill every number they mention from the data', () => {
+    for (const [id, p] of Object.entries(PLACES))
+      for (const text of [p.away, p.here])
+        expect(fill(text, { ...TEXT_VALUES, lines: 1 }), id).not.toMatch(/\{/);
   });
 
   it("a place that's shut to you says the grade that opens it", () => {

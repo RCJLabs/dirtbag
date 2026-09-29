@@ -2,7 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { whereIs, around } from './presence';
 import { CLIMB } from './dials';
 import { PLACES } from './content/places';
-import { conditions, forecast, seasonOf, skyOn, sunOn, SEASON_DAYS, type Sky } from './weather';
+import {
+  conditions,
+  conditionsAt,
+  forecast,
+  seasonOf,
+  skyAt,
+  skyOn,
+  sunOn,
+  SEASON_DAYS,
+  type Sky,
+} from './weather';
 
 const days = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
 
@@ -53,6 +63,23 @@ describe('weather', () => {
       windows: 1.1,
       seeping: false,
     });
+  });
+
+  it('gives Moonstone its own desert sky: drier and hotter than the valley, the same for a seed', () => {
+    const year = days(4 * 4 * SEASON_DAYS);
+    const share = (sky: Sky, f: (d: number) => Sky) => year.filter((d) => f(d) === sky).length / year.length;
+    const valley = (d: number) => skyOn('test', d);
+    const desert = (d: number) => skyAt('test', d, 'moon');
+    // v0.956's shift: 12 points more heat, 10 less rain, averaged over the seasons.
+    expect(share('rain', desert)).toBeLessThan(share('rain', valley) - 0.05);
+    expect(share('hot', desert)).toBeGreaterThan(share('hot', valley) + 0.06);
+    expect(year.map(desert)).toEqual(year.map(desert));
+    // Everywhere in the valley shares its sky.
+    for (const d of year.slice(0, 60)) expect(skyAt('test', d, 'gorge')).toBe(valley(d));
+    // A wet day in the valley can be a dry one out there, and the rock's open.
+    const escape = year.find((d) => valley(d) === 'rain' && desert(d) !== 'rain')!;
+    expect(conditions('test', escape).open).toBe(false);
+    expect(conditionsAt('test', escape, 'moon').open).toBe(true);
   });
 
   it('sends the sun across Roadside one line at a time, the projects first', () => {

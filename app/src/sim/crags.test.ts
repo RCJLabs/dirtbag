@@ -101,9 +101,13 @@ describe('Moonstone Boulders', () => {
   });
 
   it('bakes: every window a little tighter in the desert, and the sun crosses it', () => {
-    const day = days(2, 60).find(
-      (d) => conditions('crags', d).sky === 'fair' && !conditions('crags', d).seeping,
-    )!;
+    // A fair day both in the valley and out there, so the rock is all that differs.
+    const fair = (d: number) =>
+      conditions('crags', d).sky === 'fair' &&
+      !conditions('crags', d).seeping &&
+      conditionsAt('crags', d, 'moon').sky === 'fair' &&
+      !conditionsAt('crags', d, 'moon').seeping;
+    const day = days(2, 200).find(fair)!;
     expect(conditionsAt('crags', day, 'moon').windows).toBeCloseTo(conditions('crags', day).windows * 0.92);
     const s = at(8, { at: 'moon', day, min: 10 * 60, unlocked: ['moon'] });
     expect(betaScale(s, ROUTES.megg!, 'A1')).toBeLessThan(
@@ -139,7 +143,7 @@ describe('highballs [proposed]', () => {
     const fall = { sent: false, hi: tall.moves, fellAt: 'A', tried: ['A1'], skin: 0 };
     const kinds: string[] = [];
     for (const day of days(1, 80)) {
-      if (!conditions('crags', day).open) continue;
+      if (!conditionsAt('crags', day, 'moon').open) continue;
       const s = at(8, { at: 'moon', day, min: 10 * 60 });
       const r = play(s, { t: 'go', route: 'marete' }, { t: 'done', route: 'marete', result: fall });
       for (const e of r.events) if (e.k === 'injured') kinds.push(e.kind);

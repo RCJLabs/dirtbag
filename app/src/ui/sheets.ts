@@ -29,6 +29,7 @@ import {
   PLACES,
   restCost,
   road,
+  ROUTES,
   routeOfId,
   routesAt,
   SEND_NAME,
@@ -39,6 +40,7 @@ import {
   type GameState,
   type RouteDef,
   type Skills,
+  type Sky,
 } from '../sim';
 import type { Game, SheetId } from '../game/game';
 import { CRAGS } from '../view/layout';
@@ -148,6 +150,15 @@ function problemNote(s: GameState, r: RouteDef): string {
   return `${r.type[0]!.toUpperCase()}${r.type.slice(1)}, ${r.moves} moves. Not tried.`;
 }
 
+// Out of the valley, the sky's its own: what it's doing there today.
+const SKY_OUT: Record<Sky, string> = {
+  prime: 'Out there today: cold and dry. The best friction.',
+  fair: 'Out there today: fair.',
+  hot: 'Out there today: hot. Greasy by lunch.',
+  rain: 'Out there today: rain. The rock’s soaked.',
+};
+const skyNote = (sky: Sky): string => SKY_OUT[sky];
+
 const mapRow = (game: Game): Row => ({
   label: 'Open the map',
   run: () => {
@@ -213,11 +224,17 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     case 'place': {
       const p = PLACES[id.id]!;
       const here = s.at === id.id;
-      const sub = fill(here ? p.here : p.away, TEXT_VALUES);
+      const sub = fill(here ? p.here : p.away, {
+        ...TEXT_VALUES,
+        lines: Object.values(ROUTES).filter((r) => r.place === id.id).length,
+      });
       // A crag that's shut for the season says so before you burn the gas; one that's
-      // above your grade doesn't let you go at all.
-      const shut = conditionsAt(s.seed, s.day, id.id).closed;
-      const notes = shut ? [`${shut}.`] : undefined;
+      // above your grade doesn't let you go at all. One out of the valley has its own
+      // weather, so its card says what it's doing out there.
+      const here_ = conditionsAt(s.seed, s.day, id.id);
+      const shut = here_.closed;
+      const sky = PLACES[id.id]?.ownSky ? [skyNote(here_.sky)] : [];
+      const notes = shut || sky.length ? [...(shut ? [`${shut}.`] : []), ...sky] : undefined;
       if (!here) {
         const locked = p.minGrade !== undefined && gradeOf(s.climber.skills) < p.minGrade;
         const drive = driveRow(game, s, id.id, 'Drive here');

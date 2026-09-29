@@ -19,7 +19,7 @@ import { ACTS, PLACES, road } from './content/places';
 import { TALK } from './content/people';
 import type { RouteDef } from './content/routes';
 import { BODY, CLIMB, DAY, LOAD, MONEY } from './dials';
-import { cold, ratio } from './body';
+import { cold, freshLoad, ratio } from './body';
 import { gradeOf, average } from './climber';
 import { act, faSuggestions, goBlocked, knowsBeta, landingChance, newGame, talkStart } from './game';
 import { whereNow } from './presence';
@@ -55,8 +55,9 @@ export interface DaySummary {
   workMin: number;
   // The hardest grade index you tied in on today, or -1.
   hardest: number;
-  // Where the day's climbing was: a place, "tired" (too spent to go), or "nothing" (no line
-  // left within reach anywhere).
+  // Where the day's climbing was: a place; "tired" (too spent to go); "resting" (the body
+  // said no, with unsent lines still out there); or "nothing" (no line left within reach
+  // anywhere).
   where: string;
   // Minutes on the rock (goes and the rests between them), and the skill they taught, summed
   // over all five: what climbing's worth an hour, against a setting shift's.
@@ -307,6 +308,25 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     return lines.sort((a, b) => b.w - a.w)[0]?.r ?? null;
   }
 
+  // Whether a place has an unsent line the day allows (weather, closures, the light, a
+  // belayer, the pass) for a fresh, unhurt body: what "nothing new to try" is about. Grade
+  // gates count, so the Gorge isn't fresh before V4.
+  function fresh(place: string): boolean {
+    const p = PLACES[place];
+    if (p?.minGrade !== undefined && gradeOf(s.climber.skills) < p.minGrade) return false;
+    const body: GameState = {
+      ...s,
+      at: place,
+      today: place === 'gym' ? [...s.today, 'pass'] : s.today,
+      energy: 100,
+      skin: 100,
+      fed: 100,
+      injury: null,
+      load: freshLoad(),
+    };
+    return routesAt(s.seed, place, s.day).some((r) => !s.routes[r.id]?.sent && !goBlocked(body, r));
+  }
+
   // The easiest thing here to warm up on, sent or not.
   function warmUp(): RouteDef | null {
     return (
@@ -356,7 +376,9 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
           : choose('gym')
             ? 'gym'
             : null;
-    let where = place ? 'tired' : 'nothing';
+    // Nothing to climb isn't the same as nothing new to try: a hurt or spent climber still
+    // has unsent lines out there, and only a day without any counts as the content running out.
+    let where = place ? 'tired' : ['road', 'gorge', 'gym'].some(fresh) ? 'resting' : 'nothing';
     if (place && s.min < 16 * 60 && s.energy >= 30 && s.skin >= 25) {
       travel(place);
       if (place === 'gym') tryAct('gym.pass');

@@ -1010,9 +1010,21 @@ The full diagnosis is in the audit, under *The map and the look*.
 
 **Status (29 Sep 2026): 10.1–10.3 built; the marker stays.**
 1. Met on the build: the gym, Roadside, the Gorge and Moonstone each have a scene, lines drawn from data, and conditions you can see.
-2. Not met. A few runs still hit a day with nothing to try. Since 10.3b these are mostly injury days, which the harness counts as nothing to try.
+2. Not met: 1 run in 144 is left.
+   - The harness now counts only content running out. Before, a day the body kept you off the rock counted as nothing to try; now it's "resting", since the lines were still there.
+   - The one run left is a V4 climber who had sent everything at the gym by day 25, the board's V7 included, and then got a wet day.
+   - Making the board's grades stiff (still Evan's call) would very likely close it.
 3. Not met: there's no V10 boulder anywhere. Sport goes to grade 10 at Moonstone, and v0.956 had no V10 boulder at these crags either.
 4. Needs testers.
+
+*As built (follow-ups, 29 Sep 2026):*
+- **Moonstone's own sky.** v0.956 rolled every crag's weather from its climate. Out of the valley, Moonstone now gets its own sky, as a new place flag `ownSky`:
+  - the season's odds, shifted by v0.956's desert terms (12 points more heat, 10 less rain, 2 less prime), on its own seed label;
+  - over a year it rains less and bakes more than the valley, so a wet day at home can be a dry one out there.
+  - Its place card says what it's doing ("Out there today: fair."), and once it's paid for, the forecast adds it to each day.
+  - The Gorge keeps the valley's sky, which R2's season was tuned on; v0.956 rolled it apart too. v0.956's desert "soft after rain" and "washed clean" aren't carried: the day after rain seeps as it does in the valley.
+- **The harness** counts a day the body kept you off the rock as "resting", not "nothing".
+- **Roadside's card** said "Seven lines" of eleven. The count now comes from the data (`{lines}`), and a content check holds every place card's text to the placeholders it can fill.
 
 ---
 
@@ -1418,3 +1430,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 10.2: conditions you can see. The sun crosses Roadside end to end in two hours and greases each line as it arrives (proposed). The scene and walls show its edge, wet rock shows after rain, and the map tags closed and soaked crags. The season targets pass.
 - 2026-09-29 — Phase 10.3a: Moonstone Boulders as a place. v0.956's terms: V6, a $400 haul paid once, a $20 permit each trip. Nine lines, a desert scene with a quartzite spire, its road and map pin. Save v4 adds the trips you've paid for, migrated from a real v3 save. Highballs (10.3b) are next.
 - 2026-09-29 — Phase 10.3b: highballs (proposed). A fall off a tall boulder can land you badly, by height, halved by the Moonstone haul's pads and again by a partner spotting. The beta sheet shows the odds. Careful bots wait for a spotter; 7% of moderate runs now end month one with a jammed ankle. Phase 10's slices are built; its criteria 2–4 aren't met, so the marker stays.
+- 2026-09-29 — Phase 10 follow-ups: Moonstone gets its own desert sky (v0.956's per-crag weather), on its card and the forecast. The harness counts only content, not injuries, as "nothing new to try": 1 run in 144 is left, and it hinges on the board-stiffness call. Roadside's card counts its lines from the data.

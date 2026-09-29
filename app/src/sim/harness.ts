@@ -68,7 +68,8 @@ export const firstTry = (run: BotRun, grade: number): number | null =>
 export const firstInjury = (run: BotRun): number | null =>
   run.injuries.length ? Number(/^day (\d+)/.exec(run.injuries[0]!)?.[1]) : null;
 
-// The first day there was nothing left within reach anywhere, or null.
+// The first day there was nothing new left within reach anywhere, or null. Days the body
+// kept you off the rock ("resting") don't count: the lines were still there.
 export const contentOut = (run: BotRun): number | null =>
   run.days.find((d) => d.where === 'nothing')?.day ?? null;
 

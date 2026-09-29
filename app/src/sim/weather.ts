@@ -40,6 +40,35 @@ export function skyOn(seed: string, day: number): Sky {
 export const forecast = (seed: string, day: number, n = 3): Sky[] =>
   Array.from({ length: n }, (_, i) => skyOn(seed, day + i));
 
+// The sky over a place: the valley's anywhere in it; its own for a place out of it, from
+// the season's odds shifted by its climate, as v0.956 rolled its crags. The desert gets 12
+// points more heat, 10 less rain and 2 less prime; shade 8 more rain and 6 less heat. (v0.956
+// rolled the Gorge apart too; the rebuild keeps it on the valley's sky, which R2's season
+// was tuned on.)
+export function skyAt(seed: string, day: number, place: string): Sky {
+  const p = PLACES[place];
+  if (!p?.ownSky) return skyOn(seed, day);
+  if (day <= 1) return 'prime';
+  const w = [...WEIGHTS[seasonOf(day)]];
+  if (p.desert) {
+    w[2]! += 0.12;
+    w[3] = Math.max(0, w[3]! - 0.1);
+    w[0] = Math.max(0, w[0]! - 0.02);
+  }
+  if (p.shaded) {
+    w[3]! += 0.08;
+    w[2] = Math.max(0, w[2]! - 0.06);
+  }
+  const r =
+    Rng.fromStream(seed, 'worldgen').derive(`sky-${place}-${day}`).next() * w.reduce((a, b) => a + b, 0);
+  let acc = 0;
+  for (let i = 0; i < 4; i++) {
+    acc += w[i]!;
+    if (r < acc) return SKIES[i]!;
+  }
+  return 'fair';
+}
+
 export interface Conditions {
   sky: Sky;
   // The crag is climbable at all.
@@ -60,9 +89,11 @@ const SUN_HALFWAY: Record<Sky, number> = { prime: 15 * 60, fair: 14 * 60, hot: 1
 // What the day means at the crag. Prime is cold and dry: the best friction and the sun
 // comes round later. Hot days grease the wall by noon. Rain closes it, and it seeps the
 // day after.
-export function conditions(seed: string, day: number): Conditions {
-  const sky = skyOn(seed, day);
-  const seeping = sky !== 'rain' && day > 1 && skyOn(seed, day - 1) === 'rain';
+export const conditions = (seed: string, day: number): Conditions =>
+  fromSky(skyOn(seed, day), day > 1 ? skyOn(seed, day - 1) : null);
+
+function fromSky(sky: Sky, before: Sky | null): Conditions {
+  const seeping = sky !== 'rain' && before === 'rain';
   const base = sky === 'prime' ? 1.1 : sky === 'hot' ? 0.9 : 1;
   return {
     sky,
@@ -73,15 +104,17 @@ export function conditions(seed: string, day: number): Conditions {
   };
 }
 
-// What the day means at a particular crag: the valley's weather, plus the crag's own shade
-// and closures. Shaded rock doesn't grease and doesn't mind the heat.
+// What the day means at a particular crag: its sky (the valley's, or its own out of it),
+// plus its own shade and closures. Shaded rock doesn't grease and doesn't mind the heat.
 export function conditionsAt(
   seed: string,
   day: number,
   place: string,
 ): Conditions & { closed: string | null } {
-  const c = conditions(seed, day);
   const p = PLACES[place];
+  const c = p?.ownSky
+    ? fromSky(skyAt(seed, day, place), day > 1 ? skyAt(seed, day - 1, place) : null)
+    : conditions(seed, day);
   const closed = p?.closed && seasonOf(day) === p.closed.season ? p.closed.why : null;
   if (p?.desert) return { ...c, closed, windows: c.windows * CLIMB.desertFactor };
   if (!p?.shaded) return { ...c, closed };

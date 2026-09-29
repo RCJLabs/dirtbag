@@ -50,6 +50,7 @@ import {
   seasonOf,
   SKILLS,
   SKY_NAME,
+  skyAt,
   startName,
   sunOn,
   tierOf,
@@ -683,11 +684,16 @@ function WeekBody({ s }: { game: Game; s: GameState }) {
       <ul className="days">
         {[0, 1, 2].map((i) => {
           const c = conditions(s.seed, s.day + i);
+          // A trip you've paid for out of the valley has its own sky: worth knowing before
+          // three hours of gas.
+          const away = s.unlocked
+            .filter((id) => PLACES[id]?.ownSky)
+            .map((id) => `${PLACES[id]!.name}: ${SKY_NAME[skyAt(s.seed, s.day + i, id)].toLowerCase()}.`);
           return (
             <li key={i} data-sky={c.sky}>
               <b>{i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : `Day ${s.day + i}`}</b>
               <span className="sky">{SKY_NAME[c.sky]}</span>
-              <small>{skyLine(c)}</small>
+              <small>{[skyLine(c), ...away].join(' ')}</small>
             </li>
           );
         })}

@@ -4,7 +4,6 @@
 import {
   belayer,
   CLIMB,
-  conditions,
   conditionsAt,
   gradeLabel,
   isNight,
@@ -84,7 +83,8 @@ export function render(g: G, f: Frame): void {
   else renderScene(g, f);
 }
 
-const wet = (s: GameState) => conditions(s.seed, s.day).sky === 'rain';
+// Raining where you are: the valley's sky, or a place's own out of it.
+const wet = (s: GameState, place: string) => conditionsAt(s.seed, s.day, place).sky === 'rain';
 // Where the water runs on wet rock: fixed per wall, so it runs the same way every time.
 const WET_SEED = 57;
 const wetSeed = (id: string) => [...id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, WET_SEED);
@@ -179,7 +179,7 @@ function renderScene(g: G, f: Frame): void {
     ]);
     g.fillRect(0, 0, W, H);
   }
-  if (!gym && wet(s)) drawRain(g, W, H, f.t, f.still);
+  if (!gym && wet(s, place)) drawRain(g, W, H, f.t, f.still);
 }
 
 const PIN_FILL: Record<PinKind, string> = { crag: ACC.comic, camp: '#9CC77E', town: CREAM };
@@ -390,7 +390,7 @@ function renderWall(g: G, f: Frame): void {
     drawClimber(g, LOOK.you!, 0, 0, stride, falling);
     g.restore();
   } else drawClimber(g, LOOK.you!, sx, sy, stride, falling);
-  if (r.place !== 'gym' && wet(s)) drawRain(g, W, H, f.t, f.still);
+  if (r.place !== 'gym' && wet(s, r.place)) drawRain(g, W, H, f.t, f.still);
   // And the world narrows: the edges close in as the bar fills, pulsing near the top. The
   // gradient is squashed to the screen's shape so the sides close in as much as the ends.
   if (pump > 45) {
