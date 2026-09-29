@@ -63,8 +63,9 @@
 | 10 Crags as places | Built on the rebuild (the board, conditions you can see, Moonstone) and closed by Evan's call. Its testers' criterion carries. |
 | 11 Valley map | Built on the rebuild (the taps, place cards, adding a place, the daily plan) and closed by Evan's call. Criteria 2 to 5 pass; its testers' criterion carries. Released in 0.961.0 with Phase 10. |
 | 12 UI system | Built on the rebuild (the Journal, the wide screen, keyboard and access, Tonight, no inline styles) and closed by Evan's call. The flows the e2e doesn't play in landscape or by keyboard carry to playtesting. |
-| 13 Sound and feel | The current milestone. |
-| 14–20 | Unchanged in intent. They target the new build. |
+| 13 Sound and feel | Built on the rebuild (effects and ambience made in code, the licence ledger, credits) and closed by Evan's call. Criterion 4 (music) carries with the music decision; criteria 1 and 2 wait on an ear. |
+| 14 Desktop and Steam | The current milestone. |
+| 15–20 | Unchanged in intent. They target the new build. |
 
 ## The rebuild track
 
@@ -1300,7 +1301,7 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 ---
 
-### Phase 13 — Sound and feel   **<<< CURRENT MILESTONE**
+### Phase 13 — Sound and feel
 
 **Goal.** Every action has feedback, the world has ambience, and the music is owned or cleanly licensed for a paid release.
 
@@ -1344,7 +1345,7 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **13.3 The licence ledger and credits.** Every sound and where it came from; a check that nothing unlisted ships; a credits screen.
 - **13.4 Music**, when Evan decides.
 
-**Status (29 Sep 2026): 13.1 to 13.3 built; 13.4, music, is parked.**
+**Status (29 Sep 2026): 13.1 to 13.3 built; closed by Evan's call.** Criterion 4 carries with music (13.4), which is parked; criteria 1 and 2 are met in code and tests and still wait on someone listening. The marker moved to Phase 14.
 - `src/audio/`: `cues.ts` names what each thing sounds like, `sound.ts` makes it. 23 cues: around the valley (a tap, steps, a speech bubble, the map, the van, eating, money in and out, bed, resting, the dog) and on the wall (pulling on, each move, each clip, the crux, clearing it, each crux verb as your hands play it, a throw's rising charge and release, breath as the pump builds, the fall, the landing, the send).
 - An act sounds like what it does to you, from its data, so a new act has a sound without anyone choosing one. A test holds every act and every crux verb to one.
 - Settings: sound on, quiet or off; vibration on or off. The sound suspends while the app is hidden. The ambience bus already ducks under dialogue, ready for 13.2.
@@ -1369,7 +1370,7 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 ## Stage D — Get it in front of people
 
-### Phase 14 — Desktop and Steam build
+### Phase 14 — Desktop and Steam build   **<<< CURRENT MILESTONE**
 
 **Goal.** A Steam build that plays well with mouse, keyboard or gamepad on Windows, macOS, Linux and Steam Deck.
 
@@ -1666,3 +1667,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 12 closed by Evan's call: criteria 1, 4 and 5 met; 2 and 3 met for what the e2e plays, the rest carried to playtesting. CURRENT MILESTONE moved to Phase 13, sound and feel; it gets planned on the rebuild next.
 - 2026-09-29 — Phase 13 planned on the rebuild, with Evan's calls: effects and ambience made in code, CC0 recordings where they fall flat, music parked, and effects shippable without it. 13.1: the sound engine and a sound for every verb, volume and vibration in Settings, silent while hidden. The e2e hears 20 of the 23 cues.
 - 2026-09-29 — Phase 13.2 and 13.3: every place has ambience, from its data, turned by the hour and the sky; the licence ledger lists all 34 sounds, `npm run check` fails on unlisted audio, and Settings has credits. A click in 13.1's effects (envelopes starting at full volume) is fixed.
+- 2026-09-29 — Phase 13 closed by Evan's call: criteria 1–3 met, criterion 4 carried with the parked music decision. CURRENT MILESTONE moved to Phase 14, the desktop and Steam build; it gets planned on the rebuild next.
