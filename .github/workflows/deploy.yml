@@ -1,6 +1,7 @@
-# Deploys a release to dirtbag.rcjlabs.com when a version tag is pushed (v0.957.0, ...). The tag
-# must equal package.json's version, which must equal the version compiled into index.html.
-# Rolling back = run this workflow by hand on an older tag.
+# Deploys a release to dirtbag.rcjlabs.com when a version tag is pushed (v0.960.0, ...). The tag
+# must equal package.json's version, which the game in app/ is stamped and built with.
+# Rolling back = run this workflow by hand on an older tag (v0.956.0 is the retired v0.956,
+# with its own copy of this workflow).
 #
 # One-time setup, by hand, in the repo's Settings (until then Pages keeps deploying main as before
 # and this workflow's deploy job fails):
@@ -32,8 +33,11 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            app/package-lock.json
 
-      - run: npm ci
+      - run: npm ci && npm ci --prefix app
 
       - name: Tag matches package.json
         run: |
@@ -42,6 +46,9 @@ jobs:
             echo "::error::ref $GITHUB_REF_NAME is not the release tag v$v (run this on a version tag)"
             exit 1
           fi
+
+      - name: Build the game
+        run: npm run build --prefix app
 
       - name: Static checks
         run: npm run check
@@ -115,10 +122,12 @@ jobs:
             if [ "$i" = 30 ]; then echo "::error::$site is still not serving $GITHUB_SHA after 5 minutes"; exit 1; fi
             sleep 10
           done
-          if ! curl -fsS --compressed -H 'Cache-Control: no-cache' "$site/" | grep -q "\"$v\""; then
-            echo "::error::live index.html is not $v"
+          if ! curl -fsS -H 'Cache-Control: no-cache' "$site/version.json?$GITHUB_SHA" | grep -q "\"version\":\"$v\""; then
+            echo "::error::live version.json is not $v"
             exit 1
           fi
+          # A returning v0.956 player's browser checks this URL for a new worker.
+          curl -fsS -H 'Cache-Control: no-cache' "$site/service-worker.js" | grep -q 'dirtbag-app-' || { echo "::error::live service-worker.js is not the rebuild's"; exit 1; }
           curl -fsS "$site/.well-known/assetlinks.json" | node -e "JSON.parse(require('fs').readFileSync(0, 'utf8')); console.log('assetlinks.json served')"
 
       - name: Install Chromium

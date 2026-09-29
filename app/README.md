@@ -2,7 +2,7 @@
 
 The game rebuilt from source. It has a new look (park-poster landscapes, comic people and panels, all drawn in code), side-view scenes joined by a valley map, and beta-then-send climbing. The decisions and the milestones are in [`docs/ROADMAP.md`](../docs/ROADMAP.md), under "Direction and the rebuild".
 
-This is R2: the first season, Act I, from gym plastic to your first V5 project.
+This is the game as it ships from 0.960.0 (the roadmap's R3): the first season, Act I, from gym plastic to your first V5 project. Its build is the site: the repo root's `npm run stage` publishes `dist/`.
 - **Act I:** v0.956's first-season quest as a goal ladder, in its words: five stages with a "Next" pill on screen, ending at V4 with a card. Dex's race for the open project starts that night.
 - **Places:**
   - Roadside Crag: seven boulders and four sport lines, including an open project you first-ascend, name and grade.
@@ -19,6 +19,7 @@ This is R2: the first season, Act I, from gym plastic to your first V5 project.
   - Pump you can see: the climber shakes and the screen's edges close in.
   - Climbers move at a pace set by their grade.
 - **The send card:** a PNG of your line, drawn on the device, to save or share.
+- **v0.956's players:** v0.956 retired at 0.960.0. Someone who played it is told so, can keep their old career as a file, and can carry on under their old name, their climbing capped at V3.
 - **The shell:** the game installs and plays offline.
 
 ## Commands
@@ -33,7 +34,7 @@ npm run typecheck      # the sim is checked with no DOM types, the rest with the
 npm run format         # Prettier (CI runs format:check)
 npm run build          # dist/
 npm run size           # what a player downloads, against the budget
-npm run e2e            # a bot plays two days on dist/ in headless Chromium, then reloads offline
+npm run e2e            # a bot plays two days on dist/ in headless Chromium and reloads offline, then a v0.956 player crosses over
 npm run harness        # bots play whole seasons; prints the tables and Phase 6's first-season targets
 ```
 
@@ -50,9 +51,9 @@ npm run harness        # bots play whole seasons; prints the tables and Phase 6'
 | `src/sim/curves.ts` | Other climbers' grades over the season: Sage's steady climb, and Dex's streaks, injury and peak. |
 | `src/sim/dials.ts` | Every tunable number, with what it means and why it's set there. |
 | `src/view/` | The painters and the frame renderer: scenes, the map, the wall, people. Reads state, never changes it. |
-| `src/game/` | The game loop, input, walking, driving and the attempt's timing; saves to localStorage. |
+| `src/game/` | The game loop, input, walking, driving and the attempt's timing; saves to localStorage. `legacy.ts` reads a retired v0.956 career and keeps it as a file, never writing to it. |
 | `src/ui/` | React panels: HUD, speech bubbles, sheets, the climb panel, the goal pill. `card.ts` words the send card; `view/paint/card.ts` paints it. |
-| `build/pwa.ts` | The installable shell, made at build time: the manifest, icons drawn in code, and a service worker that precaches exactly this build. |
+| `build/pwa.ts` | The installable shell, made at build time: the manifest and icons (drawn in code, `favicon.ico` too), and a service worker that precaches exactly this build. The worker is `service-worker.js`, v0.956's name, so a browser that installed v0.956 swaps workers in place, and it clears v0.956's cache. |
 | `e2e/playthrough.mjs` | The bot that plays two days in the browser, then checks the game starts offline. |
 
 ## Rules
@@ -71,7 +72,7 @@ npm run harness        # bots play whole seasons; prints the tables and Phase 6'
   - The loader never repairs a save and never substitutes a fresh one. `game/persist.ts` moves a bad save aside, falls back to the last save from an earlier day, and says so.
 - **Nothing leaves the site.** Fonts are bundled (OFL, from `@fontsource`), and the e2e bot fails on any off-site request.
 
-## What R2 fakes
+## What it still fakes
 
 - **Balance.**
   - The harness fits the season's shape: runway, the first V5 project around day 18, injuries, and climbing against setting. `npm run harness` prints the targets.
@@ -82,4 +83,4 @@ npm run harness        # bots play whole seasons; prints the tables and Phase 6'
 - **Design calls** marked *[proposed]* in the roadmap are Evan's to rule on: Sage's week away, the blessing's bond, the race's V4 trigger, Act I's "regular" stage, pace, and the card's footer.
 - **Not in yet:** sound, gear (the trad lines wait for it), comps, media, and jobs beyond the café and setting.
 - **Saves.** Save v3 is still growing, and freezes when R2 ships. A save from an earlier R2 build can fail to load: it's moved aside, not lost.
-- **Deployment.** The service worker and manifest work in the build and in the e2e, but the rebuild isn't deployed until R3.
+- **The switch-over, live.** The crossover (a browser with v0.956 installed meeting this build) was tested locally, not yet on the real site. On the first visit after the deploy, v0.956 shows once from its own cache. Within a few seconds the new worker takes over and deletes v0.956's cache, and from the next launch it's this game.

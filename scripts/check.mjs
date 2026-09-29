@@ -1,10 +1,12 @@
-// Static checks on the release files. Fast, no browser. Run before every commit that touches the
-// site: `npm run check`. Exits non-zero on the first run of failures, listing all of them.
-import { existsSync } from 'node:fs';
+// Static checks on the release: one version everywhere, the built site is whole, and the Play
+// app can still verify the domain. Fast, no browser. Run before every commit that touches the
+// site: `npm run check`. The site is the rebuild's build, so build it first
+// (`npm run build --prefix app`); a missing build fails, it doesn't skip.
+import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { splitBuild } from './lib/build-parts.mjs';
-import { ROOT, read, packageVersion, cacheName, CACHE_RE, embeddedVersion } from './lib/version.mjs';
+import { COPIES, ROOT, read, packageVersion } from './lib/version.mjs';
 
+const DIST = 'app/dist';
 const results = [];
 const check = (name, fn) => {
   try {
@@ -25,60 +27,66 @@ const json = (rel) => {
   }
 };
 const exists = (rel) => existsSync(join(ROOT, rel));
+const built = (rel) => exists(`${DIST}/${rel}`);
 
 const version = packageVersion();
-const html = read('index.html');
-const sw = read('service-worker.js');
 
 // --- one version everywhere ---------------------------------------------------------------
-check(`index.html embeds ${version}`, () => {
-  if (!html.includes(`"${version}"`)) {
-    const found = embeddedVersion(html);
-    fail(`index.html was built as ${found ?? 'an unknown version'}, package.json says ${version}. Rebuild from source, or fix package.json.`);
-  }
-});
-check(`service worker cache is ${cacheName(version)}`, () => {
-  const m = sw.match(CACHE_RE);
-  if (!m) fail(`service-worker.js has no "const CACHE = '…';" line`);
-  if (m[1] !== cacheName(version)) fail(`service-worker.js uses ${m[1]}. Run \`npm run stamp\`.`);
-});
-check(`twa-manifest.json appVersionName is ${version}`, () => {
-  const v = json('twa-manifest.json').appVersionName;
-  if (v !== version) fail(`twa-manifest.json says ${v}. Run \`npm run stamp\`.`);
-});
+for (const { file, get } of COPIES)
+  check(`${file} says ${version}`, () => {
+    const found = get(json(file)).filter((v) => v !== undefined);
+    const off = found.filter((v) => v !== version);
+    if (!found.length) fail(`${file} carries no version`);
+    if (off.length) fail(`${file} says ${off.join(', ')}. Run \`npm run stamp\`.`);
+  });
 
-// --- the build is still the shape the tooling expects ---------------------------------------
-check('index.html splits into audio / sprites / js / css', () => {
-  const p = splitBuild(html);
-  return `${Object.keys(p.audio.entries).length} tracks, ${Object.keys(p.assets.entries).length} sprites`;
+// --- the build is the site, and it's whole ------------------------------------------------
+check(`${DIST} is built`, () => {
+  if (!built('index.html')) fail(`no ${DIST}/index.html. Build it: npm run build --prefix app`);
 });
+if (built('index.html')) {
+  const html = read(`${DIST}/index.html`);
+  const sw = built('service-worker.js') ? read(`${DIST}/service-worker.js`) : '';
+  const assets = readdirSync(join(ROOT, DIST, 'assets'));
 
-// --- everything the page, manifest and service worker point at exists ---------------------------
-check('index.html links resolve', () => {
-  // Scan only the HTML shell; the 2 MB bundle contains markup-looking strings.
-  const shell = splitBuild(html).shell.body;
-  const refs = [...shell.matchAll(/<link [^>]*href="([^"]+)"/g)].map((m) => m[1]);
-  const reg = shell.match(/serviceWorker\.register\('([^']+)'/);
-  if (reg) refs.push(reg[1]);
-  const missing = refs.filter((r) => !/^https?:/.test(r) && !exists(r));
-  if (missing.length) fail(`missing: ${missing.join(', ')}`);
-  return `${refs.length} refs`;
-});
-check('service worker precache list resolves', () => {
-  const shell = sw.match(/const SHELL = \[([\s\S]*?)\];/);
-  if (!shell) fail('no SHELL array in service-worker.js');
-  const urls = [...shell[1].matchAll(/'\.\/([^']*)'/g)].map((m) => m[1]).filter(Boolean);
-  const missing = urls.filter((u) => !exists(u));
-  if (missing.length) fail(`precached but missing: ${missing.join(', ')}`);
-  return `${urls.length} files`;
-});
-check('web manifest is valid and its icons exist', () => {
-  const m = json('manifest.webmanifest');
-  const missing = (m.icons || []).map((i) => i.src).filter((s) => !exists(s));
-  if (missing.length) fail(`missing icons: ${missing.join(', ')}`);
-});
-check('favicon.ico exists', () => {
-  if (!exists('favicon.ico')) fail('browsers request /favicon.ico on every load; without it every load logs a 404');
+  check(`the game is built as ${version}`, () => {
+    const js = assets.filter((f) => f.endsWith('.js')).map((f) => read(`${DIST}/assets/${f}`));
+    // The minifier may quote it any of three ways.
+    if (!js.some((t) => ['"', "'", '`'].some((q) => t.includes(`${q}${version}${q}`))))
+      fail(`no script in ${DIST}/assets carries "${version}". Rebuild after \`npm run stamp\`.`);
+  });
+  check('index.html links resolve', () => {
+    const refs = [...html.matchAll(/(?:href|src)="\.\/([^"]+)"/g)].map((m) => m[1]);
+    const missing = refs.filter((r) => !built(r));
+    if (missing.length) fail(`missing: ${missing.join(', ')}`);
+    return `${refs.length} refs`;
+  });
+  check('service-worker.js precaches files that exist', () => {
+    if (!sw) fail(`no ${DIST}/service-worker.js: returning players' browsers would keep v0.956's worker`);
+    const list = sw.match(/const FILES = (\[[\s\S]*?\]);/);
+    if (!list) fail('no FILES list in service-worker.js');
+    const files = JSON.parse(list[1]).map((f) => f.replace(/^\.\//, '')).filter(Boolean);
+    const missing = files.filter((f) => !built(f));
+    if (missing.length) fail(`precached but missing: ${missing.join(', ')}`);
+    return `${files.length} files`;
+  });
+  check("service-worker.js clears v0.956's cache", () => {
+    if (!sw.includes('dirtbag-v\\d+')) fail("the worker no longer deletes v0.956's cache (dirtbag-v…)");
+  });
+  check('web manifest is valid and its icons exist', () => {
+    const m = json(`${DIST}/manifest.webmanifest`);
+    const missing = (m.icons || []).map((i) => i.src).filter((s) => !built(s));
+    if (missing.length) fail(`missing icons: ${missing.join(', ')}`);
+    if (m.id !== '/' || m.scope !== './') fail(`id ${m.id} / scope ${m.scope}: an installed copy would become a second app`);
+  });
+  check('favicon.ico is built', () => {
+    if (!built('favicon.ico')) fail('browsers request /favicon.ico; without it every load logs a 404');
+  });
+}
+
+// --- served beside the build ---------------------------------------------------------------
+check('privacy.html exists', () => {
+  if (!exists('privacy.html')) fail('the Play listing links the privacy page');
 });
 
 // --- the Play build can still verify the domain ----------------------------------------------------

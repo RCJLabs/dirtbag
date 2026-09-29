@@ -1,32 +1,37 @@
 // Boots the game in headless Chromium the way a new player does and fails on anything a player
 // would hit: an uncaught error, a failed request, a request that leaves the site (the privacy page
-// promises nothing is sent anywhere), a new game that never reaches town, a clock that doesn't tick,
-// a save that doesn't write, a reload that doesn't come back, or no offline start.
+// promises nothing is sent anywhere), a worker that doesn't take over (or leaves v0.956's cache
+// behind), a climber that never reaches the Lot, a save that doesn't write, a clock that doesn't
+// move when you act, a reload that doesn't come back, or no offline start.
 //
-//   npm run smoke                      serve this folder and test it
-//   npm run smoke -- --root _site      test a staged deploy folder
+//   npm run smoke                      test the staged site (_site, from `npm run stage`)
+//   npm run smoke -- --root app/dist   test another folder
 //   npm run smoke -- --url https://dirtbag.rcjlabs.com/   test the live site
 //
 // Needs Playwright's Chromium (`npx playwright install chromium`), or set CHROMIUM_PATH.
-import { appendFileSync, mkdirSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { chromium } from 'playwright';
 import { startServer } from './lib/serve.mjs';
-import { ROOT, packageVersion, cacheName } from './lib/version.mjs';
+import { ROOT } from './lib/version.mjs';
 
 const arg = (name) => {
   const i = process.argv.indexOf(`--${name}`);
   return i > 0 ? process.argv[i + 1] : undefined;
 };
 const OUT = join(ROOT, 'smoke-artifacts');
-const SAVE_KEY = 'dirtbag-save-v3';
-const CACHE = cacheName(packageVersion());
+const SAVE_KEY = 'dirtbag.save';
 // How long a real phone on a decent connection might take to show the title (measured ~12 s on
 // throttled 4G in the audit). Locally it's under a second.
 const BOOT_TIMEOUT = 60_000;
 const STEP_TIMEOUT = 10_000;
 
-const server = arg('url') ? null : await startServer({ root: resolve(arg('root') || ROOT) });
+const root = resolve(ROOT, arg('root') || '_site');
+if (!arg('url') && !existsSync(join(root, 'index.html'))) {
+  console.error(`nothing to test at ${root}: build and stage first (npm run build --prefix app && npm run stage)`);
+  process.exit(1);
+}
+const server = arg('url') ? null : await startServer({ root });
 const url = arg('url') || server.url;
 const origin = new URL(url).origin;
 
@@ -90,16 +95,14 @@ async function step(name, fn) {
   }
 }
 
-const button = (name) => page.getByRole('button', { name }).first();
-const click = (name) => button(name).click({ timeout: STEP_TIMEOUT });
-const clockText = () => page.evaluate(() => (document.body.innerText.match(/\b\d{1,2}:\d{2}\s?[AP]M\b/) || [null])[0]);
+const clock = () => page.textContent('#h-time', { timeout: STEP_TIMEOUT });
 const readSave = () =>
   page.evaluate((key) => {
     const raw = localStorage.getItem(key);
     if (!raw) return null;
     try {
-      const s = JSON.parse(raw);
-      return { day: s.day, kb: Math.round(raw.length / 1024) };
+      const s = JSON.parse(raw).state;
+      return { day: s.day, name: s.climber?.name, kb: Math.round(raw.length / 1024) };
     } catch {
       return { corrupt: true };
     }
@@ -108,67 +111,74 @@ const readSave = () =>
 try {
   await step('boot', async () => {
     await page.goto(url, { waitUntil: 'load', timeout: BOOT_TIMEOUT });
-    await button(/PLAY/).waitFor({ state: 'visible', timeout: BOOT_TIMEOUT });
-    return 'title screen up';
+    await page.locator('#create').waitFor({ state: 'visible', timeout: BOOT_TIMEOUT });
+    return 'the creation screen is up';
   });
 
   await step('service worker', async () => {
-    const info = await page.evaluate(async (cache) => {
+    const info = await page.evaluate(async () => {
       const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((r) => setTimeout(r, 20_000))]);
       if (!reg) return { error: 'never became ready within 20 s' };
-      const hit = await caches.open(cache).then((c) => c.match(new URL('index.html', location.href).href));
-      return { script: reg.active?.scriptURL, cached: !!hit, keys: await caches.keys() };
-    }, CACHE);
+      const keys = await caches.keys();
+      const mine = keys.find((k) => k.startsWith('dirtbag-app-'));
+      const hit = mine && (await caches.open(mine).then((c) => c.match(new URL('index.html', location.href).href)));
+      return { script: reg.active?.scriptURL, mine, cached: !!hit, keys };
+    });
     if (info.error) throw new Error(`service worker ${info.error}`);
+    // The name v0.956's worker had: a browser that installed v0.956 swaps workers in place.
     if (!info.script?.endsWith('/service-worker.js')) throw new Error(`unexpected worker ${info.script}`);
-    if (!info.cached) throw new Error(`cache ${CACHE} has no index.html (caches: ${info.keys.join(', ') || 'none'})`);
-    return `active, ${CACHE} holds index.html`;
+    if (!info.cached) throw new Error(`no dirtbag-app- cache holds index.html (caches: ${info.keys.join(', ') || 'none'})`);
+    const old = info.keys.filter((k) => /^dirtbag-v\d+$/.test(k));
+    if (old.length) throw new Error(`v0.956's cache is still here: ${old.join(', ')}`);
+    return `active, ${info.mine} holds the game`;
   });
 
   await step('new game', async () => {
-    await click(/PLAY/);
-    await click(/^New Game$/);
-    await click(/^Normal/);
-    for (const next of ['Build', 'Style', 'Calling', 'Flaw', 'You']) await click(new RegExp(`^Next · ${next}`));
-    await click(/^START CLIMBING$/);
-    await click(/^LIVE THE DREAM$/);
-    await page.getByText('ENERGY', { exact: true }).waitFor({ state: 'visible', timeout: STEP_TIMEOUT });
-    await page.getByText('Day 1', { exact: true }).waitFor({ state: 'visible', timeout: STEP_TIMEOUT });
-    return 'default build reached town (Day 1 HUD)';
+    await page.fill('#c-name', 'Smoke', { timeout: STEP_TIMEOUT });
+    await page.click('#c-go', { timeout: STEP_TIMEOUT });
+    await page.locator('#create').waitFor({ state: 'detached', timeout: STEP_TIMEOUT });
+    const t = await clock();
+    if (!/^Day 1 · /.test(t ?? '')) throw new Error(`the HUD says ${t}`);
+    return `a climber, at the Lot on ${t}`;
   });
 
   await step('save', async () => {
-    // The game autosaves on its 1 Hz clock, so the first save lands a second or two after town.
     let s = await readSave();
     for (let i = 0; i < 20 && !s; i++) {
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(250);
       s = await readSave();
     }
     if (!s) throw new Error(`${SAVE_KEY} was never written`);
     if (s.corrupt) throw new Error(`${SAVE_KEY} is not valid JSON`);
-    if (s.day !== 1) throw new Error(`save says day ${s.day}, expected 1`);
+    if (s.day !== 1 || s.name !== 'Smoke') throw new Error(`save says ${s.name} on day ${s.day}`);
     return `${SAVE_KEY} written, ${s.kb} KB`;
   });
 
   await step('clock', async () => {
-    // 1 real second is 1 game minute, so a few seconds must move the HUD clock.
-    const a = await clockText();
-    if (!a) throw new Error('no clock on screen');
+    // The clock moves only when you do something: Enter at the van opens it, and dinner takes time.
+    const a = await clock();
+    await page.evaluate(() => document.activeElement instanceof HTMLElement && document.activeElement.blur());
+    await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: /Cook ramen/ }).click({ timeout: STEP_TIMEOUT });
     let b = a;
-    for (let i = 0; i < 10 && b === a; i++) {
-      await page.waitForTimeout(500);
-      b = await clockText();
+    for (let i = 0; i < 20 && b === a; i++) {
+      await page.waitForTimeout(250);
+      b = await clock();
     }
     if (a === b) throw new Error(`clock stuck at ${a}`);
     return `${a} → ${b}`;
   });
 
   await step('reload', async () => {
+    const before = await clock();
     await page.reload({ waitUntil: 'load', timeout: BOOT_TIMEOUT });
-    await button(/PLAY/).waitFor({ state: 'visible', timeout: BOOT_TIMEOUT });
+    await page.locator('#h-time').waitFor({ state: 'visible', timeout: BOOT_TIMEOUT });
+    if (await page.locator('#create').count()) throw new Error('the reload lost the climber: the creation screen came back');
+    const after = await clock();
+    if (after !== before) throw new Error(`left at ${before}, came back at ${after}`);
     const s = await readSave();
-    if (!s || s.corrupt || s.day !== 1) throw new Error(`save did not survive a reload: ${JSON.stringify(s)}`);
-    return 'title back, save intact';
+    if (!s || s.corrupt || s.name !== 'Smoke') throw new Error(`save did not survive a reload: ${JSON.stringify(s)}`);
+    return `back at ${after}, save intact`;
   });
 
   await step('offline', async () => {
@@ -176,8 +186,9 @@ try {
     if (server) await server.close();
     await context.setOffline(true);
     await page.reload({ waitUntil: 'load', timeout: BOOT_TIMEOUT });
-    await button(/PLAY/).waitFor({ state: 'visible', timeout: BOOT_TIMEOUT });
-    return 'boots from the service-worker cache';
+    await page.locator('#h-time').waitFor({ state: 'visible', timeout: BOOT_TIMEOUT });
+    if (await page.locator('#create').count()) throw new Error('offline, the game started over');
+    return 'boots from the service-worker cache, climber and all';
   });
 
   await step('network and console', async () => `${requests} requests, all same-origin; ${warnings.length} console warnings`);

@@ -1,9 +1,9 @@
 # Runs on every push and PR. Two jobs:
-#   check  the released site: one version everywhere, every referenced file exists, the download
-#          size, then the live build booted in headless Chromium (new game, town, save, clock,
-#          reload, offline start).
-#   app    the rebuild in app/: formatting, types, the sim's tests, a build inside its size
-#          budget, then a bot that plays the first day on the build.
+#   check  the site as it would ship: the game built, one version everywhere, every referenced
+#          file there, the download size, then the staged site booted in headless Chromium (a
+#          new climber, the save, the clock, reload, offline start).
+#   app    the game in app/: formatting, types, the sim's tests, a build inside its size
+#          budget, then a bot that plays the first two days on the build, and a v0.956 player.
 # Failure screenshots from either are kept as run artifacts.
 name: CI
 
@@ -31,19 +31,28 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            app/package-lock.json
 
-      - run: npm ci
+      - run: npm ci && npm ci --prefix app
 
-      - name: Static checks (version, manifests, referenced files)
+      - name: Build the game
+        run: npm run build --prefix app
+
+      - name: Static checks (one version, the build whole, the Play domain link)
         run: npm run check
 
       - name: Size report
         run: npm run size
 
+      - name: Stage the site (allowlisted files only)
+        run: npm run stage
+
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Smoke test
+      - name: Smoke test the staged site
         run: npm run smoke
 
       - name: Keep failure screenshots

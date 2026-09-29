@@ -338,6 +338,29 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 - The notice, the file (`dirtbag-v0956-career.json`: the format, when, and every `dirtbag-` key as v0.956 wrote it), the prefilled name, and "As you were". The e2e bot plays a v0.956 player in a browser of their own and checks all four, and that the old keys are untouched.
 - *[proposed]* A carried climber comes across at no more than V3, scaled so their shape survives (strong fingers stay strong). V3 is the middle of Act I: a veteran skips the gym basics but still has the act's top grade and Dex's race to earn. The rebuild has nothing above V9 to climb anyway. Under the cap, they come across as they were. The You sheet calls them "An old hand".
 
+*As built (R3.2):*
+- **Version 0.960.0.** One version in `package.json`, stamped into both lockfiles, `app/package.json` and the TWA's `appVersionName`; `npm run check` fails on any drift.
+- **The site is the build.** `npm run stage` copies `app/dist`, plus `privacy.html`, `CNAME` and `.well-known/assetlinks.json`: 21 files and about 550 KB, where v0.956 was 15 MB. v0.956's files and its tools (the build compare, the splitter, the old size report) left the tree; the `v0.956.0` tag keeps them.
+- **The worker changes hands.**
+  - The build's service worker ships as `service-worker.js`, v0.956's name, so an installed browser swaps workers in place. On activating it deletes v0.956's `dirtbag-v…` caches.
+  - The game also asks for a new worker on every launch, because `register()` on a registered worker doesn't look, and the browser's own look can wait a day.
+  - The new check caught a lost escape in the generated worker (`dirtbag-vd+`) that would have left v0.956's 10 MB behind.
+- **The crossover, tested locally** with v0.956's own files:
+  - The first visit after the deploy shows v0.956 from its cache.
+  - About 2.5 s later the new worker installs and deletes `dirtbag-v09560`.
+  - From the next launch it's the rebuild, retirement notice and all, offline included.
+  - With reloads faster than the browser checks, v0.956's old worker serves the rebuild (cached, offline too) until a later check swaps them. Nobody is stranded either way.
+- **The pipeline follows:**
+  - the smoke test plays the rebuild's first minute (its clock moves on an action, not on time);
+  - CI and Deploy build the game first;
+  - Deploy's live check reads `version.json` and confirms `service-worker.js` is the rebuild's.
+- **The shell:** the build draws `favicon.ico` too. The Play app's bars and splash take the game's `#15161a`.
+- **The privacy page** describes this game: its settings, the send card, and the old-career file. v0.956's diagnostics and screen wake are gone.
+- **Evan's steps:**
+  1. push `v0.956.0`, so a rollback has somewhere to land;
+  2. push `v0.960.0` to deploy;
+  3. once it's live, run Build TWA and upload the bundle to Play.
+
 **Depends on:** R2. **Effort:** ~1–2 weeks.
 
 **Risks of the rebuild.**
@@ -1285,3 +1308,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — R2 targets: the harness checks Phase 6's first-season targets and passes all four. Its bots now log time on the rock, what it taught them, and any stuck night. It also found wet days in week four with nothing new to try once the gym set is done. R2 is built; criteria 1 and 2 wait on watchers and testers.
 - 2026-09-29 — R2 closed by Evan's call: criteria 1 and 2 accepted as tested and watched; the proposed design calls stand as built until he rules. CURRENT MILESTONE moved to R3.
 - 2026-09-29 — R3 decided (Evan): v0.956 retires with its saves exported, and the rebuild ships as 0.960.0. R3.1: the rebuild tells a v0.956 player the old game has retired, keeps their career as a file, and lets them come across under their old name, capped at V3 (proposed).
+- 2026-09-29 — R3.2: the site becomes the game's build, at 0.960.0. The build's worker takes v0.956's name and clears its cache, and a local crossover test shows a v0.956 browser swapping to the rebuild within seconds, offline included. Smoke, check, stage, CI and Deploy follow the build. v0.956's files leave the tree; its tag keeps them.

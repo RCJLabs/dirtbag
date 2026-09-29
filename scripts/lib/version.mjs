@@ -1,6 +1,6 @@
-// One version string, read from package.json, drives the service-worker cache name and the TWA
-// manifest. The app's own copy is compiled into index.html by the source build, so here it can
-// only be checked, not written.
+// One version string, in the root package.json, for the whole release. Copies of it live in the
+// rebuild's package (compiled into the game, and written into every save), both lockfiles, and
+// the Play build's versionName. `npm run stamp` writes them; `npm run check` fails on drift.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -13,18 +13,25 @@ export function packageVersion() {
   return v;
 }
 
-// 0.956.0 -> dirtbag-v09560. This is the format the live service worker already uses, kept so
-// that stamping an unchanged version leaves service-worker.js byte-identical (a changed SW makes
-// every installed client re-download the whole ~10 MB game). Phase 2 replaces this with a hash
-// of the build.
-export const cacheName = (v) => `dirtbag-v${v.split('.').join('')}`;
-
-export const CACHE_RE = /const CACHE = '([^']*)';/;
-
-// The bundle declares the version right before the "what's new" storage key, e.g.
-// ZN="0.956.0",eB="dirtbag-whatsnew-seen". The minified names change per build; the key doesn't.
-// Used only to say *which* version index.html has when the check fails.
-export function embeddedVersion(html) {
-  const m = html.match(/"(\d+\.\d+\.\d+)",[\w$]+="dirtbag-whatsnew-seen"/);
-  return m ? m[1] : null;
-}
+// Each file that carries a copy: how to read its copies, and how to write them.
+export const COPIES = [
+  {
+    file: 'package-lock.json',
+    get: (j) => [j.version, j.packages?.['']?.version],
+    set: (j, v) => {
+      j.version = v;
+      if (j.packages?.['']) j.packages[''].version = v;
+    },
+  },
+  { file: 'app/package.json', get: (j) => [j.version], set: (j, v) => (j.version = v) },
+  {
+    file: 'app/package-lock.json',
+    get: (j) => [j.version, j.packages?.['']?.version],
+    set: (j, v) => {
+      j.version = v;
+      if (j.packages?.['']) j.packages[''].version = v;
+    },
+  },
+  // Bubblewrap writes this file without a final newline; keep it that way.
+  { file: 'twa-manifest.json', get: (j) => [j.appVersionName], set: (j, v) => (j.appVersionName = v), bare: true },
+];
