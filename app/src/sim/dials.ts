@@ -160,6 +160,26 @@ export const RIVAL = {
   raceDays: 5,
 };
 
+// Scout (v0.956's dog, the Lot's stray here). His bond runs 0-100 as v0.956's did; the
+// perks it once bought come later.
+export const DOG = {
+  // He picks you after your tenth trip out to a crag (v0.956's offer).
+  offerTrips: 10,
+  // A night takes this much of his food; kibble fills him and adds a little bond.
+  nightFed: 22,
+  kibble: 6,
+  kibbleBond: 3,
+  // Throwing the stick: an hour, once a day.
+  playBond: 10,
+  playMin: 60,
+  // Every drive he rides along.
+  rideBond: 2,
+  // Under this he's hungry, and his lines say so.
+  hungryBelow: 30,
+  // His bond's words: new pup, good buddy, best friend (v0.956's).
+  tiers: [0, 30, 70],
+};
+
 // Injuries: v0.956's three tiers and how long each keeps you off. The clinic is a copay
 // (your weekly insurance pays the rest), and your first injury costs only time (Phase 6).
 export const INJURY = {

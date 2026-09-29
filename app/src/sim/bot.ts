@@ -344,6 +344,9 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     travel('lot');
     if (s.fed < 60) tryAct('lot.cook');
     if (s.fed < 40) tryAct('lot.cook');
+    // Scout: taken on when he picks you, fed when his bowl's low. No stick: bots are busy.
+    tryAct('lot.adopt');
+    if (s.dog && s.dog.fed < 40) tryAct('lot.kibble');
     while (s.min < DAY.bedFrom) if (!tryAct(isNight(s.min) ? 'lot.sit' : 'lot.rest')) break;
     run.days.push({
       day: s.day,

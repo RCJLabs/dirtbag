@@ -9,6 +9,10 @@ import {
   conditionsAt,
   costLabel,
   DAY,
+  DOG,
+  DOG_OFFER,
+  DOG_TIER_NAME,
+  dogTier,
   fill,
   goBlocked,
   gradeOf,
@@ -233,6 +237,39 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             run: () => game.walkOff(),
           },
         ],
+      };
+    }
+
+    case 'dog': {
+      const d = s.dog;
+      if (!d)
+        return {
+          title: 'Scout',
+          sub: DOG_OFFER.sub,
+          close: true,
+          rows: [
+            actRow(game, s, 'lot.adopt'),
+            {
+              label: DOG_OFFER.no,
+              run: () => {
+                game.closeSheet();
+                game.toast(DOG_OFFER.left);
+              },
+            },
+          ],
+        };
+      const days = s.day - d.since;
+      const fed =
+        d.fed >= 80
+          ? 'Fed, and pleased about it.'
+          : d.fed < DOG.hungryBelow
+            ? 'He keeps checking the food bin.'
+            : 'He could eat.';
+      return {
+        title: d.name,
+        sub: `${DOG_TIER_NAME[dogTier(d.bond)]}. ${days ? `With you ${days} day${days > 1 ? 's' : ''}.` : 'Yours since this morning.'} ${fed}`,
+        close: true,
+        rows: [actRow(game, s, 'lot.kibble'), actRow(game, s, 'lot.play')],
       };
     }
 

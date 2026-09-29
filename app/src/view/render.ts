@@ -99,6 +99,8 @@ function renderScene(g: G, f: Frame): void {
     if (night) drawLights(g, LIGHTS, cam);
     drawDog(g, f.scout.x - cam, GND + 5, 1, f.t, f.scout.wag);
   }
+  // Scout rode out with you: he's by the van.
+  if (crag && s.dog) drawDog(g, 238 - cam, GND + 5, 1, f.t, 0);
   // The crag's sign, with a closure notice pinned under it when the season shuts it; then
   // the tags on the rock, and the people in front of them.
   if (crag) {

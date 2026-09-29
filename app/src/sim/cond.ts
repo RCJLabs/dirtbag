@@ -4,7 +4,7 @@
 import { gradeOf } from './climber';
 import { PLACES } from './content/places';
 import { gradeOfPerson } from './curves';
-import { ARC, DAY, MONEY } from './dials';
+import { ARC, DAY, DOG, MONEY } from './dials';
 import { clockShort, fill } from './format';
 import type { GameState } from './types';
 import { conditionsAt, skyOn, type Sky } from './weather';
@@ -35,6 +35,9 @@ export interface Cond {
   racing?: boolean; // a first-ascent race is on
   lead?: string; // "who/n": you climb at least n grades harder than them
   trail?: string; // "who/n": they climb at least n grades harder than you
+  dog?: boolean; // you have a dog
+  dogOffer?: boolean; // Scout's ready to pick you
+  dogFedBelow?: number; // your dog's food is under this
 }
 
 // How many grades you climb above someone today (negative when they're ahead).
@@ -101,8 +104,14 @@ export function holds(s: GameState, c: Cond): boolean {
     const [who, n] = ref(c.trail);
     if (-leadOver(s, who) < n) return false;
   }
+  if (c.dog !== undefined && !!s.dog !== c.dog) return false;
+  if (c.dogOffer !== undefined && dogOffered(s) !== c.dogOffer) return false;
+  if (c.dogFedBelow !== undefined && !(s.dog && s.dog.fed < c.dogFedBelow)) return false;
   return true;
 }
+
+// Scout picks you once you've made enough trips out, and until he has.
+export const dogOffered = (s: GameState): boolean => !s.dog && s.trips >= DOG.offerTrips;
 
 // Whether beat n of someone's arc is due: the one before it played, the bond there, and
 // enough days since the last.

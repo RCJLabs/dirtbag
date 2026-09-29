@@ -17,6 +17,8 @@ export {
   lineGrade,
   lineName,
   talkValues,
+  dogTier,
+  dogLine,
   TIER_NAME,
   faSuggestions,
   FA_NAME_MAX,
@@ -60,14 +62,14 @@ export { whereIs, whereNow, around, tierOf, PARTNERS } from './presence';
 export { gradeOfPerson, dexHurt } from './curves';
 export { ratio, zone, daysOff, cold, goLoad, projected } from './body';
 export type { Zone } from './body';
-export { holds, unmet, isNight, headroom, beatDue } from './cond';
+export { holds, unmet, isNight, headroom, beatDue, dogOffered } from './cond';
 export type { Cond, Need } from './cond';
 export { toSave, fromSave, validate, SAVE_VERSION, MIGRATIONS } from './save';
 export type { LoadResult, Migration, SaveFile } from './save';
 export { Rng, hashSeed, mulberry32 } from './rng';
 export type { Stream } from './rng';
 export * from './format';
-export { DAY, MONEY, BODY, CLIMB, LOAD, INJURY, BOND, ARC } from './dials';
+export { DAY, MONEY, BODY, CLIMB, LOAD, INJURY, BOND, ARC, DOG } from './dials';
 export { PLACES, ACTS, ROADS, road, TEXT_VALUES } from './content/places';
 export type { PlaceDef, ActDef, RoadDef } from './content/places';
 export {
@@ -84,4 +86,5 @@ export {
 export type { RouteDef, CruxDef, BetaDef, Verb, Disc } from './content/routes';
 export { GYM, WEEK_DAYS, weekOf, gymSet, routeById, routesAt } from './content/gym';
 export { TALK, PEOPLE, THINGS, RACE_ROUTE } from './content/people';
+export { DOG_OFFER, DOG_TIER_NAME } from './content/dog';
 export type { TalkDef, TalkNode, TalkOpt, TalkFx, PersonDef, ThingDef } from './content/people';

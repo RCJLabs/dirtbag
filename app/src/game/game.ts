@@ -5,6 +5,7 @@
 import {
   act,
   attemptInput,
+  dogOffered,
   goResult,
   gradeLabel,
   isNight,
@@ -72,6 +73,7 @@ export type SheetId =
       notes: string[];
       from: 'send' | 'wall';
     }
+  | { k: 'dog' }
   | { k: 'you' }
   | { k: 'week' }
   | { k: 'settings' }
@@ -383,6 +385,11 @@ export class Game {
     } else if ('thing' in u) {
       const th = THINGS[u.thing];
       if (u.wag) this.scout.wag = 1.4;
+      // Scout's your dog, or about to be: his sheet, not a line.
+      if (u.thing === 'scout' && (this.state.dog || dogOffered(this.state))) {
+        this.openSheet({ k: 'dog' });
+        return;
+      }
       if (!th) return;
       const s = this.state;
       const night = isNight(s.min);

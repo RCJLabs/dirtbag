@@ -14,6 +14,9 @@ import {
   conditions,
   costLabel,
   dayFactor,
+  DOG,
+  DOG_TIER_NAME,
+  dogTier,
   FA_NAME_MAX,
   faSuggestions,
   goBlocked,
@@ -408,7 +411,7 @@ function LoadRow({ s }: { s: GameState }) {
 // The people you've met: how close you are, in v0.956's tiers, and where things stand.
 function PeopleRows({ s }: { s: GameState }) {
   const met = Object.entries(s.people).filter(([id]) => PEOPLE[id]);
-  if (!met.length) return null;
+  if (!met.length && !s.dog) return null;
   return (
     <>
       <p className="crux">People</p>
@@ -420,6 +423,15 @@ function PeopleRows({ s }: { s: GameState }) {
             <small>{personNote(s, id, p)}</small>
           </li>
         ))}
+        {s.dog && (
+          <li>
+            <b>{s.dog.name}</b>
+            <span className="sky">{DOG_TIER_NAME[dogTier(s.dog.bond)]}</span>
+            <small>
+              {s.dog.fed < DOG.hungryBelow ? 'Hungry, and too polite to say.' : 'Rides shotgun. Fed.'}
+            </small>
+          </li>
+        )}
       </ul>
     </>
   );

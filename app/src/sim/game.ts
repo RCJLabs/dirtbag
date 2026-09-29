@@ -9,9 +9,10 @@ import { dexHurt, dexSeason, gradeOfPerson } from './curves';
 import { routeById, routesAt } from './content/gym';
 import { CLINIC_LINE, FIRST_FREE_LINE, HEALED_LINE, HURT_LINE } from './content/injuries';
 import { ACTS, PLACES, road, TEXT_VALUES } from './content/places';
+import { DOG_LINES, DOG_OFFER } from './content/dog';
 import { PEOPLE, RACE_ROUTE, RIVAL_FA_NAMES, TALK } from './content/people';
 import { SEND_NAME, effGrade, gradeLabel, gradeName, type RouteDef } from './content/routes';
-import { BODY, CLIMB, DAY, INJURY, LOAD, MONEY, RIVAL } from './dials';
+import { BODY, CLIMB, DAY, DOG, INJURY, LOAD, MONEY, RIVAL } from './dials';
 import { fill, money, skillsNote } from './format';
 import { PARTNERS, tierOf, whereNow } from './presence';
 import { hashSeed } from './rng';
@@ -42,6 +43,8 @@ export function newGame(seed: string): GameState {
     firsts: {},
     people: {},
     race: null,
+    trips: 0,
+    dog: null,
     log: [],
   };
 }
@@ -88,6 +91,21 @@ export const restCost = (r: RouteDef): number => CLIMB.restMin[r.disc];
 export function belayer(s: GameState): string | null {
   for (const who of PARTNERS) if (whereNow(s, who) === s.at) return who;
   return null;
+}
+
+// A pick from a list that holds for the day: the same line if you ask twice.
+const ofDay = <T>(s: GameState, key: string, xs: readonly T[]): T =>
+  xs[hashSeed(`${s.seed}:${key}:${s.day}`) % xs.length]!;
+
+// Your dog's tier: new pup, good buddy, best friend.
+export const dogTier = (bond: number): number => DOG.tiers.filter((t) => bond >= t).length - 1;
+
+// What Scout's up to, where you are.
+export function dogLine(s: GameState, where: 'crag' | 'drive'): string | null {
+  if (!s.dog) return null;
+  const L = DOG_LINES[where];
+  const pool = s.dog.fed < DOG.hungryBelow ? L.hungry : L.tiers[dogTier(s.dog.bond)]!;
+  return ofDay(s, `dog-${where}`, pool);
 }
 
 // v0.956's bond tiers, by name.
@@ -221,6 +239,11 @@ export function act(s0: GameState, a: Action): Result {
           : `Van spot, ${TEXT_VALUES.spot}. Morning comes anyway.`,
       );
     if (hungry) line('You went to bed hungry, and it shows.');
+    if (s.dog) {
+      s.dog.fed = Math.max(0, s.dog.fed - DOG.nightFed);
+      if (s.dog.fed < DOG.hungryBelow)
+        line("Scout's bowl is empty. He's been decent about it, which is worse.");
+    }
     if (s.injury && s.day >= s.injury.until) {
       line(fill(HEALED_LINE, { kind: s.injury.kind }));
       s.injury = null;
@@ -298,7 +321,11 @@ export function act(s0: GameState, a: Action): Result {
     spend(d.cost);
     for (const f of d.sets ?? []) if (!s.today.includes(f)) s.today.push(f);
     if (d.trains) train(d.trains);
+    if (d.dog?.adopt) s.dog = { name: 'Scout', since: s.day, fed: 60, bond: 0 };
+    if (s.dog && d.dog?.fill) s.dog.fed = 100;
+    if (s.dog && d.dog?.bond) s.dog.bond = Math.min(100, s.dog.bond + d.dog.bond);
     if (d.says) line(d.says);
+    if (d.saysOneOf) line(ofDay(s, id, d.saysOneOf));
     return null;
   };
   const meet = (who: string) => (s.people[who] ??= { bond: 0, last: 0, since: s.day });
@@ -421,6 +448,16 @@ export function act(s0: GameState, a: Action): Result {
       if (declined) line("The card's declined at the pump. You make it on fumes.");
       else if (r.cash >= 12) line(`Gas, ${money(r.cash)}. The van starts on the second try.`);
       else if (r.cash > 0) line(`Gas, ${money(r.cash)}.`);
+      // Every drive with Scout is a ride-along; out at the crag he gets up to something.
+      if (s.dog) s.dog.bond = Math.min(100, s.dog.bond + DOG.rideBond);
+      if (to.crag) {
+        s.trips += 1;
+        if (s.trips === DOG.offerTrips && !s.dog) line(DOG_OFFER.first);
+        if (s.dog && !s.today.includes('dog-out')) {
+          s.today.push('dog-out');
+          line(dogLine(s, 'crag')!);
+        }
+      }
       break;
     }
 

@@ -49,6 +49,9 @@ export interface GameState {
   people: Record<string, PersonLog>;
   // A first-ascent race with Dex: the line, and the last day you have to send it.
   race: { route: string; until: number } | null;
+  // Trips out to a crag, and your dog once one has picked you.
+  trips: number;
+  dog: DogLog | null;
   // The message log: every line the game has told you, newest last.
   log: LogLine[];
 }
@@ -83,6 +86,15 @@ export interface RouteLog {
   hi: number;
   sent: SendRecord | null;
   sentToday: boolean;
+}
+
+export interface DogLog {
+  name: string;
+  // The day he picked you.
+  since: number;
+  // How fed he is, and how close you are, both 0-100.
+  fed: number;
+  bond: number;
 }
 
 export interface FirstAscent {

@@ -9,7 +9,8 @@
 // back: there's no game over, only a bad week.
 
 import type { Need } from '../cond';
-import { DAY, MONEY } from '../dials';
+import { DAY, DOG, MONEY } from '../dials';
+import { DOG_LINES, DOG_OFFER } from './dog';
 import { clockShort } from '../format';
 import type { Delta, Skills } from '../types';
 import type { Season } from '../weather';
@@ -49,6 +50,10 @@ export interface ActDef {
   trains?: Partial<Skills>;
   // Sleep ends the day; its rules live in the sim, not here.
   sleep?: true;
+  // What it does for your dog: takes him on, fills his bowl, or adds to the bond.
+  dog?: { adopt?: true; fill?: true; bond?: number };
+  // A line picked by the day, instead of the same one every time.
+  saysOneOf?: string[];
 }
 
 export interface RoadDef {
@@ -131,6 +136,28 @@ export const ACTS: Record<string, ActDef> = {
     cost: { min: 60, energy: 4 },
     needs: [{ night: false, why: "It's evening. The fire's lit." }],
     says: 'You read the same page four times.',
+  },
+  'lot.adopt': {
+    label: DOG_OFFER.yes,
+    cost: {},
+    needs: [{ dogOffer: true }],
+    dog: { adopt: true },
+    says: DOG_OFFER.took,
+  },
+  'lot.kibble': {
+    label: 'Feed Scout',
+    cost: { min: 5, cash: -DOG.kibble },
+    needs: [{ dog: true }, { dogFedBelow: 80, why: "He's good. He'd eat it anyway." }, { pay: DOG.kibble }],
+    dog: { fill: true, bond: DOG.kibbleBond },
+    says: 'Scout eats like it was a race, and wins.',
+  },
+  'lot.play': {
+    label: 'Throw the stick',
+    cost: { min: DOG.playMin },
+    needs: [{ dog: true }, { notToday: 'play', why: "He's had his game today. He disagrees." }],
+    sets: ['play'],
+    dog: { bond: DOG.playBond },
+    saysOneOf: DOG_LINES.play,
   },
   'lot.sit': {
     label: 'Sit a while',
