@@ -304,7 +304,7 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 
 **Depends on:** R1 and Phase 5. **Effort:** ~6–10 weeks.
 
-### R3 — Switch-over   **<<< CURRENT MILESTONE**
+### R3 — Switch-over
 
 **Goal.** The new build becomes dirtbag.rcjlabs.com and the Play app.
 
@@ -365,7 +365,11 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 - `docs/STORE.md` holds the Play listing for 0.960.0, in the game's voice: an 80-character short description, the full description, and "What's new". The order follows the audit (the life, then the climbing, then the promise); every fact in it is checked against the build. `npm run check` holds each block to Play's limit.
 - Eight 1080 × 1920 screenshots from the 0.960.0 build, listed there with captions. They were delivered with the release work rather than committed, since they're binary.
 
-**Status (29 Sep 2026): built; the release is Evan's.**
+**Status (29 Sep 2026): built and merged (PR #11); closed by Evan's call with the release carried.** Evan moved on to Phase 10 the same day; the release steps below stay his, and R3's criterion 1 is met when they're done.
+
+*The notes below are from before the merge.*
+
+**Status before the merge: built; the release is Evan's.**
 - Criterion 2 is built and tested before the deploy:
   - the e2e bot plays a v0.956 player who keeps their career and comes across;
   - a local crossover with v0.956's own files shows an installed browser swapping to the rebuild within seconds, offline included.
@@ -891,7 +895,7 @@ The full diagnosis is in the audit, under *The map and the look*.
 
 ---
 
-### Phase 10 — Make crags into places
+### Phase 10 — Make crags into places   **<<< CURRENT MILESTONE**
 
 **Goal.** Each crag is a place you recognize and plan a trip to: a topo with its lines, conditions you can see, and a road-trip map that connects them.
 
@@ -924,6 +928,17 @@ The full diagnosis is in the audit, under *The map and the look*.
 3. Testers can point at the crag they want and say why (conditions, style, a project).
 
 **Depends on:** Phases 8–9. **Effort:** ~3–5 weeks. **Main risk:** art volume. A topo is line work over one drawing per crag.
+
+**On the rebuild (plan, 29 Sep 2026).** The scope above was written for v0.956's nine crags up to V17. The rebuilt game has the gym, Roadside Crag and Granite Gorge, and a first season that tops out at V9. Phase 10 grows it a place at a time, in slices:
+- **10.1, the board at Send City.** A steep board beside the weekly wall, with harder problems (V4–V7) that stay up four weeks: v0.956's "persistent gym walls". It fills the gap R2's harness found, where by week four about half the bots hit a wet day with the week's set done and nothing new to try.
+- **10.2, conditions you can see.** The shade line crossing the wall through the day (the prime window made visible), wet streaks after rain, and closures on the map.
+- **10.3, Moonstone Boulders**, v0.956's next crag: desert quartzite, opens at V6, a permit to climb. Its scene and topos drawn in code, highballs with pad and spotter decisions (the audit's idea for its identity), and its road on the map. It's where Act II would start.
+
+**Done when, on the rebuild** *[proposed; replaces the criteria above until Evan rules]*:
+1. The gym and every crag in the game read as places: their own scene, lines drawn from data, and conditions you can see (shade, wet, closed).
+2. Any day of the first season, in any weather, has something new to try: the harness's "nothing new to try" reads 0.
+3. There are lines at every grade from V0 to the top of the content.
+4. Testers can point at where they want to go and say why (conditions, style, a project).
 
 ---
 
@@ -1324,3 +1339,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — R3 decided (Evan): v0.956 retires with its saves exported, and the rebuild ships as 0.960.0. R3.1: the rebuild tells a v0.956 player the old game has retired, keeps their career as a file, and lets them come across under their old name, capped at V3 (proposed).
 - 2026-09-29 — R3.2: the site becomes the game's build, at 0.960.0. The build's worker takes v0.956's name and clears its cache, and a local crossover test shows a v0.956 browser swapping to the rebuild within seconds, offline included. Smoke, check, stage, CI and Deploy follow the build. v0.956's files leave the tree; its tag keeps them.
 - 2026-09-29 — R3.3: the Play listing and "What's new" for 0.960.0 in `docs/STORE.md`, held to Play's limits by `npm run check`, and eight screenshots from the build. R3 is built; the tags and the Play upload are Evan's.
+- 2026-09-29 — R3 merged (PR #11) and closed by Evan's call with the release carried as his steps (the v0.956.0 and v0.960.0 tags, then the Play upload). CURRENT MILESTONE moved to Phase 10, planned on the rebuild: the board at Send City, conditions you can see, and Moonstone Boulders.
