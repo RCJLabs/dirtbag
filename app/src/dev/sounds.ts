@@ -1,7 +1,10 @@
 // A sound sheet for listening: every cue rendered offline, each with a player. Dev only:
 // `npm run dev`, then /sounds.html. It is not part of the production build.
+import { Ambience } from '../audio/ambience';
+import { bedFor, ON_THE_MAP, type Bed } from '../audio/beds';
 import type { Cue } from '../audio/cues';
-import { VOICES } from '../audio/sound';
+import { newGame, PLACES } from '../sim';
+import { VOICES } from '../audio/voices';
 
 const RATE = 44100;
 // How hard each cue plays here: a heavy breath and a full drive, the rest as they come.
@@ -53,8 +56,50 @@ function wav(b: AudioBuffer): Blob {
   return new Blob([buf], { type: 'audio/wav' });
 }
 
+// Eight seconds of a bed, its now-and-then things scattered as they would be live.
+async function renderBed(bed: Bed): Promise<Blob> {
+  const secs = 8;
+  const ctx = new OfflineAudioContext(1, RATE * secs, RATE);
+  const noise = ctx.createBuffer(1, RATE * 2, RATE);
+  const d = noise.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const out = ctx.createGain();
+  out.gain.value = 0.9;
+  out.connect(ctx.destination);
+  const amb = new Ambience(ctx, out, noise);
+  amb.set(bed);
+  for (let t = 0; t < secs - 1; t += 1 / 30) amb.tick(1 / 30, t);
+  return wav(await ctx.startRendering());
+}
+
+// Every place by day and by night, one in the rain, and the map.
+function beds(): [string, Bed][] {
+  const s = newGame('sounds');
+  let wet = 1;
+  while (wet < 90 && bedFor({ ...s, day: wet, min: 600 }, 'lot').rain === 0) wet++;
+  return [
+    ...Object.keys(PLACES).flatMap((p): [string, Bed][] => [
+      [`${p}, day`, bedFor({ ...s, min: 10 * 60 }, p)],
+      [`${p}, night`, bedFor({ ...s, min: 21 * 60 }, p)],
+    ]),
+    ['lot, rain', bedFor({ ...s, day: wet, min: 600 }, 'lot')],
+    ['map', ON_THE_MAP],
+  ];
+}
+
 const list = document.getElementById('list')!;
 const rendered: Record<string, Blob> = {};
+for (const [name, bed] of beds()) {
+  const blob = await renderBed(bed);
+  rendered[`bed ${name}`] = blob;
+  const li = document.createElement('li');
+  li.textContent = name;
+  const a = document.createElement('audio');
+  a.controls = true;
+  a.src = URL.createObjectURL(blob);
+  li.append(a);
+  list.append(li);
+}
 for (const cue of Object.keys(VOICES) as Cue[]) {
   const blob = await render(cue);
   rendered[cue] = blob;

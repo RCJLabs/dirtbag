@@ -150,6 +150,28 @@ check('the game sets no inline styles but custom properties', () => {
   return `${files.length} files`;
 });
 
+// --- every sound is in the licence ledger -------------------------------------------------
+// The game's sound is made in code. An audio file may ship only as a recording the ledger
+// lists with its author, licence and source (app/src/audio/ledger.json), so no sound goes
+// out with its licence unwritten.
+check('every audio file is in the licence ledger', () => {
+  const AUDIO = /\.(mp3|ogg|oga|opus|wav|m4a|aac|flac|webm)$/i;
+  const ledger = json('app/src/audio/ledger.json');
+  const listed = new Set(ledger.recordings.map((r) => r.file));
+  const files = ['app/src', 'app/public', DIST].flatMap((dir) =>
+    exists(dir)
+      ? readdirSync(join(ROOT, dir), { recursive: true })
+          .filter((f) => AUDIO.test(f))
+          .map((f) => `${dir}/${f}`)
+      : [],
+  );
+  const unlisted = files.filter((f) => ![...listed].some((l) => f.endsWith(l)));
+  if (unlisted.length) fail(`audio not in the ledger: ${unlisted.join(', ')}`);
+  for (const r of ledger.recordings)
+    if (!r.author || !r.licence || !r.url) fail(`${r.file}: the ledger needs its author, licence and source`);
+  return `${Object.keys(ledger.sounds).length} sounds, ${ledger.recordings.length} recordings, ${files.length} audio files`;
+});
+
 // --- the Play build can still verify the domain ----------------------------------------------------
 check('TWA host matches CNAME and assetlinks.json names the app', () => {
   const twa = json('twa-manifest.json');

@@ -49,6 +49,23 @@ export interface PlaceDef {
   here: string;
   // Acts on the place card, in order.
   acts: string[];
+  // What it sounds like while you're there (audio/ambience.ts makes it, in code).
+  ambience: Ambience;
+}
+
+// A place's sound, each part 0 to 1. Outdoors, birds give way to crickets at night; rain
+// comes in by itself, on the roof of anywhere with a room tone.
+export interface Ambience {
+  wind?: number;
+  birds?: number;
+  fire?: number;
+  creek?: number;
+  // Indoors: the room itself, people talking, cups and plates.
+  room?: number;
+  murmur?: number;
+  clinks?: number;
+  // Now and then, a hawk over the desert.
+  hawk?: number;
 }
 
 export interface ActDef {
@@ -85,6 +102,7 @@ export const PLACES: Record<string, PlaceDef> = {
   lot: {
     name: 'The Lot',
     scene: 'lot',
+    ambience: { wind: 0.25, birds: 0.5, fire: 0.5 },
     away: 'Home. {spot} a night.',
     here: 'Home. {spot} a night.',
     acts: [],
@@ -93,6 +111,7 @@ export const PLACES: Record<string, PlaceDef> = {
     name: 'Roadside Crag',
     crag: true,
     scene: 'crag',
+    ambience: { wind: 0.35, birds: 0.4 },
     away: 'Granite. {lines} lines, from a V2 warm-up to The Pump.',
     here: "You're parked here.",
     acts: [],
@@ -116,6 +135,7 @@ export const PLACES: Record<string, PlaceDef> = {
     name: 'Granite Gorge',
     crag: true,
     scene: 'gorge',
+    ambience: { wind: 0.2, birds: 0.3, creek: 0.6 },
     away: 'Classic granite, two hours out and in the shade. Harder lines.',
     here: 'The canyon’s cool even at noon.',
     acts: [],
@@ -130,6 +150,7 @@ export const PLACES: Record<string, PlaceDef> = {
     name: 'Moonstone Boulders',
     crag: true,
     scene: 'moon',
+    ambience: { wind: 0.6, hawk: 0.3 },
     away: 'Quartzite highballs out in the desert. A real road trip.',
     here: 'Sand, sky, and boulders the size of houses.',
     acts: [],
@@ -147,6 +168,7 @@ export const PLACES: Record<string, PlaceDef> = {
   gym: {
     name: 'Send City',
     scene: 'gym',
+    ambience: { room: 0.6, murmur: 0.5 },
     away: 'The gym downtown. New problems every week. Day pass {pass}.',
     here: 'Plastic, chalk dust, a playlist nobody chose.',
     acts: ['gym.pass', 'gym.set'],
@@ -154,6 +176,7 @@ export const PLACES: Record<string, PlaceDef> = {
   diner: {
     name: 'The Diner',
     scene: null,
+    ambience: { room: 0.4, murmur: 0.6, clinks: 0.5 },
     away: 'Old Town. The special, and bottomless coffee.',
     here: 'Old Town. Otis is reading the paper.',
     acts: ['diner.meal', 'diner.coffee'],
@@ -161,6 +184,7 @@ export const PLACES: Record<string, PlaceDef> = {
   cafe: {
     name: 'Coffee Shop',
     scene: null,
+    ambience: { room: 0.3, murmur: 0.5, clinks: 0.6 },
     away: 'Midtown. They always need someone on the morning shift.',
     here: 'Midtown. Wren is on the bar.',
     acts: ['cafe.shift', 'cafe.double', 'cafe.coffee'],

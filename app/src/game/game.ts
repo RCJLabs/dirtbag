@@ -34,6 +34,7 @@ import {
   type SendStyle,
   type Skills,
 } from '../sim';
+import { bedFor, ON_THE_MAP } from '../audio/beds';
 import { actCue, VERB_CUES } from '../audio/cues';
 import { Sound } from '../audio/sound';
 import { arcTable, atLen, clamp, type Pt } from '../view/kit/geom';
@@ -105,6 +106,7 @@ export type SheetId =
   | { k: 'note'; text: string; day: number; min: number }
   | { k: 'week' }
   | { k: 'settings' }
+  | { k: 'credits' }
   | { k: 'restart' }
   | { k: 'plan' };
 
@@ -238,12 +240,20 @@ export class Game {
     });
     this.fast = createStore<Fast>({ cam: 0, att: null });
     this.sound.configure(settings);
-    // The ambience drops while someone's talking to you.
+    // The ambience drops while someone's talking to you, and follows you about: the place
+    // you're at, or the map while you're on it or driving.
     let talking = false;
-    this.ui.subscribe(() => {
-      const t = !!this.ui.get().talk;
+    const listen = () => {
+      const u = this.ui.get();
+      const t = !!u.talk;
       if (t !== talking) this.sound.duck((talking = t));
-    });
+      const s = this.state;
+      const map = u.view === 'map' && (u.driving || !!PLACES[s.at]?.scene);
+      const key = map ? 'map' : `${s.at}:${isNight(s.min) ? 'night' : 'day'}:${s.day}`;
+      this.sound.setBed(key, map ? ON_THE_MAP : bedFor(s, s.at));
+    };
+    this.ui.subscribe(listen);
+    listen();
     if (home?.scene) this.enter(home.scene, this.state.x ?? undefined);
     if (b.note) this.toast(b.note);
   }
@@ -952,6 +962,7 @@ export class Game {
         this.applyAttempt(stepAttempt(this.att, STEP));
       }
     }
+    this.sound.tick(dt);
     if (this.scout.wag > 0) this.scout.wag -= dt;
     const f = this.fast.get();
     if (Math.abs(f.cam - this.cam) > 0.01 || f.att !== this.att)

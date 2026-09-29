@@ -1344,13 +1344,26 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **13.3 The licence ledger and credits.** Every sound and where it came from; a check that nothing unlisted ships; a credits screen.
 - **13.4 Music**, when Evan decides.
 
-**Status (29 Sep 2026): 13.1 built.**
+**Status (29 Sep 2026): 13.1 to 13.3 built; 13.4, music, is parked.**
 - `src/audio/`: `cues.ts` names what each thing sounds like, `sound.ts` makes it. 23 cues: around the valley (a tap, steps, a speech bubble, the map, the van, eating, money in and out, bed, resting, the dog) and on the wall (pulling on, each move, each clip, the crux, clearing it, each crux verb as your hands play it, a throw's rising charge and release, breath as the pump builds, the fall, the landing, the send).
 - An act sounds like what it does to you, from its data, so a new act has a sound without anyone choosing one. A test holds every act and every crux verb to one.
 - Settings: sound on, quiet or off; vibration on or off. The sound suspends while the app is hidden. The ambience bus already ducks under dialogue, ready for 13.2.
 - The e2e hears 20 of the 23 cues over its five days and fails if any goes quiet. Paying, Scout, and a hold-to-load's charge and throw aren't in those days.
 - `npm run dev`, then `/sounds.html`: every cue rendered, with a player, for listening. Not part of the build.
 - **Nobody has listened to it in the game yet.** The e2e proves each sound plays, not that it sounds right; the levels were set by measurement (peaks between 12% and 43% of full scale under a 0.9 master). Evan's ear is criterion 1's real test. 2.5 KB of the budget.
+
+13.2, ambience:
+- Each place says what it sounds like, in its data (`ambience` in `PLACES`): wind, birds, the fire, the Gorge's creek, a room, voices, cups, a hawk over Moonstone. `audio/beds.ts` turns it by the hour and the sky: birds give way to crickets outdoors at night, the Lot's fire comes up after dark, and rain comes in by itself, muffled on the roof indoors. The map is a little wind. A test holds every place to a sound.
+- `audio/ambience.ts` plays it: looped noise through filters for the steady layers, wandering so wind gusts and voices come and go, and the now-and-then things scattered over them, each through a gain at its layer's level. A new place crossfades in; the ambience ducks under dialogue.
+- Levels by measurement: the beds sit between −29 and −46 dB RMS, well under the effects.
+- **A bug in 13.1's effects, found here:** each sound's gain started at Web Audio's default of 1 until its envelope began, so a noise burst starting between two samples could let its first one through at full volume, a click of up to 0.8. Envelopes now start at zero; 200 crackles in a row peak at 0.12.
+- The e2e plays the ambience of the six places its days go (the Lot, Roadside, the café, the diner, the gym, the map) and fails if one's missing. The Gorge and Moonstone are held by the unit test.
+
+13.3, the licence ledger and credits:
+- `app/src/audio/ledger.json` lists all 34 sounds (24 cues, 10 layers of ambience) and where each comes from: all of them code. A recording would be listed with its file, author, licence (CC0 or CC BY 4.0) and source. A test holds every cue and layer to an entry; `npm run check` fails on any audio file in the source or the build that the ledger doesn't list.
+- Settings has **Credits**: the game, the art and sound made in code, any recordings from the ledger, music (not yet), and the fonts under the SIL OFL. The e2e opens it.
+
+**Where the criteria stand:** 1 (every verb has a sound) and 2 (every place has ambience) are met in code and tests, and wait on Evan's ear. 3 (the ledger covers all audio) is met and checked. 4 (music ducks under dialogue and pauses when hidden) waits on music; the ambience already does both.
 
 ---
 
@@ -1652,3 +1665,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 12.4 and 12.5: the van says what tonight will do (from `tonight()`, which sleep is held to), and inline styles are down to custom properties, checked by `npm run check`. Phase 12's slices are all built; closing it is Evan's call.
 - 2026-09-29 — Phase 12 closed by Evan's call: criteria 1, 4 and 5 met; 2 and 3 met for what the e2e plays, the rest carried to playtesting. CURRENT MILESTONE moved to Phase 13, sound and feel; it gets planned on the rebuild next.
 - 2026-09-29 — Phase 13 planned on the rebuild, with Evan's calls: effects and ambience made in code, CC0 recordings where they fall flat, music parked, and effects shippable without it. 13.1: the sound engine and a sound for every verb, volume and vibration in Settings, silent while hidden. The e2e hears 20 of the 23 cues.
+- 2026-09-29 — Phase 13.2 and 13.3: every place has ambience, from its data, turned by the hour and the sky; the licence ledger lists all 34 sounds, `npm run check` fails on unlisted audio, and Settings has credits. A click in 13.1's effects (envelopes starting at full volume) is fixed.

@@ -858,6 +858,10 @@ button.pill:disabled {
 .days li[data-sky='rain'] .sky {
   color: var(--u-rain);
 }
+/* Credits: a name can be long, so it gets the whole line. */
+.days.credits b {
+  grid-column: 1/-1;
+}
 .days small {
   grid-column: 1/-1;
   font: 500 calc(12px * var(--u-fs)) / 1.3 var(--u-mono);

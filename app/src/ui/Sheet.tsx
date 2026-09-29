@@ -73,6 +73,7 @@ import { planLine, stepLabel, stepsAt, withStep, type PlanStep } from '../game/p
 import { CARD, cardPng } from '../view/paint/card';
 import { cardFile, cardOf, cardText } from './card';
 import { buildSheet, SKILL_NAME, type ListSpec } from './sheets';
+import { CREDITS } from './credits';
 import { vars } from './vars';
 
 export const VERB_TEXT: Record<Verb, string> = {
@@ -120,6 +121,8 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
       <WeekBody game={game} s={state} />
     ) : id.k === 'settings' ? (
       <SettingsBody game={game} settings={ui.settings} />
+    ) : id.k === 'credits' ? (
+      <CreditsBody />
     ) : id.k === 'card' ? (
       <CardBody game={game} id={id} s={state} />
     ) : id.k === 'plan' ? (
@@ -985,6 +988,41 @@ function SettingsBody({ game, settings }: { game: Game; settings: Settings }) {
         {choice('buzz', 'off', 'Off')}
       </div>
       <OldCareer />
+      <ul>
+        <li>
+          <button
+            type="button"
+            className="opt"
+            id="b-credits"
+            onClick={() => game.openSheet({ k: 'credits' })}
+          >
+            <span>Credits</span>
+            <span className="c" />
+          </button>
+        </li>
+      </ul>
+    </>
+  );
+}
+
+// Who made what, from ui/credits.ts; sound from the licence ledger.
+function CreditsBody() {
+  return (
+    <>
+      <h3 id="sheet-title">Credits</h3>
+      {CREDITS.map((c) => (
+        <Fragment key={c.head}>
+          <p className="crux">{c.head}</p>
+          <ul className="days credits" id={`credits-${c.head.toLowerCase().replace(/\s+/g, '-')}`}>
+            {c.lines.map((l) => (
+              <li key={l.what}>
+                <b>{l.what}</b>
+                <small>{l.who}</small>
+              </li>
+            ))}
+          </ul>
+        </Fragment>
+      ))}
     </>
   );
 }
