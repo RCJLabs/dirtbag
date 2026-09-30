@@ -409,11 +409,11 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 | A. Make it safe to change | 1–4 | Source control, a safety net, load time, and pulling the simulation out of the UI | 8–14 weeks |
 | B. Decide what the game is | 5–7 | Design bible and cut list, core-loop retune, the first hour | 5–8 weeks |
 | C. Make it look like the game it is | 8–13 | Art direction, the climbing screen, crags, the town, the UI system, sound | 18–29 weeks |
-| E. Make the full game worth paying for | 21–23, then 16–18 | The climber (gear, trad, training, crags past Act I), the life (van, body, food, hustle, games), who you are (origins, stances, Record Book); then the story spine and ending, the people, careers and jobs | 32–49 weeks |
+| E. Make the full game worth paying for | 21, 22, 24, 23, then 16–18 | The climber (gear, trad, training, crags past Act I), the life (van, body, food, hustle, games), expeditions as trips, who you are (origins, stances, Record Book); then the story spine and ending, the people, careers and jobs | 37–57 weeks |
 | D. Get it in front of people | 14–15 | Desktop/Steam build, then the demo, store page and festival: after the full game, by Evan's call | 4–6 weeks |
 | F. Ship | 19–20 | Monetization, store readiness, beta, launch and after | 5–8 weeks |
 
-That adds up to about 51–82 weeks, roughly 12–19 months [INFERRED].
+That adds up to about 56–90 weeks, roughly 13–21 months [INFERRED].
 
 **Timing anchors:**
 - The next Steam Next Fest is 22 Feb – 1 Mar 2027 (register by 10 Jan). That's too early for the rebuilt demo.
@@ -1486,7 +1486,7 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Criterion 4:** `walls.test.ts` climbs a wall to the top and fails one (a fall, a retreat, a drive away), and runs 300 seeded expeditions against the exact odds (within 0.08), with summits and failures both.
 - **Its picture:** each wall's name and grade high on its crag's rock, tapped to open it; each pitch has its own line on the close-up. An expedition is a sheet over the Lot.
 - **Save v8,** migrated from a real v7 save: on no wall, away on nothing.
-- **Not quite right yet:** an expedition has no scene of its own (the Lot's sky shows behind a storm), and the HUD's energy isn't the expedition's. The bots don't climb walls or go on expeditions, so the harness says nothing about their pay. Over 56 days the harness is unchanged: all five targets pass with the same numbers as the Cave (the rope costs them nothing because they never buy one).
+- **Not quite right yet** (Phase 24 takes the first two): an expedition has no scene of its own (the Lot's sky shows behind a storm), and the HUD's energy isn't the expedition's. The bots don't climb walls or go on expeditions, so the harness says nothing about their pay. Over 56 days the harness is unchanged: all five targets pass with the same numbers as the Cave (the rope costs them nothing because they never buy one).
 
 ---
 
@@ -1516,9 +1516,39 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 ---
 
+### Phase 24 — Expeditions as trips
+
+*Added 30 Sep 2026 by Evan's call, after 21.5 built expeditions as a sheet of daily calls over the Lot. Numbered 24 so older numbers don't move. It runs after Phase 22 and before Phase 23 [proposed]: a trip is packed with Phase 22's food and fuel, and leaves Phase 22's van behind. It could run straight after Phase 21 instead, at the cost of building packing twice.*
+
+**Goal.** An expedition is a trip you plan, travel, live and come home from, somewhere that looks like nowhere else in the game, and its pitches are climbed, not rolled.
+
+**Why.**
+- **21.5 made the decision honest, not the trip.** The summit's odds are shown and the choices are real, but a day on El Capitan is a sheet over the Lot's sky, and a pitch is a dice roll against endurance.
+- **It's the game's biggest set piece.** An expedition is the most money, time and risk a career puts on one bet, and v0.956 gave it one menu (`docs/audit/climbing.md` §2.14).
+
+**Scope.**
+- **A scene for each,** drawn in code: El Capitan's meadow and the wall above it, Cerro Torre's wind-scoured spire over the Patagonian ice cap, and a Karakoram glacier base camp under Trango. Day and night, clear and storm, with the weather on the wall where you can see it. A wall view of each: ledges, the portaledge, the haul line, and how high you are.
+- **Planning,** from the Lot: when to go, against a forecast that's honest about how uncertain it is; what to pack, by weight, into a haul bag with a limit (food and water by the day, fuel, a portaledge, the rack); who comes, from your crew by bond, and what they're good for; permits and flights. The summit's odds update as you plan, and are shown every day after, as in 21.5.
+- **Getting there:** travel days, the approach (the glacier trek, acclimatizing for Trango), and what the valley does while you're gone: rent, your job's leave (Phase 18's rank-based leave, or losing the shifts), Scout with friends.
+- **On the wall:** each pitch a real go through beta-then-send, with its own cruxes and the altitude, cold and fatigue narrowing the windows; your partner leading in blocks; hauling; portaledge nights that cost food and water and give back less each night; the forecast changing under you; retreat at any ledge, and what it costs to go down.
+- **What happens up there:** dropped gear, a stuck haul bag, rockfall, a storm that comes early, another party in trouble. Few, seeded and consequential, not a random-event table.
+- **Coming home:** the story told at the fire, a card, a magazine's fee or a sponsor's (Phase 18), and a Record Book entry (Phase 23). A failed trip comes home with something too: a high point, beta for next time, a partner closer or further.
+- **The Unreal spec** gets the trip's rules in `Dirtbag-UE/concepts/2D-SPEC-LOG.md`.
+
+**Done when.**
+1. Each expedition has its own scene and wall view, clear and storm, day and night.
+2. An expedition can be planned, travelled, climbed and come home from, summit or not, and the e2e bot plays one through.
+3. Its pitches are climbed through beta-then-send; the dice decide only the weather and what happens up there.
+4. The summit's odds are shown while planning and every day after, and the harness checks them against the bots' own trips.
+5. No expedition is a farm: the harness finds none that out-earns its time and cost at the grade it's offered.
+
+**Depends on:** Phase 21 (21.5's walls, odds and save), Phase 22 (food, fuel, the van left behind). Uses Phase 18's leave and Phase 23's Record Book where they exist, and fills them in when they arrive. **Effort:** ~5–8 weeks [INFERRED]; the three scenes are most of it. **Main risk:** scope. Planning, packing and events can each become busywork; each earns its place by changing the summit's odds in a way the player can see.
+
+---
+
 ### Phase 23 — Who you are: origins, paths, stances, and the Record Book
 
-*Added 29 Sep 2026 by Evan's call. Runs after Phase 22, before Phase 16, which keys its epilogues to all of it.*
+*Added 29 Sep 2026 by Evan's call. Runs after Phases 22 and 24, before Phase 16, which keys its epilogues to all of it.*
 
 **Goal.** A climber who's somebody: where they came from, what they're becoming, what they stand for, and a book of what they've done.
 
@@ -1851,3 +1881,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Phase 21.4: Psicobloc Cove. v0.956's eight deep-water solos, V2 to V9; a fall is a splash with no landing or strain roll; V4, two hours out on the coast, open in summer only; a sea-cliff scene, face and shelf; the bots go there from V4.
 - 2026-09-30 — Phase 21.4: The Cave. A second gym, eight problems a week V3 to V10, its own pass and a power-and-fingers specialty; indoor places generalized; coaching with three ranks; the bots climb there from V3. The Hollow waits for its quest.
 - 2026-09-30 — Phase 21.5: walls and expeditions. v0.956's four walls climbed pitch by pitch with bivies, on a rope from the gear shop; its three expeditions as a day-by-day call with the summit's odds worked out and shown; save v8. Criterion 4 passes in the tests.
+- 2026-09-30 — Evan's call: Phase 24 added, expeditions as trips: a scene for each, planning and packing, getting there, pitches climbed through beta-then-send, and coming home. It runs after Phase 22 and before 23 [proposed]; the order is now 21, 22, 24, 23, 16, 17, 18, 14, 15, 19, 20.
