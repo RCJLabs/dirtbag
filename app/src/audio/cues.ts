@@ -22,6 +22,10 @@ export type Cue =
   | 'strum'
   // Knuckles on the van's panel at night (Phase 22.6a).
   | 'knock'
+  // On the road (Phase 22.6b): the side door rolling shut on a hitchhiker; tires onto a
+  // gravel pull-off and the handbrake.
+  | 'door'
+  | 'pullover'
   // On the wall.
   | 'pullon'
   | 'move'

@@ -106,8 +106,18 @@ export interface GameState {
   // Phase 22.6. The event deck: the day of the last encounter of any kind, the night of the
   // last knock, and the knocks heard, oldest first; and the encounter you're in, if any,
   // which waits for your answer.
-  deck: { last: number; knock: number; seen: string[] };
-  encounter: { kind: 'knock'; id: string } | null;
+  // Phase 22.6b adds the day of the last hitchhiker and stop, the stops you've found, and the
+  // hitchhikers you've picked up, by the answer you gave the first time.
+  deck: {
+    last: number;
+    knock: number;
+    seen: string[];
+    hitch: number;
+    stop: number;
+    stops: string[];
+    met: Record<string, number>;
+  };
+  encounter: { kind: 'knock' | 'hitch' | 'stop'; id: string } | null;
   meals: string[];
   fueled: number;
   breakdown: { part: 'tires' | 'engine'; to: string; rest: number; bodged: boolean } | null;
@@ -308,7 +318,7 @@ export type GameEvent =
   // A conversation moves to another node, or ends (null).
   | { k: 'talk'; node: string | null }
   // An encounter begins (Phase 22.6): it waits for an answer.
-  | { k: 'encounter'; kind: 'knock'; id: string }
+  | { k: 'encounter'; kind: 'knock' | 'hitch' | 'stop'; id: string }
   // The action wasn't allowed; `why` says so in the game's voice.
   | { k: 'refused'; why: string };
 

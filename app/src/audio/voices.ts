@@ -89,6 +89,18 @@ export const VOICES: Record<Cue, (v: V, k: number) => void> = {
     );
     if (k < 1) burst(v, { filter: 'bandpass', f: 900, q: 1.2, dur: 0.06, gain: 0.5 * (1 - k) });
   },
+  // A van's side door: the long roll of the runner, and the thunk as it latches.
+  door: (v) => {
+    burst(v, { filter: 'bandpass', f: 700, f2: 1100, q: 1.4, dur: 0.45, gain: 0.35, attack: 0.05 });
+    burst(v, { filter: 'lowpass', f: 380, dur: 0.12, gain: 1, delay: 0.46 });
+    tone(v, { type: 'triangle', f: 110, f2: 80, dur: 0.16, gain: 0.3, delay: 0.46 });
+  },
+  // Tires leaving the asphalt for gravel, slowing, and the handbrake's ratchet.
+  pullover: (v) => {
+    burst(v, { filter: 'highpass', f: 1800, f2: 900, dur: 0.9, gain: 0.35, attack: 0.08 });
+    for (let i = 0; i < 5; i++)
+      tone(v, { type: 'square', f: jitter(900, 0.06), dur: 0.02, gain: 0.08, delay: 1 + i * 0.045 });
+  },
   // Two knuckle raps on sheet metal, and a third a beat later.
   knock: (v) => {
     [0, 0.16, 0.5].forEach((d) => {

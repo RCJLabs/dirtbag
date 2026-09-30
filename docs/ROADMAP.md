@@ -1831,6 +1831,17 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **E2e:** a planted night the seed's deck knocks on: bed, the knock heard, the card, an answer, day eight.
 - **Also in this release, from Evan's phone:** the Market's and the Garage's names ran off the map's right edge (labelled to their left now, and a layout test holds every name on screen); and a card-only place had no ✕ while you were there (it closes onto the map now).
 
+**Status (30 Sep 2026): 22.6b built: hitchhikers and roadside stops.** Save v21, 0.977.0.
+- **On the road:** a drive to or from a crag that doesn't break down can meet someone, from day 3, within the one-encounter-a-day cap the knocks share [the day-3 start is proposed]. The encounter waits for you at the other end: a sound as you pull in (the side door, or tires onto gravel) and its card, no ✕. A plan waits on your answer, then carries on.
+- **Hitchhikers:** v0.956's eight, in its words, 14% of such drives and five days apart; someone you've met 2.6 times likelier than a stranger [v0.956's numbers].
+  - The first time: three answers, and a new fourth, driving past. Drive past and they're still a stranger.
+  - The second time: their second meeting. It remembers what you did: the grifter's "ask for your forty back" is there only if you gave him forty.
+  - v0.956 paid some answers in flat skill. Here the old hand's receipt is a real piece of beta at the crag you're driving to, and the busker's three chords are three sets of guitar practice. Standing, reputation and crafting materials are gone, as with the knocks.
+  - **At a breakdown,** with no friend to call, a hitchhiker you picked up (never the grifter or the thief) comes the other way half the time, and fixes it as a friend would.
+- **Roadside stops:** v0.956's nine finds (the overlook, the World's Largest Boulder, Ma's Pie Stop, the hot spring and the rest), 20% of such drives and three days apart [proposed; v0.956 offered one on three drives in four]. Pulling over is a 40-minute detour for psyche, and some energy, skin or food. A find you haven't seen first; after the first time, 40% of it. Its flat skill is psyche here.
+- **The bots** answer with their first option. Every harness target passes. The climber bots' stuck nights went from 1 to 3 in 144 runs: the first answer to the grifter and the thief costs $40 and $55.
+- **E2e:** the day-four plan's drive home meets this seed's runaway; the plan waits for the answer and carries on (an answer isn't counted against the day's taps). A planted morning drive to Roadside picks up the busker: the door heard, the card, three chords, and the crag.
+
 ---
 
 ### Phase 24 — Expeditions as trips
@@ -2225,3 +2236,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Phase 22.5a built: the hustle's safety net, once a day each: cans from the van, the bins behind the market after dark, and foraging at the lake, seeded by the day; taught once, the first time you're hungry and broke. None out-earns a shift an hour (a new harness target). Bots use cans and the bins when broke. Save v18. 0.974.0.
 - 2026-09-30 — Phase 22.5b built, and 22.5 with it: busking outside the Coffee Shop, a set of eight strums a day, by Evan's calls: under every job an hour at first, over every job after about 180 days of sets, and bigger crowds as you get better. Criterion 2 notes busking as his exception. Save v19. 0.975.0.
 - 2026-09-30 — Two fixes from Evan's phone: the map's Market and Garage names no longer run off the edge, and card-only places close onto the map. Phase 22.6a built: the seeded event deck, one encounter a day at most, and v0.956's ten knocks on the van at night, by where you're parked, each holding the night until you answer. Save v20. 0.976.0.
+- 2026-09-30 — Phase 22.6b built: v0.956's eight hitchhikers (who remember what you did, and may be the one at your next breakdown) and nine roadside stops, on drives to and from the crags, sharing the knocks' one-a-day cap; nothing before day 3. Plans wait on an answer. Save v21. 0.977.0.

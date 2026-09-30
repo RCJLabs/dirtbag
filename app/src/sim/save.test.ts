@@ -42,6 +42,7 @@ const V16 = readFileSync(new URL('./fixtures/save-v16.json', import.meta.url), '
 const V17 = readFileSync(new URL('./fixtures/save-v17.json', import.meta.url), 'utf8');
 const V18 = readFileSync(new URL('./fixtures/save-v18.json', import.meta.url), 'utf8');
 const V19 = readFileSync(new URL('./fixtures/save-v19.json', import.meta.url), 'utf8');
+const V20 = readFileSync(new URL('./fixtures/save-v20.json', import.meta.url), 'utf8');
 // What R2's migration adds to any older save.
 const R2_BODY = {
   load: { acute: 20, chronic: 20, today: 0 },
@@ -82,7 +83,10 @@ const P224C = { supplies: 80, sick: null };
 const P224D = { psyche: { level: 50, stale: 0 }, crags: [] };
 const P225A = { seen: [] };
 const P225B = { guitar: 0 };
-const P226A = { deck: { last: 0, knock: 0, seen: [] }, encounter: null };
+const P226A = {
+  deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {} },
+  encounter: null,
+};
 
 describe('saves', () => {
   it('round-trip a played game exactly', () => {
@@ -519,6 +523,23 @@ describe('saves', () => {
     expect(r.state.spot).toBe('driveway');
   });
 
+  it('load a real 0.976.0 save from before the road: its knocks kept, nobody picked up', () => {
+    const r = fromSave(V20);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(20);
+    expect(r.state.deck).toEqual({
+      last: 7,
+      knock: 7,
+      seen: ['jump'],
+      hitch: 0,
+      stop: 0,
+      stops: [],
+      met: {},
+    });
+    expect(r.state).toEqual({ ...JSON.parse(V20).state, deck: r.state.deck });
+  });
+
   // These pretend a longer history: a v1 file that stored `money` where the state now has
   // `cash`, loaded by a build two versions on, with test migrations in place of the real ones.
   it('run the migration chain in order, and stop at a gap or a throw', () => {
@@ -526,7 +547,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(20);
+    expect(SAVE_VERSION).toBe(21);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

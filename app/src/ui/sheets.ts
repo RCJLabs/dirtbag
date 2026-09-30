@@ -96,6 +96,11 @@ import {
   buskBlocked,
   knockById,
   drivewayHost,
+  hitcherById,
+  hitchOpts,
+  hitchFriend,
+  stopById,
+  EVENTS,
   buskRate,
   guitarRank,
   RANK_NAME,
@@ -727,8 +732,42 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     }
 
     // Phase 22.6a: someone at the door. No close: the night waits on an answer.
-    case 'knock': {
+    case 'encounter': {
       const e = s.encounter;
+      // Phase 22.6b: a hitchhiker, the first time or again; a stop, and the detour it is.
+      if (e?.kind === 'hitch') {
+        const h = hitcherById(e.id);
+        if (!h) return null;
+        const again = s.deck.met[h.id] !== undefined;
+        return {
+          title: h.who,
+          sub: again
+            ? h.again.open
+            : `${h.sign === 'no sign' ? 'No sign.' : `“${h.sign}”, the sign says.`} ${h.look} ${h.pitch}`,
+          close: false,
+          rows: hitchOpts(s, h).map((o, i) => ({ label: o.label, run: () => game.answer(i) })),
+        };
+      }
+      if (e?.kind === 'stop') {
+        const x = stopById(e.id);
+        if (!x) return null;
+        const seen = s.deck.stops.includes(x.id);
+        return {
+          title: x.name,
+          sub: seen
+            ? `The turnoff for ${x.name}. You know the way.`
+            : `A turnoff you haven’t taken, for ${x.name}.`,
+          close: false,
+          rows: [
+            {
+              label: 'Pull over',
+              cost: costLabel({ min: EVENTS.stop.min, cash: x.fx.cash }),
+              run: () => game.answer(0),
+            },
+            { label: 'Keep driving', run: () => game.answer(1) },
+          ],
+        };
+      }
       const k = e ? knockById(e.id) : undefined;
       if (!k) return null;
       const host = drivewayHost(s);
@@ -745,6 +784,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       if (!b) return null;
       const to = PLACES[b.to]!.name;
       const who = friendFor(s);
+      // Phase 22.6b: a hitchhiker you were good to, if nobody you'd call can.
+      const hitch = who ? null : hitchFriend(s);
       const tow = { min: VAN.tow.min, cash: -VAN.tow.cash };
       return {
         title: 'Broken down',
@@ -760,7 +801,16 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
                   run: () => game.fix('friend'),
                 },
               ]
-            : []),
+            : hitch
+              ? [
+                  {
+                    label: `Wave down ${hitch.friend}`,
+                    cost: costLabel({ min: VAN.friend.min + b.rest }),
+                    note: `They’re coming the other way, and they remember the ride. A jack, a hand, and on to ${to}.`,
+                    run: () => game.fix('friend'),
+                  },
+                ]
+              : []),
           {
             label: 'Bodge it',
             cost: costLabel({ min: VAN.bodge.min }),
