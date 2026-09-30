@@ -1674,6 +1674,18 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
   - The e2e loads a broken-down save rather than driving into a breakdown; the sim's tests cover the drive.
   - The page size is 246.9 of 250 KB, and 22.2b will need room: the budget is close.
 
+**Status (30 Sep 2026): 22.2b built: where you sleep.** Save v12, 0.966.0.
+- **Where you park** is a choice on the week sheet that stays until you change it. The night settles it, and Tonight shows it: the spot, the energy and the ticket odds. You wake at the Lot whichever you pick, with the drive back taken off the morning [proposed, all of it]:
+  - **The Lot:** $18. From the fourth night in a row, a ticket: 5% a night, rising 5% a night to 25%, $25 each. v0.956 went to 40% with a boot at three.
+  - **The Upper Trailhead:** free, $6 of gas and 25 minutes each way. −10 energy, −20 in winter.
+  - **The truck stop:** $6 and $2 of gas, −12 energy.
+  - **A friend's driveway:** a partner (tier 3), once every 4 nights. $2 of gas, +5 energy.
+  - **The Ridge:** once you've made 25 trips out ("standing", until Phase 18 has some). $8 of gas and 40 minutes, +5 energy, −15 in winter.
+- **A spot that won't have you tonight** falls back to the Lot, and says so. A card that won't cover it is the pullout, as before.
+- **Bots** use a driveway when they can, the trailhead once the Lot's ticket odds start, and the Lot otherwise. Every harness target passes: balanced runway 3.2, 3.3, 3.4 and 4.0 days at days 7–28, no stuck nights; the career bots at V10 by day 160.
+- **E2e:** the week sheet lists the spots, with the Lot chosen and the Ridge locked on day two.
+- **Carried:** the page is 248.5 of 250 KB. 22.2c (upgrades and winter) won't fit without raising the budget or finding room.
+
 ---
 
 ### Phase 24 — Expeditions as trips
@@ -2055,3 +2067,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Phase 22.1 built: shifts posted by the week and signed up for ahead (only those count toward a raise; three no-shows cost the job), the Warehouse as a fourth job, pay that starts low and roughly doubles by the top rank, and how you live (dirtbag, comfortable, plush) paid nightly. Save v10. 0.964.0.
 - 2026-09-30 — Phase 22.2a built: the van's three parts wear with driving and nights; a worn van breaks down on drives out of town (never a kept-up one), with a tow, a bodge, limping on or a friend; Dale's garage in Midtown puts parts back. Wear retuned to about $5 a day after the harness. Save v11. 0.965.0.
 - 2026-09-30 — Evan's call on the jobs: each pays in something besides money (coaching head, setting technique, the warehouse endurance); the café pays least a shift and is shortest; a Diner job, a little more a shift in tips for a longer one. Setting $28 → $30.
+- 2026-09-30 — Phase 22.2b built: where you sleep, a standing choice among the Lot (tickets from the fourth night running), the Upper Trailhead, the truck stop, a friend's driveway and the Ridge, each with its cost, drive and night; Tonight shows it. Save v12. 0.966.0.

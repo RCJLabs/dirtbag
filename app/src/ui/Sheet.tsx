@@ -87,6 +87,12 @@ import {
   PARTS,
   PART_NAME,
   partWord,
+  SPOT,
+  SPOTS,
+  SPOT_IDS,
+  SPOT_NAME,
+  spotBlocked,
+  type SpotId,
 } from '../sim';
 import type { Game, JournalPage, SheetId, Ui } from '../game/game';
 import { legacyFile, saveLegacyFile } from '../game/legacy';
@@ -703,7 +709,10 @@ function TonightList({ t }: { t: Tonight }) {
           <small>
             {t.rough
               ? `The card won't take the spot. A cold night: +${t.energy} energy by morning.`
-              : `+${t.energy} energy by morning.`}
+              : `${SPOT_NAME[t.night.spot]}${t.night.wanted ? ` (${SPOT_NAME[t.night.wanted].replace(/^The /, 'the ').replace(/^A /, 'a ')} won’t work tonight)` : ''}. +${t.energy} energy by morning.`}
+            {t.night.ticket > 0
+              ? ` A ${Math.round(t.night.ticket * 100)}% chance of a ${money(SPOT.tickets.fine)} ticket.`
+              : ''}
             {t.hungry ? ` You'd go to bed hungry, and it costs you ${BODY.hungryNight} of that.` : ''}
           </small>
         </li>
@@ -1060,6 +1069,7 @@ function WeekBody({ game, s }: { game: Game; s: GameState }) {
         Registration and insurance, {money(MONEY.registration + MONEY.insurance)}, {billsWhen(s.day)}.
       </p>
       <ShiftRows game={game} s={s} />
+      <SpotRows game={game} s={s} />
       <LivingRows game={game} s={s} />
     </>
   );
@@ -1120,6 +1130,53 @@ function workLine(s: GameState, job: string): string {
   const back = benchedUntil(s, job);
   if (back !== null) return `${JOBS[job]!.name}: let go, back from day ${back}.`;
   return `${JOBS[job]!.name}: ${rankName(s, job)}${n ? `, ${n} warning${n > 1 ? 's' : ''}` : ''}.`;
+}
+
+// Where you park (Phase 22.2b): chosen here, and it stays until you change it.
+const SPOT_WHAT: Record<SpotId, string> = {
+  lot: 'Home. Stay too many nights running and the parking people notice.',
+  trailhead: 'Free, up the road. Cold, and colder in winter.',
+  truckstop: 'Cheap, lit all night, and loud.',
+  driveway: 'A friend’s place. A good night, now and then.',
+  ridge: 'The locals’ spot above the valley. Stars, and wind.',
+};
+
+function SpotRows({ game, s }: { game: Game; s: GameState }) {
+  return (
+    <>
+      <p className="crux">Where you park</p>
+      <div role="radiogroup" aria-label="Where you park" id="spots">
+        {SPOT_IDS.map((k) => {
+          const d = SPOTS[k];
+          const why = spotBlocked(s, k);
+          const cost = d.cost + d.gas;
+          const bits = [
+            cost ? `${money(cost)} a night${d.gas ? ' with gas' : ''}` : 'free',
+            d.drive ? `${d.drive} min back in the morning` : '',
+            d.energy ? `${d.energy > 0 ? '+' : ''}${d.energy} energy` : '',
+          ].filter(Boolean);
+          return (
+            <button
+              type="button"
+              key={k}
+              id={`spot-${k}`}
+              className={`beta choice${why ? ' locked' : ''}`}
+              role="radio"
+              aria-checked={s.spot === k}
+              aria-disabled={!!why}
+              onClick={() => !why && game.park(k)}
+            >
+              <span className="dot" />
+              <span>
+                {SPOT_NAME[k]} · {bits.join(', ')}
+              </span>
+              <small>{why ?? SPOT_WHAT[k]}</small>
+            </button>
+          );
+        })}
+      </div>
+    </>
+  );
 }
 
 const LIVING: Record<Lifestyle, [string, string]> = {

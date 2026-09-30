@@ -86,6 +86,8 @@ import {
   partWord,
   PEOPLE,
   VAN,
+  nightAt,
+  SPOT_NAME,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import type { Game, SheetId } from '../game/game';
@@ -154,7 +156,10 @@ function actRow(game: Game, s: GameState, id: string): Row {
     .filter(Boolean)
     .join('. ');
   if (a.sleep && !why) {
-    if (headroom(s) < MONEY.vanSpot) note = "The card won't cover the spot: a cold night in the pullout.";
+    const n = nightAt(s);
+    note = n.rough
+      ? "The card won't cover the spot: a cold night in the pullout."
+      : `${SPOT_NAME[n.spot]}.${n.wanted ? ` ${SPOT_NAME[n.wanted]} won’t work tonight.` : ''}`;
     if (s.fed < BODY.hungryBelow) note += ' You’ll sleep hungry.';
   }
   return {
@@ -182,7 +187,7 @@ function weekNote(s: GameState): string {
   const shift = next
     ? `Next shift: ${JOBS[next.job]!.name}, ${next.day === s.day ? 'today' : dayName(next.day)}.`
     : 'No shifts signed up for.';
-  return `${shift} The schedule, and how you live.`;
+  return `${shift} Parked at ${SPOT_NAME[s.spot].replace(/^The /, 'the ').replace(/^A /, 'a ')}. The schedule, where you park, and how you live.`;
 }
 
 // Where you stand at a job: your rank, and what the next one takes.

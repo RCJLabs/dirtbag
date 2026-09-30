@@ -5,7 +5,7 @@ import { projected, ratio, zone, daysOff, type Zone } from './body';
 import { ACTS } from './content/places';
 import { BODY, LIFESTYLE, MONEY, type Lifestyle } from './dials';
 import { livingTonight } from './jobs';
-import { headroom } from './cond';
+import { nightAt, type Night } from './spots';
 import { conditions, type Sky } from './weather';
 import type { GameState } from './types';
 
@@ -16,9 +16,11 @@ export const BASE_BURN =
 export const runway = (cash: number): number => Math.max(0, cash) / BASE_BURN;
 
 export interface Tonight {
-  // The van spot tonight: MONEY.vanSpot, or 0 in the pullout when the card won't take it.
+  // What parking tonight costs, gas included, or 0 in the pullout when the card won't take
+  // it; and where it'll be (Phase 22.2b), with the ticket odds at the Lot.
   spot: number;
   rough: boolean;
+  night: Night;
   // Energy back by morning, after a rough or hungry night.
   energy: number;
   hungry: boolean;
@@ -41,18 +43,24 @@ export interface Tonight {
 }
 
 export function tonight(s: GameState): Tonight {
-  const rough = headroom(s) < MONEY.vanSpot;
-  const spot = rough ? 0 : MONEY.vanSpot;
+  const night = nightAt(s);
+  const rough = night.rough;
+  const spot = night.cost;
   const hungry = s.fed < BODY.hungryBelow;
   const billsIn = (7 - (s.day % 7)) % 7;
   const bills = MONEY.registration + MONEY.insurance;
-  const life = rough ? LIFESTYLE.dirtbag : livingTonight(s);
+  const life = rough ? LIFESTYLE.dirtbag : livingTonight(s, spot);
   const cash = s.cash - spot - life.cost - (billsIn === 0 ? bills : 0);
   const p = projected(s.load);
   return {
     spot,
     rough,
-    energy: (rough ? BODY.roughEnergy : BODY.sleepEnergy) - (hungry ? BODY.hungryNight : 0) + life.energy,
+    night,
+    energy:
+      (rough ? BODY.roughEnergy : BODY.sleepEnergy) -
+      (hungry ? BODY.hungryNight : 0) +
+      life.energy +
+      night.energy,
     hungry,
     living: { tier: s.lifestyle, ...life, skimped: !rough && life !== LIFESTYLE[s.lifestyle] },
     skin: BODY.sleepSkin + life.skin,

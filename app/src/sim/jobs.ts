@@ -91,10 +91,10 @@ export function signupBlocked(s: GameState, job: string, day: number, on = true)
 }
 
 // What tonight's living costs and gives back: how you live, if the card takes it after the
-// van spot; a dirtbag's night if it won't.
-export function livingTonight(s: GameState): (typeof LIFESTYLE)[Lifestyle] {
+// night's spot (`spot`, what it costs); a dirtbag's night if it won't.
+export function livingTonight(s: GameState, spot: number): (typeof LIFESTYLE)[Lifestyle] {
   const l = LIFESTYLE[s.lifestyle];
-  return s.cash - MONEY.vanSpot + MONEY.cardLimit >= l.cost ? l : LIFESTYLE.dirtbag;
+  return s.cash - spot + MONEY.cardLimit >= l.cost ? l : LIFESTYLE.dirtbag;
 }
 
 // A shift's tips (the diner's), seeded by the job and the day: a weekday's range, half again

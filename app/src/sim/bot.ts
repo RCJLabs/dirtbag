@@ -19,13 +19,14 @@ import { ACTS, PLACES, road } from './content/places';
 import { JOBS } from './content/jobs';
 import { TALK } from './content/people';
 import { roped, type RouteDef } from './content/routes';
-import { BODY, BOND, CLIMB, KIT, LOAD, MONEY, VAN } from './dials';
+import { BODY, BOND, CLIMB, KIT, LOAD, MONEY, VAN, type SpotId } from './dials';
 import { cold, freshLoad, ratio } from './body';
 import { gradeOf, average } from './climber';
 import { act, actCost, faSuggestions, goBlocked, knowsBeta, landingChance, newGame, talkStart } from './game';
 import { whereNow } from './presence';
 import { signupBlocked } from './jobs';
 import { friendFor, PARTS, repairCost } from './van';
+import { spotBlocked, ticketOdds } from './spots';
 import { tonight } from './tonight';
 import type { Action, GameState, GoResult, Skills } from './types';
 import type { Rng } from './rng';
@@ -339,6 +340,17 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     workMin += s.min - t;
   }
 
+  // Phase 22.2b: where to park tonight. A friend's driveway when it'll have you, the
+  // trailhead when the Lot's ticket odds start, and the Lot otherwise.
+  function park() {
+    const want: SpotId = !spotBlocked(s, 'driveway')
+      ? 'driveway'
+      : ticketOdds(s.lotNights) > 0
+        ? 'trailhead'
+        : 'lot';
+    if (s.spot !== want) go({ t: 'spot', spot: want });
+  }
+
   // Phase 22.1: at night, a bot that'll be short in the morning signs up for tomorrow's
   // shift, so the shift counts toward a raise, like a player planning the week. The one it
   // takes is the best-paying of `jobs` posted tomorrow, an hour for an hour from the Lot.
@@ -555,6 +567,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     tryAct('lot.adopt');
     if (s.dog && s.dog.fed < 40) tryAct('lot.kibble');
     if (!isNight(s.min)) tryAct('lot.rest');
+    park();
     signUp(['cafe.shift']);
     record(where, morning);
     tryAct('lot.sleep');
@@ -732,6 +745,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     if (s.dog && s.dog.fed < 40) tryAct('lot.kibble');
     if (!isNight(s.min)) tryAct('lot.rest');
     const next = saving();
+    park();
     signUp(JOB_ACTS, next ? next + 50 : 0);
     record(where, morning);
     tryAct('lot.sleep');

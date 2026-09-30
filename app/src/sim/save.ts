@@ -8,13 +8,13 @@
 import { CARRIED, STARTS } from './climber';
 import { GEAR } from './content/gear';
 import { PLACES } from './content/places';
-import { LIFESTYLE, TRAIN } from './dials';
+import { LIFESTYLE, SPOTS, TRAIN } from './dials';
 import { JOBS } from './content/jobs';
 import { ROUTES, WALLS } from './content/routes';
 import { EXPEDITIONS } from './content/expeditions';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 11;
+export const SAVE_VERSION = 12;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -107,6 +107,12 @@ export const MIGRATIONS: Record<number, Migration> = {
   10: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, van: { tires: 70, engine: 70, battery: 70 }, breakdown: null };
+  },
+  // v11 -> v12 (Phase 22.2b): parked at the Lot, as everyone was, with the count of nights in
+  // a row starting from here, and no driveway yet.
+  11: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, spot: 'lot', lotNights: 0, driveway: 0 };
   },
 };
 
@@ -244,6 +250,9 @@ export function validate(x: unknown): string[] {
   need(perJob(x.strikes), 'strikes');
   need(perJob(x.benched), 'benched');
   need(typeof x.lifestyle === 'string' && x.lifestyle in LIFESTYLE, 'lifestyle');
+  need(typeof x.spot === 'string' && x.spot in SPOTS, 'spot');
+  need(isInt(x.lotNights) && x.lotNights >= 0, 'lotNights');
+  need(isInt(x.driveway) && x.driveway >= 0, 'driveway');
   const pct = (v: unknown) => isNum(v) && v >= 0 && v <= 100;
   const van = x.van;
   need(isObj(van) && ['tires', 'engine', 'battery'].every((k) => pct(van[k])), 'van');

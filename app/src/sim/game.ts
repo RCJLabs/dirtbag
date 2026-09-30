@@ -63,6 +63,8 @@ import {
   RIVAL,
   TRAD,
   TRAIN,
+  SPOT,
+  SPOTS,
   VAN,
   WALL,
   WORK,
@@ -71,6 +73,8 @@ import { EXPEDITIONS } from './content/expeditions';
 import { pitchOdds, pitchRoll, stormOn, wallPay } from './expeditions';
 import { canAsk, queueMin, sprayable, sprayedOn } from './crowds';
 import { soloed } from './solo';
+import { drivewayHost, nightAt, spotBlocked, ticketRoll } from './spots';
+import { SPOT_LINE, SPOT_NAME } from './content/spots';
 import { bodgeHolds, breakdownRoll, friendFor, PART_NAME, repairCost, unsafePart } from './van';
 import { BODGE_FAILED, BODGE_HELD, BREAKDOWN_LINE } from './content/van';
 import { speedBlocked, speedGains, speedLoad, speedTime, runsToday } from './speed';
@@ -128,6 +132,9 @@ export function newGame(seed: string): GameState {
     strikes: {},
     benched: {},
     lifestyle: 'dirtbag',
+    spot: 'lot',
+    lotNights: 0,
+    driveway: 0,
     van: { ...VAN.start },
     breakdown: null,
     wall: null,
@@ -198,6 +205,8 @@ export function actCost(s: GameState, d: ActDef): Delta {
   if (d.job) return { ...d.cost, cash: (d.cost.cash ?? 0) + raiseAt(s, d.job.id) * d.job.shifts };
   // A repair costs its share of the part's price, by wear.
   if (d.van) return { ...d.cost, cash: -repairCost(s, d.van) };
+  // Bed costs wherever you're parked tonight (Phase 22.2b).
+  if (d.sleep) return { ...d.cost, cash: -nightAt(s).cost };
   if (d.until === undefined) return d.cost;
   const min = Math.max(0, d.until - s.min);
   const out: Delta = { min };
@@ -412,18 +421,31 @@ export function act(s0: GameState, a: Action): Result {
     const ended = s.day;
 
     const hungry = where !== 'away' && s.fed < BODY.hungryBelow;
-    const rough = where === 'van' && headroom(s) < MONEY.vanSpot;
+    // Where the van's parked tonight (Phase 22.2b), and what it costs; the pullout if the
+    // card won't cover it.
+    const night = where === 'van' ? nightAt(s) : null;
+    const rough = !!night?.rough;
     // How you live is paid at the van, after the spot, while the card still takes it.
-    const life = where === 'van' && !rough ? livingTonight(s) : LIFESTYLE.dirtbag;
-    if (where === 'van' && !rough) s.cash -= MONEY.vanSpot;
-    const skimped = where === 'van' && !rough && life !== LIFESTYLE[s.lifestyle];
+    const life = night && !rough ? livingTonight(s, night.cost) : LIFESTYLE.dirtbag;
+    const skimped = !!night && !rough && life !== LIFESTYLE[s.lifestyle];
+    const ticket = !!night && night.spot === 'lot' && !rough && ticketRoll(s);
+    if (night) {
+      s.cash -= night.cost;
+      s.lotNights = night.spot === 'lot' && !rough ? s.lotNights + 1 : 0;
+      if (night.spot === 'driveway') s.driveway = ended;
+      if (ticket) s.cash -= SPOT.tickets.fine;
+    }
     s.cash -= life.cost;
     s.day += 1;
-    s.min = DAY.wakeMin;
+    // A spot out of town is a drive back in the morning.
+    s.min = DAY.wakeMin + (night?.drive ?? 0);
     const rest =
       where === 'ledge'
         ? WALL.bivy.energy
-        : (rough ? BODY.roughEnergy : BODY.sleepEnergy) - (hungry ? BODY.hungryNight : 0) + life.energy;
+        : (rough ? BODY.roughEnergy : BODY.sleepEnergy) -
+          (hungry ? BODY.hungryNight : 0) +
+          life.energy +
+          (night?.energy ?? 0);
     s.energy = clamp100(s.energy + rest);
     s.skin = clamp100(s.skin + BODY.sleepSkin + life.skin);
     if (where !== 'away') s.fed = clamp100(s.fed - (where === 'ledge' ? WALL.bivy.fed : BODY.nightFed));
@@ -451,11 +473,18 @@ export function act(s0: GameState, a: Action): Result {
     else if (where === 'away') {
       // Nothing to say: the expedition's day says it.
     } else if (rough) line("The card won't take the van spot. You sleep in the pullout. It's cold.");
+    else if (night && night.spot !== 'lot')
+      line(fill(SPOT_LINE[night.spot], { who: PEOPLE[drivewayHost(s) ?? '']?.name ?? 'A friend' }));
     else
       line(
         s.cash < 0
           ? `Van spot, ${TEXT_VALUES.spot}. You're $${-s.cash} in the hole.`
           : `Van spot, ${TEXT_VALUES.spot}. Morning comes anyway.`,
+      );
+    if (night?.wanted) line(`${SPOT_NAME[night.wanted]} wouldn’t work tonight. The Lot, then.`);
+    if (ticket)
+      line(
+        `A ticket under the wiper: ${money(SPOT.tickets.fine)}. The parking people have noticed you live here.`,
       );
     if (skimped) line('The card won’t stretch to how you like to live. A dirtbag night, then.');
     if (hungry) line('You went to bed hungry, and it shows.');
@@ -805,6 +834,14 @@ export function act(s0: GameState, a: Action): Result {
         s.shifts.push({ job: a.job, day: a.day });
         s.shifts.sort((x, y) => x.day - y.day);
       } else s.shifts = s.shifts.filter((x) => !(x.job === a.job && x.day === a.day));
+      break;
+    }
+
+    case 'spot': {
+      if (!(a.spot in SPOTS)) return refuse('No such spot.');
+      const why = spotBlocked(s, a.spot);
+      if (why) return refuse(why);
+      s.spot = a.spot;
       break;
     }
 
