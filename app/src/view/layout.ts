@@ -155,6 +155,26 @@ export const CRAGS: Record<string, CragSpec> = {
     // The spire, with a highball either side.
     frame: 760,
   },
+  // Psicobloc Cove: a limestone sea cliff, its eight deep-water lines up it from a rock
+  // shelf above the water. No boulders: the sea's where they'd be.
+  cove: {
+    width: 1500,
+    wall: [480, 1500],
+    lines: [
+      { n: 1, x: 560, route: 'ptide' },
+      { n: 2, x: 670, route: 'pplunge' },
+      { n: 3, x: 780, route: 'pslab' },
+      { n: 4, x: 890, route: 'pbarnacle' },
+      { n: 5, x: 1000, route: 'pleap' },
+      { n: 6, x: 1110, route: 'poverhang' },
+      { n: 7, x: 1220, route: 'parete' },
+      { n: 8, x: 1330, route: 'pdeep' },
+    ],
+    boulders: [],
+    sign: 272,
+    hint: 'Pick a line and pull on. The sea catches you.',
+    frame: 900,
+  },
   // The Crucible: a black gneiss wall with four roped lines, the myth the last of them, and
   // boulders on the frozen ground either side; the boulder myth out past Event Horizon.
   crucible: {
@@ -315,6 +335,7 @@ export const SCENES: Record<string, SceneLayout> = {
   stone: cragScene('stone', CRAGS.stone!),
   wind: cragScene('wind', CRAGS.wind!),
   crucible: cragScene('crucible', CRAGS.crucible!),
+  cove: cragScene('cove', CRAGS.cove!),
   gym: {
     place: 'gym',
     width: GYM_W,
@@ -380,6 +401,7 @@ export const SPOTS: Record<string, Spot[]> = {
   stone: [{ who: 'dex', x: 1180, face: -1, pose: 'stand', talk: 'dex' }],
   wind: [{ who: 'dex', x: 1350, face: -1, pose: 'stand', talk: 'dex' }],
   crucible: [{ who: 'dex', x: 1340, face: -1, pose: 'stand', talk: 'dex' }],
+  cove: [{ who: 'dex', x: 420, face: 1, pose: 'stand', talk: 'dex' }],
 };
 
 // Who's in a scene right now: the people whose day puts them at its place.
@@ -436,6 +458,8 @@ export const MAP_PINS: Record<string, Pin> = {
   wind: { x: 40, y: 108, side: 1, kind: 'crag' },
   // East out of the valley, over the pass above Midtown.
   crucible: { x: 338, y: 372, side: -1, kind: 'crag', dy: -16 },
+  // West past Old Town, down to the coast.
+  cove: { x: 24, y: 506, side: 1, kind: 'crag', dy: 14 },
 };
 export const DIM_PINS: [number, number][] = [
   [266, 334],

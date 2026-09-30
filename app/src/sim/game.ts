@@ -709,7 +709,8 @@ export function act(s0: GameState, a: Action): Result {
       s.load.today = round2(s.load.today + load);
       const goN = Object.values(s.routes).reduce((t, x) => t + x.goesToday, 0);
       // Overuse first; failing that, a fall off a highball can land you badly.
-      const strain = rollInjury(s, r, load, wasCold, goN);
+      // A deep-water solo loads you, but the sea takes the fall: no strain roll (v0.956's).
+      const strain = r.dws ? null : rollInjury(s, r, load, wasCold, goN);
       // A deck is only as far as the result says, and only on trad: nothing else has one.
       const deck = r.disc === 'trad' && !res.sent && res.deck ? Math.min(res.deck, r.heightFt) : 0;
       const landed =

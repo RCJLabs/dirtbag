@@ -111,7 +111,7 @@ A place is data, a pin and a picture. In order:
    - `layout.test.ts`: no pin, no header, a scene that isn't the place's, a scene narrower than the widest screen sees (960, the Lot's width), a side road that doesn't start on the highway, a drive that runs past its ends, a crag line with nowhere on screen.
    - `sun.test.ts`: a sun path that misses a line or doubles back.
 
-   If the place changes a season (a crag in Act I's grades, a job), run `npm run harness` too. The bots climb at Roadside, the Gorge, the Mesa and the gym (`BOT_PLACES` in `sim/bot.ts`), so a crag they should use goes into their day there first.
+   If the place changes a season (a crag in Act I's grades, a job), run `npm run harness` too. The bots climb at Roadside, the Gorge, the Cove, the Mesa and the gym (`BOT_PLACES` in `sim/bot.ts`), so a crag they should use goes into their day there first.
 9. **Log it.** Add a changelog line in `docs/ROADMAP.md`. A new rule, or a change to one, also goes in `Dirtbag-UE/concepts/2D-SPEC-LOG.md`.
 
 ## What it still fakes
@@ -121,7 +121,7 @@ A place is data, a pin and a picture. In order:
   - The bots' human-ish hands are guesses, not measurements: scatter on the load and timing meters, and about 200 ms of lag on the tension band, varied from go to go (`HUMAN` in `sim/bot.ts`).
 - **Feel.** Phase 9's criteria (a watcher can tell how close a go was; a pumped go feels tense) and Phase 7's first hour need people, not bots.
 - **Content.**
-  - Sixty-six crag lines (five of them trad), V0 to V18 with no grade missing, six gym problems a week, and the board's four.
+  - Seventy-four crag lines (five of them trad, eight deep-water solos), V0 to V18 with no grade missing, six gym problems a week, and the board's four.
   - Before the board, about half the bots hit a wet day in week four with nothing new to try. With the board a grade stiff, none of 144 runs do. The harness counts only content running out, not days the body said no.
 - **Injuries** are rare in the first month: none for bots that warm up and heed the warning, and 3% for reckless ones. That meets Phase 6's ceiling, but it may be too gentle to register as a trade-off. It's a playtest question.
 - **Design calls** marked *[proposed]* in the roadmap are Evan's to rule on: Sage's week away, the blessing's bond, the race's V4 trigger, Act I's "regular" stage, pace, and the card's footer.

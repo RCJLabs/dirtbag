@@ -19,6 +19,10 @@ export type Disc = 'boulder' | 'sport' | 'trad';
 // On a rope: a sport route clipped to bolts, or a trad line protected with what you place.
 export const roped = (r: { disc: Disc }): boolean => r.disc !== 'boulder';
 
+// Drawn on a crag's wall, not as a boulder of its own: a roped line, or a deep-water solo up
+// a sea cliff.
+export const onWall = (r: { disc: Disc; dws?: true }): boolean => roped(r) || !!r.dws;
+
 export interface BetaDef {
   name: string;
   // How the climb panel names it mid-go: "The roof lip, heel hook."
@@ -86,6 +90,9 @@ export interface RouteDef {
   highball?: true;
   // A myth (v0.956's revealAfter): a line you can't even read until you've sent this one.
   hiddenUntil?: string;
+  // Deep-water solo: a boulder problem up a sea cliff. A fall is a splash: no pad, no
+  // landing, no strain roll (v0.956's dws).
+  dws?: true;
 }
 
 // The grade a line really climbs at.
@@ -322,6 +329,7 @@ export function libraryBoulder(
     board?: true;
     highball?: true;
     hiddenUntil?: string;
+    dws?: true;
   },
 ): RouteDef {
   const [a, b] = LIBRARY[type];
@@ -331,6 +339,7 @@ export function libraryBoulder(
     ...(shape.board ? { board: true as const } : {}),
     ...(shape.highball ? { highball: true as const } : {}),
     ...(shape.hiddenUntil ? { hiddenUntil: shape.hiddenUntil } : {}),
+    ...(shape.dws ? { dws: true as const } : {}),
     id,
     name,
     grade,
@@ -1250,6 +1259,84 @@ const cMyth = {
   hiddenUntil: 'cthreshold',
 };
 
+// ---- Psicobloc Cove: v0.956's deep-water solos, two hours out on the coast ----
+// Its eight lines, names and grades as v0.956 had them, V2 to V9, up a limestone sea cliff.
+// A fall is a splash. V4 to get in, and open in summer only.
+
+const dws = (
+  id: string,
+  name: string,
+  grade: number,
+  type: Style,
+  shape: Omit<Parameters<typeof libraryBoulder>[5], 'dws'>,
+): RouteDef => libraryBoulder(id, name, grade, type, 'cove', { ...shape, dws: true });
+
+const pTide = dws('ptide', 'Tide Pool Traverse', 2, 'endurance', {
+  moves: 12,
+  from: 7.0,
+  to: 9.6,
+  cruxName: 'The wet bit',
+  heightFt: 12,
+  line: 'Sideways along the waterline, a foot above the swell. Everyone’s first go, and first swim.',
+});
+const pPlunge = dws('pplunge', 'The Plunge', 3, 'dyno', {
+  moves: 7,
+  from: 4.2,
+  to: 5.6,
+  cruxName: 'The jump',
+  heightFt: 22,
+  line: 'Climb up, jump for the jug, and if you miss, well, that’s the name.',
+});
+const pSlab = dws('pslab', 'Saltwater Slab', 4, 'technical', {
+  moves: 9,
+  from: 5.0,
+  to: 7.0,
+  cruxName: 'The salty smear',
+  heightFt: 25,
+  line: 'A slab above the sea, and salt on every foothold.',
+});
+const pBarnacle = dws('pbarnacle', 'Barnacle Crimps', 5, 'crimp', {
+  moves: 9,
+  from: 4.4,
+  to: 6.6,
+  cruxName: 'The barnacles',
+  heightFt: 28,
+  line: 'The crimps are fine. The barnacles on them are sharp.',
+});
+const pLeap = dws('pleap', 'Leap of Faith', 6, 'dyno', {
+  moves: 8,
+  from: 5.0,
+  to: 6.4,
+  cruxName: 'The leap',
+  heightFt: 32,
+  line: 'Thirty feet up, a leap across a gap you’d walk round on land. The guidebook says V6.',
+  trueGrade: 7,
+});
+const pTide2 = dws('poverhang', 'Overhanging Tide', 7, 'power', {
+  moves: 10,
+  from: 5.6,
+  to: 7.8,
+  cruxName: 'The roof',
+  heightFt: 30,
+  line: 'A roof over the sea. Your feet cut, the swell comes in, and you hang on anyway.',
+});
+const pArete = dws('parete', 'Psicobloc Arête', 8, 'technical', {
+  moves: 11,
+  from: 6.8,
+  to: 9.0,
+  cruxName: 'The arête',
+  heightFt: 38,
+  line: 'The cove’s tall arête. The top is high enough that you think about the landing, even in water.',
+});
+const pDeep = dws('pdeep', 'The Deep End', 9, 'power', {
+  moves: 12,
+  from: 8.2,
+  to: 10.4,
+  cruxName: 'The last bulge',
+  heightFt: 45,
+  line: 'The tallest thing in the cove. The hard part is the top, and the drop is a long one.',
+});
+
 export const ROUTES: Record<string, RouteDef> = {
   warm: warmBoulder,
   dyno,
@@ -1317,6 +1404,14 @@ export const ROUTES: Record<string, RouteDef> = {
   clifeline: cLifeline,
   cthreshold: cThreshold,
   cmyth: cMyth,
+  ptide: pTide,
+  pplunge: pPlunge,
+  pslab: pSlab,
+  pbarnacle: pBarnacle,
+  pleap: pLeap,
+  poverhang: pTide2,
+  parete: pArete,
+  pdeep: pDeep,
 };
 
 // Said when you come off between cruxes with nothing left in your arms.

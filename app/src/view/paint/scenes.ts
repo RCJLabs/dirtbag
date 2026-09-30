@@ -168,6 +168,36 @@ const DESERT: Palette = {
   talus: '#CDB58F',
 };
 
+// Psicobloc Cove: a summer coast. Bright sky, a blue-green sea, pale limestone streaked
+// orange and grey, and scrub on the headland.
+const COAST: Palette = {
+  sky: [
+    [0, '#6FB0DA'],
+    [0.6, '#CFE6EE'],
+    [1, '#F2EBD8'],
+  ],
+  orb: '#FFF6DA',
+  orbX: 300,
+  orbY: 64,
+  far2: '#A9C8D6',
+  far: '#8FB2C2',
+  mid: '#9DAA78',
+  midTree: '#5E7048',
+  trees: '#4E6040',
+  ground: '#E2D2AE',
+  ground2: '#D4C29C',
+  track: '#CDBB92',
+  van: '#E6DCC4',
+  trim: '#2F6F73',
+  glass: '#6F8C98',
+  wall: '#D8CFBE',
+  wallShade: '#B7AD9C',
+  wallDark: '#6E665C',
+  talus: '#C9BFAA',
+};
+// The sea under the cove's shelf.
+const SEA = { deep: '#2F7C95', shallow: '#4FA3B4', foam: 'rgba(255,255,255,.7)' };
+
 // The Crucible: overcast and freezing. A flat grey sky, frost on the ground, and black
 // gneiss banded with pale quartz.
 const FRIGID: Palette = {
@@ -589,7 +619,7 @@ const CRAG_VAN = { x: 34, w: 200, h: 82 };
 
 // How a crag's rock is painted: Roadside's banded sandstone, the Gorge's granite, or
 // Moonstone's quartzite.
-type Rock = 'sandstone' | 'granite' | 'quartzite' | 'redrock' | 'gneiss';
+type Rock = 'sandstone' | 'granite' | 'quartzite' | 'redrock' | 'gneiss' | 'limestone';
 
 // The wall's outline: a ragged left edge from its foot, and either the scene's right edge
 // or, where the wall ends, a top that steps down into the talus.
@@ -906,6 +936,37 @@ function gneiss(g: G, P: Palette, c: CragSpec, r: () => number): void {
   }
 }
 
+// The cove's limestone: pale and overhanging, with tufas hanging down it, orange and grey
+// streaks, and pockets.
+function limestone(g: G, P: Palette, c: CragSpec, r: () => number): void {
+  const [x0, x1] = c.wall;
+  const right = Math.min(x1, c.width) + 20;
+  for (let i = 0; i < 22; i++) {
+    const x = x0 + 30 + r() * (right - x0 - 40);
+    const len = 160 + r() * 340;
+    const orange = r() < 0.5;
+    g.fillStyle = lin(g, 0, -10, 0, len, [
+      [0, orange ? 'rgba(206,120,60,.32)' : 'rgba(60,64,70,.28)'],
+      [1, 'rgba(0,0,0,0)'],
+    ]);
+    g.fillRect(x, -10, 6 + r() * 20, len);
+  }
+  // Tufas: long drips of rock, lit on one side.
+  for (let i = 0; i < 9; i++) {
+    const x = x0 + 60 + r() * (right - x0 - 100);
+    const top = r() * 120;
+    const len = 180 + r() * 220;
+    fill(g, (gg) => rr(gg, x, top, 10 + r() * 8, len, 6), P.wallShade!);
+    fill(g, (gg) => rr(gg, x + 2, top, 4, len - 8, 2), 'rgba(255,255,255,.3)');
+  }
+  g.fillStyle = 'rgba(60,54,48,.45)';
+  for (let i = 0; i < 24; i++) {
+    g.beginPath();
+    g.ellipse(x0 + 40 + r() * (right - x0 - 60), 40 + r() * 420, 3 + r() * 6, 2 + r() * 4, 0, 0, 6.2832);
+    g.fill();
+  }
+}
+
 // Behind-the-boulders trees: junipers at Roadside and Moonstone, pines in the Gorge.
 const TREES: Record<string, [number, number][]> = {
   crag: [
@@ -918,6 +979,10 @@ const TREES: Record<string, [number, number][]> = {
     [18, 210],
     [96, 170],
     [250, 150],
+  ],
+  cove: [
+    [20, 1],
+    [250, 0.8],
   ],
   crucible: [
     [20, 120],
@@ -1014,6 +1079,7 @@ function paintCragGround(P: Palette, id: string, kind: Rock): HTMLCanvasElement 
   else if (kind === 'quartzite') quartzite(g, P, spec, r);
   else if (kind === 'redrock') redrock(g, P, spec, r);
   else if (kind === 'gneiss') gneiss(g, P, spec, r);
+  else if (kind === 'limestone') limestone(g, P, spec, r);
   else sandstone(g, P, spec, r);
   g.fillStyle = lin(g, 0, GND - 60, 0, GND, [
     [0, 'rgba(40,36,34,0)'],
@@ -1031,7 +1097,7 @@ function paintCragGround(P: Palette, id: string, kind: Rock): HTMLCanvasElement 
     trace(g, pts, false);
     g.stroke();
     g.fillStyle = '#2A2A30';
-    if (ROUTES[rt.route]?.disc !== 'trad')
+    if (ROUTES[rt.route]?.disc === 'sport')
       for (let i = 2; i < pts.length; i += 3) {
         const [x, y] = pts[i]!;
         g.beginPath();
@@ -1044,6 +1110,24 @@ function paintCragGround(P: Palette, id: string, kind: Rock): HTMLCanvasElement 
   g.fillStyle = P.track;
   g.fillRect(0, GND + 6, w, 22);
   for (const [x, tw, th] of TALUS[id] ?? []) fill(g, (gg) => rock(gg, x, GND - th * 0.2, tw, th), P.talus!);
+  // The cove: a rock shelf along the foot of the cliff, and the sea under it.
+  if (LOOK[id]?.sea) {
+    const x0 = spec.wall[0] - 80;
+    g.fillStyle = lin(g, 0, GND + 4, 0, H, [
+      [0, SEA.shallow],
+      [1, SEA.deep],
+    ]);
+    g.fillRect(x0, GND + 4, w - x0 + 10, H - GND);
+    g.strokeStyle = SEA.foam;
+    g.lineWidth = 1.6;
+    for (let y = GND + 18; y < H; y += 22) {
+      g.beginPath();
+      for (let x = x0; x <= w + 10; x += 14) g.lineTo(x, y + Math.sin(x * 0.05 + y) * 3);
+      g.stroke();
+    }
+    fill(g, (gg) => rr(gg, x0, GND - 8, w - x0 + 10, 14, 4), P.wallShade!);
+    fill(g, (gg) => gg.rect(x0, GND - 8, w - x0 + 10, 3), 'rgba(255,255,255,.35)');
+  }
   for (const b of spec.boulders) paintBoulder(g, b, kind);
   const cv = CRAG_VAN;
   drawVan(g, cv.x, GND - cv.h - cv.h * 0.19, cv.w, cv.h, { body: P.van, trim: P.trim, glass: P.glass });
@@ -1061,6 +1145,7 @@ const BOULDER_ROCK: Record<Rock, [string, string]> = {
   quartzite: ['#EDE3D3', '#C4B19E'],
   redrock: ['#C8683E', '#9C4A30'],
   gneiss: ['#5A5C62', '#3A3C42'],
+  limestone: ['#D8CFBE', '#B7AD9C'],
 };
 
 // A boulder on the talus, side on: an angular block with a lit face and a shaded side,
@@ -1176,13 +1261,14 @@ const cache = new Map<string, SceneArt>();
 export const SEEN = Math.max(600, W_MAX / Z);
 
 // The crags away from the valley: their own light, their own rock.
-const LOOK: Record<string, { P: Palette; seed: number; rock: Rock }> = {
+const LOOK: Record<string, { P: Palette; seed: number; rock: Rock; sea?: true }> = {
   gorge: { P: GORGE, seed: 17, rock: 'granite' },
   moon: { P: DESERT, seed: 23, rock: 'quartzite' },
   mesa: { P: MESA, seed: 29, rock: 'redrock' },
   stone: { P: VALLEY, seed: 31, rock: 'granite' },
   wind: { P: ALPINE, seed: 37, rock: 'granite' },
   crucible: { P: FRIGID, seed: 41, rock: 'gneiss' },
+  cove: { P: COAST, seed: 43, rock: 'limestone', sea: true },
 };
 
 // The painted layers for a scene at a time of day. Two are kept: the one you're in and the

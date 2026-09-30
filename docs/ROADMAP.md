@@ -1465,6 +1465,14 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Its picture:** black gneiss folded into pale bands under a flat grey sky, frost on the ground; a close-up face with the Lifeline's seam; a boulder look.
 - **Criterion 3's first half** (lines at every grade from V0 to V18) now holds. The second half, bots reaching V10+ without running out of things to try, doesn't yet: the bots don't pay for trips, and in 56 days they reach V5.
 
+**Status (30 Sep 2026): 21.4, fifth crag built: Psicobloc Cove, and deep-water solo.**
+- **The crag,** through "Adding a place": v0.956's eight deep-water lines, names and grades from its bundle: Tide Pool Traverse V2, The Plunge V3, Saltwater Slab V4, Barnacle Crimps V5, Leap of Faith V6 (really V7), Overhanging Tide V7, Psicobloc Arête V8, The Deep End V9, from 12 to 45 ft.
+- **Deep-water solo** (a new rule, v0.956's dws): a boulder problem up a sea cliff. A fall drops you into the sea and you swim back to the shelf: no pads, no landing roll, and no strain roll either, as in v0.956. The lines are drawn up the cliff like a wall's, not as boulders, with no bolts.
+- **Access** as v0.956 had it: V4, no fee, two hours from the Lot out past Old Town ($14 of gas from the Diner), weather of its own, and open in summer only: a place can now be closed for several seasons, not just one. A Regular will come out with you.
+- **Its picture:** a pale limestone sea cliff with tufas and orange streaks, a rock shelf along its foot and the sea under it; a close-up face with each line as tall as it is, the traverse along the waterline; a pin on the coast past Old Town.
+- **The bots** go there once they climb V4, after Roadside and the Gorge, when it's open. The 56-day harness doesn't reach summer, so its numbers don't change.
+- **Not quite right yet:** the scene chalks every line to the top of the cliff, even the 12 ft traverse (the close-up is right). The sea sounds like the Gorge's creek: ambience has no surf yet.
+
 ---
 
 ### Phase 22 — The life: the van, the body, food, the hustle, and the games
@@ -1825,3 +1833,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 21.4: The Big Stone. v0.956's five single pitches (V6 to 5.14a, one trad, one bolted), V8 and a $600 trip, four hours out, shaded; a granite big-wall scene, face and boulder look; Ride-or-Die to bring a partner.
 - 2026-09-29 — Phase 21.4: Wind River Walls. v0.956's nine lines (V9 to an open V15; three bolted to 5.14c, one trad), V9, an $800 trip and a $35 permit, four hours out past the Gorge, shaded, shut in winter; an alpine scene, face and boulder look.
 - 2026-09-29 — Phase 21.4: The Crucible. v0.956's lines V13 to its two V18 myths, and The Anvil (V16) so no grade is missing; myths that can't be read until the line under them is sent; V11, four hours east over the pass, shaded; a gneiss scene, face and boulder look.
+- 2026-09-30 — Phase 21.4: Psicobloc Cove. v0.956's eight deep-water solos, V2 to V9; a fall is a splash with no landing or strain roll; V4, two hours out on the coast, open in summer only; a sea-cliff scene, face and shelf; the bots go there from V4.

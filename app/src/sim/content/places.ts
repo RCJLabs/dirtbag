@@ -22,8 +22,9 @@ export interface PlaceDef {
   // card says until then.
   minGrade?: number;
   locked?: string;
-  // A season it's closed, and why (v0.956's closedSeason).
-  closed?: { season: Season; why: string };
+  // A season it's closed, and why (v0.956's closedSeason); or several, for a place that's
+  // only open the rest of the year (v0.956's openSeason).
+  closed?: { season: Season | Season[]; why: string };
   // Shaded rock stays cool: no afternoon grease, and heat doesn't hurt it.
   shaded?: true;
   // Desert rock: sunbaked, every window a little tighter (CLIMB.desertFactor).
@@ -261,6 +262,24 @@ export const PLACES: Record<string, PlaceDef> = {
     locked: 'Nothing here is under V13. Come back when you’re climbing V11, and even then.',
     shaded: true,
     ownSky: true,
+  },
+  // v0.956's "deep-water solo over the sea, summer only, and a fall is just a splash": V4,
+  // two hours out on the coast past Old Town, no fee, and shut the rest of the year.
+  cove: {
+    name: 'Psicobloc Cove',
+    crag: true,
+    scene: 'cove',
+    ambience: { wind: 0.4, creek: 0.7, birds: 0.2 },
+    away: 'Deep-water solo on a limestone sea cliff, two hours out. A fall is just a splash.',
+    here: 'Salt on your hands, the swell under you, and no pads anywhere.',
+    acts: [],
+    minGrade: 4,
+    invite: 3,
+    locked: 'The cliff starts at V2 but the swim doesn’t. Come back when you’re climbing V4.',
+    closed: { season: ['fall', 'winter', 'spring'], why: 'Cold, rough seas till summer' },
+    ownSky: true,
+    // The sun comes up the coast from the south end: the tall lines out at the point first.
+    sun: ['pdeep', 'parete', 'poverhang', 'pleap', 'pbarnacle', 'pslab', 'pplunge', 'ptide'],
   },
   gym: {
     name: 'Send City',
@@ -549,6 +568,9 @@ export const ROADS: RoadDef[] = [
   { a: 'wind', b: 'gorge', min: 120, cash: 14 },
   // The Crucible: v0.956's four hours and 45% of a tank from the Lot, east over the pass.
   { a: 'crucible', b: 'lot', min: 240, cash: 26 },
+  // Psicobloc Cove: v0.956's two hours and 26% of a tank from the Lot, west past Old Town
+  // to the coast.
+  { a: 'cove', b: 'diner', min: 110, cash: 14 },
 ];
 
 // A drive: its time and gas, and the places it passes on the way.

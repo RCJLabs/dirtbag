@@ -127,6 +127,7 @@ export {
   librarySport,
   libraryTrad,
   roped,
+  onWall,
 } from './content/routes';
 export type { RouteDef, CruxDef, BetaDef, Verb, Disc } from './content/routes';
 export {

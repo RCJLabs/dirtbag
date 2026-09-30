@@ -107,6 +107,18 @@ export const SIDE_ROADS: Record<string, { pts: Pt[]; dirt?: true }> = {
     ],
     dirt: true,
   },
+  // West to Psicobloc Cove: the Old Town spur, and on down to the coast.
+  cove: {
+    pts: [
+      [207, 470],
+      [176, 468],
+      [146, 467],
+      [118, 466],
+      [84, 478],
+      [52, 494],
+      [24, 506],
+    ],
+  },
   // East to The Crucible: off the highway above Midtown, up over the pass.
   crucible: {
     pts: [

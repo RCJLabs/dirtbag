@@ -256,6 +256,38 @@ describe('the grades (Phase 21.4)', () => {
   });
 });
 
+describe('Psicobloc Cove (Phase 21.4)', () => {
+  it('opens at V4, two hours out past Old Town, in summer only', () => {
+    expect(act(at(3), { t: 'travel', to: 'cove' }).events[0]).toMatchObject({ k: 'refused' });
+    expect(road('lot', 'cove')!.min).toBe(120);
+    const summer = days(1, 400).find(
+      (d) => seasonOf(d) === 'summer' && conditionsAt('crags', d, 'cove').open,
+    )!;
+    const fall = days(1, 400).find((d) => seasonOf(d) === 'fall' && conditionsAt('crags', d, 'cove').open)!;
+    expect(goBlocked(at(5, { at: 'cove', day: summer, min: 10 * 60 }), ROUTES.pslab!)).toBeNull();
+    expect(goBlocked(at(5, { at: 'cove', day: fall, min: 10 * 60 }), ROUTES.pslab!)).toBe(
+      'Cold, rough seas till summer',
+    );
+  });
+
+  it('keeps v0.956’s eight deep-water lines, V2 to V9, and a fall off one never hurts', () => {
+    const here = Object.values(ROUTES).filter((r) => r.place === 'cove');
+    expect(here).toHaveLength(8);
+    expect(here.every((r) => r.dws && r.disc === 'boulder' && !r.highball)).toBe(true);
+    // Spiked load, cold, off the top of the Deep End: the sea takes it, every day.
+    const hurt = days(1, 60).filter((day) => {
+      const s = at(9, { at: 'cove', day, today: [], load: { acute: 60, chronic: 20, today: 40 } });
+      const r = act(s, {
+        t: 'done',
+        route: 'pdeep',
+        result: { sent: false, hi: 11, fellAt: 'A', tried: ['A1'], skin: 0 },
+      });
+      return r.state.injury;
+    });
+    expect(hurt).toEqual([]);
+  });
+});
+
 describe('highballs [proposed]', () => {
   it('can land you badly off a fall: more from higher, less with the haul’s pads and a spotter', () => {
     const tall = ROUTES.marete!;

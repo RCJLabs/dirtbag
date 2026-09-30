@@ -3,7 +3,7 @@
 // close-up walls of their own (boulder.ts, gym.ts). Whatever the wall, a route is mapped
 // from moves (the sim's unit) to points along its line here, so the rules never see a pixel.
 
-import { roped, ROUTES, type RouteDef } from '../../sim';
+import { onWall, ROUTES, type RouteDef } from '../../sim';
 import { arcTable, atLen, lin, mk, poly, spline, trace, type G, type Pt } from '../kit/geom';
 import { mulberry32 } from '../kit/noise';
 import { H, W } from '../layout';
@@ -332,6 +332,61 @@ const TOPO_PTS: Record<string, Pt[]> = {
     [300, 190],
     [308, 104],
   ],
+  // Psicobloc Cove, left to right, each as tall as it is: the traverse along the waterline,
+  // then higher and higher to the Deep End out at the point.
+  ptide: [
+    [14, 528],
+    [30, 520],
+    [46, 526],
+    [62, 516],
+    [78, 522],
+  ],
+  pplunge: [
+    [70, 532],
+    [66, 480],
+    [74, 420],
+    [70, 366],
+  ],
+  pslab: [
+    [112, 532],
+    [108, 470],
+    [116, 404],
+    [110, 342],
+  ],
+  pbarnacle: [
+    [152, 532],
+    [158, 470],
+    [150, 400],
+    [158, 318],
+  ],
+  pleap: [
+    [192, 532],
+    [188, 460],
+    [196, 390],
+    [186, 340],
+    [200, 286],
+  ],
+  poverhang: [
+    [234, 532],
+    [240, 470],
+    [228, 420],
+    [242, 360],
+    [236, 302],
+  ],
+  parete: [
+    [276, 532],
+    [272, 460],
+    [280, 380],
+    [274, 300],
+    [280, 238],
+  ],
+  pdeep: [
+    [318, 532],
+    [324, 450],
+    [314, 360],
+    [324, 270],
+    [318, 182],
+  ],
   testpiece: [
     [290, 538],
     [298, 470],
@@ -393,7 +448,7 @@ const topos = new Map<string, Topo>();
 // A route's line on its wall, without painting the wall: all that positions on it (the
 // climber, the chalk, the sun's edge) need.
 export function topoFor(r: RouteDef): Topo {
-  if (roped(r)) return TOPO[r.id]!;
+  if (onWall(r)) return TOPO[r.id]!;
   const key = closeKey(r);
   let t = topos.get(key);
   if (!t) {
@@ -411,7 +466,7 @@ export function topoFor(r: RouteDef): Topo {
 
 // The wall a route is on, and its line there.
 export function wallOf(r: RouteDef): Wall {
-  if (roped(r)) return { art: wallArt(r.place, r.id), topo: TOPO[r.id]!, big: false };
+  if (onWall(r)) return { art: wallArt(r.place, r.id), topo: TOPO[r.id]!, big: false };
   const key = closeKey(r);
   let w = close.get(key);
   if (!w) {
@@ -586,6 +641,80 @@ const M_WALL: Pt[] = [
   [320, 440],
   [338, BASE_Y],
 ];
+
+// Psicobloc Cove: a limestone sea cliff, tufas hanging down it, orange and grey streaks,
+// scrub along its top, and the sea at its foot.
+const P_WALL: Pt[] = [
+  [-4, BASE_Y],
+  [-4, 170],
+  [60, 160],
+  [140, 168],
+  [220, 150],
+  [300, 160],
+  [364, 146],
+  [364, BASE_Y],
+];
+
+function paintCove(g: G): void {
+  const r = mulberry32(201);
+  g.fillStyle = lin(g, 0, 0, 0, 170, [
+    [0, '#6FB0DA'],
+    [1, '#F2EBD8'],
+  ]);
+  g.fillRect(0, 0, W, H);
+  g.save();
+  g.beginPath();
+  poly(g, P_WALL, true);
+  g.clip();
+  g.fillStyle = '#D8CFBE';
+  g.fillRect(0, 0, W, H);
+  for (let i = 0; i < 18; i++) {
+    const x = r() * W;
+    const len = 120 + r() * 300;
+    const orange = r() < 0.5;
+    g.fillStyle = lin(g, 0, 150, 0, 150 + len, [
+      [0, orange ? 'rgba(206,120,60,.35)' : 'rgba(60,64,70,.3)'],
+      [1, 'rgba(0,0,0,0)'],
+    ]);
+    g.fillRect(x, 150, 5 + r() * 14, len);
+  }
+  g.fillStyle = '#B7AD9C';
+  for (let i = 0; i < 7; i++) {
+    const x = 20 + r() * 320;
+    const top = 170 + r() * 60;
+    const len = 120 + r() * 160;
+    g.fillRect(x, top, 7 + r() * 6, len);
+  }
+  g.fillStyle = 'rgba(60,54,48,.45)';
+  for (let i = 0; i < 20; i++) {
+    g.beginPath();
+    g.ellipse(r() * W, 200 + r() * 320, 2 + r() * 4, 1.5 + r() * 3, 0, 0, 6.2832);
+    g.fill();
+  }
+  // Overhanging Tide's roof.
+  g.fillStyle = 'rgba(70,62,54,.55)';
+  g.fillRect(216, 412, 44, 10);
+  g.restore();
+  g.fillStyle = '#5E7048';
+  for (let x = -4; x < W + 8; x += 18 + r() * 14) {
+    g.beginPath();
+    g.ellipse(x, 158 + r() * 8, 10 + r() * 8, 6 + r() * 3, 0, 0, 6.2832);
+    g.fill();
+  }
+  // The sea.
+  g.fillStyle = lin(g, 0, BASE_Y, 0, H, [
+    [0, '#4FA3B4'],
+    [1, '#2F7C95'],
+  ]);
+  g.fillRect(-4, BASE_Y - 4, W + 8, H - BASE_Y + 8);
+  g.strokeStyle = 'rgba(255,255,255,.7)';
+  g.lineWidth = 1.4;
+  for (let y = BASE_Y + 6; y < H; y += 20) {
+    g.beginPath();
+    for (let x = -4; x <= W + 8; x += 12) g.lineTo(x, y + Math.sin(x * 0.06 + y) * 3);
+    g.stroke();
+  }
+}
 
 // The Crucible: a black gneiss face under a grey sky, folded into pale bands, frost in
 // its cracks, and a thin seam up the Lifeline.
@@ -1233,7 +1362,7 @@ function paintLines(g: G, place: string, selected: string): void {
   for (const [id, t] of Object.entries(TOPO)) {
     // A myth nobody has read isn't drawn: there's nothing on the rock to see.
     if (id === selected || ROUTES[id]?.place !== place || ROUTES[id]?.hiddenUntil) continue;
-    const trad = ROUTES[id]?.disc === 'trad';
+    const bolted = ROUTES[id]?.disc === 'sport';
     g.strokeStyle = '#F7EBD0';
     g.lineWidth = 1.5;
     g.setLineDash([4, 3]);
@@ -1241,7 +1370,7 @@ function paintLines(g: G, place: string, selected: string): void {
     trace(g, t.d, false);
     g.stroke();
     g.setLineDash([]);
-    if (!trad) boltDots(g, t);
+    if (bolted) boltDots(g, t);
   }
   // A myth's own line waits for the render, which draws it once you can read it.
   if (ROUTES[selected]?.hiddenUntil) return;
@@ -1278,6 +1407,7 @@ function paintWall(g: G, place: string, selected: string): void {
   else if (place === 'stone') paintStone(g);
   else if (place === 'wind') paintWind(g);
   else if (place === 'crucible') paintCrucible(g);
+  else if (place === 'cove') paintCove(g);
   else paintRoadside(g);
   paintLines(g, place, selected);
 }
@@ -1286,7 +1416,7 @@ function paintWall(g: G, place: string, selected: string): void {
 // the boulder itself, so weather drawn on the rock stays off the sky.
 export function rockPath(g: G, r: RouteDef): void {
   g.beginPath();
-  if (roped(r)) poly(g, FACE[r.place] ?? WALLPOLY, true);
+  if (onWall(r)) poly(g, FACE[r.place] ?? WALLPOLY, true);
   else poly(g, boulderOutline(r), true);
 }
 
@@ -1298,12 +1428,13 @@ const FACE: Record<string, Pt[]> = {
   stone: B_WALL,
   wind: R_WALL,
   crucible: C_WALL,
+  cove: P_WALL,
 };
 
 // A route's wall, painted into any context in wall units: what the wall view caches at 2x,
 // for the send card to paint at its own size.
 export function paintRouteArt(g: G, r: RouteDef): void {
-  if (roped(r)) paintWall(g, r.place, r.id);
+  if (onWall(r)) paintWall(g, r.place, r.id);
   else if (r.board) paintBoardWall(g, boardPattern(r.id), r.heightFt);
   else if (r.place === 'gym') paintGymWall(g, slotOf(r.id), r.heightFt);
   else paintBoulderArt(g, r);

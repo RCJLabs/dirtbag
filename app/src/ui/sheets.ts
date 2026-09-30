@@ -363,8 +363,9 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       const crux = r.cruxes.find((c) => c.id === id.fall.crux);
       const where = crux ? crux.name.replace(/^The /, 'the ') : 'the wall';
       const hi = s.routes[id.route]?.hi ?? 0;
-      const how =
-        r.disc === 'boulder'
+      const how = r.dws
+        ? `${aFoot(id.fall.ft)} drop into the sea from move ${id.fall.move} of ${r.moves}. You swim back to the shelf.`
+        : r.disc === 'boulder'
           ? `${aFoot(id.fall.ft)} drop to the pads from move ${id.fall.move} of ${r.moves}.`
           : id.fall.deck
             ? `${aFoot(id.fall.ft)} fall from move ${id.fall.move} of ${r.moves}, and nothing held it off the ground.`
@@ -410,9 +411,11 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
                 ? 'Lower off and walk out'
                 : r.disc === 'trad'
                   ? 'Clean your gear and walk out'
-                  : r.place === 'gym'
-                    ? 'Drop onto the mats'
-                    : 'Walk down the back',
+                  : r.dws
+                    ? 'Jump off, and swim back'
+                    : r.place === 'gym'
+                      ? 'Drop onto the mats'
+                      : 'Walk down the back',
             run: () => game.walkOff(),
           },
           ...(id.first ? [cardRow(game, id)] : []),
