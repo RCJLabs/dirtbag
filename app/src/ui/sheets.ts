@@ -61,6 +61,15 @@ import {
   nextRank,
   rankName,
   indoor,
+  EXPED,
+  EXPEDITIONS,
+  gradeName,
+  has,
+  pitchOdds,
+  stormOn,
+  summitOdds,
+  WALLS,
+  wallPay,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import type { Game, SheetId } from '../game/game';
@@ -233,6 +242,11 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           actRow(game, s, 'lot.cook'),
           ...(isNight(s.min) ? [] : [actRow(game, s, 'lot.rest')]),
           trainRow(game, s),
+          {
+            label: 'Expeditions',
+            note: 'Big walls a long way from here, bought in cash and climbed a day at a time.',
+            run: () => game.openSheet({ k: 'expeds' }),
+          },
           actRow(game, s, 'lot.sleep'),
           ...(plan.length
             ? [{ label: 'Run the plan', note: `${planLine(plan)}.`, run: () => game.runPlan(plan) }]
@@ -410,6 +424,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     case 'sent': {
       const r = routeOfId(s, id.route)!;
       const gained = gainsLine(id.gains);
+      if (r.wall) return pitchSent(game, s, id, r, gained);
       return {
         title: SEND_NAME[id.style],
         sub: `${lineName(s, r)}, ${lineGrade(s, r)}, on go ${id.go}.${r.disc === 'sport' ? " Rent's still due." : r.disc === 'trad' ? ' On gear you placed.' : ''}`,
@@ -574,7 +589,216 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       };
     }
 
+    case 'wall':
+      return wallSheet(game, s, id.id);
+
+    case 'expeds':
+      return {
+        title: 'Expeditions',
+        sub: 'Paid in cash, up front. Out there, every day is one call: lead, dig deep, rest, or go home.',
+        close: true,
+        rows: [
+          ...Object.entries(EXPEDITIONS).map(([eid, e]) => ({
+            label: e.name,
+            cost: costLabel({ cash: -e.cost }),
+            note: `${e.objective}, ${e.region}. ${oddsLine(s, eid)}`,
+            run: () => game.openSheet({ k: 'exped', id: eid }),
+          })),
+          { label: 'Back', run: () => game.openSheet({ k: 'van' }) },
+        ],
+      };
+
+    case 'exped':
+      return expedSheet(game, s, id.id);
+
     default:
       return null;
   }
+}
+
+const pct = (p: number): string => `${Math.round(p * 100)}%`;
+
+// The summit's odds before you pay: leading every fair day you've the energy for, and
+// digging deep every one.
+function oddsLine(s: GameState, id: string): string {
+  const e = EXPEDITIONS[id]!;
+  const k = s.climber.skills;
+  return `${e.pitches} pitches in ${e.days} days, storms ${pct(e.stormOdds)} of them. Summit odds for you: ${pct(summitOdds(k, e, false))} leading, ${pct(summitOdds(k, e, true))} digging deep.`;
+}
+
+// A wall from its foot, or from wherever you are on it.
+function wallSheet(game: Game, s: GameState, id: string): ListSpec {
+  const w = WALLS[id]!;
+  const on = s.wall?.id === id ? s.wall : null;
+  const topped = !!s.routes[w.pitches[w.pitches.length - 1]!]?.sent;
+  const notes = w.pitches.map((pid, i) => {
+    const r = ROUTES[pid]!;
+    const mark = on && i < on.next ? ' ✓' : on && i === on.next ? ' ← next' : '';
+    return `${i + 1}. ${r.name}, ${gradeLabel(r)}${mark}`;
+  });
+  const sub = `${PLACES[w.place]!.name}. ${w.pitches.length} pitches, ${gradeName('sport', w.grade)} at the hardest. ${w.line}`;
+  if (!on) {
+    const rope = has(s, 'rope');
+    const other = s.wall ? WALLS[s.wall.id]!.name : null;
+    return {
+      title: w.name,
+      sub,
+      notes: [
+        ...notes,
+        topped
+          ? 'You’ve topped it. Again is for you.'
+          : `The first summit pays ${money(wallPay(w))} for the photos.`,
+      ],
+      close: true,
+      rows: [
+        {
+          label: 'Rack up and start',
+          note: other
+            ? `You're on ${other}. Rap off it first.`
+            : rope
+              ? 'A pitch at a time, in order. Sleep on it if the day runs out.'
+              : 'Walls need a rope of your own. The gear shop sells them.',
+          off: !rope || !!other,
+          run: () => {
+            if (!game.wall(id, 'start')) game.lookUp(w.pitches[0]!);
+          },
+        },
+      ],
+    };
+  }
+  const next = ROUTES[w.pitches[on.next]!]!;
+  const night = isNight(s.min);
+  return {
+    title: w.name,
+    sub: on.next ? `On the wall, ${on.next} of ${w.pitches.length} pitches done.` : sub,
+    notes,
+    close: true,
+    rows: [
+      {
+        label: `Climb pitch ${on.next + 1}: ${next.name}`,
+        note: goBlocked(s, next) ?? undefined,
+        run: () => game.lookUp(next.id),
+      },
+      {
+        label: 'Bivy on the ledge',
+        note: !on.next
+          ? 'You’re still on the ground. The van’s right there.'
+          : night
+            ? 'A thin night tied in: less sleep than the van, nothing to pay, and you wake where you stopped.'
+            : 'Once it’s dark. Climb while it’s light.',
+        off: !on.next || !night,
+        run: () => void game.wall(id, 'bivy'),
+      },
+      {
+        label: 'Rap off',
+        note: 'Down to the van. Next time you start from the bottom.',
+        run: () => {
+          if (!game.wall(id, 'retreat')) game.closeSheet();
+        },
+      },
+    ],
+  };
+}
+
+// A pitch sent: on to the next, or off the top.
+function pitchSent(
+  game: Game,
+  s: GameState,
+  id: SheetId & { k: 'sent' },
+  r: RouteDef,
+  gained: string,
+): ListSpec {
+  const w = WALLS[r.wall!]!;
+  const on = s.wall?.id === r.wall ? s.wall : null;
+  const next = on ? ROUTES[w.pitches[on.next]!]! : null;
+  return {
+    title: SEND_NAME[id.style],
+    sub: `${lineName(s, r)}, ${lineGrade(s, r)}, on go ${id.go}. ${
+      next ? `Pitch ${on!.next} of ${w.pitches.length}.` : `The top of ${w.name}.`
+    }`,
+    close: false,
+    notes: [...id.notes, ...(gained ? [gained] : [])],
+    rows: next
+      ? [
+          { label: `On to pitch ${on!.next + 1}: ${next.name}`, run: () => game.lookUp(next.id) },
+          {
+            label: 'Sit on the belay',
+            note: 'Back to the wall, where you can rap off or, after dark, bivy.',
+            run: () => game.walkOff(),
+          },
+        ]
+      : [{ label: 'Walk off the top', run: () => game.walkOff() }, ...(id.first ? [cardRow(game, id)] : [])],
+  };
+}
+
+// An expedition: what it asks before you go, and each day's call once you're there.
+function expedSheet(game: Game, s: GameState, id: string): ListSpec {
+  const e = EXPEDITIONS[id]!;
+  const k = s.climber.skills;
+  const x = s.expedition?.id === id ? s.expedition : null;
+  if (!x) {
+    const why = s.expedition
+      ? `You're on ${EXPEDITIONS[s.expedition.id]!.name}.`
+      : s.at !== 'lot'
+        ? 'Expeditions leave from the Lot.'
+        : gradeOf(k) < e.gradeReq
+          ? `${e.name} wants V${e.gradeReq}. You climb V${gradeOf(k)}.`
+          : s.cash < e.cost
+            ? `${money(e.cost)} in hand, not on the card. You have ${money(Math.max(0, s.cash))}.`
+            : null;
+    return {
+      title: e.name,
+      sub: `${e.objective}, ${e.region}. ${e.blurb}`,
+      notes: [oddsLine(s, id), `The summit pays ${money(e.pays)}. Anything short of it pays nothing.`],
+      close: true,
+      rows: [
+        {
+          label: 'Go',
+          cost: costLabel({ cash: -e.cost }),
+          note: why ?? 'Food, flights and a porter. The van waits at the Lot.',
+          off: !!why,
+          run: () => void game.exped(id, 'go'),
+        },
+        { label: 'Back', run: () => game.openSheet({ k: 'expeds' }) },
+      ],
+    };
+  }
+  const storm = stormOn(s.seed, id, e, s.day);
+  const from = { day: x.day, pitch: x.pitch, energy: x.energy };
+  const lead = (dig: boolean): Row => {
+    const cost = dig ? EXPED.dig : EXPED.lead;
+    const tired = x.energy < cost;
+    return {
+      label: dig ? 'Dig deep' : 'Lead the next pitch',
+      note: storm
+        ? 'Not in this.'
+        : tired
+          ? 'Not enough left in you. Rest.'
+          : `${pct(pitchOdds(k, e, dig))} to fix pitch ${x.pitch + 1}. Costs ${cost} of your ${x.energy} energy.`,
+      off: storm || tired,
+      run: () => void game.exped(id, dig ? 'dig' : 'lead'),
+    };
+  };
+  return {
+    title: `${e.name}, day ${x.day} of ${e.days}`,
+    sub: `${x.pitch} of ${e.pitches} pitches fixed. ${storm ? 'A storm on the wall today.' : 'Clear today.'}`,
+    notes: [
+      `Left in you on the wall: ${x.energy} of ${EXPED.energy}. Summit odds from here: ${pct(summitOdds(k, e, false, from))} leading, ${pct(summitOdds(k, e, true, from))} digging deep.`,
+    ],
+    close: false,
+    rows: [
+      lead(false),
+      lead(true),
+      {
+        label: 'Rest in camp',
+        note: `${EXPED.rest} energy back${storm ? ', and the storm goes by without you' : ''}.`,
+        run: () => void game.exped(id, 'rest'),
+      },
+      {
+        label: 'Call it off',
+        note: 'Home with what you’ve fixed, which pays nothing. The money’s spent either way.',
+        run: () => void game.exped(id, 'bail'),
+      },
+    ],
+  };
 }

@@ -359,6 +359,9 @@ export const KIT = {
   pad: { price: 180 },
   // A rack: cams, nuts, slings. v0.956's $280. Nobody leads trad without one.
   rack: { price: 280 },
+  // A rope of your own (Phase 21.5), for walls, where the belayer's won't reach: v0.956
+  // sold rope and harness; one price here [proposed].
+  rope: { price: 150 },
   // A hangboard screwed over the van's back doors (Phase 21.3) [proposed price]. v0.956
   // sold a pull-up bar as a van upgrade at $90; a board alone is cheaper.
   hangboard: { price: 60 },
@@ -400,4 +403,35 @@ export const TRAIN = {
   // Taper: three days with no training, every crux 3% wider and 6% on the last day
   // (v0.956's +0.03 and +0.06), then a fortnight before you can taper again.
   taper: { days: 3, windows: 1.03, last: 1.06, cooldown: 14 },
+};
+
+// Multi-pitch walls (Phase 21.5), as v0.956 had them: an hour and some energy a pitch, and
+// the summit pays once, $40 + $12 a grade + $10 a pitch. A night on a ledge is a worse
+// night than the van's.
+export const WALL = {
+  pitch: { min: 60, energy: 8, fed: 4 },
+  pay: { base: 40, perGrade: 12, perPitch: 10 },
+  bivy: { energy: 40, fed: 20 },
+};
+
+// Expeditions (Phase 21.5): v0.956's day loop. Leading a pitch costs energy (more if you dig
+// deep, for better odds); a day in camp gives 48 back (v0.956's), and any night 10. A
+// pitch's odds come from your endurance against the objective's grade: `base` at the grade
+// (v0.956's 0.68 at El Cap for a V9), `perGrade` a grade either side, from `floor` to
+// `ceiling` (v0.956's 0.45 and 0.97), and `digBonus` more if you dig deep. Tuned so El Cap
+// at its grade goes a little over half the time and at its V7 gate hardly ever, as the
+// audit found v0.956's did.
+export const EXPED = {
+  energy: 100,
+  lead: 22,
+  dig: 36,
+  rest: 48,
+  night: 10,
+  base: 0.68,
+  perGrade: 0.1,
+  digBonus: 0.25,
+  floor: 0.45,
+  ceiling: 0.97,
+  // The summit's lesson for the head, as v0.956's +8 head was, scaled to a go's lessons.
+  head: 2,
 };

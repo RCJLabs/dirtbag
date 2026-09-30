@@ -29,6 +29,7 @@ const V3 = readFileSync(new URL('./fixtures/save-v3.json', import.meta.url), 'ut
 const V4 = readFileSync(new URL('./fixtures/save-v4.json', import.meta.url), 'utf8');
 const V5 = readFileSync(new URL('./fixtures/save-v5.json', import.meta.url), 'utf8');
 const V6 = readFileSync(new URL('./fixtures/save-v6.json', import.meta.url), 'utf8');
+const V7 = readFileSync(new URL('./fixtures/save-v7.json', import.meta.url), 'utf8');
 // What R2's migration adds to any older save.
 const R2_BODY = {
   load: { acute: 20, chronic: 20, today: 0 },
@@ -48,6 +49,8 @@ const P21 = { gear: { shoes: 60, chalk: 30 } };
 const P213 = (day: number) => ({ training: { phase: 'base', since: day, taper: null, prehab: 0 } });
 // And the job ladder's: no shifts counted yet.
 const JOBS0 = { jobs: {} };
+// And Phase 21.5's: on no wall, away on nothing.
+const P215 = { wall: null, expedition: null };
 
 describe('saves', () => {
   it('round-trip a played game exactly', () => {
@@ -105,6 +108,7 @@ describe('saves', () => {
       ...P21,
       ...P213(old.day),
       ...JOBS0,
+      ...P215,
     });
     // And it plays on: the new rules accept it.
     const made = act(r.state, { t: 'create', name: 'Sam', start: 'boulderer' });
@@ -124,6 +128,7 @@ describe('saves', () => {
       ...P21,
       ...P213(JSON.parse(V2).state.day),
       ...JOBS0,
+      ...P215,
     });
     expect(act(r.state, { t: 'travel', to: 'lot' }).events.some((e) => e.k === 'refused')).toBe(false);
   });
@@ -139,6 +144,7 @@ describe('saves', () => {
       ...P21,
       ...P213(JSON.parse(V3).state.day),
       ...JOBS0,
+      ...P215,
     });
     expect(act(r.state, { t: 'travel', to: 'road' }).events.some((e) => e.k === 'refused')).toBe(false);
   });
@@ -148,7 +154,13 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(4);
-    expect(r.state).toEqual({ ...JSON.parse(V4).state, ...P21, ...P213(JSON.parse(V4).state.day), ...JOBS0 });
+    expect(r.state).toEqual({
+      ...JSON.parse(V4).state,
+      ...P21,
+      ...P213(JSON.parse(V4).state.day),
+      ...JOBS0,
+      ...P215,
+    });
     expect(act(r.state, { t: 'travel', to: 'lot' }).events.some((e) => e.k === 'refused')).toBe(false);
   });
 
@@ -158,7 +170,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(5);
     const old = JSON.parse(V5).state;
-    expect(r.state).toEqual({ ...old, ...P213(old.day), ...JOBS0 });
+    expect(r.state).toEqual({ ...old, ...P213(old.day), ...JOBS0, ...P215 });
     expect(r.state.gear.rack).toBe(1);
     expect(act(r.state, { t: 'travel', to: 'lot' }).events.some((e) => e.k === 'refused')).toBe(false);
   });
@@ -169,9 +181,18 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(6);
     const old = JSON.parse(V6).state;
-    expect(r.state).toEqual({ ...old, ...JOBS0 });
+    expect(r.state).toEqual({ ...old, ...JOBS0, ...P215 });
     expect(r.state.training.prehab).toBeGreaterThan(0);
     expect(act(r.state, { t: 'travel', to: 'cafe' }).events.some((e) => e.k === 'refused')).toBe(false);
+  });
+
+  it('load a real Phase 21.4 save with shifts: everything kept, on no wall, away on nothing', () => {
+    const r = fromSave(V7);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(7);
+    expect(r.state).toEqual({ ...JSON.parse(V7).state, ...P215 });
+    expect(r.state.jobs.cafe).toBe(2);
   });
 
   // These pretend a longer history: a v1 file that stored `money` where the state now has
@@ -181,7 +202,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(7);
+    expect(SAVE_VERSION).toBe(8);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

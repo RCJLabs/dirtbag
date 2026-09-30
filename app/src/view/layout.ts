@@ -39,7 +39,8 @@ export type Use =
   | { talk: string }
   | { thing: string; wag?: true }
   | { route: string }
-  | { problem: number };
+  | { problem: number }
+  | { wall: string };
 
 export interface Hot {
   x0: number;
@@ -77,6 +78,8 @@ export interface CragSpec {
   hint: string;
   // The middle of its place card's header.
   frame: number;
+  // Its multi-pitch walls (Phase 21.5): where each one starts up the rock.
+  walls?: { x: number; wall: string }[];
 }
 
 export const CRAGS: Record<string, CragSpec> = {
@@ -104,6 +107,7 @@ export const CRAGS: Record<string, CragSpec> = {
     ],
     sign: 272,
     hint: 'Boulders on the talus, ropes on the wall',
+    walls: [{ x: 300, wall: 'prow' }],
     // The belay under The Pump, Sage by the Testpiece and Dex in the boulder field.
     frame: 930,
   },
@@ -237,6 +241,11 @@ export const CRAGS: Record<string, CragSpec> = {
     ],
     sign: 272,
     hint: 'Boulders in the meadow. The wall needs a belayer.',
+    walls: [
+      { x: 640, wall: 'golden' },
+      { x: 1060, wall: 'obsidian' },
+      { x: 1200, wall: 'ascendant' },
+    ],
     // The foot of the wall.
     frame: 820,
   },
@@ -300,6 +309,16 @@ function cragScene(place: string, c: CragSpec): SceneLayout {
       { x0: 34, x1: 234, y0: 440, y1: GND + 8, stand: 196, face: -1, use: { sheet: 'cragVan' } },
       // Boulders first: they stand in front of the wall, so a tap on one is for it.
       ...c.boulders.map((b) => wallHot(b.x, { route: b.route }, b.w / 2, GND - b.h - 16)),
+      // A wall's start, high on the rock, above anything you'd walk up to.
+      ...(c.walls ?? []).map((w) => ({
+        x0: w.x - 34,
+        x1: w.x + 34,
+        y0: 40,
+        y1: GND - 170,
+        stand: w.x - 30,
+        face: 1 as const,
+        use: { wall: w.wall },
+      })),
       ...c.lines.map((r) => wallHot(r.x, { route: r.route })),
     ],
   };

@@ -93,6 +93,8 @@ export interface RouteDef {
   // Deep-water solo: a boulder problem up a sea cliff. A fall is a splash: no pad, no
   // landing, no strain roll (v0.956's dws).
   dws?: true;
+  // A pitch of a multi-pitch wall (WALLS): climbed only in its turn, on the wall.
+  wall?: string;
 }
 
 // The grade a line really climbs at.
@@ -417,6 +419,36 @@ export function libraryTrad(...args: Parameters<typeof librarySport>): RouteDef 
     (at) => !r.cruxes.some((c) => at >= c.from && at <= c.to),
   );
   return { ...r, disc: 'trad', bolts: [], stances };
+}
+
+// One pitch of a multi-pitch wall: a single crux of its style two-thirds of the way up, bolts
+// all the way, and a belay ledge at the top.
+function libraryPitch(
+  wall: string,
+  n: number,
+  name: string,
+  grade: number,
+  type: Style,
+  place: string,
+): RouteDef {
+  const [a, b] = LIBRARY[type];
+  const moves = 16;
+  return {
+    id: `${wall}-${n}`,
+    name,
+    grade,
+    disc: 'sport',
+    type,
+    place,
+    moves,
+    heightFt: 100,
+    line: `Pitch ${n}. A hundred feet to the next ledge.`,
+    cruxes: [{ id: 'A', name, from: 9.2, to: 11.4, win: 'Through it. On to the ledge.', beta: ['A1', 'A2'] }],
+    beta: { A1: a, A2: b },
+    rest: null,
+    bolts: boltsFor(moves),
+    wall,
+  };
 }
 
 // ---- Roadside Crag ----
@@ -1337,6 +1369,89 @@ const pDeep = dws('pdeep', 'The Deep End', 9, 'power', {
   line: 'The tallest thing in the cove. The hard part is the top, and the drop is a long one.',
 });
 
+// ---- Multi-pitch walls (Phase 21.5): v0.956's four, pitch by pitch ----
+// A wall is climbed a pitch at a time, in order, on a rope, and you can sleep on it. The
+// Prow at Roadside is v0.956's; its name went to the Mesa's boulder first, so it's The Long
+// Prow here. The rest are at The Big Stone.
+
+export interface WallDef {
+  name: string;
+  place: string;
+  // The wall's grade on the sport table: its hardest pitch.
+  grade: number;
+  pitches: string[];
+  line: string;
+}
+
+const pitches = (wall: string, place: string, list: [string, number, Style][]): RouteDef[] =>
+  list.map(([name, grade, type], i) => libraryPitch(wall, i + 1, name, grade, type, place));
+
+const PITCHES: RouteDef[] = [
+  ...pitches('prow', 'road', [
+    ['Slab Start', 3, 'technical'],
+    ['The Crimp Ladder', 4, 'crimp'],
+    ['The Roof Crux', 5, 'power'],
+    ['Summit Headwall', 4, 'endurance'],
+  ]),
+  ...pitches('golden', 'stone', [
+    ['Friction Slab', 7, 'technical'],
+    ['The Long Corner', 8, 'endurance'],
+    ['Golden Crimps', 9, 'crimp'],
+    ['The Bulge', 8, 'power'],
+    ['Exit Cracks', 7, 'endurance'],
+  ]),
+  ...pitches('obsidian', 'stone', [
+    ['Black Dihedral', 11, 'crimp'],
+    ['Glass Slab', 12, 'technical'],
+    ['The Obsidian Roof', 13, 'power'],
+    ['The Leap', 12, 'dyno'],
+    ['Pumpfest', 11, 'endurance'],
+    ['Razor Traverse', 12, 'crimp'],
+    ['Tower Headwall', 11, 'endurance'],
+  ]),
+  ...pitches('ascendant', 'stone', [
+    ['The Approach Pitch', 14, 'endurance'],
+    ['Hairline', 15, 'crimp'],
+    ['The Mirror', 16, 'technical'],
+    ['The Great Roof', 16, 'power'],
+    ['The Leap of Faith', 17, 'dyno'],
+    ['The Ascendant Crux', 18, 'crimp'],
+    ['The Headwall', 16, 'endurance'],
+    ['Summit Block', 15, 'power'],
+  ]),
+];
+
+export const WALLS: Record<string, WallDef> = {
+  prow: {
+    name: 'The Long Prow',
+    place: 'road',
+    grade: 5,
+    pitches: PITCHES.filter((r) => r.wall === 'prow').map((r) => r.id),
+    line: 'Four pitches up the prow above Roadside. The roof on the third is the whole story.',
+  },
+  golden: {
+    name: 'Golden Buttress',
+    place: 'stone',
+    grade: 9,
+    pitches: PITCHES.filter((r) => r.wall === 'golden').map((r) => r.id),
+    line: 'Five pitches of golden granite. Most people spend a night on it.',
+  },
+  obsidian: {
+    name: 'Obsidian Tower',
+    place: 'stone',
+    grade: 13,
+    pitches: PITCHES.filter((r) => r.wall === 'obsidian').map((r) => r.id),
+    line: 'Seven pitches of black rock, a roof in the middle, and a leap nobody likes.',
+  },
+  ascendant: {
+    name: 'The Ascendant',
+    place: 'stone',
+    grade: 18,
+    pitches: PITCHES.filter((r) => r.wall === 'ascendant').map((r) => r.id),
+    line: 'Eight pitches, the hardest in the valley, and the sixth is the hardest thing anyone’s done.',
+  },
+};
+
 export const ROUTES: Record<string, RouteDef> = {
   warm: warmBoulder,
   dyno,
@@ -1412,6 +1527,7 @@ export const ROUTES: Record<string, RouteDef> = {
   poverhang: pTide2,
   parete: pArete,
   pdeep: pDeep,
+  ...Object.fromEntries(PITCHES.map((r) => [r.id, r])),
 };
 
 // Said when you come off between cruxes with nothing left in your arms.

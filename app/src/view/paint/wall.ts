@@ -414,6 +414,23 @@ const topoOf = (d: Pt[]): Topo => {
   return { d, L, len, bolts };
 };
 
+// A wall's pitches (Phase 21.5): each one fills the close-up, bottom to top, wandering a
+// little on its own seed, from a start that steps across the face pitch by pitch.
+const WALL_X: Record<string, number> = { prow: 172, golden: 120, obsidian: 180, ascendant: 230 };
+const PITCH_TOP: Record<string, number> = { road: 184 };
+
+function pitchPts(r: RouteDef): Pt[] {
+  const n = Number(r.id.split('-').pop());
+  const rnd = mulberry32(n * 97 + r.id.length * 13 + (WALL_X[r.wall!] ?? 0));
+  const top = PITCH_TOP[r.place] ?? 80;
+  const x0 = (WALL_X[r.wall!] ?? 180) + ((n % 3) - 1) * 26;
+  const pts: Pt[] = [];
+  for (let i = 0; i < 7; i++) pts.push([x0 + (rnd() - 0.5) * 26, 540 - ((540 - top) * i) / 6]);
+  return pts;
+}
+
+for (const r of Object.values(ROUTES)) if (r.wall) TOPO_PTS[r.id] = pitchPts(r);
+
 const TOPO: Record<string, Topo> = Object.fromEntries(
   Object.entries(TOPO_PTS).map(([id, pts]) => [id, topoOf(spline(pts, 14))]),
 );
@@ -1359,9 +1376,13 @@ function paintGorge(g: G): void {
 // Other lines dashed with their bolts; yours solid, its bolts drawn live as you clip them.
 // A trad line has no bolts to draw: only what you place.
 function paintLines(g: G, place: string, selected: string): void {
+  // Up on a wall, the single-pitch lines are below you, and the other pitches are yours to
+  // come to: only your pitch is drawn.
+  const high = !!ROUTES[selected]?.wall;
   for (const [id, t] of Object.entries(TOPO)) {
     // A myth nobody has read isn't drawn: there's nothing on the rock to see.
-    if (id === selected || ROUTES[id]?.place !== place || ROUTES[id]?.hiddenUntil) continue;
+    if (high || id === selected || ROUTES[id]?.place !== place || ROUTES[id]?.hiddenUntil) continue;
+    if (ROUTES[id]?.wall) continue;
     const bolted = ROUTES[id]?.disc === 'sport';
     g.strokeStyle = '#F7EBD0';
     g.lineWidth = 1.5;

@@ -62,6 +62,10 @@ export interface GameState {
   training: Training;
   // Shifts worked at each job (content/jobs.ts): what your rank there is earned from.
   jobs: Record<string, number>;
+  // On a multi-pitch wall (Phase 21.5): which, and the index of the next pitch.
+  wall: { id: string; next: number } | null;
+  // Away on an expedition: which, the day of it you're on, pitches fixed, and energy left.
+  expedition: { id: string; day: number; pitch: number; energy: number } | null;
   // The message log: every line the game has told you, newest last.
   log: LogLine[];
 }
@@ -188,7 +192,11 @@ export type Action =
   // Phase 21.3: a session (a protocol's id, or 'prehab'), a phase, a taper.
   | { t: 'train'; protocol: string }
   | { t: 'phase'; phase: PhaseId }
-  | { t: 'taper' };
+  | { t: 'taper' }
+  // Phase 21.5: a wall (start it, bivy on it, or retreat), and an expedition (go, then a day
+  // at a time: lead, dig deep, rest in camp, or bail).
+  | { t: 'wall'; wall: string; do: 'start' | 'bivy' | 'retreat' }
+  | { t: 'exped'; id: string; do: 'go' | 'lead' | 'dig' | 'rest' | 'bail' };
 
 // What a finished go hands back to the game.
 export interface GoResult {

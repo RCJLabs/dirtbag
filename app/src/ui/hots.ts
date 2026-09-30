@@ -10,6 +10,7 @@ import {
   TALK,
   THINGS,
   type GameState,
+  WALLS,
 } from '../sim';
 import type { Hot } from '../view/layout';
 
@@ -20,6 +21,7 @@ export function hotLabel(s: GameState, h: Hot): string {
   if ('sheet' in u) return SHEET_NAME[u.sheet];
   if ('talk' in u) return PEOPLE[TALK[u.talk]?.who ?? '']?.name ?? 'Someone';
   if ('thing' in u) return u.thing === 'scout' && s.dog ? s.dog.name : (THINGS[u.thing]?.name ?? 'Something');
+  if ('wall' in u) return WALLS[u.wall]?.name ?? 'A wall';
   if ('route' in u) {
     const r = routeOfId(s, u.route);
     return r ? `${lineName(s, r)}, ${lineGrade(s, r)}${s.routes[r.id]?.sent ? ', sent' : ''}` : 'A line';

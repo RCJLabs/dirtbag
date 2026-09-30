@@ -113,7 +113,11 @@ export type SheetId =
   | { k: 'plan' }
   // Phase 21.3: sessions where you are, and the phases.
   | { k: 'train' }
-  | { k: 'phases' };
+  | { k: 'phases' }
+  // Phase 21.5: a wall and its pitches; the expeditions, and one of them.
+  | { k: 'wall'; id: string }
+  | { k: 'expeds' }
+  | { k: 'exped'; id: string };
 
 export interface Hud {
   day: number;
@@ -227,7 +231,11 @@ export class Game {
       state: this.state,
       view: home?.scene ? 'scene' : 'map',
       scene: home?.scene ?? 'lot',
-      sheet: home?.scene ? null : { k: 'place', id: this.state.at },
+      sheet: this.state.expedition
+        ? { k: 'exped', id: this.state.expedition.id }
+        : home?.scene
+          ? null
+          : { k: 'place', id: this.state.at },
       talk: null,
       toast: null,
       stamp: null,
@@ -320,6 +328,10 @@ export class Game {
   }
 
   private set(p: Partial<Ui>): void {
+    // Away on an expedition, the day's call is the only sheet there is, whatever else
+    // tries to clear or replace it.
+    const x = this.state.expedition;
+    if (x && 'sheet' in p && p.sheet?.k !== 'exped') p = { ...p, sheet: { k: 'exped', id: x.id } };
     this.ui.update((u) => ({ ...u, ...p }));
   }
 
@@ -532,6 +544,7 @@ export class Game {
       else if (night && th.nightAct) this.dispatch({ t: 'act', act: th.nightAct });
       else this.toast(night ? (th.night ?? th.day) : th.day);
     } else if ('route' in u) this.lookUp(u.route);
+    else if ('wall' in u) this.openSheet({ k: 'wall', id: u.wall });
     else {
       const r = routesAt(this.state.seed, this.state.at, this.state.day)[u.problem];
       if (r) this.lookUp(r.id);
@@ -655,6 +668,19 @@ export class Game {
     return refusal(this.dispatch({ t: 'taper' }));
   }
 
+  // A wall: start up it, bivy on it, or come down.
+  wall(wall: string, what: 'start' | 'bivy' | 'retreat'): string | null {
+    return refusal(this.dispatch({ t: 'wall', wall, do: what }));
+  }
+
+  // An expedition: go, then a day at a time.
+  exped(id: string, what: 'go' | 'lead' | 'dig' | 'rest' | 'bail'): string | null {
+    const why = refusal(this.dispatch({ t: 'exped', id, do: what }));
+    // Home again, summit or not: the lines already said how it went.
+    if (!why && !this.state.expedition) this.closeSheet();
+    return why;
+  }
+
   // Pay for a trip once (Moonstone's haul): the place card rebuilds with the drive on it.
   unlock(place: string): void {
     this.dispatch({ t: 'unlock', place });
@@ -766,11 +792,13 @@ export class Game {
         : -1;
     // The board's problems all start under the board.
     const hot = SCENES[scene]!.hots.find((h) =>
-      r?.board
-        ? 'sheet' in h.use && h.use.sheet === 'board'
-        : 'route' in h.use
-          ? h.use.route === route
-          : 'problem' in h.use && h.use.problem === slot,
+      r?.wall
+        ? 'wall' in h.use && h.use.wall === r.wall
+        : r?.board
+          ? 'sheet' in h.use && h.use.sheet === 'board'
+          : 'route' in h.use
+            ? h.use.route === route
+            : 'problem' in h.use && h.use.problem === slot,
     );
     this.enterScene(scene, hot?.stand);
   }

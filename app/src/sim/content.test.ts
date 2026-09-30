@@ -106,7 +106,7 @@ describe('content', () => {
     expect(weekOf(8)).toBe(2);
     expect(routesAt('a', 'road', 1).map((r) => r.id)).toEqual(
       Object.values(ROUTES)
-        .filter((r) => r.place === 'road')
+        .filter((r) => r.place === 'road' && !r.wall)
         .map((r) => r.id),
     );
     expect(routeById('a', 'sc-99-7')).toBeUndefined();
@@ -151,8 +151,9 @@ describe('content', () => {
         expect(p.sun, id).toBeUndefined();
         continue;
       }
+      // A wall's pitches take the sun with the wall, not a place on its path.
       const lines = Object.values(ROUTES)
-        .filter((r) => r.place === id)
+        .filter((r) => r.place === id && !r.wall)
         .map((r) => r.id);
       expect([...(p.sun ?? [])].sort(), id).toEqual(lines.sort());
     }

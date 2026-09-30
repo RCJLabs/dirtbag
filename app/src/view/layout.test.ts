@@ -23,7 +23,8 @@ describe('the crags on screen', () => {
       }
     }
     expect(new Set(seen).size).toBe(seen.length);
-    const crag = Object.values(ROUTES).filter((r) => r.place !== 'gym');
+    // A wall's pitches are climbed from its sheet, not walked up to one by one.
+    const crag = Object.values(ROUTES).filter((r) => r.place !== 'gym' && !r.wall);
     expect(seen.sort()).toEqual(crag.map((r) => r.id).sort());
   });
 

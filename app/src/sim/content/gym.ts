@@ -222,5 +222,6 @@ export function routeById(seed: string, id: string): RouteDef | undefined {
 export function routesAt(seed: string, place: string, day: number): RouteDef[] {
   if (place === GYM) return [...gymSet(seed, weekOf(day)), ...boardSet(seed, blockOf(day))];
   if (place === CAVE) return caveSet(seed, weekOf(day));
-  return Object.values(ROUTES).filter((r) => r.place === place);
+  // A wall's pitches aren't lines you walk up to: they're climbed from the wall, in turn.
+  return Object.values(ROUTES).filter((r) => r.place === place && !r.wall);
 }

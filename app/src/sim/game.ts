@@ -4,7 +4,7 @@
 
 import { cold, daysOff, freshLoad, goLoad, projected, ratio, rollInjury } from './body';
 import { CARRIED, carried, gains, gradeOf, STARTS, type GoSummary } from './climber';
-import { headroom, holds, leadOver, unmet } from './cond';
+import { headroom, holds, isNight, leadOver, unmet } from './cond';
 import { dexHurt, dexSeason, gradeOfPerson } from './curves';
 import { indoor, INDOOR, INDOOR_CLOSE, routeById, routesAt } from './content/gym';
 import {
@@ -36,8 +36,33 @@ import {
 import { JOBS } from './content/jobs';
 import { raiseAt, rankAt, rankName, shiftsAt } from './jobs';
 import { freshTraining, PHASE_NAME, phaseLock, taperDay, taperWait } from './training';
-import { SEND_NAME, effGrade, gradeLabel, gradeName, roped, type RouteDef } from './content/routes';
-import { BODY, CLIMB, DAY, DOG, HIGHBALL, INJURY, LOAD, MONEY, RIVAL, TRAD, TRAIN } from './dials';
+import {
+  ROUTES,
+  SEND_NAME,
+  WALLS,
+  effGrade,
+  gradeLabel,
+  gradeName,
+  roped,
+  type RouteDef,
+} from './content/routes';
+import {
+  BODY,
+  CLIMB,
+  DAY,
+  DOG,
+  EXPED,
+  HIGHBALL,
+  INJURY,
+  LOAD,
+  MONEY,
+  RIVAL,
+  TRAD,
+  TRAIN,
+  WALL,
+} from './dials';
+import { EXPEDITIONS } from './content/expeditions';
+import { pitchOdds, pitchRoll, stormOn, wallPay } from './expeditions';
 import { fill, money, skillsNote } from './format';
 import { PARTNERS, tierOf, whereNow } from './presence';
 import { hashSeed, Rng } from './rng';
@@ -88,6 +113,8 @@ export function newGame(seed: string): GameState {
     gear: { ...START_KIT },
     training: freshTraining(1),
     jobs: {},
+    wall: null,
+    expedition: null,
     log: [],
   };
 }
@@ -134,7 +161,7 @@ export const routeOfId = (s: GameState, id: string): RouteDef | undefined => rou
 // What a go costs you. Given your state, tape on a crack takes its share off the skin.
 export function goCost(r: RouteDef, s?: GameState): Required<Pick<Delta, 'min' | 'energy' | 'fed' | 'skin'>> {
   const kind = indoor(r.place) ? 'gym' : r.disc;
-  const c = CLIMB.go[kind];
+  const c = r.wall ? WALL.pitch : CLIMB.go[kind];
   const bare = CLIMB.skin[r.type] * (indoor(r.place) ? 1 : CLIMB.rockSkin);
   const skin = Math.round(s ? tapedSkin(s, r, bare) : bare);
   return { min: c.min, energy: -c.energy, fed: -c.fed, skin: -skin };
@@ -256,6 +283,12 @@ export function goBlocked(s: GameState, r: RouteDef): string | null {
     if (!c.open) return 'The rock is soaked';
     if (s.min >= CLIMB.darkFrom) return 'Too dark to climb';
     if (r.disc === 'trad' && !has(s, 'rack')) return 'You need a rack to lead this. The gear shop sells them';
+    if (r.wall) {
+      const w = WALLS[r.wall]!;
+      if (s.wall?.id !== r.wall) return `Start up ${w.name} first`;
+      const next = w.pitches[s.wall.next];
+      if (next !== r.id) return `Pitch ${s.wall.next + 1} is next: ${ROUTES[next!]?.name ?? 'the next one'}`;
+    }
     if (roped(r) && !belayer(s)) return 'Nobody here to belay you';
   }
   const off = daysOff(s);
@@ -349,18 +382,23 @@ export function act(s0: GameState, a: Action): Result {
     if (bill) spend({ cash: -bill });
     s.hurt += 1;
   };
-  const sleep = () => {
+  // A night: in the van at the Lot, on a ledge halfway up a wall, or away on an expedition
+  // (where the food's paid for, the van waits, and friends feed the dog).
+  const sleep = (where: 'van' | 'ledge' | 'away' = 'van') => {
     const ended = s.day;
 
-    const hungry = s.fed < BODY.hungryBelow;
-    const rough = headroom(s) < MONEY.vanSpot;
-    if (!rough) s.cash -= MONEY.vanSpot;
+    const hungry = where !== 'away' && s.fed < BODY.hungryBelow;
+    const rough = where === 'van' && headroom(s) < MONEY.vanSpot;
+    if (where === 'van' && !rough) s.cash -= MONEY.vanSpot;
     s.day += 1;
     s.min = DAY.wakeMin;
-    const rest = (rough ? BODY.roughEnergy : BODY.sleepEnergy) - (hungry ? BODY.hungryNight : 0);
+    const rest =
+      where === 'ledge'
+        ? WALL.bivy.energy
+        : (rough ? BODY.roughEnergy : BODY.sleepEnergy) - (hungry ? BODY.hungryNight : 0);
     s.energy = clamp100(s.energy + rest);
     s.skin = clamp100(s.skin + BODY.sleepSkin);
-    s.fed = clamp100(s.fed - BODY.nightFed);
+    if (where !== 'away') s.fed = clamp100(s.fed - (where === 'ledge' ? WALL.bivy.fed : BODY.nightFed));
     // The day's load folds into the averages; a deload sheds some of the acute.
     const p = projected(s.load);
     const shed = s.training.phase === 'deload' ? TRAIN.phases.deload.acute : 1;
@@ -376,9 +414,15 @@ export function act(s0: GameState, a: Action): Result {
       r.goesToday = 0;
       r.sentToday = false;
     }
-    s.at = 'lot';
-    s.x = null;
-    if (rough) line("The card won't take the van spot. You sleep in the pullout. It's cold.");
+    if (where !== 'ledge') {
+      s.at = 'lot';
+      s.x = null;
+    }
+    if (where === 'ledge')
+      line('A night on a ledge, clipped in, the valley lit up a long way down. You sleep some.');
+    else if (where === 'away') {
+      // Nothing to say: the expedition's day says it.
+    } else if (rough) line("The card won't take the van spot. You sleep in the pullout. It's cold.");
     else
       line(
         s.cash < 0
@@ -386,7 +430,7 @@ export function act(s0: GameState, a: Action): Result {
           : `Van spot, ${TEXT_VALUES.spot}. Morning comes anyway.`,
       );
     if (hungry) line('You went to bed hungry, and it shows.');
-    if (s.dog) {
+    if (s.dog && where !== 'away') {
       s.dog.fed = Math.max(0, s.dog.fed - DOG.nightFed);
       if (s.dog.fed < DOG.hungryBelow)
         line("Scout's bowl is empty. He's been decent about it, which is worse.");
@@ -401,6 +445,50 @@ export function act(s0: GameState, a: Action): Result {
       line(`Registration and insurance: $${bills}. The week's bills don't care about your card.`);
     }
     rivalNight(ended);
+  };
+  // A pitch of a wall done: on to the next, or the summit. It pays once, the first time.
+  const wallPitch = (id: string, lap: boolean) => {
+    const w = WALLS[id]!;
+    s.wall = { id, next: s.wall!.next + 1 };
+    if (s.wall.next < w.pitches.length) {
+      line(`Pitch ${s.wall.next} done. ${w.pitches.length - s.wall.next} to go.`);
+      return;
+    }
+    s.wall = null;
+    const pay = wallPay(w);
+    if (lap) line(`${w.name} again, all of it. The top's no smaller the second time.`);
+    else {
+      spend({ cash: pay });
+      line(
+        `The summit of ${w.name}, ${w.pitches.length} pitches. A magazine pays ${money(pay)} for the photos.`,
+      );
+    }
+  };
+  // A day of an expedition gone: home at the summit or when time runs out.
+  const expedDay = () => {
+    const x = s.expedition!;
+    const e = EXPEDITIONS[x.id]!;
+    if (x.pitch >= e.pitches) {
+      s.expedition = null;
+      spend({ cash: e.pays });
+      train({ head: EXPED.head });
+      line(
+        `${e.name}: the summit of ${e.objective}, on day ${x.day}. The sponsors pay ${money(e.pays)}, and you'll be telling this one for years. ${skillsNote({ head: EXPED.head })}.`,
+      );
+      sleep('away');
+      return;
+    }
+    if (x.day >= e.days) {
+      s.expedition = null;
+      line(
+        `${e.name}: out of time, ${x.pitch} of ${e.pitches} pitches fixed. You fly home with a story and nothing else.`,
+      );
+      sleep('away');
+      return;
+    }
+    x.day += 1;
+    x.energy = Math.min(EXPED.energy, x.energy + EXPED.night);
+    sleep('away');
   };
   // Overnight news about the people you know: Dex's race, his season, and who's climbing
   // harder than whom.
@@ -532,7 +620,84 @@ export function act(s0: GameState, a: Action): Result {
     if (!s.today.includes(who)) s.today.push(who);
   };
 
+  // Away on an expedition: the valley waits. Only the expedition's own day goes on.
+  if (s.expedition && a.t !== 'exped' && a.t !== 'stand' && a.t !== 'pick')
+    return refuse(`You're on ${EXPEDITIONS[s.expedition.id]!.name}.`);
+
   switch (a.t) {
+    case 'wall': {
+      const w = WALLS[a.wall];
+      if (!w) return refuse('No such wall.');
+      if (a.do === 'start') {
+        if (s.at !== w.place) return refuse(`${w.name} is at ${PLACES[w.place]!.name}.`);
+        if (s.wall) return refuse(`You're on ${WALLS[s.wall.id]!.name}.`);
+        if (!has(s, 'rope')) return refuse('Walls need a rope of your own. The gear shop sells them.');
+        const c = conditionsAt(s.seed, s.day, w.place);
+        if (c.closed) return refuse(`${c.closed}.`);
+        if (!c.open) return refuse('The rock is soaked.');
+        s.wall = { id: a.wall, next: 0 };
+        line(`You rack up at the foot of ${w.name}. ${w.pitches.length} pitches.`);
+      } else if (a.do === 'retreat') {
+        if (s.wall?.id !== a.wall) return refuse("You're not on it.");
+        s.wall = null;
+        line(`You rap off ${w.name}. The wall will be there.`);
+      } else {
+        if (s.wall?.id !== a.wall) return refuse("You're not on it.");
+        if (s.wall.next === 0) return refuse("You're still at the bottom. Go back to the van.");
+        if (!isNight(s.min)) return refuse('Not yet. Climb while it’s light.');
+        sleep('ledge');
+      }
+      break;
+    }
+
+    case 'exped': {
+      const e = EXPEDITIONS[a.id];
+      if (!e) return refuse('No such expedition.');
+      if (a.do === 'go') {
+        if (s.expedition) return refuse("You're already away.");
+        if (s.at !== 'lot') return refuse('Expeditions leave from the Lot.');
+        if (gradeOf(s.climber.skills) < e.gradeReq) return refuse(`${e.name} wants V${e.gradeReq}.`);
+        if (s.cash < e.cost) return refuse(`${e.name} costs ${money(e.cost)}, in hand.`);
+        if (s.wall) s.wall = null;
+        spend({ cash: -e.cost });
+        s.expedition = { id: a.id, day: 1, pitch: 0, energy: EXPED.energy };
+        line(
+          `${e.name}, ${e.region}: ${e.objective}. ${e.days} days, ${e.pitches} pitches.${s.dog ? ' The dog stays with friends at the Lot.' : ''}`,
+        );
+        break;
+      }
+      const x = s.expedition;
+      if (!x || x.id !== a.id) return refuse("You're not on it.");
+      if (a.do === 'bail') {
+        s.expedition = null;
+        line(
+          `${e.name}: you call it, ${x.pitch} of ${e.pitches} pitches fixed. Nobody argues with going home alive.`,
+        );
+        break;
+      }
+      const storm = stormOn(s.seed, a.id, e, s.day);
+      if (a.do === 'rest') {
+        x.energy = Math.min(EXPED.energy, x.energy + EXPED.rest);
+        line(storm ? 'Storm. You sit it out in the tent.' : 'A day in camp. You eat everything.');
+        expedDay();
+        break;
+      }
+      if (storm) return refuse('A storm’s on the wall. Nobody leads in this.');
+      const dig = a.do === 'dig';
+      const cost = dig ? EXPED.dig : EXPED.lead;
+      if (x.energy < cost) return refuse('Not enough left in you to lead. Rest in camp.');
+      x.energy -= cost;
+      if (pitchRoll(s.seed, a.id, s.day, x.pitch) < pitchOdds(s.climber.skills, e, dig)) {
+        x.pitch += 1;
+        line(`Pitch ${x.pitch} fixed${dig ? ', and it took everything' : ''}. ${e.pitches - x.pitch} to go.`);
+      } else
+        line(
+          `You back off pitch ${x.pitch + 1}. ${dig ? 'You dug deep, and it still said no.' : 'Tomorrow.'}`,
+        );
+      expedDay();
+      break;
+    }
+
     case 'create': {
       if (s.climber.name) return refuse('You already are who you are.');
       const name = a.name.trim().slice(0, NAME_MAX).trim();
@@ -612,6 +777,10 @@ export function act(s0: GameState, a: Action): Result {
       if (permit && headroom(s) < permit)
         return refuse(`${to.name} needs a ${money(permit)} permit, and the card won't cover it.`);
       spend({ cash: -permit });
+      if (s.wall) {
+        line(`You rap off ${WALLS[s.wall.id]!.name}. The wall will be there.`);
+        s.wall = null;
+      }
       const declined = r.cash > 0 && headroom(s) < r.cash;
       spend({ min: r.min, cash: declined ? 0 : -r.cash, energy: r.min >= 30 ? -BODY.driveEnergy : 0 });
       s.at = a.to;
@@ -729,6 +898,7 @@ export function act(s0: GameState, a: Action): Result {
         L.sent ??= { day: s.day, go: L.goes, style: firstStyle };
         L.sentToday = true;
         events.push({ k: 'sent', route: a.route, style, go: L.goes });
+        if (r.wall && s.wall?.id === r.wall) wallPitch(r.wall, lap);
         if (r.open && !s.firsts[r.id] && L.sent.day === s.day && L.sent.go === L.goes)
           events.push({ k: 'fa', route: r.id });
         if (s.race?.route === a.route) {

@@ -112,6 +112,8 @@ export {
   KIT,
   TRAD,
   TRAIN,
+  WALL,
+  EXPED,
 } from './dials';
 export { PLACES, ACTS, ROADS, road, TEXT_VALUES } from './content/places';
 export type { PlaceDef, ActDef, RoadDef, Trip, Ambience } from './content/places';
@@ -128,8 +130,12 @@ export {
   libraryTrad,
   roped,
   onWall,
+  WALLS,
 } from './content/routes';
-export type { RouteDef, CruxDef, BetaDef, Verb, Disc } from './content/routes';
+export type { RouteDef, CruxDef, BetaDef, Verb, Disc, WallDef } from './content/routes';
+export { EXPEDITIONS } from './content/expeditions';
+export type { ExpeditionDef } from './content/expeditions';
+export { pitchOdds, stormOn, summitOdds, onExpedition, wallPay } from './expeditions';
 export {
   GYM,
   WEEK_DAYS,

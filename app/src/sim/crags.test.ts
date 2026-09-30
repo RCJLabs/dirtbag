@@ -173,7 +173,7 @@ describe('The Big Stone (Phase 21.4)', () => {
   });
 
   it('keeps v0.956’s five single pitches, and takes a Ride-or-Die to come out', () => {
-    const here = Object.values(ROUTES).filter((r) => r.place === 'stone');
+    const here = Object.values(ROUTES).filter((r) => r.place === 'stone' && !r.wall);
     expect(here.map((r) => [r.name, r.disc]).sort()).toEqual(
       [
         ['Base Camp Boulder', 'boulder'],

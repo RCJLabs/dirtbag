@@ -323,6 +323,7 @@ export const PLACES: Record<string, PlaceDef> = {
       'shop.pad',
       'shop.rack',
       'shop.hangboard',
+      'shop.rope',
       'shop.usedShoes',
       'shop.usedPad',
       'shop.usedRack',
@@ -507,6 +508,13 @@ export const ACTS: Record<string, ActDef> = {
     needs: [{ hasNot: 'hangboard', why: 'One board on the van is plenty.' }, { pay: KIT.hangboard.price }],
     gear: { id: 'hangboard', set: 1 },
     says: 'A slab of wood with edges in it. It goes over the back doors, and the van will never be the same.',
+  },
+  'shop.rope': {
+    label: 'A rope and a harness',
+    cost: { min: 15, cash: -KIT.rope.price },
+    needs: [{ hasNot: 'rope', why: 'One rope is enough to get you in trouble.' }, { pay: KIT.rope.price }],
+    gear: { id: 'rope', set: 1 },
+    says: 'Seventy metres of dynamic rope, and a harness that fits if you breathe in.',
   },
   'shop.usedRack': {
     label: 'A used rack, from the swap meet',

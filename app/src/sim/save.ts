@@ -10,9 +10,11 @@ import { GEAR } from './content/gear';
 import { PLACES } from './content/places';
 import { TRAIN } from './dials';
 import { JOBS } from './content/jobs';
+import { WALLS } from './content/routes';
+import { EXPEDITIONS } from './content/expeditions';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 7;
+export const SAVE_VERSION = 8;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -83,6 +85,11 @@ export const MIGRATIONS: Record<number, Migration> = {
   6: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, jobs: {} };
+  },
+  // v7 -> v8 (Phase 21.5): on no wall, and away on no expedition.
+  7: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, wall: null, expedition: null };
   },
 };
 
@@ -208,6 +215,25 @@ export function validate(x: unknown): string[] {
     'training',
   );
   need(isObj(x.jobs) && Object.entries(x.jobs).every(([id, n]) => id in JOBS && isInt(n) && n >= 0), 'jobs');
+  const w = x.wall;
+  need(
+    w === null || (isObj(w) && typeof w.id === 'string' && w.id in WALLS && isInt(w.next) && w.next >= 0),
+    'wall',
+  );
+  const e = x.expedition;
+  need(
+    e === null ||
+      (isObj(e) &&
+        typeof e.id === 'string' &&
+        e.id in EXPEDITIONS &&
+        isInt(e.day) &&
+        e.day >= 1 &&
+        isInt(e.pitch) &&
+        e.pitch >= 0 &&
+        isNum(e.energy) &&
+        e.energy >= 0),
+    'expedition',
+  );
   const dog = x.dog;
   const pct = (v: unknown) => isNum(v) && v >= 0 && v <= 100;
   need(

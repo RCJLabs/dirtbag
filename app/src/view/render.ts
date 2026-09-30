@@ -10,6 +10,7 @@ import {
   roped,
   conditionsAt,
   gradeLabel,
+  gradeName,
   isNight,
   lineGrade,
   picks,
@@ -19,6 +20,7 @@ import {
   routesAt,
   talkStart,
   TALK,
+  WALLS,
   type Attempt,
   type GameState,
   type RouteDef,
@@ -198,6 +200,27 @@ export function sceneLive(g: G, s: GameState, scene: string, cam: number, eye: E
         true,
         !!s.routes[r.route]?.sent,
       );
+    // Each wall's name, high on the rock where it starts.
+    for (const w of crag.walls ?? []) {
+      const def = WALLS[w.wall]!;
+      label(g, 'poster', def.name.toUpperCase(), w.x - cam, GND - 250, {
+        size: 9,
+        color: '#FFFDF5',
+        halo: '#2B2A33',
+      });
+      label(
+        g,
+        'poster',
+        `${gradeName('sport', def.grade)} · ${def.pitches.length} PITCHES${s.wall?.id === w.wall ? ` · ON P${s.wall.next + 1}` : ''}`,
+        w.x - cam,
+        GND - 236,
+        {
+          size: 7.5,
+          color: '#FFFDF5',
+          halo: '#2B2A33',
+        },
+      );
+    }
     for (const b of crag.boulders)
       boulderTag(
         g,
