@@ -152,6 +152,10 @@
     "gym": {
       "made": "code",
       "in": "src/audio/ambience.ts"
+    },
+    "strum": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
     }
   },
   "recordings": [],

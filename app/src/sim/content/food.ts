@@ -72,5 +72,8 @@ export const RECIPES: Record<string, Recipe> = {
 export const MEAL_NAME: Record<string, string> = {
   ramen: 'ramen',
   diner: 'the special',
+  // Phase 22.5a: the hustle's meals.
+  bins: 'what the bins had',
+  forage: 'what the shore had',
   ...Object.fromEntries(Object.entries(RECIPES).map(([id, r]) => [id, r.name.toLowerCase()])),
 };

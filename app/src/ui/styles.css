@@ -1122,6 +1122,34 @@ button.pill:disabled {
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
+/* Busking (Phase 22.5b): the bar a marker crosses, with the band to strum in; half a hit
+   in its pale edges, a clean one in the middle. Matches BUSK_BAND in game.ts. */
+.c-bar.beat {
+  height: 18px;
+}
+.c-bar.beat .band {
+  position: absolute;
+  inset: 0 34%;
+  background: color-mix(in srgb, var(--u-acc) 30%, transparent);
+}
+.c-bar.beat .band::after {
+  content: '';
+  position: absolute;
+  inset: 0 25%;
+  background: var(--u-acc);
+}
+.c-bar.beat .mark {
+  position: absolute;
+  top: 0;
+  left: var(--x, 0);
+  width: 4px;
+  height: 100%;
+  margin-left: -2px;
+  background: var(--u-ink);
+}
+.busk .hands {
+  display: grid;
+}
 /* The week's shifts: each day's posted jobs, as toggles. */
 .days.shifts li {
   align-items: center;

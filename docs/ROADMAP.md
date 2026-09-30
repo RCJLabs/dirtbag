@@ -1554,7 +1554,7 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 **Done when.**
 1. A season's runway still holds Phase 6's targets with the van's costs in.
-2. No game, meal or hustle is a farm: the harness finds none that out-earns or out-bonds its time.
+2. No game, meal or hustle is a farm: the harness finds none that out-earns or out-bonds its time. *Busking is the exception, by Evan's call (30 Sep 2026): it pays under every job at first and over every job an hour after hundreds of sets. One set a day keeps a day's busking under a day's shift.*
 3. Every event and game has a sound and an e2e step.
 
 **Depends on:** Phase 21 (the van carries the rack). **Effort:** ~8–12 weeks [INFERRED].
@@ -1800,6 +1800,21 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Carried:**
   - Scout, a night with people at the fire, and events (22.6) don't lift it yet. Those slices can add their own lifts.
   - Nothing in the game reads psyche but the windows. Story beats that want it can.
+
+**Status (30 Sep 2026): 22.5a built: cans, the bins and foraging.** Save v18, 0.974.0. 22.5 goes in two parts: the hustle's safety net, then busking, which needs a timing beat of its own (the climb's verbs are built around routes), and which the cooking beat can reuse.
+- **The hustle,** each once a day, seeded by the day so a reload can't reroll it [proposed numbers, v0.956's where it had them]:
+  - **Cans**, from the van by day: 2 h, 8 energy, $3 to $9.
+  - **The bins** behind the market, after dark: 1 h, 4 energy; 78% of nights, 24 to 39 food, and a meal for the variety count.
+  - **Foraging** at the lake by day: 2 h, 6 energy, 18 to 29 food, 40% of that in winter. v0.956 foraged in town too; here the shore is the one place.
+- **Taught once:** the first time you're under 35 food with under $10, a line says where all three are. A new `seen` list keeps one-time lines from repeating.
+- **None out-earns a shift an hour** (a new harness target, and a test). At best: cans $4.50/h, the bins $3.12/h, foraging $1.16/h, against the warehouse's $6.50/h, the worst shift. Food is priced at ramen's, the cheapest food money buys. Priced at the diner's special instead, a lucky night at the bins is worth $7.80/h: over the warehouse, under everything else.
+- **The bots** collect cans when under $10 and hit the bins when hungry with no money for ramen. The climber bots collect cans about 8 times a season; the others almost never need to. Every harness target passes; the climber bots' one stuck night (a card at its limit, not hunger) stays.
+- **Status (30 Sep 2026): 22.5b built: busking. 22.5 is done.** Save v19, 0.975.0. Evan's calls: it pays less than any job at first and, after hundreds of days of it, more an hour than any job, because you've become a good guitar player; it's at the Coffee Shop; and the crowds grow as you get better.
+  - **A set** is a row on the Coffee Shop's card: 1 h, 5 energy, once a day, 8 AM to 8 PM, not in the rain. A marker crosses a bar eight times, and you strum (the button, Space or Enter) as it crosses the band: a clean chord in the middle, half of one near it. Each strum is a chord, synthesised in code.
+  - **Your playing** comes from your sets, each counting half for turning up and half by how clean it was. It's 63% of the way after 150 sets and 95% after 450. Ranks: beginner, busker (25%), a regular (55%), local legend (85%), each said when you reach it and shown in the journal.
+  - **Pay:** an hour on an ordinary crowd runs from $4 (under the warehouse's $6.50) to $24, times the crowd (lunch and early evening best, weekends ×1.3, the sky, the day's luck), times how clean the set was (a sloppy one earns 30%). At 75% clean, a set a day: $4.12 on day 1, $12.84 on day 100, $17.77 on day 200, passing head coach's $17/h on day 180.
+  - **The crowd** grows with your playing: 2 people stop for a beginner on an ordinary day, 30 for a legend.
+  - **Carried:** the bots don't busk (the harness reads the curve from the numbers). A set's line doesn't vary by crowd beyond the headcount yet. The cooking beat can now reuse the beat's panel.
 
 ---
 
@@ -2192,3 +2207,5 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Fixes from Evan's phone: the van's lit windows spilled past the cab's roof (now clipped to the body), and a tap on the van while standing by it opened its sheet and let the same tap's click pick a row (it cooked ramen). A sheet now ignores a click whose press came before it opened; an e2e step taps the van on a touch screen. 0.971.1.
 - 2026-09-30 — Phase 22.4c built: one supplies gauge (water and washing) refilled at the lake, the market, the gym and the truck stop; a seeded nightly chance of a cold, a bug or a toothache from the cold, low supplies, hunger and a samey diet; a doctor at the clinic. Save v16. 0.972.0.
 - 2026-09-30 — Phase 22.4d built, and 22.4 with it: psyche, a slow mood that a new send, a new crag, company and the fire lift, and shifts and samey days wear down, drifting back to even every night; it moves every window up to 5%, and Tonight says it in a word. Bots sit at the fire when flat. Save v17. 0.973.0.
+- 2026-09-30 — Phase 22.5a built: the hustle's safety net, once a day each: cans from the van, the bins behind the market after dark, and foraging at the lake, seeded by the day; taught once, the first time you're hungry and broke. None out-earns a shift an hour (a new harness target). Bots use cans and the bins when broke. Save v18. 0.974.0.
+- 2026-09-30 — Phase 22.5b built, and 22.5 with it: busking outside the Coffee Shop, a set of eight strums a day, by Evan's calls: under every job an hour at first, over every job after about 180 days of sets, and bigger crowds as you get better. Criterion 2 notes busking as his exception. Save v19. 0.975.0.

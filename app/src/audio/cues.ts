@@ -18,6 +18,8 @@ export type Cue =
   | 'rest'
   | 'dog'
   | 'train'
+  // A chord outside the café (Phase 22.5b): clean, or muffed.
+  | 'strum'
   // On the wall.
   | 'pullon'
   | 'move'

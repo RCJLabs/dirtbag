@@ -74,6 +74,21 @@ function envelope(g: GainNode, t: number, peak: number, attack: number, dur: num
 export const jitter = (x: number, by = 0.08) => x * (1 + (Math.random() * 2 - 1) * by);
 
 export const VOICES: Record<Cue, (v: V, k: number) => void> = {
+  // A chord: six strings a few milliseconds apart, a G, ringing when it's clean (k = 1) and
+  // choked to a dull chunk when it's off (k = 0).
+  strum: (v, k) => {
+    const ring = 0.15 + 0.85 * k;
+    [98, 123.5, 147, 196, 247, 392].forEach((f, i) =>
+      tone(v, {
+        type: 'triangle',
+        f: k > 0 ? f : jitter(f, 0.04),
+        dur: 0.12 + 0.9 * ring,
+        gain: 0.12 + 0.06 * k,
+        delay: i * 0.012,
+      }),
+    );
+    if (k < 1) burst(v, { filter: 'bandpass', f: 900, q: 1.2, dur: 0.06, gain: 0.5 * (1 - k) });
+  },
   // A pencil tick on paper.
   tap: (v) => tone(v, { f: 1500, f2: 1150, dur: 0.035, gain: 0.25 }),
   // A boot on dirt.

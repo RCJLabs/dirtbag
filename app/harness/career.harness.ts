@@ -7,7 +7,8 @@ import { STARTS } from '../src/sim/climber';
 import { contentOut, firstTry, median, season } from '../src/sim/harness';
 import { JOBS } from '../src/sim/content/jobs';
 import { ACTS } from '../src/sim/content/places';
-import { PSYCHE } from '../src/sim/dials';
+import { BUSK, PSYCHE } from '../src/sim/dials';
+import { buskRate, practiceOf } from '../src/sim/busk';
 
 const SEEDS = Number(process.env.CAREER_SEEDS ?? 4);
 const DAYS = Number(process.env.CAREER_DAYS ?? 224);
@@ -33,8 +34,33 @@ function payTable() {
   }
 }
 
+// Phase 22.5b, Evan's call: busking pays under every job an hour at first and over every job
+// after hundreds of sets. Its rate on an ordinary crowd, a day's set at a time played 75%
+// clean, against the jobs' first and top ranks.
+function buskTable(): boolean {
+  const hours = Object.entries(JOBS).map(([id, j]) => {
+    const a = Object.values(ACTS).find((x) => x.job?.id === id && x.job.shifts === 1)!;
+    const h = (a.cost.min ?? 60) / 60;
+    const pay = (r: number) => ((a.cost.cash ?? 0) + j.raise * r + (j.tips?.[0] ?? 0)) / h;
+    return { name: j.name, first: pay(0), top: pay(j.ranks.length - 1) };
+  });
+  const setsOn = (day: number) => day * practiceOf(0.75);
+  const days = [1, 30, 100, 200, 300];
+  out('\n## Busking: an hour on an ordinary crowd, played clean, by days of one set\n');
+  out(days.map((d) => `day ${d} $${buskRate(setsOn(d)).toFixed(2)}`).join(' · '));
+  const best = hours.reduce((a, b) => (b.top > a.top ? b : a));
+  let d = 1;
+  while (buskRate(setsOn(d)) <= best.top && d < 2000) d++;
+  const low = Math.min(...hours.map((x) => x.first));
+  out(
+    `Passes ${best.name}'s top rank ($${best.top.toFixed(2)}/h) on day ${d} of busking; starts under the lowest first rank ($${low.toFixed(2)}/h).`,
+  );
+  return buskRate(0) < low && d >= 100 && d < 2000;
+}
+
 it('career', { timeout: 1_800_000 }, () => {
   payTable();
+  const buskOk = buskTable();
   out(`\n# Career harness: ${SEEDS} seeds × ${DAYS} days, the career bot, human-ish hands\n`);
   out(
     `| start | refused | stuck | ${AT.map((d) => `d${d} grade · $`).join(' | ')} | V10 on | first V10 go | trips bought | nothing new | resting | warnings · top rank |`,
@@ -108,5 +134,10 @@ it('career', { timeout: 1_800_000 }, () => {
     longest <= 7,
     'Psyche never stays low for more than a week',
     `longest run low: ${longest} days; median psyche ${AT.map((d, i) => `d${d} ${psyAt[i]}`).join(', ')}.`,
+  );
+  say(
+    buskOk,
+    'Busking starts under every job an hour and passes every job after 100+ days of sets',
+    `see the busking table; ${BUSK.notes} chords a set, one set a day.`,
   );
 });

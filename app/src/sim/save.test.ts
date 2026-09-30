@@ -39,6 +39,8 @@ const V13 = readFileSync(new URL('./fixtures/save-v13.json', import.meta.url), '
 const V14 = readFileSync(new URL('./fixtures/save-v14.json', import.meta.url), 'utf8');
 const V15 = readFileSync(new URL('./fixtures/save-v15.json', import.meta.url), 'utf8');
 const V16 = readFileSync(new URL('./fixtures/save-v16.json', import.meta.url), 'utf8');
+const V17 = readFileSync(new URL('./fixtures/save-v17.json', import.meta.url), 'utf8');
+const V18 = readFileSync(new URL('./fixtures/save-v18.json', import.meta.url), 'utf8');
 // What R2's migration adds to any older save.
 const R2_BODY = {
   load: { acute: 20, chronic: 20, today: 0 },
@@ -77,6 +79,8 @@ const P224B = { scars: [], flare: null, fear: [] };
 // Phase 22.4c: supplies at a new climber's, and well.
 const P224C = { supplies: 80, sick: null };
 const P224D = { psyche: { level: 50, stale: 0 }, crags: [] };
+const P225A = { seen: [] };
+const P225B = { guitar: 0 };
 
 describe('saves', () => {
   it('round-trip a played game exactly', () => {
@@ -144,6 +148,8 @@ describe('saves', () => {
       ...P224B,
       ...P224C,
       ...P224D,
+      ...P225A,
+      ...P225B,
     });
     // And it plays on: the new rules accept it.
     const made = act(r.state, { t: 'create', name: 'Sam', start: 'boulderer' });
@@ -173,6 +179,8 @@ describe('saves', () => {
       ...P224B,
       ...P224C,
       ...P224D,
+      ...P225A,
+      ...P225B,
     });
     expect(act(r.state, { t: 'travel', to: 'lot' }).events.some((e) => e.k === 'refused')).toBe(false);
   });
@@ -198,6 +206,8 @@ describe('saves', () => {
       ...P224B,
       ...P224C,
       ...P224D,
+      ...P225A,
+      ...P225B,
     });
     expect(act(r.state, { t: 'travel', to: 'road' }).events.some((e) => e.k === 'refused')).toBe(false);
   });
@@ -222,6 +232,8 @@ describe('saves', () => {
       ...P224B,
       ...P224C,
       ...P224D,
+      ...P225A,
+      ...P225B,
     });
     expect(act(r.state, { t: 'travel', to: 'lot' }).events.some((e) => e.k === 'refused')).toBe(false);
   });
@@ -246,6 +258,8 @@ describe('saves', () => {
       ...P224B,
       ...P224C,
       ...P224D,
+      ...P225A,
+      ...P225B,
     });
     expect(r.state.gear.rack).toBe(1);
     expect(act(r.state, { t: 'travel', to: 'lot' }).events.some((e) => e.k === 'refused')).toBe(false);
@@ -270,6 +284,8 @@ describe('saves', () => {
       ...P224B,
       ...P224C,
       ...P224D,
+      ...P225A,
+      ...P225B,
     });
     expect(r.state.training.prehab).toBeGreaterThan(0);
     expect(act(r.state, { t: 'travel', to: 'cafe' }).events.some((e) => e.k === 'refused')).toBe(false);
@@ -292,6 +308,8 @@ describe('saves', () => {
       ...P224B,
       ...P224C,
       ...P224D,
+      ...P225A,
+      ...P225B,
     });
     expect(r.state.jobs.cafe).toBe(2);
   });
@@ -312,6 +330,8 @@ describe('saves', () => {
       ...P224B,
       ...P224C,
       ...P224D,
+      ...P225A,
+      ...P225B,
     });
     expect(r.state.routes.warm?.goes).toBe(1);
   });
@@ -331,6 +351,8 @@ describe('saves', () => {
       ...P224B,
       ...P224C,
       ...P224D,
+      ...P225A,
+      ...P225B,
     });
     expect(r.state.jobs.cafe).toBe(1);
   });
@@ -349,6 +371,8 @@ describe('saves', () => {
       ...P224B,
       ...P224C,
       ...P224D,
+      ...P225A,
+      ...P225B,
     });
     expect(r.state.lifestyle).toBe('comfortable');
     expect(r.state.shifts).toEqual([{ job: 'cafe', day: 2 }]);
@@ -367,6 +391,8 @@ describe('saves', () => {
       ...P224B,
       ...P224C,
       ...P224D,
+      ...P225A,
+      ...P225B,
     });
     expect(r.state.van.tires).toBeLessThan(85);
   });
@@ -376,7 +402,16 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(12);
-    expect(r.state).toEqual({ ...JSON.parse(V12).state, ...P223, ...P224, ...P224B, ...P224C, ...P224D });
+    expect(r.state).toEqual({
+      ...JSON.parse(V12).state,
+      ...P223,
+      ...P224,
+      ...P224B,
+      ...P224C,
+      ...P224D,
+      ...P225A,
+      ...P225B,
+    });
     expect(r.state.spot).toBe('trailhead');
   });
 
@@ -385,7 +420,15 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(13);
-    expect(r.state).toEqual({ ...JSON.parse(V13).state, ...P224, ...P224B, ...P224C, ...P224D });
+    expect(r.state).toEqual({
+      ...JSON.parse(V13).state,
+      ...P224,
+      ...P224B,
+      ...P224C,
+      ...P224D,
+      ...P225A,
+      ...P225B,
+    });
     expect(r.state.pantry.rice).toBe(4);
   });
 
@@ -394,7 +437,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(14);
-    expect(r.state).toEqual({ ...JSON.parse(V14).state, ...P224B, ...P224C, ...P224D });
+    expect(r.state).toEqual({ ...JSON.parse(V14).state, ...P224B, ...P224C, ...P224D, ...P225A, ...P225B });
     expect(r.state.insurance).toBe('full');
   });
 
@@ -403,7 +446,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(15);
-    expect(r.state).toEqual({ ...JSON.parse(V15).state, ...P224C, ...P224D });
+    expect(r.state).toEqual({ ...JSON.parse(V15).state, ...P224C, ...P224D, ...P225A, ...P225B });
     expect(r.state.scars).toEqual(['fingers']);
   });
 
@@ -412,12 +455,35 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(16);
-    expect(r.state).toEqual({ ...JSON.parse(V16).state, ...P224D });
+    expect(r.state).toEqual({ ...JSON.parse(V16).state, ...P224D, ...P225A, ...P225B });
     expect(r.state.sick).toEqual({ kind: 'cold', until: 4 });
     // It had been to the Road: going back isn't somewhere new.
     const back = act(r.state, { t: 'travel', to: 'road' }).state;
     expect(back.today).toContain('crag');
     expect(back.today).not.toContain('new-crag');
+  });
+
+  it('load a real 0.973.0 save from before the hustle: psyche and crags kept, nothing seen', () => {
+    const r = fromSave(V17);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(17);
+    expect(r.state).toEqual({ ...JSON.parse(V17).state, ...P225A, ...P225B });
+    expect(r.state.psyche).toEqual({ level: 41, stale: 2 });
+    expect(r.state.crags).toEqual(['road']);
+    // It's hungry and broke: the next thing it does, it's told where the net is, once.
+    const next = act(r.state, { t: 'act', act: 'lot.rest' });
+    expect(next.state.seen).toEqual(['hustle']);
+  });
+
+  it('load a real 0.974.0 save from before busking: the hustle kept, no sets played', () => {
+    const r = fromSave(V18);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(18);
+    expect(r.state).toEqual({ ...JSON.parse(V18).state, ...P225B });
+    expect(r.state.seen).toEqual(['hustle']);
+    expect(r.state.today).toContain('cans');
   });
 
   // These pretend a longer history: a v1 file that stored `money` where the state now has
@@ -427,7 +493,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(17);
+    expect(SAVE_VERSION).toBe(19);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

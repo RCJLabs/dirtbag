@@ -98,6 +98,11 @@ export interface GameState {
   // crags you've been to since, which is what makes one new.
   psyche: { level: number; stale: number };
   crags: string[];
+  // Phase 22.5a. One-time lines you've had, so they aren't said twice ("hustle").
+  seen: string[];
+  // Phase 22.5b. Sets played outside the café, each counted by how clean it was: what your
+  // guitar playing, and the crowd it draws, comes from.
+  guitar: number;
   meals: string[];
   fueled: number;
   breakdown: { part: 'tires' | 'engine'; to: string; rest: number; bodged: boolean } | null;
@@ -259,7 +264,9 @@ export type Action =
   // Phase 22.2b: where you park for the night, from now on.
   | { t: 'spot'; spot: 'lot' | 'trailhead' | 'truckstop' | 'driveway' | 'ridge' }
   // Phase 22.4a: your insurance plan, from the next bills on.
-  | { t: 'insure'; plan: 'none' | 'catastrophic' | 'full' };
+  | { t: 'insure'; plan: 'none' | 'catastrophic' | 'full' }
+  // Phase 22.5b: a set outside the café, and how clean it was, 0 to 1.
+  | { t: 'busk'; acc: number };
 
 // What a finished go hands back to the game.
 export interface GoResult {
