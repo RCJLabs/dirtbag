@@ -332,8 +332,11 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   const travel = (to: string): boolean => {
     if (s.at === to) return true;
     if (!go({ t: 'travel', to })) return false;
-    // Someone on the road (Phase 22.6b): the first answer, as a bot takes things.
-    if (s.encounter) go({ t: 'answer', opt: 0 });
+    // Someone on the road (Phase 22.6b), or a walk-out's calls (22.6c): the first answer, as
+    // a bot takes things. Out of a walk-out, the drive is still to do.
+    while (s.encounter) if (!go({ t: 'answer', opt: 0 })) break;
+    if (s.at !== to && !s.breakdown && !s.encounter && !go({ t: 'travel', to })) return false;
+    while (s.encounter) if (!go({ t: 'answer', opt: 0 })) break;
     if (s.breakdown) {
       const ok =
         ((friendFor(s) || hitchFriend(s)) && go({ t: 'fix', how: 'friend' })) ||

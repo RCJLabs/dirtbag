@@ -168,6 +168,10 @@
     "pullover": {
       "made": "code",
       "in": "src/audio/voices.ts"
+    },
+    "walkout": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
     }
   },
   "recordings": [],

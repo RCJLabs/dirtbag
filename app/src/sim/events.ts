@@ -5,6 +5,8 @@
 
 import { KNOCKS, type Knock, type KnockFx } from './content/knocks';
 import { PLACES } from './content/places';
+import { EPICS, type Epic, type EpicEnd, type EpicKind } from './content/epics';
+import { conditionsAt, seasonOf } from './weather';
 import { HITCHERS, PASS_BY, STOPS, type Hitcher, type RoadFx, type RoadStop } from './content/road';
 import { EVENTS } from './dials';
 import { Rng } from './rng';
@@ -90,3 +92,50 @@ export function hitchFriend(s: GameState): Hitcher | null {
 
 // A road event's psyche, on the rebuild's scale.
 export const roadPsyche = (p: number | undefined): number => Math.round((p ?? 0) * EVENTS.psyche);
+
+// ---- walk-outs (Phase 22.6c) ----
+
+export const epicByKind = (k: string): Epic | undefined => EPICS.find((e) => e.kind === k);
+
+// How risky walking out of this crag is now: v0.956's reckoning, on the rebuild's state.
+export function epicRisk(s: GameState, crag: string): number {
+  const E = EVENTS.epic;
+  const late = s.min >= E.late;
+  let r = 0;
+  if (late) r += 2;
+  if (s.min >= E.later) r += 1;
+  if (late && !s.gear.headlamp) r += 3;
+  if (conditionsAt(s.seed, s.day, crag).sky === 'rain') r += 2;
+  if (seasonOf(s.day) === 'winter') r += 1;
+  if (s.energy < 25) r += 2;
+  else if (s.energy < 45) r += 1;
+  if (s.fed <= 15) r += 1;
+  if (s.supplies <= 0) r += 1;
+  if (!Object.values(s.people).some((p) => p.last === s.day)) r += 1;
+  return r;
+}
+
+export const epicOdds = (s: GameState, crag: string): number =>
+  Math.max(0, Math.min(EVENTS.epic.most, (epicRisk(s, crag) - EVENTS.epic.from) * EVENTS.epic.per));
+
+// What kind of walk-out it is: the weather first, then a wall, the winter dark, no light.
+export function epicKind(s: GameState, crag: string): EpicKind {
+  const late = s.min >= EVENTS.epic.late;
+  if (conditionsAt(s.seed, s.day, crag).sky === 'rain') return 'storm';
+  if (s.wall) return 'stuck';
+  if (late && seasonOf(s.day) === 'winter') return 'cold';
+  if (late) return 'dark';
+  return 'lost';
+}
+
+// Leaving a crag: whether the walk out turns into something, seeded by the day. Never hurt,
+// never ten days after the last, never on a day that's had its encounter.
+export function epicNow(s: GameState, crag: string): EpicKind | null {
+  if (!PLACES[crag]?.crag || s.injury || s.day < EVENTS.from || s.deck.last === s.day) return null;
+  if (s.deck.epic && s.day - s.deck.epic < EVENTS.epic.every) return null;
+  const r = Rng.fromStream(s.seed, 'events').derive(`epic-${s.day}`);
+  return r.next() < epicOdds(s, crag) ? epicKind(s, crag) : null;
+}
+
+export const epicEnd = (risk: number): EpicEnd =>
+  risk <= EVENTS.epic.clean ? 'clean' : risk <= EVENTS.epic.rough ? 'rough' : 'bad';

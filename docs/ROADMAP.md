@@ -1842,6 +1842,22 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The bots** answer with their first option. Every harness target passes. The climber bots' stuck nights went from 1 to 3 in 144 runs: the first answer to the grifter and the thief costs $40 and $55.
 - **E2e:** the day-four plan's drive home meets this seed's runaway; the plan waits for the answer and carries on (an answer isn't counted against the day's taps). A planted morning drive to Roadside picks up the busker: the door heard, the card, three chords, and the crag.
 
+**Status (30 Sep 2026): 22.6c built: walk-outs. 22.6 is done.** Save v22, 0.978.0.
+- **Walk-outs** are v0.956's five epics, in its words: the dark, a storm, off route, the long cold, and a stuck rope. Each is three stages of three calls.
+- **When:** driving away from a crag, before the drive, the walk back to the van can turn into one. It's unhurt only, ten days apart, and within the one-a-day cap. The odds are v0.956's: 5.5% a point of risk over 4, up to 45%.
+  - Risk: late (+2 from 7 PM, +1 more from 9), late with no headlamp (+3), rain (+2), winter (+1), spent (+1 under 45 energy, +2 under 25), starving (+1), out of water (+1), and alone that day (+1).
+  - A careful day never meets one. A late, spent, lightless, solo one does about a third of the time.
+- **Which:** the weather first (storm), then a wall you're on (the rope), the winter dark (the cold), any dark (the walk out), and by day, off route.
+- **The calls add up:** each adds risk, energy, food, skin and hours. The total decides how you get out:
+  - at most 2, clean;
+  - at most 6, rough;
+  - past that, badly: a jammed or rolled ankle, with its bill.
+  - Getting out is worth a little psyche whatever it cost. The hours pass, the ending says how it went, and the journal keeps the story. Then you drive. v0.956's "rattled" has no home here.
+- **A headlamp** at the gear shop, $18 [proposed]: three points of risk off every late walk-out.
+- **Where you see it:** the trail (boots and wind, made in code), and each stage's card, with no ✕.
+- **The bots** answer with the first call, then drive. They're off the rock by dusk, so they rarely meet one [not measured]. Every harness target passes.
+- **E2e:** a planted night at Roadside (day 4, half nine, spent, alone, no light) that this seed turns into The Walk Out: the trail heard, three careful calls, out clean, and in the journal. A planted drive to Roadside also pulls over at Balanced Rock. Every event now has a sound and an e2e step (criterion 3, for the events; the games are 22.9's).
+
 ---
 
 ### Phase 24 — Expeditions as trips
@@ -2237,3 +2253,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Phase 22.5b built, and 22.5 with it: busking outside the Coffee Shop, a set of eight strums a day, by Evan's calls: under every job an hour at first, over every job after about 180 days of sets, and bigger crowds as you get better. Criterion 2 notes busking as his exception. Save v19. 0.975.0.
 - 2026-09-30 — Two fixes from Evan's phone: the map's Market and Garage names no longer run off the edge, and card-only places close onto the map. Phase 22.6a built: the seeded event deck, one encounter a day at most, and v0.956's ten knocks on the van at night, by where you're parked, each holding the night until you answer. Save v20. 0.976.0.
 - 2026-09-30 — Phase 22.6b built: v0.956's eight hitchhikers (who remember what you did, and may be the one at your next breakdown) and nine roadside stops, on drives to and from the crags, sharing the knocks' one-a-day cap; nothing before day 3. Plans wait on an answer. Save v21. 0.977.0.
+- 2026-09-30 — Phase 22.6c built, and 22.6 with it: v0.956's five walk-out epics (the dark, a storm, off route, the cold, a stuck rope), three stages of calls that add up to getting out clean, rough or hurt; triggered leaving a crag late, spent, alone, in rain or winter; a headlamp at the gear shop. Every event has a sound and an e2e step. Save v22. 0.978.0.

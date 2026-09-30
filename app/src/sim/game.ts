@@ -89,6 +89,9 @@ import { fishCatch } from './lake';
 import { HUSTLE_TEACH, hustleTake, needsTeaching } from './hustle';
 import {
   driveEncounter,
+  epicByKind,
+  epicEnd,
+  epicNow,
   hitchFriend,
   hitcherById,
   hitchOpts,
@@ -183,7 +186,7 @@ export function newGame(seed: string): GameState {
     crags: [],
     seen: [],
     guitar: 0,
-    deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {} },
+    deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0 },
     encounter: null,
     wall: null,
     expedition: null,
@@ -1014,6 +1017,47 @@ export function act(s0: GameState, a: Action): Result {
     return true;
   };
 
+  // A call on the walk out (Phase 22.6c): it adds up, and the last stage's call gets you
+  // out, clean, rough or hurt, and says so, in the journal too.
+  const walkOut = (e: NonNullable<GameState['encounter']>, i: number): boolean => {
+    const ep = epicByKind(e.id);
+    const stage = e.stage ?? 0;
+    const o = ep?.stages[stage]?.opts[i];
+    if (!ep || !o || !e.tally) return false;
+    const t = {
+      risk: e.tally.risk + o.risk,
+      energy: e.tally.energy + (o.energy ?? 0),
+      fed: e.tally.fed + (o.fed ?? 0),
+      skin: e.tally.skin + (o.skin ?? 0),
+      psyche: e.tally.psyche + (o.psyche ?? 0),
+      hours: e.tally.hours + (o.hours ?? 1),
+    };
+    if (stage + 1 < ep.stages.length) {
+      s.encounter = { ...e, stage: stage + 1, tally: t };
+      return true;
+    }
+    s.encounter = null;
+    const end = epicEnd(t.risk);
+    spend({ min: t.hours * 60 });
+    s.energy = clamp100(s.energy + t.energy);
+    s.fed = clamp100(s.fed + t.fed);
+    s.skin = clamp100(s.skin + t.skin);
+    s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + roadPsyche(t.psyche + EVENTS.epic.psyche)) };
+    line(ep.ends[end]);
+    note(`${ep.title} at ${PLACES[s.at]!.name}: ${ep.story[end]}.`);
+    if (end === 'bad') {
+      // Hurt on the way out: an ankle, a tier 1 or 2, seeded by the day.
+      const r = Rng.fromStream(s.seed, 'events').derive(`epic-hurt-${s.day}`);
+      const tier = (r.next() < 0.5 ? 1 : 2) as 1 | 2;
+      const [lo, hi] = INJURY.days[tier - 1]!;
+      injure(
+        { kind: LANDING_NAME[tier - 1]!, tier, until: s.day + 1 + r.int(lo, hi) },
+        `Somewhere on the way out: a ${LANDING_NAME[tier - 1]}.`,
+      );
+    }
+    return true;
+  };
+
   // A Free Solo run that ended: nothing more happens to this climber.
   if (s.dead) return refuse('That climber is gone.');
 
@@ -1227,6 +1271,20 @@ export function act(s0: GameState, a: Action): Result {
         return refuse(
           `The ${PART_NAME[shot].toLowerCase()} won’t make it out of town. The garage is in Midtown.`,
         );
+      // The walk out (Phase 22.6c): before the drive, the trail back to the van, which can
+      // turn into a night of its own. You drive once you're out.
+      const epic = epicNow(s, from);
+      if (epic) {
+        s.encounter = {
+          kind: 'epic',
+          id: epic,
+          stage: 0,
+          tally: { risk: 0, energy: 0, fed: 0, skin: 0, psyche: 0, hours: 0 },
+        };
+        s.deck = { ...s.deck, last: s.day, epic: s.day };
+        events.push({ k: 'encounter', kind: 'epic', id: epic });
+        break;
+      }
       spend({ cash: -permit });
       if (s.wall) {
         line(`You rap off ${WALLS[s.wall.id]!.name}. The wall will be there.`);
@@ -1411,6 +1469,10 @@ export function act(s0: GameState, a: Action): Result {
     // the night.
     case 'answer': {
       const e = s.encounter;
+      if (e?.kind === 'epic') {
+        if (!walkOut(e, a.opt)) return refuse('Nobody’s asking.');
+        break;
+      }
       if (e?.kind === 'hitch' || e?.kind === 'stop') {
         if (!road_(e, a.opt)) return refuse('Nobody’s asking.');
         break;

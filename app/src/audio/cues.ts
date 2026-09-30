@@ -26,6 +26,8 @@ export type Cue =
   // gravel pull-off and the handbrake.
   | 'door'
   | 'pullover'
+  // Boots on a dark trail, and the wind in the trees (Phase 22.6c).
+  | 'walkout'
   // On the wall.
   | 'pullon'
   | 'move'

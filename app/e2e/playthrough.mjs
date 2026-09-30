@@ -675,7 +675,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 21 ||
+  saved?.v !== 22 ||
   st.encounter !== null ||
   !Array.isArray(st.deck?.seen) ||
   !(st.guitar >= 0) ||
@@ -1154,7 +1154,7 @@ console.log('A hitchhiker on the way to Roadside');
     energy: 80,
     guitar: 0,
     van: { tires: 100, engine: 100, battery: 100 },
-    deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {} },
+    deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0 },
     encounter: null,
   };
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
@@ -1168,9 +1168,7 @@ console.log('A hitchhiker on the way to Roadside');
   trip.on('console', (m) => m.type() === 'error' && problems.push(`hitchhiker: console.error: ${m.text()}`));
   await trip.goto(server.url, { waitUntil: 'load' });
   const sheetOf = () => trip.evaluate(() => document.querySelector('#sheet')?.textContent ?? '');
-  await trip.waitForFunction(() =>
-    /Tap anywhere to walk/.test(document.querySelector('#hint')?.textContent ?? ''),
-  );
+  await trip.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Map');
   await trip.click('#b-nav');
   await trip.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Close');
   await trip.waitForTimeout(450);
@@ -1197,6 +1195,137 @@ console.log('A hitchhiker on the way to Roadside');
   if (after.at !== 'road' || after.guitar !== 3 || after.deck.met.busker !== 2 || after.encounter !== null)
     await fail(`after the ride: at ${after.at}, guitar ${after.guitar}, ${JSON.stringify(after.deck)}`);
   log('hitchhiker: three chords, and Roadside');
+  await ctx.close();
+}
+
+console.log('A roadside stop on the way to Roadside');
+// Phase 22.6b. Day eight's morning drive to Roadside passes this seed's Balanced Rock: the
+// tires onto gravel (heard), its card, pulling over, and the find kept.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  saved.state = {
+    ...saved.state,
+    day: 8,
+    min: 9 * 60,
+    at: 'lot',
+    x: null,
+    cash: 150,
+    energy: 80,
+    van: { tires: 100, engine: 100, battery: 100 },
+    deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0 },
+    encounter: null,
+  };
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  await ctx.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+    window.cues = [];
+    window.addEventListener('dirtbag:sound', (e) => window.cues.push(e.detail));
+  }, JSON.stringify(saved));
+  const pull = await ctx.newPage();
+  pull.on('pageerror', (e) => problems.push(`stop: uncaught: ${e.message}`));
+  pull.on('console', (m) => m.type() === 'error' && problems.push(`stop: console.error: ${m.text()}`));
+  await pull.goto(server.url, { waitUntil: 'load' });
+  await pull.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Map');
+  await pull.click('#b-nav');
+  await pull.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Close');
+  await pull.waitForTimeout(450);
+  const box = await pull.locator('#cv').boundingBox();
+  const [rx, ry] = fit([292, 220]);
+  await pull.mouse.click(box.x + (rx * box.height) / 740, box.y + (ry * box.height) / 740);
+  await pull.waitForFunction(() => /Roadside Crag/.test(document.querySelector('#sheet')?.textContent ?? ''));
+  await pull.locator('#sheet .opt', { hasText: 'Drive here' }).first().click();
+  await pull.waitForFunction(
+    () => /Balanced Rock/.test(document.querySelector('#sheet')?.textContent ?? ''),
+    null,
+    {
+      timeout: 15_000,
+    },
+  );
+  if (await pull.$('#sheet .x')) await fail('a stop can be closed without an answer');
+  if (!(await pull.evaluate(() => window.cues.includes('pullover'))))
+    await fail('the pull-off was never heard');
+  await pull.locator('#sheet .opt', { hasText: 'Pull over' }).first().click();
+  await pull.waitForFunction(() => !document.querySelector('#sheet'), null, { timeout: 10_000 });
+  const after = await pull.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  if (after.at !== 'road' || !after.deck.stops.includes('balanced') || after.encounter !== null)
+    await fail(`after the stop: at ${after.at}, ${JSON.stringify(after.deck)}`);
+  log('stop: Balanced Rock, pulled over, and kept');
+  await ctx.close();
+}
+
+console.log('A walk-out from Roadside');
+// Phase 22.6c. The day-five climber at Roadside at half nine on the night of day four,
+// spent, hungry, alone and with no headlamp, which this seed's deck turns into The Walk Out:
+// the map, the drive that waits, the trail (heard), three careful calls, out clean, and the
+// journal has it.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  saved.state = {
+    ...saved.state,
+    day: 4,
+    min: 21 * 60 + 30,
+    at: 'road',
+    x: null,
+    energy: 20,
+    fed: 10,
+    cash: 150,
+    people: {},
+    injury: null,
+    van: { tires: 100, engine: 100, battery: 100 },
+    deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0 },
+    encounter: null,
+  };
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  await ctx.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+    window.cues = [];
+    window.addEventListener('dirtbag:sound', (e) => window.cues.push(e.detail));
+  }, JSON.stringify(saved));
+  const dark = await ctx.newPage();
+  dark.on('pageerror', (e) => problems.push(`walk-out: uncaught: ${e.message}`));
+  dark.on('console', (m) => m.type() === 'error' && problems.push(`walk-out: console.error: ${m.text()}`));
+  await dark.goto(server.url, { waitUntil: 'load' });
+  const sheetOf = () => dark.evaluate(() => document.querySelector('#sheet')?.textContent ?? '');
+  await dark.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Map');
+  await dark.click('#b-nav');
+  await dark.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Close');
+  await dark.waitForTimeout(450);
+  const box = await dark.locator('#cv').boundingBox();
+  const [lx, ly] = fit([262, 612]);
+  await dark.mouse.click(box.x + (lx * box.height) / 740, box.y + (ly * box.height) / 740);
+  await dark.waitForFunction(() => /Drive here/.test(document.querySelector('#sheet')?.textContent ?? ''));
+  await dark.locator('#sheet .opt', { hasText: 'Drive here' }).first().click();
+  await dark.waitForFunction(
+    () => /The Walk Out/.test(document.querySelector('#sheet')?.textContent ?? ''),
+    null,
+    {
+      timeout: 10_000,
+    },
+  );
+  log(`walk-out: ${(await sheetOf()).slice(0, 110)}`);
+  if (await dark.$('#sheet .x')) await fail('a walk-out can be closed without a call');
+  if (!(await dark.evaluate(() => window.cues.includes('walkout')))) await fail('the trail was never heard');
+  await dark.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-walk-out.png`) });
+  for (const call of [
+    'Sit down and wait for the moon',
+    'Follow the bank down until it narrows',
+    'Contour around, however long it takes',
+  ]) {
+    await dark.waitForFunction(
+      (c) => (document.querySelector('#sheet')?.textContent ?? '').includes(c),
+      call,
+    );
+    await dark.locator('#sheet .opt', { hasText: call }).first().click();
+  }
+  await dark.waitForFunction(() => !document.querySelector('#sheet'), null, { timeout: 10_000 });
+  const after = await dark.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  if (after.encounter !== null || after.at !== 'road' || after.deck.epic !== 4 || after.injury !== null)
+    await fail(
+      `after the walk-out: at ${after.at}, ${JSON.stringify(after.deck)}, ${JSON.stringify(after.injury)}`,
+    );
+  if (!after.log.some((l) => /The Walk Out at Roadside Crag/.test(l.text)))
+    await fail('the journal missed it');
+  log('walk-out: three careful calls, out clean, in the journal');
   await ctx.close();
 }
 

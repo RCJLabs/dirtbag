@@ -139,7 +139,19 @@ export { weeklyBills, clinicBill, carePrice, jabbed } from './clinic';
 export { flaring, scarred, historyWindows } from './scars';
 export { isSick, sickOdds, SICK_NAME } from './sick';
 export { psycheBy, psycheDay, psycheWord } from './psyche';
-export { hitchFriend, hitcherById, hitchOpts, knockById, knockOdds, knockPsyche, stopById } from './events';
+export {
+  hitchFriend,
+  hitcherById,
+  hitchOpts,
+  knockById,
+  knockOdds,
+  knockPsyche,
+  stopById,
+  epicByKind,
+  epicOdds,
+  epicRisk,
+} from './events';
+export { EPICS, type Epic } from './content/epics';
 export { HITCHERS, STOPS, type Hitcher, type RoadStop } from './content/road';
 export { KNOCKS, type Knock } from './content/knocks';
 export { buskBlocked, buskHeads, buskRate, guitarRank, guitarSkill, RANK_NAME } from './busk';

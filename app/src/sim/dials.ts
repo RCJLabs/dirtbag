@@ -478,6 +478,22 @@ export const EVENTS = {
   hitch: { odds: 0.14, every: 5, again: 2.6 },
   stop: { odds: 0.2, every: 3, min: 40, again: 0.4 },
   friend: 0.5,
+  // Phase 22.6c: a walk-out from a crag, ten days apart and never hurt [v0.956's]. Risk adds
+  // up from the day: late (`late`, and more from `later`), late with no headlamp, rain, winter,
+  // spent, starving, out of water, alone. The odds are `per` a point over `from`, up to `most`.
+  // The calls on the way add more; at most `clean` you get out clean, at most `rough` rough,
+  // and past that badly, hurt. Getting out is worth `psyche` whatever it cost.
+  epic: {
+    every: 10,
+    late: 19 * 60,
+    later: 21 * 60,
+    from: 4,
+    per: 0.055,
+    most: 0.45,
+    clean: 2,
+    rough: 6,
+    psyche: 5,
+  },
   psyche: 0.5,
   // Knocks heard lately that the deck passes over while there are others for the spot.
   fresh: 3,
@@ -677,6 +693,9 @@ export const KIT = {
   pad: { price: 180 },
   // A rack: cams, nuts, slings. v0.956's $280. Nobody leads trad without one.
   rack: { price: 280 },
+  // A headlamp (Phase 22.6c) [proposed]: a walk-out after dark without one is the riskiest
+  // thing in the valley.
+  headlamp: { price: 18 },
   // A rope of your own (Phase 21.5), for walls, where the belayer's won't reach: v0.956
   // sold rope and harness; one price here [proposed].
   rope: { price: 150 },

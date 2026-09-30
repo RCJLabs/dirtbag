@@ -30,6 +30,12 @@ export const GEAR: Record<string, GearDef> = {
     what: 'Over the van’s back doors. Fingers and pulling, on a rainy day.',
   },
   rack: { name: 'A rack', kind: 'owned', what: 'Cams, nuts and slings. What you place is what catches you.' },
+  // Phase 22.6c.
+  headlamp: {
+    name: 'A headlamp',
+    kind: 'owned',
+    what: 'The walk out after dark, with the trail in front of you.',
+  },
   // Phase 22.2c: the van's upgrades, fitted at the garage, and the heater's propane.
   bed: {
     name: 'A real bed',
