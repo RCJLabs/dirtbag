@@ -24,6 +24,6 @@ export function hotLabel(s: GameState, h: Hot): string {
     const r = routeOfId(s, u.route);
     return r ? `${lineName(s, r)}, ${lineGrade(s, r)}${s.routes[r.id]?.sent ? ', sent' : ''}` : 'A line';
   }
-  const r = routesAt(s.seed, 'gym', s.day)[u.problem];
+  const r = routesAt(s.seed, s.at, s.day)[u.problem];
   return r ? `${lineName(s, r)}, ${gradeLabel(r)}${s.routes[r.id]?.sent ? ', sent' : ''}` : 'A problem';
 }

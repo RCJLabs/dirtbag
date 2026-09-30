@@ -1473,6 +1473,13 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The bots** go there once they climb V4, after Roadside and the Gorge, when it's open. The 56-day harness doesn't reach summer, so its numbers don't change.
 - **Not quite right yet:** the scene chalks every line to the top of the cliff, even the 12 ft traverse (the close-up is right). The sea sounds like the Gorge's creek: ambience has no surf yet.
 
+**Status (30 Sep 2026): 21.4, sixth place built: The Cave, a second gym.** The Hollow waits for the quest that finds it (Evan's call): it comes with the quests.
+- **The Cave** (v0.956's "steep bouldering cave, no ropes, just hard plastic"): eight problems a week, V3 to V10, mostly power and crimps as v0.956's were, set out steep walls in a dark room at the trailhead below Roadside. Its own day pass; power and fingers come a fifth faster there (v0.956's specialty), as technique and endurance do at Send City.
+- **The gym, generalized:** "the gym" in the rules is now any indoor place (`INDOOR` in `sim/content/gym.ts`), each with its pass, specialty and closing time. The training sessions run at either gym.
+- **Coaching** (v0.956's Cave job): four hours at $34, training head and technique, from V5 [proposed]; three ranks, Assistant coach to Head coach, at 8 and 20 shifts and V6 and V8, +$8 a shift each.
+- **Its picture:** a room scene (the sign, the desk, steep charcoal panels leaning out further the deeper in, eight tapes), the gym's close-up in the Cave's colours, and a pin at the trailhead hamlet where the map had a placeholder.
+- **The bots** climb there from V3 when it has something new. Over 56 days: all five targets still pass; the first V5 go comes a little sooner (day 18 from 19–20); climbing's skill an hour at V3–V5 rises (12.7, 10.0, 8.8 from 11.1, 9.1, 8.0), and training's share of it falls. They still end at V5.
+
 ---
 
 ### Phase 22 — The life: the van, the body, food, the hustle, and the games
@@ -1834,3 +1841,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 21.4: Wind River Walls. v0.956's nine lines (V9 to an open V15; three bolted to 5.14c, one trad), V9, an $800 trip and a $35 permit, four hours out past the Gorge, shaded, shut in winter; an alpine scene, face and boulder look.
 - 2026-09-29 — Phase 21.4: The Crucible. v0.956's lines V13 to its two V18 myths, and The Anvil (V16) so no grade is missing; myths that can't be read until the line under them is sent; V11, four hours east over the pass, shaded; a gneiss scene, face and boulder look.
 - 2026-09-30 — Phase 21.4: Psicobloc Cove. v0.956's eight deep-water solos, V2 to V9; a fall is a splash with no landing or strain roll; V4, two hours out on the coast, open in summer only; a sea-cliff scene, face and shelf; the bots go there from V4.
+- 2026-09-30 — Phase 21.4: The Cave. A second gym, eight problems a week V3 to V10, its own pass and a power-and-fingers specialty; indoor places generalized; coaching with three ranks; the bots climb there from V3. The Hollow waits for its quest.

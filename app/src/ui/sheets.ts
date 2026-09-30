@@ -60,6 +60,7 @@ import {
   trainBlocked,
   nextRank,
   rankName,
+  indoor,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import type { Game, SheetId } from '../game/game';
@@ -263,6 +264,20 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     }
 
     case 'desk':
+      if (s.at === 'cave')
+        return {
+          title: 'The desk',
+          sub: s.today.includes('cavepass')
+            ? "Your hand's stamped. Climb till ten."
+            : 'Someone behind the desk is taping a finger. The set changes every seven days.',
+          close: true,
+          rows: [
+            actRow(game, s, 'cave.pass'),
+            actRow(game, s, 'cave.coach'),
+            trainRow(game, s),
+            mapRow(game),
+          ],
+        };
       return {
         title: 'The desk',
         sub: s.today.includes('pass')
@@ -327,11 +342,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       }
       if (p.scene) {
         const scene = p.scene;
-        const label = CRAGS[scene]
-          ? 'Walk to the wall'
-          : scene === 'gym'
-            ? 'Walk in'
-            : 'Walk back to the van';
+        const label = CRAGS[scene] ? 'Walk to the wall' : indoor(id.id) ? 'Walk in' : 'Walk back to the van';
         return {
           title: p.name,
           sub,
@@ -413,7 +424,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
                   ? 'Clean your gear and walk out'
                   : r.dws
                     ? 'Jump off, and swim back'
-                    : r.place === 'gym'
+                    : indoor(r.place)
                       ? 'Drop onto the mats'
                       : 'Walk down the back',
             run: () => game.walkOff(),
@@ -485,7 +496,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       };
 
     case 'train': {
-      const where = s.at === 'gym' ? 'gym' : 'van';
+      const where = indoor(s.at) ? 'gym' : 'van';
       const rows: Row[] = Object.entries(PROTOCOLS)
         .filter(([, p]) => p.where === where)
         .map(([pid, p]) => {
@@ -512,7 +523,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       const tw = taperWait(s);
       const tapering = taperDay(s) > 0;
       return {
-        title: where === 'gym' ? 'Train at the gym' : 'Train at the van',
+        title: where === 'gym' ? `Train at ${PLACES[s.at]!.name}` : 'Train at the van',
         sub: `${blockLine(s)} One session a day.`,
         close: true,
         rows: [

@@ -16,6 +16,7 @@ import {
   PEOPLE,
   PLACES,
   routeOfId,
+  indoor,
   routesAt,
   startAttempt,
   STEP,
@@ -532,7 +533,7 @@ export class Game {
       else this.toast(night ? (th.night ?? th.day) : th.day);
     } else if ('route' in u) this.lookUp(u.route);
     else {
-      const r = routesAt(this.state.seed, 'gym', this.state.day)[u.problem];
+      const r = routesAt(this.state.seed, this.state.at, this.state.day)[u.problem];
       if (r) this.lookUp(r.id);
     }
   }
@@ -760,8 +761,8 @@ export class Game {
     const r = routeOfId(this.state, route);
     const scene = (r && PLACES[r.place]?.scene) ?? 'crag';
     const slot =
-      r?.place === 'gym'
-        ? routesAt(this.state.seed, 'gym', this.state.day).findIndex((p) => p.id === route)
+      r && indoor(r.place)
+        ? routesAt(this.state.seed, r.place, this.state.day).findIndex((p) => p.id === route)
         : -1;
     // The board's problems all start under the board.
     const hot = SCENES[scene]!.hots.find((h) =>

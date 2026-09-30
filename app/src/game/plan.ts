@@ -3,7 +3,7 @@
 // UI's, not the sim's. Each step runs through act() as a tap would, so the rules never know
 // a plan ran them, and it lives beside the save, like the settings.
 
-import { ACTS, PLACES, ROUTES, type GameState } from '../sim';
+import { ACTS, indoor, PLACES, ROUTES, type GameState } from '../sim';
 
 export interface PlanStep {
   place: string;
@@ -13,9 +13,9 @@ export interface PlanStep {
 
 export const SLEEP = 'lot.sleep';
 
-// Somewhere with something to climb: a crag's lines, or the gym's wall.
+// Somewhere with something to climb: a crag's lines, or a gym's wall.
 const climbable = (place: string): boolean =>
-  place === 'gym' || Object.values(ROUTES).some((r) => r.place === place);
+  indoor(place) || Object.values(ROUTES).some((r) => r.place === place);
 
 // What you can plan at a place: its acts, and climbing where there's something to climb. An
 // act only a moment offers (Scout picking you) isn't one, and nor is looking after a dog

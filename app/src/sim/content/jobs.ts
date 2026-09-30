@@ -20,6 +20,13 @@ export const JOBS: Record<string, JobDef> = {
     at: [0, 12, 30, 54, 84],
     raise: 4,
   },
+  // Coaching at The Cave [proposed]: you start at V5, and head coach wants you climbing V8.
+  coach: {
+    ranks: ['Assistant coach', 'Coach', 'Head coach'],
+    at: [0, 8, 20],
+    grade: [5, 6, 8],
+    raise: 8,
+  },
   // v0.956 gated setting at V8; here you start on the tape and climb the ranks as you climb.
   set: {
     ranks: ['Apprentice setter', 'Setter', 'Senior setter', 'Head setter'],

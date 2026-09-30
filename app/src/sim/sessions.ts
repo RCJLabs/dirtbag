@@ -8,6 +8,7 @@ import { has } from './kit';
 import { PREHAB, PROTOCOLS, type ProtocolDef } from './content/training';
 import { CLIMB, LOAD, TRAIN } from './dials';
 import { taperDay } from './training';
+import { INDOOR, INDOOR_CLOSE } from './content/gym';
 import type { Delta, GameState, Skills } from './types';
 
 const round2 = (v: number) => Math.round(v * 100) / 100;
@@ -57,9 +58,10 @@ export function trainBlocked(s: GameState, id: string): string | null {
     if (s.at !== 'lot') return 'The hangboard’s on the van, at the Lot';
     if (!has(s, 'hangboard')) return 'You need a hangboard. The gear shop sells them';
   } else {
-    if (s.at !== 'gym') return 'That’s at the gym';
-    if (s.min >= 22 * 60) return 'Send City is closed';
-    if (!s.today.includes('pass')) return 'Buy a day pass at the desk first';
+    const inside = INDOOR[s.at];
+    if (!inside) return 'That’s at a gym';
+    if (s.min >= INDOOR_CLOSE) return `${inside.name} is closed`;
+    if (!s.today.includes(inside.pass)) return 'Buy a day pass at the desk first';
     if (id === 'campus' && gradeOf(s.climber.skills) < TRAIN.campusGrade)
       return `Not till you’re climbing V${TRAIN.campusGrade}. Pulleys first`;
   }

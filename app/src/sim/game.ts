@@ -6,7 +6,7 @@ import { cold, daysOff, freshLoad, goLoad, projected, ratio, rollInjury } from '
 import { CARRIED, carried, gains, gradeOf, STARTS, type GoSummary } from './climber';
 import { headroom, holds, leadOver, unmet } from './cond';
 import { dexHurt, dexSeason, gradeOfPerson } from './curves';
-import { routeById, routesAt } from './content/gym';
+import { indoor, INDOOR, INDOOR_CLOSE, routeById, routesAt } from './content/gym';
 import {
   CLINIC_LINE,
   FIRST_FREE_LINE,
@@ -133,9 +133,9 @@ export const routeOfId = (s: GameState, id: string): RouteDef | undefined => rou
 
 // What a go costs you. Given your state, tape on a crack takes its share off the skin.
 export function goCost(r: RouteDef, s?: GameState): Required<Pick<Delta, 'min' | 'energy' | 'fed' | 'skin'>> {
-  const kind = r.place === 'gym' ? 'gym' : r.disc;
+  const kind = indoor(r.place) ? 'gym' : r.disc;
   const c = CLIMB.go[kind];
-  const bare = CLIMB.skin[r.type] * (r.place === 'gym' ? 1 : CLIMB.rockSkin);
+  const bare = CLIMB.skin[r.type] * (indoor(r.place) ? 1 : CLIMB.rockSkin);
   const skin = Math.round(s ? tapedSkin(s, r, bare) : bare);
   return { min: c.min, energy: -c.energy, fed: -c.fed, skin: -skin };
 }
@@ -246,9 +246,10 @@ export const revealed = (s: GameState, r: RouteDef): boolean =>
 export function goBlocked(s: GameState, r: RouteDef): string | null {
   if (!revealed(s, r))
     return `You can't read this line yet. Send ${routeOfId(s, r.hiddenUntil!)?.name ?? 'the hardest line here'} first`;
-  if (r.place === 'gym') {
-    if (s.min >= 22 * 60) return 'Send City is closed';
-    if (!s.today.includes('pass')) return 'Buy a day pass at the desk first';
+  const inside = INDOOR[r.place];
+  if (inside) {
+    if (s.min >= INDOOR_CLOSE) return `${inside.name} is closed`;
+    if (!s.today.includes(inside.pass)) return 'Buy a day pass at the desk first';
   } else {
     const c = conditionsAt(s.seed, s.day, r.place);
     if (c.closed) return c.closed;
@@ -678,7 +679,7 @@ export function act(s0: GameState, a: Action): Result {
               ? `That's no ${gradeLabel(r)}. Locals have been sandbagging it.`
               : `That's no ${gradeLabel(r)}. It's soft, and you're not complaining.`,
         );
-      if (r.place !== 'gym' && s.min >= sunOn(s.seed, s.day, r.place, r.id) && !s.today.includes('grease')) {
+      if (!indoor(r.place) && s.min >= sunOn(s.seed, s.day, r.place, r.id) && !s.today.includes('grease')) {
         s.today.push('grease');
         line("Sun's on this line now. Everything feels greasy.");
       }
@@ -702,7 +703,7 @@ export function act(s0: GameState, a: Action): Result {
       // climbed in, before it counts as your warm-up.
       const wasCold = cold(s, r);
       const load = goLoad(
-        CLIMB.go[r.place === 'gym' ? 'gym' : r.disc].energy,
+        CLIMB.go[indoor(r.place) ? 'gym' : r.disc].energy,
         r.grade,
         res.sent ? 1 : res.hi / r.moves,
       );
@@ -764,7 +765,7 @@ export function act(s0: GameState, a: Action): Result {
       // Spiked over your usual load, your body keeps less of what the go taught.
       const spent = ratio(s.load) > LOAD.slow ? LOAD.slowGains : 1;
       for (const k of Object.keys(got) as (keyof Skills)[]) {
-        const gym = r.place === 'gym' && (k === 'technique' || k === 'endurance') ? CLIMB.gymSpecialty : 1;
+        const gym = INDOOR[r.place]?.specialty.includes(k) ? CLIMB.gymSpecialty : 1;
         got[k] = round2(got[k]! * CLIMB.learn * (lap ? CLIMB.repeatLearn : 1) * gym * spent);
       }
       // Leading on gear you placed yourself is a lesson for the head.

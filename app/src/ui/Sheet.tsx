@@ -3,6 +3,7 @@ import {
   ACT_I,
   ACT_I_END,
   average,
+  indoor,
   revealed,
   roped,
   betaScale,
@@ -325,7 +326,7 @@ function Close({ game }: { game: Game }) {
 // What the day's doing to a line outdoors: in the sun already, or in the shade and till
 // when; and damp, the day after rain. Nothing on a day of rain: the rock's shut.
 function rockNote(s: GameState, r: RouteDef): string {
-  if (r.place === 'gym') return '';
+  if (indoor(r.place)) return '';
   const c = conditionsAt(s.seed, s.day, r.place);
   if (!c.open) return '';
   const sun = sunOn(s.seed, s.day, r.place, r.id);

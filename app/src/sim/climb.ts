@@ -18,6 +18,7 @@ import { effGrade, PUMPED, type BetaDef, type CruxDef, type RouteDef, type Verb 
 import { cold } from './body';
 import { BODY, CLIMB, LOAD, TRAD } from './dials';
 import { kitFactor } from './kit';
+import { indoor } from './content/gym';
 import { trainWindows } from './training';
 import type { GameState, GoResult } from './types';
 import { conditionsAt, sunOn } from './weather';
@@ -129,7 +130,7 @@ export function dayFactor(s: GameState, r: RouteDef): { windows: number; grease:
   const weak = s.fed < BODY.weakBelow ? 1 - (0.3 * (BODY.weakBelow - s.fed)) / BODY.weakBelow : 1;
   // A hard line before you've warmed up.
   const body = weak * (cold(s, r) ? LOAD.coldWindows : 1) * trainWindows(s);
-  if (r.place === 'gym') return { windows: body, grease: false };
+  if (indoor(r.place)) return { windows: body, grease: false };
   const c = conditionsAt(s.seed, s.day, r.place);
   const grease = s.min >= sunOn(s.seed, s.day, r.place, r.id);
   return { windows: c.windows * (grease ? CLIMB.greaseFactor : 1) * body, grease };

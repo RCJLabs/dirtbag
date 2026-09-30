@@ -240,7 +240,8 @@ export const CLIMB = {
   // A go on a line you've already sent teaches this share again: laps are mileage, not
   // progress. It stands in for v0.956's staleness.
   repeatLearn: 0.3,
-  // Send City's specialty, as in v0.956: technique and endurance come a little faster.
+  // Each gym's specialty, as in v0.956 (INDOOR in content/gym.ts): Send City brings on
+  // technique and endurance a little faster, The Cave power and fingers.
   gymSpecialty: 1.2,
   // Below these you can't tie in at all.
   minEnergy: 10,

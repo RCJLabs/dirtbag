@@ -14,7 +14,7 @@ import {
   type Attempt,
 } from './climb';
 import { headroom, holds, isNight, unmet } from './cond';
-import { routesAt } from './content/gym';
+import { INDOOR, routesAt } from './content/gym';
 import { ACTS, PLACES, road } from './content/places';
 import { TALK } from './content/people';
 import type { RouteDef } from './content/routes';
@@ -70,7 +70,9 @@ export interface DaySummary {
 }
 
 // Where the bots climb: the crags they drive to without paying for a haul, and the gym.
-const BOT_PLACES = ['road', 'gorge', 'cove', 'mesa', 'gym'];
+const BOT_PLACES = ['road', 'gorge', 'cove', 'mesa', 'cave', 'gym'];
+// The Cave's problems start at V3: a bot climbs there once it's climbing that.
+const CAVE_FROM = 3;
 
 // A careful climber reads a highball's landing odds the way they read the load warning: they
 // won't work one while a fall from its crux lands badly more than 1 time in 20, so they wait
@@ -309,7 +311,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       ...s,
       at: place,
       min: s.min + drive,
-      today: place === 'gym' ? [...s.today, 'pass'] : s.today,
+      today: INDOOR[place] ? [...s.today, INDOOR[place]!.pass] : s.today,
     };
     const lines = routesAt(s.seed, place, s.day)
       .filter((r) => !goBlocked(there, r) && !s.routes[r.id]?.sent && (s.routes[r.id]?.goesToday ?? 0) < 3)
@@ -333,7 +335,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     const body: GameState = {
       ...s,
       at: place,
-      today: place === 'gym' ? [...s.today, 'pass'] : s.today,
+      today: INDOOR[place] ? [...s.today, INDOOR[place]!.pass] : s.today,
       energy: 100,
       skin: 100,
       fed: 100,
@@ -398,15 +400,17 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
             ? 'cove'
             : opens('mesa') && choose('mesa')
               ? 'mesa'
-              : choose('gym')
-                ? 'gym'
-                : null;
+              : grade >= CAVE_FROM && choose('cave')
+                ? 'cave'
+                : choose('gym')
+                  ? 'gym'
+                  : null;
     // Nothing to climb isn't the same as nothing new to try: a hurt or spent climber still
     // has unsent lines out there, and only a day without any counts as the content running out.
     let where = place ? 'tired' : BOT_PLACES.some(fresh) ? 'resting' : 'nothing';
     if (place && s.min < 16 * 60 && s.energy >= 30 && s.skin >= 25) {
       travel(place);
-      if (place === 'gym') tryAct('gym.pass');
+      if (INDOOR[place]) tryAct(`${place}.pass`);
       const t = s.min;
       session();
       climbMin += s.min - t;

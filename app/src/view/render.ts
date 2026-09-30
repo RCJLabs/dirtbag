@@ -4,6 +4,7 @@
 import {
   belayer,
   CLIMB,
+  indoor,
   protection,
   revealed,
   roped,
@@ -34,6 +35,7 @@ import {
   OY,
   presentIn,
   PROBLEM_X,
+  CAVE_X,
   SCENES,
   W,
   Z,
@@ -54,7 +56,7 @@ import {
   tapeTag,
   vanIcon,
 } from './paint/fx';
-import { TAPE } from './paint/gym';
+import { CAVE_TAPE, TAPE } from './paint/gym';
 import { mapArt } from './paint/map';
 import { drawBelayerBack, drawClimber, drawDog, drawPerson, INK, LOOK } from './paint/people';
 import { BIG } from './paint/scale';
@@ -205,6 +207,10 @@ export function sceneLive(g: G, s: GameState, scene: string, cam: number, eye: E
         !!s.routes[b.route]?.sent,
       );
   }
+  if (scene === 'cave')
+    routesAt(s.seed, 'cave', s.day).forEach((r, n) =>
+      tapeTag(g, CAVE_X[n]! - cam, GND - 26, CAVE_TAPE[n]!, gradeLabel(r), !!s.routes[r.id]?.sent),
+    );
   if (gym) {
     const lines = routesAt(s.seed, 'gym', s.day);
     lines
@@ -359,7 +365,7 @@ function renderWall(g: G, f: Frame): void {
 // much as the ends.
 function wallWeather(g: G, f: Frame, r: RouteDef): void {
   const s = f.state;
-  if (r.place !== 'gym' && wet(s, r.place)) drawRain(g, f.w, H, f.t, f.still);
+  if (!indoor(r.place) && wet(s, r.place)) drawRain(g, f.w, H, f.t, f.still);
   const pump = f.att && (f.att.phase === 'climb' || f.att.phase === 'crux') ? f.att.pump : 0;
   if (pump > 45) {
     const beat = f.still || pump < 80 ? 1 : 0.85 + 0.15 * Math.sin(f.t * 8);
@@ -387,7 +393,7 @@ function wallPanel(g: G, f: Frame, r: RouteDef): void {
   // On a close-up wall the climber is drawn big, so labels stand further off the line.
   const off = wall.big ? 44 : 14;
   g.drawImage(wall.art, 0, 0, W, H);
-  if (r.place !== 'gym') {
+  if (!indoor(r.place)) {
     const sun = wallSun(s, r);
     if (sun) drawSun(g, sun.x, sun.lit, -10, W + 10, 0, H, sunLight(s.min));
     const w = wetness(s, r.place);

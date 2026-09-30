@@ -281,6 +281,16 @@ export const PLACES: Record<string, PlaceDef> = {
     // The sun comes up the coast from the south end: the tall lines out at the point first.
     sun: ['pdeep', 'parete', 'poverhang', 'pleap', 'pbarnacle', 'pslab', 'pplunge', 'ptide'],
   },
+  // v0.956's second gym: "a steep bouldering cave, no ropes, just hard plastic", V3 to V10,
+  // at the trailhead below Roadside. A day pass, and coaching for work once you can climb.
+  cave: {
+    name: 'The Cave',
+    scene: 'cave',
+    ambience: { room: 0.7, murmur: 0.3 },
+    away: 'The bouldering cave at the trailhead. Steep plastic, V3 and up. Day pass {pass}.',
+    here: 'Low ceiling, loud music, everyone upside down.',
+    acts: ['cave.pass', 'cave.coach'],
+  },
   gym: {
     name: 'Send City',
     scene: 'gym',
@@ -510,6 +520,30 @@ export const ACTS: Record<string, ActDef> = {
     says: 'Somebody’s old rack: faded slings, cams that still cam. You check every trigger twice.',
   },
 
+  'cave.pass': {
+    label: 'Buy a day pass',
+    cost: { min: 5, cash: -MONEY.dayPass },
+    needs: [{ notToday: 'cavepass', why: "You've got a pass for today." }, { pay: MONEY.dayPass }],
+    sets: ['cavepass'],
+    says: 'A stamp on your hand, and a nod at the steep end.',
+  },
+  // v0.956's Cave job: coaching, four hours at $34, training head and technique. Nobody
+  // pays for coaching from someone who can't climb [proposed: V5 to start].
+  'cave.coach': {
+    label: 'Coach a session',
+    cost: { min: 240, cash: 34, energy: -18, fed: -10 },
+    needs: [
+      oneShift,
+      { grade: 5, why: 'They want a coach who climbs V5.' },
+      { before: 14 * 60, why: 'Sessions start by {t}.' },
+      { energy: 18, why: 'Too tired to spot anyone.' },
+    ],
+    note: 'Trains your head and technique. Your pass is on the house.',
+    sets: ['worked', 'cavepass'],
+    trains: { head: 2, technique: 1 },
+    job: { id: 'coach', shifts: 1 },
+    says: 'Four hours of telling people to trust their feet.',
+  },
   'gym.pass': {
     label: 'Buy a day pass',
     cost: { min: 5, cash: -MONEY.dayPass },
@@ -571,6 +605,9 @@ export const ROADS: RoadDef[] = [
   // Psicobloc Cove: v0.956's two hours and 26% of a tank from the Lot, west past Old Town
   // to the coast.
   { a: 'cove', b: 'diner', min: 110, cash: 14 },
+  // The Cave: at the trailhead on the highway, twenty minutes short of Roadside.
+  { a: 'cave', b: 'road', min: 20, cash: 3 },
+  { a: 'cave', b: 'gym', min: 45, cash: 8 },
 ];
 
 // A drive: its time and gas, and the places it passes on the way.

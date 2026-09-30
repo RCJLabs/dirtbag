@@ -274,6 +274,9 @@ export const PROBLEM_X = [384, 474, 564, 654, 744, 834];
 export const BOARD_X0 = 990;
 export const BOARD_X1 = 1190;
 export const GYM_W = 1250;
+// The Cave: the desk by the door, then eight problems out its steep walls, V3 to V10.
+export const CAVE_X = [360, 440, 520, 600, 690, 780, 870, 960];
+export const CAVE_W = 1150;
 
 const wallHot = (x: number, use: Use, half = 26, y0 = 110): Hot => ({
   x0: x - half,
@@ -336,6 +339,25 @@ export const SCENES: Record<string, SceneLayout> = {
   wind: cragScene('wind', CRAGS.wind!),
   crucible: cragScene('crucible', CRAGS.crucible!),
   cove: cragScene('cove', CRAGS.cove!),
+  cave: {
+    place: 'cave',
+    width: CAVE_W,
+    spawn: 70,
+    hint: 'Day pass at the desk. The set changes every week.',
+    frame: 560,
+    hots: [
+      {
+        x0: DESK_X - 56,
+        x1: DESK_X + 56,
+        y0: GND - 70,
+        y1: GND + 8,
+        stand: DESK_X + 70,
+        face: -1,
+        use: { sheet: 'desk' },
+      },
+      ...CAVE_X.map((x, n) => wallHot(x, { problem: n }, 34, GND - 210)),
+    ],
+  },
   gym: {
     place: 'gym',
     width: GYM_W,
@@ -402,6 +424,7 @@ export const SPOTS: Record<string, Spot[]> = {
   wind: [{ who: 'dex', x: 1350, face: -1, pose: 'stand', talk: 'dex' }],
   crucible: [{ who: 'dex', x: 1340, face: -1, pose: 'stand', talk: 'dex' }],
   cove: [{ who: 'dex', x: 420, face: 1, pose: 'stand', talk: 'dex' }],
+  cave: [{ who: 'dex', x: 1020, face: -1, pose: 'stand', talk: 'dex' }],
 };
 
 // Who's in a scene right now: the people whose day puts them at its place.
@@ -457,11 +480,10 @@ export const MAP_PINS: Record<string, Pin> = {
   // On past the Gorge, where its dirt road climbs out of the valley.
   wind: { x: 40, y: 108, side: 1, kind: 'crag' },
   // East out of the valley, over the pass above Midtown.
-  crucible: { x: 338, y: 372, side: -1, kind: 'crag', dy: -16 },
+  crucible: { x: 338, y: 372, side: -1, kind: 'crag', dy: 16 },
   // West past Old Town, down to the coast.
   cove: { x: 24, y: 506, side: 1, kind: 'crag', dy: 14 },
+  // The Cave: at the trailhead hamlet on the highway, below Roadside.
+  cave: { x: 266, y: 334, side: 1, kind: 'town' },
 };
-export const DIM_PINS: [number, number][] = [
-  [266, 334],
-  [78, 612],
-];
+export const DIM_PINS: [number, number][] = [[78, 612]];

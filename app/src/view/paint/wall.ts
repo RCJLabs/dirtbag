@@ -3,7 +3,7 @@
 // close-up walls of their own (boulder.ts, gym.ts). Whatever the wall, a route is mapped
 // from moves (the sim's unit) to points along its line here, so the rules never see a pixel.
 
-import { onWall, ROUTES, type RouteDef } from '../../sim';
+import { indoor, onWall, ROUTES, type RouteDef } from '../../sim';
 import { arcTable, atLen, lin, mk, poly, spline, trace, type G, type Pt } from '../kit/geom';
 import { mulberry32 } from '../kit/noise';
 import { H, W } from '../layout';
@@ -439,8 +439,8 @@ const boardPattern = (id: string): number => Number(id.split('-')[1] ?? 1) * 10 
 const closeKey = (r: RouteDef): string =>
   r.board
     ? `board:${boardPattern(r.id)}:${r.heightFt}`
-    : r.place === 'gym'
-      ? `gym:${slotOf(r.id)}:${r.heightFt}`
+    : indoor(r.place)
+      ? `${r.place}:${slotOf(r.id)}:${r.heightFt}`
       : r.id;
 
 const topos = new Map<string, Topo>();
@@ -455,7 +455,7 @@ export function topoFor(r: RouteDef): Topo {
     t = topoOf(
       r.board
         ? boardTopo(boardPattern(r.id), r.heightFt)
-        : r.place === 'gym'
+        : indoor(r.place)
           ? gymTopo(slotOf(r.id), r.heightFt)
           : boulderTopo(r.id, r.heightFt),
     );
@@ -472,8 +472,8 @@ export function wallOf(r: RouteDef): Wall {
   if (!w) {
     const art = r.board
       ? boardWallArt(boardPattern(r.id), r.heightFt)
-      : r.place === 'gym'
-        ? gymWallArt(slotOf(r.id), r.heightFt)
+      : indoor(r.place)
+        ? gymWallArt(slotOf(r.id), r.heightFt, r.place === 'cave')
         : boulderArt(r);
     w = { art, topo: topoFor(r), big: true };
     close.set(key, w);
@@ -1436,6 +1436,6 @@ const FACE: Record<string, Pt[]> = {
 export function paintRouteArt(g: G, r: RouteDef): void {
   if (onWall(r)) paintWall(g, r.place, r.id);
   else if (r.board) paintBoardWall(g, boardPattern(r.id), r.heightFt);
-  else if (r.place === 'gym') paintGymWall(g, slotOf(r.id), r.heightFt);
+  else if (indoor(r.place)) paintGymWall(g, slotOf(r.id), r.heightFt, r.place === 'cave');
   else paintBoulderArt(g, r);
 }

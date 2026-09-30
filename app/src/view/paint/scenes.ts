@@ -3,11 +3,11 @@
 // painted once per scene and time of day, then scrolled.
 
 import { ROUTES } from '../../sim';
-import { CRAGS, GND, H, W, W_MAX, WW, Z, type CragSpec, GYM_W } from '../layout';
+import { CRAGS, GND, H, W, W_MAX, WW, Z, type CragSpec, GYM_W, CAVE_W } from '../layout';
 import { lerp, lin, mk, poly, rad, rr, trace, type G, type Pt } from '../kit/geom';
 import { fbm, mulberry32 } from '../kit/noise';
 import { chair, pineShape, popTop, rock, vanBody, vanWindows } from '../shapes';
-import { paintGymBack, paintGymGround } from './gym';
+import { paintCaveBack, paintCaveGround, paintGymBack, paintGymGround } from './gym';
 
 export type Tod = 'morning' | 'night' | 'day';
 
@@ -1275,7 +1275,7 @@ const LOOK: Record<string, { P: Palette; seed: number; rock: Rock; sea?: true }>
 // one you just left, so walking back doesn't repaint. A place card's header paints from a
 // scene without keeping it (`keep` false), so looking at the map never pushes out yours.
 export function sceneArt(id: string, tod: Tod, keep = true): SceneArt {
-  const key = id === 'gym' ? id : `${id}:${tod}`;
+  const key = id === 'gym' || id === 'cave' ? id : `${id}:${tod}`;
   const a = cache.get(key) ?? paintArt(id, tod);
   if (keep && !cache.has(key)) {
     cache.set(key, a);
@@ -1285,6 +1285,12 @@ export function sceneArt(id: string, tod: Tod, keep = true): SceneArt {
 }
 
 function paintArt(id: string, tod: Tod): SceneArt {
+  if (id === 'cave')
+    return {
+      sky: paintCaveBack(SKY_W),
+      marks: { orb: null, stars: false },
+      layers: [{ p: 1, w: CAVE_W, c: paintCaveGround() }],
+    };
   if (id === 'gym')
     return {
       sky: paintGymBack(SKY_W),
