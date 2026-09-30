@@ -30,6 +30,8 @@ import {
   DOG_VET,
 } from './content/dog';
 import { dogAge, nextDogName, scoutFinds, type Perk } from './scout';
+import { expedCost, owns } from './dreams';
+import { dreamById } from './content/dreams';
 import { PEOPLE, RACE_ROUTE, RIVAL_FA_NAMES, TALK } from './content/people';
 import { ACT_I_END } from './content/story';
 import { START_KIT } from './content/gear';
@@ -83,6 +85,7 @@ import {
   SICK,
   SUPPLIES,
   TRAD,
+  UPGRADE,
   TRAIN,
   SPOT,
   SPOTS,
@@ -199,6 +202,7 @@ export function newGame(seed: string): GameState {
     deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0 },
     encounter: null,
     dogs: [],
+    dream: { pick: null, pot: 0, owned: [] },
     wall: null,
     expedition: null,
     speed: { pb: null, runs: 0, day: 0 },
@@ -1152,9 +1156,11 @@ export function act(s0: GameState, a: Action): Result {
         if (s.expedition) return refuse("You're already away.");
         if (s.at !== 'lot') return refuse('Expeditions leave from the Lot.');
         if (gradeOf(s.climber.skills) < e.gradeReq) return refuse(`${e.name} wants V${e.gradeReq}.`);
-        if (s.cash < e.cost) return refuse(`${e.name} costs ${money(e.cost)}, in hand.`);
+        // The War Chest (Phase 22.8) halves it.
+        const cost = expedCost(s, e.cost);
+        if (s.cash < cost) return refuse(`${e.name} costs ${money(cost)}, in hand.`);
         if (s.wall) s.wall = null;
-        spend({ cash: -e.cost });
+        spend({ cash: -cost });
         s.expedition = { id: a.id, day: 1, pitch: 0, energy: EXPED.energy };
         line(
           `${e.name}, ${e.region}: ${e.objective}. ${e.days} days, ${e.pitches} pitches.${s.dog ? ' The dog stays with friends at the Lot.' : ''}`,
@@ -1507,6 +1513,46 @@ export function act(s0: GameState, a: Action): Result {
       if (Object.keys(got).length) line(`${skillsNote(got)}.`);
       else if (runsToday(s) === SPEED.fresh + 1)
         line('Your legs are done learning today. The clock doesn’t care.');
+      break;
+    }
+
+    // Phase 22.8: a dream. Pick one, put cash in the pot toward it (in hand, not on the card),
+    // take the pot back, or claim the dream once the pot covers it.
+    case 'dream': {
+      const D = s.dream;
+      if (a.do === 'pick') {
+        const d = dreamById(a.id ?? '');
+        if (!d) return refuse('No such dream.');
+        if (owns(s, d.id)) return refuse(`${d.name} is yours already.`);
+        s.dream = { ...D, pick: d.id };
+        line(`${d.name}, then. ${money(d.cost)}. The jar has ${money(D.pot)} in it.`);
+        break;
+      }
+      if (a.do === 'stash') {
+        const n = Math.floor(a.amount ?? 0);
+        if (!(n > 0)) return refuse('Nothing to put in.');
+        if (s.cash < n) return refuse('Not in hand. The jar takes cash, not the card.');
+        s.cash -= n;
+        s.dream = { ...D, pot: D.pot + n };
+        line(`${money(n)} in the jar. ${money(D.pot + n)} saved.`);
+        break;
+      }
+      if (a.do === 'take') {
+        if (!D.pot) return refuse('The jar’s empty.');
+        s.cash += D.pot;
+        s.dream = { ...D, pot: 0 };
+        line(`You tip the jar out: ${money(D.pot)}. It’ll be there to fill again.`);
+        break;
+      }
+      const d = D.pick ? dreamById(D.pick) : undefined;
+      if (!d) return refuse('Pick a dream first.');
+      if (D.pot < d.cost) return refuse(`${d.name} is ${money(d.cost)}. The jar has ${money(D.pot)}.`);
+      s.dream = { pick: null, pot: D.pot - d.cost, owned: [...D.owned, d.id] };
+      // The Rig comes with every upgrade Dale fits; Home Base with a kitchen.
+      if (d.id === 'rig') for (const u of Object.keys(UPGRADE)) s.gear[u] = 1;
+      if (d.id === 'homebase') s.gear.kitchen = 1;
+      line(d.claimed);
+      note(`${d.name}, day ${s.day}. ${d.perk}`);
       break;
     }
 
