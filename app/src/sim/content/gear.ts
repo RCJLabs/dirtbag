@@ -57,6 +57,11 @@ export const GEAR: Record<string, GearDef> = {
     kind: 'owned',
     what: `${less(UPGRADE.insulation.cold)} cold on a winter night.`,
   },
+  kitchen: {
+    name: 'A camp kitchen',
+    kind: 'owned',
+    what: 'A stove at the van, and the recipes the market sells for.',
+  },
   propane: {
     name: 'Propane',
     kind: 'uses',
@@ -65,7 +70,7 @@ export const GEAR: Record<string, GearDef> = {
 };
 
 // The van's upgrades, in the order the garage offers them.
-export const UPGRADES = ['bed', 'curtains', 'toolkit', 'tuneup', 'heater', 'insulation'] as const;
+export const UPGRADES = ['bed', 'curtains', 'toolkit', 'tuneup', 'heater', 'insulation', 'kitchen'] as const;
 export type UpgradeId = (typeof UPGRADES)[number];
 
 // What a new climber has: the shoes they drove out in, and half a bag of chalk.

@@ -11,6 +11,7 @@
 // back: there's no game over, only a bad week.
 
 import type { Need } from '../cond';
+import { INGREDIENTS, RECIPES } from './food';
 import { DAY, DOG, KIT, MONEY, UPGRADE, VAN, WINTER, type VanPart } from '../dials';
 import { DOG_LINES, DOG_OFFER } from './dog';
 import { clockShort } from '../format';
@@ -104,6 +105,12 @@ export interface ActDef {
   gear?: { id: string; set?: number; add?: number };
   // A repair at the garage (Phase 22.2a): that part back to new, at a price by its wear.
   van?: VanPart;
+  // Phase 22.3: a recipe it cooks (content/food.ts), an ingredient it buys a pack of, a meal it
+  // is (for the variety count), and whether it's a cup of coffee.
+  recipe?: string;
+  buys?: string;
+  meal?: string;
+  coffee?: true;
   // A shift at a job (content/jobs.ts), counting this many toward promotion. Its pay is
   // `cost.cash` at the first rank, plus the rank's raise for each shift.
   job?: { id: string; shifts: number };
@@ -377,6 +384,25 @@ export const PLACES: Record<string, PlaceDef> = {
     here: 'Pallets to the roof, and a forklift backing up somewhere, beeping.',
     acts: ['warehouse.shift'],
   },
+  // Phase 22.3 [proposed]: the market in Midtown, across from the café. Groceries for the
+  // camp kitchen.
+  market: {
+    name: 'The Market',
+    scene: null,
+    ambience: { room: 0.3, murmur: 0.4, clinks: 0.3 },
+    away: 'Midtown, across from the café. Groceries for anyone with a stove.',
+    here: 'Crates of greens out front, and a cashier who’s seen your van.',
+    acts: [
+      'market.oats',
+      'market.rice',
+      'market.beans',
+      'market.tortillas',
+      'market.eggs',
+      'market.cheese',
+      'market.pasta',
+      'market.greens',
+    ],
+  },
   // Phase 22.2a [proposed]: Dale's garage, on the edge of Midtown past the gear shop. Where a
   // tow brings you, and where the van gets put back together.
   garage: {
@@ -395,6 +421,7 @@ export const PLACES: Record<string, PlaceDef> = {
       'garage.tuneup',
       'garage.heater',
       'garage.insulation',
+      'garage.kitchen',
     ],
   },
 };
@@ -420,10 +447,44 @@ const onSchedule = (job: string): Need[] => [
 ];
 
 export const ACTS: Record<string, ActDef> = {
+  // Phase 22.3: the camp kitchen's recipes, from the pantry (content/food.ts).
+  ...Object.fromEntries(
+    Object.entries(RECIPES).map(([id, r]): [string, ActDef] => [
+      `lot.${id}`,
+      {
+        label: `Cook ${r.name.toLowerCase()}`,
+        cost: { min: r.min, fed: r.fed, energy: r.energy, skin: r.skin },
+        needs: [
+          { has: 'kitchen', why: 'You need a camp kitchen. Dale at the garage fits them.' },
+          ...r.uses.map((u) => ({
+            stock: u,
+            why: `No ${INGREDIENTS[u]!.name.toLowerCase()} in the pantry.`,
+          })),
+        ],
+        note: r.fuels ? 'Fuels you: every crux a little more forgiving, the rest of the day.' : undefined,
+        recipe: id,
+        meal: id,
+        says: r.says,
+      },
+    ]),
+  ),
+  // The market (Phase 22.3): a pack of each ingredient.
+  ...Object.fromEntries(
+    Object.entries(INGREDIENTS).map(([id, g]): [string, ActDef] => [
+      `market.${id}`,
+      {
+        label: `${g.name}, ${g.servings} servings`,
+        cost: { min: 5, cash: -g.price },
+        needs: [{ pay: g.price }],
+        buys: id,
+      },
+    ]),
+  ),
   'lot.cook': {
     label: 'Cook ramen',
     cost: { min: 20, cash: -2, fed: 25, energy: 6 },
     needs: [{ pay: 2 }],
+    meal: 'ramen',
     says: 'Ramen again. It works.',
   },
   'lot.sleep': {
@@ -473,6 +534,7 @@ export const ACTS: Record<string, ActDef> = {
     label: 'Order the special',
     cost: { min: 45, cash: -10, fed: 50, energy: 4 },
     needs: [{ pay: 10 }],
+    meal: 'diner',
     says: "The special is meatloaf. It's always meatloaf.",
   },
   // Phase 22.1, by Evan's call: waiting tables. Four hours and a base a little over the
@@ -495,6 +557,7 @@ export const ACTS: Record<string, ActDef> = {
     label: 'Bottomless coffee',
     cost: { min: 10, cash: -2, energy: 6 },
     needs: [{ pay: 2 }],
+    coffee: true,
   },
   'cafe.shift': {
     label: 'Work a shift',
@@ -581,10 +644,16 @@ export const ACTS: Record<string, ActDef> = {
     'A heater under the passenger seat. It runs on propane from the gear shop.',
   ),
   ...upgrade('insulation', 'Insulate the van', 'Foam in the walls and the ceiling. It holds the warm in.'),
+  ...upgrade(
+    'kitchen',
+    'Fit a camp kitchen',
+    'A two-burner stove and a board that folds down. Groceries at the market.',
+  ),
   'cafe.coffee': {
     label: 'Buy a coffee',
     cost: { min: 10, cash: -4, energy: 16, fed: -2 },
     needs: [{ pay: 4 }],
+    coffee: true,
     says: 'Wren makes it strong.',
   },
   // The gear shop (Phase 21.1). Prices, wear and what a block lasts are KIT's.
@@ -765,6 +834,9 @@ export const ROADS: RoadDef[] = [
   // The warehouse: on the flats below Midtown, between the Lot and the shop.
   { a: 'warehouse', b: 'lot', min: 10, cash: 1 },
   { a: 'warehouse', b: 'shop', min: 6, cash: 1 },
+  // The market: across from the café, a block from Send City.
+  { a: 'market', b: 'cafe', min: 3, cash: 0 },
+  { a: 'market', b: 'gym', min: 4, cash: 0 },
   // The garage: past the gear shop, on the way out to the Lot.
   { a: 'garage', b: 'shop', min: 5, cash: 0 },
   { a: 'garage', b: 'lot', min: 8, cash: 1 },

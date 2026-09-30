@@ -673,7 +673,8 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 12 ||
+  saved?.v !== 13 ||
+  !Array.isArray(st.meals) ||
   st.spot !== 'lot' ||
   !(st.van?.tires > 0) ||
   st.breakdown !== null ||
@@ -736,6 +737,7 @@ await click('#sheet .x');
 await tapAt(100, 560);
 await expectText('#sheet', /Your van/, 'van');
 await expectText('#sheet', /Next shift: Coffee Shop, Wed/, 'the next shift, from the van');
+await expectText('#sheet', /The pantry.*Empty\. The market’s in Midtown/, 'the pantry, from the van');
 await click('#sheet .opt', 'Sleep');
 await expectText('#h-time', /^Day 3 · 7:10 AM$/, 'morning');
 

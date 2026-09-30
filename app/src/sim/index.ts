@@ -125,7 +125,9 @@ export {
   SPOTS,
   UPGRADE,
   WINTER,
+  FOOD,
 } from './dials';
+export { INGREDIENTS, RECIPES, MEAL_NAME } from './content/food';
 export type { SpotId } from './dials';
 export { SPOT_IDS, nightAt, spotBlocked, ticketOdds, drivewayHost, type Night } from './spots';
 export { SPOT_NAME } from './content/spots';

@@ -154,9 +154,14 @@ export const UPGRADE = {
   // A tune-up: a fifth off the gas on every drive.
   tuneup: { price: 90, min: 90, gas: 0.8 },
   // A diesel heater: no cold on a winter night while there's propane for it, a tank a night.
-  heater: { price: 150, min: 90 },
+  // Evan's call: one a player can buy before the first winter (day 15). The season harness's
+  // balanced bots hold a median $83 on days 10 to 14, so $45 and a first tank ($18) is in
+  // reach; $150 wasn't.
+  heater: { price: 45, min: 90 },
   // Insulation: half the cold, heater or not.
   insulation: { price: 60, min: 120, cold: 0.5 },
+  // Phase 22.3: a camp kitchen, and the recipes with it (content/food.ts).
+  kitchen: { price: 80, min: 60 },
 };
 export const WINTER = {
   // What a winter night in the van takes out of you on top of the spot's own chill, before
@@ -166,6 +171,22 @@ export const WINTER = {
   propane: { price: 18, nights: 10 },
   // The warning, this many days before winter comes.
   warnDays: 5,
+};
+
+// Phase 22.3: food [proposed, all of it]. A meal that fuels you (content/food.ts) widens
+// every window by this much for the rest of the day: a day's edge, never a skill (v0.956's
+// recipes gave flat skill, a farm to V18: climbing.md §5.3).
+export const FOOD = {
+  fueled: 1.05,
+  // The same meal this many times running, and Tonight says so (22.4's sickness reads it).
+  same: 4,
+  // Coffee: past this many a day, a cup is jitters, not energy.
+  coffees: 2,
+  crash: -6,
+  // Going to bed hungry with food in the pantry: you eat a serving cold, for this much, up to
+  // this many servings.
+  cold: 15,
+  coldMax: 2,
 };
 
 export const BODY = {

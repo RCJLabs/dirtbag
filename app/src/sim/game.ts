@@ -23,6 +23,7 @@ import { DOG_LINES, DOG_OFFER } from './content/dog';
 import { PEOPLE, RACE_ROUTE, RIVAL_FA_NAMES, TALK } from './content/people';
 import { ACT_I_END } from './content/story';
 import { START_KIT } from './content/gear';
+import { INGREDIENTS, RECIPES } from './content/food';
 import { has, tapedSkin, wearKit } from './kit';
 import {
   prehabBlocked,
@@ -50,6 +51,7 @@ import {
   BODY,
   CLIMB,
   CROWD,
+  FOOD,
   FREESOLO,
   SPEED,
   DAY,
@@ -138,6 +140,9 @@ export function newGame(seed: string): GameState {
     driveway: 0,
     van: { ...VAN.start },
     breakdown: null,
+    pantry: {},
+    meals: [],
+    fueled: 0,
     wall: null,
     expedition: null,
     speed: { pb: null, runs: 0, day: 0 },
@@ -166,6 +171,8 @@ export function emptyLog(): RouteLog {
 // fails loudly if anything non-JSON sneaks in.
 const clone = (s: GameState): GameState => JSON.parse(JSON.stringify(s)) as GameState;
 const clamp100 = (v: number) => Math.max(0, Math.min(100, v));
+// Cups of coffee today (Phase 22.3).
+export const coffeesToday = (s: GameState): number => s.today.filter((f) => f === 'coffee').length;
 const round2 = (v: number) => Math.round(v * 100) / 100;
 
 // A session's injury roll is numbered apart from the day's goes, so the two never share one.
@@ -208,6 +215,8 @@ export function actCost(s: GameState, d: ActDef): Delta {
   if (d.van) return { ...d.cost, cash: -repairCost(s, d.van) };
   // Bed costs wherever you're parked tonight (Phase 22.2b).
   if (d.sleep) return { ...d.cost, cash: -nightAt(s).cost };
+  // Past a couple of cups a day, coffee is jitters, not energy (Phase 22.3).
+  if (d.coffee && coffeesToday(s) >= FOOD.coffees) return { ...d.cost, energy: FOOD.crash };
   if (d.until === undefined) return d.cost;
   const min = Math.max(0, d.until - s.min);
   const out: Delta = { min };
@@ -421,6 +430,18 @@ export function act(s0: GameState, a: Action): Result {
   const sleep = (where: 'van' | 'ledge' | 'away' = 'van') => {
     const ended = s.day;
 
+    // Going to bed hungry with food in the pantry: you eat some of it cold first (Phase 22.3).
+    if (where !== 'away' && s.fed < BODY.hungryBelow) {
+      const cold: string[] = [];
+      for (let n = 0; n < FOOD.coldMax && s.fed < BODY.hungryBelow; n++) {
+        const id = Object.keys(INGREDIENTS).find((k) => (s.pantry[k] ?? 0) > 0);
+        if (!id) break;
+        s.pantry[id]! -= 1;
+        s.fed = clamp100(s.fed + FOOD.cold);
+        cold.push(INGREDIENTS[id]!.name.toLowerCase());
+      }
+      if (cold.length) line(`Too hungry to cook: ${cold.join(' and ')}, cold, from the pantry.`);
+    }
     const hungry = where !== 'away' && s.fed < BODY.hungryBelow;
     // Where the van's parked tonight (Phase 22.2b), and what it costs; the pullout if the
     // card won't cover it.
@@ -659,6 +680,22 @@ export function act(s0: GameState, a: Action): Result {
     if (s.dog && d.dog?.bond) s.dog.bond = Math.min(100, s.dog.bond + d.dog.bond);
     if (d.gear) s.gear[d.gear.id] = d.gear.set ?? (s.gear[d.gear.id] ?? 0) + (d.gear.add ?? 0);
     if (d.van) s.van[d.van] = 100;
+    // Phase 22.3: the pantry, the meals, the day's fuel, and the cups of coffee.
+    if (d.buys) s.pantry[d.buys] = (s.pantry[d.buys] ?? 0) + INGREDIENTS[d.buys]!.servings;
+    if (d.recipe) {
+      const r = RECIPES[d.recipe]!;
+      for (const u of r.uses) s.pantry[u] = (s.pantry[u] ?? 0) - 1;
+      if (r.fuels) s.fueled = s.day;
+    }
+    if (d.meal) {
+      s.meals.push(d.meal);
+      if (s.meals.length > FOOD.same) s.meals.splice(0, s.meals.length - FOOD.same);
+    }
+    if (d.coffee) {
+      if (coffeesToday(s) >= FOOD.coffees)
+        line('One cup too many. Your hands shake and your head doesn’t get the memo.');
+      s.today.push('coffee');
+    }
     // Tips, where a job has them, on top of the shift's pay.
     const tips = d.job ? tipsFor(s, d.job.id) : 0;
     if (tips) spend({ cash: tips });

@@ -1695,7 +1695,7 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
   | Blackout curtains | $60 | 70% fewer tickets at the Lot |
   | A tool kit | $85 | A bodge holds 9 times in 10 |
   | A tune-up | $90 | 20% less gas |
-  | A diesel heater | $150 | No cold on a winter night, a tank of propane a night |
+  | A diesel heater | $45 (was $150) | No cold on a winter night, a tank of propane a night |
   | Insulation | $60 | Half the cold |
 
   None of them earns. The camp kitchen waits for 22.3's recipes.
@@ -1709,6 +1709,29 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Carried:**
   - Winter falls in the first month, so a new climber meets it before they can afford a heater. That's the pressure the plan asked for, but it's worth a play.
   - v0.956's build-outs from scavenged materials aren't in; they want 22.5's hustle.
+- **Evan's call (30 Sep 2026): a heater a player can afford before the first winter.** The season bots hold a median $83 on days 10–14 (balanced; $58 at the 25th percentile), so the heater went from $150 to $45. With a first tank ($18) that's $63. Every balanced bot and 47 of 48 climber bots now have one by day 16.
+  - The bots buy it first, before winter, once no part needs the garage.
+  - They no longer max the card on an urgent repair: a van that can't leave town still reaches a shift and the gym.
+  - Every harness target passes. 0.967.1.
+
+**Status (30 Sep 2026): 22.3a built: the pantry and the kitchen.** Save v13, 0.968.0. 22.3 goes in two parts: the pantry and the kitchen, then the lake.
+- **The Market** is a new place in Midtown, across from the café. It sells eight ingredients in 4-serving packs at about $1–1.50 a serving [proposed].
+- **A camp kitchen** ($80, from Dale) cooks four recipes at the van from the pantry:
+  - oatmeal: +30 food, +4 energy;
+  - rice and beans: +45 food;
+  - breakfast burritos: +50 food, and fuels you;
+  - pasta and greens: +45 food, +3 skin, and fuels you.
+
+  **Fueled** means every window is 5% wider for the rest of the day: a day's edge, never a skill. v0.956's recipes gave flat skill, a farm to V18. Ramen needs no kitchen.
+- **Variety:** the last four meals are remembered (ramen and the special too), and Tonight says when they've all been the same. The sickness it feeds is 22.4's.
+- **Coffee:** past two cups a day, a cup costs 6 energy instead of giving it.
+- **A hungry bedtime** eats up to two servings from the pantry, cold, first.
+- **The bots** fit the kitchen after the heater, shop when the pantry's low, and cook the best meal they can. The career bots all fit one and cook 169 meals in 112 days, 153 of them fueling, and still reach V10 on the same day (161). The buff is no farm (Phase 22's criterion 2, for meals). Every harness target passes.
+- **E2e:** the van sheet shows the pantry.
+- **Carried:**
+  - The cooking beat, a short minigame over the stove, isn't in: cooking is a tap.
+  - The lake (fishing, a swim, water) is 22.3b.
+  - The page is 251.6 of 300 KB.
 
 ---
 
@@ -2093,3 +2116,5 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Evan's call on the jobs: each pays in something besides money (coaching head, setting technique, the warehouse endurance); the café pays least a shift and is shortest; a Diner job, a little more a shift in tips for a longer one. Setting $28 → $30.
 - 2026-09-30 — Phase 22.2b built: where you sleep, a standing choice among the Lot (tickets from the fourth night running), the Upper Trailhead, the truck stop, a friend's driveway and the Ridge, each with its cost, drive and night; Tonight shows it. Save v12. 0.966.0.
 - 2026-09-30 — Evan's call: the size budget goes from 250 KB to 300 KB. Phase 22.2c built: six van upgrades at the garage (bed, curtains, tool kit, tune-up, heater, insulation), none of them income; winter nights cost energy unless the heater's burning propane, with a warning before. 22.2 done. 0.967.0.
+- 2026-09-30 — Evan's call: the heater costs $45 (from $150), within reach before the first winter; the bots buy it first. 0.967.1.
+- 2026-09-30 — Phase 22.3a built: the Market, a camp kitchen and four recipes (two fuel you: wider windows for the day, never a skill), the last four meals counted for variety, coffee crashing past two, and a hungry bedtime eating the pantry first. Save v13. 0.968.0.

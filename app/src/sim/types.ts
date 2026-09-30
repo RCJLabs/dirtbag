@@ -78,6 +78,11 @@ export interface GameState {
   // part that went, where you were headed, the minutes of driving left, and whether you've
   // tried a bodge.
   van: { tires: number; engine: number; battery: number };
+  // Phase 22.3. Servings in the pantry, by ingredient (content/food.ts); the last few meals,
+  // newest last (ramen, the special, a recipe's id); and the day a meal fueled you, if any.
+  pantry: Record<string, number>;
+  meals: string[];
+  fueled: number;
   breakdown: { part: 'tires' | 'engine'; to: string; rest: number; bodged: boolean } | null;
   // On a multi-pitch wall (Phase 21.5): which, and the index of the next pitch.
   wall: { id: string; next: number } | null;
