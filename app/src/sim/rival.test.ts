@@ -44,7 +44,11 @@ const sent: GoResult = { sent: true, hi: 8, fellAt: null, tried: ['A1'], skin: 0
 const send = (s: GameState, route: string) => play(s, { t: 'go', route }, { t: 'done', route, result: sent });
 // Home to the Lot and to bed.
 const night = (s: GameState) =>
-  play({ ...s, at: 'lot', min: 18 * 60, cash: Math.max(s.cash, 100) }, { t: 'act', act: 'lot.sleep' });
+  // No knocks (Phase 22.6a has its own tests).
+  play(
+    { ...s, at: 'lot', min: 18 * 60, cash: Math.max(s.cash, 100), deck: { ...s.deck, knock: s.day } },
+    { t: 'act', act: 'lot.sleep' },
+  );
 const met = (day: number): GameState['people'] => ({ dex: { bond: 0, last: 0, since: day - 3 } });
 
 describe('Dex’s curve', () => {

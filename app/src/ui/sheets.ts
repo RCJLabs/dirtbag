@@ -94,6 +94,8 @@ import {
   RECIPES,
   BUSK,
   buskBlocked,
+  knockById,
+  drivewayHost,
   buskRate,
   guitarRank,
   RANK_NAME,
@@ -721,6 +723,20 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             run: () => game.speedStart(),
           },
         ],
+      };
+    }
+
+    // Phase 22.6a: someone at the door. No close: the night waits on an answer.
+    case 'knock': {
+      const e = s.encounter;
+      const k = e ? knockById(e.id) : undefined;
+      if (!k) return null;
+      const host = drivewayHost(s);
+      return {
+        title: k.title,
+        sub: fill(k.sit, { who: host ? PEOPLE[host]!.name : 'Your friend' }),
+        close: false,
+        rows: k.opts.map((o, i) => ({ label: o.label, run: () => game.answer(i) })),
       };
     }
 

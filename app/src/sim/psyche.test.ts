@@ -14,7 +14,9 @@ const base = (over: Partial<GameState> = {}): GameState => ({
   psyche: { level: 50, stale: 0 },
   ...over,
 });
-const sleep = (s: GameState) => act(s, { t: 'act', act: 'lot.sleep' });
+// No knock tonight (Phase 22.6a has its own tests): a knock the night before keeps the door quiet.
+const sleep = (s: GameState) =>
+  act({ ...s, deck: { ...s.deck, knock: s.day } }, { t: 'act', act: 'lot.sleep' });
 const lines = (r: ReturnType<typeof act>) => r.events.flatMap((e) => (e.k === 'line' ? [e.text] : []));
 const drifted = (l: number) => Math.round(l + (PSYCHE.even - l) * PSYCHE.drift);
 const sent = { ...emptyLog(), goes: 1, sentToday: true, sent: { day: 1, go: 1, style: 'onsight' as const } };

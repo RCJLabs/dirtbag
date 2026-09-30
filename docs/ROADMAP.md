@@ -1816,6 +1816,21 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
   - **The crowd** grows with your playing: 2 people stop for a beginner on an ordinary day, 30 for a legend.
   - **Carried:** the bots don't busk (the harness reads the curve from the numbers). A set's line doesn't vary by crowd beyond the headcount yet. The cooking beat can now reuse the beat's panel.
 
+**Status (30 Sep 2026): 22.6a built: the event deck, and knocks on the van at night.** Save v20, 0.976.0. 22.6 goes in three parts: knocks; roadside stops and hitchhikers on drives; walk-out epics.
+- **The deck** is seeded, and deals at most one encounter a day, of any kind. An encounter waits for your answer: nothing else happens until you give one, as with a breakdown.
+- **Knocks** are v0.956's ten, in its words, with three answers each, by where you're parked:
+  - the Lot: the cop's flashlight, the wrong vehicle, a jump, the dumpster;
+  - the truck stop: the wrong vehicle, a jump, the man in the hi-vis, the dumpster;
+  - the trailhead: a jump, headlights at two, something in the food box;
+  - the Ridge: the food box, the van moving in the wind, somebody else who knows the spot;
+  - a friend's driveway: one in the morning, the friend at the passenger door, which moves your bond with them.
+- **When:** v0.956's odds, 11% a night times the spot's (the Lot 1.4, the truck stop 1.2, the trailhead 0.9, the Ridge 0.6, a driveway 0.5), never within four nights of the last. The deck passes over the last three you've heard while the spot has others. About five a season at the Lot [INFERRED].
+- **What an answer does:** energy (lost sleep), cash (the jump's $20, the truck stop's $11), supplies, bond, and psyche at half v0.956's scale, since the rebuild's moves slower. v0.956's standing, reputation, crafting materials and grime have no home here, so those effects are gone.
+- **Where you see it:** going to bed, the knock (three raps, made in code) and its card: the situation and three answers, no ✕. The answer's line, then the morning.
+- **The bots** answer with the first option. Every harness target passes.
+- **E2e:** a planted night the seed's deck knocks on: bed, the knock heard, the card, an answer, day eight.
+- **Also in this release, from Evan's phone:** the Market's and the Garage's names ran off the map's right edge (labelled to their left now, and a layout test holds every name on screen); and a card-only place had no ✕ while you were there (it closes onto the map now).
+
 ---
 
 ### Phase 24 — Expeditions as trips
@@ -2209,3 +2224,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Phase 22.4d built, and 22.4 with it: psyche, a slow mood that a new send, a new crag, company and the fire lift, and shifts and samey days wear down, drifting back to even every night; it moves every window up to 5%, and Tonight says it in a word. Bots sit at the fire when flat. Save v17. 0.973.0.
 - 2026-09-30 — Phase 22.5a built: the hustle's safety net, once a day each: cans from the van, the bins behind the market after dark, and foraging at the lake, seeded by the day; taught once, the first time you're hungry and broke. None out-earns a shift an hour (a new harness target). Bots use cans and the bins when broke. Save v18. 0.974.0.
 - 2026-09-30 — Phase 22.5b built, and 22.5 with it: busking outside the Coffee Shop, a set of eight strums a day, by Evan's calls: under every job an hour at first, over every job after about 180 days of sets, and bigger crowds as you get better. Criterion 2 notes busking as his exception. Save v19. 0.975.0.
+- 2026-09-30 — Two fixes from Evan's phone: the map's Market and Garage names no longer run off the edge, and card-only places close onto the map. Phase 22.6a built: the seeded event deck, one encounter a day at most, and v0.956's ten knocks on the van at night, by where you're parked, each holding the night until you answer. Save v20. 0.976.0.

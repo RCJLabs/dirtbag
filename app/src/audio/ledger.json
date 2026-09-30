@@ -156,6 +156,10 @@
     "strum": {
       "made": "code",
       "in": "src/audio/voices.ts"
+    },
+    "knock": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
     }
   },
   "recordings": [],

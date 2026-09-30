@@ -86,6 +86,7 @@ import { canAsk, queueMin, sprayable, sprayedOn } from './crowds';
 import { soloed } from './solo';
 import { fishCatch } from './lake';
 import { HUSTLE_TEACH, hustleTake, needsTeaching } from './hustle';
+import { knockById, knockPsyche, knockTonight } from './events';
 import { buskBlocked, buskHeads, buskTips, guitarRank, practiceOf, RANK_LINE } from './busk';
 import { carePrice, clinicBill, jabbed, weeklyBills, worsened } from './clinic';
 import { flareRoll, scarRoll, scarred } from './scars';
@@ -170,6 +171,8 @@ export function newGame(seed: string): GameState {
     crags: [],
     seen: [],
     guitar: 0,
+    deck: { last: 0, knock: 0, seen: [] },
+    encounter: null,
     wall: null,
     expedition: null,
     speed: { pb: null, runs: 0, day: 0 },
@@ -747,6 +750,15 @@ export function act(s0: GameState, a: Action): Result {
     const why = unmet(s, d.needs);
     if (why) return why;
     if (d.sleep) {
+      // A knock on the van (Phase 22.6a): the night waits for your answer.
+      const night = nightAt(s);
+      const k = night.rough ? null : knockTonight(s, night.spot);
+      if (k) {
+        s.encounter = { kind: 'knock', id: k.id };
+        s.deck = { last: s.day, knock: s.day, seen: [...s.deck.seen, k.id].slice(-10) };
+        events.push({ k: 'encounter', kind: 'knock', id: k.id });
+        return null;
+      }
       sleep();
       return null;
     }
@@ -937,6 +949,10 @@ export function act(s0: GameState, a: Action): Result {
 
   // A Free Solo run that ended: nothing more happens to this climber.
   if (s.dead) return refuse('That climber is gone.');
+
+  // Someone at the door (Phase 22.6): nothing happens until you've answered.
+  if (s.encounter && a.t !== 'answer' && a.t !== 'stand' && a.t !== 'pick')
+    return refuse('Someone’s at the door.');
 
   // Broken down on the road: nothing happens until you've found a way out.
   if (s.breakdown && a.t !== 'fix' && a.t !== 'stand' && a.t !== 'pick')
@@ -1309,6 +1325,27 @@ export function act(s0: GameState, a: Action): Result {
       if (Object.keys(got).length) line(`${skillsNote(got)}.`);
       else if (runsToday(s) === SPEED.fresh + 1)
         line('Your legs are done learning today. The clock doesn’t care.');
+      break;
+    }
+
+    // Phase 22.6: an answer to the encounter you're in. A knock's answer, then the rest of
+    // the night.
+    case 'answer': {
+      const e = s.encounter;
+      const k = e ? knockById(e.id) : undefined;
+      const o = k?.opts[a.opt];
+      if (!e || !k || !o) return refuse('Nobody’s asking.');
+      const fx = o.fx;
+      s.encounter = null;
+      if (fx.cash) spend({ cash: fx.cash });
+      if (fx.energy) s.energy = clamp100(s.energy + fx.energy);
+      if (fx.supplies) s.supplies = Math.max(0, Math.min(100, s.supplies + fx.supplies));
+      const p = knockPsyche(fx);
+      if (p) s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + p) };
+      const host = drivewayHost(s);
+      if (fx.bond && host) bond(host, meet(host).bond + fx.bond);
+      line(o.out);
+      sleep();
       break;
     }
 

@@ -132,7 +132,9 @@ describe('injuries', () => {
     const until = s.injury!.until;
     let healed: string[] = [];
     while (t.day < until) {
-      const r = act({ ...t, min: 18 * 60, at: 'lot', cash: 100 }, { t: 'act', act: 'lot.sleep' });
+      let r = act({ ...t, min: 18 * 60, at: 'lot', cash: 100 }, { t: 'act', act: 'lot.sleep' });
+      // Someone knocks (Phase 22.6a): answer, and the night goes on.
+      if (r.state.encounter) r = act(r.state, { t: 'answer', opt: 0 });
       t = r.state;
       healed = r.events.flatMap((e) => (e.k === 'line' ? [e.text] : []));
     }

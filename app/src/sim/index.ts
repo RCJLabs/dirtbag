@@ -118,6 +118,7 @@ export {
   CROWD,
   SPEED,
   BUSK,
+  EVENTS,
   FREESOLO,
   WORK,
   LIFESTYLE,
@@ -138,6 +139,8 @@ export { weeklyBills, clinicBill, carePrice, jabbed } from './clinic';
 export { flaring, scarred, historyWindows } from './scars';
 export { isSick, sickOdds, SICK_NAME } from './sick';
 export { psycheBy, psycheDay, psycheWord } from './psyche';
+export { knockById, knockOdds, knockPsyche } from './events';
+export { KNOCKS, type Knock } from './content/knocks';
 export { buskBlocked, buskHeads, buskRate, guitarRank, guitarSkill, RANK_NAME } from './busk';
 export { MARK_NAME, STYLE_NAME, type Mark } from './content/injuries';
 export { INGREDIENTS, RECIPES, MEAL_NAME } from './content/food';

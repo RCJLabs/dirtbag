@@ -27,7 +27,12 @@ const run = (s: GameState, ...acts: Action[]): GameState => {
   return s;
 };
 const sleep = (s: GameState, n = 1): GameState => {
-  for (let i = 0; i < n; i++) s = run({ ...s, at: 'lot', min: 22 * 60 }, { t: 'act', act: 'lot.sleep' });
+  // No knocks (Phase 22.6a has its own tests).
+  for (let i = 0; i < n; i++)
+    s = run(
+      { ...s, at: 'lot', min: 22 * 60, deck: { ...s.deck, knock: s.day } },
+      { t: 'act', act: 'lot.sleep' },
+    );
   return s;
 };
 const phased = (s: GameState, phase: PhaseId): GameState => ({ ...s, training: { ...s.training, phase } });

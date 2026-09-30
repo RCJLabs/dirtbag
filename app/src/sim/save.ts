@@ -13,9 +13,10 @@ import { JOBS } from './content/jobs';
 import { ROUTES, WALLS } from './content/routes';
 import { EXPEDITIONS } from './content/expeditions';
 import { INGREDIENTS, MEAL_NAME } from './content/food';
+import { KNOCKS } from './content/knocks';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 19;
+export const SAVE_VERSION = 20;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -151,6 +152,11 @@ export const MIGRATIONS: Record<number, Migration> = {
   18: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, guitar: 0 };
+  },
+  // v19 -> v20 (Phase 22.6a): an empty deck, and nobody at the door.
+  19: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, deck: { last: 0, knock: 0, seen: [] }, encounter: null };
   },
 };
 
@@ -320,6 +326,14 @@ export function validate(x: unknown): string[] {
   need(isStrs(x.crags) && x.crags.every((c) => PLACES[c]?.crag), 'crags');
   need(isStrs(x.seen), 'seen');
   need(isNum(x.guitar) && x.guitar >= 0, 'guitar');
+  const dk = x.deck;
+  need(isObj(dk) && isInt(dk.last) && isInt(dk.knock) && isStrs(dk.seen), 'deck');
+  const en = x.encounter;
+  need(
+    en === null ||
+      (isObj(en) && en.kind === 'knock' && typeof en.id === 'string' && KNOCKS.some((k) => k.id === en.id)),
+    'encounter',
+  );
   need(isInt(x.lotNights) && x.lotNights >= 0, 'lotNights');
   need(isInt(x.driveway) && x.driveway >= 0, 'driveway');
   const pct = (v: unknown) => isNum(v) && v >= 0 && v <= 100;

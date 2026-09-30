@@ -20,6 +20,8 @@ export type Cue =
   | 'train'
   // A chord outside the café (Phase 22.5b): clean, or muffed.
   | 'strum'
+  // Knuckles on the van's panel at night (Phase 22.6a).
+  | 'knock'
   // On the wall.
   | 'pullon'
   | 'move'
