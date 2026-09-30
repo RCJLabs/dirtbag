@@ -1015,6 +1015,47 @@ console.log('Broken down on the road');
   await ctx.close();
 }
 
+console.log('A tap on the van, on a phone');
+// A touch opens the van's sheet on the press; the same tap's click must not land on a row
+// the sheet put under the finger (it cooked ramen, on Evan's phone). Standing by the van at
+// night, four taps low on it: the sheet, and nothing spent.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  saved.state = { ...saved.state, at: 'lot', x: 300, min: 18 * 60, cash: 50, breakdown: null };
+  const ctx = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    deviceScaleFactor: 2,
+    hasTouch: true,
+    isMobile: true,
+  });
+  await ctx.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+  }, JSON.stringify(saved));
+  const phone = await ctx.newPage();
+  phone.on('pageerror', (e) => problems.push(`phone: uncaught: ${e.message}`));
+  await phone.goto(server.url, { waitUntil: 'load' });
+  await phone.waitForSelector('#h-cash', { timeout: 10_000 });
+  await phone.waitForTimeout(800);
+  for (const [x, y] of [
+    [100, 560],
+    [120, 620],
+    [60, 650],
+    [150, 680],
+  ]) {
+    await phone.touchscreen.tap(x, y);
+    await phone.waitForTimeout(600);
+    const sheet = await phone.evaluate(() => document.querySelector('#sheet')?.textContent ?? '');
+    if (!/Your van/.test(sheet)) await fail(`a tap at ${x},${y} didn't open the van: ${sheet.slice(0, 80)}`);
+    await phone.evaluate(() => document.querySelector('#sheet .x')?.click());
+    await phone.waitForTimeout(300);
+  }
+  const after = [await phone.textContent('#h-cash'), await phone.textContent('#h-time')];
+  if (after[0] !== '$50' || !/6:00 PM$/.test(after[1] ?? ''))
+    await fail(`the taps on the van did something: ${after.join(' ')}`);
+  log('four taps on the van: its sheet each time, nothing spent');
+  await ctx.close();
+}
+
 console.log('A keyboard, and larger text');
 {
   const portrait = page;

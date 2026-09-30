@@ -135,12 +135,28 @@ const LOAD_WORD: Record<Zone, [string, string]> = {
 // bars, or a dashed one when it's a sliver.
 const winBars = (w: number) => (w >= 0.14 ? 3 : w >= 0.09 ? 2 : w >= 0.055 ? 1 : 0);
 
+// When the last press went down, anywhere. A tap on the scene opens a sheet on pointerdown,
+// and the same tap's click lands afterwards on whatever the sheet put under the finger: a row
+// you never chose. A sheet ignores any click whose press went down before it opened.
+let downAt = 0;
+if (typeof window !== 'undefined')
+  window.addEventListener('pointerdown', () => (downAt = performance.now()), true);
+
 export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
   const ref = useRef<HTMLDivElement>(null);
+  const opened = useRef(0);
+  const ghost = (e: React.MouseEvent) => {
+    // A keyboard's click has no press (detail 0); a real tap pressed after the sheet opened.
+    if (e.detail > 0 && downAt < opened.current) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
   const state = ui.state;
   const kind = id.k === 'place' ? `place:${id.id}` : id.k === 'journal' ? `journal:${id.page}` : id.k;
   // A new sheet starts at the top with its first live button focused, for keyboards.
   useLayoutEffect(() => {
+    opened.current = performance.now();
     const el = ref.current;
     if (!el) return;
     el.scrollTop = 0;
@@ -170,7 +186,14 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
     ) : null;
   if (body)
     return (
-      <div className="sheet" id="sheet" role="dialog" aria-labelledby="sheet-title" ref={ref}>
+      <div
+        className="sheet"
+        id="sheet"
+        role="dialog"
+        aria-labelledby="sheet-title"
+        ref={ref}
+        onClickCapture={ghost}
+      >
         {id.k !== 'fa' && id.k !== 'card' && <Close game={game} />}
         {body}
       </div>
@@ -178,7 +201,14 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
   const spec = buildSheet(game, id, state);
   if (!spec) return null;
   return (
-    <div className="sheet" id="sheet" role="dialog" aria-labelledby="sheet-title" ref={ref}>
+    <div
+      className="sheet"
+      id="sheet"
+      role="dialog"
+      aria-labelledby="sheet-title"
+      ref={ref}
+      onClickCapture={ghost}
+    >
       {spec.close && <Close game={game} />}
       <h3 id="sheet-title">{spec.title}</h3>
       {spec.head && <PlaceHead s={state} {...spec.head} />}

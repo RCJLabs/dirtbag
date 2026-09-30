@@ -492,6 +492,11 @@ function drawVan(
   g.fillStyle = 'rgba(0,0,0,.12)';
   g.fillRect(x - 2, y + h * 0.78, w + 4, h * 0.3);
   g.restore();
+  // The windows stay inside the body: the cab's glass follows the curve of the roof.
+  g.save();
+  g.beginPath();
+  vanBody(g, x, y, w, h);
+  g.clip();
   for (const v of vanWindows(x, y, w, h)) fill(g, (gg) => gg.rect(...v), lit ? '#FFD27A' : glass);
   if (!lit) {
     g.fillStyle = 'rgba(255,255,255,.35)';
@@ -505,6 +510,7 @@ function drawVan(
       g.fill();
     }
   }
+  g.restore();
   g.strokeStyle = 'rgba(0,0,0,.28)';
   g.lineWidth = 1;
   g.beginPath();
