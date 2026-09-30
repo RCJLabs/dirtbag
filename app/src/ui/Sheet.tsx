@@ -1,6 +1,8 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   ACT_I,
+  guitarRank,
+  RANK_NAME,
   ACT_I_END,
   average,
   indoor,
@@ -958,6 +960,11 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
             `Old injuries: your ${s.scars.map((m) => MARK_NAME[m as Mark]).join(', ')}. Lines that load them are riskier. `}
           {s.fear.length > 0 &&
             `Afraid of ${s.fear.map((f) => STYLE_NAME[f as Style].toLowerCase()).join(' and ')} lines until you send one.`}
+        </p>
+      )}
+      {s.guitar > 0 && (
+        <p className="sub" id="guitar">
+          {`Guitar: ${RANK_NAME[guitarRank(s.guitar)].toLowerCase()}, from your sets outside the café.`}
         </p>
       )}
       <KitRows s={s} />

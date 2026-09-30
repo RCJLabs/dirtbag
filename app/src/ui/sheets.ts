@@ -92,6 +92,11 @@ import {
   bodgeOdds,
   INGREDIENTS,
   RECIPES,
+  BUSK,
+  buskBlocked,
+  buskRate,
+  guitarRank,
+  RANK_NAME,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import type { Game, SheetId } from '../game/game';
@@ -276,6 +281,21 @@ const mapRow = (game: Game): Row => ({
   },
 });
 
+// Busking outside the café (Phase 22.5b): what you play like, and what an ordinary crowd
+// pays that an hour.
+function buskRow(game: Game, s: GameState): Row {
+  const why = buskBlocked(s);
+  return {
+    label: 'Busk out front',
+    cost: costLabel({ min: BUSK.min, energy: -BUSK.energy }),
+    note: why
+      ? `${why}.`
+      : `${RANK_NAME[guitarRank(s.guitar)]}: about ${money(Math.round(buskRate(s.guitar)))} an hour on an ordinary crowd, played clean. Strum as the marker crosses the band.`,
+    off: !!why,
+    run: () => game.buskStart(),
+  };
+}
+
 export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | null {
   switch (id.k) {
     case 'van': {
@@ -459,6 +479,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         head,
         rows: [
           ...p.acts.map((a) => actRow(game, s, a)),
+          // Phase 22.5b: a set out front.
+          ...(id.id === 'cafe' ? [buskRow(game, s)] : []),
           ...onward.map((o) =>
             driveRow(game, s, o, o === 'lot' ? 'Drive back to the Lot' : `Drive to ${PLACES[o]!.name}`),
           ),

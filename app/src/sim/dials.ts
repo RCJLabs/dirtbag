@@ -423,6 +423,40 @@ export const HUSTLE = {
   teach: { fed: 35, cash: 10 },
 };
 
+// Phase 22.5b: busking outside the café [proposed]. Evan's call: it pays less than any job
+// at first, and after hundreds of sets more an hour than any job, because you've become a
+// good guitar player; and the crowds grow as you do. Your playing is `learn`-scaled: after
+// `learn` sets you're 63% of the way there, after three times that 95%. A set counts
+// `practice.floor` plus the rest by how clean it was. Pay an hour runs from `rate.start`
+// (under the warehouse's $6.50) to `rate.top` (over head coach's $17), times the crowd
+// (the hour, the weekend, the sky, the day's luck: about 1 on an ordinary day), times how
+// you played. One set a day, so a day's busking never pays what a day's shift does.
+export const BUSK = {
+  min: 60,
+  energy: 5,
+  from: 8 * 60,
+  until: 20 * 60,
+  notes: 8,
+  learn: 150,
+  practice: { floor: 0.5 },
+  rate: { start: 4, top: 24 },
+  // Tips at a sloppy set, as a share of a clean one's.
+  sloppy: 0.3,
+  hours: [
+    { from: 8 * 60, f: 0.6 },
+    { from: 11 * 60 + 30, f: 1.2 },
+    { from: 14 * 60, f: 0.8 },
+    { from: 17 * 60, f: 1.3 },
+  ],
+  weekend: 1.3,
+  sky: { prime: 1.1, fair: 1, hot: 0.8, rain: 0 },
+  luck: 0.2,
+  // People who stop, on an ordinary crowd, from your first set to a legend's.
+  heads: [2, 30] as [number, number],
+  // Where your playing earns a name: busker, regular, local legend.
+  ranks: [0.25, 0.55, 0.85],
+};
+
 // Phase 22.4d: psyche [proposed]. A slow mood, 0 to 100, settled each night. Variety and
 // company lift it and grind wears it down; every night it drifts a tenth of the way back to
 // even, so nothing holds it up for long, and a day moves it at most `cap` either way. At the

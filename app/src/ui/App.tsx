@@ -5,6 +5,7 @@ import { H, screenWidth, WIDE } from '../view/layout';
 import { Bubble } from './Bubble';
 import { ClimbPanel } from './ClimbPanel';
 import { SpeedPanel } from './SpeedPanel';
+import { BuskPanel } from './BuskPanel';
 import { Create } from './Create';
 import { Goal } from './Goal';
 import { PlanChip } from './PlanChip';
@@ -80,6 +81,14 @@ export function App({ game }: { game: Game }) {
         if (hand !== null) {
           e.preventDefault();
           if (!e.repeat) game.speedGrab(hand);
+        }
+        return;
+      }
+      // Outside the café (Phase 22.5b): Space or Enter strums.
+      if (u.busk && u.busk.phase === 'play') {
+        if (hold(e)) {
+          e.preventDefault();
+          if (!e.repeat) game.buskTap();
         }
         return;
       }
@@ -168,7 +177,8 @@ export function App({ game }: { game: Game }) {
           {ui.sheet && <Sheet game={game} id={ui.sheet} ui={ui} />}
           {ui.climbing && <ClimbPanel game={game} />}
           {ui.speed && <SpeedPanel game={game} />}
-          {ui.view === 'map' && !ui.driving && !ui.sheet && (
+          {ui.busk && <BuskPanel game={game} />}
+          {ui.view === 'map' && !ui.driving && !ui.sheet && !ui.busk && (
             <div className="corner">
               <button type="button" className="restart" onClick={() => game.openSheet({ k: 'restart' })}>
                 Start over

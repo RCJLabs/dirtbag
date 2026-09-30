@@ -67,6 +67,7 @@ import {
   PLANS,
   RIVAL,
   SCARS,
+  BUSK,
   PSYCHE,
   SICK,
   SUPPLIES,
@@ -85,6 +86,7 @@ import { canAsk, queueMin, sprayable, sprayedOn } from './crowds';
 import { soloed } from './solo';
 import { fishCatch } from './lake';
 import { HUSTLE_TEACH, hustleTake, needsTeaching } from './hustle';
+import { buskBlocked, buskHeads, buskTips, guitarRank, practiceOf, RANK_LINE } from './busk';
 import { carePrice, clinicBill, jabbed, weeklyBills, worsened } from './clinic';
 import { flareRoll, scarRoll, scarred } from './scars';
 import { isSick, SICK_NAME, sickRoll } from './sick';
@@ -167,6 +169,7 @@ export function newGame(seed: string): GameState {
     psyche: { level: PSYCHE.start, stale: 0 },
     crags: [],
     seen: [],
+    guitar: 0,
     wall: null,
     expedition: null,
     speed: { pb: null, runs: 0, day: 0 },
@@ -1306,6 +1309,35 @@ export function act(s0: GameState, a: Action): Result {
       if (Object.keys(got).length) line(`${skillsNote(got)}.`);
       else if (runsToday(s) === SPEED.fresh + 1)
         line('Your legs are done learning today. The clock doesn’t care.');
+      break;
+    }
+
+    // Phase 22.5b: a set outside the café, and how clean it was (0 to 1).
+    case 'busk': {
+      const why = buskBlocked(s);
+      if (why) return refuse(`${why}.`);
+      if (!(a.acc >= 0 && a.acc <= 1)) return refuse('Not a set.');
+      const was = guitarRank(s.guitar);
+      const heads = buskHeads(s);
+      const tips = buskTips(s, a.acc);
+      spend({ min: BUSK.min, energy: -BUSK.energy, cash: tips });
+      s.today.push('busked');
+      s.guitar = round2(s.guitar + practiceOf(a.acc));
+      const how =
+        a.acc >= 0.85
+          ? 'Clean all the way through.'
+          : a.acc >= 0.5
+            ? 'A couple of fluffed chords. Nobody seems to mind.'
+            : 'You lose the thread twice and start one song over.';
+      const who =
+        heads <= 0
+          ? 'Nobody stops.'
+          : heads === 1
+            ? 'One person stops to listen.'
+            : `${heads} people stop to listen.`;
+      line(`${how} ${who} ${tips ? `${money(tips)} in the case.` : 'The case stays empty.'}`);
+      const now = guitarRank(s.guitar);
+      if (now !== was && now !== 'beginner') line(RANK_LINE[now]);
       break;
     }
 

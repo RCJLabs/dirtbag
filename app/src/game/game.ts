@@ -42,6 +42,8 @@ import {
   SPEED,
   speedBlocked,
   speedTime,
+  BUSK,
+  buskBlocked,
 } from '../sim';
 import { bedFor, ON_THE_MAP } from '../audio/beds';
 import { actCue, VERB_CUES } from '../audio/cues';
@@ -165,6 +167,18 @@ export interface Ui {
   plan: { steps: PlanStep[]; i: number; waiting: boolean; stopped: string | null } | null;
   // A run on the speed wall: the lights, how many holds you've taken, and how it ended.
   speed: SpeedUi | null;
+  // A set outside the café (Phase 22.5b).
+  busk: BuskUi | null;
+}
+
+// A set: the note you're on, the marker's sweep across the bar (0 to 1), each note's score
+// (1 in the band, a half near it, 0 off it), and when it's done, what the set came to.
+export interface BuskUi {
+  phase: 'play' | 'done';
+  note: number;
+  pos: number;
+  scores: number[];
+  said: string | null;
 }
 
 export interface SpeedUi {
@@ -183,6 +197,10 @@ const SPEED_LIGHT = 1;
 const SPEED_GO = 3;
 // A same-hand grab: you slip and lose this long.
 const SPEED_SLIP = 0.35;
+// Busking (Phase 22.5b): seconds for the marker to cross the bar, and the band: a hit
+// within `BUSK_BAND` of the middle, half a hit within twice that.
+const BUSK_SWEEP = 1.3;
+const BUSK_BAND = 0.08;
 
 export interface Fast {
   cam: number;
@@ -290,6 +308,7 @@ export class Game {
       plans: loadPlans(),
       plan: null,
       speed: null,
+      busk: null,
     });
     this.fast = createStore<Fast>({ cam: 0, att: null });
     this.sound.configure(settings);
@@ -926,6 +945,53 @@ export class Game {
     return { holds: u.holds, slip: !!this.speedRun && this.speedRun.t < this.speedRun.slipUntil };
   }
 
+  // ---- busking outside the café (Phase 22.5b) ----
+
+  buskStart(): void {
+    const why = buskBlocked(this.state);
+    if (why) {
+      this.toast(`${why}.`);
+      return;
+    }
+    this.set({ sheet: null, busk: { phase: 'play', note: 0, pos: 0, scores: [], said: null } });
+  }
+
+  private stepBusk(dt: number): void {
+    const u = this.ui.get().busk;
+    if (!u || u.phase !== 'play') return;
+    const pos = u.pos + dt / BUSK_SWEEP;
+    // Off the end of the bar: that chord's missed.
+    if (pos >= 1) return this.buskScore(u, 0);
+    this.set({ busk: { ...u, pos } });
+  }
+
+  // A strum: scored by how near the middle the marker was.
+  buskTap(): void {
+    const u = this.ui.get().busk;
+    if (!u || u.phase !== 'play') return;
+    const off = Math.abs(u.pos - 0.5);
+    this.buskScore(u, off <= BUSK_BAND ? 1 : off <= 2 * BUSK_BAND ? 0.5 : 0);
+  }
+
+  private buskScore(u: BuskUi, score: number): void {
+    this.sound.play('strum', score);
+    const scores = [...u.scores, score];
+    if (scores.length < BUSK.notes) {
+      this.set({ busk: { ...u, note: scores.length, pos: 0, scores } });
+      return;
+    }
+    const acc = scores.reduce((a, b) => a + b, 0) / scores.length;
+    const ev = this.dispatch({ t: 'busk', acc });
+    const said = ev.flatMap((e) => (e.k === 'line' ? [e.text] : [])).join(' ') || null;
+    this.set({ busk: { ...u, phase: 'done', pos: 0, scores, said } });
+  }
+
+  // Packed up: back to the café's card, where you were.
+  buskDone(): void {
+    this.set({ busk: null });
+    this.openSheet({ k: 'place', id: this.state.at });
+  }
+
   // Ask the crowd at the base for a line's beta.
   ask(route: string): void {
     this.dispatch({ t: 'ask', route });
@@ -1199,6 +1265,7 @@ export class Game {
       }
     }
     this.stepSpeed(dt);
+    this.stepBusk(dt);
     this.sound.tick(dt);
     if (this.scout.wag > 0) this.scout.wag -= dt;
     const f = this.fast.get();

@@ -675,7 +675,8 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 18 ||
+  saved?.v !== 19 ||
+  !(st.guitar >= 0) ||
   !Array.isArray(st.seen) ||
   !(st.psyche?.level >= 0) ||
   !Array.isArray(st.crags) ||
@@ -838,6 +839,43 @@ await expectText('#plan-chip', /Plan stopped.*Shifts start by 3 PM/, 'the plan s
 await shot('plan-stopped');
 await click('#plan-chip .plan-x');
 
+console.log('Busking');
+// Phase 22.5b: a set out front, the marker read off the bar and strummed as it crosses the
+// middle, as a player's eye would.
+await click('#sheet .opt', 'Busk out front');
+await until('the set', async () => (await page.locator('#busk').count()) > 0);
+for (let n = 0; n < 8; n++) {
+  // Watched a frame at a time, in the page: a poll from here is too slow for the band.
+  const ok = await page.evaluate(
+    () =>
+      new Promise((done) => {
+        const t0 = performance.now();
+        const look = () => {
+          const m = document.querySelector('#busk .mark');
+          const x = m ? parseFloat(getComputedStyle(m).getPropertyValue('--x')) : NaN;
+          if (x >= 46 && x <= 54) {
+            document
+              .querySelector('#b-strum')
+              .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+            done(true);
+          } else if (performance.now() - t0 > 5000) done(false);
+          else requestAnimationFrame(look);
+        };
+        look();
+      }),
+  );
+  if (!ok) await fail('the marker never crossed the band');
+  await wait(120);
+}
+await expectText(
+  '#b-status',
+  /(stop to listen|stops to listen|Nobody stops).*(in the case|stays empty)/,
+  'the set',
+);
+log(`the set: ${await text('#b-status')}`);
+await shot('busking');
+await click('#b-done');
+
 console.log('The gear shop');
 // Phase 21.1: the shop has a front, sells a block of chalk, and the kit shows on the You
 // page: the shoes you drove out in, and the chalk.
@@ -879,7 +917,7 @@ if (quiet.length) await fail(`no ambience at: ${quiet.join(', ')}`);
 // Everything the five days do. Scout and a hold-to-load's charge and throw aren't in them;
 // cues.test.ts holds those to having a sound.
 const HEARD =
-  'breath cleared clip crux drive earn eat fell grip land move paper pay pullon rest send slap sleep step talk tap train';
+  'breath cleared clip crux drive earn eat fell grip land move paper pay pullon rest send slap sleep step strum talk tap train';
 const silent = HEARD.split(' ').filter((c) => !heard.has(c));
 if (silent.length) await fail(`never heard: ${silent.join(', ')}`);
 

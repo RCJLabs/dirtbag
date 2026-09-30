@@ -12,6 +12,7 @@ export function Goal({ game, ui }: { game: Game; ui: Ui }) {
     ui.talk ||
     ui.climbing ||
     ui.speed ||
+    ui.busk ||
     ui.driving ||
     ui.view === 'wall'
   )

@@ -15,7 +15,7 @@ import { EXPEDITIONS } from './content/expeditions';
 import { INGREDIENTS, MEAL_NAME } from './content/food';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 18;
+export const SAVE_VERSION = 19;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -146,6 +146,11 @@ export const MIGRATIONS: Record<number, Migration> = {
   17: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, seen: [] };
+  },
+  // v18 -> v19 (Phase 22.5b): no sets played yet.
+  18: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, guitar: 0 };
   },
 };
 
@@ -314,6 +319,7 @@ export function validate(x: unknown): string[] {
   );
   need(isStrs(x.crags) && x.crags.every((c) => PLACES[c]?.crag), 'crags');
   need(isStrs(x.seen), 'seen');
+  need(isNum(x.guitar) && x.guitar >= 0, 'guitar');
   need(isInt(x.lotNights) && x.lotNights >= 0, 'lotNights');
   need(isInt(x.driveway) && x.driveway >= 0, 'driveway');
   const pct = (v: unknown) => isNum(v) && v >= 0 && v <= 100;
