@@ -520,3 +520,18 @@ export const MAP_PINS: Record<string, Pin> = {
   cave: { x: 266, y: 334, side: 1, kind: 'town' },
 };
 export const DIM_PINS: [number, number][] = [[78, 612]];
+
+// The valley on the screen: scaled a little, about the middle, so its pins (The Big Stone
+// at the top, the Lot at the bottom) sit between the HUD and the caption above and the goal
+// chip and buttons below. Drawn full size, the top crags hid under the HUD on a phone.
+export const MAP_FIT = { top: 112, bottom: 648, from: 34, to: 612 };
+export const MAP_K = (MAP_FIT.bottom - MAP_FIT.top) / (MAP_FIT.to - MAP_FIT.from);
+// A point on the map to the screen's valley column, and back.
+export const mapToScreen = (x: number, y: number): [number, number] => [
+  W / 2 + (x - W / 2) * MAP_K,
+  MAP_FIT.top + (y - MAP_FIT.from) * MAP_K,
+];
+export const screenToMap = (x: number, y: number): [number, number] => [
+  W / 2 + (x - W / 2) / MAP_K,
+  MAP_FIT.from + (y - MAP_FIT.top) / MAP_K,
+];

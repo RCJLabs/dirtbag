@@ -43,6 +43,8 @@ import {
   CAVE_X,
   SCENES,
   SPEED_LANE,
+  MAP_FIT,
+  MAP_K,
   W,
   Z,
   type PinKind,
@@ -315,20 +317,36 @@ const PIN_FILL: Record<PinKind, string> = { crag: ACC.comic, camp: '#9CC77E', to
 // of it, and the valley stays in the middle.
 export const mapLeft = (w: number): number => (w - W) / 2;
 
+// The map's art as it's drawn: padded, so the valley scaled into MAP_FIT still reaches both
+// sides of a portrait screen.
+export const valleyArt = (): HTMLCanvasElement => mapArt(W + 1);
+
 function renderMap(g: G, f: Frame): void {
-  const art = mapArt(f.w);
-  const aw = art.width / (art.height / H);
-  g.drawImage(art, ((aw - f.w) / 2) * (art.height / H), 0, f.w * (art.height / H), art.height, 0, 0, f.w, H);
-  // The title, as a comic caption box, in the screen's corner.
+  // The valley, fitted between the HUD and the buttons (MAP_FIT), its pins and roads with it,
+  // on a dark ground that frames it where it doesn't reach.
   g.fillStyle = INK;
-  g.fillRect(18, 59, 188, 38);
+  g.fillRect(0, 0, f.w, H);
+  g.translate(mapLeft(f.w), 0);
+  g.translate(W / 2, MAP_FIT.top);
+  g.scale(MAP_K, MAP_K);
+  g.translate(-W / 2, -MAP_FIT.from);
+  const wide = valleyArt();
+  const ww = wide.width / (wide.height / H);
+  g.drawImage(wide, (W - ww) / 2, 0, ww, H);
+  g.setTransform(f.px, 0, 0, f.px, 0, 0);
+  // The title, as a comic caption box, under the HUD's left end.
+  g.fillStyle = INK;
+  g.fillRect(16, 76, 160, 30);
   g.fillStyle = '#F2C84B';
-  g.fillRect(14, 55, 188, 38);
+  g.fillRect(12, 72, 160, 30);
   g.strokeStyle = INK;
   g.lineWidth = 2.5;
-  g.strokeRect(14, 55, 188, 38);
-  label(g, 'comic', 'Dirtbag Valley', 108, 82, { size: 25, halo: '#F2C84B' });
+  g.strokeRect(12, 72, 160, 30);
+  label(g, 'comic', 'Dirtbag Valley', 92, 94, { size: 21, halo: '#F2C84B' });
   g.translate(mapLeft(f.w), 0);
+  g.translate(W / 2, MAP_FIT.top);
+  g.scale(MAP_K, MAP_K);
+  g.translate(-W / 2, -MAP_FIT.from);
   for (const [x, y] of DIM_PINS) {
     g.fillStyle = 'rgba(30,30,34,.4)';
     g.beginPath();

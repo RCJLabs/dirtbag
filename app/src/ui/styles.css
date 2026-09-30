@@ -691,11 +691,11 @@ button.pill:disabled {
 .ui:has(.plan-chip) .toast {
   top: 110px;
 }
-/* The map's pins run from top to bottom; the band between Roadside (to y 236) and Send City
-   (from y 398) is clear of them, so a toast on the open map goes there. A sheet on the
-   map covers the bottom, and a toast keeps to the top. */
+/* The map's pins run from top to bottom; fitted under the HUD (MAP_FIT), the band between
+   Roadside (to y 300) and The Cave (from y 375) is clear of them, so a toast on the open
+   map goes there. A sheet on the map covers the bottom, and a toast keeps to the top. */
 .screen.on-map .ui:not(:has(.sheet)) .toast {
-  top: 248px;
+  top: 306px;
 }
 .plan-chip {
   position: absolute;
