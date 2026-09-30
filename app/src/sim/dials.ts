@@ -189,6 +189,23 @@ export const FOOD = {
   coldMax: 2,
 };
 
+// Phase 22.3b: the lake [proposed]. Fishing is food, not cash: each fish is `fish` food,
+// cooked on the shore. The catch is up to `most` fish, its odds by season and by the hour
+// (dawn and dusk bite). Two hours for at most a diner meal's worth, once a day: never a
+// shift's pay (the harness's rule for a hustle).
+export const LAKE = {
+  fish: 15,
+  most: 3,
+  // The chance of each fish, by season.
+  bite: { spring: 0.4, summer: 0.5, fall: 0.5, winter: 0.15 },
+  // Before this minute or from that one, the fish bite half again as often.
+  dawn: 9 * 60,
+  dusk: 17 * 60,
+  golden: 1.5,
+  // A swim: more back than it takes, once a day, not in winter.
+  swim: { min: 45, energy: 8 },
+};
+
 export const BODY = {
   startEnergy: 78,
   startSkin: 64,

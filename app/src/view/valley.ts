@@ -154,6 +154,16 @@ export const SIDE_ROADS: Record<string, { pts: Pt[]; dirt?: true }> = {
       [202, 572],
     ],
   },
+  // The Lake: a dirt track west off the highway below the Lot, over the creek.
+  lake: {
+    pts: [
+      [roadX(622), 622],
+      [190, 624],
+      [150, 616],
+      [120, 608],
+    ],
+    dirt: true,
+  },
   // The Market: a street east off the highway, across from the café.
   market: {
     pts: [
