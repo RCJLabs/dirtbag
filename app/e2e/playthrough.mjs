@@ -558,6 +558,8 @@ await press('Enter');
 await expectText('#sheet', /Your van/, 'van');
 // Tonight says what bed will do, and bed does it: $41 in the morning.
 await expectText('#tonight', /The spot\$18.*Morning\$41/, 'tonight');
+// Psyche by morning, and the fire you sat at is part of why.
+await expectText('#psyche', /^Psyche(Keen|Psyched)Up for .*the fire\./, 'psyche');
 await click('#sheet .opt', 'Sleep');
 await expectText('#h-time', /^Day 2 · 7:10 AM$/, 'morning');
 await expectText('#h-cash', /^\$41$/, 'cash');
@@ -673,7 +675,9 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 16 ||
+  saved?.v !== 17 ||
+  !(st.psyche?.level >= 0) ||
+  !Array.isArray(st.crags) ||
   !(st.supplies >= 0) ||
   !Array.isArray(st.scars) ||
   st.insurance !== 'catastrophic' ||

@@ -411,6 +411,30 @@ export const SICK = {
   doctor: { price: 30, min: 60 },
 };
 
+// Phase 22.4d: psyche [proposed]. A slow mood, 0 to 100, settled each night. Variety and
+// company lift it and grind wears it down; every night it drifts a tenth of the way back to
+// even, so nothing holds it up for long, and a day moves it at most `cap` either way. At the
+// ends it moves every window by `windows`: a little, never the day's story.
+export const PSYCHE = {
+  start: 60,
+  even: 50,
+  drift: 0.1,
+  cap: 8,
+  // A line you'd never sent; a day at a crag, or one you'd never been to; a day climbing
+  // with someone; the fire at night.
+  send: 4,
+  crag: 2,
+  newCrag: 6,
+  company: 3,
+  fire: 2,
+  // A shift; and each day in a row with none of the above past the first, up to `staleMax`.
+  shift: -3,
+  staleMax: 4,
+  windows: 0.05,
+  // Where the words change: under 25 low, then flat, steady, keen, and psyched from 80.
+  bands: [25, 45, 60, 80],
+};
+
 export const INJURY = {
   days: [
     [2, 4],

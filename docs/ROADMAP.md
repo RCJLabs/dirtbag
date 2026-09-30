@@ -1788,6 +1788,19 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The bots** buy water when supplies fall under 40 and see the doctor for a toothache. A balanced bot is sick about twice in 56 days, with no toothaches. Every harness target passes.
 - **Carried:** teeth are the toothache. v0.956's separate tooth meter isn't back, and doesn't need to be.
 
+**Status (30 Sep 2026): 22.4d built: psyche. 22.4 is done.** Save v17, 0.973.0.
+- **Psyche** is a slow mood, 0 to 100, settled every night from the day that's ending [proposed numbers].
+  - **Lifts:** a line you'd never sent (+4); a day at a crag (+2), or +6 the first time you're at that one; climbing with someone (+3); the fire at night (+2).
+  - **Wears:** a shift (−3); and a run of days with nothing to lift it, a little more each day, to −4.
+  - A day moves it at most 8 either way, and every night it drifts a tenth of the way back to 50. No one ritual holds it up: the fire every night settles at keen, short of psyched.
+  - A new climber starts at 60, keen. At the ends it moves every window 5%.
+- **Where you see it:** Tonight gives it in a word (low, flat, steady, keen, psyched) and says what moved it today. A line says so the morning it tips into low or psyched.
+- **The bots** sit at the fire when they're under keen. Without it the career bots sank to low after day 100 (projecting at the limit, same gym, shifts); with it they hold steady. The season bots run keen: early on, most days bring a new send.
+- Every harness target passes, and a new one: psyche never stays low for more than a week (longest 0 days; career median 52 at day 56, 63 at day 224).
+- **Carried:**
+  - Scout, a night with people at the fire, and events (22.6) don't lift it yet. Those slices can add their own lifts.
+  - Nothing in the game reads psyche but the windows. Story beats that want it can.
+
 ---
 
 ### Phase 24 — Expeditions as trips
@@ -2178,3 +2191,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Phase 22.4b built: old injuries (a healed tier-2+ injury may leave a mark: more risk there, and flares physio settles) and fear (after a landing, a deck or the worst injury, that style's windows tighter until you send one). Save v15. 0.971.0.
 - 2026-09-30 — Fixes from Evan's phone: the van's lit windows spilled past the cab's roof (now clipped to the body), and a tap on the van while standing by it opened its sheet and let the same tap's click pick a row (it cooked ramen). A sheet now ignores a click whose press came before it opened; an e2e step taps the van on a touch screen. 0.971.1.
 - 2026-09-30 — Phase 22.4c built: one supplies gauge (water and washing) refilled at the lake, the market, the gym and the truck stop; a seeded nightly chance of a cold, a bug or a toothache from the cold, low supplies, hunger and a samey diet; a doctor at the clinic. Save v16. 0.972.0.
+- 2026-09-30 — Phase 22.4d built, and 22.4 with it: psyche, a slow mood that a new send, a new crag, company and the fire lift, and shifts and samey days wear down, drifting back to even every night; it moves every window up to 5%, and Tonight says it in a word. Bots sit at the fire when flat. Save v17. 0.973.0.

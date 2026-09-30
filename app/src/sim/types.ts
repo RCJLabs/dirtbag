@@ -94,6 +94,10 @@ export interface GameState {
   // day it passes (a toothache waits for the clinic).
   supplies: number;
   sick: { kind: 'cold' | 'bug' | 'toothache'; until: number } | null;
+  // Phase 22.4d. Psyche, 0 to 100, and the days in a row with nothing to lift it; and the
+  // crags you've been to since, which is what makes one new.
+  psyche: { level: number; stale: number };
+  crags: string[];
   meals: string[];
   fueled: number;
   breakdown: { part: 'tires' | 'engine'; to: string; rest: number; bodged: boolean } | null;

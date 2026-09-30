@@ -117,6 +117,10 @@ import { CREDITS } from './credits';
 import { kitNote, kitState } from './kit';
 import { vars } from './vars';
 
+// "a, b and c".
+const and = (xs: string[]): string =>
+  xs.length > 1 ? `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}` : (xs[0] ?? '');
+
 export const VERB_TEXT: Record<Verb, string> = {
   load: 'Hold to load, let go in the band',
   tension: 'Hold and release to stay in the band',
@@ -785,6 +789,20 @@ function TonightList({ t }: { t: Tonight }) {
             {t.supplies < SUPPLIES.low
               ? 'Water and washing by morning: low. The lake, the market or the gym.'
               : 'Water and washing by morning.'}
+          </small>
+        </li>
+        <li id="psyche">
+          <b>Psyche</b>
+          <span className="sky">{`${t.psyche.word[0]!.toUpperCase()}${t.psyche.word.slice(1)}`}</span>
+          <small>
+            {t.psyche.up.length ? `Up for ${and(t.psyche.up)}. ` : ''}
+            {t.psyche.down.length ? `Down for ${and(t.psyche.down)}. ` : ''}
+            {!t.psyche.up.length && !t.psyche.down.length ? 'A day like any other. ' : ''}
+            {t.psyche.word === 'low'
+              ? 'Every window’s a little tighter for it.'
+              : t.psyche.word === 'psyched'
+                ? 'Every window’s a little wider for it.'
+                : ''}
           </small>
         </li>
         {t.same && (

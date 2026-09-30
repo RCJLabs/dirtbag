@@ -5,6 +5,7 @@ import { projected, ratio, zone, daysOff, type Zone } from './body';
 import { ACTS } from './content/places';
 import { BODY, FOOD, LIFESTYLE, MONEY, SUPPLIES, type Lifestyle } from './dials';
 import { isSick, SICK_NAME, sickOdds } from './sick';
+import { psycheBy, psycheDay, psycheWord, type PsycheWord } from './psyche';
 import { MEAL_NAME } from './content/food';
 import { livingTonight } from './jobs';
 import { weeklyBills } from './clinic';
@@ -30,6 +31,8 @@ export interface Tonight {
   supplies: number;
   sickOdds: number;
   sick: string | null;
+  // Phase 22.4d: psyche by morning, in a word, and what today did to it.
+  psyche: { word: PsycheWord; up: string[]; down: string[] };
   // Energy back by morning, after a rough or hungry night.
   energy: number;
   hungry: boolean;
@@ -71,6 +74,7 @@ export function tonight(s: GameState): Tonight {
     ),
     sickOdds: isSick(s) ? 0 : sickOdds(s, night.heat).odds,
     sick: isSick(s) && s.sick ? SICK_NAME[s.sick.kind] : null,
+    psyche: { word: psycheWord(psycheBy(s).level), up: psycheDay(s).up, down: psycheDay(s).down },
     same:
       s.meals.length >= FOOD.same && s.meals.every((m) => m === s.meals[0]) ? MEAL_NAME[s.meals[0]!]! : null,
     energy:

@@ -30,6 +30,8 @@ function atCrag(min = 9 * 60): GameState {
     at: 'road',
     min,
     today: ['warm'],
+    // Psyche even (Phase 22.4d), so the day's scale is the rock's alone.
+    psyche: { level: 50, stale: 0 },
     climber: {
       name: 'Test',
       start: 'allrounder',

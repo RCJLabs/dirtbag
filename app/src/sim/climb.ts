@@ -19,6 +19,7 @@ import { cold } from './body';
 import { BODY, CLIMB, FOOD, FREESOLO, LOAD, TRAD } from './dials';
 import { historyWindows } from './scars';
 import { sickWindows } from './sick';
+import { psycheWindows } from './psyche';
 import { soloed } from './solo';
 import { kitFactor } from './kit';
 import { indoor } from './content/gym';
@@ -141,7 +142,8 @@ export function dayFactor(s: GameState, r: RouteDef): { windows: number; grease:
     trainWindows(s) *
     fuel *
     historyWindows(s, r.type) *
-    sickWindows(s);
+    sickWindows(s) *
+    psycheWindows(s);
   if (indoor(r.place)) return { windows: body, grease: false };
   const c = conditionsAt(s.seed, s.day, r.place);
   const grease = s.min >= sunOn(s.seed, s.day, r.place, r.id);

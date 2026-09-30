@@ -7,6 +7,7 @@ import { STARTS } from '../src/sim/climber';
 import { contentOut, firstTry, median, season } from '../src/sim/harness';
 import { JOBS } from '../src/sim/content/jobs';
 import { ACTS } from '../src/sim/content/places';
+import { PSYCHE } from '../src/sim/dials';
 
 const SEEDS = Number(process.env.CAREER_SEEDS ?? 4);
 const DAYS = Number(process.env.CAREER_DAYS ?? 224);
@@ -92,5 +93,20 @@ it('career', { timeout: 1_800_000 }, () => {
     bad === 0,
     'A career is never refused or stuck',
     `${bad} refusals and stuck nights across ${all.length} runs.`,
+  );
+  // Phase 22.4d: psyche moves with the life, and a career that sits at the fire when it's
+  // flat never lives at the bottom.
+  const lowRun = (r: BotRun) => {
+    let most = 0;
+    let n = 0;
+    for (const d of r.days) most = Math.max(most, (n = d.psyche < PSYCHE.bands[0]! ? n + 1 : 0));
+    return most;
+  };
+  const longest = Math.max(...all.map(lowRun));
+  const psyAt = AT.map((d) => median(all.map((r) => r.days[d - 1]!.psyche)).toFixed(0));
+  say(
+    longest <= 7,
+    'Psyche never stays low for more than a week',
+    `longest run low: ${longest} days; median psyche ${AT.map((d, i) => `d${d} ${psyAt[i]}`).join(', ')}.`,
   );
 });
