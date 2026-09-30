@@ -71,6 +71,9 @@ export interface Ambience {
   room?: number;
   murmur?: number;
   clinks?: number;
+  // A climbing gym's own noises, now and then: a fall onto the pads, a chalk clap, a hand
+  // slapping a hold.
+  gym?: number;
   // Now and then, a hawk over the desert.
   hawk?: number;
 }
@@ -297,7 +300,7 @@ export const PLACES: Record<string, PlaceDef> = {
   cave: {
     name: 'The Cave',
     scene: 'cave',
-    ambience: { room: 0.7, murmur: 0.3 },
+    ambience: { room: 0.3, murmur: 0.3, gym: 1 },
     away: 'The bouldering cave at the trailhead. Steep plastic, V3 and up. Day pass {pass}.',
     here: 'Low ceiling, loud music, everyone upside down.',
     acts: ['cave.pass', 'cave.coach'],
@@ -305,7 +308,7 @@ export const PLACES: Record<string, PlaceDef> = {
   gym: {
     name: 'Send City',
     scene: 'gym',
-    ambience: { room: 0.6, murmur: 0.5 },
+    ambience: { room: 0.25, murmur: 0.45, gym: 0.8 },
     away: 'The gym downtown. New problems every week. Day pass {pass}.',
     here: 'Plastic, chalk dust, a playlist nobody chose.',
     acts: ['gym.pass', 'gym.set'],

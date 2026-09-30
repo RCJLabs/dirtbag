@@ -14,6 +14,7 @@ export interface Bed {
   murmur: number;
   clinks: number;
   hawk: number;
+  gym: number;
 }
 
 export const QUIET: Bed = {
@@ -27,6 +28,7 @@ export const QUIET: Bed = {
   murmur: 0,
   clinks: 0,
   hawk: 0,
+  gym: 0,
 };
 
 // The map is a paper thing in your hands: a little wind, whatever the valley's doing.
@@ -52,5 +54,6 @@ export function bedFor(s: GameState, place: string): Bed {
     murmur: a.murmur ?? 0,
     clinks: a.clinks ?? 0,
     hawk: rain ? 0 : (a.hawk ?? 0),
+    gym: a.gym ?? 0,
   };
 }

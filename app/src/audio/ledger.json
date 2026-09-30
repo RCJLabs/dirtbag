@@ -144,6 +144,10 @@
     "hawk": {
       "made": "code",
       "in": "src/audio/ambience.ts"
+    },
+    "gym": {
+      "made": "code",
+      "in": "src/audio/ambience.ts"
     }
   },
   "recordings": [],

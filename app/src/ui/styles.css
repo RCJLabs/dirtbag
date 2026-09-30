@@ -484,6 +484,9 @@ button.pill:disabled {
   background: color-mix(in srgb, var(--u-ink) 16%, transparent);
   border-radius: 3px;
   overflow: hidden;
+  /* Whatever's drawn in the bar stays in it. */
+  position: relative;
+  contain: paint;
 }
 .c-bar i {
   display: block;
@@ -497,9 +500,12 @@ button.pill:disabled {
 .screen:not(.still) .c-bar i.hot {
   animation: pumped 0.9s ease-in-out infinite;
 }
+/* A colour pulse, not a filter: an animated filter puts the bar on its own layer, and phone
+   Chrome drew that layer unclipped and at the wrong scale, a striped red box over the whole
+   panel (Evan, 0.962.0). */
 @keyframes pumped {
   50% {
-    filter: brightness(1.35);
+    background-color: color-mix(in srgb, var(--u-acc) 70%, #fff);
   }
 }
 

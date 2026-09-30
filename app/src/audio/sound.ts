@@ -8,8 +8,11 @@ import { Ambience } from './ambience';
 import type { Bed } from './beds';
 import { VOICES, type V } from './voices';
 
-// The master level for each setting.
-const LEVEL: Record<Settings['sound'], number> = { on: 0.9, quiet: 0.35, off: 0 };
+// The master level for each setting. It was 0.9 and 0.35, too loud on a phone even on
+// quiet (Evan, testing 0.962.0).
+const LEVEL: Record<Settings['sound'], number> = { on: 0.5, quiet: 0.15, off: 0 };
+// The ambience sits under the effects.
+const AMB = 0.7;
 // How far the ambience drops while someone's talking to you.
 const DUCKED = 0.3;
 
@@ -48,6 +51,7 @@ export class Sound {
       this.sfx = ctx.createGain();
       this.sfx.connect(this.master);
       this.amb = ctx.createGain();
+      this.amb.gain.value = AMB;
       this.amb.connect(this.master);
       // Two seconds of white noise: chalk, breath, wind and rain are all it, filtered.
       this.noise = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
@@ -87,7 +91,8 @@ export class Sound {
 
   // Someone's talking: the ambience drops under them, and comes back after.
   duck(on: boolean): void {
-    if (this.amb && this.ctx) this.amb.gain.setTargetAtTime(on ? DUCKED : 1, this.ctx.currentTime, 0.15);
+    if (this.amb && this.ctx)
+      this.amb.gain.setTargetAtTime(on ? DUCKED * AMB : AMB, this.ctx.currentTime, 0.15);
   }
 
   private live(): V | null {
