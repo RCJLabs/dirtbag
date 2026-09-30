@@ -796,6 +796,13 @@ export class Game {
   // An answer (Phase 22.6). On the road, and you're where you were going; at the door, and
   // then the rest of the night.
   answer(opt: number): void {
+    // A walk-out's calls, one stage at a time; out, and you're back at the van.
+    if (this.state.encounter?.kind === 'epic') {
+      const ev = this.dispatch({ t: 'answer', opt });
+      if (ev.some((e) => e.k === 'refused')) return;
+      if (!this.state.encounter) this.set({ sheet: null });
+      return;
+    }
     if (this.state.encounter?.kind !== 'knock') {
       const ev = this.dispatch({ t: 'answer', opt });
       if (ev.some((e) => e.k === 'refused')) return;
@@ -844,6 +851,15 @@ export class Game {
       this.sync();
       for (const l of lines) this.toast(l);
       return no.why;
+    }
+    // A walk-out (Phase 22.6c): the trail comes before the drive, and waits on your calls.
+    if (this.state.encounter?.kind === 'epic') {
+      this.held = null;
+      this.sync();
+      this.stopPlan();
+      this.sound.play('walkout');
+      this.set({ sheet: { k: 'encounter' } });
+      return null;
     }
     this.hush();
     let pts = drivePath(from, to, MAP_PINS);

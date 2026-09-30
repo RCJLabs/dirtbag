@@ -101,6 +101,7 @@ import {
   hitchFriend,
   stopById,
   EVENTS,
+  epicByKind,
   buskRate,
   guitarRank,
   RANK_NAME,
@@ -746,6 +747,18 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             : `${h.sign === 'no sign' ? 'No sign.' : `“${h.sign}”, the sign says.`} ${h.look} ${h.pitch}`,
           close: false,
           rows: hitchOpts(s, h).map((o, i) => ({ label: o.label, run: () => game.answer(i) })),
+        };
+      }
+      // Phase 22.6c: a walk-out, a stage at a time.
+      if (e?.kind === 'epic') {
+        const ep = epicByKind(e.id);
+        const st = ep?.stages[e.stage ?? 0];
+        if (!ep || !st) return null;
+        return {
+          title: ep.title,
+          sub: e.stage ? st.sit : `${ep.open} ${st.sit}`,
+          close: false,
+          rows: st.opts.map((o, i) => ({ label: o.label, note: o.sub, run: () => game.answer(i) })),
         };
       }
       if (e?.kind === 'stop') {

@@ -15,9 +15,10 @@ import { EXPEDITIONS } from './content/expeditions';
 import { INGREDIENTS, MEAL_NAME } from './content/food';
 import { KNOCKS } from './content/knocks';
 import { HITCHERS, STOPS } from './content/road';
+import { EPICS } from './content/epics';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 21;
+export const SAVE_VERSION = 22;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -164,6 +165,12 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     const deck = isObj(x.deck) ? x.deck : {};
     return { ...x, deck: { ...deck, hitch: 0, stop: 0, stops: [], met: {} } };
+  },
+  // v21 -> v22 (Phase 22.6c): no walk-outs yet.
+  21: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const deck = isObj(x.deck) ? x.deck : {};
+    return { ...x, deck: { ...deck, epic: 0 } };
   },
 };
 
@@ -343,13 +350,27 @@ export function validate(x: unknown): string[] {
       isInt(dk.stop) &&
       isStrs(dk.stops) &&
       isObj(dk.met) &&
+      isInt(dk.epic) &&
       Object.entries(dk.met).every(([id, i]) => HITCHERS.some((h) => h.id === id) && isInt(i)),
     'deck',
   );
   const en = x.encounter;
-  const ids = { knock: KNOCKS, hitch: HITCHERS, stop: STOPS } as Record<string, { id: string }[]>;
+  const ids = {
+    knock: KNOCKS,
+    hitch: HITCHERS,
+    stop: STOPS,
+    epic: EPICS.map((e) => ({ id: e.kind })),
+  } as Record<string, { id: string }[]>;
+  const tl = isObj(en) ? en.tally : undefined;
   need(
-    en === null || (isObj(en) && typeof en.kind === 'string' && !!ids[en.kind]?.some((k) => k.id === en.id)),
+    en === null ||
+      (isObj(en) &&
+        typeof en.kind === 'string' &&
+        !!ids[en.kind]?.some((k) => k.id === en.id) &&
+        (en.kind !== 'epic' ||
+          (isInt(en.stage) &&
+            isObj(tl) &&
+            ['risk', 'energy', 'fed', 'skin', 'psyche', 'hours'].every((k) => isNum(tl[k]))))),
     'encounter',
   );
   need(isInt(x.lotNights) && x.lotNights >= 0, 'lotNights');
