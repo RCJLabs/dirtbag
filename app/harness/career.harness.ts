@@ -24,10 +24,11 @@ function payTable() {
   out('|---|---|---|');
   for (const [id, j] of Object.entries(JOBS)) {
     const a = Object.values(ACTS).find((x) => x.job?.id === id && x.job.shifts === 1)!;
-    const pay = (r: number) => (a.cost.cash ?? 0) + j.raise * r;
+    // Tips at the middle of their weekday range.
+    const pay = (r: number) => (a.cost.cash ?? 0) + j.raise * r + (j.tips ? (j.tips[0] + j.tips[1]) / 2 : 0);
     const hours = (a.cost.min ?? 60) / 60;
     const ranks = j.ranks.map((n, r) => `${n} $${pay(r)} ($${(pay(r) / hours).toFixed(2)}/h)`).join(' · ');
-    out(`| ${j.name} | ${hours} h, ${j.posts ?? 7} a week | ${ranks} |`);
+    out(`| ${j.name} | ${hours} h, ${j.posts ?? 7} a week${j.tips ? ', with tips' : ''} | ${ranks} |`);
   }
 }
 

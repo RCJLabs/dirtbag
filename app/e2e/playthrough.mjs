@@ -618,7 +618,7 @@ await tapAt(170 * Z, screenY(540));
 await expectText('#sheet', /The desk/, 'desk');
 await click('#sheet .opt', 'Set problems for a shift');
 await expectText('#h-time', /11:22 AM$/, 'clock');
-await expectText('#h-cash', /^\$68$/, 'paid');
+await expectText('#h-cash', /^\$70$/, 'paid');
 await expectText('#toast', /Sage turns up/, 'Sage');
 await click('#sheet .x');
 await wait(300);
@@ -703,7 +703,7 @@ await until('the service worker to control the page', () =>
 await page.context().setOffline(true);
 await page.reload({ waitUntil: 'load' });
 await expectText('#h-time', /^Day 2 · 1[12]:\d\d AM$/, 'clock offline');
-await expectText('#h-cash', /^\$68$/, 'cash offline');
+await expectText('#h-cash', /^\$70$/, 'cash offline');
 await shot('offline');
 await page.context().setOffline(false);
 

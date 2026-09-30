@@ -24,7 +24,7 @@ const sleepAt = (s: GameState) => act({ ...s, at: 'lot', min: 22 * 60 }, { t: 'a
 const lines = (r: ReturnType<typeof act>) => r.events.flatMap((e) => (e.k === 'line' ? [e.text] : []));
 
 describe('jobs', () => {
-  it('pays the first rank what it always did, and counts a double as two shifts', () => {
+  it('pays the first rank its base (the café’s $28, the least a shift), and counts a double as two', () => {
     const s = at();
     expect(actCost(s, ACTS['cafe.shift']!).cash).toBe(28);
     const r = act(s, { t: 'act', act: 'cafe.double' });
@@ -145,5 +145,35 @@ describe('the week', () => {
     expect(tonight(broke).living.skimped).toBe(true);
     expect(sleepAt(broke).state.cash).toBe(-MONEY.cardLimit);
     expect(act(s, { t: 'lifestyle', tier: 'comfortable' }).state.lifestyle).toBe('comfortable');
+  });
+});
+
+describe('what each job pays besides money', () => {
+  it('pays the diner a little over the café a shift, in tips, better at the weekend', () => {
+    const day = postedIn('jobs', 'diner', 1).find((d) => d < 6)!;
+    const s = at({ at: 'diner', day, shifts: [{ job: 'diner', day }] });
+    const r = act(s, { t: 'act', act: 'diner.shift' });
+    const tips = r.state.cash - s.cash - 30;
+    const [lo, hi] = JOBS.diner!.tips!;
+    expect(tips).toBeGreaterThanOrEqual(lo);
+    expect(tips).toBeLessThanOrEqual(hi);
+    expect(lines(r).some((l) => l.endsWith(`of it tips.`))).toBe(true);
+    // More a shift than the café's, tips and all, for a longer one.
+    const cafe = ACTS['cafe.shift']!.cost;
+    expect(30 + lo).toBeGreaterThan(cafe.cash ?? 0);
+    expect(ACTS['diner.shift']!.cost.min!).toBeGreaterThan(cafe.min ?? 0);
+    expect(r.state.jobs.diner).toBe(1);
+  });
+
+  it('trains your endurance at the warehouse, as coaching does your head and setting your technique', () => {
+    expect(ACTS['warehouse.shift']!.trains?.endurance).toBeGreaterThan(0);
+    expect(ACTS['cave.coach']!.trains?.head).toBeGreaterThan(0);
+    expect(ACTS['gym.set']!.trains?.technique).toBeGreaterThan(0);
+    // The café pays least a shift, and its shifts are the shortest.
+    const shift = (id: string) => ACTS[id]!.cost;
+    for (const id of ['diner.shift', 'cave.coach', 'gym.set', 'warehouse.shift']) {
+      expect(shift('cafe.shift').cash!, id).toBeLessThan(shift(id).cash!);
+      expect(shift('cafe.shift').min!, id).toBeLessThan(shift(id).min!);
+    }
   });
 });

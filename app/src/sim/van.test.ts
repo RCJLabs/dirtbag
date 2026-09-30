@@ -48,11 +48,13 @@ describe('the van', () => {
     expect(at(20)).toBeGreaterThan(at(50));
   });
 
-  it('won’t leave town on a shot part or start on a flat battery, but gets you to the garage', () => {
+  it('won’t leave town on a shot part or a flat battery, but always gets you across it', () => {
     expect(refused(base({ van: van(10) }), { t: 'travel', to: 'road' })).toMatch(/won’t make it out of town/);
     expect(refused(base({ van: van(10) }), { t: 'travel', to: 'garage' })).toBeNull();
+    // A flat battery: a jump across town, to a shift or the garage, but not out of it.
     const flat = base({ van: van(100, 100, 0) });
-    expect(refused(flat, { t: 'travel', to: 'cafe' })).toMatch(/battery’s flat/);
+    expect(refused(flat, { t: 'travel', to: 'road' })).toMatch(/battery’s flat/);
+    expect(refused(flat, { t: 'travel', to: 'cafe' })).toBeNull();
     expect(refused(flat, { t: 'travel', to: 'garage' })).toBeNull();
     // Out at the crag on a shot part, the drive home still goes.
     expect(refused(base({ at: 'road', van: van(10) }), { t: 'travel', to: 'lot' })).toBeNull();

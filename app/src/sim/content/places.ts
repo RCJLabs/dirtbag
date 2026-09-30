@@ -3,7 +3,8 @@
 // lines, so no number is typed twice.
 //
 // Prices and shifts are v0.956's where it had them: the diner meal ($10, +50 fed), a café
-// shift (3 h, $28), setting at Send City (4 h, $28, and it trains technique).
+// shift (3 h, $28), setting at Send City (4 h, $28, raised to $30 in Phase 22.1 so the café
+// pays least a shift, by Evan's call; it trains technique).
 //
 // An act's id starts with the place it happens at: 'cafe.shift' is worked at the café.
 // Work needs energy but never food, so a broke, hungry climber can always earn their way
@@ -332,8 +333,8 @@ export const PLACES: Record<string, PlaceDef> = {
     scene: null,
     ambience: { room: 0.4, murmur: 0.6, clinks: 0.5 },
     away: 'Old Town. The special, and bottomless coffee.',
-    here: 'Old Town. Otis is reading the paper.',
-    acts: ['diner.meal', 'diner.coffee'],
+    here: 'Old Town. Otis is reading the paper. There’s a HELP WANTED sign by the register.',
+    acts: ['diner.meal', 'diner.coffee', 'diner.shift'],
   },
   // Phase 21.1: where your kit comes from. A resole bench in the back, and on weekends the
   // swap meet out front.
@@ -450,6 +451,22 @@ export const ACTS: Record<string, ActDef> = {
     needs: [{ pay: 10 }],
     says: "The special is meatloaf. It's always meatloaf.",
   },
+  // Phase 22.1, by Evan's call: waiting tables. Four hours and a base a little over the
+  // café's an hour, and the tips on top (content/jobs.ts), better at the weekend.
+  'diner.shift': {
+    label: 'Wait tables',
+    cost: { min: 240, cash: 30, energy: -16, fed: -6 },
+    needs: [
+      oneShift,
+      ...onSchedule('diner'),
+      { before: 14 * 60, why: 'Shifts start by {t}.' },
+      { energy: 16, why: 'Too tired to carry four plates.' },
+    ],
+    note: 'Plus tips. Otis leaves a quarter, every time.',
+    sets: ['worked'],
+    job: { id: 'diner', shifts: 1 },
+    says: 'Four hours of refills and "whenever you get a chance."',
+  },
   'diner.coffee': {
     label: 'Bottomless coffee',
     cost: { min: 10, cash: -2, energy: 6 },
@@ -487,13 +504,14 @@ export const ACTS: Record<string, ActDef> = {
   'warehouse.shift': {
     label: 'Work a shift',
     cost: { min: 480, cash: 52, energy: -40, fed: -20 },
+    trains: { endurance: 2 },
     needs: [
       oneShift,
       ...onSchedule('warehouse'),
       { before: 9 * 60, why: 'The shift starts by {t}. Late is a no.' },
       { energy: 40, why: 'Too tired to lift anything.' },
     ],
-    note: 'The day is gone after this.',
+    note: 'Trains your endurance. The day is gone after this.',
     sets: ['worked'],
     job: { id: 'warehouse', shifts: 1 },
     says: 'Eight hours of pallets, and a scanner that beeps at you.',
@@ -662,7 +680,7 @@ export const ACTS: Record<string, ActDef> = {
   },
   'gym.set': {
     label: 'Set problems for a shift',
-    cost: { min: 240, cash: 28, energy: -22, fed: -10 },
+    cost: { min: 240, cash: 30, energy: -22, fed: -10 },
     needs: [
       oneShift,
       ...onSchedule('set'),

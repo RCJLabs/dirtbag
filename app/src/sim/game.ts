@@ -34,7 +34,7 @@ import {
   trainBlocked,
 } from './sessions';
 import { JOBS } from './content/jobs';
-import { livingTonight, raiseAt, rankAt, rankName, shiftsAt, signupBlocked } from './jobs';
+import { livingTonight, raiseAt, rankAt, rankName, shiftsAt, signupBlocked, tipsFor } from './jobs';
 import { freshTraining, PHASE_NAME, phaseLock, taperDay, taperWait } from './training';
 import {
   ROUTES,
@@ -489,7 +489,7 @@ export function act(s0: GameState, a: Action): Result {
     const charged = s.van.battery > 0;
     s.van.battery = round2(Math.max(0, s.van.battery - VAN.night));
     if (charged && s.van.battery <= 0)
-      line('The van won’t turn over. The battery’s flat. A jump gets you to the garage.');
+      line('The van won’t turn over. The battery’s flat. A jump gets you across town, and no further.');
     if (s.injury && s.day >= s.injury.until) {
       line(fill(HEALED_LINE, { kind: s.injury.kind }));
       s.injury = null;
@@ -617,7 +617,15 @@ export function act(s0: GameState, a: Action): Result {
     if (s.dog && d.dog?.bond) s.dog.bond = Math.min(100, s.dog.bond + d.dog.bond);
     if (d.gear) s.gear[d.gear.id] = d.gear.set ?? (s.gear[d.gear.id] ?? 0) + (d.gear.add ?? 0);
     if (d.van) s.van[d.van] = 100;
-    if (d.says) line(d.job ? `${d.says} +${money(cost.cash ?? 0)}.` : d.says);
+    // Tips, where a job has them, on top of the shift's pay.
+    const tips = d.job ? tipsFor(s, d.job.id) : 0;
+    if (tips) spend({ cash: tips });
+    if (d.says)
+      line(
+        d.job
+          ? `${d.says} +${money((cost.cash ?? 0) + tips)}${tips ? `, ${money(tips)} of it tips` : ''}.`
+          : d.says,
+      );
     if (d.saysOneOf) line(ofDay(s, id, d.saysOneOf));
     if (d.job) {
       // Only a shift you signed up for counts toward promotion; a walk-in just pays.
@@ -885,11 +893,14 @@ export function act(s0: GameState, a: Action): Result {
       const permit = to.permit ?? 0;
       if (permit && headroom(s) < permit)
         return refuse(`${to.name} needs a ${money(permit)} permit, and the card won't cover it.`);
-      // The van first: a flat battery gets a jump as far as the garage, and a part that's
-      // shot won't take a drive out of town, except home or to the garage.
+      // The van first: a flat battery gets a jump for a drive across town, and a part that's
+      // shot won't take a drive out of town either, except home or to the garage. Town is
+      // always in reach, so a broke climber can always get to a shift.
       const fixing = a.to === 'garage' || a.to === 'lot';
-      if (s.van.battery <= 0 && a.to !== 'garage')
-        return refuse('The battery’s flat. A jump gets you as far as the garage, and no further.');
+      if (s.van.battery <= 0 && r.min >= VAN.from && !fixing)
+        return refuse(
+          'The battery’s flat. A jump gets you across town, not out of it. The garage is in Midtown.',
+        );
       const shot = unsafePart(s);
       if (shot && r.min >= VAN.from && !fixing)
         return refuse(

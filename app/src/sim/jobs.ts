@@ -6,6 +6,7 @@ import { gradeOf } from './climber';
 import { JOBS } from './content/jobs';
 import { WEEK_DAYS, weekOf } from './content/gym';
 import { LIFESTYLE, MONEY, WORK, type Lifestyle } from './dials';
+import { isWeekend } from './cond';
 import { Rng } from './rng';
 import type { GameState } from './types';
 
@@ -94,4 +95,13 @@ export function signupBlocked(s: GameState, job: string, day: number, on = true)
 export function livingTonight(s: GameState): (typeof LIFESTYLE)[Lifestyle] {
   const l = LIFESTYLE[s.lifestyle];
   return s.cash - MONEY.vanSpot + MONEY.cardLimit >= l.cost ? l : LIFESTYLE.dirtbag;
+}
+
+// A shift's tips (the diner's), seeded by the job and the day: a weekday's range, half again
+// at the weekend. Zero for a job without them.
+export function tipsFor(s: GameState, job: string): number {
+  const t = JOBS[job]?.tips;
+  if (!t) return 0;
+  const n = Rng.fromStream(s.seed, 'events').derive(`tips-${job}-${s.day}`).int(t[0], t[1]);
+  return isWeekend(s.day) ? Math.round(n * 1.5) : n;
 }
