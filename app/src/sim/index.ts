@@ -114,6 +114,7 @@ export {
   TRAIN,
   WALL,
   EXPED,
+  CROWD,
 } from './dials';
 export { PLACES, ACTS, ROADS, road, TEXT_VALUES } from './content/places';
 export type { PlaceDef, ActDef, RoadDef, Trip, Ambience } from './content/places';
@@ -136,6 +137,7 @@ export type { RouteDef, CruxDef, BetaDef, Verb, Disc, WallDef } from './content/
 export { EXPEDITIONS } from './content/expeditions';
 export type { ExpeditionDef } from './content/expeditions';
 export { pitchOdds, stormOn, summitOdds, onExpedition, wallPay } from './expeditions';
+export { crowdAt, crowdNow, crowdLevel, queueMin, sprayable, canAsk, type Crowd } from './crowds';
 export {
   GYM,
   WEEK_DAYS,

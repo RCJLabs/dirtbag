@@ -21,11 +21,13 @@ import {
   talkStart,
   TALK,
   WALLS,
+  crowdNow,
   type Attempt,
   type GameState,
   type RouteDef,
 } from '../sim';
 import { rad, type G, type Pt } from './kit/geom';
+import { mulberry32 } from './kit/noise';
 import {
   BOARD_X0,
   CRAGS,
@@ -60,7 +62,7 @@ import {
 } from './paint/fx';
 import { CAVE_TAPE, TAPE } from './paint/gym';
 import { mapArt } from './paint/map';
-import { drawBelayerBack, drawClimber, drawDog, drawPerson, INK, LOOK } from './paint/people';
+import { drawBelayerBack, drawClimber, drawDog, drawPerson, INK, LOOK, STRANGERS } from './paint/people';
 import { BIG } from './paint/scale';
 import { drawSkyMarks, FIRE_X, LIGHTS, sceneArt, SKY_W, type SceneArt, type Tod } from './paint/scenes';
 import { belayAt, onRoute, rockPath, routeStretch, topoFor, traceSelected, wallOf } from './paint/wall';
@@ -247,6 +249,22 @@ export function sceneLive(g: G, s: GameState, scene: string, cam: number, eye: E
       .forEach((r, n) =>
         tapeTag(g, BOARD_X0 + 25 + n * 50 - cam, GND - 16, '#2B2825', gradeLabel(r), !!s.routes[r.id]?.sent),
       );
+  }
+  // The crowd, if there is one: strangers at the foot of the lines, the same ones all day.
+  if (crag) {
+    const n = { empty: 0, quiet: 1, busy: 3, packed: 5 }[crowdNow(s, place)];
+    const spots = [...crag.lines.map((l) => l.x), ...crag.boulders.map((b) => b.x)];
+    const r = mulberry32(s.day * 131 + place.length * 17 + spots.length);
+    for (let i = 0; i < n && spots.length; i++) {
+      const x = spots.splice(Math.floor(r() * spots.length), 1)[0]! + (r() - 0.5) * 36;
+      drawPerson(g, STRANGERS[i % STRANGERS.length]!, {
+        x: x - cam,
+        y: GND,
+        dir: r() < 0.5 ? -1 : 1,
+        pose: r() < 0.25 ? 'sit' : 'stand',
+        t: f.t + i,
+      });
+    }
   }
   for (const p of presentIn(s, scene)) {
     drawPerson(g, LOOK[p.who]!, { x: p.x - cam, y: GND, dir: p.face, pose: p.pose, t: f.t });

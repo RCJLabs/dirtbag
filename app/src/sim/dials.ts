@@ -435,3 +435,25 @@ export const EXPED = {
   // The summit's lesson for the head, as v0.956's +8 head was, scaled to a go's lessons.
   head: 2,
 };
+
+// Crowds (Phase 21.6, v0.956's): a crag's `crowd` scaled by the weekend (v0.956's ×1.7),
+// the hour (nobody at dawn, the most from late morning into the afternoon), the sky (a prime
+// day brings everyone out; heat keeps them home) and the day's luck, then read off `levels`.
+// A crowd queues for the ropes (`queue`, minutes before a go; the boulders only when
+// packed), and knows the beta: asking around (`ask` minutes) teaches you some, at the cost of
+// the onsight, and when it's packed, someone shouts it at you anyway on a first go (`spray`).
+export const CROWD = {
+  weekend: 1.7,
+  hours: [
+    { from: 7 * 60, f: 0.5 },
+    { from: 9 * 60, f: 1 },
+    { from: 16 * 60, f: 0.7 },
+    { from: 19 * 60, f: 0 },
+  ],
+  sky: { prime: 1.25, fair: 1, hot: 0.6, rain: 0 },
+  luck: 0.3,
+  levels: { quiet: 0.25, busy: 0.7, packed: 1.2 },
+  queue: { rope: { busy: 10, packed: 20 }, boulder: { busy: 0, packed: 10 } },
+  ask: 15,
+  spray: 0.4,
+};

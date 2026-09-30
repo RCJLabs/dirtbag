@@ -70,6 +70,9 @@ import {
   summitOdds,
   WALLS,
   wallPay,
+  CROWD,
+  crowdAt,
+  type Crowd,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import type { Game, SheetId } from '../game/game';
@@ -335,7 +338,9 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       const here_ = conditionsAt(s.seed, s.day, id.id);
       const shut = here_.closed;
       const sky = PLACES[id.id]?.ownSky ? [skyNote(here_.sky)] : [];
-      const notes = shut || sky.length ? [...(shut ? [`${shut}.`] : []), ...sky] : undefined;
+      const crowd = p.crowd && !shut ? [crowdNote(crowdAt(s.seed, s.day, min, id.id))] : [];
+      const extra = [...(shut ? [`${shut}.`] : []), ...sky, ...crowd];
+      const notes = extra.length ? extra : undefined;
       if (!here) {
         const locked = p.minGrade !== undefined && gradeOf(s.climber.skills) < p.minGrade;
         const drive = driveRow(game, s, id.id, 'Drive here');
@@ -613,6 +618,21 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
 
     default:
       return null;
+  }
+}
+
+// Who else is out, and what it means for you: the queue, and the beta.
+export function crowdNote(c: Crowd): string {
+  const q = CROWD.queue;
+  switch (c) {
+    case 'empty':
+      return 'Nobody else out. The place is yours.';
+    case 'quiet':
+      return 'A few others out. No waiting.';
+    case 'busy':
+      return `Busy: ${q.rope.busy} min in line for a rope, and people at the base who know the beta.`;
+    case 'packed':
+      return `Packed: ${q.rope.packed} min in line for a rope, ${q.boulder.packed} for a boulder, and beta whether you want it or not.`;
   }
 }
 

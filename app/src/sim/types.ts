@@ -196,7 +196,9 @@ export type Action =
   // Phase 21.5: a wall (start it, bivy on it, or retreat), and an expedition (go, then a day
   // at a time: lead, dig deep, rest in camp, or bail).
   | { t: 'wall'; wall: string; do: 'start' | 'bivy' | 'retreat' }
-  | { t: 'exped'; id: string; do: 'go' | 'lead' | 'dig' | 'rest' | 'bail' };
+  | { t: 'exped'; id: string; do: 'go' | 'lead' | 'dig' | 'rest' | 'bail' }
+  // Phase 21.6: ask the crowd at the base for a line's beta.
+  | { t: 'ask'; route: string };
 
 // What a finished go hands back to the game.
 export interface GoResult {

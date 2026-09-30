@@ -743,6 +743,11 @@ export class Game {
     });
   }
 
+  // Ask the crowd at the base for a line's beta.
+  ask(route: string): void {
+    this.dispatch({ t: 'ask', route });
+  }
+
   pick(route: string, crux: string, beta: string): void {
     this.dispatch({ t: 'pick', route, crux, beta });
   }

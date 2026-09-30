@@ -46,6 +46,9 @@ export interface PlaceDef {
   // The bond a partner needs with you to come out here when you ask: further, harder to
   // talk them into (BOND.tiers names them).
   invite?: number;
+  // How many climbers it draws on a plain weekday afternoon, 0 to 1 (v0.956's crag
+  // popularity). Crowds (Phase 21.6) build from it; a place without one never has one.
+  crowd?: number;
   // The side-view scene you walk around in, or null for a card-only place.
   scene: string | null;
   // The map card's line when you're elsewhere, and when you're here.
@@ -117,6 +120,7 @@ export const PLACES: Record<string, PlaceDef> = {
     acts: [],
   },
   road: {
+    crowd: 0.6,
     name: 'Roadside Crag',
     crag: true,
     scene: 'crag',
@@ -143,6 +147,7 @@ export const PLACES: Record<string, PlaceDef> = {
     ],
   },
   gorge: {
+    crowd: 0.5,
     name: 'Granite Gorge',
     crag: true,
     scene: 'gorge',
@@ -159,6 +164,7 @@ export const PLACES: Record<string, PlaceDef> = {
   // v0.956's third crag, "a fabled desert highball mecca, a real road trip out": V6 to
   // get in, a haul to pay for once, and a permit every trip.
   moon: {
+    crowd: 0.45,
     name: 'Moonstone Boulders',
     crag: true,
     scene: 'moon',
@@ -181,6 +187,7 @@ export const PLACES: Record<string, PlaceDef> = {
   // v0.956's fourth crag: "a famous desert destination, world-class and brutal". V7 to get
   // in, three hours out, and shut for the summer heat. No haul to pay for: just the drive.
   mesa: {
+    crowd: 0.45,
     name: 'Sandstone Mesa',
     crag: true,
     scene: 'mesa',
@@ -213,6 +220,7 @@ export const PLACES: Record<string, PlaceDef> = {
   // v0.956's "valley of granite big walls, the multi-day proving ground": V8 to get in, a
   // trip paid for once, four hours out, and shaded. Its walls come with Phase 21.5.
   stone: {
+    crowd: 0.6,
     name: 'The Big Stone',
     crag: true,
     scene: 'stone',
@@ -231,6 +239,7 @@ export const PLACES: Record<string, PlaceDef> = {
   // trip paid for once and a permit every time, four hours out past the Gorge, shaded, and
   // snowed in all winter.
   wind: {
+    crowd: 0.3,
     name: 'Wind River Walls',
     crag: true,
     scene: 'wind',
@@ -250,6 +259,7 @@ export const PLACES: Record<string, PlaceDef> = {
   // v0.956's "remote, frigid wall, where the grades run out": V11, four hours out, shaded, no
   // haul to pay for. East out of the valley, over the pass above Midtown.
   crucible: {
+    crowd: 0.2,
     name: 'The Crucible',
     crag: true,
     scene: 'crucible',
@@ -266,6 +276,7 @@ export const PLACES: Record<string, PlaceDef> = {
   // v0.956's "deep-water solo over the sea, summer only, and a fall is just a splash": V4,
   // two hours out on the coast past Old Town, no fee, and shut the rest of the year.
   cove: {
+    crowd: 0.6,
     name: 'Psicobloc Cove',
     crag: true,
     scene: 'cove',

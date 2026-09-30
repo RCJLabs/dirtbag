@@ -69,6 +69,10 @@ import {
   type RouteDef,
   type Season,
   type Verb,
+  canAsk,
+  CROWD,
+  crowdNow,
+  queueMin,
 } from '../sim';
 import type { Game, JournalPage, SheetId, Ui } from '../game/game';
 import { legacyFile, saveLegacyFile } from '../game/legacy';
@@ -365,6 +369,8 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
   const cost = `${costLabel({ min: c.min })} · ${bodyNote({ energy: c.energy, skin: c.skin })}${rockNote(s, r)}`;
   const log = s.routes[route];
   const unnamed = r.open && log?.sent && !s.firsts[route];
+  // Who else is at the base: a queue for the line, and beta to be had for the asking.
+  const crowd = r.wall || indoor(r.place) ? 'empty' : crowdNow(s, r.place);
   // A myth you can't read yet: no name, no grade, no beta. Just what it'll take.
   if (!revealed(s, r))
     return (
@@ -387,6 +393,26 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
         <p className="note">Open project: nobody’s sent it. Send it and it’s yours to name.</p>
       )}
       {r.highball && <p className="note">{landingNote(s, r)}</p>}
+      {(crowd === 'busy' || crowd === 'packed') && (
+        <p className="note">
+          {crowd === 'packed' ? 'Packed' : 'Busy'}:{' '}
+          {queueMin(s, r) ? `${queueMin(s, r)} min in line for it` : 'no line for it'}
+          {crowd === 'packed'
+            ? ', and beta whether you want it or not.'
+            : ', and people at the base who know the beta.'}
+        </p>
+      )}
+      {canAsk(s, r) && (
+        <button type="button" className="opt" onClick={() => game.ask(route)}>
+          <span>Ask around for the beta</span>
+          <span className="c">{CROWD.ask} min</span>
+          <small>
+            {log?.goes
+              ? 'Somebody here has done it.'
+              : 'Somebody here has done it. It’ll cost you the onsight.'}
+          </small>
+        </button>
+      )}
       {s.race?.route === route && (
         <p className="note">
           Dex is racing you for it: {s.race.until - s.day + 1} day{s.race.until === s.day ? '' : 's'} left.

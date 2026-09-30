@@ -49,6 +49,7 @@ import {
 import {
   BODY,
   CLIMB,
+  CROWD,
   DAY,
   DOG,
   EXPED,
@@ -63,6 +64,7 @@ import {
 } from './dials';
 import { EXPEDITIONS } from './content/expeditions';
 import { pitchOdds, pitchRoll, stormOn, wallPay } from './expeditions';
+import { canAsk, queueMin, sprayable, sprayedOn } from './crowds';
 import { fill, money, skillsNote } from './format';
 import { PARTNERS, tierOf, whereNow } from './presence';
 import { hashSeed, Rng } from './rng';
@@ -164,7 +166,8 @@ export function goCost(r: RouteDef, s?: GameState): Required<Pick<Delta, 'min' |
   const c = r.wall ? WALL.pitch : CLIMB.go[kind];
   const bare = CLIMB.skin[r.type] * (indoor(r.place) ? 1 : CLIMB.rockSkin);
   const skin = Math.round(s ? tapedSkin(s, r, bare) : bare);
-  return { min: c.min, energy: -c.energy, fed: -c.fed, skin: -skin };
+  // A busy crag's queue comes first.
+  return { min: c.min + (s ? queueMin(s, r) : 0), energy: -c.energy, fed: -c.fed, skin: -skin };
 }
 
 export const restCost = (r: RouteDef): number => CLIMB.restMin[r.disc];
@@ -831,10 +834,21 @@ export function act(s0: GameState, a: Action): Result {
       if (!r || r.place !== s.at) return refuse("That line isn't here.");
       const why = goBlocked(s, r);
       if (why) return refuse(`${why}.`);
+      // Whether the crowd shouts the beta at you, decided at the base, before the queue.
+      const sprayed = sprayedOn(s, r);
+      const queued = queueMin(s, r);
       spend(goCost(r, s));
       const L = logOf(s, a.route);
       L.goes += 1;
       L.goesToday += 1;
+      if (queued && L.goesToday === 1) line(`A queue for it. You wait ${queued} minutes for your turn.`);
+      if (sprayed) {
+        const b = sprayable(s, r)[0]!;
+        learn(r.id, b, 'told', '');
+        line(
+          `"${r.beta[b]!.name}," someone on the next rope calls, before you've chalked up. So much for the onsight.`,
+        );
+      }
       // Whoever's on belay, and anyone you know climbing here, makes it a day together.
       const who = roped(r) ? belayer(s) : null;
       if (who) climbedWith(who);
@@ -852,6 +866,19 @@ export function act(s0: GameState, a: Action): Result {
         s.today.push('grease');
         line("Sun's on this line now. Everything feels greasy.");
       }
+      break;
+    }
+
+    case 'ask': {
+      const r = routeOfId(s, a.route);
+      if (!r || r.place !== s.at) return refuse("That line isn't here.");
+      if (s.routes[r.id]?.sent) return refuse('You’ve sent it. Nobody’s telling you anything.');
+      if (!sprayable(s, r).length) return refuse('Nobody here knows more about it than you do.');
+      if (!canAsk(s, r)) return refuse('Nobody here to ask.');
+      const b = sprayable(s, r)[0]!;
+      spend({ min: CROWD.ask });
+      learn(r.id, b, 'told', '');
+      line(`You ask around. Somebody's been on it all season: ${r.beta[b]!.name.toLowerCase()}.`);
       break;
     }
 
