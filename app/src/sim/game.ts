@@ -66,6 +66,7 @@ import {
   MONEY,
   PLANS,
   RIVAL,
+  SCARS,
   TRAD,
   TRAIN,
   SPOT,
@@ -81,6 +82,8 @@ import { canAsk, queueMin, sprayable, sprayedOn } from './crowds';
 import { soloed } from './solo';
 import { fishCatch } from './lake';
 import { carePrice, clinicBill, jabbed, weeklyBills, worsened } from './clinic';
+import { flareRoll, scarRoll, scarred } from './scars';
+import { AREA, MARK_NAME, STYLE_NAME, type Mark } from './content/injuries';
 import { drivewayHost, nightAt, spotBlocked, ticketRoll } from './spots';
 import { SPOT_LINE, SPOT_NAME } from './content/spots';
 import { bodgeHolds, breakdownRoll, friendFor, gasFor, PART_NAME, repairCost, unsafePart } from './van';
@@ -150,6 +153,9 @@ export function newGame(seed: string): GameState {
     fueled: 0,
     insurance: 'catastrophic',
     jab: 0,
+    scars: [],
+    flare: null,
+    fear: [],
     wall: null,
     expedition: null,
     speed: { pb: null, runs: 0, day: 0 },
@@ -256,7 +262,11 @@ export function landingChance(s: GameState, r: RouteDef, moves: number): number 
   if (!r.highball) return 0;
   const over = fallFt(r, moves) - HIGHBALL.safeFt;
   if (over <= 0) return 0;
-  return HIGHBALL.perFoot * over * (morePads(s) ? HIGHBALL.pads : 1) * (belayer(s) ? HIGHBALL.spotter : 1);
+  // An old ankle injury lands worse (Phase 22.4b).
+  const scar = s.scars.includes('ankle') ? SCARS.risk : 1;
+  return (
+    HIGHBALL.perFoot * over * (morePads(s) ? HIGHBALL.pads : 1) * (belayer(s) ? HIGHBALL.spotter : 1) * scar
+  );
 }
 
 // Rolls a fall's landing. `n` numbers the go within the day, as the injury roll does, on its
@@ -440,6 +450,17 @@ export function act(s0: GameState, a: Action): Result {
     if (bill) spend({ cash: -bill });
     s.hurt += 1;
   };
+  // An injury heals: said, and it may leave a mark (Phase 22.4b).
+  const heal = () => {
+    const was = s.injury!;
+    line(fill(HEALED_LINE, { kind: was.kind }));
+    s.injury = null;
+    const mark = scarRoll(s, was);
+    if (mark) {
+      s.scars.push(mark);
+      line(`It’s healed, but your ${MARK_NAME[mark]} will remember. Lines that load it are riskier now.`);
+    }
+  };
   // A night: in the van at the Lot, on a ledge halfway up a wall, or away on an expedition
   // (where the food's paid for, the van waits, and friends feed the dog).
   const sleep = (where: 'van' | 'ledge' | 'away' = 'van') => {
@@ -568,10 +589,7 @@ export function act(s0: GameState, a: Action): Result {
     s.van.battery = round2(Math.max(0, s.van.battery - VAN.night));
     if (charged && s.van.battery <= 0)
       line('The van won’t turn over. The battery’s flat. A jump gets you across town, and no further.');
-    if (s.injury && s.day >= s.injury.until) {
-      line(fill(HEALED_LINE, { kind: s.injury.kind }));
-      s.injury = null;
-    }
+    if (s.injury && s.day >= s.injury.until) heal();
     if (ended % 7 === 0) {
       const bills = weeklyBills(s);
       s.cash -= bills;
@@ -718,10 +736,13 @@ export function act(s0: GameState, a: Action): Result {
       const cut = d.clinic === 'physio' ? CLINIC.physio.days : Math.floor(left / 2);
       s.injury = { ...s.injury, until: s.injury.until - cut };
       if (d.clinic === 'cortisone') s.jab = s.day;
-      if (s.injury.until <= s.day) {
-        line(fill(HEALED_LINE, { kind: s.injury.kind }));
-        s.injury = null;
-      } else line(`${cut === 1 ? 'A day' : `${cut} days`} off your ${s.injury.kind}.`);
+      if (s.injury.until <= s.day) heal();
+      else line(`${cut === 1 ? 'A day' : `${cut} days`} off your ${s.injury.kind}.`);
+    }
+    // Physio settles a flare of an old injury, too.
+    if (d.clinic === 'physio' && s.flare) {
+      line(`The physio works on your old ${MARK_NAME[s.flare.area as Mark]} injury. It settles.`);
+      s.flare = null;
     }
     // The lake: whatever bites, cooked on the shore.
     if (d.fish) {
@@ -1290,6 +1311,11 @@ export function act(s0: GameState, a: Action): Result {
           line('Somebody was watching that.');
         }
         note(`${SEND_NAME[style]}: ${r.name}, ${gradeLabel(r)}, on go ${L.goes}.`);
+        // A send of the style you were afraid of ends the fear (Phase 22.4b).
+        if (s.fear.includes(r.type)) {
+          s.fear = s.fear.filter((f) => f !== r.type);
+          line(`That's the fear gone. ${STYLE_NAME[r.type]} lines feel like yours again.`);
+        }
       } else if (res.fellAt) {
         const crux = r.cruxes.find((c) => c.id === res.fellAt);
         if (!crux) return refuse('No such crux.');
@@ -1335,6 +1361,17 @@ export function act(s0: GameState, a: Action): Result {
           days: hurt.until - s.day - 1,
         });
         injure(hurt, text);
+        // A bad landing, a deck or the worst of injuries leaves you afraid of the style.
+        if ((landed || s.injury?.tier === 3) && !s.fear.includes(r.type)) {
+          s.fear.push(r.type);
+          line(`${STYLE_NAME[r.type]} lines won't feel the same for a while. Send one and it'll pass.`);
+        }
+      }
+      // An old injury where this line loads you can flare (Phase 22.4b).
+      if (!hurt && scarred(s, r.type) && !s.flare && flareRoll(s, goN)) {
+        const area = AREA[r.type];
+        s.flare = { area, until: s.day + SCARS.flareDays };
+        line(`Your old ${MARK_NAME[area]} injury flares up. It'll settle in a few days, or with physio.`);
       }
       break;
     }

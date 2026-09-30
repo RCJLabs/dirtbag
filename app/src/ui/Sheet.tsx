@@ -98,6 +98,11 @@ import {
   PLANS,
   INJURY,
   type Plan,
+  MARK_NAME,
+  STYLE_NAME,
+  flaring,
+  type Mark,
+  type Style,
 } from '../sim';
 import type { Game, JournalPage, SheetId, Ui } from '../game/game';
 import { legacyFile, saveLegacyFile } from '../game/legacy';
@@ -418,6 +423,17 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
         <p className="note">Open project: nobody’s sent it. Send it and it’s yours to name.</p>
       )}
       {r.highball && <p className="note">{landingNote(s, r)}</p>}
+      {s.fear.includes(r.type) && (
+        <p className="note" id="fear-note">
+          {STYLE_NAME[r.type]} lines have had your nerve since the fall: every window tighter until you send
+          one.
+        </p>
+      )}
+      {flaring(s, r.type) && (
+        <p className="note">
+          Your old {MARK_NAME[s.flare!.area as Mark]} injury is flaring: tighter here. Physio settles it.
+        </p>
+      )}
       {soloed(s, r) && (
         <p className="note" id="solo-note">
           Free Solo: no rope. Come off and that’s the end of {s.climber.name}.
@@ -873,6 +889,14 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
       </p>
       <p className="crux">Load</p>
       <LoadRow s={s} />
+      {(s.scars.length > 0 || s.fear.length > 0) && (
+        <p className="sub" id="history">
+          {s.scars.length > 0 &&
+            `Old injuries: your ${s.scars.map((m) => MARK_NAME[m as Mark]).join(', ')}. Lines that load them are riskier. `}
+          {s.fear.length > 0 &&
+            `Afraid of ${s.fear.map((f) => STYLE_NAME[f as Style].toLowerCase()).join(' and ')} lines until you send one.`}
+        </p>
+      )}
       <KitRows s={s} />
       <PeopleRows s={s} />
       <p className="crux">Money</p>

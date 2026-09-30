@@ -1763,6 +1763,17 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **E2e:** the week sheet offers the three plans, catastrophic chosen.
 - **Carried:** v0.956's urgent care isn't separate: the clinic bill at the moment you're hurt is it.
 
+**Status (30 Sep 2026): 22.4b built: old injuries and fear.** Save v15, 0.971.0.
+- **Old injuries:** a tier-2 or tier-3 injury, when it heals, can leave a mark where it was (35% and 70%, seeded) [proposed]. That merges v0.956's scars and marks.
+  - The area is fingers, shoulder, elbow or knee from a strain, or an ankle from a landing.
+  - A mark makes injuries there 30% likelier for good, and ankle landings too.
+  - Now and then (6% a go on a line that loads it) a mark flares: that style's windows are 10% tighter for three days, or until physio settles it.
+  - A flare is felt only on those lines, so it isn't a chore.
+- **Fear:** a bad landing, a deck or a tier-3 injury leaves you afraid of that line's style. Every window on that style is 10% tighter until you send one, and the send says so.
+- **Where you see it:** the beta sheet says when fear or a flare tightens a line, and the journal lists old injuries and fears.
+- Every harness target passes (injuries in the first month: 9%).
+- **Carried:** no bot aims to send its feared style first. A player would.
+
 ---
 
 ### Phase 24 — Expeditions as trips
@@ -2150,3 +2161,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Phase 22.3a built: the Market, a camp kitchen and four recipes (two fuel you: wider windows for the day, never a skill), the last four meals counted for variety, coffee crashing past two, and a hungry bedtime eating the pantry first. Save v13. 0.968.0.
 - 2026-09-30 — Phase 22.3b built: the lake opens, with fishing (food, not cash, seeded by season and hour, once a day) and a swim. 0.969.0.
 - 2026-09-30 — Phase 22.4a built: insurance plans (none, catastrophic, full cover) replace the flat premium and set the clinic's bills; the Clinic in Old Town has physio (a day off an injury, once a day) and cortisone (half off, and the next injury in three weeks a tier worse). Save v14. 0.970.0.
+- 2026-09-30 — Phase 22.4b built: old injuries (a healed tier-2+ injury may leave a mark: more risk there, and flares physio settles) and fear (after a landing, a deck or the worst injury, that style's windows tighter until you send one). Save v15. 0.971.0.

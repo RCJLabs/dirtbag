@@ -673,7 +673,8 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 14 ||
+  saved?.v !== 15 ||
+  !Array.isArray(st.scars) ||
   st.insurance !== 'catastrophic' ||
   !Array.isArray(st.meals) ||
   st.spot !== 'lot' ||

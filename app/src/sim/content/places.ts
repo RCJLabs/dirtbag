@@ -508,10 +508,10 @@ export const ACTS: Record<string, ActDef> = {
     label: 'Physio',
     cost: { min: CLINIC.physio.min },
     needs: [
-      { injured: true, why: 'Nothing to treat. The physio looks almost disappointed.' },
+      { treatable: true, why: 'Nothing to treat. The physio looks almost disappointed.' },
       { notToday: 'physio', why: 'One session a day. Rest is the other half of it.' },
     ],
-    note: 'A day off your injury.',
+    note: 'A day off your injury, and it settles a flare of an old one.',
     sets: ['physio'],
     clinic: 'physio',
     says: 'An hour of being pressed where it hurts, and an hour of homework.',

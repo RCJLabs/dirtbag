@@ -6,7 +6,8 @@
 import { gradeOf, type Style } from './climber';
 import { AREA, INJURY_NAME } from './content/injuries';
 import type { RouteDef } from './content/routes';
-import { BODY, INJURY, LOAD } from './dials';
+import { BODY, INJURY, LOAD, SCARS } from './dials';
+import { scarred } from './scars';
 import { Rng } from './rng';
 import { riskFactor } from './training';
 import type { GameState, Injury, Load } from './types';
@@ -61,7 +62,9 @@ export function injuryChance(s: GameState, r: { type: Style }, load: number, was
     (wasCold ? LOAD.coldRisk : 1) *
     hungry *
     (load / LOAD.perGo) *
-    riskFactor(s)
+    riskFactor(s) *
+    // An old injury where this style loads you (Phase 22.4b).
+    (scarred(s, r.type) ? SCARS.risk : 1)
   );
 }
 

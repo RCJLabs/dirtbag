@@ -15,7 +15,7 @@ import { EXPEDITIONS } from './content/expeditions';
 import { INGREDIENTS, MEAL_NAME } from './content/food';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 14;
+export const SAVE_VERSION = 15;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -125,6 +125,11 @@ export const MIGRATIONS: Record<number, Migration> = {
   13: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, insurance: 'catastrophic', jab: 0 };
+  },
+  // v14 -> v15 (Phase 22.4b): no marks, no flare, no fear. Old injuries before now left none.
+  14: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, scars: [], flare: null, fear: [] };
   },
 };
 
@@ -271,6 +276,15 @@ export function validate(x: unknown): string[] {
   need(isInt(x.fueled) && x.fueled >= 0, 'fueled');
   need(typeof x.insurance === 'string' && x.insurance in PLANS, 'insurance');
   need(isInt(x.jab) && x.jab >= 0, 'jab');
+  const MARKS = ['fingers', 'shoulder', 'forearm', 'leg', 'ankle'];
+  const STYLES = ['crimp', 'power', 'endurance', 'technical', 'dyno', 'crack'];
+  need(isStrs(x.scars) && x.scars.every((m) => MARKS.includes(m)), 'scars');
+  const fl = x.flare;
+  need(
+    fl === null || (isObj(fl) && typeof fl.area === 'string' && MARKS.includes(fl.area) && isInt(fl.until)),
+    'flare',
+  );
+  need(isStrs(x.fear) && x.fear.every((f) => STYLES.includes(f)), 'fear');
   need(isInt(x.lotNights) && x.lotNights >= 0, 'lotNights');
   need(isInt(x.driveway) && x.driveway >= 0, 'driveway');
   const pct = (v: unknown) => isNum(v) && v >= 0 && v <= 100;

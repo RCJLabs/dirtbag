@@ -366,6 +366,24 @@ export const CLINIC = {
   cortisone: { price: 60, min: 30, jabDays: 21 },
 };
 
+// Phase 22.4b: old injuries and fear [proposed]. A tier-2 or tier-3 injury, healed, can leave
+// a mark on where it was (content/injuries.ts AREA): more risk there for good, and now and
+// then a flare, felt only on lines that load it, until physio settles it or it passes. A
+// deck, a bad landing or a tier-3 injury leaves you afraid of that line's style until you
+// send one. v0.956's scars and marks, merged (core-loop.md §8 CUT 3).
+export const SCARS = {
+  // The chance a healed injury leaves a mark, by tier.
+  chance: [0, 0.35, 0.7],
+  // Injury risk where it's marked.
+  risk: 1.3,
+  // A flare's chance a go on a line that loads the mark, how long it lasts, and what it does
+  // to that line's windows.
+  flare: 0.06,
+  flareDays: 3,
+  flareWindows: 0.9,
+};
+export const FEAR = { windows: 0.9 };
+
 export const INJURY = {
   days: [
     [2, 4],

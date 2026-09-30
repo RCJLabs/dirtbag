@@ -52,6 +52,7 @@ export interface Cond {
   stock?: string; // a serving of that ingredient in the pantry (Phase 22.3)
   notSeason?: Season; // it isn't this season (the lake's swim, not in winter)
   injured?: boolean; // you've an injury (the clinic)
+  treatable?: boolean; // an injury, or an old one flaring (physio)
 }
 
 // The last two days of every seven are the weekend: the week's bills land on its last night.
@@ -139,6 +140,8 @@ export function holds(s: GameState, c: Cond): boolean {
   if (c.stock !== undefined && !((s.pantry[c.stock] ?? 0) > 0)) return false;
   if (c.notSeason !== undefined && seasonOf(s.day) === c.notSeason) return false;
   if (c.injured !== undefined && !!s.injury !== c.injured) return false;
+  if (c.treatable !== undefined && !!(s.injury || (s.flare && s.day < s.flare.until)) !== c.treatable)
+    return false;
   return true;
 }
 
