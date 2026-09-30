@@ -121,7 +121,12 @@ export {
   WORK,
   LIFESTYLE,
   VAN,
+  SPOT,
+  SPOTS,
 } from './dials';
+export type { SpotId } from './dials';
+export { SPOT_IDS, nightAt, spotBlocked, ticketOdds, drivewayHost, type Night } from './spots';
+export { SPOT_NAME } from './content/spots';
 export type { VanPart } from './dials';
 export { PARTS, PART_NAME, partWord, repairCost, friendFor, breakdownOdds, unsafePart } from './van';
 export type { Lifestyle } from './dials';

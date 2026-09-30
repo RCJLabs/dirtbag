@@ -618,7 +618,7 @@ await tapAt(170 * Z, screenY(540));
 await expectText('#sheet', /The desk/, 'desk');
 await click('#sheet .opt', 'Set problems for a shift');
 await expectText('#h-time', /11:22 AM$/, 'clock');
-await expectText('#h-cash', /^\$68$/, 'paid');
+await expectText('#h-cash', /^\$70$/, 'paid');
 await expectText('#toast', /Sage turns up/, 'Sage');
 await click('#sheet .x');
 await wait(300);
@@ -673,7 +673,8 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 11 ||
+  saved?.v !== 12 ||
+  st.spot !== 'lot' ||
   !(st.van?.tires > 0) ||
   st.breakdown !== null ||
   // Day two's setting shift was a walk-in: paid, and not counted.
@@ -703,7 +704,7 @@ await until('the service worker to control the page', () =>
 await page.context().setOffline(true);
 await page.reload({ waitUntil: 'load' });
 await expectText('#h-time', /^Day 2 · 1[12]:\d\d AM$/, 'clock offline');
-await expectText('#h-cash', /^\$68$/, 'cash offline');
+await expectText('#h-cash', /^\$70$/, 'cash offline');
 await shot('offline');
 await page.context().setOffline(false);
 
@@ -716,13 +717,17 @@ await expectText('#sheet', /Your van/, 'van');
 await click('#sheet .opt', 'Lie around till dark');
 await expectText('#h-time', /^Day 2 · 5:00 PM$/, 'dark');
 
-console.log('The week: a shift signed up for, and how you live');
+console.log('The week: a shift signed up for, where you park, and how you live');
 // Tomorrow's café shift, signed up for from the van, so day three's shift counts toward a
 // raise. How you live stays a dirtbag's: day three's money is counted as it always was.
 await click('#sheet .opt', 'Your week');
 await expectText('#shifts', /Today.*Coffee Shop/, 'the schedule');
 await click('#sh-cafe-1');
 await until('signed up', async () => (await page.getAttribute('#sh-cafe-1', 'aria-pressed')) === 'true');
+await expectText('#spots', /The Lot.*The Upper Trailhead.*The Ridge/, 'where you park');
+if ((await page.getAttribute('#spot-lot', 'aria-checked')) !== 'true') await fail('not parked at the Lot');
+if ((await page.getAttribute('#spot-ridge', 'aria-disabled')) !== 'true')
+  await fail('the Ridge is open on day two');
 await expectText('#living', /Dirtbag · free.*Comfortable/, 'how you live');
 if ((await page.getAttribute('#live-dirtbag', 'aria-checked')) !== 'true')
   await fail('not living as a dirtbag');

@@ -34,6 +34,7 @@ import {
   type GoStyle,
   type PhaseId,
   type Lifestyle,
+  type SpotId,
   type SendStyle,
   type Skills,
   unfinishedSolo,
@@ -747,6 +748,11 @@ export class Game {
 
   live(tier: Lifestyle): void {
     this.dispatch({ t: 'lifestyle', tier });
+  }
+
+  // Phase 22.2b: where you park for the night.
+  park(spot: SpotId): void {
+    this.dispatch({ t: 'spot', spot });
   }
 
   // A way out of a breakdown. Once the van's going again, you're wherever it took you.

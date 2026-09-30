@@ -69,6 +69,11 @@ export interface GameState {
   benched: Record<string, number>;
   // How you live (dials.ts LIFESTYLE): paid at the van every night.
   lifestyle: 'dirtbag' | 'comfortable' | 'plush';
+  // Phase 22.2b. Where you park for the night (dials.ts SPOTS), nights in a row at the Lot
+  // (what tickets come from), and the last night you used a friend's driveway.
+  spot: 'lot' | 'trailhead' | 'truckstop' | 'driveway' | 'ridge';
+  lotNights: number;
+  driveway: number;
   // Phase 22.2a. The van's parts, 0 to 100, and the breakdown you're sat beside, if any: the
   // part that went, where you were headed, the minutes of driving left, and whether you've
   // tried a bodge.
@@ -228,7 +233,9 @@ export type Action =
   | { t: 'signup'; job: string; day: number; on: boolean }
   | { t: 'lifestyle'; tier: 'dirtbag' | 'comfortable' | 'plush' }
   // Phase 22.2a: a way out of a breakdown.
-  | { t: 'fix'; how: 'tow' | 'bodge' | 'limp' | 'friend' };
+  | { t: 'fix'; how: 'tow' | 'bodge' | 'limp' | 'friend' }
+  // Phase 22.2b: where you park for the night, from now on.
+  | { t: 'spot'; spot: 'lot' | 'trailhead' | 'truckstop' | 'driveway' | 'ridge' };
 
 // What a finished go hands back to the game.
 export interface GoResult {

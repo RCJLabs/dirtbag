@@ -111,6 +111,36 @@ export const VAN = {
   work: { tires: 60, engine: 120, battery: 20 } as Record<VanPart, number>,
 };
 
+// Phase 22.2b: where you park for the night, a choice that stays until you change it. Each
+// spot's price on top of the gas there and back, the drive (off the evening and the
+// morning), and what the night does to your energy, more in winter where it's cold. You
+// wake at the Lot either way [proposed, all of it].
+export type SpotId = 'lot' | 'trailhead' | 'truckstop' | 'driveway' | 'ridge';
+export const SPOTS: Record<
+  SpotId,
+  { cost: number; gas: number; drive: number; energy: number; winter: number }
+> = {
+  // The Lot: the van spot, and the meter maid.
+  lot: { cost: MONEY.vanSpot, gas: 0, drive: 0, energy: 0, winter: 0 },
+  // The Upper Trailhead: free, up the road, and cold.
+  trailhead: { cost: 0, gas: 6, drive: 25, energy: -10, winter: -10 },
+  // The truck stop on the highway: cheap, lit all night, and loud.
+  truckstop: { cost: 6, gas: 2, drive: 10, energy: -12, winter: 0 },
+  // A friend's driveway: a good night, if you don't wear out your welcome.
+  driveway: { cost: 0, gas: 2, drive: 10, energy: 5, winter: 0 },
+  // The Ridge: the locals' spot above the valley, once they know you. Stars, and wind.
+  ridge: { cost: 0, gas: 8, drive: 40, energy: 5, winter: -15 },
+};
+export const SPOT = {
+  // Tickets at the Lot: none for the first `from` nights in a row, then `per` more a night
+  // up to `cap`. v0.956 went to 40% and booted you at three.
+  tickets: { from: 3, per: 0.05, cap: 0.25, fine: 25 },
+  // The driveway wants a partner (BOND.tiers) and a few nights between visits.
+  driveway: { tier: 3, every: 4 },
+  // The Ridge opens once you've made this many trips out.
+  ridgeTrips: 25,
+};
+
 export const BODY = {
   startEnergy: 78,
   startSkin: 64,

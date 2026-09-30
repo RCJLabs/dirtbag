@@ -1652,8 +1652,14 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **A finding for Evan:** the career bots still spend their whole career at the café, to Veteran. They choose by today's pay an hour, and an assistant coach ($8.50/h) earns less than a café regular ($11.00/h), so they never start the coaching ladder. A player who looks ahead would. Whether a starting coach should pay more, or the bots should plan a ladder, is open.
 - **Carried:** warnings never expire [proposed]. Nothing cancels your shifts when you leave on an expedition; each missed one is a warning. The page size is 243.6 of 250 KB.
 
+**Evan's call on the jobs (30 Sep 2026), after 22.1:**
+- A job that pays less an hour pays in something else: coaching your head, setting your technique, and now the warehouse your endurance (+2 a shift).
+- The café pays least a shift ($28), and its shifts are the shortest (3 h). Cutting it to $25 left the harness's balanced bots stuck in their eighth week, so setting went from $28 to $30 instead.
+- The Diner is a fifth job: 4 h at $30 plus $4–10 in tips (half again on a weekend), 5 shifts a week, ranks Busser to Floor manager. That's a little more a shift than the café, for a longer one.
+- The career bots still choose by pay alone, so they stay at the café. The skill bonuses are for a player who wants them; the bots don't value them yet.
+
 **Status (30 Sep 2026): 22.2a built: the van's parts, breakdowns and the garage.** Save v11, 0.965.0. 22.2 goes in three parts: 22.2a parts and breakdowns, 22.2b where you sleep, 22.2c upgrades and winter.
-- **Three parts:** tires, engine and battery, 0 to 100. Tires and the engine wear by the minute driven, and the battery by the night. A flat battery gets a jump as far as the garage and no further; a road part under 15 won't leave town except home or to the garage.
+- **Three parts:** tires, engine and battery, 0 to 100. Tires and the engine wear by the minute driven, and the battery by the night. A flat battery gets a jump across town but not out of it, and a road part under 15 won't leave town either, except home or to the garage. Town is always in reach, so a broke climber can always get to a shift: the career harness found a bot stuck at the Lot with a flat battery and no money when the jump only reached the garage.
 - **Breakdowns** happen only on drives of 20 minutes or more. The odds go with the square of the worst road part's wear, so a van you keep up never breaks down (v0.956's broke down on 17% of crag days even fresh). Roadside and back is about 0.6% with a part at 85, 7% at 50 and 18% at 20. It happens halfway, with a sound, and the drive stops there.
 - **Ways out:**
   - a tow to the garage ($70, 1 h 30);
@@ -1667,6 +1673,18 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
   - The climber bot (works only when it's nearly broke) has 5 stuck nights in 56 days, where it had none; a breakdown catches it with nothing saved.
   - The e2e loads a broken-down save rather than driving into a breakdown; the sim's tests cover the drive.
   - The page size is 246.9 of 250 KB, and 22.2b will need room: the budget is close.
+
+**Status (30 Sep 2026): 22.2b built: where you sleep.** Save v12, 0.966.0.
+- **Where you park** is a choice on the week sheet that stays until you change it. The night settles it, and Tonight shows it: the spot, the energy and the ticket odds. You wake at the Lot whichever you pick, with the drive back taken off the morning [proposed, all of it]:
+  - **The Lot:** $18. From the fourth night in a row, a ticket: 5% a night, rising 5% a night to 25%, $25 each. v0.956 went to 40% with a boot at three.
+  - **The Upper Trailhead:** free, $6 of gas and 25 minutes each way. −10 energy, −20 in winter.
+  - **The truck stop:** $6 and $2 of gas, −12 energy.
+  - **A friend's driveway:** a partner (tier 3), once every 4 nights. $2 of gas, +5 energy.
+  - **The Ridge:** once you've made 25 trips out ("standing", until Phase 18 has some). $8 of gas and 40 minutes, +5 energy, −15 in winter.
+- **A spot that won't have you tonight** falls back to the Lot, and says so. A card that won't cover it is the pullout, as before.
+- **Bots** use a driveway when they can, the trailhead once the Lot's ticket odds start, and the Lot otherwise. Every harness target passes: balanced runway 3.2, 3.3, 3.4 and 4.0 days at days 7–28, no stuck nights; the career bots at V10 by day 160.
+- **E2e:** the week sheet lists the spots, with the Lot chosen and the Ridge locked on day two.
+- **Carried:** the page is 248.5 of 250 KB. 22.2c (upgrades and winter) won't fit without raising the budget or finding room.
 
 ---
 
@@ -2048,3 +2066,5 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Evan's calls on Phase 22's decisions: jobs differ in pay and hours, starting low with promotion the way up (no pace target); psyche kept as a slow mood; Scout's full lifecycle kept; the garden and farm cut, their plan saved for later; three van parts.
 - 2026-09-30 — Phase 22.1 built: shifts posted by the week and signed up for ahead (only those count toward a raise; three no-shows cost the job), the Warehouse as a fourth job, pay that starts low and roughly doubles by the top rank, and how you live (dirtbag, comfortable, plush) paid nightly. Save v10. 0.964.0.
 - 2026-09-30 — Phase 22.2a built: the van's three parts wear with driving and nights; a worn van breaks down on drives out of town (never a kept-up one), with a tow, a bodge, limping on or a friend; Dale's garage in Midtown puts parts back. Wear retuned to about $5 a day after the harness. Save v11. 0.965.0.
+- 2026-09-30 — Evan's call on the jobs: each pays in something besides money (coaching head, setting technique, the warehouse endurance); the café pays least a shift and is shortest; a Diner job, a little more a shift in tips for a longer one. Setting $28 → $30.
+- 2026-09-30 — Phase 22.2b built: where you sleep, a standing choice among the Lot (tickets from the fourth night running), the Upper Trailhead, the truck stop, a friend's driveway and the Ridge, each with its cost, drive and night; Tonight shows it. Save v12. 0.966.0.
