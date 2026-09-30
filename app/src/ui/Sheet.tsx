@@ -84,6 +84,9 @@ import {
   benchedUntil,
   WORK,
   type Lifestyle,
+  PARTS,
+  PART_NAME,
+  partWord,
 } from '../sim';
 import type { Game, JournalPage, SheetId, Ui } from '../game/game';
 import { legacyFile, saveLegacyFile } from '../game/legacy';
@@ -881,6 +884,19 @@ function KitRows({ s }: { s: GameState }) {
               <i className="none" />
             )}
             <b>{kitState(id, n)}</b>
+          </li>
+        ))}
+      </ul>
+      <p className="crux">The van</p>
+      <ul className="skills" id="van">
+        {PARTS.map((p) => (
+          <li key={p}>
+            <span>{PART_NAME[p]}</span>
+            <i
+              className={s.van[p] < 40 ? 'hot' : undefined}
+              style={vars({ '--v': (s.van[p] / 100).toFixed(3) })}
+            />
+            <b>{partWord(s.van[p])}</b>
           </li>
         ))}
       </ul>

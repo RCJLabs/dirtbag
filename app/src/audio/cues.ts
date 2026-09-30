@@ -9,6 +9,8 @@ export type Cue =
   | 'talk'
   | 'paper'
   | 'drive'
+  // A breakdown on the road (Phase 22.2a).
+  | 'breakdown'
   | 'eat'
   | 'earn'
   | 'pay'
@@ -38,6 +40,8 @@ export function actCue(a: ActDef): Cue {
   if (a.sleep) return 'sleep';
   if (a.dog) return 'dog';
   if (a.until) return 'rest';
+  // The garage's bill is the part's, by wear: always money out.
+  if (a.van) return 'pay';
   const c = a.cost;
   if ((c.cash ?? 0) > 0) return 'earn';
   if ((c.fed ?? 0) > 0 || ((c.energy ?? 0) > 0 && (c.cash ?? 0) < 0)) return 'eat';

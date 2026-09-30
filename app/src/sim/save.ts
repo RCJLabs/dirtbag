@@ -14,7 +14,7 @@ import { ROUTES, WALLS } from './content/routes';
 import { EXPEDITIONS } from './content/expeditions';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 10;
+export const SAVE_VERSION = 11;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -101,6 +101,12 @@ export const MIGRATIONS: Record<number, Migration> = {
   9: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, shifts: [], strikes: {}, benched: {}, lifestyle: 'dirtbag' };
+  },
+  // v10 -> v11 (Phase 22.2a): the van's parts, worn from the miles already on it, and not
+  // broken down.
+  10: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, van: { tires: 70, engine: 70, battery: 70 }, breakdown: null };
   },
 };
 
@@ -238,6 +244,21 @@ export function validate(x: unknown): string[] {
   need(perJob(x.strikes), 'strikes');
   need(perJob(x.benched), 'benched');
   need(typeof x.lifestyle === 'string' && x.lifestyle in LIFESTYLE, 'lifestyle');
+  const pct = (v: unknown) => isNum(v) && v >= 0 && v <= 100;
+  const van = x.van;
+  need(isObj(van) && ['tires', 'engine', 'battery'].every((k) => pct(van[k])), 'van');
+  const bd = x.breakdown;
+  need(
+    bd === null ||
+      (isObj(bd) &&
+        (bd.part === 'tires' || bd.part === 'engine') &&
+        typeof bd.to === 'string' &&
+        bd.to in PLACES &&
+        isInt(bd.rest) &&
+        bd.rest >= 0 &&
+        typeof bd.bodged === 'boolean'),
+    'breakdown',
+  );
   const w = x.wall;
   need(
     w === null || (isObj(w) && typeof w.id === 'string' && w.id in WALLS && isInt(w.next) && w.next >= 0),
@@ -271,7 +292,6 @@ export function validate(x: unknown): string[] {
   const dd = x.dead;
   need(dd === null || (isObj(dd) && typeof dd.route === 'string' && isInt(dd.day) && isNum(dd.hi)), 'dead');
   const dog = x.dog;
-  const pct = (v: unknown) => isNum(v) && v >= 0 && v <= 100;
   need(
     dog === null ||
       (isObj(dog) && typeof dog.name === 'string' && isInt(dog.since) && pct(dog.fed) && pct(dog.bond)),

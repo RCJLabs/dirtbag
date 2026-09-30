@@ -10,7 +10,7 @@
 // back: there's no game over, only a bad week.
 
 import type { Need } from '../cond';
-import { DAY, DOG, KIT, MONEY } from '../dials';
+import { DAY, DOG, KIT, MONEY, VAN, type VanPart } from '../dials';
 import { DOG_LINES, DOG_OFFER } from './dog';
 import { clockShort } from '../format';
 import type { Delta, Skills } from '../types';
@@ -101,6 +101,8 @@ export interface ActDef {
   saysOneOf?: string[];
   // What it does to your kit: sets an item to this (condition, or 1 for owned), or adds uses.
   gear?: { id: string; set?: number; add?: number };
+  // A repair at the garage (Phase 22.2a): that part back to new, at a price by its wear.
+  van?: VanPart;
   // A shift at a job (content/jobs.ts), counting this many toward promotion. Its pay is
   // `cost.cash` at the first rank, plus the rank's raise for each shift.
   job?: { id: string; shifts: number };
@@ -373,6 +375,16 @@ export const PLACES: Record<string, PlaceDef> = {
     here: 'Pallets to the roof, and a forklift backing up somewhere, beeping.',
     acts: ['warehouse.shift'],
   },
+  // Phase 22.2a [proposed]: Dale's garage, on the edge of Midtown past the gear shop. Where a
+  // tow brings you, and where the van gets put back together.
+  garage: {
+    name: 'The Garage',
+    scene: null,
+    ambience: { room: 0.35, murmur: 0.1, clinks: 0.5 },
+    away: 'Edge of Midtown. Tires, engines, batteries. Dale takes cards and opinions.',
+    here: 'A radio on a shelf, a calendar from 2019, and Dale under somebody’s truck.',
+    acts: ['garage.tires', 'garage.engine', 'garage.battery'],
+  },
 };
 
 const oneShift: Need = { notToday: 'worked', why: "You've done your shift today." };
@@ -485,6 +497,28 @@ export const ACTS: Record<string, ActDef> = {
     sets: ['worked'],
     job: { id: 'warehouse', shifts: 1 },
     says: 'Eight hours of pallets, and a scanner that beeps at you.',
+  },
+  // The garage: each part back to new, priced by how far gone it is (van.ts repairCost).
+  'garage.tires': {
+    label: 'New tires',
+    cost: { min: VAN.work.tires },
+    needs: [{ worn: 'tires', why: 'Plenty of tread left.' }, { payVan: 'tires' }],
+    van: 'tires',
+    says: 'Four new tires, balanced. The van drives straight for the first time in months.',
+  },
+  'garage.engine': {
+    label: 'Service the engine',
+    cost: { min: VAN.work.engine },
+    needs: [{ worn: 'engine', why: 'Dale listens to it and shrugs. It’s fine.' }, { payVan: 'engine' }],
+    van: 'engine',
+    says: 'Belts, hoses, oil, and a look from Dale about the oil.',
+  },
+  'garage.battery': {
+    label: 'New battery',
+    cost: { min: VAN.work.battery },
+    needs: [{ worn: 'battery', why: 'It’s holding a charge fine.' }, { payVan: 'battery' }],
+    van: 'battery',
+    says: 'A new battery. The van starts first time, like it’s showing off.',
   },
   'cafe.coffee': {
     label: 'Buy a coffee',
@@ -661,6 +695,10 @@ export const ROADS: RoadDef[] = [
   // The warehouse: on the flats below Midtown, between the Lot and the shop.
   { a: 'warehouse', b: 'lot', min: 10, cash: 1 },
   { a: 'warehouse', b: 'shop', min: 6, cash: 1 },
+  // The garage: past the gear shop, on the way out to the Lot.
+  { a: 'garage', b: 'shop', min: 5, cash: 0 },
+  { a: 'garage', b: 'lot', min: 8, cash: 1 },
+  { a: 'garage', b: 'cafe', min: 7, cash: 1 },
   { a: 'road', b: 'lot', min: 60, cash: 12 },
   { a: 'road', b: 'cafe', min: 65, cash: 12 },
   { a: 'road', b: 'diner', min: 70, cash: 12 },

@@ -63,6 +63,7 @@ import {
   RIVAL,
   TRAD,
   TRAIN,
+  VAN,
   WALL,
   WORK,
 } from './dials';
@@ -70,6 +71,8 @@ import { EXPEDITIONS } from './content/expeditions';
 import { pitchOdds, pitchRoll, stormOn, wallPay } from './expeditions';
 import { canAsk, queueMin, sprayable, sprayedOn } from './crowds';
 import { soloed } from './solo';
+import { bodgeHolds, breakdownRoll, friendFor, PART_NAME, repairCost, unsafePart } from './van';
+import { BODGE_FAILED, BODGE_HELD, BREAKDOWN_LINE } from './content/van';
 import { speedBlocked, speedGains, speedLoad, speedTime, runsToday } from './speed';
 import { fill, money, skillsNote } from './format';
 import { PARTNERS, tierOf, whereNow } from './presence';
@@ -125,6 +128,8 @@ export function newGame(seed: string): GameState {
     strikes: {},
     benched: {},
     lifestyle: 'dirtbag',
+    van: { ...VAN.start },
+    breakdown: null,
     wall: null,
     expedition: null,
     speed: { pb: null, runs: 0, day: 0 },
@@ -191,6 +196,8 @@ export const restCost = (r: RouteDef): number => CLIMB.restMin[r.disc];
 export function actCost(s: GameState, d: ActDef): Delta {
   // A shift pays its rank's raise on top.
   if (d.job) return { ...d.cost, cash: (d.cost.cash ?? 0) + raiseAt(s, d.job.id) * d.job.shifts };
+  // A repair costs its share of the part's price, by wear.
+  if (d.van) return { ...d.cost, cash: -repairCost(s, d.van) };
   if (d.until === undefined) return d.cost;
   const min = Math.max(0, d.until - s.min);
   const out: Delta = { min };
@@ -478,6 +485,11 @@ export function act(s0: GameState, a: Action): Result {
       if (s.dog.fed < DOG.hungryBelow)
         line("Scout's bowl is empty. He's been decent about it, which is worse.");
     }
+    // The battery loses a little every night; the morning it's flat, you know.
+    const charged = s.van.battery > 0;
+    s.van.battery = round2(Math.max(0, s.van.battery - VAN.night));
+    if (charged && s.van.battery <= 0)
+      line('The van won’t turn over. The battery’s flat. A jump gets you to the garage.');
     if (s.injury && s.day >= s.injury.until) {
       line(fill(HEALED_LINE, { kind: s.injury.kind }));
       s.injury = null;
@@ -604,6 +616,7 @@ export function act(s0: GameState, a: Action): Result {
     if (s.dog && d.dog?.fill) s.dog.fed = 100;
     if (s.dog && d.dog?.bond) s.dog.bond = Math.min(100, s.dog.bond + d.dog.bond);
     if (d.gear) s.gear[d.gear.id] = d.gear.set ?? (s.gear[d.gear.id] ?? 0) + (d.gear.add ?? 0);
+    if (d.van) s.van[d.van] = 100;
     if (d.says) line(d.job ? `${d.says} +${money(cost.cash ?? 0)}.` : d.says);
     if (d.saysOneOf) line(ofDay(s, id, d.saysOneOf));
     if (d.job) {
@@ -624,6 +637,26 @@ export function act(s0: GameState, a: Action): Result {
         );
     }
     return null;
+  };
+  // The van's miles: tires and engine wear by the minute.
+  const wear = (min: number) => {
+    s.van.tires = round2(Math.max(0, s.van.tires - VAN.wear.tires * min));
+    s.van.engine = round2(Math.max(0, s.van.engine - VAN.wear.engine * min));
+  };
+  // Getting there, however you did.
+  const arriveAt = (id: string) => {
+    s.at = id;
+    s.x = null;
+    // Every drive with Scout is a ride-along; out at the crag he gets up to something.
+    if (s.dog) s.dog.bond = Math.min(100, s.dog.bond + DOG.rideBond);
+    if (PLACES[id]!.crag) {
+      s.trips += 1;
+      if (s.trips === DOG.offerTrips && !s.dog) line(DOG_OFFER.first);
+      if (s.dog && !s.today.includes('dog-out')) {
+        s.today.push('dog-out');
+        line(dogLine(s, 'crag')!);
+      }
+    }
   };
   const meet = (who: string) => (s.people[who] ??= { bond: 0, last: 0, since: s.day });
   // Bond, and the line when it takes you up a tier.
@@ -673,6 +706,10 @@ export function act(s0: GameState, a: Action): Result {
 
   // A Free Solo run that ended: nothing more happens to this climber.
   if (s.dead) return refuse('That climber is gone.');
+
+  // Broken down on the road: nothing happens until you've found a way out.
+  if (s.breakdown && a.t !== 'fix' && a.t !== 'stand' && a.t !== 'pick')
+    return refuse('The van’s broken down. First things first.');
 
   // Away on an expedition: the valley waits. Only the expedition's own day goes on.
   if (s.expedition && a.t !== 'exped' && a.t !== 'stand' && a.t !== 'pick')
@@ -848,28 +885,83 @@ export function act(s0: GameState, a: Action): Result {
       const permit = to.permit ?? 0;
       if (permit && headroom(s) < permit)
         return refuse(`${to.name} needs a ${money(permit)} permit, and the card won't cover it.`);
+      // The van first: a flat battery gets a jump as far as the garage, and a part that's
+      // shot won't take a drive out of town, except home or to the garage.
+      const fixing = a.to === 'garage' || a.to === 'lot';
+      if (s.van.battery <= 0 && a.to !== 'garage')
+        return refuse('The battery’s flat. A jump gets you as far as the garage, and no further.');
+      const shot = unsafePart(s);
+      if (shot && r.min >= VAN.from && !fixing)
+        return refuse(
+          `The ${PART_NAME[shot].toLowerCase()} won’t make it out of town. The garage is in Midtown.`,
+        );
       spend({ cash: -permit });
       if (s.wall) {
         line(`You rap off ${WALLS[s.wall.id]!.name}. The wall will be there.`);
         s.wall = null;
       }
       const declined = r.cash > 0 && headroom(s) < r.cash;
-      spend({ min: r.min, cash: declined ? 0 : -r.cash, energy: r.min >= 30 ? -BODY.driveEnergy : 0 });
-      s.at = a.to;
-      s.x = null;
+      const broke = breakdownRoll(s, r.min, a.to);
+      wear(broke ? Math.round(r.min / 2) : r.min);
+      spend({ cash: declined ? 0 : -r.cash, energy: r.min >= 30 ? -BODY.driveEnergy : 0 });
       if (declined) line("The card's declined at the pump. You make it on fumes.");
       else if (r.cash >= 12) line(`Gas, ${money(r.cash)}. The van starts on the second try.`);
       else if (r.cash > 0) line(`Gas, ${money(r.cash)}.`);
       if (permit) line(`Permit, ${money(permit)}. The ranger doesn't look up.`);
-      // Every drive with Scout is a ride-along; out at the crag he gets up to something.
-      if (s.dog) s.dog.bond = Math.min(100, s.dog.bond + DOG.rideBond);
-      if (to.crag) {
-        s.trips += 1;
-        if (s.trips === DOG.offerTrips && !s.dog) line(DOG_OFFER.first);
-        if (s.dog && !s.today.includes('dog-out')) {
-          s.today.push('dog-out');
-          line(dogLine(s, 'crag')!);
+      if (broke) {
+        const half = Math.round(r.min / 2);
+        spend({ min: half });
+        s.van[broke] = Math.min(s.van[broke], VAN.broken);
+        s.breakdown = { part: broke, to: a.to, rest: r.min - half, bodged: false };
+        line(BREAKDOWN_LINE[broke]);
+        break;
+      }
+      spend({ min: r.min });
+      arriveAt(a.to);
+      break;
+    }
+
+    // A breakdown's way out: a tow to the garage, a bodge, limping on, or a friend.
+    case 'fix': {
+      const b = s.breakdown;
+      if (!b) return refuse('The van’s running.');
+      const dest = PLACES[b.to]!.name;
+      if (a.how === 'tow') {
+        spend({ cash: -VAN.tow.cash, min: VAN.tow.min });
+        s.breakdown = null;
+        line(
+          `A tow truck, ${money(VAN.tow.cash)} and an hour and a half. The van rides to the garage backwards.`,
+        );
+        arriveAt('garage');
+      } else if (a.how === 'bodge') {
+        if (b.bodged) return refuse('You’ve tried that. It isn’t going to hold.');
+        b.bodged = true;
+        spend({ min: VAN.bodge.min });
+        if (!bodgeHolds(s)) {
+          line(BODGE_FAILED[b.part]);
+          break;
         }
+        s.van[b.part] = VAN.bodge.to;
+        s.breakdown = null;
+        line(BODGE_HELD[b.part]);
+        spend({ min: b.rest });
+        arriveAt(b.to);
+      } else if (a.how === 'limp') {
+        spend({ min: b.rest * VAN.limp.slow, energy: -VAN.limp.energy });
+        s.breakdown = null;
+        line(`You limp the rest of the way to ${dest}, hazards on, at half the speed of anything else.`);
+        arriveAt(b.to);
+      } else {
+        const who = friendFor(s);
+        if (!who) return refuse('Nobody you’d call for this. Not yet.');
+        spend({ min: VAN.friend.min });
+        s.van[b.part] = Math.max(s.van[b.part], VAN.friend.to);
+        s.breakdown = null;
+        line(
+          `${PEOPLE[who]!.name} drives out with a jack and a thermos, and doesn't mention it again. Not much, anyway.`,
+        );
+        spend({ min: b.rest });
+        arriveAt(b.to);
       }
       break;
     }

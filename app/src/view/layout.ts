@@ -527,6 +527,8 @@ export const MAP_PINS: Record<string, Pin> = {
   shop: { x: 240, y: 540, side: 1, kind: 'town' },
   // The Warehouse: on the flats by the river, down a short spur west of the highway.
   warehouse: { x: 190, y: 572, side: -1, kind: 'town' },
+  // The Garage: east of the highway past the gear shop, down a short street.
+  garage: { x: 300, y: 562, side: 1, kind: 'town' },
   road: { x: 292, y: 220, side: -1, kind: 'crag' },
   gorge: { x: 96, y: 150, side: 1, kind: 'crag', dy: -16 },
   // Out of the valley where the highway leaves it, north past Roadside.

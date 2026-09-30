@@ -120,7 +120,10 @@ export {
   FREESOLO,
   WORK,
   LIFESTYLE,
+  VAN,
 } from './dials';
+export type { VanPart } from './dials';
+export { PARTS, PART_NAME, partWord, repairCost, friendFor, breakdownOdds, unsafePart } from './van';
 export type { Lifestyle } from './dials';
 export { PLACES, ACTS, ROADS, road, TEXT_VALUES } from './content/places';
 export type { PlaceDef, ActDef, RoadDef, Trip, Ambience } from './content/places';

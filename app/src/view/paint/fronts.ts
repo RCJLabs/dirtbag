@@ -430,4 +430,59 @@ const warehouse: Front = (g, s, w, h) => {
   if (wet(s, 'warehouse')) drawRain(g, w, h, 0, true);
 };
 
-export const FRONTS: Record<string, Front> = { diner, cafe, shop, warehouse };
+// The Garage (Phase 22.2a): a cinder-block shop with two bays, one up on the lift, a
+// hand-painted sign, stacked tires by the door and an oil-stained apron.
+const garage: Front = (g, s, w, h) => {
+  const night = isNight(s.min);
+  const kerb = street(g, valley(night ? 'night' : 'morning'), w, h, night);
+  const x0 = Math.round(w * 0.14);
+  const x1 = Math.round(w * 0.8);
+  const top = Math.round(h * 0.18);
+  const bw = x1 - x0;
+  g.fillStyle = night ? '#5A5652' : '#C9C2B4';
+  g.fillRect(x0, top, bw, kerb - top);
+  g.fillStyle = night ? 'rgba(0,0,0,.14)' : 'rgba(90,80,70,.14)';
+  for (let y = top + 6; y < kerb; y += 7) g.fillRect(x0, y, bw, 1);
+  g.fillStyle = night ? '#2B2825' : '#4A4038';
+  g.fillRect(x0 - 4, top - 4, bw + 8, 5);
+  g.fillStyle = '#EFE0C2';
+  rr(g, x0 + 20, top + 6, bw - 40, 17, 3);
+  g.fill();
+  label(g, 'poster', 'DALE’S', x0 + bw / 2, top + 20, { size: 14, color: '#8A3A2A', halo: '#EFE0C2' });
+  // Two bays: the left one open, a van up on the lift; the right one shut.
+  const by = top + 30;
+  const bayW = Math.round(bw * 0.36);
+  const lx = x0 + 10;
+  g.fillStyle = night ? LIT : '#3A3530';
+  g.fillRect(lx, by, bayW, kerb - by);
+  g.fillStyle = '#6F8C98';
+  rr(g, lx + 8, by + 10, bayW - 16, 14, 3);
+  g.fill();
+  g.fillStyle = '#2B2825';
+  g.fillRect(lx + bayW / 2 - 2, by + 24, 4, kerb - by - 24);
+  g.beginPath();
+  g.arc(lx + 16, by + 26, 3.5, 0, Math.PI * 2);
+  g.arc(lx + bayW - 16, by + 26, 3.5, 0, Math.PI * 2);
+  g.fill();
+  const rx = lx + bayW + 10;
+  g.fillStyle = night ? '#6A6660' : '#9A948A';
+  g.fillRect(rx, by, bayW, kerb - by);
+  g.fillStyle = 'rgba(0,0,0,.16)';
+  for (let y = by + 4; y < kerb; y += 4) g.fillRect(rx, y, bayW, 1);
+  // Tires stacked by the door, and an oil stain on the apron.
+  const tx = x1 + 6;
+  g.fillStyle = '#2B2825';
+  for (let i = 0; i < 4; i++) {
+    g.beginPath();
+    g.ellipse(tx + 10, kerb - 4 - i * 6, 11, 3.5, 0, 0, Math.PI * 2);
+    g.fill();
+  }
+  g.fillStyle = 'rgba(20,18,16,.35)';
+  g.beginPath();
+  g.ellipse(lx + bayW / 2, kerb + 6, 18, 3, 0, 0, Math.PI * 2);
+  g.fill();
+  lamp(g, x0 - 20, kerb, night);
+  if (wet(s, 'garage')) drawRain(g, w, h, 0, true);
+};
+
+export const FRONTS: Record<string, Front> = { diner, cafe, shop, warehouse, garage };

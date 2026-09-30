@@ -34,6 +34,8 @@ const at = (grade: number, over: Partial<GameState> = {}): GameState => {
     },
     today: ['warm'],
     cash: 100,
+    // A van kept up never breaks down: these are about the crags, not the road.
+    van: { tires: 100, engine: 100, battery: 100 },
     ...over,
   };
 };

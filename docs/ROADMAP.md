@@ -1652,6 +1652,22 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **A finding for Evan:** the career bots still spend their whole career at the café, to Veteran. They choose by today's pay an hour, and an assistant coach ($8.50/h) earns less than a café regular ($11.00/h), so they never start the coaching ladder. A player who looks ahead would. Whether a starting coach should pay more, or the bots should plan a ladder, is open.
 - **Carried:** warnings never expire [proposed]. Nothing cancels your shifts when you leave on an expedition; each missed one is a warning. The page size is 243.6 of 250 KB.
 
+**Status (30 Sep 2026): 22.2a built: the van's parts, breakdowns and the garage.** Save v11, 0.965.0. 22.2 goes in three parts: 22.2a parts and breakdowns, 22.2b where you sleep, 22.2c upgrades and winter.
+- **Three parts:** tires, engine and battery, 0 to 100. Tires and the engine wear by the minute driven, and the battery by the night. A flat battery gets a jump as far as the garage and no further; a road part under 15 won't leave town except home or to the garage.
+- **Breakdowns** happen only on drives of 20 minutes or more. The odds go with the square of the worst road part's wear, so a van you keep up never breaks down (v0.956's broke down on 17% of crag days even fresh). Roadside and back is about 0.6% with a part at 85, 7% at 50 and 18% at 20. It happens halfway, with a sound, and the drive stops there.
+- **Ways out:**
+  - a tow to the garage ($70, 1 h 30);
+  - a bodge (1 h; it holds 3 times in 5, one try);
+  - limping on (double time, −15 energy, and the part stays shot);
+  - calling a friend (a partner at tier 2 or more: 2 h, and the part good for a while).
+- **The garage** (Dale's, on the edge of Midtown) puts a part back to new for its price by wear: tires $140, engine $180, battery $90 from dead, never under $15.
+- **Tuning found by the harness:** the first wear rates (0.06 and 0.04 a minute) cost a daily Roadside commuter about $25 a day. The balanced bots went broke by week two, with 194 stuck nights. At a quarter of that (about $5 a day), and with the bots bodging before they limp and saving for a worn part the way they save for the bills, every target passes again: balanced runway 2.3, 3.5, 3.3 and 3.8 days at days 7–28 with no stuck nights, and the career bots at V10 by day 162.5 with no refusals. That's Phase 22's criterion 1, so far.
+- **E2e:** a save broken down on the road comes back to the breakdown, can't be closed without a way out, tows to the garage and gets new tires.
+- **Carried:**
+  - The climber bot (works only when it's nearly broke) has 5 stuck nights in 56 days, where it had none; a breakdown catches it with nothing saved.
+  - The e2e loads a broken-down save rather than driving into a breakdown; the sim's tests cover the drive.
+  - The page size is 246.9 of 250 KB, and 22.2b will need room: the budget is close.
+
 ---
 
 ### Phase 24 — Expeditions as trips
@@ -2031,3 +2047,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Phase 22 planned on the rebuild [proposed]: nine slices (the week and the money, the van, food, the body, the hustle, events, Scout's life, dreams, the games) on the audit's principles (pressure that changes, no farms, one night, Tonight shows it, seeded and written), with five decisions for Evan before their slices: pace, psyche, Scout's end, the garden and farm, and van parts.
 - 2026-09-30 — Evan's calls on Phase 22's decisions: jobs differ in pay and hours, starting low with promotion the way up (no pace target); psyche kept as a slow mood; Scout's full lifecycle kept; the garden and farm cut, their plan saved for later; three van parts.
 - 2026-09-30 — Phase 22.1 built: shifts posted by the week and signed up for ahead (only those count toward a raise; three no-shows cost the job), the Warehouse as a fourth job, pay that starts low and roughly doubles by the top rank, and how you live (dirtbag, comfortable, plush) paid nightly. Save v10. 0.964.0.
+- 2026-09-30 — Phase 22.2a built: the van's three parts wear with driving and nights; a worn van breaks down on drives out of town (never a kept-up one), with a tow, a bodge, limping on or a friend; Dale's garage in Midtown puts parts back. Wear retuned to about $5 a day after the harness. Save v11. 0.965.0.
