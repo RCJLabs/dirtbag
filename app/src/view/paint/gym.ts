@@ -16,6 +16,8 @@ import {
   GYM_W,
   H,
   PROBLEM_X,
+  CENTER_W,
+  CENTER_X,
   SPEED_LANE,
   SPEED_X0,
   SPEED_X1,
@@ -426,7 +428,7 @@ export function gymTopo(slot: number, heightFt: number): Pt[] {
   return spline(pts, 10);
 }
 
-const walls = new Map<number, HTMLCanvasElement>();
+const walls = new Map<string, HTMLCanvasElement>();
 
 // ---- the board, face-on ----
 
@@ -560,20 +562,27 @@ const SEND_CITY: WallLook = {
   old: ['#A7A39A', '#C9C3B6', '#8C8A84'],
 };
 
-export function gymWallArt(slot: number, heightFt: number, cave = false): HTMLCanvasElement {
-  const key = slot * 100 + heightFt + (cave ? 10000 : 0);
+// Each gym's close-up: its colours and its tape, by place.
+const LOOK_AT: Record<string, () => WallLook> = {
+  gym: () => SEND_CITY,
+  cave: () => CAVE_LOOK,
+  center: () => CENTER_LOOK,
+};
+
+export function gymWallArt(slot: number, heightFt: number, place = 'gym'): HTMLCanvasElement {
+  const key = `${place}:${slot}:${heightFt}`;
   const hit = walls.get(key);
   if (hit) return hit;
   const [c, g] = mk(W, H, 2);
-  paintGymWall(g, slot, heightFt, cave);
+  paintGymWall(g, slot, heightFt, place);
   walls.set(key, c);
   return c;
 }
 
 // A problem's stretch of a gym's wall, painted into any context (the wall view's cached art,
 // or the send card at its own size).
-export function paintGymWall(g: G, slot: number, heightFt: number, cave = false): void {
-  const look = cave ? CAVE_LOOK : SEND_CITY;
+export function paintGymWall(g: G, slot: number, heightFt: number, place = 'gym'): void {
+  const look = (LOOK_AT[place] ?? LOOK_AT.gym!)();
   const top = finishY(heightFt) - 60;
   g.fillStyle = look.back;
   g.fillRect(0, 0, W, H);
@@ -726,5 +735,145 @@ export function paintCaveGround(): HTMLCanvasElement {
   g.fillRect(x0 - 20, GND - 8, x1 - x0 + 110, 24);
   g.fillStyle = '#5585B8';
   g.fillRect(x0 - 20, GND - 8, x1 - x0 + 110, 4);
+  return c;
+}
+
+// ---- The Training Center (Phase 21) ----
+// A comp hall: white walls under skylights, big coloured volumes bolted on, neon tape, and a
+// comp clock over the desk.
+
+// Its tape, V7 to V14: comp colours.
+export const CENTER_TAPE = [
+  '#FF3D7F',
+  '#2EC4B6',
+  '#FFB703',
+  '#8338EC',
+  '#3A86FF',
+  '#FB5607',
+  '#06D6A0',
+  '#111114',
+];
+const CENTER_LOOK: WallLook = {
+  back: '#F2F0EA',
+  top: '#C9CDD4',
+  panel: ['#FFFFFF', '#E6E3DC'],
+  tape: CENTER_TAPE,
+  old: ['#D3CFC6', '#C4C0B6', '#DCD8CF'],
+};
+
+export function paintCenterBack(w: number): HTMLCanvasElement {
+  const [c, g] = mk(w, H, 2);
+  const pad = (w - W) / 2;
+  g.translate(pad, 0);
+  g.fillStyle = '#E9ECEF';
+  g.fillRect(-pad, 0, w, H);
+  g.fillStyle = '#B9C0C9';
+  g.fillRect(-pad, 0, w, 120);
+  // Skylights in the roof, with daylight falling under them.
+  for (let x = -Math.ceil(pad / 130) * 130 + 30; x < W + pad + 130; x += 130) {
+    g.fillStyle = '#DDF0FA';
+    g.fillRect(x, 40, 80, 50);
+    g.fillStyle = '#B9C0C9';
+    g.fillRect(x + 38, 40, 4, 50);
+    g.fillStyle = lin(g, 0, 90, 0, 330, [
+      [0, 'rgba(230,246,255,.55)'],
+      [1, 'rgba(230,246,255,0)'],
+    ]);
+    g.beginPath();
+    g.moveTo(x, 90);
+    g.lineTo(x + 80, 90);
+    g.lineTo(x + 120, 330);
+    g.lineTo(x - 40, 330);
+    g.closePath();
+    g.fill();
+  }
+  return c;
+}
+
+export function paintCenterGround(): HTMLCanvasElement {
+  const [c, g] = mk(CENTER_W, H, 2);
+  g.fillStyle = '#9AA0A8';
+  g.fillRect(-10, GND - 6, CENTER_W + 20, H);
+  label(g, 'poster', 'TRAINING CENTER', 186, 258, { size: 26, color: '#3A86FF', halo: '#E9ECEF' });
+  label(g, 'poster', 'COMP WALLS · V7 AND UP', 186, 280, { size: 12, color: '#5E646C', halo: '#E9ECEF' });
+  // The desk, the pass sign, and the comp clock over it.
+  const dx = DESK_X;
+  g.fillStyle = '#2B2D33';
+  g.fillRect(dx - 52, GND - 46, 104, 46);
+  g.fillStyle = '#E9ECEF';
+  g.fillRect(dx - 56, GND - 50, 112, 7);
+  g.fillStyle = '#FFFDF5';
+  g.fillRect(dx - 48, GND - 150, 96, 34);
+  label(g, 'poster', `DAY PASS ${TEXT_VALUES.centerPass}`, dx, GND - 127, {
+    size: 15,
+    color: '#1E2B2B',
+    halo: '#FFFDF5',
+  });
+  g.fillStyle = '#111114';
+  rr(g, dx - 34, GND - 196, 68, 30, 4);
+  g.fill();
+  label(g, 'poster', '4:00', dx, GND - 174, { size: 18, color: '#FF3D7F', halo: '#111114' });
+  // The walls: tall white panels, straight up then a steep top section, and the volumes.
+  const x0 = 310;
+  const x1 = 1010;
+  const top = GND - 230;
+  g.fillStyle = '#FFFFFF';
+  g.fillRect(x0, top, x1 - x0, GND - top);
+  g.strokeStyle = 'rgba(60,70,80,.18)';
+  g.lineWidth = 1.2;
+  for (let x = x0 + 88; x < x1; x += 88) {
+    g.beginPath();
+    g.moveTo(x, top);
+    g.lineTo(x, GND);
+    g.stroke();
+  }
+  g.fillStyle = '#C9CDD4';
+  g.fillRect(x0 - 6, top - 12, x1 - x0 + 12, 14);
+  // Volumes: big triangles and hexes in comp colours, one behind each problem or so.
+  const r = mulberry32(707);
+  const vol = ['#3A86FF', '#FFB703', '#2EC4B6', '#FF3D7F', '#8338EC', '#06D6A0'];
+  for (let i = 0; i < 9; i++) {
+    const vx = x0 + 40 + r() * (x1 - x0 - 80);
+    const vy = top + 30 + r() * (GND - top - 90);
+    const s = 16 + r() * 18;
+    g.fillStyle = vol[i % vol.length]!;
+    g.globalAlpha = 0.55;
+    g.beginPath();
+    if (i % 2)
+      poly(
+        g,
+        [
+          [vx - s, vy + s * 0.6],
+          [vx + s, vy + s * 0.6],
+          [vx, vy - s],
+        ],
+        true,
+      );
+    else {
+      const pts: Pt[] = [];
+      for (let k = 0; k < 6; k++)
+        pts.push([vx + Math.cos((k * Math.PI) / 3) * s, vy + Math.sin((k * Math.PI) / 3) * s]);
+      poly(g, pts, true);
+    }
+    g.fill();
+    g.globalAlpha = 1;
+  }
+  for (let i = 0; i < 50; i++) {
+    g.fillStyle = CENTER_LOOK.old[i % 3]!;
+    hold(g, x0 + 10 + r() * (x1 - x0 - 20), top + 16 + r() * (GND - top - 40), 3 + r() * 3, 700 + i);
+    g.fill();
+  }
+  CENTER_X.forEach((x, slot) => {
+    g.fillStyle = CENTER_TAPE[slot]!;
+    for (const [i, h] of holdsFor(slot, x, GND - 30, top + 30).entries()) {
+      hold(g, h.at[0], h.at[1], h.s + 1, slot * 41 + i);
+      g.fill();
+    }
+  });
+  // Mats wall to wall.
+  g.fillStyle = MAT;
+  g.fillRect(x0 - 20, GND - 8, x1 - x0 + 40, 24);
+  g.fillStyle = '#5585B8';
+  g.fillRect(x0 - 20, GND - 8, x1 - x0 + 40, 4);
   return c;
 }

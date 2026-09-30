@@ -139,6 +139,14 @@ export const SIDE_ROADS: Record<string, { pts: Pt[]; dirt?: true }> = {
       [346, 34],
     ],
   },
+  // The Training Center: a Midtown side street, west between the blocks.
+  center: {
+    pts: [
+      [roadX(402), 402],
+      [196, 402],
+      [184, 402],
+    ],
+  },
   // The desert road west to Sandstone Mesa, where the highway climbs out of the valley.
   mesa: {
     pts: [

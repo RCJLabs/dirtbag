@@ -291,6 +291,9 @@ export const GYM_W = 1470;
 // The Cave: the desk by the door, then eight problems out its steep walls, V3 to V10.
 export const CAVE_X = [360, 440, 520, 600, 690, 780, 870, 960];
 export const CAVE_W = 1150;
+// The Training Center: the desk, then eight comp problems along its white walls, V7 to V14.
+export const CENTER_X = [360, 445, 530, 615, 700, 785, 870, 955];
+export const CENTER_W = 1150;
 
 const wallHot = (x: number, use: Use, half = 26, y0 = 110): Hot => ({
   x0: x - half,
@@ -382,6 +385,25 @@ export const SCENES: Record<string, SceneLayout> = {
       ...CAVE_X.map((x, n) => wallHot(x, { problem: n }, 34, GND - 210)),
     ],
   },
+  center: {
+    place: 'center',
+    width: CENTER_W,
+    spawn: 70,
+    hint: 'Day pass at the desk. The comp set changes every week.',
+    frame: 560,
+    hots: [
+      {
+        x0: DESK_X - 56,
+        x1: DESK_X + 56,
+        y0: GND - 70,
+        y1: GND + 8,
+        stand: DESK_X + 70,
+        face: -1,
+        use: { sheet: 'desk' },
+      },
+      ...CENTER_X.map((x, n) => wallHot(x, { problem: n }, 34, GND - 240)),
+    ],
+  },
   gym: {
     place: 'gym',
     width: GYM_W,
@@ -458,6 +480,7 @@ export const SPOTS: Record<string, Spot[]> = {
   crucible: [{ who: 'dex', x: 1340, face: -1, pose: 'stand', talk: 'dex' }],
   cove: [{ who: 'dex', x: 420, face: 1, pose: 'stand', talk: 'dex' }],
   cave: [{ who: 'dex', x: 1020, face: -1, pose: 'stand', talk: 'dex' }],
+  center: [{ who: 'dex', x: 1030, face: -1, pose: 'stand', talk: 'dex' }],
 };
 
 // Who's in a scene right now: the people whose day puts them at its place.
@@ -518,6 +541,8 @@ export const MAP_PINS: Record<string, Pin> = {
   cove: { x: 24, y: 506, side: 1, kind: 'crag', dy: 14 },
   // The Cave: at the trailhead hamlet on the highway, below Roadside.
   cave: { x: 266, y: 334, side: 1, kind: 'town' },
+  // The Training Center: Midtown, west of the highway, down a side street between blocks.
+  center: { x: 172, y: 402, side: -1, kind: 'town' },
 };
 export const DIM_PINS: [number, number][] = [[78, 612]];
 

@@ -285,6 +285,15 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     }
 
     case 'desk':
+      if (s.at === 'center')
+        return {
+          title: 'The desk',
+          sub: s.today.includes('centerpass')
+            ? 'Wristband on. The comp wall is yours till ten.'
+            : 'The comp team is warming up on problems you’d project. The set changes every seven days.',
+          close: true,
+          rows: [actRow(game, s, 'center.pass'), trainRow(game, s), mapRow(game)],
+        };
       if (s.at === 'cave')
         return {
           title: 'The desk',

@@ -121,7 +121,7 @@ A place is data, a pin and a picture. In order:
   - The bots' human-ish hands are guesses, not measurements: scatter on the load and timing meters, and about 200 ms of lag on the tension band, varied from go to go (`HUMAN` in `sim/bot.ts`).
 - **Feel.** Phase 9's criteria (a watcher can tell how close a go was; a pumped go feels tense) and Phase 7's first hour need people, not bots.
 - **Content.**
-  - Seventy-four crag lines (five of them trad, eight deep-water solos), V0 to V18 with no grade missing, six gym problems a week at Send City and the board's four, and eight a week at The Cave.
+  - Seventy-four crag lines (five of them trad, eight deep-water solos), V0 to V18 with no grade missing, six gym problems a week at Send City and the board's four, eight a week at The Cave (V5–V12), and eight comp problems a week at the Training Center (V7–V14).
   - Before the board, about half the bots hit a wet day in week four with nothing new to try. With the board a grade stiff, none of 144 runs do. The harness counts only content running out, not days the body said no.
 - **Injuries** are rare in the first month: none for bots that warm up and heed the warning, and 3% for reckless ones. That meets Phase 6's ceiling, but it may be too gentle to register as a trade-off. It's a playtest question.
 - **Design calls** marked *[proposed]* in the roadmap are Evan's to rule on: Sage's week away, the blessing's bond, the race's V4 trigger, Act I's "regular" stage, pace, and the card's footer.

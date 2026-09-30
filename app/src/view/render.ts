@@ -41,6 +41,7 @@ import {
   presentIn,
   PROBLEM_X,
   CAVE_X,
+  CENTER_X,
   SCENES,
   SPEED_LANE,
   MAP_FIT,
@@ -64,7 +65,7 @@ import {
   tapeTag,
   vanIcon,
 } from './paint/fx';
-import { CAVE_TAPE, speedHold, TAPE } from './paint/gym';
+import { CAVE_TAPE, CENTER_TAPE, speedHold, TAPE } from './paint/gym';
 import { mapArt } from './paint/map';
 import { drawBelayerBack, drawClimber, drawDog, drawPerson, INK, LOOK, STRANGERS } from './paint/people';
 import { BIG } from './paint/scale';
@@ -239,6 +240,10 @@ export function sceneLive(g: G, s: GameState, scene: string, cam: number, eye: E
         !!s.routes[b.route]?.sent,
       );
   }
+  if (scene === 'center')
+    routesAt(s.seed, 'center', s.day).forEach((r, n) =>
+      tapeTag(g, CENTER_X[n]! - cam, GND - 26, CENTER_TAPE[n]!, gradeLabel(r), !!s.routes[r.id]?.sent),
+    );
   if (scene === 'cave')
     routesAt(s.seed, 'cave', s.day).forEach((r, n) =>
       tapeTag(g, CAVE_X[n]! - cam, GND - 26, CAVE_TAPE[n]!, gradeLabel(r), !!s.routes[r.id]?.sent),
