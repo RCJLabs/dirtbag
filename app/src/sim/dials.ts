@@ -201,13 +201,16 @@ export const INJURY = {
   clinic: [0, 45, 210],
 };
 
-// Highballs [proposed]: a fall from high on a tall boulder can land badly. Up to safeFt a
+// Highballs [proposed]: a fall from high on a tall boulder (`fromFt` up) can land badly. Up to safeFt a
 // fall onto a pad is a normal boulder fall; every foot above it adds perFoot to the chance
 // of a bad landing, with one pad and nobody spotting. So a fall from 16 ft is about 1 in 10,
 // from 22 ft about 1 in 6. The Moonstone haul's pads halve it, and a partner spotting you
 // halves it again. How far over safeFt you fell sets how bad: tier 2 from `tier2` ft over,
 // tier 3 from `tier3`.
 export const HIGHBALL = {
+  // Every outdoor boulder this tall is a highball (Evan's call, 30 Sep 2026): v0.956's
+  // Highball Arête is 18 ft, and 16 takes in the tall problems the later crags brought.
+  fromFt: 16,
   safeFt: 8,
   perFoot: 0.012,
   pads: 0.5,

@@ -16,6 +16,7 @@ import { ACTS, PLACES, road, ROADS, TEXT_VALUES } from './content/places';
 import { fill } from './format';
 import { PEOPLE, TALK, THINGS } from './content/people';
 import { ROUTES, type RouteDef } from './content/routes';
+import { HIGHBALL } from './dials';
 
 const STYLES = Object.keys(MIX);
 // The fixed lines, and the gym's first two months (the wall and the board) for two seeds.
@@ -26,6 +27,18 @@ const everyRoute: RouteDef[] = [
 ];
 
 describe('content', () => {
+  it('makes every outdoor boulder from HIGHBALL.fromFt up a highball, and nothing else', () => {
+    for (const r of Object.values(ROUTES)) {
+      const tall = r.disc === 'boulder' && !r.dws && !r.board && r.heightFt >= HIGHBALL.fromFt;
+      expect(!!r.highball, r.id).toBe(tall);
+    }
+    // v0.956's Highball Arête, and what the later crags brought.
+    expect(
+      ['highball', 'marete', 'gcathedral', 'wopen', 'chorizon'].every((id) => ROUTES[id]!.highball),
+    ).toBe(true);
+    expect(ROUTES.megg!.highball).toBeUndefined();
+  });
+
   it('places list real acts, and each act belongs to a place', () => {
     for (const p of Object.values(PLACES)) for (const a of p.acts) expect(ACTS, a).toHaveProperty([a]);
     for (const id of Object.keys(ACTS)) expect(PLACES, id).toHaveProperty([id.split('.')[0]!]);

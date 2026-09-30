@@ -1495,6 +1495,13 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The harness** (56 days): all five targets still pass. The queue costs the bots time: climbing's skill an hour falls about 8% at V0–V2 (V2 11.65 from 12.73) and little higher up. The first V5 go stays at day 18–18.5, and some runs now see V6. Injuries move within noise (warmed-up 3% from 2%, reckless 3% from 6%): the rolls land on different days.
 - **Not yet:** crowds on the map's pins (Phase 10's crowd markers); send trains and crowd lines that quote your record (v0.956's) wait for Phase 17's people. The bots never ask around.
 
+**Status (30 Sep 2026): 21.6, highball calls: every outdoor boulder from 16 ft up is a highball (Evan's call).**
+- **By height, not by hand.** Phase 10.3b flagged five boulders by hand, and the crags 21.4 brought had problems as tall with no flag: a fall from 18 ft on The Wind River project cost nothing, while the same fall off Roadside's Highball Arête could jam an ankle. Now `isHighball` sets the flag from the height (`HIGHBALL.fromFt`, 16 ft) on every outdoor boulder except deep-water solos, and the content test holds it there, so a new crag's tall problems can't slip through.
+- **Twelve more:** Crimp Cathedral (the Gorge), Moonstone Mantel and Hueco Pockets, The Prow, Desert Splitter and The Mesa project, The Warm-Up Wall (The Big Stone), Offwidth Horror and The Wind River project, The Vise, Event Horizon and the Crucible myth. Seventeen in all.
+- **What they cost:** their cruxes sit 9–12 ft up, so a crux fall with one pad and nobody spotting lands badly 1–5% of the time (the Crucible myth 0.8%, Moonstone Mantel 4.6%), against 6–10% on the five tall ones. Pads and a spotter halve it each, as before, and the beta sheet shows it.
+- **The Gorge now wants a spotter** as well as a belayer, and its place card says so. No crag is left with ropes and no highballs, so the "boulders only" line has nothing to say for now.
+- **The harness** (56 days) reads the same as after crowds, to the decimal: every new highball is V7 or harder (Moonstone Mantel is the easiest), past the V5 the bots reach, so nothing they do changes. Their 1–5% crux landings are all under the careful bots' 1-in-20 line anyway.
+
 ---
 
 ### Phase 22 — The life: the van, the body, food, the hustle, and the games
@@ -1890,3 +1897,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Phase 21.5: walls and expeditions. v0.956's four walls climbed pitch by pitch with bivies, on a rope from the gear shop; its three expeditions as a day-by-day call with the summit's odds worked out and shown; save v8. Criterion 4 passes in the tests.
 - 2026-09-30 — Evan's call: Phase 24 added, expeditions as trips: a scene for each, planning and packing, getting there, pitches climbed through beta-then-send, and coming home. It runs after Phase 22 and before 23 [proposed]; the order is now 21, 22, 24, 23, 16, 17, 18, 14, 15, 19, 20.
 - 2026-09-30 — Phase 21.6: crowds and spray beta. Each crag's crowd from its draw, the weekend, the hour, the sky and the day; a queue for the ropes in the go's cost; beta from the crowd, asked for or shouted at you, at the cost of the onsight; strangers at the base.
+- 2026-09-30 — Phase 21.6: highball calls, by Evan's call: every outdoor boulder from 16 ft up is a highball, set from its height and held by a test. Twelve more, seventeen in all; the Gorge now wants a spotter.

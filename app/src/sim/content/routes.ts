@@ -11,6 +11,7 @@
 // generated each week (gym.ts) from the beta library below.
 
 import type { Style } from '../climber';
+import { HIGHBALL } from '../dials';
 import type { GoStyle } from '../types';
 
 export type Verb = 'tension' | 'timing' | 'load';
@@ -87,6 +88,7 @@ export interface RouteDef {
   // On Send City's board: the gym's steep panel, whose problems stay up for weeks.
   board?: true;
   // A boulder tall enough that a fall off it is a real fall: it can land you badly (HIGHBALL).
+  // Set from its height (isHighball), never by hand.
   highball?: true;
   // A myth (v0.956's revealAfter): a line you can't even read until you've sent this one.
   hiddenUntil?: string;
@@ -329,7 +331,6 @@ export function libraryBoulder(
     trueGrade?: number;
     open?: true;
     board?: true;
-    highball?: true;
     hiddenUntil?: string;
     dws?: true;
   },
@@ -339,7 +340,6 @@ export function libraryBoulder(
     ...(shape.trueGrade !== undefined ? { trueGrade: shape.trueGrade } : {}),
     ...(shape.open ? { open: true as const } : {}),
     ...(shape.board ? { board: true as const } : {}),
-    ...(shape.highball ? { highball: true as const } : {}),
     ...(shape.hiddenUntil ? { hiddenUntil: shape.hiddenUntil } : {}),
     ...(shape.dws ? { dws: true as const } : {}),
     id,
@@ -734,7 +734,6 @@ const highball = libraryBoulder('highball', 'Highball Arête', 5, 'technical', '
   cruxName: 'The top',
   heightFt: 18,
   line: 'Eight moves up a clean arête, and the crux is where the pads stop helping.',
-  highball: true,
 });
 const theProject = libraryBoulder('project', 'The Project', 6, 'power', 'road', {
   moves: 6,
@@ -863,7 +862,6 @@ const mArete = libraryBoulder('marete', 'Tall Arête', 6, 'technical', 'moon', {
   cruxName: 'The top',
   heightFt: 22,
   line: 'An arête as tall as a house, and the hard part is at the top of it.',
-  highball: true,
 });
 const mMantel = libraryBoulder('mmantel', 'Moonstone Mantel', 7, 'power', 'moon', {
   moves: 5,
@@ -897,7 +895,6 @@ const mSplitter = libraryBoulder('msplitter', 'Moonstone Splitter', 8, 'crack', 
   cruxName: 'The flare',
   heightFt: 20,
   line: 'A splitter up a boulder the size of a van. Tape up.',
-  highball: true,
 });
 const mRoof = libraryBoulder('mroof', 'Lunar Roof', 11, 'power', 'moon', {
   moves: 9,
@@ -915,7 +912,6 @@ const mOpen = libraryBoulder('mopen', 'The Moonstone project', 12, 'power', 'moo
   heightFt: 22,
   line: 'Nobody’s done it. The chalk stops two-thirds of the way up a very tall boulder.',
   open: true,
-  highball: true,
 });
 const mSpire = librarySport('mspire', 'Desert Spire', 8, 'dyno', 'moon', {
   moves: 24,
@@ -1069,7 +1065,6 @@ const bSplit = libraryBoulder('bsplit', 'The Splitter Pitch', 10, 'crack', 'ston
   cruxName: 'The finger lock',
   heightFt: 22,
   line: 'A perfect finger crack that ends a long way off the ground.',
-  highball: true,
 });
 const bTrad = libraryTrad('btrad', 'The Trad Pitch', 11, 'technical', 'stone', {
   moves: 28,
@@ -1452,7 +1447,7 @@ export const WALLS: Record<string, WallDef> = {
   },
 };
 
-export const ROUTES: Record<string, RouteDef> = {
+const LINES: Record<string, RouteDef> = {
   warm: warmBoulder,
   dyno,
   crimpfest,
@@ -1529,6 +1524,16 @@ export const ROUTES: Record<string, RouteDef> = {
   pdeep: pDeep,
   ...Object.fromEntries(PITCHES.map((r) => [r.id, r])),
 };
+
+// A highball is any boulder outdoors from HIGHBALL.fromFt up, set by its height and never by
+// hand (Evan's call, 30 Sep 2026), so a new crag's tall problems can't be left falling free.
+// A deep-water solo lands in the sea.
+export const isHighball = (r: RouteDef): boolean =>
+  r.disc === 'boulder' && !r.dws && !r.board && r.heightFt >= HIGHBALL.fromFt;
+
+export const ROUTES: Record<string, RouteDef> = Object.fromEntries(
+  Object.entries(LINES).map(([id, r]) => [id, isHighball(r) ? { ...r, highball: true as const } : r]),
+);
 
 // Said when you come off between cruxes with nothing left in your arms.
 export const PUMPED = 'Pumped. Your forearms quit before you do.';

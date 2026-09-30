@@ -52,6 +52,7 @@ describe("who's around", () => {
       lines: ['Nobody.'],
       cover: 'Nobody to belay you or spot you.',
     });
-    expect(whoAround(at(), 'gorge', 9 * 60).cover).toBe('Nobody to belay you: boulders only.');
+    // Crimp Cathedral is 16 ft: the Gorge wants a spotter as well as a belayer now.
+    expect(whoAround(at(), 'gorge', 9 * 60).cover).toBe('Nobody to belay you or spot you.');
   });
 });
