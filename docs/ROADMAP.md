@@ -1659,7 +1659,7 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - The career bots still choose by pay alone, so they stay at the café. The skill bonuses are for a player who wants them; the bots don't value them yet.
 
 **Status (30 Sep 2026): 22.2a built: the van's parts, breakdowns and the garage.** Save v11, 0.965.0. 22.2 goes in three parts: 22.2a parts and breakdowns, 22.2b where you sleep, 22.2c upgrades and winter.
-- **Three parts:** tires, engine and battery, 0 to 100. Tires and the engine wear by the minute driven, and the battery by the night. A flat battery gets a jump as far as the garage and no further; a road part under 15 won't leave town except home or to the garage.
+- **Three parts:** tires, engine and battery, 0 to 100. Tires and the engine wear by the minute driven, and the battery by the night. A flat battery gets a jump across town but not out of it, and a road part under 15 won't leave town either, except home or to the garage. Town is always in reach, so a broke climber can always get to a shift: the career harness found a bot stuck at the Lot with a flat battery and no money when the jump only reached the garage.
 - **Breakdowns** happen only on drives of 20 minutes or more. The odds go with the square of the worst road part's wear, so a van you keep up never breaks down (v0.956's broke down on 17% of crag days even fresh). Roadside and back is about 0.6% with a part at 85, 7% at 50 and 18% at 20. It happens halfway, with a sound, and the drive stops there.
 - **Ways out:**
   - a tow to the garage ($70, 1 h 30);
