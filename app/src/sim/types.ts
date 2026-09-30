@@ -69,6 +69,11 @@ export interface GameState {
   benched: Record<string, number>;
   // How you live (dials.ts LIFESTYLE): paid at the van every night.
   lifestyle: 'dirtbag' | 'comfortable' | 'plush';
+  // Phase 22.2a. The van's parts, 0 to 100, and the breakdown you're sat beside, if any: the
+  // part that went, where you were headed, the minutes of driving left, and whether you've
+  // tried a bodge.
+  van: { tires: number; engine: number; battery: number };
+  breakdown: { part: 'tires' | 'engine'; to: string; rest: number; bodged: boolean } | null;
   // On a multi-pitch wall (Phase 21.5): which, and the index of the next pitch.
   wall: { id: string; next: number } | null;
   // Away on an expedition: which, the day of it you're on, pitches fixed, and energy left.
@@ -221,7 +226,9 @@ export type Action =
   | { t: 'speed'; real: number | null }
   // Phase 22.1: sign up for a job's shift on a day (or drop it), and how you live.
   | { t: 'signup'; job: string; day: number; on: boolean }
-  | { t: 'lifestyle'; tier: 'dirtbag' | 'comfortable' | 'plush' };
+  | { t: 'lifestyle'; tier: 'dirtbag' | 'comfortable' | 'plush' }
+  // Phase 22.2a: a way out of a breakdown.
+  | { t: 'fix'; how: 'tow' | 'bodge' | 'limp' | 'friend' };
 
 // What a finished go hands back to the game.
 export interface GoResult {

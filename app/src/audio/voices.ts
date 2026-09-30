@@ -89,6 +89,13 @@ export const VOICES: Record<Cue, (v: V, k: number) => void> = {
     burst(v, { filter: 'lowpass', f: 900, dur: 0.08, gain: 1, delay: 0.14 });
     tone(v, { type: 'sawtooth', f: 46, f2: 70, dur: 0.3 + 1.7 * k, gain: 0.35, delay: 0.26, attack: 0.1 });
   },
+  // A bang, the engine coughing down to nothing, and hot metal ticking.
+  breakdown: (v) => {
+    burst(v, { filter: 'lowpass', f: 1400, f2: 300, dur: 0.25, gain: 1 });
+    tone(v, { type: 'sawtooth', f: 70, f2: 30, dur: 0.9, gain: 0.35, delay: 0.1, attack: 0.02 });
+    for (let i = 0; i < 4; i++)
+      tone(v, { type: 'triangle', f: jitter(2400, 0.1), dur: 0.03, gain: 0.12, delay: 1.1 + i * 0.28 });
+  },
   // Ramen on the stove, or a plate put down.
   eat: (v) => {
     burst(v, { filter: 'highpass', f: 3200, dur: 0.6, gain: 0.25, attack: 0.05 });

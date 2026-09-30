@@ -18,12 +18,13 @@ import { INDOOR, routesAt } from './content/gym';
 import { ACTS, PLACES, road } from './content/places';
 import { TALK } from './content/people';
 import { roped, type RouteDef } from './content/routes';
-import { BODY, BOND, CLIMB, KIT, LOAD, MONEY } from './dials';
+import { BODY, BOND, CLIMB, KIT, LOAD, MONEY, VAN } from './dials';
 import { cold, freshLoad, ratio } from './body';
 import { gradeOf, average } from './climber';
 import { act, actCost, faSuggestions, goBlocked, knowsBeta, landingChance, newGame, talkStart } from './game';
 import { whereNow } from './presence';
 import { signupBlocked } from './jobs';
+import { friendFor, PARTS, repairCost } from './van';
 import { tonight } from './tonight';
 import type { Action, GameState, GoResult, Skills } from './types';
 import type { Rng } from './rng';
@@ -247,6 +248,8 @@ const CAREER_PLACES = [
 const JOB_ACTS = ['cafe.shift', 'cave.coach', 'gym.set', 'warehouse.shift'];
 // Each job's one-shift act (Phase 22.1): what a bot signed up for goes to work as.
 const SHIFT_OF: Record<string, string> = Object.fromEntries(JOB_ACTS.map((id) => [ACTS[id]!.job!.id, id]));
+// A part under this goes to the garage once there's money for it.
+const GARAGE_AT = 45;
 // A crag day starts by here, or it's not worth the drive.
 const LAST_START = 14 * 60;
 
@@ -287,13 +290,32 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   // Only asks for an act when its needs hold, like a player reading a greyed-out button.
   const tryAct = (id: string): boolean =>
     id.split('.')[0] === s.at && !unmet(s, ACTS[id]!.needs) ? go({ t: 'act', act: id }) : false;
-  const travel = (to: string) => s.at === to || go({ t: 'travel', to });
+  // A drive, and whatever it takes if the van breaks down on the way: a friend if there's
+  // one to call, then a bodge (free, and the part's left usable), then limping on if there's
+  // energy for it (the part's left shot), and the tow when all else fails.
+  const travel = (to: string): boolean => {
+    if (s.at === to) return true;
+    if (!go({ t: 'travel', to })) return false;
+    if (s.breakdown) {
+      const ok =
+        (friendFor(s) && go({ t: 'fix', how: 'friend' })) ||
+        (go({ t: 'fix', how: 'bodge' }) && !s.breakdown) ||
+        (s.energy >= 40 && go({ t: 'fix', how: 'limp' })) ||
+        go({ t: 'fix', how: 'tow' });
+      if (!ok) return false;
+    }
+    return s.at === to;
+  };
 
   const billsSoon = () => Math.ceil(s.day / 7) * 7 - s.day <= 1;
 
   // The morning's money: the cushion, and the week's bills when they're close.
   const wantFor = (day: number) =>
-    CUSHION[strategy] + (Math.ceil(day / 7) * 7 - day <= 1 ? MONEY.registration + MONEY.insurance : 0);
+    CUSHION[strategy] +
+    (Math.ceil(day / 7) * 7 - day <= 1 ? MONEY.registration + MONEY.insurance : 0) +
+    repairs();
+  // A worn part is saved for, the way the bills are.
+  const repairs = () => PARTS.filter((p) => s.van[p] < GARAGE_AT).reduce((n, p) => n + repairCost(s, p), 0);
   // Today's shift, if the bot signed up for one: it goes whatever the money says, or it's a
   // warning.
   const booked = (): string | null => {
@@ -337,6 +359,19 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     travel('shop');
     if (resole) tryAct('shop.resole');
     if (chalk) tryAct('shop.chalk');
+  }
+
+  // Keeps the van up (Phase 22.2a): a part to the garage when it's worn and there's money
+  // past the cushion for it, and at once, on the card, when it's shot or the battery's going.
+  function garage() {
+    const due = PARTS.filter((p) => {
+      const c = s.van[p];
+      if (c < VAN.unsafe || (p === 'battery' && c < 8)) return true;
+      return c < GARAGE_AT && s.cash >= repairCost(s, p) + CUSHION[strategy];
+    });
+    if (!due.length) return;
+    travel('garage');
+    for (const p of due) tryAct(`garage.${p}`);
   }
 
   // Talks to Sage when she's here: her lesson once a day, and whatever beat of her arc is
@@ -473,6 +508,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     if (s.fed < 70) tryAct('lot.cook');
     work();
     kit();
+    garage();
     // The crag when it's dry and there's something there to try; the gym otherwise.
     // Roadside first, the Gorge once it's open to you and there's nothing new at Roadside,
     // the gym when the rock's wet or done.
@@ -654,12 +690,16 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     if (s.fed < 70) tryAct('lot.cook');
     buyTrips();
     kit();
+    garage();
     // Money first: the cushion, the week's bills, and the next trip if there's one to save
     // for. A working morning, then a crag near enough to reach after it.
     // A trip's saved for with a night's costs over, so it's still there in the morning.
     const trip = saving();
     const want =
-      CUSHION.career + (billsSoon() ? MONEY.registration + MONEY.insurance : 0) + (trip ? trip + 50 : 0);
+      CUSHION.career +
+      (billsSoon() ? MONEY.registration + MONEY.insurance : 0) +
+      (trip ? trip + 50 : 0) +
+      repairs();
     const pick = pickPlace();
     // A working day: ask Hazel along first, to the crag you'll reach after the shift, so
     // she's there with the rope when you are.

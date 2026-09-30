@@ -71,6 +71,46 @@ export const LIFESTYLE: Record<Lifestyle, { cost: number; energy: number; skin: 
   plush: { cost: 28, energy: 15, skin: 8 },
 };
 
+// Phase 22.2a: the van's three parts, each 0 to 100 (v0.956 had six; Decision 5 kept three).
+// Tires and the engine wear with every minute driven; the battery a little every night. A
+// part wears the van toward a breakdown on any drive out of town, and the garage in Midtown
+// puts it back [proposed, all of it].
+export type VanPart = 'tires' | 'engine' | 'battery';
+export const VAN = {
+  // A new climber's van is used, not new; one already out here when the van came in, more so.
+  start: { tires: 85, engine: 85, battery: 85 },
+  // Wear per minute of driving: Roadside and back (two hours) is about 1.8 off the tires and
+  // 1.2 off the engine, so a climber out there every day needs tires about every 55 days and
+  // an engine service about every 80: about $5 a day with the battery. The first try (0.06
+  // and 0.04) cost a daily commuter $25 a day and sank every season bot by week two.
+  wear: { tires: 0.015, engine: 0.01 },
+  // Off the battery every night.
+  night: 1,
+  // Drives this long or more can break down; a hop across town never does.
+  from: 20,
+  // Breakdown odds an hour of driving: `worn` times the square of the worst road part's
+  // wear (0 new, 1 dead). A van kept up never breaks down; v0.956's did 17% of crag days
+  // even fresh. Roadside and back (two hours) with a part at 85 is about 0.6%; at 50, 7%;
+  // at 20, 18%.
+  base: 0,
+  worn: 0.14,
+  // What a breakdown leaves of the part that went.
+  broken: 5,
+  // Under this, the van won't take a drive out of town, except home or to the garage.
+  unsafe: 15,
+  // The ways out. A tow to the garage; a bodge, which holds three times in five; limping on
+  // at half speed; or a friend with a spare and an afternoon.
+  tow: { cash: 70, min: 90 },
+  bodge: { min: 60, odds: 0.6, to: 35 },
+  limp: { slow: 2, energy: 15 },
+  friend: { min: 120, to: 30, tier: 2 },
+  // The garage: a part from dead to new costs this, and a repair its share of it by wear,
+  // never under `least`; the time is the whole job's.
+  price: { tires: 140, engine: 180, battery: 90 } as Record<VanPart, number>,
+  least: 15,
+  work: { tires: 60, engine: 120, battery: 20 } as Record<VanPart, number>,
+};
+
 export const BODY = {
   startEnergy: 78,
   startSkin: 64,

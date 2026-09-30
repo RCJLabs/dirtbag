@@ -125,7 +125,9 @@ export type SheetId =
   | { k: 'exped'; id: string }
   // Phase 21.6: the speed wall, and how a Free Solo run ended.
   | { k: 'speed' }
-  | { k: 'dead' };
+  | { k: 'dead' }
+  // Broken down on the road (Phase 22.2a): the ways out.
+  | { k: 'breakdown' };
 
 export interface Hud {
   day: number;
@@ -264,11 +266,13 @@ export class Game {
       scene: home?.scene ?? 'lot',
       sheet: this.state.dead
         ? { k: 'dead' }
-        : this.state.expedition
-          ? { k: 'exped', id: this.state.expedition.id }
-          : home?.scene
-            ? null
-            : { k: 'place', id: this.state.at },
+        : this.state.breakdown
+          ? { k: 'breakdown' }
+          : this.state.expedition
+            ? { k: 'exped', id: this.state.expedition.id }
+            : home?.scene
+              ? null
+              : { k: 'place', id: this.state.at },
       talk: null,
       toast: null,
       stamp: null,
@@ -373,6 +377,9 @@ export class Game {
     if (x && 'sheet' in p && p.sheet?.k !== 'exped') p = { ...p, sheet: { k: 'exped', id: x.id } };
     // A Free Solo climber who fell: that's all there is, until a new one.
     if (this.state.dead && 'sheet' in p && p.sheet?.k !== 'dead') p = { ...p, sheet: { k: 'dead' } };
+    // Broken down, once the van's stopped rolling: the ways out, until you've taken one.
+    if (this.state.breakdown && !this.trip && 'sheet' in p && p.sheet?.k !== 'breakdown')
+      p = { ...p, sheet: { k: 'breakdown' } };
     this.ui.update((u) => ({ ...u, ...p }));
   }
 
@@ -742,6 +749,19 @@ export class Game {
     this.dispatch({ t: 'lifestyle', tier });
   }
 
+  // A way out of a breakdown. Once the van's going again, you're wherever it took you.
+  fix(how: 'tow' | 'bodge' | 'limp' | 'friend'): string | null {
+    const ev = this.dispatch({ t: 'fix', how });
+    const no = refusal(ev);
+    if (no || this.state.breakdown) return no;
+    const place = this.state.at;
+    const scene = PLACES[place]?.scene;
+    this.set({ sheet: null });
+    if (scene) this.fadeTo(() => this.enter(scene));
+    else this.openSheet({ k: 'place', id: place });
+    return null;
+  }
+
   unlock(place: string): void {
     this.dispatch({ t: 'unlock', place });
   }
@@ -762,7 +782,9 @@ export class Game {
       return no.why;
     }
     this.hush();
-    const pts = drivePath(from, to, MAP_PINS);
+    let pts = drivePath(from, to, MAP_PINS);
+    // Broken down: the drive stops halfway, where it happened.
+    if (this.state.breakdown) pts = pts.slice(0, Math.max(2, Math.ceil(pts.length / 2)));
     const trip: Trip = { to, pts, L: arcTable(pts), t: 0, dur: this.still ? 0.01 : 1.8 };
     this.sound.play('drive', trip.dur / 1.8);
     const start = () => {
@@ -783,6 +805,13 @@ export class Game {
     this.sync();
     // What you learned on the way is said where you get to, not over the map's pins.
     const say = () => lines.forEach((l) => this.toast(l));
+    if (this.state.breakdown) {
+      this.sound.play('breakdown');
+      this.stopPlan();
+      this.set({ sheet: { k: 'breakdown' } });
+      say();
+      return;
+    }
     const scene = PLACES[trip.to]?.scene;
     if (scene) this.fadeTo(() => (this.enter(scene), say()));
     else {

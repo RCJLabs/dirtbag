@@ -80,6 +80,12 @@ import {
   signedUp,
   dayName,
   JOBS,
+  friendFor,
+  PART_NAME,
+  PARTS,
+  partWord,
+  PEOPLE,
+  VAN,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import type { Game, SheetId } from '../game/game';
@@ -267,6 +273,11 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             label: 'Your week',
             note: weekNote(s),
             run: () => game.openSheet({ k: 'week' }),
+          },
+          {
+            label: 'Under the hood',
+            note: `${PARTS.map((p) => `${PART_NAME[p]} ${partWord(s.van[p])}`).join(', ')}. The garage is in Midtown.`,
+            run: () => game.openSheet({ k: 'journal', page: 'you' }),
           },
           {
             label: 'Expeditions',
@@ -650,6 +661,52 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             note: why ? `${why}.` : 'Grab with alternate hands. The same hand twice and you slip.',
             off: !!why,
             run: () => game.speedStart(),
+          },
+        ],
+      };
+    }
+
+    case 'breakdown': {
+      const b = s.breakdown;
+      if (!b) return null;
+      const to = PLACES[b.to]!.name;
+      const who = friendFor(s);
+      const tow = { min: VAN.tow.min, cash: -VAN.tow.cash };
+      return {
+        title: 'Broken down',
+        sub: `On the shoulder, halfway to ${to}. The ${PART_NAME[b.part].toLowerCase()} ${b.part === 'tires' ? 'are' : 'is'} done.`,
+        close: false,
+        rows: [
+          ...(who
+            ? [
+                {
+                  label: `Call ${PEOPLE[who]!.name}`,
+                  cost: costLabel({ min: VAN.friend.min + b.rest }),
+                  note: `A jack, a spare and an afternoon of theirs. On to ${to}, and the part good for a while.`,
+                  run: () => game.fix('friend'),
+                },
+              ]
+            : []),
+          {
+            label: 'Bodge it',
+            cost: costLabel({ min: VAN.bodge.min }),
+            note: b.bodged
+              ? 'You’ve tried. It isn’t going to hold.'
+              : `Tape, zip ties and hope. It holds about ${Math.round(VAN.bodge.odds * 5)} times in 5, and then it’s on to ${to}.`,
+            off: b.bodged,
+            run: () => game.fix('bodge'),
+          },
+          {
+            label: `Limp on to ${to}`,
+            cost: costLabel({ min: b.rest * VAN.limp.slow, energy: -VAN.limp.energy }),
+            note: 'Hazards on, half speed. The part’s shot when you get there: next stop, the garage.',
+            run: () => game.fix('limp'),
+          },
+          {
+            label: 'Call a tow',
+            cost: costLabel(tow, 'tow'),
+            note: 'To the garage in Midtown, and the van with it. Not to the crag.',
+            run: () => game.fix('tow'),
           },
         ],
       };

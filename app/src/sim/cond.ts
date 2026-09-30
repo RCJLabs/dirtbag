@@ -4,7 +4,8 @@
 import { gradeOf } from './climber';
 import { PLACES } from './content/places';
 import { gradeOfPerson } from './curves';
-import { ARC, DAY, DOG, MONEY } from './dials';
+import { ARC, DAY, DOG, MONEY, type VanPart } from './dials';
+import { repairCost } from './van';
 import { clockShort, fill } from './format';
 import { benchedUntil, isPosted } from './jobs';
 import type { GameState } from './types';
@@ -46,6 +47,8 @@ export interface Cond {
   unlocked?: string; // you've paid for that place's haul
   posted?: string; // that job has a shift posted today (content/jobs.ts)
   hired?: string; // that job hasn't let you go, or has taken you back
+  worn?: VanPart; // that part of the van could use the garage (under 95)
+  payVan?: VanPart; // the card covers the garage's bill for that part
 }
 
 // The last two days of every seven are the weekend: the week's bills land on its last night.
@@ -128,6 +131,8 @@ export function holds(s: GameState, c: Cond): boolean {
   if (c.weekend !== undefined && isWeekend(s.day) !== c.weekend) return false;
   if (c.posted !== undefined && !isPosted(s.seed, c.posted, s.day)) return false;
   if (c.hired !== undefined && benchedUntil(s, c.hired) !== null) return false;
+  if (c.worn !== undefined && !(s.van[c.worn] < 95)) return false;
+  if (c.payVan !== undefined && headroom(s) < repairCost(s, c.payVan)) return false;
   return true;
 }
 
@@ -152,7 +157,7 @@ export function unmet(s: GameState, needs: readonly Need[] = []): string | null 
   for (const n of needs) {
     if (holds(s, n)) continue;
     if (n.why) return fill(n.why, { t: clockShort(n.before ?? n.from ?? 0) });
-    if (n.pay !== undefined) return "The card's declined.";
+    if (n.pay !== undefined || n.payVan !== undefined) return "The card's declined.";
     if (n.energy !== undefined) return 'Too tired.';
     if (n.skin !== undefined) return 'Your skin is done for today.';
     if (n.fed !== undefined) return "You're too hungry.";

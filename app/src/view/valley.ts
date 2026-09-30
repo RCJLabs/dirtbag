@@ -154,6 +154,14 @@ export const SIDE_ROADS: Record<string, { pts: Pt[]; dirt?: true }> = {
       [202, 572],
     ],
   },
+  // The Garage: a short street east off the highway, below Midtown.
+  garage: {
+    pts: [
+      [roadX(562), 562],
+      [250, 562],
+      [288, 562],
+    ],
+  },
   // The desert road west to Sandstone Mesa, where the highway climbs out of the valley.
   mesa: {
     pts: [
@@ -183,6 +191,8 @@ export const BLOCKS: [number, number, number, number][] = [
   [236, 342, 16, 10],
   // The Warehouse's shed, long and low, behind its pin.
   [176, 552, 30, 12],
+  // The Garage: a two-bay shop.
+  [292, 542, 22, 12],
 ];
 export const LOT_RECT: [number, number, number, number] = [242, 598, 44, 28];
 

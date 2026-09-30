@@ -17,7 +17,8 @@
 // from the map, three from a scene. Day four runs day three again as a plan, and day five
 // runs one the day won't allow.
 // Then a v0.956 player, in a browser of their own: the retirement notice, their career kept
-// as a file, and coming across as they were.
+// as a file, and coming across as they were. Then a save broken down on the road: the ways
+// out, a tow to the garage, and new tires.
 // Then a day played with the keyboard alone, and the text at its larger size (Phase 12):
 // making a climber, Hazel, the journal, the map's pins, a go on the Warm Boulder, the drive
 // home and bed, with nothing running off the screen.
@@ -672,7 +673,9 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 10 ||
+  saved?.v !== 11 ||
+  !(st.van?.tires > 0) ||
+  st.breakdown !== null ||
   // Day two's setting shift was a walk-in: paid, and not counted.
   st.jobs?.set !== undefined ||
   !Array.isArray(st.shifts) ||
@@ -930,6 +933,69 @@ console.log('A v0.956 player');
   log(
     `came across: ${me.name}, V${grade}, fingers still the strength (${me.skills.fingers} vs head ${me.skills.head})`,
   );
+  await ctx.close();
+}
+
+console.log('Broken down on the road');
+// Phase 22.2a. A save from the side of the road (the day-five climber, tires gone, halfway to
+// Roadside) comes back to the breakdown and nothing else. A tow takes the van to the
+// garage, and the garage puts new tires on it.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  saved.state = {
+    ...saved.state,
+    at: 'lot',
+    x: null,
+    min: 9 * 60,
+    cash: 300,
+    van: { tires: 5, engine: 80, battery: 80 },
+    breakdown: { part: 'tires', to: 'road', rest: 30, bodged: false },
+  };
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  await ctx.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+  }, JSON.stringify(saved));
+  const road = await ctx.newPage();
+  road.on('pageerror', (e) => problems.push(`breakdown: uncaught: ${e.message}`));
+  road.on('console', (m) => m.type() === 'error' && problems.push(`breakdown: console.error: ${m.text()}`));
+  await road.goto(server.url, { waitUntil: 'load' });
+  const sheetText = () => road.evaluate(() => document.querySelector('#sheet')?.textContent ?? '');
+  await road.waitForFunction(
+    () => /Broken down/.test(document.querySelector('#sheet')?.textContent ?? ''),
+    null,
+    {
+      timeout: 10_000,
+    },
+  );
+  const ways = await sheetText();
+  log(`breakdown: ${ways.slice(0, 120)}`);
+  if (!/Bodge it/.test(ways) || !/Limp on to Roadside Crag/.test(ways) || !/Call a tow/.test(ways))
+    await fail(`the ways out: ${ways}`);
+  if (await road.$('#sheet .x')) await fail('a breakdown can be closed without a way out');
+  await road.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-breakdown.png`) });
+  await road.locator('#sheet .opt', { hasText: 'Call a tow' }).first().click();
+  await road.waitForFunction(
+    () => /The Garage/.test(document.querySelector('#sheet')?.textContent ?? ''),
+    null,
+    {
+      timeout: 10_000,
+    },
+  );
+  await road.locator('#sheet .opt', { hasText: 'New tires' }).first().click();
+  const after = await road
+    .waitForFunction(
+      () => {
+        const st = JSON.parse(localStorage.getItem('dirtbag.save') ?? 'null')?.state;
+        return st?.van?.tires === 100 ? st : null;
+      },
+      null,
+      { timeout: 10_000 },
+    )
+    .then((h) => h.jsonValue());
+  if (after.at !== 'garage' || after.breakdown !== null || !(after.cash < 300 - 70))
+    await fail(`after the tow and the tires: ${JSON.stringify({ at: after.at, cash: after.cash })}`);
+  log(`towed and fixed: at the garage, $${after.cash}, tires ${after.van.tires}`);
+  await road.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-garage.png`) });
   await ctx.close();
 }
 
