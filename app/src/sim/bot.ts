@@ -39,6 +39,7 @@ import { act, actCost, faSuggestions, goBlocked, knowsBeta, landingChance, newGa
 import { whereNow } from './presence';
 import { signupBlocked } from './jobs';
 import { friendFor, PARTS, repairCost, unsafePart } from './van';
+import { carePrice, weeklyBills } from './clinic';
 import { spotBlocked, ticketOdds } from './spots';
 import { tonight } from './tonight';
 import type { Action, GameState, GoResult, Skills } from './types';
@@ -340,9 +341,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   };
   // The morning's money: the cushion, and the week's bills when they're close.
   const wantFor = (day: number) =>
-    CUSHION[strategy] +
-    (Math.ceil(day / 7) * 7 - day <= 1 ? MONEY.registration + MONEY.insurance : 0) +
-    repairs();
+    CUSHION[strategy] + (Math.ceil(day / 7) * 7 - day <= 1 ? weeklyBills(s) : 0) + repairs();
   // A worn part is saved for, the way the bills are.
   const repairs = () => PARTS.filter((p) => s.van[p] < GARAGE_AT).reduce((n, p) => n + repairCost(s, p), 0);
   // Today's shift, if the bot signed up for one: it goes whatever the money says, or it's a
@@ -401,6 +400,14 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     if (chalk) tryAct('shop.chalk');
   }
 
+  // Phase 22.4a: physio when hurt, with money past the cushion for it and days to save.
+  function physio() {
+    if (!s.injury || s.injury.until - s.day < 2) return;
+    if (s.cash < carePrice(s, 'physio') + CUSHION[strategy]) return;
+    travel('clinic');
+    tryAct('clinic.physio');
+  }
+
   // Phase 22.3: the best meal the pantry makes, the ones that fuel you first; ramen when
   // there's no kitchen or nothing in the pantry for it.
   function eat(): boolean {
@@ -448,11 +455,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       cold &&
       repairs() === 0 &&
       !s.gear.heater &&
-      s.cash >=
-        UPGRADE.heater.price +
-          WINTER.propane.price +
-          WARM_OVER +
-          (billsSoon() ? MONEY.registration + MONEY.insurance : 0);
+      s.cash >= UPGRADE.heater.price + WINTER.propane.price + WARM_OVER + (billsSoon() ? weeklyBills(s) : 0);
     const fit = warm
       ? 'heater'
       : BOT_UPGRADES.find((id) => !s.gear[id] && s.cash >= UPGRADE[id].price + CUSHION[strategy] + SPARE);
@@ -608,6 +611,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     work();
     kit();
     groceries();
+    physio();
     garage();
     // The crag when it's dry and there's something there to try; the gym otherwise.
     // Roadside first, the Gorge once it's open to you and there's nothing new at Roadside,
@@ -793,16 +797,13 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     buyTrips();
     kit();
     groceries();
+    physio();
     garage();
     // Money first: the cushion, the week's bills, and the next trip if there's one to save
     // for. A working morning, then a crag near enough to reach after it.
     // A trip's saved for with a night's costs over, so it's still there in the morning.
     const trip = saving();
-    const want =
-      CUSHION.career +
-      (billsSoon() ? MONEY.registration + MONEY.insurance : 0) +
-      (trip ? trip + 50 : 0) +
-      repairs();
+    const want = CUSHION.career + (billsSoon() ? weeklyBills(s) : 0) + (trip ? trip + 50 : 0) + repairs();
     const pick = pickPlace();
     // A working day: ask Hazel along first, to the crag you'll reach after the shift, so
     // she's there with the rope when you are.

@@ -154,6 +154,17 @@ export const SIDE_ROADS: Record<string, { pts: Pt[]; dirt?: true }> = {
       [202, 572],
     ],
   },
+  // The Clinic: the Old Town spur, and a block north.
+  clinic: {
+    pts: [
+      [207, 470],
+      [176, 468],
+      [146, 467],
+      [118, 466],
+      [112, 446],
+      [106, 432],
+    ],
+  },
   // The Lake: a dirt track west off the highway below the Lot, over the creek.
   lake: {
     pts: [
@@ -207,6 +218,8 @@ export const BLOCKS: [number, number, number, number][] = [
   [98, 467, 24, 17],
   [256, 328, 18, 12],
   [236, 342, 16, 10],
+  // The Clinic, north of Old Town's blocks.
+  [92, 408, 24, 12],
   // The Warehouse's shed, long and low, behind its pin.
   [176, 552, 30, 12],
   // The Garage: a two-bay shop.

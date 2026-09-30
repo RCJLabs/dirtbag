@@ -8,14 +8,14 @@
 import { CARRIED, STARTS } from './climber';
 import { GEAR } from './content/gear';
 import { PLACES } from './content/places';
-import { LIFESTYLE, SPOTS, TRAIN } from './dials';
+import { LIFESTYLE, PLANS, SPOTS, TRAIN } from './dials';
 import { JOBS } from './content/jobs';
 import { ROUTES, WALLS } from './content/routes';
 import { EXPEDITIONS } from './content/expeditions';
 import { INGREDIENTS, MEAL_NAME } from './content/food';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 13;
+export const SAVE_VERSION = 14;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -119,6 +119,12 @@ export const MIGRATIONS: Record<number, Migration> = {
   12: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, pantry: {}, meals: [], fueled: 0 };
+  },
+  // v13 -> v14 (Phase 22.4a): on the catastrophic plan, which is what the flat premium was,
+  // and never jabbed.
+  13: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, insurance: 'catastrophic', jab: 0 };
   },
 };
 
@@ -263,6 +269,8 @@ export function validate(x: unknown): string[] {
   );
   need(isStrs(x.meals) && x.meals.every((m) => m in MEAL_NAME), 'meals');
   need(isInt(x.fueled) && x.fueled >= 0, 'fueled');
+  need(typeof x.insurance === 'string' && x.insurance in PLANS, 'insurance');
+  need(isInt(x.jab) && x.jab >= 0, 'jab');
   need(isInt(x.lotNights) && x.lotNights >= 0, 'lotNights');
   need(isInt(x.driveway) && x.driveway >= 0, 'driveway');
   const pct = (v: unknown) => isNum(v) && v >= 0 && v <= 100;

@@ -527,6 +527,8 @@ export const MAP_PINS: Record<string, Pin> = {
   shop: { x: 240, y: 540, side: 1, kind: 'town' },
   // The Warehouse: on the flats by the river, down a short spur west of the highway.
   warehouse: { x: 190, y: 572, side: -1, kind: 'town' },
+  // The Clinic: Old Town, round the corner from the diner (Phase 22.4a).
+  clinic: { x: 104, y: 424, side: 1, kind: 'town' },
   // The Lake: west of the Lot, on its east shore, past the creek (Phase 22.3b).
   lake: { x: 108, y: 604, side: 1, kind: 'camp', dy: -12 },
   // The Market: Midtown, across the street from the café.

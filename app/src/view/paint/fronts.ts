@@ -589,4 +589,54 @@ const lake: Front = (g, s, w, h) => {
   if (wet(s, 'lake')) drawRain(g, w, h, 0, true);
 };
 
-export const FRONTS: Record<string, Front> = { diner, cafe, shop, warehouse, garage, market, lake };
+// The Clinic (Phase 22.4a): a low white building with a green cross, a ramp, and a bench
+// out front where somebody always seems to be icing a knee.
+const clinic: Front = (g, s, w, h) => {
+  const night = isNight(s.min);
+  const kerb = street(g, valley(night ? 'night' : 'morning'), w, h, night);
+  const x0 = Math.round(w * 0.14);
+  const x1 = Math.round(w * 0.84);
+  const top = Math.round(h * 0.24);
+  const bw = x1 - x0;
+  g.fillStyle = night ? '#6E7074' : '#E4E0D6';
+  g.fillRect(x0, top, bw, kerb - top);
+  g.fillStyle = night ? '#3E4044' : '#8E8A80';
+  g.fillRect(x0 - 4, top - 5, bw + 8, 6);
+  // The cross.
+  const cx = x0 + 26;
+  const cy = top + 18;
+  g.fillStyle = '#3E8F5A';
+  g.fillRect(cx - 3, cy - 9, 6, 18);
+  g.fillRect(cx - 9, cy - 3, 18, 6);
+  label(g, 'poster', 'CLINIC', x0 + bw / 2 + 12, top + 22, {
+    size: 13,
+    color: '#3E5A48',
+    halo: night ? '#6E7074' : '#E4E0D6',
+  });
+  // Windows, the door and the ramp.
+  const wy = top + 32;
+  for (let i = 0; i < 3; i++) {
+    const wx = x0 + 12 + i * (bw * 0.2);
+    g.fillStyle = night ? LIT : '#A8BFC6';
+    g.fillRect(wx, wy, bw * 0.14, kerb - wy - 14);
+  }
+  const dx = x1 - 34;
+  g.fillStyle = night ? LIT : '#6F8C98';
+  g.fillRect(dx, wy - 4, 22, kerb - wy + 4);
+  g.fillStyle = night ? '#4A4C50' : '#B8B2A6';
+  g.beginPath();
+  g.moveTo(dx - 30, kerb);
+  g.lineTo(dx, kerb - 6);
+  g.lineTo(dx, kerb);
+  g.closePath();
+  g.fill();
+  // The bench.
+  g.fillStyle = '#6A4A36';
+  g.fillRect(x1 + 6, kerb - 10, 26, 3);
+  g.fillRect(x1 + 8, kerb - 7, 2, 7);
+  g.fillRect(x1 + 28, kerb - 7, 2, 7);
+  lamp(g, x0 - 18, kerb, night);
+  if (wet(s, 'clinic')) drawRain(g, w, h, 0, true);
+};
+
+export const FRONTS: Record<string, Front> = { diner, cafe, shop, warehouse, garage, market, lake, clinic };

@@ -348,6 +348,24 @@ export const LEGACY = {
 
 // Injuries: v0.956's three tiers and how long each keeps you off. The clinic is a copay
 // (your weekly insurance pays the rest), and your first injury costs only time (Phase 6).
+// Phase 22.4a: insurance plans, chosen in the week, paid with the week's bills; they replace
+// the flat premium (MONEY.insurance is catastrophic's, the plan everyone had). Each sets what
+// a clinic bill comes to: a multiple of INJURY.clinic, or a flat copay [proposed].
+export type Plan = 'none' | 'catastrophic' | 'full';
+export const PLANS: Record<Plan, { premium: number; bill: number; copay?: number; care: number }> = {
+  none: { premium: 0, bill: 2, care: 1 },
+  catastrophic: { premium: MONEY.insurance, bill: 1, care: 1 },
+  full: { premium: 45, bill: 0, copay: 20, care: 0.25 },
+};
+
+// The clinic in Old Town (Phase 22.4a) [proposed]. Physio takes a day off an injury, once a
+// day; cortisone halves what's left, and the next injury inside `jabDays` lands a tier worse.
+// `care` in PLANS is the share of these prices you pay.
+export const CLINIC = {
+  physio: { price: 40, min: 120, days: 1 },
+  cortisone: { price: 60, min: 30, jabDays: 21 },
+};
+
 export const INJURY = {
   days: [
     [2, 4],

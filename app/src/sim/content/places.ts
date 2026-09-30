@@ -12,7 +12,7 @@
 
 import type { Need } from '../cond';
 import { INGREDIENTS, RECIPES } from './food';
-import { DAY, DOG, KIT, LAKE, MONEY, UPGRADE, VAN, WINTER, type VanPart } from '../dials';
+import { CLINIC, DAY, DOG, KIT, LAKE, MONEY, UPGRADE, VAN, WINTER, type VanPart } from '../dials';
 import { DOG_LINES, DOG_OFFER } from './dog';
 import { clockShort } from '../format';
 import type { Delta, Skills } from '../types';
@@ -113,6 +113,8 @@ export interface ActDef {
   coffee?: true;
   // Phase 22.3b: a line in the lake; the catch is food (lake.ts).
   fish?: true;
+  // Phase 22.4a: care at the clinic, priced on your plan (clinic.ts).
+  clinic?: 'physio' | 'cortisone';
   // A shift at a job (content/jobs.ts), counting this many toward promotion. Its pay is
   // `cost.cash` at the first rank, plus the rank's raise for each shift.
   job?: { id: string; shifts: number };
@@ -386,6 +388,15 @@ export const PLACES: Record<string, PlaceDef> = {
     here: 'Pallets to the roof, and a forklift backing up somewhere, beeping.',
     acts: ['warehouse.shift'],
   },
+  // Phase 22.4a [proposed]: the clinic in Old Town, round the corner from the diner.
+  clinic: {
+    name: 'The Clinic',
+    scene: null,
+    ambience: { room: 0.4, murmur: 0.2, clinks: 0.15 },
+    away: 'Old Town, round the corner from the diner. Physio, and a cortisone shot if you’re in a hurry.',
+    here: 'A waiting room full of runners, and a poster of the knee nobody reads.',
+    acts: ['clinic.physio', 'clinic.cortisone'],
+  },
   // Phase 22.3b [proposed]: the lake west of the Lot, down a dirt track past the creek.
   lake: {
     name: 'The Lake',
@@ -491,6 +502,32 @@ export const ACTS: Record<string, ActDef> = {
       },
     ]),
   ),
+  // The clinic (Phase 22.4a): physio, a day off an injury, once a day; cortisone, half of
+  // what's left, and the next injury in three weeks is a tier worse. Priced on your plan.
+  'clinic.physio': {
+    label: 'Physio',
+    cost: { min: CLINIC.physio.min },
+    needs: [
+      { injured: true, why: 'Nothing to treat. The physio looks almost disappointed.' },
+      { notToday: 'physio', why: 'One session a day. Rest is the other half of it.' },
+    ],
+    note: 'A day off your injury.',
+    sets: ['physio'],
+    clinic: 'physio',
+    says: 'An hour of being pressed where it hurts, and an hour of homework.',
+  },
+  'clinic.cortisone': {
+    label: 'A cortisone shot',
+    cost: { min: CLINIC.cortisone.min },
+    needs: [
+      { injured: true, why: 'Nothing to inject. Good.' },
+      { notToday: 'jab', why: 'One is plenty.' },
+    ],
+    note: 'Half the days off it. It hides the next injury’s worst for three weeks.',
+    sets: ['jab'],
+    clinic: 'cortisone',
+    says: 'A cold swab, a long needle, and the doctor’s look that says she’d rather you rested.',
+  },
   // The lake (Phase 22.3b): a line in the water, and a swim.
   'lake.fish': {
     label: 'Fish for a couple of hours',
@@ -867,6 +904,8 @@ export const ROADS: RoadDef[] = [
   // The warehouse: on the flats below Midtown, between the Lot and the shop.
   { a: 'warehouse', b: 'lot', min: 10, cash: 1 },
   { a: 'warehouse', b: 'shop', min: 6, cash: 1 },
+  // The clinic: round the corner from the diner.
+  { a: 'clinic', b: 'diner', min: 3, cash: 0 },
   // The lake: a dirt track west from the Lot, past the creek.
   { a: 'lake', b: 'lot', min: 12, cash: 1 },
   // The market: across from the café, a block from Send City.

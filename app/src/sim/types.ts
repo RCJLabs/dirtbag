@@ -81,6 +81,10 @@ export interface GameState {
   // Phase 22.3. Servings in the pantry, by ingredient (content/food.ts); the last few meals,
   // newest last (ramen, the special, a recipe's id); and the day a meal fueled you, if any.
   pantry: Record<string, number>;
+  // Phase 22.4a. Your insurance plan (dials.ts PLANS), and the day of your last cortisone
+  // shot (0 for never): the next injury inside three weeks lands a tier worse.
+  insurance: 'none' | 'catastrophic' | 'full';
+  jab: number;
   meals: string[];
   fueled: number;
   breakdown: { part: 'tires' | 'engine'; to: string; rest: number; bodged: boolean } | null;
@@ -240,7 +244,9 @@ export type Action =
   // Phase 22.2a: a way out of a breakdown.
   | { t: 'fix'; how: 'tow' | 'bodge' | 'limp' | 'friend' }
   // Phase 22.2b: where you park for the night, from now on.
-  | { t: 'spot'; spot: 'lot' | 'trailhead' | 'truckstop' | 'driveway' | 'ridge' };
+  | { t: 'spot'; spot: 'lot' | 'trailhead' | 'truckstop' | 'driveway' | 'ridge' }
+  // Phase 22.4a: your insurance plan, from the next bills on.
+  | { t: 'insure'; plan: 'none' | 'catastrophic' | 'full' };
 
 // What a finished go hands back to the game.
 export interface GoResult {

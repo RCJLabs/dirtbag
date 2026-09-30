@@ -35,6 +35,7 @@ import {
   type PhaseId,
   type Lifestyle,
   type SpotId,
+  type Plan,
   type SendStyle,
   type Skills,
   unfinishedSolo,
@@ -748,6 +749,11 @@ export class Game {
 
   live(tier: Lifestyle): void {
     this.dispatch({ t: 'lifestyle', tier });
+  }
+
+  // Phase 22.4a: your insurance plan.
+  insure(plan: Plan): void {
+    this.dispatch({ t: 'insure', plan });
   }
 
   // Phase 22.2b: where you park for the night.
