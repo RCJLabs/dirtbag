@@ -1559,6 +1559,83 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 **Depends on:** Phase 21 (the van carries the rack). **Effort:** ~8–12 weeks [INFERRED].
 
+**Plan on the rebuild (30 Sep 2026) [proposed].** Written from the audit (`docs/audit/core-loop.md` §2.2–2.8, §5.1–5.7, §8; `economy.md` §2.4–2.5, §8; `social.md` §2.6–2.9, §5, §8) against what the rebuild has: the van spot, weekly bills, gas by the drive, the card limit, three jobs with ranks, energy, skin, fed, load, injuries in three tiers, ramen and the diner, Scout, and the Tonight panel. There's no event system yet.
+
+*The principles, from the audit's verdicts:*
+- **Survival pressure that changes, not disappears.** v0.956's money stopped mattering after about day 15 (`economy.md` §1.1). Here every new cost is a choice with a visible trade: where to sleep, what to eat, whether to fix the van now.
+- **No farms.** Everything takes time, is capped by the day, and pays through the same curves as climbing (`hi()`) or as a day's buff, never flat skill. The harness holds each one under an hour on the rock and under a shift's pay.
+- **One night.** Every way a night passes (the van, a ledge, an expedition, a motel if one comes) goes through `sleep()`, so nothing skips the bills (v0.956's motel bug).
+- **Tonight shows it.** Each new meter appears in the Tonight panel with its number and its fix; no hidden meters.
+- **Seeded, and written.** Events come off one seeded deck. At most one a day. The vignettes keep v0.956's voice (the audit's keep list), and a bad outcome never pays more than a good one.
+
+*The slices, in order.* Each goes through the harness, the e2e and a save migration where it changes the state.
+
+- **22.1 The week and the money.**
+  - Each job posts 3–4 shifts a week that you sign up for, so the week is planned around the weather (`economy.md` §8 #15). A signed-up no-show costs a warning, and three cost the job.
+  - Pay per shift rises, so a working week is fewer, better days.
+  - Lifestyle tiers you choose replace v0.956's hidden grade multiplier: dirtbag, comfortable, plush. Each has its nightly cost, sleep and supplies.
+  - The autopilot shift is moot here: shifts are already one tap.
+  - The career harness gets a pace target (Decision 1).
+- **22.2 The van.**
+  - **Parts wear by the mile and the night:** three parts, not v0.956's six (tires, engine, battery [proposed]). A worn part raises the breakdown odds on a drive.
+  - **Breakdowns** are written vignettes with v0.956's ways out: a tow, a spare, a bodge, limping home, or a friend.
+  - **Repairs** happen at a garage in Midtown.
+  - **Where you sleep** is a nightly choice:
+    - the Lot ($18, and tickets in cash after too many nights in a row);
+    - the Upper Trailhead (free, cold, far);
+    - the truck stop (a shower, and a bad night);
+    - a friend's driveway (bond, and a cooldown);
+    - the Ridge (standing).
+  - **Upgrades:** a bed, a camp kitchen, curtains, a tool kit, a tune-up, and a heater that burns propane every winter night. There's no passive income: v0.956's solar and power station paid the whole nut (`core-loop.md` §5.1).
+  - **Winter** is a season you prepare for: the heater's fuel, insulation, a winter-kit goal.
+- **22.3 Food.**
+  - A pantry you stock at a Midtown market.
+  - Recipes cooked at the van with the camp kitchen, as a short cooking beat. They give food and a day's buff (wider windows for the day), not v0.956's flat skill, which was a farm to V18 (`climbing.md` §5.3).
+  - Variety matters: four of the same meal in a row raise sickness odds, and Tonight says so.
+  - The lake (the map's dimmed pin) opens: fishing, food not cash, seeded catches by season and hour; a swim; water.
+  - Coffee gets a crash after two a day.
+  - Starving eats the pantry first.
+- **22.4 The body, deeper.**
+  - Insurance plans (none, catastrophic, full) replace the flat weekly premium.
+  - A clinic: urgent care, physio (days off an injury, two hours, once a day), and cortisone (fast, at a risk).
+  - Old injuries: v0.956's scars and marks, merged (`core-loop.md` §8 CUT 3). A tier-2+ injury can leave one: more risk in its style, and a flare that physio settles, felt only when you climb that style, so it isn't a chore.
+  - Fear: after a deck, a bad landing or a tier-3 injury, that style's windows are tighter until you send one; the beta sheet says so.
+  - One supplies gauge, merging water, propane and hygiene (`core-loop.md` §8 CUT 1). Refilled at the gas station, the gym's shower or the lake.
+  - Sickness: a seeded nightly chance from winter, supplies, hunger and a same-meal diet; it takes teeth in with it.
+  - Psyche: Decision 2.
+- **22.5 The hustle.** Cans, dumpster runs and foraging keep v0.956's thematic safety net. The game teaches it the first time you're hungry and broke. Busking in Old Town is a timing beat that pays by the crowd there (21.6's crowds), capped by the day, with lines of its own, not "Solid set." None out-earns a shift an hour.
+- **22.6 Events.**
+  - One seeded deck, at most one encounter a day.
+  - Knocks on the van at night (by where you're parked); roadside stops and hitchhikers on drives (a hitchhiker remembers what you did, and may be the friend at your next breakdown); walk-out epics on late crag days (headlamp, weather, energy).
+  - v0.956's Gen-1 one-liners stay cut (`social.md` §8 #11).
+  - Each has a sound and an e2e step (criterion 3).
+- **22.7 Scout's life.**
+  - Perks at bond: settles at the fire; finds food overnight; watches the van, halving tickets. v0.956's bug let any dog block every ticket.
+  - Aging in dog-years, vet scares with bills, and the end (Decision 3).
+  - No new stray for a month after.
+- **22.8 Dreams.**
+  - A protected savings pot the broke check counts.
+  - The Dream Rig: van life halved, the upgrades done.
+  - The War Chest: expeditions halved, ready for Phase 24.
+  - Home Base: a cabin at the Lot, no van spot, a kitchen. It says exactly what it stops charging, unlike v0.956's "ever".
+- **22.9 The games, by Evan's call.**
+  - At the fire, with the people there: hold'em, blackjack, liar's dice, horseshoes. Each takes an hour or two and once a night, and pays something of its own:
+    - hold'em keeps reads on each person, and what they know;
+    - blackjack is money, with a buy-in cap;
+    - liar's dice and horseshoes are bond with whoever's playing, at most once a night each.
+  - Trivia becomes the glossary. The garden and farm visits: Decision 4.
+  - Blackjack and hold'em are simulated gambling: the Play listing's content rating changes before they ship, and that's Evan's step in the Play Console.
+
+*The decisions Evan's call is needed on before their slices:*
+1. **Pace.** The career bot reaches V10 around day 162; v0.956's typical player did by day 80. Proposed: fewer, better-paid shifts (22.1), so a working week leaves more whole days for the rock. Also a harness target: the career bot at V10 by day 120, with a "can I afford this trip?" decision still in every week (Phase 6's). Or keep today's pace.
+2. **Psyche.** v0.956's turned into a nightly checklist (`core-loop.md` §5.3). Proposed: a slow mood that variety and company raise (a new crag, a send, a night with people) and grind lowers (the same gym, shift after shift). It moves the windows a little, and no single ritual fixes it. Or leave psyche out.
+3. **Scout's end.** v0.956's lifecycle ran to his death at about day 288, with a farewell; the audit calls it the game's best long arc. Proposed: keep it, as written. Or he grows old and stays.
+4. **The garden and the farm.** The audit says cut: eight hours for food dearer than the diner. Proposed: cut, and give the folks a phone call and a visit in Phase 17's people instead. Or keep them as the "maybe" the scope says.
+5. **Van parts.** Three (tires, engine, battery) against v0.956's six. Proposed: three.
+
+**Done when** gets one more, if Decision 1 goes that way:
+4. The career bot reaches V10 by day 120 [proposed], and a working climber still meets a "can I afford this?" decision every week.
+
 ---
 
 ### Phase 24 — Expeditions as trips
@@ -1935,3 +2012,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — 0.962.1: the map fits the valley between the HUD and the buttons (MAP_FIT), so The Big Stone and Sandstone Mesa no longer hide under the HUD on a phone (Evan's report); the map's toast moves to the new gap.
 - 2026-09-30 — 0.962.2, from Evan's testing: the pump bar's hot pulse animates its colour, not a filter (phone Chrome drew the filtered layer as a striped red box over the climb panel); sound quieter (master 0.5 on, 0.15 quiet, from 0.9 and 0.35; ambience a notch under the effects); the gyms sound like gyms: falls onto the pads, chalk claps and hands on holds, less room rumble, and voices that come and go instead of a breeze.
 - 2026-09-30 — Phase 21 closed by Evan's call. The wet-day gap is closed with content: The Cave sets V5 to V12, and the Training Center (v0.956's third gym) sets eight comp-style problems a week, V7 to V14, from V7. The career bots reach V10 in every run (median day 162) and never run out of things to try. 0.963.0. CURRENT MILESTONE moved to Phase 22, the life; it gets planned on the rebuild next.
+- 2026-09-30 — Phase 22 planned on the rebuild [proposed]: nine slices (the week and the money, the van, food, the body, the hustle, events, Scout's life, dreams, the games) on the audit's principles (pressure that changes, no farms, one night, Tonight shows it, seeded and written), with five decisions for Evan before their slices: pace, psyche, Scout's end, the garden and farm, and van parts.
