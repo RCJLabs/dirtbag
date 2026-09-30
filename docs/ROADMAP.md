@@ -1801,6 +1801,20 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
   - Scout, a night with people at the fire, and events (22.6) don't lift it yet. Those slices can add their own lifts.
   - Nothing in the game reads psyche but the windows. Story beats that want it can.
 
+**Status (30 Sep 2026): 22.5a built: cans, the bins and foraging.** Save v18, 0.974.0. 22.5 goes in two parts: the hustle's safety net, then busking, which needs a timing beat of its own (the climb's verbs are built around routes), and which the cooking beat can reuse.
+- **The hustle,** each once a day, seeded by the day so a reload can't reroll it [proposed numbers, v0.956's where it had them]:
+  - **Cans**, from the van by day: 2 h, 8 energy, $3 to $9.
+  - **The bins** behind the market, after dark: 1 h, 4 energy; 78% of nights, 24 to 39 food, and a meal for the variety count.
+  - **Foraging** at the lake by day: 2 h, 6 energy, 18 to 29 food, 40% of that in winter. v0.956 foraged in town too; here the shore is the one place.
+- **Taught once:** the first time you're under 35 food with under $10, a line says where all three are. A new `seen` list keeps one-time lines from repeating.
+- **None out-earns a shift an hour** (a new harness target, and a test). At best: cans $4.50/h, the bins $3.12/h, foraging $1.16/h, against the warehouse's $6.50/h, the worst shift. Food is priced at ramen's, the cheapest food money buys. Priced at the diner's special instead, a lucky night at the bins is worth $7.80/h: over the warehouse, under everything else.
+- **The bots** collect cans when under $10 and hit the bins when hungry with no money for ramen. The climber bots collect cans about 8 times a season; the others almost never need to. Every harness target passes; the climber bots' one stuck night (a card at its limit, not hunger) stays.
+- **22.5b, busking [proposed, for Evan]:**
+  - A spot in Old Town, 1 h, once a day, by day. The crowd comes from the hour, the weekend and the sky, as a crag's does (crowds.ts), with a town draw of its own.
+  - The beat: eight taps as a marker crosses a band (the climb's timing verb, rebuilt as a small engine of its own in the sim), each a strum. Tips are the crowd times your accuracy, capped by the day under the worst shift an hour.
+  - It pays something the others don't: psyche, when there's a crowd.
+  - Lines by the crowd and how it went, not "Solid set". An e2e step busks. The engine is the one the cooking beat would use.
+
 ---
 
 ### Phase 24 — Expeditions as trips
@@ -2192,3 +2206,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Fixes from Evan's phone: the van's lit windows spilled past the cab's roof (now clipped to the body), and a tap on the van while standing by it opened its sheet and let the same tap's click pick a row (it cooked ramen). A sheet now ignores a click whose press came before it opened; an e2e step taps the van on a touch screen. 0.971.1.
 - 2026-09-30 — Phase 22.4c built: one supplies gauge (water and washing) refilled at the lake, the market, the gym and the truck stop; a seeded nightly chance of a cold, a bug or a toothache from the cold, low supplies, hunger and a samey diet; a doctor at the clinic. Save v16. 0.972.0.
 - 2026-09-30 — Phase 22.4d built, and 22.4 with it: psyche, a slow mood that a new send, a new crag, company and the fire lift, and shifts and samey days wear down, drifting back to even every night; it moves every window up to 5%, and Tonight says it in a word. Bots sit at the fire when flat. Save v17. 0.973.0.
+- 2026-09-30 — Phase 22.5a built: the hustle's safety net, once a day each: cans from the van, the bins behind the market after dark, and foraging at the lake, seeded by the day; taught once, the first time you're hungry and broke. None out-earns a shift an hour (a new harness target). Bots use cans and the bins when broke. Save v18. 0.974.0.

@@ -16,6 +16,7 @@ import {
   CLINIC,
   DAY,
   DOG,
+  HUSTLE,
   KIT,
   LAKE,
   MONEY,
@@ -131,6 +132,8 @@ export interface ActDef {
   // Phase 22.4c: supplies it puts back, and a doctor for what you're sick with (sick.ts).
   supplies?: number;
   doctor?: true;
+  // Phase 22.5a: a hustle, whose take is seeded by the day (hustle.ts).
+  hustle?: 'cans' | 'bins' | 'forage';
   // A shift at a job (content/jobs.ts), counting this many toward promotion. Its pay is
   // `cost.cash` at the first rank, plus the rank's raise for each shift.
   job?: { id: string; shifts: number };
@@ -420,7 +423,7 @@ export const PLACES: Record<string, PlaceDef> = {
     ambience: { wind: 0.3, birds: 0.6, creek: 0.5 },
     away: 'West of the Lot, past the creek. Fish at dawn and dusk, and a swim when it’s warm.',
     here: 'Still water, a half-sunk dock, and somebody’s lawn chair nobody’s claimed in years.',
-    acts: ['lake.fish', 'lake.swim', 'lake.water'],
+    acts: ['lake.fish', 'lake.forage', 'lake.swim', 'lake.water'],
   },
   // Phase 22.3 [proposed]: the market in Midtown, across from the café. Groceries for the
   // camp kitchen.
@@ -439,6 +442,7 @@ export const PLACES: Record<string, PlaceDef> = {
       'market.cheese',
       'market.pasta',
       'market.greens',
+      'market.bins',
     ],
   },
   // Phase 22.2a [proposed]: Dale's garage, on the edge of Midtown past the gear shop. Where a
@@ -579,6 +583,42 @@ export const ACTS: Record<string, ActDef> = {
     needs: [{ sick: true, why: 'Nothing wrong with you. The receptionist looks almost sorry.' }],
     doctor: true,
     note: 'Half what’s left of a cold or a bug; a toothache seen to.',
+  },
+  // The hustle (Phase 22.5a): v0.956's safety net, once a day each.
+  'lot.cans': {
+    label: 'Collect cans',
+    cost: { min: HUSTLE.cans.min, energy: HUSTLE.cans.energy },
+    needs: [
+      { notToday: 'cans', why: 'You’ve done the rounds today. The bins are picked clean.' },
+      { night: false, why: 'Nobody’s thrown anything out since you last looked. Tomorrow.' },
+      { energy: -HUSTLE.cans.energy, why: 'Too tired to walk the rounds.' },
+    ],
+    note: `The bins round the Lot and the trailhead, a bag of cans to the depot: $${HUSTLE.cans.cash[0]} to $${HUSTLE.cans.cash[1]}.`,
+    sets: ['cans'],
+    hustle: 'cans',
+  },
+  'market.bins': {
+    label: 'Check the bins out back',
+    cost: { min: HUSTLE.bins.min, energy: HUSTLE.bins.energy },
+    needs: [
+      { night: true, why: 'Not while they’re open. After dark, when the day’s bread goes out.' },
+      { notToday: 'bins', why: 'You’ve been through them tonight.' },
+    ],
+    note: 'Yesterday’s bread and bruised fruit, most nights. Free, and nobody’s proud of it.',
+    sets: ['bins'],
+    hustle: 'bins',
+  },
+  'lake.forage': {
+    label: 'Forage along the shore',
+    cost: { min: HUSTLE.forage.min, energy: HUSTLE.forage.energy },
+    needs: [
+      { notToday: 'forage', why: 'You’ve picked the shore over today.' },
+      { night: false, why: 'Too dark to tell what’s what.' },
+      { energy: -HUSTLE.forage.energy, why: 'Too tired to go looking.' },
+    ],
+    note: 'Berries, greens, whatever the season’s left. Slim in winter.',
+    sets: ['forage'],
+    hustle: 'forage',
   },
   // The lake (Phase 22.3b): a line in the water, and a swim.
   'lake.fish': {

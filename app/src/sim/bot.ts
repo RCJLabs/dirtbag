@@ -28,6 +28,7 @@ import {
   LOAD,
   MONEY,
   SICK,
+  HUSTLE,
   PSYCHE,
   SUPPLIES,
   UPGRADE,
@@ -429,6 +430,13 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     return tryAct('lot.cook');
   }
 
+  // Phase 22.5a: the bins behind the market, and back to the van.
+  function binRun() {
+    travel('market');
+    tryAct('market.bins');
+    travel('lot');
+  }
+
   // With a kitchen, a run to the market when the pantry's low: a pack of each for rice and
   // beans and for burritos, while the money past the cushion lasts.
   function groceries() {
@@ -672,7 +680,10 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     // Scout: taken on when he picks you, fed when his bowl's low. No stick: bots are busy.
     tryAct('lot.adopt');
     if (s.dog && s.dog.fed < 40) tryAct('lot.kibble');
+    // Broke (Phase 22.5a): cans by day, and the bins after dark if there's no food money.
+    if (s.cash < HUSTLE.teach.cash) tryAct('lot.cans');
     if (!isNight(s.min)) tryAct('lot.rest');
+    if (s.fed < HUSTLE.teach.fed && s.cash < -(ACTS['lot.cook']!.cost.cash ?? 0)) binRun();
     // The fire when the days have gone flat (Phase 22.4d), as a player would.
     if (s.psyche.level < BOT_FIRE) tryAct('lot.sit');
     park();
@@ -850,7 +861,10 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     if (s.fed < 40) eat();
     tryAct('lot.adopt');
     if (s.dog && s.dog.fed < 40) tryAct('lot.kibble');
+    // Broke (Phase 22.5a): cans by day, and the bins after dark if there's no food money.
+    if (s.cash < HUSTLE.teach.cash) tryAct('lot.cans');
     if (!isNight(s.min)) tryAct('lot.rest');
+    if (s.fed < HUSTLE.teach.fed && s.cash < -(ACTS['lot.cook']!.cost.cash ?? 0)) binRun();
     // The fire when the days have gone flat (Phase 22.4d), as a player would.
     if (s.psyche.level < BOT_FIRE) tryAct('lot.sit');
     const next = saving();

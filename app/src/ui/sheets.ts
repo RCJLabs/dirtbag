@@ -295,6 +295,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             run: () => game.openSheet({ k: 'place', id: 'market' }),
           },
           ...(isNight(s.min) ? [] : [actRow(game, s, 'lot.rest')]),
+          // Phase 22.5a: the cans, by day.
+          ...(isNight(s.min) ? [] : [actRow(game, s, 'lot.cans')]),
           trainRow(game, s),
           {
             label: 'Your week',

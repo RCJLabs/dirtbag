@@ -84,6 +84,7 @@ import { pitchOdds, pitchRoll, stormOn, wallPay } from './expeditions';
 import { canAsk, queueMin, sprayable, sprayedOn } from './crowds';
 import { soloed } from './solo';
 import { fishCatch } from './lake';
+import { HUSTLE_TEACH, hustleTake, needsTeaching } from './hustle';
 import { carePrice, clinicBill, jabbed, weeklyBills, worsened } from './clinic';
 import { flareRoll, scarRoll, scarred } from './scars';
 import { isSick, SICK_NAME, sickRoll } from './sick';
@@ -165,6 +166,7 @@ export function newGame(seed: string): GameState {
     sick: null,
     psyche: { level: PSYCHE.start, stale: 0 },
     crags: [],
+    seen: [],
     wall: null,
     expedition: null,
     speed: { pb: null, runs: 0, day: 0 },
@@ -748,6 +750,8 @@ export function act(s0: GameState, a: Action): Result {
     const cost = actCost(s, d);
     // The lake's catch is rolled when you cast, at the hour you cast (Phase 22.3b).
     const caught = d.fish ? fishCatch(s) : 0;
+    // So is a hustle's take (Phase 22.5a), by the day.
+    const take = d.hustle ? hustleTake(s, d.hustle) : 0;
     spend(cost);
     for (const f of d.sets ?? []) if (!s.today.includes(f)) s.today.push(f);
     if (d.trains) train(d.trains);
@@ -801,6 +805,25 @@ export function act(s0: GameState, a: Action): Result {
         n === 0
           ? 'Two hours, one nibble, no fish. The lake wins this round.'
           : `${n === 1 ? 'A trout' : `${n} trout`}, cooked on a flat rock by the water. +${n * LAKE.fish} food.`,
+      );
+    }
+    // The hustle (Phase 22.5a): cans are cash; the bins and the shore are a meal, when
+    // there's one.
+    if (d.hustle === 'cans') {
+      spend({ cash: take });
+      line(`A bag of cans to the depot. ${money(take)}.`);
+    } else if (d.hustle) {
+      s.fed = clamp100(s.fed + take);
+      if (take) {
+        s.meals.push(d.hustle);
+        if (s.meals.length > FOOD.same) s.meals.splice(0, s.meals.length - FOOD.same);
+      }
+      line(
+        d.hustle === 'bins'
+          ? take
+            ? `Day-old bread and a bag of bruised apples. +${take} food.`
+            : 'Someone got there first. The bins are empty but for cardboard.'
+          : `Greens, a handful of berries, some mushrooms you’re fairly sure about. +${take} food.`,
       );
     }
     if (d.coffee) {
@@ -1512,6 +1535,11 @@ export function act(s0: GameState, a: Action): Result {
       );
       break;
     }
+  }
+  // Hungry and broke for the first time: where the net is (Phase 22.5a).
+  if (s.climber.name && needsTeaching(s)) {
+    s.seen.push('hustle');
+    line(HUSTLE_TEACH);
   }
   // Act I's goals, after whatever just happened: each one done says so, and the last ends
   // the act.

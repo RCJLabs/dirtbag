@@ -98,6 +98,8 @@ export interface GameState {
   // crags you've been to since, which is what makes one new.
   psyche: { level: number; stale: number };
   crags: string[];
+  // Phase 22.5a. One-time lines you've had, so they aren't said twice ("hustle").
+  seen: string[];
   meals: string[];
   fueled: number;
   breakdown: { part: 'tires' | 'engine'; to: string; rest: number; bodged: boolean } | null;

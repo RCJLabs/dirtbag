@@ -411,6 +411,18 @@ export const SICK = {
   doctor: { price: 30, min: 60 },
 };
 
+// Phase 22.5a: the hustle [proposed], v0.956's safety net for being broke: cans round the
+// Lot, the bins behind the market after it shuts, and foraging by the lake. Each is once a
+// day and takes its time; none pays a shift's worth an hour (the harness checks). v0.956's
+// numbers, but for the forage, which here is the lake's only and slim in winter.
+export const HUSTLE = {
+  cans: { min: 120, energy: -8, cash: [3, 9] as [number, number] },
+  bins: { min: 60, energy: -4, odds: 0.78, fed: [24, 39] as [number, number] },
+  forage: { min: 120, energy: -6, fed: [18, 29] as [number, number], winter: 0.4 },
+  // Hungry under this and broke under this, the game says where the net is, once.
+  teach: { fed: 35, cash: 10 },
+};
+
 // Phase 22.4d: psyche [proposed]. A slow mood, 0 to 100, settled each night. Variety and
 // company lift it and grind wears it down; every night it drifts a tenth of the way back to
 // even, so nothing holds it up for long, and a day moves it at most `cap` either way. At the

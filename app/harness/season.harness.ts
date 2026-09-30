@@ -8,7 +8,8 @@ import { ACTS } from '../src/sim/content/places';
 import { PROTOCOLS } from '../src/sim/content/training';
 import { newGame } from '../src/sim/game';
 import { sessionGains } from '../src/sim/sessions';
-import { SPEED, TRAIN } from '../src/sim/dials';
+import { HUSTLE, SPEED, TRAIN } from '../src/sim/dials';
+import { JOBS } from '../src/sim/content/jobs';
 import { speedGains } from '../src/sim/speed';
 import { checkpoints, contentOut, firstInjury, firstTry, median, season } from '../src/sim/harness';
 
@@ -158,6 +159,27 @@ function targets(all: Record<Seasonal, BotRun[]>, reckless: BotRun[]): void {
     v5.every((x) => x.day <= 28),
     'A median climber is on a V5 project by day 28',
     `first V5 go, median: ${v5.map((x) => `${x.k} day ${x.day >= 99 ? '–' : x.day}`).join(', ')}.`,
+  );
+  // 5. Phase 22's criterion 2, for the hustle (22.5a): at its best, none pays what the
+  // worst-paid shift does an hour. Food is priced at ramen's, the cheapest food money buys.
+  const shiftHour = Math.min(
+    ...Object.values(ACTS)
+      .filter((a) => a.job && a.job.shifts === 1)
+      .map((a) => ((a.cost.cash ?? 0) + (JOBS[a.job!.id]!.tips?.[0] ?? 0)) / ((a.cost.min ?? 60) / 60)),
+  );
+  const ramen = ACTS['lot.cook']!.cost;
+  const perFood = -(ramen.cash ?? 0) / (ramen.fed ?? 1);
+  const hustles = {
+    cans: HUSTLE.cans.cash[1] / (HUSTLE.cans.min / 60),
+    bins: (HUSTLE.bins.fed[1] * perFood) / (HUSTLE.bins.min / 60),
+    forage: (HUSTLE.forage.fed[1] * perFood) / (HUSTLE.forage.min / 60),
+  };
+  const used = (runs: BotRun[], re: RegExp) =>
+    runs.reduce((n, r) => n + r.lines.filter((l) => re.test(l)).length, 0) / runs.length;
+  say(
+    Object.values(hustles).every((h) => h < shiftHour),
+    'No hustle out-earns a shift an hour',
+    `at best, cans $${hustles.cans.toFixed(2)}/h, the bins $${hustles.bins.toFixed(2)}/h, foraging $${hustles.forage.toFixed(2)}/h; the worst shift $${shiftHour.toFixed(2)}/h. Cans and bins a season, per run: ${STRATEGIES.map((k) => `${k} ${used(all[k], /bag of cans/).toFixed(1)} and ${used(all[k], /bins/i).toFixed(1)}`).join(', ')}.`,
   );
   out(
     `\n(Ending grades, all moderate runs: median V${median(moderate.map((r) => gradeOf(r.state.climber.skills)))}.)`,
