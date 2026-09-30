@@ -19,11 +19,13 @@ const DAYS = Number(process.env.DAYS ?? 56);
 const AT = [7, 14, 21, 28, 42, 56].filter((d) => d <= DAYS);
 const out = (s = '') => process.stdout.write(`${s}\n`);
 const f1 = (x: number) => (Number.isNaN(x) ? '–' : x.toFixed(1));
-const STRATEGIES: Strategy[] = ['climber', 'balanced', 'worker'];
+// The season's three: the career bot has its own harness (career.harness.ts).
+type Seasonal = Exclude<Strategy, 'career'>;
+const STRATEGIES: Seasonal[] = ['climber', 'balanced', 'worker'];
 
 it('season', { timeout: 600_000 }, () => {
   out(`\n# Season harness: ${SEEDS} seeds × ${DAYS} days, human-ish hands\n`);
-  const all: Record<Strategy, BotRun[]> = { climber: [], balanced: [], worker: [] };
+  const all: Record<Seasonal, BotRun[]> = { climber: [], balanced: [], worker: [] };
   const reckless: BotRun[] = [];
   for (const strategy of STRATEGIES) {
     out(`## ${strategy}\n`);
@@ -62,7 +64,7 @@ it('season', { timeout: 600_000 }, () => {
 });
 
 // Phase 6's targets for a first season, from R2's plan, read off the runs.
-function targets(all: Record<Strategy, BotRun[]>, reckless: BotRun[]): void {
+function targets(all: Record<Seasonal, BotRun[]>, reckless: BotRun[]): void {
   out('## Targets\n');
   const say = (ok: boolean, what: string, how: string) => out(`- ${ok ? '✓' : '✗'} ${what}: ${how}`);
   const pct = (n: number, d: number) => `${n}/${d} (${Math.round((100 * n) / d)}%)`;

@@ -1512,6 +1512,18 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 **21.6 against the Done-when:** criteria 1 (trad), 2 (gear wear), 4 (walls and expeditions) and 5 (training can't be farmed, speed wall included) pass. Criterion 3's first half passes (lines at every grade V0–V18); its second half, the bots reaching V10+, is open: over 56 days they reach V5, and they don't pay for trips. Phase 21 stays the CURRENT MILESTONE until that's met or ruled on.
 
+**Status (30 Sep 2026): the career bot, for criterion 3. Its first half passes; its second passes except on about one wet day a run. Evan's call.**
+- **Why the season bots stop at V5:** they play 56 days, climb at six places, never pay for a trip, only work café shifts, and never ask anyone along. Left to run 200 days they reach V9 and run out of things to try from about day 100.
+- **The career bot** (`strategy: 'career'` in `sim/bot.ts`; the season's three are unchanged, and so are their numbers):
+  - takes the best-paying job it can get, by the hour, travel included: café shifts, doubles when it's short, coaching from V5, setting;
+  - saves for the next trip its grade has opened, and buys it (Moonstone around day 70, The Big Stone around 120, Wind River around 160);
+  - asks Hazel along, through her talk as a player would, to any crag the bond allows, before a working morning too;
+  - picks the day's crag by the hardest line it can get on there, less a little for the drive (and for the gas, when it's short);
+  - goes to every crag and both gyms.
+- **The career harness** (`harness/career.harness.ts`, in `npm run harness`; 4 seeds × 4 starts × 224 days, human-ish hands, 30 s): every run reaches V10, median day 200 (194–214 by start); no refusals, no stuck nights; about 30 days a run the body says rest.
+- **What still fails:** 9 of 16 runs hit a day (one, twice in one run) with nothing new to try before V10. Every one is the same day: the valley's wet, the climber's V7–V10, and every indoor problem is sent (the board tops out at V7, The Cave at V10, both weekly). It's content, not the bot. Two ways to close it: (a) rule the criterion met at this level, or (b) give the rain something past V9 indoors, such as v0.956's third gym, the Training Center (14 routes a week, never planned here), or harder sets at The Cave.
+- **A finding about pace, not the criterion:** V10 on day ~200 against v0.956's typical player on day 80 (`docs/audit/climbing.md` §5.2). The first month is on Phase 6's targets; after it, work eats most mornings (the career bot works about 195 days in 224) and skill gains flatten with hi(). Whether that's the game's pace or too slow is a balance call for Evan, and Phase 22's economy will move it either way.
+
 ---
 
 ### Phase 22 — The life: the van, the body, food, the hustle, and the games
@@ -1909,3 +1921,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Phase 21.6: crowds and spray beta. Each crag's crowd from its draw, the weekend, the hour, the sky and the day; a queue for the ropes in the go's cost; beta from the crowd, asked for or shouted at you, at the cost of the onsight; strangers at the base.
 - 2026-09-30 — Phase 21.6: highball calls, by Evan's call: every outdoor boulder from 16 ft up is a highball, set from its height and held by a test. Twelve more, seventeen in all; the Gorge now wants a spotter.
 - 2026-09-30 — Phase 21.6: the speed wall at Send City (a reaction start, alternate hands, a PB; time, a pass and a daily cap on what it teaches) and Free Solo (chosen at the start; outdoor sport lines and wall pitches without a rope; a fall ends the run, and reloading can't take it back); save v9. 21.6 done; Phase 21's criterion 3 (bots to V10+) still open.
+- 2026-09-30 — Phase 21, criterion 3: a career bot (best job, trips saved for, Hazel asked along, the hardest crag it can use) and a four-year career harness. Every run reaches V10 (median day 200) with no refusals or stuck nights; 9 of 16 hit about one wet day with nothing indoors past V9. Closing Phase 21 waits on Evan's call on that gap.

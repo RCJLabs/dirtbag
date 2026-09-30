@@ -48,7 +48,7 @@ npm run format         # Prettier (CI runs format:check)
 npm run build          # dist/
 npm run size           # what a player downloads, against the budget
 npm run e2e            # a bot plays five days on dist/ in headless Chromium (counting day three's taps, running day four as a plan) and reloads offline, then a v0.956 player crosses over
-npm run harness        # bots play whole seasons; prints the tables and Phase 6's first-season targets
+npm run harness        # bots play whole seasons, then four-year careers; prints the tables and their targets
 ```
 
 ## Layout
@@ -61,7 +61,7 @@ npm run harness        # bots play whole seasons; prints the tables and Phase 6'
 | `src/sim/training.ts`, `sessions.ts`, `content/training.ts` | Your training block (phase, taper, prehab) and a session: what it costs, teaches and loads (`TRAIN` in `dials.ts`). |
 | `src/sim/climber.ts`, `weather.ts`, `presence.ts` | Skills and the grade curve; each day's sky; where people are. All pure functions of the state or the seed. |
 | `src/sim/bot.ts` | A player that isn't one: plays whole days through `act()`, with perfect or human-ish hands, under three strategies (climber, balanced, worker). |
-| `src/sim/harness.ts`, `harness/` | The balance harness: bots play 28-day seasons across every start and strategy. It prints grade, money, runway and injuries, then passes or fails Phase 6's first-season targets. |
+| `src/sim/harness.ts`, `harness/` | The balance harness: bots play 56-day seasons across every start and strategy, and print grade, money, runway and injuries against Phase 6's first-season targets. Then the career bot plays four years (224 days) from every start, against Phase 21's grade target (`career.harness.ts`). |
 | `src/sim/story.ts`, `content/story.ts` | Act I: the goal ladder, as data, and how far along it you are. |
 | `src/sim/curves.ts` | Other climbers' grades over the season: Sage's steady climb, and Dex's streaks, injury and peak. |
 | `src/sim/dials.ts` | Every tunable number, with what it means and why it's set there. |
@@ -111,7 +111,7 @@ A place is data, a pin and a picture. In order:
    - `layout.test.ts`: no pin, no header, a scene that isn't the place's, a scene narrower than the widest screen sees (960, the Lot's width), a side road that doesn't start on the highway, a drive that runs past its ends, a crag line with nowhere on screen.
    - `sun.test.ts`: a sun path that misses a line or doubles back.
 
-   If the place changes a season (a crag in Act I's grades, a job), run `npm run harness` too. The bots climb at Roadside, the Gorge, the Cove, the Mesa, the Cave and Send City (`BOT_PLACES` in `sim/bot.ts`), so a crag they should use goes into their day there first.
+   If the place changes a season (a crag in Act I's grades, a job), run `npm run harness` too. The season's bots climb at Roadside, the Gorge, the Cove, the Mesa, the Cave and Send City (`BOT_PLACES` in `sim/bot.ts`); the career bot goes anywhere (`CAREER_PLACES`). A crag they should use goes into those lists.
 9. **Log it.** Add a changelog line in `docs/ROADMAP.md`. A new rule, or a change to one, also goes in `Dirtbag-UE/concepts/2D-SPEC-LOG.md`.
 
 ## What it still fakes
