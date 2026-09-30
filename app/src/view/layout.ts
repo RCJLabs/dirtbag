@@ -531,10 +531,12 @@ export const MAP_PINS: Record<string, Pin> = {
   clinic: { x: 104, y: 424, side: 1, kind: 'town' },
   // The Lake: west of the Lot, on its east shore, past the creek (Phase 22.3b).
   lake: { x: 108, y: 604, side: 1, kind: 'camp', dy: -12 },
-  // The Market: Midtown, across the street from the café.
-  market: { x: 318, y: 446, side: 1, kind: 'town' },
-  // The Garage: east of the highway past the gear shop, down a short street.
-  garage: { x: 300, y: 562, side: 1, kind: 'town' },
+  // The Market: Midtown, across the street from the café. Labelled to its left: to the
+  // right, a phone's screen cut its name off (Evan, 0.975.0).
+  market: { x: 318, y: 446, side: -1, kind: 'town' },
+  // The Garage: east of the highway past the gear shop, down a short street. Labelled to its
+  // left, as the market is.
+  garage: { x: 300, y: 562, side: -1, kind: 'town' },
   road: { x: 292, y: 220, side: -1, kind: 'crag' },
   gorge: { x: 96, y: 150, side: 1, kind: 'crag', dy: -16 },
   // Out of the valley where the highway leaves it, north past Roadside.

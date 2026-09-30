@@ -67,6 +67,21 @@ describe('the crags on screen', () => {
     }
   });
 
+  it('keep every pin’s name on a portrait screen', () => {
+    // A name's width at the map's 15 px comic hand, overestimated a little: the widest
+    // capitals run about 7 px a letter at map scale. On a phone, the Market's and the
+    // Garage's ran off the right edge (Evan, 0.975.0).
+    for (const [id, p] of Object.entries(MAP_PINS)) {
+      const name = PLACES[id]?.name ?? id;
+      const from = p.x + p.side * 17;
+      const to = from + p.side * name.length * 7.2;
+      const [a] = mapToScreen(Math.min(from, to), p.y);
+      const [b] = mapToScreen(Math.max(from, to), p.y);
+      expect(a, id).toBeGreaterThanOrEqual(0);
+      expect(b, id).toBeLessThanOrEqual(W);
+    }
+  });
+
   it('pin every place on the map', () => {
     for (const id of Object.keys(PLACES)) expect(MAP_PINS[id], id).toBeDefined();
     for (const s of Object.values(SCENES)) expect(PLACES[s.place], s.place).toBeDefined();
