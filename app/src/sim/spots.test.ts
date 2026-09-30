@@ -2,7 +2,7 @@
 // tickets you for staying, the driveway wants a partner and a gap between visits, the Ridge
 // wants you known, and a spot that won't have you tonight falls back to the Lot.
 import { describe, expect, it } from 'vitest';
-import { BODY, MONEY, SPOT, SPOTS } from './dials';
+import { BODY, MONEY, SPOT, SPOTS, WINTER } from './dials';
 import { act, newGame } from './game';
 import { nightAt, spotBlocked, ticketOdds } from './spots';
 import { tonight } from './tonight';
@@ -36,10 +36,10 @@ describe('where you park', () => {
     }
   });
 
-  it('is colder up high in winter', () => {
+  it('is colder up high in winter, on top of the van’s own cold', () => {
     const winter = Array.from({ length: 400 }, (_, i) => i + 1).find((d) => seasonOf(d) === 'winter')!;
     const s = base({ spot: 'trailhead', day: winter });
-    expect(nightAt(s).energy).toBe(SPOTS.trailhead.energy + SPOTS.trailhead.winter);
+    expect(nightAt(s).energy).toBe(SPOTS.trailhead.energy + SPOTS.trailhead.winter + WINTER.cold);
   });
 
   it('tickets you at the Lot once you’ve stayed a few nights running, and a night away resets it', () => {

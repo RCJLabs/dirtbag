@@ -713,6 +713,11 @@ function TonightList({ t }: { t: Tonight }) {
             {t.night.ticket > 0
               ? ` A ${Math.round(t.night.ticket * 100)}% chance of a ${money(SPOT.tickets.fine)} ticket.`
               : ''}
+            {t.night.heat
+              ? ' The heater’s on: a tank of propane.'
+              : t.night.cold < 0
+                ? ` Winter: ${t.night.cold} energy of that is the cold.`
+                : ''}
             {t.hungry ? ` You'd go to bed hungry, and it costs you ${BODY.hungryNight} of that.` : ''}
           </small>
         </li>

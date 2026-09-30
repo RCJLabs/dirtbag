@@ -123,12 +123,24 @@ export {
   VAN,
   SPOT,
   SPOTS,
+  UPGRADE,
+  WINTER,
 } from './dials';
 export type { SpotId } from './dials';
 export { SPOT_IDS, nightAt, spotBlocked, ticketOdds, drivewayHost, type Night } from './spots';
 export { SPOT_NAME } from './content/spots';
 export type { VanPart } from './dials';
-export { PARTS, PART_NAME, partWord, repairCost, friendFor, breakdownOdds, unsafePart } from './van';
+export {
+  PARTS,
+  PART_NAME,
+  partWord,
+  repairCost,
+  friendFor,
+  breakdownOdds,
+  unsafePart,
+  gasFor,
+  bodgeOdds,
+} from './van';
 export type { Lifestyle } from './dials';
 export { PLACES, ACTS, ROADS, road, TEXT_VALUES } from './content/places';
 export type { PlaceDef, ActDef, RoadDef, Trip, Ambience } from './content/places';

@@ -67,6 +67,7 @@ import {
   SPOTS,
   VAN,
   WALL,
+  WINTER,
   WORK,
 } from './dials';
 import { EXPEDITIONS } from './content/expeditions';
@@ -75,7 +76,7 @@ import { canAsk, queueMin, sprayable, sprayedOn } from './crowds';
 import { soloed } from './solo';
 import { drivewayHost, nightAt, spotBlocked, ticketRoll } from './spots';
 import { SPOT_LINE, SPOT_NAME } from './content/spots';
-import { bodgeHolds, breakdownRoll, friendFor, PART_NAME, repairCost, unsafePart } from './van';
+import { bodgeHolds, breakdownRoll, friendFor, gasFor, PART_NAME, repairCost, unsafePart } from './van';
 import { BODGE_FAILED, BODGE_HELD, BREAKDOWN_LINE } from './content/van';
 import { speedBlocked, speedGains, speedLoad, speedTime, runsToday } from './speed';
 import { fill, money, skillsNote } from './format';
@@ -482,6 +483,18 @@ export function act(s0: GameState, a: Action): Result {
           : `Van spot, ${TEXT_VALUES.spot}. Morning comes anyway.`,
       );
     if (night?.wanted) line(`${SPOT_NAME[night.wanted]} wouldn’t work tonight. The Lot, then.`);
+    // Winter (Phase 22.2c): the heater burns a tank, or the cold gets in.
+    if (night?.heat) {
+      s.gear.propane = (s.gear.propane ?? 0) - 1;
+      if (s.gear.propane <= 0) line('The heater coughs out the last of the propane. The gear shop has more.');
+    } else if (night && night.cold < 0)
+      line('A winter night in the van. You sleep in everything you own, and it isn’t enough.');
+    // A warning, once a year, before winter comes.
+    if (
+      seasonOf(s.day + WINTER.warnDays - 1) === 'winter' &&
+      seasonOf(s.day + WINTER.warnDays - 2) !== 'winter'
+    )
+      line('The nights are getting cold. Dale at the garage fits heaters, and the gear shop sells propane.');
     if (ticket)
       line(
         `A ticket under the wiper: ${money(SPOT.tickets.fine)}. The parking people have noticed you live here.`,
@@ -948,13 +961,14 @@ export function act(s0: GameState, a: Action): Result {
         line(`You rap off ${WALLS[s.wall.id]!.name}. The wall will be there.`);
         s.wall = null;
       }
-      const declined = r.cash > 0 && headroom(s) < r.cash;
+      const gas = gasFor(s, r.cash);
+      const declined = gas > 0 && headroom(s) < gas;
       const broke = breakdownRoll(s, r.min, a.to);
       wear(broke ? Math.round(r.min / 2) : r.min);
-      spend({ cash: declined ? 0 : -r.cash, energy: r.min >= 30 ? -BODY.driveEnergy : 0 });
+      spend({ cash: declined ? 0 : -gas, energy: r.min >= 30 ? -BODY.driveEnergy : 0 });
       if (declined) line("The card's declined at the pump. You make it on fumes.");
-      else if (r.cash >= 12) line(`Gas, ${money(r.cash)}. The van starts on the second try.`);
-      else if (r.cash > 0) line(`Gas, ${money(r.cash)}.`);
+      else if (gas >= 12) line(`Gas, ${money(gas)}. The van starts on the second try.`);
+      else if (gas > 0) line(`Gas, ${money(gas)}.`);
       if (permit) line(`Permit, ${money(permit)}. The ranger doesn't look up.`);
       if (broke) {
         const half = Math.round(r.min / 2);

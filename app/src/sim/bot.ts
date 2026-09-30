@@ -19,7 +19,19 @@ import { ACTS, PLACES, road } from './content/places';
 import { JOBS } from './content/jobs';
 import { TALK } from './content/people';
 import { roped, type RouteDef } from './content/routes';
-import { BODY, BOND, CLIMB, KIT, LOAD, MONEY, VAN, type SpotId } from './dials';
+import {
+  BODY,
+  BOND,
+  CLIMB,
+  KIT,
+  LOAD,
+  MONEY,
+  UPGRADE,
+  VAN,
+  WINTER,
+  type SpotId,
+  type VanPart,
+} from './dials';
 import { cold, freshLoad, ratio } from './body';
 import { gradeOf, average } from './climber';
 import { act, actCost, faSuggestions, goBlocked, knowsBeta, landingChance, newGame, talkStart } from './game';
@@ -30,7 +42,7 @@ import { spotBlocked, ticketOdds } from './spots';
 import { tonight } from './tonight';
 import type { Action, GameState, GoResult, Skills } from './types';
 import type { Rng } from './rng';
-import { conditions, conditionsAt } from './weather';
+import { conditions, conditionsAt, seasonOf } from './weather';
 
 export interface BotRun {
   state: GameState;
@@ -252,6 +264,10 @@ const JOB_ACTS = ['cafe.shift', 'diner.shift', 'cave.coach', 'gym.set', 'warehou
 const SHIFT_OF: Record<string, string> = Object.fromEntries(JOB_ACTS.map((id) => [ACTS[id]!.job!.id, id]));
 // A part under this goes to the garage once there's money for it.
 const GARAGE_AT = 45;
+// Van upgrades a bot buys, in order, and what it keeps in hand past its cushion before it
+// does (Phase 22.2c).
+const BOT_UPGRADES = ['insulation', 'heater', 'bed', 'tuneup', 'curtains', 'toolkit'] as const;
+const SPARE = 60;
 // A crag day starts by here, or it's not worth the drive.
 const LAST_START = 14 * 60;
 
@@ -382,14 +398,32 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   // Keeps the van up (Phase 22.2a): a part to the garage when it's worn and there's money
   // past the cushion for it, and at once, on the card, when it's shot or the battery's going.
   function garage() {
-    const due = PARTS.filter((p) => {
+    // Asked again before each job, so one repair's bill counts against the next.
+    const needs = (p: VanPart) => {
       const c = s.van[p];
       if (c < VAN.unsafe || (p === 'battery' && c < 8)) return true;
       return c < GARAGE_AT && s.cash >= repairCost(s, p) + CUSHION[strategy];
-    });
-    if (!due.length) return;
+    };
+    const due = PARTS.filter(needs);
+    // Phase 22.2c: one upgrade a day, when there's money past the cushion for it, the ones
+    // for winter first; and propane in the tank for the heater through the cold.
+    const fit = BOT_UPGRADES.find(
+      (id) => !s.gear[id] && s.cash >= UPGRADE[id].price + CUSHION[strategy] + SPARE,
+    );
+    const cold = seasonOf(s.day) === 'winter' || seasonOf(s.day + WINTER.warnDays) === 'winter';
+    if (
+      cold &&
+      s.gear.heater &&
+      (s.gear.propane ?? 0) < 3 &&
+      s.cash >= WINTER.propane.price + CUSHION[strategy]
+    ) {
+      travel('shop');
+      tryAct('shop.propane');
+    }
+    if (!due.length && !fit) return;
     travel('garage');
-    for (const p of due) tryAct(`garage.${p}`);
+    for (const p of PARTS) if (needs(p)) tryAct(`garage.${p}`);
+    if (fit && s.cash >= UPGRADE[fit].price + CUSHION[strategy] + SPARE) tryAct(`garage.${fit}`);
   }
 
   // Talks to Sage when she's here: her lesson once a day, and whatever beat of her arc is

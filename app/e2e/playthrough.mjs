@@ -986,6 +986,10 @@ console.log('Broken down on the road');
       timeout: 10_000,
     },
   );
+  // Dale fits upgrades too (Phase 22.2c): the heater for winter among them.
+  const garage = await sheetText();
+  if (!/Fit a diesel heater/.test(garage) || !/Insulate the van/.test(garage))
+    await fail(`the garage's upgrades: ${garage.slice(0, 200)}`);
   await road.locator('#sheet .opt', { hasText: 'New tires' }).first().click();
   const after = await road
     .waitForFunction(

@@ -141,6 +141,33 @@ export const SPOT = {
   ridgeTrips: 25,
 };
 
+// Phase 22.2c: what Dale fits to the van, and winter. Every upgrade is a thing you own
+// (content/gear.ts), fitted once, for good. None of them earns: v0.956's solar and power
+// station paid the whole nut, and the audit cut that (core-loop.md §5.1) [proposed, all of it].
+export const UPGRADE = {
+  // A real mattress: more back from every night in the van.
+  bed: { price: 70, min: 60, energy: 5 },
+  // Blackout curtains: the parking people can't see you're living there.
+  curtains: { price: 60, min: 30, tickets: 0.3 },
+  // A tool kit: a bodge that holds nine times in ten.
+  toolkit: { price: 85, min: 5, bodge: 0.9 },
+  // A tune-up: a fifth off the gas on every drive.
+  tuneup: { price: 90, min: 90, gas: 0.8 },
+  // A diesel heater: no cold on a winter night while there's propane for it, a tank a night.
+  heater: { price: 150, min: 90 },
+  // Insulation: half the cold, heater or not.
+  insulation: { price: 60, min: 120, cold: 0.5 },
+};
+export const WINTER = {
+  // What a winter night in the van takes out of you on top of the spot's own chill, before
+  // the heater and insulation.
+  cold: -10,
+  // Propane at the gear shop: a tank lasts this many heated nights.
+  propane: { price: 18, nights: 10 },
+  // The warning, this many days before winter comes.
+  warnDays: 5,
+};
+
 export const BODY = {
   startEnergy: 78,
   startSkin: 64,
