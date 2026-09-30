@@ -57,9 +57,9 @@ import {
   Z,
   type Hot,
   type Use,
+  screenToMap,
 } from '../view/layout';
-import { mapArt } from '../view/paint/map';
-import { mapLeft, render, type Frame } from '../view/render';
+import { mapLeft, render, valleyArt, type Frame } from '../view/render';
 import { drivePath } from '../view/valley';
 import * as persist from './persist';
 import { loadPlans, noted, savePlans, SLEEP, wipePlans, type PlanStep, type Plans } from './plan';
@@ -624,10 +624,10 @@ export class Game {
     else if (u.view === 'wall' && !u.climbing && !u.sheet) this.openSheet({ k: 'beta', route: u.wallRoute });
   }
 
-  private tapMap(x: number, sy: number): void {
+  private tapMap(x: number, y: number): void {
     if (this.trip) return;
-    // The valley sits in the middle of a wide screen.
-    const sx = x - mapLeft(this.ui.get().w);
+    // The valley sits in the middle of a wide screen, fitted under the HUD.
+    const [sx, sy] = screenToMap(x - mapLeft(this.ui.get().w), y);
     const near = Object.entries(MAP_PINS)
       .map(([id, p]) => ({ id, d: Math.hypot(p.x - sx, p.y - sy) }))
       .sort((a, b) => a.d - b.d)[0];
@@ -1213,7 +1213,7 @@ export class Game {
 
   // The map is the one slow painting; do it while the player is looking at the Lot.
   warm(): void {
-    mapArt();
+    valleyArt();
   }
 }
 

@@ -4,7 +4,22 @@
 import { describe, expect, it } from 'vitest';
 import { onWall, PLACES, ROUTES } from '../sim';
 import { hasHeader } from './header';
-import { CRAGS, H, MAP_PINS, SCENES, screenWidth, SPOTS, W, W_MAX, WIDE, widthOf, Z } from './layout';
+import {
+  CRAGS,
+  H,
+  MAP_FIT,
+  MAP_PINS,
+  mapToScreen,
+  screenToMap,
+  SCENES,
+  screenWidth,
+  SPOTS,
+  W,
+  W_MAX,
+  WIDE,
+  widthOf,
+  Z,
+} from './layout';
 import { drivePath, joinOf, roadX, SIDE_ROADS } from './valley';
 
 describe('the crags on screen', () => {
@@ -36,6 +51,19 @@ describe('the crags on screen', () => {
         expect(b.x + b.w / 2, b.route).toBeLessThanOrEqual(c.width);
         if (i) expect(b.x - b.w / 2, b.route).toBeGreaterThan(bs[i - 1]!.x + bs[i - 1]!.w / 2);
       });
+    }
+  });
+
+  it('fit every map pin between the HUD and the buttons, and read taps back to the map', () => {
+    for (const [id, p] of Object.entries(MAP_PINS)) {
+      const [x, y] = mapToScreen(p.x, p.y);
+      expect(y, id).toBeGreaterThanOrEqual(MAP_FIT.top);
+      expect(y, id).toBeLessThanOrEqual(MAP_FIT.bottom);
+      expect(x, id).toBeGreaterThan(0);
+      expect(x, id).toBeLessThan(W);
+      const [bx, by] = screenToMap(x, y);
+      expect(bx).toBeCloseTo(p.x);
+      expect(by).toBeCloseTo(p.y);
     }
   });
 

@@ -1,7 +1,7 @@
 import { PLACES } from '../sim';
 import type { Game, Ui } from '../game/game';
 import { useStore } from '../game/store';
-import { MAP_PINS, OY, Z } from '../view/layout';
+import { MAP_PINS, mapToScreen, OY, Z } from '../view/layout';
 import { mapLeft } from '../view/render';
 import { hotLabel } from './hots';
 import { vars } from './vars';
@@ -47,7 +47,12 @@ export function Hots({ game, ui }: { game: Game; ui: Ui }) {
             className="hot pin"
             id={`pin-${id}`}
             aria-label={`${PLACES[id]?.name ?? id}${ui.state.at === id ? ', where you are' : ''}`}
-            style={box(left + p.x - PIN / 2, p.y - PIN / 2, PIN, PIN)}
+            style={box(
+              left + mapToScreen(p.x, p.y)[0] - PIN / 2,
+              mapToScreen(p.x, p.y)[1] - PIN / 2,
+              PIN,
+              PIN,
+            )}
             onClick={() => game.openPin(id)}
           />
         ))}

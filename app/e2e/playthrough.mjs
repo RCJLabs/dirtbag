@@ -289,8 +289,20 @@ async function walk(dx) {
 
 // ---- trips ----
 
-// Where the map's pins are, on the game screen (view/layout.ts, MAP_PINS).
-const PIN = { lot: [262, 612], diner: [96, 458], gym: [282, 414], cafe: [282, 476], shop: [240, 540] };
+// Where the map's pins are, on the game screen: MAP_PINS, fitted under the HUD as MAP_FIT
+// fits them (both in view/layout.ts). Change one and the other must follow.
+const FIT = { top: 112, bottom: 648, from: 34, to: 612 };
+const FK = (FIT.bottom - FIT.top) / (FIT.to - FIT.from);
+const fit = ([x, y]) => [180 + (x - 180) * FK, FIT.top + (y - FIT.from) * FK];
+const PIN = Object.fromEntries(
+  Object.entries({
+    lot: [262, 612],
+    diner: [96, 458],
+    gym: [282, 414],
+    cafe: [282, 476],
+    shop: [240, 540],
+  }).map(([id, at]) => [id, fit(at)]),
+);
 const trips = [];
 
 // A trip from a scene: the map, the pin, the drive. Phase 11 holds every trip to two taps
@@ -575,7 +587,7 @@ console.log('Place cards');
 // Before the drive, a card shows the place as you'd find it, and who'd be there. Day two is
 // fair: Roadside at 8:10 AM has Hazel till five, so a belayer and a spotter till then.
 await openMap();
-await tapAt(292, 220);
+await tapAt(...fit([292, 220]));
 await expectText(
   '#around',
   /around at 8:10 AM.*Hazel, till 5 PM.*A belayer and a spotter till 5 PM\./,
@@ -1098,7 +1110,8 @@ console.log('A landscape window');
   await expectText('#credits-sound', /Made in code/, 'the credits');
   await click('#sheet .x');
   const left = (1184 - 360) / 2;
-  await tapAt(left + 292, 220);
+  const [rx, ry] = fit([292, 220]);
+  await tapAt(left + rx, ry);
   await expectText('#sheet', /Roadside Crag/, 'place card, in landscape');
   const card = await where('#sheet');
   if (!card || card.x0 < left + 360 || Math.abs(card.x1 - 1176) > 2 || card.y0 < 60)
