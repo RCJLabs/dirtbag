@@ -1875,6 +1875,15 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **E2e:** a planted night before Scout turns 16: bed, the morning, the chord heard, the card, the van doors open, and the journal.
 - **Carried:** the last day's choices cost nothing and move you nowhere, as v0.956's did. The scene's dog, and his speech mark, still say Scout for a later stray.
 
+**Status (30 Sep 2026): 22.8 built: dreams.** Save v24, 0.980.0. v0.956's three, at its prices.
+- **The jar:** a Dreams row at the van. Pick a dream, put cash in hand in the jar ($20, $100, or everything; never the card), tip it out, and claim the dream once the jar covers it. The card and the week's bills never touch the jar. The broke check (when the hustle's taught) counts it as yours. What it takes and what it holds are said, and the claim goes in the journal.
+- **The Dream Rig, $2,800:** every spot half price for good, and every upgrade Dale fits, fitted.
+- **The War Chest, $5,000:** every expedition half price.
+- **Home Base, $9,000:** a cabin at the edge of the Lot. The Lot costs nothing to park at and gives no tickets, and there's a kitchen. It says what it stops charging, and that the weekly bills still come, where v0.956's said "ever".
+- **How long, for Evan:** saving everything the worker bots put by ($16.33 a day over a season), the Rig is day 172, the War Chest day 307, Home Base day 552. A climbing player's is slower. v0.956's prices on the rebuild's economy make them long goals; the harness prints the line, as a guide, not a target.
+- **The bots** don't save for dreams. Every harness target passes.
+- **E2e:** a climber with $3,000 at the van picks the Rig, puts everything in, and claims it: every upgrade fitted, $200 left in the jar.
+
 ---
 
 ### Phase 24 — Expeditions as trips
@@ -2272,3 +2281,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Phase 22.6b built: v0.956's eight hitchhikers (who remember what you did, and may be the one at your next breakdown) and nine roadside stops, on drives to and from the crags, sharing the knocks' one-a-day cap; nothing before day 3. Plans wait on an answer. Save v21. 0.977.0.
 - 2026-09-30 — Phase 22.6c built, and 22.6 with it: v0.956's five walk-out epics (the dark, a storm, off route, the cold, a stuck rope), three stages of calls that add up to getting out clean, rough or hurt; triggered leaving a crag late, spent, alone, in rain or winter; a headlamp at the gear shop. Every event has a sound and an e2e step. Save v22. 0.978.0.
 - 2026-09-30 — Phase 22.7 built: Scout's life, v0.956's lifecycle: perks by bond (the fire, finds on his rounds, halved tickets), dog-years, going gray, two vet scares with bills, and at 16 his last day, spent your way and kept in the journal; no new stray for a month after, and the next has a name of his own. Save v23. 0.979.0.
+- 2026-09-30 — Phase 22.8 built: dreams, v0.956's three at its prices (the Dream Rig, the War Chest, Home Base), saved for in a jar at the van that the card and the bills never touch and the broke check counts; Home Base says exactly what it stops charging. Save v24. 0.980.0.

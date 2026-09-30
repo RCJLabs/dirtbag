@@ -9,6 +9,7 @@ import { PROTOCOLS } from '../src/sim/content/training';
 import { newGame } from '../src/sim/game';
 import { sessionGains } from '../src/sim/sessions';
 import { HUSTLE, SPEED, TRAIN } from '../src/sim/dials';
+import { DREAMS } from '../src/sim/content/dreams';
 import { JOBS } from '../src/sim/content/jobs';
 import { speedGains } from '../src/sim/speed';
 import { checkpoints, contentOut, firstInjury, firstTry, median, season } from '../src/sim/harness';
@@ -180,6 +181,12 @@ function targets(all: Record<Seasonal, BotRun[]>, reckless: BotRun[]): void {
     Object.values(hustles).every((h) => h < shiftHour),
     'No hustle out-earns a shift an hour',
     `at best, cans $${hustles.cans.toFixed(2)}/h, the bins $${hustles.bins.toFixed(2)}/h, foraging $${hustles.forage.toFixed(2)}/h; the worst shift $${shiftHour.toFixed(2)}/h. Cans and bins a season, per run: ${STRATEGIES.map((k) => `${k} ${used(all[k], /bag of cans/).toFixed(1)} and ${used(all[k], /bins/i).toFixed(1)}`).join(', ')}.`,
+  );
+  // Phase 22.8: how long a dream takes, at what the worker bots put by: their median cash at
+  // the season's end, a day at a time. A guide, not a target.
+  const perDay = median(all.worker.map((r) => r.state.cash)) / DAYS;
+  out(
+    `\n(Dreams, saving what the worker bots save, $${perDay.toFixed(2)} a day: ${DREAMS.map((d) => `${d.name} ${perDay > 0 ? `day ${Math.ceil(d.cost / perDay)}` : 'never'}`).join(', ')}.)`,
   );
   out(
     `\n(Ending grades, all moderate runs: median V${median(moderate.map((r) => gradeOf(r.state.climber.skills)))}.)`,

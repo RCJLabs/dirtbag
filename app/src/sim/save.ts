@@ -18,7 +18,7 @@ import { HITCHERS, STOPS } from './content/road';
 import { EPICS } from './content/epics';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 23;
+export const SAVE_VERSION = 24;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -177,6 +177,11 @@ export const MIGRATIONS: Record<number, Migration> = {
   22: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, dogs: [] };
+  },
+  // v23 -> v24 (Phase 22.8): no dream picked, an empty jar.
+  23: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, dream: { pick: null, pot: 0, owned: [] } };
   },
 };
 
@@ -367,6 +372,17 @@ export function validate(x: unknown): string[] {
     stop: STOPS,
     epic: EPICS.map((e) => ({ id: e.kind })),
   } as Record<string, { id: string }[]>;
+  const dr = x.dream;
+  const DREAMS = ['rig', 'warchest', 'homebase'];
+  need(
+    isObj(dr) &&
+      (dr.pick === null || DREAMS.includes(dr.pick as string)) &&
+      isNum(dr.pot) &&
+      dr.pot >= 0 &&
+      isStrs(dr.owned) &&
+      dr.owned.every((o) => DREAMS.includes(o)),
+    'dream',
+  );
   need(
     Array.isArray(x.dogs) &&
       x.dogs.every((d) => isObj(d) && typeof d.name === 'string' && isInt(d.years) && isInt(d.day)),

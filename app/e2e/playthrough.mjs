@@ -675,7 +675,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 23 ||
+  saved?.v !== 24 ||
   st.encounter !== null ||
   !Array.isArray(st.deck?.seen) ||
   !(st.guitar >= 0) ||
@@ -1386,6 +1386,52 @@ console.log('Scout’s last day');
   if (!after.log.some((l) => /Scout, 16 years\. Spent it with the van doors open/.test(l.text)))
     await fail('the journal missed him');
   log('farewell: the van doors open, and the journal keeps him');
+  await ctx.close();
+}
+
+console.log('A dream');
+// Phase 22.8. A climber with $3,000 in hand at the van: the dreams, the Dream Rig picked,
+// everything in the jar, and claimed. Every upgrade is fitted, and the Lot costs half.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  saved.state = {
+    ...saved.state,
+    day: 20,
+    min: 12 * 60,
+    at: 'lot',
+    x: null,
+    cash: 3000,
+    dream: { pick: null, pot: 0, owned: [] },
+    encounter: null,
+  };
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  await ctx.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+  }, JSON.stringify(saved));
+  const jar = await ctx.newPage();
+  jar.on('pageerror', (e) => problems.push(`dream: uncaught: ${e.message}`));
+  jar.on('console', (m) => m.type() === 'error' && problems.push(`dream: console.error: ${m.text()}`));
+  await jar.goto(server.url, { waitUntil: 'load' });
+  await jar.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Map');
+  await jar.waitForTimeout(600);
+  await jar.mouse.click(100, 560);
+  await jar.waitForFunction(() => /Your van/.test(document.querySelector('#sheet')?.textContent ?? ''));
+  const pick = async (text) => {
+    await jar.waitForFunction((t) => (document.querySelector('#sheet')?.textContent ?? '').includes(t), text);
+    await jar.locator('#sheet .opt', { hasText: text }).first().click();
+  };
+  await pick('Dreams');
+  await pick('The Dream Rig');
+  await pick('Put all $3000 in');
+  await pick('Claim The Dream Rig');
+  await jar.waitForFunction(() =>
+    JSON.parse(localStorage.getItem('dirtbag.save')).state.dream.owned.includes('rig'),
+  );
+  const after = await jar.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  if (after.dream.pot !== 200 || after.gear.bed !== 1 || after.gear.kitchen !== 1)
+    await fail(`after the Rig: ${JSON.stringify(after.dream)}, ${JSON.stringify(after.gear)}`);
+  await jar.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-dream.png`) });
+  log('dream: the Dream Rig, claimed from the jar, and fitted out');
   await ctx.close();
 }
 

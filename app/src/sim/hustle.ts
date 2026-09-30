@@ -3,6 +3,7 @@
 
 import { HUSTLE } from './dials';
 import { Rng } from './rng';
+import { worth } from './dreams';
 import type { GameState } from './types';
 import { seasonOf } from './weather';
 
@@ -19,7 +20,7 @@ export function hustleTake(s: GameState, h: Hustle): number {
 
 // Hungry and broke, and never told where the net is.
 export const needsTeaching = (s: GameState): boolean =>
-  s.fed < HUSTLE.teach.fed && s.cash < HUSTLE.teach.cash && !s.seen.includes('hustle');
+  s.fed < HUSTLE.teach.fed && worth(s) < HUSTLE.teach.cash && !s.seen.includes('hustle');
 
 export const HUSTLE_TEACH =
   'Hungry and broke. There are ways round both: cans round the Lot are worth a few dollars, the bins behind the market get last night’s bread once it shuts, and there’s food by the lake if you know where to look.';

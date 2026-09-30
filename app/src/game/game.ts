@@ -133,7 +133,9 @@ export type SheetId =
   // Broken down on the road (Phase 22.2a): the ways out.
   | { k: 'breakdown' }
   // Phase 22.6: an encounter waiting on your answer: a knock, a hitchhiker, a stop.
-  | { k: 'encounter' };
+  | { k: 'encounter' }
+  // Phase 22.8: your dreams, and the jar.
+  | { k: 'dreams' };
 
 export interface Hud {
   day: number;
@@ -823,6 +825,12 @@ export class Game {
       this.dayDone();
       this.enter('lot', WAKE_X);
     });
+  }
+
+  // A dream (Phase 22.8): pick, put in, tip out, claim. The card stays up with the jar on it.
+  dream(what: 'pick' | 'stash' | 'take' | 'claim', id?: string, amount?: number): void {
+    this.dispatch({ t: 'dream', do: what, id, amount });
+    this.openSheet({ k: 'dreams' });
   }
 
   // A way out of a breakdown. Once the van's going again, you're wherever it took you.

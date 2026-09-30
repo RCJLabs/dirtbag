@@ -120,6 +120,13 @@ export interface GameState {
     epic: number;
   };
   // A walk-out (Phase 22.6c) has stages: the one you're on, and what the calls so far add up to.
+  // Phase 22.8. Your dream: the one you're saving for, the pot (the card and the bills never
+  // touch it), and the ones you own.
+  dream: {
+    pick: 'rig' | 'warchest' | 'homebase' | null;
+    pot: number;
+    owned: ('rig' | 'warchest' | 'homebase')[];
+  };
   // Phase 22.7. The dogs you've had, and lost: their names, their years, the day.
   dogs: { name: string; years: number; day: number }[];
   encounter: {
@@ -293,7 +300,9 @@ export type Action =
   // Phase 22.5b: a set outside the café, and how clean it was, 0 to 1.
   | { t: 'busk'; acc: number }
   // Phase 22.6: an answer to the encounter you're in, by its option's index.
-  | { t: 'answer'; opt: number };
+  | { t: 'answer'; opt: number }
+  // Phase 22.8: a dream to pick, cash for the pot, the pot back, or the dream claimed.
+  | { t: 'dream'; do: 'pick' | 'stash' | 'take' | 'claim'; id?: string; amount?: number };
 
 // What a finished go hands back to the game.
 export interface GoResult {

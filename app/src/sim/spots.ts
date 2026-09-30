@@ -7,6 +7,7 @@ import { headroom } from './cond';
 import { PARTNERS, tierOf } from './presence';
 import { Rng } from './rng';
 import { hasPerk } from './scout';
+import { owns, spotCost } from './dreams';
 import type { GameState } from './types';
 import { seasonOf } from './weather';
 
@@ -42,7 +43,9 @@ export const ticketTonight = (s: GameState): number =>
   ticketOdds(s.lotNights) *
   ((s.gear.curtains ?? 0) > 0 ? UPGRADE.curtains.tickets : 1) *
   // Your dog, watching the van (Phase 22.7): halved, not blocked.
-  (hasPerk(s, 'watch') ? DOG.watch : 1);
+  (hasPerk(s, 'watch') ? DOG.watch : 1) *
+  // Home Base (Phase 22.8): it's your land.
+  (owns(s, 'homebase') ? 0 : 1);
 
 export const ticketRoll = (s: GameState): boolean =>
   Rng.fromStream(s.seed, 'events').derive(`ticket-${s.day}`).next() < ticketTonight(s);
@@ -71,7 +74,8 @@ export function nightAt(s: GameState): Night {
   const want = s.spot;
   const spot: SpotId = spotBlocked(s, want) ? 'lot' : want;
   const d = SPOTS[spot];
-  const cost = d.cost + d.gas;
+  // Dreams (Phase 22.8): the Rig halves the spot, Home Base is the Lot's for free.
+  const cost = spotCost(s, spot, d.cost) + d.gas;
   const rough = headroom(s) < cost;
   // Winter: the van's cold and the spot's, unless the heater's lit; insulation halves what's
   // left. The pullout's as cold as the Lot.

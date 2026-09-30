@@ -45,6 +45,7 @@ const V19 = readFileSync(new URL('./fixtures/save-v19.json', import.meta.url), '
 const V20 = readFileSync(new URL('./fixtures/save-v20.json', import.meta.url), 'utf8');
 const V21 = readFileSync(new URL('./fixtures/save-v21.json', import.meta.url), 'utf8');
 const V22 = readFileSync(new URL('./fixtures/save-v22.json', import.meta.url), 'utf8');
+const V23 = readFileSync(new URL('./fixtures/save-v23.json', import.meta.url), 'utf8');
 // What R2's migration adds to any older save.
 const R2_BODY = {
   load: { acute: 20, chronic: 20, today: 0 },
@@ -89,6 +90,7 @@ const P226A = {
   deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0 },
   encounter: null,
   dogs: [],
+  dream: { pick: null, pot: 0, owned: [] },
 };
 
 describe('saves', () => {
@@ -541,7 +543,12 @@ describe('saves', () => {
       met: {},
       epic: 0,
     });
-    expect(r.state).toEqual({ ...JSON.parse(V20).state, deck: r.state.deck, dogs: [] });
+    expect(r.state).toEqual({
+      ...JSON.parse(V20).state,
+      deck: r.state.deck,
+      dogs: [],
+      dream: { pick: null, pot: 0, owned: [] },
+    });
   });
 
   it('load a real 0.977.0 save from before the walk-outs: the road kept, no walk-out yet', () => {
@@ -550,7 +557,12 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(21);
     const old = JSON.parse(V21).state;
-    expect(r.state).toEqual({ ...old, deck: { ...old.deck, epic: 0 }, dogs: [] });
+    expect(r.state).toEqual({
+      ...old,
+      deck: { ...old.deck, epic: 0 },
+      dogs: [],
+      dream: { pick: null, pot: 0, owned: [] },
+    });
     expect(r.state.deck.met).toEqual({ busker: 2 });
   });
 
@@ -559,8 +571,17 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(22);
-    expect(r.state).toEqual({ ...JSON.parse(V22).state, dogs: [] });
+    expect(r.state).toEqual({ ...JSON.parse(V22).state, dogs: [], dream: { pick: null, pot: 0, owned: [] } });
     expect(r.state.dog).toEqual({ name: 'Scout', since: 12, fed: 70, bond: 55 });
+  });
+
+  it('load a real 0.979.0 save from before dreams: Scout remembered, an empty jar', () => {
+    const r = fromSave(V23);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(23);
+    expect(r.state).toEqual({ ...JSON.parse(V23).state, dream: { pick: null, pot: 0, owned: [] } });
+    expect(r.state.dogs).toEqual([{ name: 'Scout', years: 16, day: 301 }]);
   });
 
   // These pretend a longer history: a v1 file that stored `money` where the state now has
@@ -570,7 +591,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(23);
+    expect(SAVE_VERSION).toBe(24);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

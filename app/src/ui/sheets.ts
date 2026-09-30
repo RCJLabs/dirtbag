@@ -96,6 +96,9 @@ import {
   buskBlocked,
   knockById,
   drivewayHost,
+  expedCost,
+  DREAMS,
+  owns,
   hitcherById,
   hitchOpts,
   hitchFriend,
@@ -318,6 +321,18 @@ const DOG_STAGE = {
   old: 'old, and yours',
 };
 
+// Phase 22.8: the jar in a line, for the van.
+function dreamNote(s: GameState): string {
+  const d = DREAMS.find((x) => x.id === s.dream.pick);
+  const owned = DREAMS.filter((x) => owns(s, x.id)).map((x) => x.name);
+  const saving = d
+    ? `${money(s.dream.pot)} of ${money(d.cost)} toward ${d.name}.`
+    : s.dream.pot
+      ? `${money(s.dream.pot)} in the jar, and no dream picked.`
+      : 'Pick one, and put something toward it.';
+  return owned.length ? `${saving} Yours: ${owned.join(', ')}.` : saving;
+}
+
 export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | null {
   switch (id.k) {
     case 'van': {
@@ -344,6 +359,12 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             label: 'Your week',
             note: weekNote(s),
             run: () => game.openSheet({ k: 'week' }),
+          },
+          // Phase 22.8: the jar, and what it's for.
+          {
+            label: 'Dreams',
+            note: dreamNote(s),
+            run: () => game.openSheet({ k: 'dreams' }),
           },
           {
             label: 'Under the hood',
@@ -817,6 +838,67 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       };
     }
 
+    // Phase 22.8: dreams. Pick one, fill the jar in hand, claim it when it's covered.
+    case 'dreams': {
+      const D = s.dream;
+      const pick = DREAMS.find((x) => x.id === D.pick);
+      const hand = Math.max(0, Math.floor(s.cash));
+      const put = (n: number): Row => ({
+        label: `Put ${money(n)} in the jar`,
+        note: hand < n ? `You have ${money(hand)} in hand. The jar doesn’t take the card.` : undefined,
+        off: hand < n,
+        run: () => game.dream('stash', undefined, n),
+      });
+      return {
+        title: 'Dreams',
+        sub: `${money(D.pot)} in the jar. The card and the week’s bills never touch it.`,
+        close: true,
+        rows: [
+          ...DREAMS.map((x): Row => {
+            const mine = owns(s, x.id);
+            const chosen = D.pick === x.id;
+            return {
+              label: x.name,
+              cost: mine ? undefined : costLabel({ cash: -x.cost }, 'to save'),
+              note: mine
+                ? `Yours. ${x.perk}`
+                : `${x.blurb} ${x.perk}${chosen ? ' The one you’re saving for.' : ''}`,
+              off: mine,
+              run: () =>
+                chosen && D.pot >= x.cost
+                  ? game.dream('claim')
+                  : !chosen
+                    ? game.dream('pick', x.id)
+                    : undefined,
+            };
+          }),
+          ...(pick && D.pot >= pick.cost
+            ? [
+                {
+                  label: `Claim ${pick.name}`,
+                  note: `${money(pick.cost)} from the jar.`,
+                  run: () => game.dream('claim'),
+                },
+              ]
+            : []),
+          put(20),
+          put(100),
+          ...(hand > 0
+            ? [{ label: `Put all ${money(hand)} in`, run: () => game.dream('stash', undefined, hand) }]
+            : []),
+          ...(D.pot > 0
+            ? [
+                {
+                  label: 'Tip the jar out',
+                  note: `${money(D.pot)} back in hand.`,
+                  run: () => game.dream('take'),
+                },
+              ]
+            : []),
+        ],
+      };
+    }
+
     case 'breakdown': {
       const b = s.breakdown;
       if (!b) return null;
@@ -910,7 +992,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         rows: [
           ...Object.entries(EXPEDITIONS).map(([eid, e]) => ({
             label: e.name,
-            cost: costLabel({ cash: -e.cost }),
+            cost: costLabel({ cash: -expedCost(s, e.cost) }),
             note: `${e.objective}, ${e.region}. ${oddsLine(s, eid)}`,
             run: () => game.openSheet({ k: 'exped', id: eid }),
           })),
@@ -1068,8 +1150,8 @@ function expedSheet(game: Game, s: GameState, id: string): ListSpec {
         ? 'Expeditions leave from the Lot.'
         : gradeOf(k) < e.gradeReq
           ? `${e.name} wants V${e.gradeReq}. You climb V${gradeOf(k)}.`
-          : s.cash < e.cost
-            ? `${money(e.cost)} in hand, not on the card. You have ${money(Math.max(0, s.cash))}.`
+          : s.cash < expedCost(s, e.cost)
+            ? `${money(expedCost(s, e.cost))} in hand, not on the card. You have ${money(Math.max(0, s.cash))}.`
             : null;
     return {
       title: e.name,
@@ -1079,7 +1161,7 @@ function expedSheet(game: Game, s: GameState, id: string): ListSpec {
       rows: [
         {
           label: 'Go',
-          cost: costLabel({ cash: -e.cost }),
+          cost: costLabel({ cash: -expedCost(s, e.cost) }),
           note: why ?? 'Food, flights and a porter. The van waits at the Lot.',
           off: !!why,
           run: () => void game.exped(id, 'go'),

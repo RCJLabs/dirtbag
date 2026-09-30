@@ -519,6 +519,10 @@ export const EVENTS = {
   fresh: 3,
 };
 
+// Phase 22.8: dreams, v0.956's. What the Rig takes off every spot, and the War Chest off
+// every expedition. Their prices are content/dreams.ts's.
+export const DREAM = { rig: 0.5, warchest: 0.5 };
+
 // Phase 22.4d: psyche [proposed]. A slow mood, 0 to 100, settled each night. Variety and
 // company lift it and grind wears it down; every night it drifts a tenth of the way back to
 // even, so nothing holds it up for long, and a day moves it at most `cap` either way. At the
