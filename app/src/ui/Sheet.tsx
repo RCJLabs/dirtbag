@@ -93,6 +93,7 @@ import {
   SPOT_NAME,
   spotBlocked,
   type SpotId,
+  FOOD,
 } from '../sim';
 import type { Game, JournalPage, SheetId, Ui } from '../game/game';
 import { legacyFile, saveLegacyFile } from '../game/legacy';
@@ -721,6 +722,15 @@ function TonightList({ t }: { t: Tonight }) {
             {t.hungry ? ` You'd go to bed hungry, and it costs you ${BODY.hungryNight} of that.` : ''}
           </small>
         </li>
+        {t.same && (
+          <li>
+            <b>Meals</b>
+            <span className="sky">The same</span>
+            <small>
+              {`${t.same[0]!.toUpperCase()}${t.same.slice(1)}, ${FOOD.same} meals running. Your body is starting to notice.`}
+            </small>
+          </li>
+        )}
         {(t.living.cost > 0 || t.living.skimped) && (
           <li>
             <b>Living</b>

@@ -90,6 +90,8 @@ import {
   SPOT_NAME,
   gasFor,
   bodgeOdds,
+  INGREDIENTS,
+  RECIPES,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import type { Game, SheetId } from '../game/game';
@@ -181,6 +183,15 @@ function trainRow(game: Game, s: GameState): Row {
     note: board ? `${blockLine(s)} A hangboard would put sessions here; prehab needs nothing.` : blockLine(s),
     run: () => game.openSheet({ k: 'train' }),
   };
+}
+
+// What's in the pantry, and where more comes from.
+function pantryNote(s: GameState): string {
+  const have = Object.entries(s.pantry)
+    .filter(([, n]) => n > 0)
+    .map(([id, n]) => `${n} ${INGREDIENTS[id]!.name.toLowerCase()}`);
+  const stove = s.gear.kitchen ? '' : ' A camp kitchen from the garage would cook it.';
+  return `${have.length ? have.join(', ') : 'Empty'}. The market’s in Midtown.${stove}`;
 }
 
 // Your next shift, from the van: where the week's schedule and how you live are.
@@ -276,6 +287,13 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         close: true,
         rows: [
           actRow(game, s, 'lot.cook'),
+          // Phase 22.3: with a camp kitchen, the recipes, and what's in the pantry for them.
+          ...(s.gear.kitchen ? Object.keys(RECIPES).map((id) => actRow(game, s, `lot.${id}`)) : []),
+          {
+            label: 'The pantry',
+            note: pantryNote(s),
+            run: () => game.openSheet({ k: 'place', id: 'market' }),
+          },
           ...(isNight(s.min) ? [] : [actRow(game, s, 'lot.rest')]),
           trainRow(game, s),
           {

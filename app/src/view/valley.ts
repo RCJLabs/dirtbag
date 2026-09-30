@@ -154,6 +154,14 @@ export const SIDE_ROADS: Record<string, { pts: Pt[]; dirt?: true }> = {
       [202, 572],
     ],
   },
+  // The Market: a street east off the highway, across from the café.
+  market: {
+    pts: [
+      [roadX(446), 446],
+      [262, 446],
+      [306, 446],
+    ],
+  },
   // The Garage: a short street east off the highway, below Midtown.
   garage: {
     pts: [

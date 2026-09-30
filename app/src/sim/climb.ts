@@ -16,7 +16,7 @@
 import { margin, pumpFactor, windowFactor } from './climber';
 import { effGrade, PUMPED, type BetaDef, type CruxDef, type RouteDef, type Verb } from './content/routes';
 import { cold } from './body';
-import { BODY, CLIMB, FREESOLO, LOAD, TRAD } from './dials';
+import { BODY, CLIMB, FOOD, FREESOLO, LOAD, TRAD } from './dials';
 import { soloed } from './solo';
 import { kitFactor } from './kit';
 import { indoor } from './content/gym';
@@ -130,7 +130,9 @@ export function picks(s: GameState, r: RouteDef): Record<string, string> {
 export function dayFactor(s: GameState, r: RouteDef): { windows: number; grease: boolean } {
   const weak = s.fed < BODY.weakBelow ? 1 - (0.3 * (BODY.weakBelow - s.fed)) / BODY.weakBelow : 1;
   // A hard line before you've warmed up.
-  const body = weak * (cold(s, r) ? LOAD.coldWindows : 1) * trainWindows(s);
+  // A meal that fuels you (Phase 22.3) widens every window for the rest of the day.
+  const fuel = s.fueled === s.day ? FOOD.fueled : 1;
+  const body = weak * (cold(s, r) ? LOAD.coldWindows : 1) * trainWindows(s) * fuel;
   if (indoor(r.place)) return { windows: body, grease: false };
   const c = conditionsAt(s.seed, s.day, r.place);
   const grease = s.min >= sunOn(s.seed, s.day, r.place, r.id);

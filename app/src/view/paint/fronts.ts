@@ -485,4 +485,59 @@ const garage: Front = (g, s, w, h) => {
   if (wet(s, 'garage')) drawRain(g, w, h, 0, true);
 };
 
-export const FRONTS: Record<string, Front> = { diner, cafe, shop, warehouse, garage };
+// The Market (Phase 22.3): a corner grocery with a striped awning, crates of greens and
+// oranges out front on the sidewalk, and a hand-lettered sign in the window.
+const market: Front = (g, s, w, h) => {
+  const night = isNight(s.min);
+  const kerb = street(g, valley(night ? 'night' : 'morning'), w, h, night);
+  const x0 = Math.round(w * 0.16);
+  const x1 = Math.round(w * 0.82);
+  const top = Math.round(h * 0.14);
+  const bw = x1 - x0;
+  g.fillStyle = night ? '#4A3A32' : '#B86B4B';
+  g.fillRect(x0, top, bw, kerb - top);
+  g.fillStyle = night ? 'rgba(0,0,0,.18)' : 'rgba(80,30,20,.14)';
+  for (let y = top + 5; y < kerb; y += 6) g.fillRect(x0, y, bw, 1);
+  g.fillStyle = '#EFE0C2';
+  rr(g, x0 + 18, top + 8, bw - 36, 16, 3);
+  g.fill();
+  label(g, 'poster', 'MARKET', x0 + bw / 2, top + 21, { size: 13, color: '#6E3A28', halo: '#EFE0C2' });
+  // A striped awning over the window.
+  const ay = top + 30;
+  for (let i = 0; i < 8; i++) {
+    g.fillStyle = i % 2 ? '#EFE0C2' : '#3E7F5A';
+    g.fillRect(x0 + 4 + (i * (bw - 8)) / 8, ay, (bw - 8) / 8 + 0.5, 9);
+  }
+  const wy = ay + 12;
+  const wh = kerb - 22 - wy;
+  g.fillStyle = night ? LIT : '#A8BFC6';
+  g.fillRect(x0 + 10, wy, bw * 0.55, wh);
+  if (!night) glint(g, x0 + 10, wy, bw * 0.55, wh);
+  label(g, 'comic', 'EGGS · RICE · GREENS', x0 + 10 + (bw * 0.55) / 2, wy + wh / 2 + 3, {
+    size: 7,
+    color: '#2B2825',
+    halo: night ? LIT : '#A8BFC6',
+  });
+  g.fillStyle = night ? '#3A2E24' : '#6A4A36';
+  g.fillRect(x1 - 30, wy, 22, kerb - wy);
+  // Crates on the sidewalk: greens, oranges, and a stack of empties.
+  const crate = (x: number, fill: string) => {
+    g.fillStyle = '#8A6A44';
+    g.fillRect(x, kerb - 14, 22, 12);
+    g.fillStyle = fill;
+    for (let i = 0; i < 4; i++) {
+      g.beginPath();
+      g.arc(x + 4 + i * 5, kerb - 15, 3, 0, Math.PI * 2);
+      g.fill();
+    }
+  };
+  crate(x0 + 12, '#5E9A4A');
+  crate(x0 + 38, '#E0913A');
+  g.fillStyle = '#8A6A44';
+  g.fillRect(x1 + 6, kerb - 12, 20, 10);
+  g.fillRect(x1 + 8, kerb - 22, 20, 10);
+  lamp(g, x0 - 18, kerb, night);
+  if (wet(s, 'market')) drawRain(g, w, h, 0, true);
+};
+
+export const FRONTS: Record<string, Front> = { diner, cafe, shop, warehouse, garage, market };

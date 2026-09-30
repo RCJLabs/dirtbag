@@ -49,6 +49,7 @@ export interface Cond {
   hired?: string; // that job hasn't let you go, or has taken you back
   worn?: VanPart; // that part of the van could use the garage (under 95)
   payVan?: VanPart; // the card covers the garage's bill for that part
+  stock?: string; // a serving of that ingredient in the pantry (Phase 22.3)
 }
 
 // The last two days of every seven are the weekend: the week's bills land on its last night.
@@ -133,6 +134,7 @@ export function holds(s: GameState, c: Cond): boolean {
   if (c.hired !== undefined && benchedUntil(s, c.hired) !== null) return false;
   if (c.worn !== undefined && !(s.van[c.worn] < 95)) return false;
   if (c.payVan !== undefined && headroom(s) < repairCost(s, c.payVan)) return false;
+  if (c.stock !== undefined && !((s.pantry[c.stock] ?? 0) > 0)) return false;
   return true;
 }
 

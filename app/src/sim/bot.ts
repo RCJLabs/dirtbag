@@ -17,6 +17,7 @@ import { headroom, holds, isNight, unmet } from './cond';
 import { INDOOR, routesAt } from './content/gym';
 import { ACTS, PLACES, road } from './content/places';
 import { JOBS } from './content/jobs';
+import { INGREDIENTS } from './content/food';
 import { TALK } from './content/people';
 import { roped, type RouteDef } from './content/routes';
 import {
@@ -266,7 +267,9 @@ const SHIFT_OF: Record<string, string> = Object.fromEntries(JOB_ACTS.map((id) =>
 const GARAGE_AT = 45;
 // Van upgrades a bot buys, in order, and what it keeps in hand past its cushion before it
 // does (Phase 22.2c).
-const BOT_UPGRADES = ['heater', 'insulation', 'bed', 'tuneup', 'curtains', 'toolkit'] as const;
+const BOT_UPGRADES = ['heater', 'kitchen', 'insulation', 'bed', 'tuneup', 'curtains', 'toolkit'] as const;
+// Meals a bot cooks, best first (Phase 22.3).
+const MEAL_ORDER = ['burritos', 'pasta', 'ricebeans', 'oatmeal'];
 const SPARE = 60;
 // What a bot keeps over the heater and its propane, or the propane alone, in winter: a
 // night at the Lot and a little, and the bills when they're close.
@@ -396,6 +399,24 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     travel('shop');
     if (resole) tryAct('shop.resole');
     if (chalk) tryAct('shop.chalk');
+  }
+
+  // Phase 22.3: the best meal the pantry makes, the ones that fuel you first; ramen when
+  // there's no kitchen or nothing in the pantry for it.
+  function eat(): boolean {
+    for (const id of MEAL_ORDER) if (tryAct(`lot.${id}`)) return true;
+    return tryAct('lot.cook');
+  }
+
+  // With a kitchen, a run to the market when the pantry's low: a pack of each for rice and
+  // beans and for burritos, while the money past the cushion lasts.
+  function groceries() {
+    if (!s.gear.kitchen) return;
+    const low = ['rice', 'beans', 'tortillas', 'eggs', 'cheese'].filter((id) => (s.pantry[id] ?? 0) < 1);
+    const cost = low.reduce((n, id) => n + INGREDIENTS[id]!.price, 0);
+    if (low.length < 2 || s.cash < cost + CUSHION[strategy]) return;
+    travel('market');
+    for (const id of low) tryAct(`market.${id}`);
   }
 
   // Keeps the van up (Phase 22.2a): a part to the garage when it's worn and there's money
@@ -583,9 +604,10 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     climbMin = 0;
     climbGain = 0;
     travel('lot');
-    if (s.fed < 70) tryAct('lot.cook');
+    if (s.fed < 70) eat();
     work();
     kit();
+    groceries();
     garage();
     // The crag when it's dry and there's something there to try; the gym otherwise.
     // Roadside first, the Gorge once it's open to you and there's nothing new at Roadside,
@@ -621,8 +643,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       where = place;
     }
     travel('lot');
-    if (s.fed < 60) tryAct('lot.cook');
-    if (s.fed < 40) tryAct('lot.cook');
+    if (s.fed < 60) eat();
+    if (s.fed < 40) eat();
     // Scout: taken on when he picks you, fed when his bowl's low. No stick: bots are busy.
     tryAct('lot.adopt');
     if (s.dog && s.dog.fed < 40) tryAct('lot.kibble');
@@ -767,9 +789,10 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     climbMin = 0;
     climbGain = 0;
     travel('lot');
-    if (s.fed < 70) tryAct('lot.cook');
+    if (s.fed < 70) eat();
     buyTrips();
     kit();
+    groceries();
     garage();
     // Money first: the cushion, the week's bills, and the next trip if there's one to save
     // for. A working morning, then a crag near enough to reach after it.
@@ -800,8 +823,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       where = then.place;
     }
     travel('lot');
-    if (s.fed < 60) tryAct('lot.cook');
-    if (s.fed < 40) tryAct('lot.cook');
+    if (s.fed < 60) eat();
+    if (s.fed < 40) eat();
     tryAct('lot.adopt');
     if (s.dog && s.dog.fed < 40) tryAct('lot.kibble');
     if (!isNight(s.min)) tryAct('lot.rest');

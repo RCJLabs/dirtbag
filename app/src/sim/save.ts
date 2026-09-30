@@ -12,9 +12,10 @@ import { LIFESTYLE, SPOTS, TRAIN } from './dials';
 import { JOBS } from './content/jobs';
 import { ROUTES, WALLS } from './content/routes';
 import { EXPEDITIONS } from './content/expeditions';
+import { INGREDIENTS, MEAL_NAME } from './content/food';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 12;
+export const SAVE_VERSION = 13;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -113,6 +114,11 @@ export const MIGRATIONS: Record<number, Migration> = {
   11: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, spot: 'lot', lotNights: 0, driveway: 0 };
+  },
+  // v12 -> v13 (Phase 22.3): an empty pantry, no meals remembered, and not fueled.
+  12: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, pantry: {}, meals: [], fueled: 0 };
   },
 };
 
@@ -251,6 +257,12 @@ export function validate(x: unknown): string[] {
   need(perJob(x.benched), 'benched');
   need(typeof x.lifestyle === 'string' && x.lifestyle in LIFESTYLE, 'lifestyle');
   need(typeof x.spot === 'string' && x.spot in SPOTS, 'spot');
+  need(
+    isObj(x.pantry) && Object.entries(x.pantry).every(([id, n]) => id in INGREDIENTS && isInt(n) && n >= 0),
+    'pantry',
+  );
+  need(isStrs(x.meals) && x.meals.every((m) => m in MEAL_NAME), 'meals');
+  need(isInt(x.fueled) && x.fueled >= 0, 'fueled');
   need(isInt(x.lotNights) && x.lotNights >= 0, 'lotNights');
   need(isInt(x.driveway) && x.driveway >= 0, 'driveway');
   const pct = (v: unknown) => isNum(v) && v >= 0 && v <= 100;
