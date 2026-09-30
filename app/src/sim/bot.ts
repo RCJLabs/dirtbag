@@ -28,6 +28,7 @@ import {
   LOAD,
   MONEY,
   SICK,
+  PSYCHE,
   SUPPLIES,
   UPGRADE,
   VAN,
@@ -71,6 +72,8 @@ export interface DaySummary {
   energy: number;
   skin: number;
   fed: number;
+  // Psyche that morning (Phase 22.4d).
+  psyche: number;
   goes: number;
   // Minutes on the clock at work.
   workMin: number;
@@ -276,6 +279,8 @@ const MEAL_ORDER = ['burritos', 'pasta', 'ricebeans', 'oatmeal'];
 const SPARE = 60;
 // Supplies under this, a bot buys water (Phase 22.4c).
 const BOT_SUPPLIES = 40;
+// Psyche under this, a bot sits at the fire before bed: short of keen (Phase 22.4d).
+const BOT_FIRE = PSYCHE.bands[2]!;
 // What a bot keeps over the heater and its propane, or the propane alone, in winter: a
 // night at the Lot and a little, and the bills when they're close.
 const WARM_OVER = 25;
@@ -603,6 +608,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       energy: s.energy,
       skin: s.skin,
       fed: s.fed,
+      psyche: s.psyche.level,
       goes: Object.values(s.routes).reduce((n, r) => n + r.goesToday, 0),
       workMin,
       hardest,
@@ -667,6 +673,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     tryAct('lot.adopt');
     if (s.dog && s.dog.fed < 40) tryAct('lot.kibble');
     if (!isNight(s.min)) tryAct('lot.rest');
+    // The fire when the days have gone flat (Phase 22.4d), as a player would.
+    if (s.psyche.level < BOT_FIRE) tryAct('lot.sit');
     park();
     signUp(['cafe.shift']);
     record(where, morning);
@@ -843,6 +851,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     tryAct('lot.adopt');
     if (s.dog && s.dog.fed < 40) tryAct('lot.kibble');
     if (!isNight(s.min)) tryAct('lot.rest');
+    // The fire when the days have gone flat (Phase 22.4d), as a player would.
+    if (s.psyche.level < BOT_FIRE) tryAct('lot.sit');
     const next = saving();
     park();
     signUp(JOB_ACTS, next ? next + 50 : 0);

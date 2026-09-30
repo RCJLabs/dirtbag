@@ -67,6 +67,7 @@ import {
   PLANS,
   RIVAL,
   SCARS,
+  PSYCHE,
   SICK,
   SUPPLIES,
   TRAD,
@@ -86,6 +87,7 @@ import { fishCatch } from './lake';
 import { carePrice, clinicBill, jabbed, weeklyBills, worsened } from './clinic';
 import { flareRoll, scarRoll, scarred } from './scars';
 import { isSick, SICK_NAME, sickRoll } from './sick';
+import { PSYCHE_LINE, psycheBy, psycheWord } from './psyche';
 import { AREA, MARK_NAME, STYLE_NAME, type Mark } from './content/injuries';
 import { drivewayHost, nightAt, spotBlocked, ticketRoll } from './spots';
 import { SPOT_LINE, SPOT_NAME } from './content/spots';
@@ -161,6 +163,8 @@ export function newGame(seed: string): GameState {
     fear: [],
     supplies: SUPPLIES.start,
     sick: null,
+    psyche: { level: PSYCHE.start, stale: 0 },
+    crags: [],
     wall: null,
     expedition: null,
     speed: { pb: null, runs: 0, day: 0 },
@@ -510,6 +514,9 @@ export function act(s0: GameState, a: Action): Result {
         Math.min(100, s.supplies - SUPPLIES.night + (night.spot === 'truckstop' ? SUPPLIES.truckstop : 0)),
       );
     }
+    // Psyche (Phase 22.4d): the day that's ending settles it, then it drifts toward even.
+    const wasWord = psycheWord(s.psyche.level);
+    s.psyche = psycheBy(s, where !== 'van');
     s.day += 1;
     // A spot out of town is a drive back in the morning.
     s.min = DAY.wakeMin + (night?.drive ?? 0);
@@ -616,6 +623,8 @@ export function act(s0: GameState, a: Action): Result {
       line('You wake up feeling human again.');
       s.sick = null;
     }
+    const word = psycheWord(s.psyche.level);
+    if (word !== wasWord && (word === 'low' || word === 'psyched')) line(PSYCHE_LINE[word]);
     if (night && s.supplies < SUPPLIES.low && s.supplies + SUPPLIES.night >= SUPPLIES.low)
       line('The water jugs are nearly dry and you could use a shower. The lake, the market or the gym.');
     if (ended % 7 === 0) {
@@ -841,6 +850,12 @@ export function act(s0: GameState, a: Action): Result {
     if (s.dog) s.dog.bond = Math.min(100, s.dog.bond + DOG.rideBond);
     if (PLACES[id]!.crag) {
       s.trips += 1;
+      // Psyche (Phase 22.4d): a day out, and somewhere you'd never been, if you hadn't. A crag
+      // you'd logged a line at before this was counted is one you'd been to.
+      const been = s.crags.includes(id) || Object.keys(s.routes).some((r) => ROUTES[r]?.place === id);
+      if (!s.crags.includes(id)) s.crags.push(id);
+      const flag = been ? 'crag' : 'new-crag';
+      if (!s.today.includes(flag)) s.today.push(flag);
       if (s.trips === DOG.offerTrips && !s.dog) line(DOG_OFFER.first);
       if (s.dog && !s.today.includes('dog-out')) {
         s.today.push('dog-out');

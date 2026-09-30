@@ -650,6 +650,7 @@ export const ACTS: Record<string, ActDef> = {
     label: 'Sit a while',
     cost: { min: 40, energy: 3 },
     needs: [{ night: true, why: 'The fire is out till tonight.' }],
+    sets: ['fire'],
     says: 'You sit until the fire is down to coals.',
   },
   'diner.meal': {

@@ -15,7 +15,7 @@ import { EXPEDITIONS } from './content/expeditions';
 import { INGREDIENTS, MEAL_NAME } from './content/food';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 16;
+export const SAVE_VERSION = 17;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -135,6 +135,12 @@ export const MIGRATIONS: Record<number, Migration> = {
   15: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, supplies: 80, sick: null };
+  },
+  // v16 -> v17 (Phase 22.4d): psyche even. No crags listed: a crag you've logged a line at
+  // counts as one you've been to (game.ts arriveAt), so an old climber's aren't new.
+  16: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, psyche: { level: 50, stale: 0 }, crags: [] };
   },
 };
 
@@ -296,6 +302,12 @@ export function validate(x: unknown): string[] {
     sk === null || (isObj(sk) && ['cold', 'bug', 'toothache'].includes(sk.kind as string) && isInt(sk.until)),
     'sick',
   );
+  const ps = x.psyche;
+  need(
+    isObj(ps) && isInt(ps.level) && ps.level >= 0 && ps.level <= 100 && isInt(ps.stale) && ps.stale >= 0,
+    'psyche',
+  );
+  need(isStrs(x.crags) && x.crags.every((c) => PLACES[c]?.crag), 'crags');
   need(isInt(x.lotNights) && x.lotNights >= 0, 'lotNights');
   need(isInt(x.driveway) && x.driveway >= 0, 'driveway');
   const pct = (v: unknown) => isNum(v) && v >= 0 && v <= 100;
