@@ -1858,6 +1858,23 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The bots** answer with the first call, then drive. They're off the rock by dusk, so they rarely meet one [not measured]. Every harness target passes.
 - **E2e:** a planted night at Roadside (day 4, half nine, spent, alone, no light) that this seed turns into The Walk Out: the trail heard, three careful calls, out clean, and in the journal. A planted drive to Roadside also pulls over at Balanced Rock. Every event now has a sound and an e2e step (criterion 3, for the events; the games are 22.9's).
 
+**Status (30 Sep 2026): 22.7 built: Scout's life.** Save v23, 0.979.0. v0.956's lifecycle, its words and numbers (Decision 3, kept).
+- **Perks, by bond,** each said the day it's earned (and none while he's hungry):
+  - He settles at the fire (20): the fire's psyche +2.
+  - He goes looking on his rounds (45): a quarter of nights, a serving of something for the pantry.
+  - He watches the van (75): the Lot's tickets half as likely. v0.956's let any dog block every ticket.
+- **Dog-years** are 18 days from the day he picked you.
+  - He goes gray at 8, and his crag lines slow down with him. He slows down at 12. Each is said the morning it comes.
+  - The vet: The Limp at 10 ($70) and The Lump at 13 ($130), billed that morning.
+  - His card says his age and his stage (still a pup, in his prime, going gray, slowing down, old and yours).
+- **The last day** is at 16, 288 days after he picked you, the morning it comes, at the van. It's v0.956's card with no ✕ and a low held chord, made in code.
+  - Three ways to spend it: the crag one more time, the van doors open, or round everybody.
+  - Then v0.956's closing line (by bond), and the journal keeps him: "Scout, 16 years. Spent it with the van doors open. Best dog in the valley and everybody knew it."
+- **No new stray for 30 days after.** The next one has a name of his own (Moss, then Juniper, then Biscuit), and the Lot's dog lines use it. "Feed Scout" is "Feed the dog" now.
+- **The bots** take him on and answer the last day with the first option. A career of 224 days likely sees one vet scare and not the end [INFERRED: he picks you around the tenth trip out]. Every harness target passes.
+- **E2e:** a planted night before Scout turns 16: bed, the morning, the chord heard, the card, the van doors open, and the journal.
+- **Carried:** the last day's choices cost nothing and move you nowhere, as v0.956's did. The scene's dog, and his speech mark, still say Scout for a later stray.
+
 ---
 
 ### Phase 24 — Expeditions as trips
@@ -2254,3 +2271,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Two fixes from Evan's phone: the map's Market and Garage names no longer run off the edge, and card-only places close onto the map. Phase 22.6a built: the seeded event deck, one encounter a day at most, and v0.956's ten knocks on the van at night, by where you're parked, each holding the night until you answer. Save v20. 0.976.0.
 - 2026-09-30 — Phase 22.6b built: v0.956's eight hitchhikers (who remember what you did, and may be the one at your next breakdown) and nine roadside stops, on drives to and from the crags, sharing the knocks' one-a-day cap; nothing before day 3. Plans wait on an answer. Save v21. 0.977.0.
 - 2026-09-30 — Phase 22.6c built, and 22.6 with it: v0.956's five walk-out epics (the dark, a storm, off route, the cold, a stuck rope), three stages of calls that add up to getting out clean, rough or hurt; triggered leaving a crag late, spent, alone, in rain or winter; a headlamp at the gear shop. Every event has a sound and an e2e step. Save v22. 0.978.0.
+- 2026-09-30 — Phase 22.7 built: Scout's life, v0.956's lifecycle: perks by bond (the fire, finds on his rounds, halved tickets), dog-years, going gray, two vet scares with bills, and at 16 his last day, spent your way and kept in the journal; no new stray for a month after, and the next has a name of his own. Save v23. 0.979.0.

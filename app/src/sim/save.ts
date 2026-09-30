@@ -18,7 +18,7 @@ import { HITCHERS, STOPS } from './content/road';
 import { EPICS } from './content/epics';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 22;
+export const SAVE_VERSION = 23;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -171,6 +171,12 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     const deck = isObj(x.deck) ? x.deck : {};
     return { ...x, deck: { ...deck, epic: 0 } };
+  },
+  // v22 -> v23 (Phase 22.7): no dog lost yet. A dog you have keeps the day he picked you, and
+  // ages from it.
+  22: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, dogs: [] };
   },
 };
 
@@ -361,12 +367,19 @@ export function validate(x: unknown): string[] {
     stop: STOPS,
     epic: EPICS.map((e) => ({ id: e.kind })),
   } as Record<string, { id: string }[]>;
+  need(
+    Array.isArray(x.dogs) &&
+      x.dogs.every((d) => isObj(d) && typeof d.name === 'string' && isInt(d.years) && isInt(d.day)),
+    'dogs',
+  );
   const tl = isObj(en) ? en.tally : undefined;
   need(
     en === null ||
       (isObj(en) &&
         typeof en.kind === 'string' &&
-        !!ids[en.kind]?.some((k) => k.id === en.id) &&
+        (en.kind === 'farewell'
+          ? typeof en.id === 'string' && isObj(x.dog)
+          : !!ids[en.kind]?.some((k) => k.id === en.id)) &&
         (en.kind !== 'epic' ||
           (isInt(en.stage) &&
             isObj(tl) &&

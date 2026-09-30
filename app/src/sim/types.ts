@@ -120,8 +120,10 @@ export interface GameState {
     epic: number;
   };
   // A walk-out (Phase 22.6c) has stages: the one you're on, and what the calls so far add up to.
+  // Phase 22.7. The dogs you've had, and lost: their names, their years, the day.
+  dogs: { name: string; years: number; day: number }[];
   encounter: {
-    kind: 'knock' | 'hitch' | 'stop' | 'epic';
+    kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell';
     id: string;
     stage?: number;
     tally?: { risk: number; energy: number; fed: number; skin: number; psyche: number; hours: number };
@@ -326,7 +328,7 @@ export type GameEvent =
   // A conversation moves to another node, or ends (null).
   | { k: 'talk'; node: string | null }
   // An encounter begins (Phase 22.6): it waits for an answer.
-  | { k: 'encounter'; kind: 'knock' | 'hitch' | 'stop' | 'epic'; id: string }
+  | { k: 'encounter'; kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell'; id: string }
   // The action wasn't allowed; `why` says so in the game's voice.
   | { k: 'refused'; why: string };
 

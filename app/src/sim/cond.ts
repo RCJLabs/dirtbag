@@ -7,6 +7,7 @@ import { gradeOfPerson } from './curves';
 import { ARC, DAY, DOG, MONEY, type VanPart } from './dials';
 import { repairCost } from './van';
 import { isSick } from './sick';
+import { strayDue } from './scout';
 import { clockShort, fill } from './format';
 import { benchedUntil, isPosted } from './jobs';
 import type { GameState } from './types';
@@ -151,7 +152,7 @@ export function holds(s: GameState, c: Cond): boolean {
 }
 
 // Scout picks you once you've made enough trips out, and until he has.
-export const dogOffered = (s: GameState): boolean => !s.dog && s.trips >= DOG.offerTrips;
+export const dogOffered = (s: GameState): boolean => !s.dog && s.trips >= DOG.offerTrips && strayDue(s);
 
 // Whether beat n of someone's arc is due: the one before it played, the bond there, and
 // enough days since the last.

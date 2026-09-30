@@ -19,7 +19,17 @@ import {
   LANDING_NAME,
 } from './content/injuries';
 import { ACTS, PLACES, road, TEXT_VALUES, type ActDef } from './content/places';
-import { DOG_LINES, DOG_OFFER } from './content/dog';
+import {
+  DOG_AGE_LINE,
+  DOG_FAREWELL,
+  DOG_FIND_LINE,
+  DOG_GRAY_CRAG,
+  DOG_LINES,
+  DOG_OFFER,
+  DOG_PERK_LINE,
+  DOG_VET,
+} from './content/dog';
+import { dogAge, nextDogName, scoutFinds, type Perk } from './scout';
 import { PEOPLE, RACE_ROUTE, RIVAL_FA_NAMES, TALK } from './content/people';
 import { ACT_I_END } from './content/story';
 import { START_KIT } from './content/gear';
@@ -188,6 +198,7 @@ export function newGame(seed: string): GameState {
     guitar: 0,
     deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0 },
     encounter: null,
+    dogs: [],
     wall: null,
     expedition: null,
     speed: { pb: null, runs: 0, day: 0 },
@@ -343,12 +354,14 @@ const ofDay = <T>(s: GameState, key: string, xs: readonly T[]): T =>
 // Your dog's tier: new pup, good buddy, best friend.
 export const dogTier = (bond: number): number => DOG.tiers.filter((t) => bond >= t).length - 1;
 
-// What Scout's up to, where you are.
+// What your dog's up to, where you are; slower at the crag once he's gray (Phase 22.7). The
+// lines are Scout's, and a later stray's name goes in his place.
 export function dogLine(s: GameState, where: 'crag' | 'drive'): string | null {
   if (!s.dog) return null;
   const L = DOG_LINES[where];
-  const pool = s.dog.fed < DOG.hungryBelow ? L.hungry : L.tiers[dogTier(s.dog.bond)]!;
-  return ofDay(s, `dog-${where}`, pool);
+  const gray = where === 'crag' && dogAge(s.dog, s.day) >= DOG.gray;
+  const pool = s.dog.fed < DOG.hungryBelow ? L.hungry : gray ? DOG_GRAY_CRAG : L.tiers[dogTier(s.dog.bond)]!;
+  return ofDay(s, `dog-${where}`, pool).replaceAll('{name}', s.dog.name).replaceAll('Scout', s.dog.name);
 }
 
 // v0.956's bond tiers, by name.
@@ -630,7 +643,30 @@ export function act(s0: GameState, a: Action): Result {
     if (s.dog && where !== 'away') {
       s.dog.fed = Math.max(0, s.dog.fed - DOG.nightFed);
       if (s.dog.fed < DOG.hungryBelow)
-        line("Scout's bowl is empty. He's been decent about it, which is worse.");
+        line(`${s.dog.name}'s bowl is empty. He's been decent about it, which is worse.`);
+      // Something from his rounds, with the perk (Phase 22.7).
+      const found = scoutFinds(s);
+      if (found) {
+        s.pantry[found] = (s.pantry[found] ?? 0) + 1;
+        line(fill(DOG_FIND_LINE, { name: s.dog.name, what: INGREDIENTS[found]!.name.toLowerCase() }));
+      }
+    }
+    // His years (Phase 22.7): the morning he goes gray, slows down, has a scare at the vet.
+    if (s.dog) {
+      const was = dogAge(s.dog, ended);
+      const now = dogAge(s.dog, s.day);
+      const at = (age: number) => was < age && now >= age;
+      const say = (t: string) => line(fill(t, { name: s.dog!.name, years: String(now) }));
+      if (at(DOG.gray)) say(DOG_AGE_LINE.gray);
+      if (at(DOG.senior)) say(DOG_AGE_LINE.senior);
+      DOG.vet.forEach((v, i) => {
+        if (!at(v.age)) return;
+        const scare = DOG_VET[i]!;
+        s.cash -= v.cost;
+        line(`${scare.title}: ${scare.sit} ${scare.out} The vet: ${money(v.cost)}.`);
+      });
+      // The last day, the morning it comes, at the van.
+      if (where === 'van' && now >= DOG.end) s.encounter = { kind: 'farewell', id: s.dog.name };
     }
     // The battery loses a little every night; the morning it's flat, you know.
     const charged = s.van.battery > 0;
@@ -785,9 +821,9 @@ export function act(s0: GameState, a: Action): Result {
     spend(cost);
     for (const f of d.sets ?? []) if (!s.today.includes(f)) s.today.push(f);
     if (d.trains) train(d.trains);
-    if (d.dog?.adopt) s.dog = { name: 'Scout', since: s.day, fed: 60, bond: 0 };
+    if (d.dog?.adopt) s.dog = { name: nextDogName(s), since: s.day, fed: 60, bond: 0 };
     if (s.dog && d.dog?.fill) s.dog.fed = 100;
-    if (s.dog && d.dog?.bond) s.dog.bond = Math.min(100, s.dog.bond + d.dog.bond);
+    if (s.dog && d.dog?.bond) dogBond(d.dog.bond);
     if (d.gear) s.gear[d.gear.id] = d.gear.set ?? (s.gear[d.gear.id] ?? 0) + (d.gear.add ?? 0);
     if (d.van) s.van[d.van] = 100;
     // Phase 22.3: the pantry, the meals, the day's fuel, and the cups of coffee.
@@ -900,7 +936,7 @@ export function act(s0: GameState, a: Action): Result {
     s.at = id;
     s.x = null;
     // Every drive with Scout is a ride-along; out at the crag he gets up to something.
-    if (s.dog) s.dog.bond = Math.min(100, s.dog.bond + DOG.rideBond);
+    if (s.dog) dogBond(DOG.rideBond);
     if (PLACES[id]!.crag) {
       s.trips += 1;
       // Psyche (Phase 22.4d): a day out, and somewhere you'd never been, if you hadn't. A crag
@@ -1015,6 +1051,15 @@ export function act(s0: GameState, a: Action): Result {
     line(first ? `${x.name}. ${x.blurb}` : `${x.name} again. Still good, if not quite like the first time.`);
     roadFx(x.fx, first ? 1 : EVENTS.stop.again);
     return true;
+  };
+
+  // Bond with your dog, and each perk it earns said the day it does (Phase 22.7).
+  const dogBond = (add: number) => {
+    const d = s.dog!;
+    const was = d.bond;
+    d.bond = Math.min(100, d.bond + add);
+    for (const [p, at] of Object.entries(DOG.perks) as [Perk, number][])
+      if (was < at && d.bond >= at) line(fill(DOG_PERK_LINE[p], { name: d.name }));
   };
 
   // A call on the walk out (Phase 22.6c): it adds up, and the last stage's call gets you
@@ -1469,6 +1514,26 @@ export function act(s0: GameState, a: Action): Result {
     // the night.
     case 'answer': {
       const e = s.encounter;
+      // The last day (Phase 22.7): how you spend it, and then he's gone.
+      if (e?.kind === 'farewell') {
+        const o = DOG_FAREWELL.opts[a.opt];
+        const d = s.dog;
+        if (!o || !d) return refuse('Nobody’s asking.');
+        const years = dogAge(d, s.day);
+        s.encounter = null;
+        line(o.out);
+        line(
+          fill(d.bond >= DOG.tiers[2]! ? DOG_FAREWELL.close.best : DOG_FAREWELL.close.other, {
+            years: String(years),
+          }),
+        );
+        note(
+          `${d.name}, ${years} years. ${o.legacy[0]!.toUpperCase()}${o.legacy.slice(1)}. Best dog in the valley and everybody knew it.`,
+        );
+        s.dogs = [...s.dogs, { name: d.name, years, day: s.day }];
+        s.dog = null;
+        break;
+      }
       if (e?.kind === 'epic') {
         if (!walkOut(e, a.opt)) return refuse('Nobody’s asking.');
         break;

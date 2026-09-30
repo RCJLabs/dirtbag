@@ -172,6 +172,10 @@
     "walkout": {
       "made": "code",
       "in": "src/audio/voices.ts"
+    },
+    "farewell": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
     }
   },
   "recordings": [],

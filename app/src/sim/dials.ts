@@ -335,6 +335,26 @@ export const DOG = {
   hungryBelow: 30,
   // His bond's words: new pup, good buddy, best friend (v0.956's).
   tiers: [0, 30, 70],
+  // Phase 22.7, v0.956's lifecycle. A dog-year is `year` days from the day he picked you; he
+  // goes gray at `gray`, slows down at `senior`, has a scare at the vet at each of `vet`'s
+  // ages (the bill with it), and at `end` it's the last day. No new stray comes for `gone`
+  // days after.
+  year: 18,
+  gray: 8,
+  senior: 12,
+  vet: [
+    { age: 10, cost: 70 },
+    { age: 13, cost: 130 },
+  ],
+  end: 16,
+  gone: 30,
+  // His perks, by bond (v0.956's): he settles at the fire (`settle` more psyche there), goes
+  // looking for food on his rounds (`find` a night, a serving for the pantry), and watches
+  // the van (the Lot's tickets `watch` as likely: halved, where v0.956's blocked every one).
+  perks: { settle: 20, find: 45, watch: 75 },
+  settle: 2,
+  find: 0.25,
+  watch: 0.5,
 };
 
 // A climber carried over from v0.956, which retired at R3 (Evan's call: retire it, export

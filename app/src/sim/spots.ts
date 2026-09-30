@@ -2,10 +2,11 @@
 // night will cost and give, and the ticket odds at the Lot. sleep() and Tonight both read
 // nightAt, so the numbers a player weighs are the ones the night uses.
 
-import { SPOT, SPOTS, UPGRADE, WINTER, type SpotId } from './dials';
+import { DOG, SPOT, SPOTS, UPGRADE, WINTER, type SpotId } from './dials';
 import { headroom } from './cond';
 import { PARTNERS, tierOf } from './presence';
 import { Rng } from './rng';
+import { hasPerk } from './scout';
 import type { GameState } from './types';
 import { seasonOf } from './weather';
 
@@ -38,7 +39,10 @@ export function ticketOdds(nights: number): number {
 
 // Tonight's ticket odds at the Lot, curtains and all.
 export const ticketTonight = (s: GameState): number =>
-  ticketOdds(s.lotNights) * ((s.gear.curtains ?? 0) > 0 ? UPGRADE.curtains.tickets : 1);
+  ticketOdds(s.lotNights) *
+  ((s.gear.curtains ?? 0) > 0 ? UPGRADE.curtains.tickets : 1) *
+  // Your dog, watching the van (Phase 22.7): halved, not blocked.
+  (hasPerk(s, 'watch') ? DOG.watch : 1);
 
 export const ticketRoll = (s: GameState): boolean =>
   Rng.fromStream(s.seed, 'events').derive(`ticket-${s.day}`).next() < ticketTonight(s);

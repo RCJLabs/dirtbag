@@ -730,13 +730,18 @@ export class Game {
         const ev = this.dispatch({ t: 'act', act: id });
         if (ev.some((e) => e.k === 'refused')) return;
         // A knock (Phase 22.6a): the night waits on your answer.
-        if (this.state.encounter) {
+        if (this.state.encounter?.kind === 'knock') {
           this.sound.play('knock');
           this.set({ sheet: { k: 'encounter' } });
           return;
         }
         this.dayDone();
         this.enter('lot', WAKE_X);
+        // His last day (Phase 22.7), the morning it comes.
+        if (this.state.encounter?.kind === 'farewell') {
+          this.sound.play('farewell');
+          this.set({ sheet: { k: 'encounter' } });
+        }
       });
       return null;
     }
