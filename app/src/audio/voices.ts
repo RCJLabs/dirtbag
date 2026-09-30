@@ -89,6 +89,13 @@ export const VOICES: Record<Cue, (v: V, k: number) => void> = {
     );
     if (k < 1) burst(v, { filter: 'bandpass', f: 900, q: 1.2, dur: 0.06, gain: 0.5 * (1 - k) });
   },
+  // Two knuckle raps on sheet metal, and a third a beat later.
+  knock: (v) => {
+    [0, 0.16, 0.5].forEach((d) => {
+      burst(v, { filter: 'bandpass', f: jitter(420, 0.05), q: 2.5, dur: 0.09, gain: 0.9, delay: d });
+      tone(v, { type: 'triangle', f: jitter(190, 0.04), f2: 150, dur: 0.14, gain: 0.35, delay: d });
+    });
+  },
   // A pencil tick on paper.
   tap: (v) => tone(v, { f: 1500, f2: 1150, dur: 0.035, gain: 0.25 }),
   // A boot on dirt.

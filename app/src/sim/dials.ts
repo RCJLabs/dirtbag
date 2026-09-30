@@ -457,6 +457,22 @@ export const BUSK = {
   ranks: [0.25, 0.55, 0.85],
 };
 
+// Phase 22.6: the event deck [v0.956's numbers]. At most one encounter a day, of any kind.
+// A knock comes on a van night, at `knock.odds` times the spot's own (the Lot's lit and
+// public, a driveway's private), and never within `knock.every` nights of the last. A
+// knock's psyche is v0.956's scale, which moved further than the rebuild's: `psyche` scales
+// it to ours.
+export const EVENTS = {
+  knock: {
+    odds: 0.11,
+    every: 4,
+    spot: { lot: 1.4, truckstop: 1.2, trailhead: 0.9, ridge: 0.6, driveway: 0.5 },
+  },
+  psyche: 0.5,
+  // Knocks heard lately that the deck passes over while there are others for the spot.
+  fresh: 3,
+};
+
 // Phase 22.4d: psyche [proposed]. A slow mood, 0 to 100, settled each night. Variety and
 // company lift it and grind wears it down; every night it drifts a tenth of the way back to
 // even, so nothing holds it up for long, and a day moves it at most `cap` either way. At the

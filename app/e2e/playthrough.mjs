@@ -675,7 +675,9 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 19 ||
+  saved?.v !== 20 ||
+  st.encounter !== null ||
+  !Array.isArray(st.deck?.seen) ||
   !(st.guitar >= 0) ||
   !Array.isArray(st.seen) ||
   !(st.psyche?.level >= 0) ||
@@ -1060,6 +1062,66 @@ console.log('Broken down on the road');
     await fail(`after the tow and the tires: ${JSON.stringify({ at: after.at, cash: after.cash })}`);
   log(`towed and fixed: at the garage, $${after.cash}, tires ${after.van.tires}`);
   await road.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-garage.png`) });
+  await ctx.close();
+}
+
+console.log('A knock on the van');
+// Phase 22.6a. The day-five climber on the night of day seven at the Lot, which this seed's
+// deck knocks on: bed, the knock (heard), its card with three answers and no ✕, an answer,
+// and the morning.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  saved.state = {
+    ...saved.state,
+    day: 7,
+    min: 21 * 60,
+    at: 'lot',
+    x: null,
+    cash: 150,
+    spot: 'lot',
+    encounter: null,
+  };
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  await ctx.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+    window.cues = [];
+    window.addEventListener('dirtbag:sound', (e) => window.cues.push(e.detail));
+  }, JSON.stringify(saved));
+  const night = await ctx.newPage();
+  night.on('pageerror', (e) => problems.push(`knock: uncaught: ${e.message}`));
+  night.on('console', (m) => m.type() === 'error' && problems.push(`knock: console.error: ${m.text()}`));
+  await night.goto(server.url, { waitUntil: 'load' });
+  const sheetOf = () => night.evaluate(() => document.querySelector('#sheet')?.textContent ?? '');
+  await night.waitForFunction(() =>
+    /Tap anywhere to walk/.test(document.querySelector('#hint')?.textContent ?? ''),
+  );
+  await night.mouse.click(100, 560);
+  await night.waitForFunction(() => /Your van/.test(document.querySelector('#sheet')?.textContent ?? ''));
+  await night.locator('#sheet .opt', { hasText: 'Sleep' }).first().click();
+  await night.waitForFunction(
+    () => /The Dumpster Behind the Building/.test(document.querySelector('#sheet')?.textContent ?? ''),
+    null,
+    { timeout: 10_000 },
+  );
+  const card = await sheetOf();
+  log(`knock: ${card.slice(0, 110)}`);
+  if (!/Have a proper look yourself/.test(card) || !/Go back to bed/.test(card))
+    await fail(`the answers: ${card}`);
+  if (await night.$('#sheet .x')) await fail('a knock can be closed without an answer');
+  if (!(await night.evaluate(() => window.cues.includes('knock')))) await fail('the knock was never heard');
+  await night.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-knock.png`) });
+  await night.locator('#sheet .opt', { hasText: 'Go back to bed' }).first().click();
+  await night.waitForFunction(
+    () => /^Day 8 · /.test(document.querySelector('#h-time')?.textContent ?? ''),
+    null,
+    {
+      timeout: 10_000,
+    },
+  );
+  const after = await night.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  if (after.encounter !== null || after.deck.knock !== 7)
+    await fail(`after the knock: ${JSON.stringify(after.deck)}`);
+  log('knock: answered, and morning');
   await ctx.close();
 }
 

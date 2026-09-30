@@ -17,7 +17,9 @@ const base = (over: Partial<GameState> = {}): GameState => ({
   day: 10,
   ...over,
 });
-const sleep = (s: GameState) => act(s, { t: 'act', act: 'lot.sleep' });
+// No knock tonight (Phase 22.6a has its own tests): a knock the night before keeps the door quiet.
+const sleep = (s: GameState) =>
+  act({ ...s, deck: { ...s.deck, knock: s.day } }, { t: 'act', act: 'lot.sleep' });
 
 describe('where you park', () => {
   it('charges each spot and its gas, and wakes you at the Lot after the drive back', () => {

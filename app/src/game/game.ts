@@ -131,7 +131,9 @@ export type SheetId =
   | { k: 'speed' }
   | { k: 'dead' }
   // Broken down on the road (Phase 22.2a): the ways out.
-  | { k: 'breakdown' };
+  | { k: 'breakdown' }
+  // Phase 22.6a: someone at the door of the van.
+  | { k: 'knock' };
 
 export interface Hud {
   day: number;
@@ -288,11 +290,13 @@ export class Game {
         ? { k: 'dead' }
         : this.state.breakdown
           ? { k: 'breakdown' }
-          : this.state.expedition
-            ? { k: 'exped', id: this.state.expedition.id }
-            : home?.scene
-              ? null
-              : { k: 'place', id: this.state.at },
+          : this.state.encounter
+            ? { k: 'knock' }
+            : this.state.expedition
+              ? { k: 'exped', id: this.state.expedition.id }
+              : home?.scene
+                ? null
+                : { k: 'place', id: this.state.at },
       talk: null,
       toast: null,
       stamp: null,
@@ -398,6 +402,8 @@ export class Game {
     if (x && 'sheet' in p && p.sheet?.k !== 'exped') p = { ...p, sheet: { k: 'exped', id: x.id } };
     // A Free Solo climber who fell: that's all there is, until a new one.
     if (this.state.dead && 'sheet' in p && p.sheet?.k !== 'dead') p = { ...p, sheet: { k: 'dead' } };
+    // Someone at the door (Phase 22.6a): their card, until you've answered.
+    if (this.state.encounter && 'sheet' in p && p.sheet?.k !== 'knock') p = { ...p, sheet: { k: 'knock' } };
     // Broken down, once the van's stopped rolling: the ways out, until you've taken one.
     if (this.state.breakdown && !this.trip && 'sheet' in p && p.sheet?.k !== 'breakdown')
       p = { ...p, sheet: { k: 'breakdown' } };
@@ -722,6 +728,12 @@ export class Game {
       this.fadeTo(() => {
         const ev = this.dispatch({ t: 'act', act: id });
         if (ev.some((e) => e.k === 'refused')) return;
+        // A knock (Phase 22.6a): the night waits on your answer.
+        if (this.state.encounter) {
+          this.sound.play('knock');
+          this.set({ sheet: { k: 'knock' } });
+          return;
+        }
         this.dayDone();
         this.enter('lot', WAKE_X);
       });
@@ -778,6 +790,17 @@ export class Game {
   // Phase 22.2b: where you park for the night.
   park(spot: SpotId): void {
     this.dispatch({ t: 'spot', spot });
+  }
+
+  // An answer at the door (Phase 22.6a), and then the rest of the night.
+  answer(opt: number): void {
+    this.fadeTo(() => {
+      const ev = this.dispatch({ t: 'answer', opt });
+      if (ev.some((e) => e.k === 'refused')) return;
+      this.set({ sheet: null });
+      this.dayDone();
+      this.enter('lot', WAKE_X);
+    });
   }
 
   // A way out of a breakdown. Once the van's going again, you're wherever it took you.

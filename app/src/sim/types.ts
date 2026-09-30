@@ -103,6 +103,11 @@ export interface GameState {
   // Phase 22.5b. Sets played outside the café, each counted by how clean it was: what your
   // guitar playing, and the crowd it draws, comes from.
   guitar: number;
+  // Phase 22.6. The event deck: the day of the last encounter of any kind, the night of the
+  // last knock, and the knocks heard, oldest first; and the encounter you're in, if any,
+  // which waits for your answer.
+  deck: { last: number; knock: number; seen: string[] };
+  encounter: { kind: 'knock'; id: string } | null;
   meals: string[];
   fueled: number;
   breakdown: { part: 'tires' | 'engine'; to: string; rest: number; bodged: boolean } | null;
@@ -266,7 +271,9 @@ export type Action =
   // Phase 22.4a: your insurance plan, from the next bills on.
   | { t: 'insure'; plan: 'none' | 'catastrophic' | 'full' }
   // Phase 22.5b: a set outside the café, and how clean it was, 0 to 1.
-  | { t: 'busk'; acc: number };
+  | { t: 'busk'; acc: number }
+  // Phase 22.6: an answer to the encounter you're in, by its option's index.
+  | { t: 'answer'; opt: number };
 
 // What a finished go hands back to the game.
 export interface GoResult {
@@ -300,6 +307,8 @@ export type GameEvent =
   | { k: 'injured'; kind: string; tier: 1 | 2 | 3; days: number; text: string }
   // A conversation moves to another node, or ends (null).
   | { k: 'talk'; node: string | null }
+  // An encounter begins (Phase 22.6): it waits for an answer.
+  | { k: 'encounter'; kind: 'knock'; id: string }
   // The action wasn't allowed; `why` says so in the game's voice.
   | { k: 'refused'; why: string };
 

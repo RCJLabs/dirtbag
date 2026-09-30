@@ -94,6 +94,8 @@ import {
   RECIPES,
   BUSK,
   buskBlocked,
+  knockById,
+  drivewayHost,
   buskRate,
   guitarRank,
   RANK_NAME,
@@ -470,12 +472,13 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           rows: [{ label, run: () => game.enterScene(scene) }],
         };
       }
-      // A card-only place: you're here until you drive somewhere, so there's no close.
+      // A card-only place: you're here until you drive somewhere, but the card still closes
+      // onto the map, as every other card does (Evan, 0.975.0: a card with no ✕ read as stuck).
       const onward = Object.keys(PLACES).filter((o) => o !== id.id && road(id.id, o));
       return {
         title: p.name,
         sub,
-        close: false,
+        close: true,
         head,
         rows: [
           ...p.acts.map((a) => actRow(game, s, a)),
@@ -720,6 +723,20 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             run: () => game.speedStart(),
           },
         ],
+      };
+    }
+
+    // Phase 22.6a: someone at the door. No close: the night waits on an answer.
+    case 'knock': {
+      const e = s.encounter;
+      const k = e ? knockById(e.id) : undefined;
+      if (!k) return null;
+      const host = drivewayHost(s);
+      return {
+        title: k.title,
+        sub: fill(k.sit, { who: host ? PEOPLE[host]!.name : 'Your friend' }),
+        close: false,
+        rows: k.opts.map((o, i) => ({ label: o.label, run: () => game.answer(i) })),
       };
     }
 

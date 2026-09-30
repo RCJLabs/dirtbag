@@ -430,6 +430,12 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     return tryAct('lot.cook');
   }
 
+  // Bed, and an answer for whoever knocks (Phase 22.6a): the first, as a bot takes things.
+  function bed() {
+    tryAct('lot.sleep');
+    if (s.encounter) go({ t: 'answer', opt: 0 });
+  }
+
   // Phase 22.5a: the bins behind the market, and back to the van.
   function binRun() {
     travel('market');
@@ -689,7 +695,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     park();
     signUp(['cafe.shift']);
     record(where, morning);
-    tryAct('lot.sleep');
+    bed();
   }
 
   // ---- the career bot ----
@@ -871,7 +877,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     park();
     signUp(JOB_ACTS, next ? next + 50 : 0);
     record(where, morning);
-    tryAct('lot.sleep');
+    bed();
   }
 
   go({ t: 'create', name: 'Bot', start: opts.start ?? 'allrounder' });
