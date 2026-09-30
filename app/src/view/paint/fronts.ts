@@ -3,7 +3,7 @@
 // unoutlined, at the hour you'd get there: lit windows after dark, and rain when it's
 // raining in the valley. Whoever works there is at the window.
 
-import { conditionsAt, isNight, type GameState } from '../../sim';
+import { conditionsAt, isNight, isWeekend, type GameState } from '../../sim';
 import { lin, rad, rr, type G } from '../kit/geom';
 import { drawRain, label } from './fx';
 import { drawPerson, LOOK, type Look, type Pose } from './people';
@@ -242,4 +242,119 @@ const cafe: Front = (g, s, w, h) => {
   if (wet(s, 'cafe')) drawRain(g, w, h, 0, true);
 };
 
-export const FRONTS: Record<string, Front> = { diner, cafe };
+// The Gear Shop: board-and-batten in forest green, a hand-painted sign, and a window with the
+// kit in it: a coil of rope, a rack of cams, shoes on a shelf, a pad on its side. On
+// weekends the swap meet's table is out on the sidewalk.
+const shop: Front = (g, s, w, h) => {
+  const night = isNight(s.min);
+  const kerb = street(g, valley(night ? 'night' : 'morning'), w, h, night);
+  const x0 = Math.round(w * 0.2);
+  const x1 = Math.round(w * 0.74);
+  const top = Math.round(h * 0.12);
+  const bw = x1 - x0;
+  g.fillStyle = night ? '#23362E' : '#3E6250';
+  g.fillRect(x0, top, bw, kerb - top);
+  g.fillStyle = night ? 'rgba(0,0,0,.18)' : 'rgba(10,30,20,.2)';
+  for (let x = x0 + 7; x < x1; x += 9) g.fillRect(x, top, 2, kerb - top);
+  // A shed roof with a lip over the sign.
+  g.fillStyle = night ? '#2B2825' : '#4A4038';
+  g.beginPath();
+  g.moveTo(x0 - 8, top + 2);
+  g.lineTo(x1 + 8, top - 6);
+  g.lineTo(x1 + 8, top);
+  g.lineTo(x0 - 8, top + 8);
+  g.closePath();
+  g.fill();
+
+  const sy = top + 14;
+  g.fillStyle = '#EFE0C2';
+  rr(g, x0 + 16, sy, bw - 32, 17, 3);
+  g.fill();
+  label(g, 'poster', 'GEAR', x0 + bw / 2, sy + 14, { size: 14, color: '#2B4A3C', halo: '#EFE0C2' });
+
+  // The window: the kit on display.
+  const door = 24;
+  const wx = x0 + 8;
+  const wy = sy + 24;
+  const ww = bw - door - 20;
+  const wh = kerb - 6 - wy;
+  g.fillStyle = night ? LIT : '#DCD2BC';
+  g.fillRect(wx, wy, ww, wh);
+  // A rope coil, top left.
+  g.strokeStyle = '#C9523F';
+  g.lineWidth = 2.5;
+  for (let i = 0; i < 3; i++) {
+    g.beginPath();
+    g.ellipse(wx + 16, wy + 16 + i * 2, 10 - i * 2, 6 - i, 0, 0, Math.PI * 2);
+    g.stroke();
+  }
+  // Cams on a sling, in their colours.
+  const cams = ['#8C5AA8', '#3E7FB8', '#D8B43A', '#C9523F', '#6EA05A'];
+  g.strokeStyle = '#2B2825';
+  g.lineWidth = 1.2;
+  g.beginPath();
+  g.moveTo(wx + 34, wy + 8);
+  g.lineTo(wx + 34 + cams.length * 6, wy + 8);
+  g.stroke();
+  cams.forEach((c, i) => {
+    const cx = wx + 37 + i * 6;
+    g.fillStyle = '#9AA0A6';
+    g.fillRect(cx - 0.5, wy + 8, 1, 7);
+    g.fillStyle = c;
+    g.beginPath();
+    g.arc(cx, wy + 17, 2.6, 0, Math.PI * 2);
+    g.fill();
+  });
+  // A shelf of shoes, and a pad on its side at the bottom.
+  const shelf = wy + wh * 0.55;
+  g.fillStyle = '#6A4A36';
+  g.fillRect(wx + 4, shelf, ww - 8, 2);
+  const shoe = (x: number, col: string) => {
+    g.fillStyle = col;
+    g.beginPath();
+    g.moveTo(x, shelf);
+    g.lineTo(x + 3, shelf - 6);
+    g.lineTo(x + 9, shelf - 7);
+    g.lineTo(x + 13, shelf - 2);
+    g.lineTo(x + 13, shelf);
+    g.closePath();
+    g.fill();
+    g.fillStyle = '#2B2825';
+    g.fillRect(x, shelf - 1.5, 13, 1.5);
+  };
+  shoe(wx + 8, '#D8B43A');
+  shoe(wx + 24, '#3E7FB8');
+  shoe(wx + 40, '#C9523F');
+  g.fillStyle = '#2F4A6A';
+  g.fillRect(wx + ww - 30, wy + wh - 14, 24, 12);
+  g.fillStyle = '#9AA0A6';
+  g.fillRect(wx + ww - 30, wy + wh - 9, 24, 2);
+  if (!night) glint(g, wx, wy, ww, wh);
+  g.strokeStyle = '#2B2825';
+  g.lineWidth = 2;
+  g.strokeRect(wx, wy, ww, wh);
+
+  const dx = x1 - door - 6;
+  g.fillStyle = night ? '#3A2E24' : '#6A4A36';
+  g.fillRect(dx, wy - 2, door, kerb - wy + 2);
+  g.fillStyle = night ? LIT : '#A8BFC6';
+  g.fillRect(dx + 5, wy + 3, door - 10, wh * 0.4);
+
+  // The swap meet, weekends: a folding table on the sidewalk with somebody's old kit on it.
+  if (isWeekend(s.day) && !night) {
+    const tx = x1 + 12;
+    g.fillStyle = '#6A4A36';
+    g.fillRect(tx, kerb - 16, 44, 3);
+    g.fillRect(tx + 3, kerb - 13, 2, 13);
+    g.fillRect(tx + 39, kerb - 13, 2, 13);
+    g.fillStyle = '#7A6A5A';
+    g.fillRect(tx + 4, kerb - 22, 16, 6);
+    g.fillStyle = '#B08A3A';
+    g.fillRect(tx + 24, kerb - 20, 12, 4);
+    label(g, 'comic', 'SWAP MEET', tx + 22, kerb - 27, { size: 8, color: '#F3E6CB', halo: '#2B2825' });
+  }
+  lamp(g, x0 - 20, kerb, night);
+  if (wet(s, 'shop')) drawRain(g, w, h, 0, true);
+};
+
+export const FRONTS: Record<string, Front> = { diner, cafe, shop };

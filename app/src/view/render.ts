@@ -4,8 +4,13 @@
 import {
   belayer,
   CLIMB,
+  indoor,
+  protection,
+  revealed,
+  roped,
   conditionsAt,
   gradeLabel,
+  gradeName,
   isNight,
   lineGrade,
   picks,
@@ -15,11 +20,15 @@ import {
   routesAt,
   talkStart,
   TALK,
+  WALLS,
+  crowdNow,
+  SPEED,
   type Attempt,
   type GameState,
   type RouteDef,
 } from '../sim';
 import { rad, type G, type Pt } from './kit/geom';
+import { mulberry32 } from './kit/noise';
 import {
   BOARD_X0,
   CRAGS,
@@ -31,7 +40,9 @@ import {
   OY,
   presentIn,
   PROBLEM_X,
+  CAVE_X,
   SCENES,
+  SPEED_LANE,
   W,
   Z,
   type PinKind,
@@ -51,12 +62,12 @@ import {
   tapeTag,
   vanIcon,
 } from './paint/fx';
-import { TAPE } from './paint/gym';
+import { CAVE_TAPE, speedHold, TAPE } from './paint/gym';
 import { mapArt } from './paint/map';
-import { drawBelayerBack, drawClimber, drawDog, drawPerson, INK, LOOK } from './paint/people';
+import { drawBelayerBack, drawClimber, drawDog, drawPerson, INK, LOOK, STRANGERS } from './paint/people';
 import { BIG } from './paint/scale';
 import { drawSkyMarks, FIRE_X, LIGHTS, sceneArt, SKY_W, type SceneArt, type Tod } from './paint/scenes';
-import { belayAt, onRoute, rockPath, routeStretch, wallOf } from './paint/wall';
+import { belayAt, onRoute, rockPath, routeStretch, topoFor, traceSelected, wallOf } from './paint/wall';
 import { sceneSun, sunLight, wallSun, wetness } from './sun';
 
 export interface Frame {
@@ -76,6 +87,8 @@ export interface Frame {
   trip: { pts: Pt[]; pos: Pt } | null;
   wallRoute: string;
   att: Attempt | null;
+  // A run on the speed wall: holds taken, and whether you're slipping.
+  speed: { holds: number; slip: boolean } | null;
 }
 
 export function render(g: G, f: Frame): void {
@@ -136,6 +149,7 @@ interface Company {
   still: boolean;
   player?: Frame['player'];
   scout?: Frame['scout'];
+  speed?: Frame['speed'];
 }
 
 // The live part of a scene, over its painted back: the fire, the light and the wet on the
@@ -184,10 +198,49 @@ export function sceneLive(g: G, s: GameState, scene: string, cam: number, eye: E
     if (conditionsAt(s.seed, s.day, place).closed)
       label(g, 'poster', 'CLOSED', sign, GND - 30, { size: 7.5, color: '#FFFFFF', halo: ACC.comic });
     for (const r of crag.lines)
-      routeTag(g, r.x - cam, GND - 100, r.n, gradeLabel(ROUTES[r.route]!), true, !!s.routes[r.route]?.sent);
+      routeTag(
+        g,
+        r.x - cam,
+        GND - 100,
+        r.n,
+        revealed(s, ROUTES[r.route]!) ? gradeLabel(ROUTES[r.route]!) : '?',
+        true,
+        !!s.routes[r.route]?.sent,
+      );
+    // Each wall's name, high on the rock where it starts.
+    for (const w of crag.walls ?? []) {
+      const def = WALLS[w.wall]!;
+      label(g, 'poster', def.name.toUpperCase(), w.x - cam, GND - 250, {
+        size: 9,
+        color: '#FFFDF5',
+        halo: '#2B2A33',
+      });
+      label(
+        g,
+        'poster',
+        `${gradeName('sport', def.grade)} · ${def.pitches.length} PITCHES${s.wall?.id === w.wall ? ` · ON P${s.wall.next + 1}` : ''}`,
+        w.x - cam,
+        GND - 236,
+        {
+          size: 7.5,
+          color: '#FFFDF5',
+          halo: '#2B2A33',
+        },
+      );
+    }
     for (const b of crag.boulders)
-      boulderTag(g, b.x - cam, GND - b.h - 12, lineGrade(s, ROUTES[b.route]!), !!s.routes[b.route]?.sent);
+      boulderTag(
+        g,
+        b.x - cam,
+        GND - b.h - 12,
+        revealed(s, ROUTES[b.route]!) ? lineGrade(s, ROUTES[b.route]!) : '?',
+        !!s.routes[b.route]?.sent,
+      );
   }
+  if (scene === 'cave')
+    routesAt(s.seed, 'cave', s.day).forEach((r, n) =>
+      tapeTag(g, CAVE_X[n]! - cam, GND - 26, CAVE_TAPE[n]!, gradeLabel(r), !!s.routes[r.id]?.sent),
+    );
   if (gym) {
     const lines = routesAt(s.seed, 'gym', s.day);
     lines
@@ -202,13 +255,36 @@ export function sceneLive(g: G, s: GameState, scene: string, cam: number, eye: E
         tapeTag(g, BOARD_X0 + 25 + n * 50 - cam, GND - 16, '#2B2825', gradeLabel(r), !!s.routes[r.id]?.sent),
       );
   }
+  // The crowd, if there is one: strangers at the foot of the lines, the same ones all day.
+  if (crag) {
+    const n = { empty: 0, quiet: 1, busy: 3, packed: 5 }[crowdNow(s, place)];
+    const spots = [...crag.lines.map((l) => l.x), ...crag.boulders.map((b) => b.x)];
+    const r = mulberry32(s.day * 131 + place.length * 17 + spots.length);
+    for (let i = 0; i < n && spots.length; i++) {
+      const x = spots.splice(Math.floor(r() * spots.length), 1)[0]! + (r() - 0.5) * 36;
+      drawPerson(g, STRANGERS[i % STRANGERS.length]!, {
+        x: x - cam,
+        y: GND,
+        dir: r() < 0.5 ? -1 : 1,
+        pose: r() < 0.25 ? 'sit' : 'stand',
+        t: f.t + i,
+      });
+    }
+  }
   for (const p of presentIn(s, scene)) {
     drawPerson(g, LOOK[p.who]!, { x: p.x - cam, y: GND, dir: p.face, pose: p.pose, t: f.t });
     // They've something to tell you.
     const opener = talkStart(s, p.talk);
     if (opener && TALK[p.talk]?.nodes[opener]?.calls) speechMark(g, p.x - cam, HEAD_Y - 10, f.t, f.still);
   }
-  const p = f.player;
+  // On the speed wall: you're up it, not standing in the room.
+  if (gym && f.speed) {
+    const n = Math.min(f.speed.holds, SPEED.holds - 1);
+    const [hx, hy] = speedHold(SPEED_LANE, n);
+    const slip = f.speed.slip && !f.still ? 3 : 0;
+    drawClimber(g, LOOK.you!, hx - cam, hy + 24 + slip, f.speed.holds % 2, false);
+  }
+  const p = f.speed && gym ? null : f.player;
   if (p)
     drawPerson(g, LOOK.you!, {
       x: p.x - cam,
@@ -342,7 +418,7 @@ function renderWall(g: G, f: Frame): void {
 // much as the ends.
 function wallWeather(g: G, f: Frame, r: RouteDef): void {
   const s = f.state;
-  if (r.place !== 'gym' && wet(s, r.place)) drawRain(g, f.w, H, f.t, f.still);
+  if (!indoor(r.place) && wet(s, r.place)) drawRain(g, f.w, H, f.t, f.still);
   const pump = f.att && (f.att.phase === 'climb' || f.att.phase === 'crux') ? f.att.pump : 0;
   if (pump > 45) {
     const beat = f.still || pump < 80 ? 1 : 0.85 + 0.15 * Math.sin(f.t * 8);
@@ -370,7 +446,7 @@ function wallPanel(g: G, f: Frame, r: RouteDef): void {
   // On a close-up wall the climber is drawn big, so labels stand further off the line.
   const off = wall.big ? 44 : 14;
   g.drawImage(wall.art, 0, 0, W, H);
-  if (r.place !== 'gym') {
+  if (!indoor(r.place)) {
     const sun = wallSun(s, r);
     if (sun) drawSun(g, sun.x, sun.lit, -10, W + 10, 0, H, sunLight(s.min));
     const w = wetness(s, r.place);
@@ -383,12 +459,20 @@ function wallPanel(g: G, f: Frame, r: RouteDef): void {
     }
   }
 
+  // A myth's line, once you can read it: the wall's art leaves it out till then.
+  if (r.hiddenUntil && roped(r) && revealed(s, r)) traceSelected(g, topoFor(r));
+
   // Each crux bracketed on the topo, with the beta you'll use there; "?" while there's
-  // another way you haven't found.
-  for (const c of r.cruxes) {
+  // another way you haven't found. A myth you can't read shows none.
+  for (const c of revealed(s, r) ? r.cruxes : []) {
     const p0 = onRoute(r, c.from);
     const p1 = onRoute(r, c.to);
-    const x = Math.min(W - 118, Math.max(p0[0], p1[0]) + off);
+    // Right of the line, unless the line runs up the wall's right edge: then left of it, so
+    // the labels never sit beside a neighbour's line instead.
+    const right = Math.max(p0[0], p1[0]) + off;
+    const flip = right > W - 118;
+    const x = flip ? Math.min(p0[0], p1[0]) - off : right;
+    const d = flip ? -1 : 1;
     const y0 = p0[1] - (wall.big ? 30 : 0);
     const y1 = p1[1] - (wall.big ? 30 : 0);
     const my = (y0 + y1) / 2;
@@ -396,15 +480,16 @@ function wallPanel(g: G, f: Frame, r: RouteDef): void {
     g.strokeStyle = ACC.comic;
     g.lineWidth = 2;
     g.beginPath();
-    g.moveTo(x - 4, y0);
+    g.moveTo(x - 4 * d, y0);
     g.lineTo(x, y0);
     g.lineTo(x, y1);
-    g.lineTo(x - 4, y1);
+    g.lineTo(x - 4 * d, y1);
     g.stroke();
-    label(g, 'comic', c.name.replace(/^The /, ''), x + 6, my - 1, { size: 13, align: 'left' });
-    label(g, 'comic', (r.beta[pick[c.id] ?? '']?.short ?? '') + (unknown ? '  ?' : ''), x + 6, my + 13, {
+    const align = flip ? 'right' : 'left';
+    label(g, 'comic', c.name.replace(/^The /, ''), x + 6 * d, my - 1, { size: 13, align });
+    label(g, 'comic', (r.beta[pick[c.id] ?? '']?.short ?? '') + (unknown ? '  ?' : ''), x + 6 * d, my + 13, {
       size: 12,
-      align: 'left',
+      align,
       color: ACC.comic,
     });
   }
@@ -426,14 +511,27 @@ function wallPanel(g: G, f: Frame, r: RouteDef): void {
   const pos = f.att?.pos ?? 0;
   const [x, y] = onRoute(r, pos);
   const falling = f.att?.phase === 'fall';
-  if (r.disc === 'sport') {
-    // Quickdraws on every bolt you've clipped, and the rope running through them to
-    // whoever's belaying.
+  if (roped(r)) {
+    // Quickdraws on every bolt you've clipped, or the pieces you've placed, and the rope
+    // running through them to whoever's belaying. A trad line shows its stances too: the
+    // ones you've passed without placing are where you ran it out.
     const who = belayer(s);
     const [bx0, by0] = belayAt(r);
     const rope: Pt[] = who ? [drawBelayerBack(g, LOOK[who]!, bx0, by0)] : [];
-    for (const b of r.bolts) {
-      if (b >= pos - CLIMB.clipPast) continue;
+    const trad = r.disc === 'trad';
+    if (trad)
+      for (const at of r.stances ?? []) {
+        if (f.att?.placed.includes(at)) continue;
+        const [sx, sy] = onRoute(r, at);
+        g.strokeStyle = 'rgba(255,255,255,.55)';
+        g.lineWidth = 2;
+        g.beginPath();
+        g.moveTo(sx - 7, sy + 4);
+        g.lineTo(sx + 7, sy + 3);
+        g.stroke();
+      }
+    const pieces = f.att ? protection(f.att, r) : trad ? [] : r.bolts.filter((b) => b < pos - CLIMB.clipPast);
+    for (const b of pieces) {
       const [bx, by] = onRoute(r, b);
       g.strokeStyle = ACC.comic;
       g.lineWidth = 1.6;
@@ -441,6 +539,13 @@ function wallPanel(g: G, f: Frame, r: RouteDef): void {
       g.moveTo(bx, by);
       g.lineTo(bx, by + 7);
       g.stroke();
+      if (trad) {
+        // A cam: its lobes in the crack, a sling to the rope.
+        g.fillStyle = '#C8553F';
+        g.beginPath();
+        g.arc(bx, by, 3, 0, 6.2832);
+        g.fill();
+      }
       g.lineWidth = 1.3;
       g.beginPath();
       g.ellipse(bx, by + 9.5, 2.3, 3.2, 0, 0, 6.2832);

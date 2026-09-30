@@ -2,7 +2,7 @@
 // screen, in the scene of its crag, and every place has a pin on the map and a header on
 // its card.
 import { describe, expect, it } from 'vitest';
-import { PLACES, ROUTES } from '../sim';
+import { onWall, PLACES, ROUTES } from '../sim';
 import { hasHeader } from './header';
 import { CRAGS, H, MAP_PINS, SCENES, screenWidth, SPOTS, W, W_MAX, WIDE, widthOf, Z } from './layout';
 import { drivePath, joinOf, roadX, SIDE_ROADS } from './valley';
@@ -17,12 +17,14 @@ describe('the crags on screen', () => {
         seen.push(b.route);
       }
       for (const l of c.lines) {
-        expect(ROUTES[l.route], l.route).toMatchObject({ disc: 'sport', place });
+        expect(ROUTES[l.route], l.route).toMatchObject({ place });
+        expect(onWall(ROUTES[l.route]!), l.route).toBe(true);
         seen.push(l.route);
       }
     }
     expect(new Set(seen).size).toBe(seen.length);
-    const crag = Object.values(ROUTES).filter((r) => r.place !== 'gym');
+    // A wall's pitches are climbed from its sheet, not walked up to one by one.
+    const crag = Object.values(ROUTES).filter((r) => r.place !== 'gym' && !r.wall);
     expect(seen.sort()).toEqual(crag.map((r) => r.id).sort());
   });
 

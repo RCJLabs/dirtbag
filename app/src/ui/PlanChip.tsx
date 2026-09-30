@@ -7,7 +7,7 @@ import { stepLabel } from '../game/plan';
 // the HUD, so a place's card (which a card-only place always has open) never hides it.
 export function PlanChip({ game, ui }: { game: Game; ui: Ui }) {
   const p = ui.plan;
-  if (!p || ui.climbing || ui.view === 'wall') return null;
+  if (!p || ui.climbing || ui.speed || ui.view === 'wall') return null;
   const step = p.steps[p.i];
   const next = p.steps[p.i + 1];
   const say = p.stopped

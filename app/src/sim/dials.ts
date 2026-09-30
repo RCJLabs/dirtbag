@@ -3,6 +3,7 @@
 // retunes them against the bots in R2.
 
 import type { Style } from './climber';
+import type { Disc } from './content/routes';
 
 // How a crux's window scales with your margin: your level in the beta's style, less the
 // line's grade. Under your level windows open 24% a grade, but never past 1.4, so a crux
@@ -115,8 +116,8 @@ export const BOND = {
   // Sage's 0.42; from the rebuild's 0.55, 0.07 a tier lands Ride-or-Die at the same
   // five days in six.
   perTier: 0.07,
-  // A Regular will come out to the Gorge with you if you ask before one.
-  invite: 3,
+  // A partner will come out climbing with you if you ask before one; how close you need to
+  // be depends on the crag (PlaceDef.invite).
   inviteBefore: 13 * 60,
 };
 
@@ -200,13 +201,16 @@ export const INJURY = {
   clinic: [0, 45, 210],
 };
 
-// Highballs [proposed]: a fall from high on a tall boulder can land badly. Up to safeFt a
+// Highballs [proposed]: a fall from high on a tall boulder (`fromFt` up) can land badly. Up to safeFt a
 // fall onto a pad is a normal boulder fall; every foot above it adds perFoot to the chance
 // of a bad landing, with one pad and nobody spotting. So a fall from 16 ft is about 1 in 10,
 // from 22 ft about 1 in 6. The Moonstone haul's pads halve it, and a partner spotting you
 // halves it again. How far over safeFt you fell sets how bad: tier 2 from `tier2` ft over,
 // tier 3 from `tier3`.
 export const HIGHBALL = {
+  // Every outdoor boulder this tall is a highball (Evan's call, 30 Sep 2026): v0.956's
+  // Highball Arête is 18 ft, and 16 takes in the tall problems the later crags brought.
+  fromFt: 16,
   safeFt: 8,
   perFoot: 0.012,
   pads: 0.5,
@@ -221,15 +225,17 @@ export const CLIMB = {
   // crag go; goes here are played in real time, so each costs less and a day holds more.
   go: {
     sport: { min: 25, energy: 10, fed: 6 },
+    // A trad go is racking up, placing on the way and cleaning on the way down: longer.
+    trad: { min: 35, energy: 12, fed: 7 },
     boulder: { min: 10, energy: 6, fed: 4 },
     gym: { min: 8, energy: 5, fed: 3 },
-  } as Record<'sport' | 'boulder' | 'gym', { min: number; energy: number; fed: number }>,
+  } as Record<Disc | 'gym', { min: number; energy: number; fed: number }>,
   // Skin per go by the route's style: v0.956's table at 0.6x for the shorter goes, and
   // 1.35x on real rock.
   skin: { crimp: 7, crack: 9, endurance: 6, power: 5, dyno: 4, technical: 3 } as Record<Style, number>,
   rockSkin: 1.35,
   // Between goes. Long enough that "one more" costs daylight.
-  restMin: { sport: 20, boulder: 10 } as Record<'sport' | 'boulder', number>,
+  restMin: { sport: 20, trad: 25, boulder: 10 } as Record<Disc, number>,
   // What a go teaches, against v0.956's formula. Its goes cost two hours and its first week
   // was already too fast (V3 inside it, docs/audit/climbing.md §5.3); goes here are shorter
   // and more of them fit in a day, so each teaches 60% as much.
@@ -237,7 +243,8 @@ export const CLIMB = {
   // A go on a line you've already sent teaches this share again: laps are mileage, not
   // progress. It stands in for v0.956's staleness.
   repeatLearn: 0.3,
-  // Send City's specialty, as in v0.956: technique and endurance come a little faster.
+  // Each gym's specialty, as in v0.956 (INDOOR in content/gym.ts): Send City brings on
+  // technique and endurance a little faster, The Cave power and fingers.
   gymSpecialty: 1.2,
   // Below these you can't tie in at all.
   minEnergy: 10,
@@ -290,4 +297,197 @@ export const CLIMB = {
   clipPast: 0.13,
   // A cleared crux puts you this far past its top.
   clearCrux: 0.13,
+};
+
+// Trad (Phase 21.2): at a stance, letting go places a piece instead of shaking out. v0.956
+// had no trad minigame at all, only a rack choice before the go; here every piece is a
+// choice made on the wall, paid for in pump and time.
+export const TRAD = {
+  // A stance is this many moves either side of its mark: below it you reach for it, past it
+  // you can still stop. Nearly a second of climbing: whether to stop is the decision, not
+  // whether you can hit the spot.
+  before: 0.5,
+  after: 0.8,
+  // The climb panel says a stance is coming this many moves before it.
+  ahead: 1.2,
+  // Seconds of letting go to get a piece in, and the pump it costs a second where hanging
+  // would pay 4.5 back. A piece is about seven points of pump against resting.
+  placeTime: 1.1,
+  placePump: 2,
+  // A fall that reaches the ground is a deck: under `safeFt` you walk it off; above, each
+  // foot is `perFoot` more likely to hurt, three times a highball's with no pad under you.
+  // How far over sets how bad, as a highball's does.
+  deck: { safeFt: 6, perFoot: 0.036, tier2: 6, tier3: 12 },
+  // v0.956 gave a trad send +3 head. Here it's a share of a go's lesson, added to head.
+  sendHead: 0.4,
+};
+
+// Your kit (Phase 21.1): v0.956's gear, cut to what a go can feel. Its wear was per two-hour
+// attempt; a go here is minutes and a day holds ten of them, so wear per go is a fraction.
+export const KIT = {
+  shoes: {
+    // v0.956: new shoes $140, a resole $35. A resole puts rubber back, not a new last.
+    price: 140,
+    resole: 35,
+    resoleTo: 90,
+    // Everyone starts in the shoes they drove out in: worn at 40 in about 80 goes, a week
+    // and a bit of climbing, so the first resole lands after Act I's first goals.
+    startAt: 60,
+    // Condition lost per go, and more on harder lines (v0.956's 1 + 0.035 per grade). About
+    // 200 goes from a resole to worn: three weeks of climbing.
+    wear: 0.25,
+    perGrade: 0.035,
+    // Under `worn` every window is this much narrower; under `blown`, much narrower. Technical
+    // lines, all footwork, feel it twice.
+    worn: 40,
+    blown: 15,
+    wornWindows: 0.95,
+    blownWindows: 0.87,
+  },
+  chalk: {
+    // A block for $8 lasts 60 goes; the bag starts half full. Without it, sweaty hands.
+    price: 8,
+    uses: 60,
+    startWith: 30,
+    without: 0.95,
+  },
+  tape: {
+    // A roll for $4 wraps six crack goes, and halves the skin a crack takes.
+    price: 4,
+    uses: 6,
+    skin: 0.5,
+  },
+  // A pad of your own: with the one everyone has, that's two, and a highball's landing
+  // halves as the Moonstone haul's pads do (HIGHBALL.pads).
+  pad: { price: 180 },
+  // A rack: cams, nuts, slings. v0.956's $280. Nobody leads trad without one.
+  rack: { price: 280 },
+  // A rope of your own (Phase 21.5), for walls, where the belayer's won't reach: v0.956
+  // sold rope and harness; one price here [proposed].
+  rope: { price: 150 },
+  // A hangboard screwed over the van's back doors (Phase 21.3) [proposed price]. v0.956
+  // sold a pull-up bar as a van upgrade at $90; a board alone is cheaper.
+  hangboard: { price: 60 },
+  // The swap meet at the shop on weekends: v0.956's 55% of new, in fair shape.
+  used: { share: 0.55, condition: 60 },
+};
+
+// Training (Phase 21.3): v0.956's protocols, cut from 16 to six and prehab, with its
+// exploits closed (docs/audit/climbing.md §2.11, fixes in §7 "Now"). Training is what you
+// do when you can't climb, or to shore up one skill: an hour of it teaches less than an
+// hour on the rock at every grade (the harness holds it to that), and it loads your body
+// the way a go does.
+export const TRAIN = {
+  // A session's lesson before its weights, hi() and the phase: `base` at V0, and `perGrade`
+  // more a grade, half a fall's (climber.ts gains: 4 + 0.7 a grade), so it keeps pace
+  // with a go's as grades climb. The harness holds the best protocol under an hour on the
+  // rock at every grade the bots reach.
+  base: 2,
+  perGrade: 0.35,
+  // Prehab: v0.956's ×0.6 on the chance of an injury, for 8 days.
+  prehab: { days: 8, risk: 0.6 },
+  // Campus boards wait until you're climbing this grade: v0.956 let anyone at them.
+  campusGrade: 4,
+  // Phases [proposed]: base is where everyone starts, and changes nothing. A phase you
+  // choose holds for `lock` days before you can change it (v0.956 let you switch at bedtime). Peak runs
+  // at most `peakDays`, then drops you into deload on its own.
+  lock: 6,
+  peakDays: 7,
+  phases: {
+    base: { train: 1, risk: 1, windows: 1 },
+    // Training harder: more from each session, and more risk on everything.
+    build: { train: 1.25, risk: 1.2, windows: 1 },
+    // Sharp for sending: every crux a little wider, sessions teach less, and you're fragile.
+    peak: { train: 0.7, risk: 1.3, windows: 1.04 },
+    // Backing off: half from a session, less risk, and each night takes a fifth off your
+    // acute load (v0.956's ×0.8).
+    deload: { train: 0.5, risk: 0.6, windows: 1, acute: 0.8 },
+  },
+  // Taper: three days with no training, every crux 3% wider and 6% on the last day
+  // (v0.956's +0.03 and +0.06), then a fortnight before you can taper again.
+  taper: { days: 3, windows: 1.03, last: 1.06, cooldown: 14 },
+};
+
+// Multi-pitch walls (Phase 21.5), as v0.956 had them: an hour and some energy a pitch, and
+// the summit pays once, $40 + $12 a grade + $10 a pitch. A night on a ledge is a worse
+// night than the van's.
+export const WALL = {
+  pitch: { min: 60, energy: 8, fed: 4 },
+  pay: { base: 40, perGrade: 12, perPitch: 10 },
+  bivy: { energy: 40, fed: 20 },
+};
+
+// Expeditions (Phase 21.5): v0.956's day loop. Leading a pitch costs energy (more if you dig
+// deep, for better odds); a day in camp gives 48 back (v0.956's), and any night 10. A
+// pitch's odds come from your endurance against the objective's grade: `base` at the grade
+// (v0.956's 0.68 at El Cap for a V9), `perGrade` a grade either side, from `floor` to
+// `ceiling` (v0.956's 0.45 and 0.97), and `digBonus` more if you dig deep. Tuned so El Cap
+// at its grade goes a little over half the time and at its V7 gate hardly ever, as the
+// audit found v0.956's did.
+export const EXPED = {
+  energy: 100,
+  lead: 22,
+  dig: 36,
+  rest: 48,
+  night: 10,
+  base: 0.68,
+  perGrade: 0.1,
+  digBonus: 0.25,
+  floor: 0.45,
+  ceiling: 0.97,
+  // The summit's lesson for the head, as v0.956's +8 head was, scaled to a go's lessons.
+  head: 2,
+};
+
+// Crowds (Phase 21.6, v0.956's): a crag's `crowd` scaled by the weekend (v0.956's ×1.7),
+// the hour (nobody at dawn, the most from late morning into the afternoon), the sky (a prime
+// day brings everyone out; heat keeps them home) and the day's luck, then read off `levels`.
+// A crowd queues for the ropes (`queue`, minutes before a go; the boulders only when
+// packed), and knows the beta: asking around (`ask` minutes) teaches you some, at the cost of
+// the onsight, and when it's packed, someone shouts it at you anyway on a first go (`spray`).
+export const CROWD = {
+  weekend: 1.7,
+  hours: [
+    { from: 7 * 60, f: 0.5 },
+    { from: 9 * 60, f: 1 },
+    { from: 16 * 60, f: 0.7 },
+    { from: 19 * 60, f: 0 },
+  ],
+  sky: { prime: 1.25, fair: 1, hot: 0.6, rain: 0 },
+  luck: 0.3,
+  levels: { quiet: 0.25, busy: 0.7, packed: 1.2 },
+  queue: { rope: { busy: 10, packed: 20 }, boulder: { busy: 0, packed: 10 } },
+  ask: 15,
+  spray: 0.4,
+};
+
+// The speed wall at Send City (v0.956's, which cost no time and no pass: the audit's
+// exploit 20). A run is 20 holds, lights to buzzer. Your time is the seconds you took on
+// the screen times `factor`, which is `v0` at V0 and `perGrade` less a grade of power and
+// technique (power counted 60/40), down to `floor`, so a fast thumb and a strong climber
+// both show. A run takes `min` (the queue, the lower-off, the walk back), costs like a
+// short go, and teaches power and technique a little (`trains`, on a session's scale) for
+// the first `fresh` a day, then nothing: PB chasing, not a skill farm. `minReal`: faster
+// than a thumb can go.
+export const SPEED = {
+  holds: 20,
+  min: 10,
+  energy: 7,
+  skin: 2,
+  fed: 2,
+  intensity: 0.8,
+  factor: { v0: 2.8, perGrade: 0.1, floor: 1.45 },
+  minReal: 1.5,
+  fresh: 3,
+  trains: { power: 0.14, technique: 0.06 },
+};
+
+// Free Solo [proposed] (v0.956's mode): every outdoor sport line and wall pitch is climbed
+// without a rope, so no belayer or rope is needed and a fall ends the run. Trad keeps its
+// rack and boulders their pads, as v0.956's boulders did. With no rope your body climbs
+// tighter: `windows` on every crux (v0.956's 0.72 was set against its dice; this is
+// against the verbs). A solo send teaches the head `head` more, as v0.956's +8 did.
+export const FREESOLO = {
+  windows: 0.82,
+  head: 2,
 };

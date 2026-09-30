@@ -26,6 +26,10 @@ This is the game as it ships from 0.960.0 (the roadmap's R3): the first season, 
 - **The journal** (Phase 12.1, after 0.961.0): tap your body in the HUD. You as a climber, and "Lately": the last 200 things that happened, in full. A line too long for a toast comes on a card instead.
 - **v0.956's players:** v0.956 retired at 0.960.0. Someone who played it is told so, can keep their old career as a file, and can carry on under their old name, their climbing capped at V3.
 - **The shell:** the game installs and plays offline.
+- **Your kit** (Phase 21.1, after 0.961.0): shoes that wear by the go, chalk, tape for cracks, a second pad, all from the gear shop in town (resoles, and a swap meet on weekends). Worn kit tightens every crux; the You page and the beta sheet say how much.
+- **Work and crew** (after 21.4): shifts earn promotions and each rank pays more (`sim/content/jobs.ts`); ask Hazel or Sage out to any crag your bond with them covers (`invite` on each place).
+- **Trad** (Phase 21.2, after 0.961.0): Trad Arête and Gorge Trad, led on a rack from the gear shop. Let go at a stance to place a piece, for pump, or climb through and run it out; a fall catches on your last piece, and with nothing low enough you deck (`TRAD` in `dials.ts`).
+- **Training** (Phase 21.3, after 0.961.0): Train on the van (with a hangboard) or at the gym desk. Six protocols and prehab, one session a day, through the load model; phases that hold for days, a taper with a cooldown (`sim/training.ts`, `sessions.ts`, `TRAIN` in `dials.ts`). The harness holds every protocol under an hour on the rock.
 - **Sound** (Phase 13.1, after 0.961.0): every verb has one, made in code with Web Audio (`src/audio/`), like the art. Volume and vibration in Settings. `npm run dev`, then `/sounds.html`, to hear them all. Every place has ambience, from its data (`ambience` in `PLACES`), turned by the hour and the weather. Every sound is in the licence ledger (`src/audio/ledger.json`); Settings has credits. No music yet.
 - **Tonight** (Phase 12.4, after 0.961.0): at night the van says what bed costs, what's left in the morning, how your body will read and tomorrow's sky, from the numbers sleep uses (`sim/tonight.ts`).
 - **Keyboard and access** (Phase 12.3, after 0.961.0): Tab reaches everything, the things in scenes and the map's pins included; Escape puts down what's open; text goes to 1.3×; the panel colours meet WCAG AA (`npm run check`).
@@ -44,7 +48,7 @@ npm run format         # Prettier (CI runs format:check)
 npm run build          # dist/
 npm run size           # what a player downloads, against the budget
 npm run e2e            # a bot plays five days on dist/ in headless Chromium (counting day three's taps, running day four as a plan) and reloads offline, then a v0.956 player crosses over
-npm run harness        # bots play whole seasons; prints the tables and Phase 6's first-season targets
+npm run harness        # bots play whole seasons, then four-year careers; prints the tables and their targets
 ```
 
 ## Layout
@@ -53,9 +57,11 @@ npm run harness        # bots play whole seasons; prints the tables and Phase 6'
 |---|---|
 | `src/sim/` | The rules: state, actions, the clock, money and body, climbing, saves, the RNG. Plain TypeScript, no DOM. |
 | `src/sim/content/` | Places, acts, roads, routes, beta, people and their lines, as data. `gym.ts` makes Send City's weekly set and its board from the seed. |
+| `src/sim/kit.ts`, `content/gear.ts` | Your kit: what it is, what a go does to it, and what it does to a go (`KIT` in `dials.ts`). |
+| `src/sim/training.ts`, `sessions.ts`, `content/training.ts` | Your training block (phase, taper, prehab) and a session: what it costs, teaches and loads (`TRAIN` in `dials.ts`). |
 | `src/sim/climber.ts`, `weather.ts`, `presence.ts` | Skills and the grade curve; each day's sky; where people are. All pure functions of the state or the seed. |
 | `src/sim/bot.ts` | A player that isn't one: plays whole days through `act()`, with perfect or human-ish hands, under three strategies (climber, balanced, worker). |
-| `src/sim/harness.ts`, `harness/` | The balance harness: bots play 28-day seasons across every start and strategy. It prints grade, money, runway and injuries, then passes or fails Phase 6's first-season targets. |
+| `src/sim/harness.ts`, `harness/` | The balance harness: bots play 56-day seasons across every start and strategy, and print grade, money, runway and injuries against Phase 6's first-season targets. Then the career bot plays four years (224 days) from every start, against Phase 21's grade target (`career.harness.ts`). |
 | `src/sim/story.ts`, `content/story.ts` | Act I: the goal ladder, as data, and how far along it you are. |
 | `src/sim/curves.ts` | Other climbers' grades over the season: Sage's steady climb, and Dex's streaks, injury and peak. |
 | `src/sim/dials.ts` | Every tunable number, with what it means and why it's set there. |
@@ -105,7 +111,7 @@ A place is data, a pin and a picture. In order:
    - `layout.test.ts`: no pin, no header, a scene that isn't the place's, a scene narrower than the widest screen sees (960, the Lot's width), a side road that doesn't start on the highway, a drive that runs past its ends, a crag line with nowhere on screen.
    - `sun.test.ts`: a sun path that misses a line or doubles back.
 
-   If the place changes a season (a crag in Act I's grades, a job), run `npm run harness` too. The bots only climb at Roadside, the Gorge and the gym, so a crag they should use goes into their day in `sim/bot.ts` first.
+   If the place changes a season (a crag in Act I's grades, a job), run `npm run harness` too. The season's bots climb at Roadside, the Gorge, the Cove, the Mesa, the Cave and Send City (`BOT_PLACES` in `sim/bot.ts`); the career bot goes anywhere (`CAREER_PLACES`). A crag they should use goes into those lists.
 9. **Log it.** Add a changelog line in `docs/ROADMAP.md`. A new rule, or a change to one, also goes in `Dirtbag-UE/concepts/2D-SPEC-LOG.md`.
 
 ## What it still fakes
@@ -115,10 +121,11 @@ A place is data, a pin and a picture. In order:
   - The bots' human-ish hands are guesses, not measurements: scatter on the load and timing meters, and about 200 ms of lag on the tension band, varied from go to go (`HUMAN` in `sim/bot.ts`).
 - **Feel.** Phase 9's criteria (a watcher can tell how close a go was; a pumped go feels tense) and Phase 7's first hour need people, not bots.
 - **Content.**
-  - Twenty crag lines, six gym problems a week, and the board's four.
+  - Seventy-four crag lines (five of them trad, eight deep-water solos), V0 to V18 with no grade missing, six gym problems a week at Send City and the board's four, and eight a week at The Cave.
   - Before the board, about half the bots hit a wet day in week four with nothing new to try. With the board a grade stiff, none of 144 runs do. The harness counts only content running out, not days the body said no.
 - **Injuries** are rare in the first month: none for bots that warm up and heed the warning, and 3% for reckless ones. That meets Phase 6's ceiling, but it may be too gentle to register as a trade-off. It's a playtest question.
 - **Design calls** marked *[proposed]* in the roadmap are Evan's to rule on: Sage's week away, the blessing's bond, the race's V4 trigger, Act I's "regular" stage, pace, and the card's footer.
-- **Not in yet:** sound, gear (the trad lines wait for it), comps, media, and jobs beyond the café and setting.
-- **Saves.** Save v4 (Phase 10.3) adds the trips you've paid for. A 0.960.0 save (v3) loads through a migration tested against a real one.
+- **Not in yet:** comps, media, and jobs beyond the café, setting and coaching. The bots don't lead trad yet (they never buy a rack), and they don't climb walls, go on expeditions, ask the crowd for beta, race the speed wall or play Free Solo.
+- **Expeditions are sheets.** A day on El Capitan is a choice on a sheet over the Lot: no scene of its own, and the Lot's sky, not the storm.
+- **Saves.** Save v9 adds your speed-wall PB, Free Solo, and the solo you're on; v8 the wall you're on and the expedition you're away on; v7 shifts worked; v6 (Phase 21.3) your training block; v5 (Phase 21.1) your kit; v4 (Phase 10.3) the trips you've paid for. Each loads from a real save of the version before, through a tested migration.
 - **The switch-over, live.** The crossover (a browser with v0.956 installed meeting this build) was tested locally, not yet on the real site. On the first visit after the deploy, v0.956 shows once from its own cache. Within a few seconds the new worker takes over and deletes v0.956's cache, and from the next launch it's this game.

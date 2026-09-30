@@ -1,8 +1,28 @@
-import { CLIMB, gradeLabel, moveAt, resting, type Attempt, type RouteDef } from '../sim';
+import {
+  CLIMB,
+  gradeLabel,
+  moveAt,
+  protection,
+  resting,
+  stanceAt,
+  TRAD,
+  type Attempt,
+  type RouteDef,
+} from '../sim';
 import type { Game } from '../game/game';
 import { useStore } from '../game/store';
 import { VERB_TEXT } from './Sheet';
 import { vars } from './vars';
+
+// Trad: how far you are over your gear, while you climb on.
+function runout(a: Attempt, r: RouteDef): string {
+  const last = protection(a, r).at(-1);
+  if (last === undefined) return a.placed.length ? 'Climbing past your piece.' : 'Climbing. Nothing in yet.';
+  const n = Math.floor(a.pos - last);
+  return n < 1
+    ? 'Climbing, just over your piece.'
+    : `Climbing. Your last piece is ${n} move${n > 1 ? 's' : ''} down.`;
+}
 
 // What the panel says under the pump bar, most urgent first.
 function status(a: Attempt, r: RouteDef): string {
@@ -15,7 +35,15 @@ function status(a: Attempt, r: RouteDef): string {
     return `${crux.name}, ${r.beta[v.beta]!.short}. ${how}.${count}`;
   }
   if (a.phase === 'sent') return r.disc === 'sport' ? 'Chains clipped.' : 'Topped out.';
+  // Trad: a stance you haven't placed at, and the piece going in.
+  if (stanceAt(a, r) !== null)
+    return a.hold ? 'A stance. Let go to place a piece.' : 'Placing. One hand on, one fiddling a cam in.';
   if (a.pump > 80) return 'Forearms are going.';
+  if (r.disc === 'trad' && a.phase === 'climb' && a.pos > 0) {
+    const next = (r.stances ?? []).find((at) => at > a.pos && at - a.pos <= TRAD.ahead);
+    if (next !== undefined && a.hold) return 'A stance coming up.';
+    if (a.hold) return runout(a, r);
+  }
   if (!a.hold && resting(a, r) && a.pos > 0) return 'Good rest on the ledge. Shake out.';
   if (r.disc === 'boulder' && a.pos === 0 && !a.hold) return 'Hold to pull on. Let go to shake out.';
   if (a.hold) return 'Climbing.';

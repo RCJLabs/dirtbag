@@ -6,10 +6,15 @@
 // turns an old state into the new shape, and add a test that loads a real old save.
 
 import { CARRIED, STARTS } from './climber';
+import { GEAR } from './content/gear';
 import { PLACES } from './content/places';
+import { TRAIN } from './dials';
+import { JOBS } from './content/jobs';
+import { ROUTES, WALLS } from './content/routes';
+import { EXPEDITIONS } from './content/expeditions';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 9;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -62,6 +67,34 @@ export const MIGRATIONS: Record<number, Migration> = {
   3: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, unlocked: [] };
+  },
+  // v4 (0.961.0) -> v5 (Phase 21.1): the kit a new climber starts with, the shoes they drove
+  // out in and half a bag of chalk, for climbers who were already out here.
+  4: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, gear: { shoes: 60, chalk: 30 } };
+  },
+  // v5 (Phase 21.2) -> v6 (Phase 21.3): a training block, in base since the day you load it,
+  // never tapered, no prehab.
+  5: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, training: { phase: 'base', since: isInt(x.day) ? x.day : 1, taper: null, prehab: 0 } };
+  },
+  // v6 (Phase 21.3) -> v7: shifts worked, counted from here. v6 never counted them, so
+  // everyone starts at the first rank.
+  6: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, jobs: {} };
+  },
+  // v7 -> v8 (Phase 21.5): on no wall, and away on no expedition.
+  7: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, wall: null, expedition: null };
+  },
+  // v8 -> v9 (Phase 21.6): no speed runs yet, and climbing on a rope, as everyone did.
+  8: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, speed: { pb: null, runs: 0, day: 0 }, mode: 'rope', soloing: null, dead: null };
   },
 };
 
@@ -167,6 +200,58 @@ export function validate(x: unknown): string[] {
   need(isInt(x.trips) && x.trips >= 0, 'trips');
   need(isInt(x.goals) && x.goals >= 0, 'goals');
   need(isStrs(x.unlocked) && x.unlocked.every((id) => id in PLACES), 'unlocked');
+  need(
+    isObj(x.gear) &&
+      Object.entries(x.gear).every(
+        ([id, n]) => id in GEAR && isNum(n) && n >= 0 && (GEAR[id]!.kind !== 'wears' || n <= 100),
+      ),
+    'gear',
+  );
+  const tr = x.training;
+  need(
+    isObj(tr) &&
+      typeof tr.phase === 'string' &&
+      tr.phase in TRAIN.phases &&
+      isInt(tr.since) &&
+      tr.since >= 1 &&
+      (tr.taper === null || (isInt(tr.taper) && tr.taper >= 1)) &&
+      isInt(tr.prehab) &&
+      tr.prehab >= 0,
+    'training',
+  );
+  need(isObj(x.jobs) && Object.entries(x.jobs).every(([id, n]) => id in JOBS && isInt(n) && n >= 0), 'jobs');
+  const w = x.wall;
+  need(
+    w === null || (isObj(w) && typeof w.id === 'string' && w.id in WALLS && isInt(w.next) && w.next >= 0),
+    'wall',
+  );
+  const e = x.expedition;
+  need(
+    e === null ||
+      (isObj(e) &&
+        typeof e.id === 'string' &&
+        e.id in EXPEDITIONS &&
+        isInt(e.day) &&
+        e.day >= 1 &&
+        isInt(e.pitch) &&
+        e.pitch >= 0 &&
+        isNum(e.energy) &&
+        e.energy >= 0),
+    'expedition',
+  );
+  const sp = x.speed;
+  need(
+    isObj(sp) &&
+      (sp.pb === null || (isNum(sp.pb) && sp.pb > 0)) &&
+      isInt(sp.runs) &&
+      sp.runs >= 0 &&
+      isInt(sp.day),
+    'speed',
+  );
+  need(x.mode === 'rope' || x.mode === 'solo', 'mode');
+  need(x.soloing === null || (typeof x.soloing === 'string' && x.soloing in ROUTES), 'soloing');
+  const dd = x.dead;
+  need(dd === null || (isObj(dd) && typeof dd.route === 'string' && isInt(dd.day) && isNum(dd.hi)), 'dead');
   const dog = x.dog;
   const pct = (v: unknown) => isNum(v) && v >= 0 && v <= 100;
   need(

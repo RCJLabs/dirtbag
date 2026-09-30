@@ -11,6 +11,7 @@ export {
   actCost,
   belayer,
   landingChance,
+  deckChance,
   fallFt,
   morePads,
   lessonAt,
@@ -20,6 +21,7 @@ export {
   routeOfId,
   lineGrade,
   lineName,
+  revealed,
   talkValues,
   dogTier,
   dogLine,
@@ -28,6 +30,7 @@ export {
   FA_NAME_MAX,
   LOG_MAX,
   NAME_MAX,
+  unfinishedSolo,
 } from './game';
 export {
   startAttempt,
@@ -39,6 +42,8 @@ export {
   dayFactor,
   moveAt,
   resting,
+  stanceAt,
+  protection,
   picks,
   routeOf,
   betaOf,
@@ -82,16 +87,38 @@ export type { Stay } from './presence';
 export { gradeOfPerson, dexHurt } from './curves';
 export { ratio, zone, daysOff, cold, goLoad, projected } from './body';
 export { tonight, runway } from './tonight';
+export { GEAR, START_KIT } from './content/gear';
+export { has, kitFactor } from './kit';
 export type { Tonight } from './tonight';
 export type { Zone } from './body';
-export { holds, unmet, isNight, headroom, beatDue, dogOffered } from './cond';
+export { holds, unmet, isNight, isWeekend, headroom, beatDue, dogOffered } from './cond';
 export type { Cond, Need } from './cond';
 export { toSave, fromSave, validate, SAVE_VERSION, MIGRATIONS } from './save';
 export type { LoadResult, Migration, SaveFile } from './save';
 export { Rng, hashSeed, mulberry32 } from './rng';
 export type { Stream } from './rng';
 export * from './format';
-export { DAY, MONEY, BODY, CLIMB, LOAD, INJURY, HIGHBALL, BOND, ARC, DOG, LEGACY } from './dials';
+export {
+  DAY,
+  MONEY,
+  BODY,
+  CLIMB,
+  LOAD,
+  INJURY,
+  HIGHBALL,
+  BOND,
+  ARC,
+  DOG,
+  LEGACY,
+  KIT,
+  TRAD,
+  TRAIN,
+  WALL,
+  EXPED,
+  CROWD,
+  SPEED,
+  FREESOLO,
+} from './dials';
 export { PLACES, ACTS, ROADS, road, TEXT_VALUES } from './content/places';
 export type { PlaceDef, ActDef, RoadDef, Trip, Ambience } from './content/places';
 export {
@@ -104,8 +131,18 @@ export {
   effGrade,
   libraryBoulder,
   librarySport,
+  libraryTrad,
+  roped,
+  onWall,
+  WALLS,
 } from './content/routes';
-export type { RouteDef, CruxDef, BetaDef, Verb, Disc } from './content/routes';
+export type { RouteDef, CruxDef, BetaDef, Verb, Disc, WallDef } from './content/routes';
+export { EXPEDITIONS } from './content/expeditions';
+export type { ExpeditionDef } from './content/expeditions';
+export { pitchOdds, stormOn, summitOdds, onExpedition, wallPay } from './expeditions';
+export { soloed } from './solo';
+export { speedBlocked, speedFactor, speedGains, speedTime, runsToday, SPEED_WALL } from './speed';
+export { crowdAt, crowdNow, crowdLevel, queueMin, sprayable, canAsk, type Crowd } from './crowds';
 export {
   GYM,
   WEEK_DAYS,
@@ -122,3 +159,10 @@ export { DOG_OFFER, DOG_TIER_NAME } from './content/dog';
 export { ACT_I, ACT_I_END } from './content/story';
 export { currentGoal, goalDesc, progress } from './story';
 export type { TalkDef, TalkNode, TalkOpt, TalkFx, PersonDef, ThingDef } from './content/people';
+export { PROTOCOLS, PREHAB } from './content/training';
+export type { ProtocolDef } from './content/training';
+export { PHASES, PHASE_NAME, phaseLock, taperDay, taperWait, prehabbed, trainWindows } from './training';
+export { sessionCost, prehabCost, sessionGains, sessionLoad, trainBlocked, prehabBlocked } from './sessions';
+export { JOBS } from './content/jobs';
+export { rankAt, rankName, nextRank, raiseAt, shiftsAt } from './jobs';
+export { caveSet, CAVE, INDOOR, indoor } from './content/gym';

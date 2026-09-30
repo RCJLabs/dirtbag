@@ -3,13 +3,24 @@
 import { describe, expect, it } from 'vitest';
 import { betaScale } from './climb';
 import { needFor } from './climber';
-import { routeById } from './content/gym';
+import { routeById, routesAt } from './content/gym';
 import { road } from './content/places';
 import { ROUTES } from './content/routes';
 import { HIGHBALL } from './dials';
-import { act, belayer, faSuggestions, goBlocked, landingChance, lineGrade, lineName, newGame } from './game';
+import {
+  act,
+  belayer,
+  emptyLog,
+  faSuggestions,
+  goBlocked,
+  landingChance,
+  lineGrade,
+  lineName,
+  newGame,
+} from './game';
 import type { Action, GameEvent, GameState } from './types';
-import { conditions, conditionsAt, skyOn } from './weather';
+import { conditions, conditionsAt, seasonOf, skyOn } from './weather';
+import { TALK } from './content/people';
 
 const lines = (ev: GameEvent[]) => ev.flatMap((e) => (e.k === 'line' ? [e.text] : []));
 const at = (grade: number, over: Partial<GameState> = {}): GameState => {
@@ -116,6 +127,164 @@ describe('Moonstone Boulders', () => {
     expect(betaScale(s, ROUTES.megg!, 'A1')).toBeLessThan(
       betaScale({ ...s, at: 'road' }, { ...ROUTES.megg!, place: 'road' }, 'A1'),
     );
+  });
+});
+
+describe('Sandstone Mesa (Phase 21.4)', () => {
+  it('opens at V7, three hours out, with no haul to pay for', () => {
+    const r = act(at(6), { t: 'travel', to: 'mesa' });
+    expect(r.events[0]).toMatchObject({ k: 'refused' });
+    const s = play(at(7), { t: 'travel', to: 'mesa' }).state;
+    expect(s).toMatchObject({ at: 'mesa', cash: 100 - road('lot', 'mesa')!.cash });
+    expect(road('lot', 'mesa')!.min).toBe(180);
+  });
+
+  it('shuts for the summer heat, and is desert rock the rest of the year', () => {
+    const summer = days(60, 100).find(
+      (d) => seasonOf(d) === 'summer' && conditionsAt('crags', d, 'mesa').open,
+    )!;
+    expect(goBlocked(at(8, { at: 'mesa', day: summer, min: 10 * 60 }), ROUTES.svarnish!)).toBe(
+      'Too hot to hold anything till fall',
+    );
+    const fall = days(1, 28).find((d) => conditionsAt('crags', d, 'mesa').open)!;
+    expect(goBlocked(at(8, { at: 'mesa', day: fall, min: 10 * 60 }), ROUTES.svarnish!)).toBeNull();
+  });
+
+  it('keeps v0.956’s eleven lines, V7 to the open V13, and Sage will come out to belay', () => {
+    const here = Object.values(ROUTES).filter((r) => r.place === 'mesa');
+    expect(here).toHaveLength(11);
+    expect(Math.min(...here.map((r) => r.grade))).toBe(7);
+    expect(here.find((r) => r.open)?.grade).toBe(13);
+    const s = at(8, { at: 'mesa', min: 10 * 60 });
+    expect(goBlocked(s, ROUTES.sdlap!)).toBe('Nobody here to belay you');
+    expect(TALK.sage!.nodes.invite!.opts.find((o) => o.fx?.invite === 'mesa')?.when?.bond).toBe('sage/5');
+  });
+});
+
+describe('The Big Stone (Phase 21.4)', () => {
+  it('opens at V8 once the trip is paid for, four hours out, in the shade', () => {
+    const r = act(at(8, { cash: 700 }), { t: 'travel', to: 'stone' });
+    expect(r.events[0]).toMatchObject({ k: 'refused' });
+    const paid = play(at(8, { cash: 700 }), { t: 'unlock', place: 'stone' }, { t: 'travel', to: 'stone' });
+    expect(paid.state).toMatchObject({ at: 'stone', cash: 100 - road('lot', 'stone')!.cash });
+    expect(road('lot', 'stone')!.min).toBe(240);
+    const hot = days(2, 120).find((d) => conditionsAt('crags', d, 'stone').sky === 'hot');
+    if (hot) expect(conditionsAt('crags', hot, 'stone').greaseFrom).toBe(24 * 60);
+  });
+
+  it('keeps v0.956’s five single pitches, and takes a Ride-or-Die to come out', () => {
+    const here = Object.values(ROUTES).filter((r) => r.place === 'stone' && !r.wall);
+    expect(here.map((r) => [r.name, r.disc]).sort()).toEqual(
+      [
+        ['Base Camp Boulder', 'boulder'],
+        ['The Splitter Pitch', 'boulder'],
+        ['The Trad Pitch', 'trad'],
+        ['The Warm-Up Wall', 'boulder'],
+        ['Valley Classic', 'sport'],
+      ].sort(),
+    );
+    expect(TALK.sage!.nodes.invite!.opts.find((o) => o.fx?.invite === 'stone')?.when).toMatchObject({
+      bond: 'sage/7',
+      unlocked: 'stone',
+    });
+  });
+});
+
+describe('Wind River Walls (Phase 21.4)', () => {
+  it('opens at V9 once paid for, takes a permit every trip, past the Gorge, four hours out', () => {
+    const paid = play(at(9, { cash: 900 }), { t: 'unlock', place: 'wind' }, { t: 'travel', to: 'wind' });
+    expect(paid.state.at).toBe('wind');
+    expect(paid.state.cash).toBe(100 - road('lot', 'wind')!.cash - 35);
+    expect(road('lot', 'wind')!.min).toBe(240);
+    expect(road('lot', 'wind')!.via).toContain('gorge');
+  });
+
+  it('is snowed in all winter', () => {
+    const winter = days(1, 400).find(
+      (d) => seasonOf(d) === 'winter' && conditionsAt('crags', d, 'wind').open,
+    )!;
+    expect(
+      goBlocked(at(10, { at: 'wind', day: winter, min: 10 * 60, unlocked: ['wind'] }), ROUTES.walpine!),
+    ).toBe('Snowed in till spring');
+  });
+
+  it('keeps v0.956’s nine lines, V9 to an open V15', () => {
+    const here = Object.values(ROUTES).filter((r) => r.place === 'wind');
+    expect(here).toHaveLength(9);
+    expect(here.find((r) => r.open)?.grade).toBe(15);
+    expect(
+      here
+        .filter((r) => r.disc !== 'boulder')
+        .map((r) => r.disc)
+        .sort(),
+    ).toEqual(['sport', 'sport', 'sport', 'trad']);
+  });
+});
+
+describe('The Crucible (Phase 21.4)', () => {
+  it('opens at V11, four hours south, with no haul to pay for', () => {
+    expect(act(at(10), { t: 'travel', to: 'crucible' }).events[0]).toMatchObject({ k: 'refused' });
+    const s = play(at(11), { t: 'travel', to: 'crucible' }).state;
+    expect(s).toMatchObject({ at: 'crucible', cash: 100 - road('lot', 'crucible')!.cash });
+    expect(road('lot', 'crucible')!.min).toBe(240);
+  });
+
+  it('keeps its myths unreadable until the hardest known line under each is sent', () => {
+    const s = at(18, { at: 'crucible', min: 10 * 60 });
+    const myth = ROUTES.cgenesis!;
+    expect(goBlocked(s, myth)).toBe("You can't read this line yet. Send Event Horizon first");
+    const sent = {
+      ...s,
+      routes: { chorizon: { ...emptyLog(), sent: { day: 1, go: 1, style: 'redpoint' as const } } },
+    };
+    expect(goBlocked(sent, myth)).toBeNull();
+    // Both are open: the first ascent is yours to name.
+    expect(ROUTES.cmyth!).toMatchObject({ grade: 18, disc: 'sport', open: true, hiddenUntil: 'cthreshold' });
+    expect(myth).toMatchObject({ grade: 18, open: true });
+  });
+});
+
+describe('the grades (Phase 21.4)', () => {
+  it('run from V0 to V18 with no hole: the gym up to V5, the crags from V2', () => {
+    const outdoors = new Set(
+      Object.values(ROUTES)
+        .filter((r) => r.disc === 'boulder' && r.place !== 'gym')
+        .map((r) => r.grade),
+    );
+    const gym = new Set(routesAt('crags', 'gym', 1).map((r) => r.grade));
+    for (let g = 0; g <= 18; g++) expect(outdoors.has(g) || gym.has(g), `V${g}`).toBe(true);
+  });
+});
+
+describe('Psicobloc Cove (Phase 21.4)', () => {
+  it('opens at V4, two hours out past Old Town, in summer only', () => {
+    expect(act(at(3), { t: 'travel', to: 'cove' }).events[0]).toMatchObject({ k: 'refused' });
+    expect(road('lot', 'cove')!.min).toBe(120);
+    const summer = days(1, 400).find(
+      (d) => seasonOf(d) === 'summer' && conditionsAt('crags', d, 'cove').open,
+    )!;
+    const fall = days(1, 400).find((d) => seasonOf(d) === 'fall' && conditionsAt('crags', d, 'cove').open)!;
+    expect(goBlocked(at(5, { at: 'cove', day: summer, min: 10 * 60 }), ROUTES.pslab!)).toBeNull();
+    expect(goBlocked(at(5, { at: 'cove', day: fall, min: 10 * 60 }), ROUTES.pslab!)).toBe(
+      'Cold, rough seas till summer',
+    );
+  });
+
+  it('keeps v0.956’s eight deep-water lines, V2 to V9, and a fall off one never hurts', () => {
+    const here = Object.values(ROUTES).filter((r) => r.place === 'cove');
+    expect(here).toHaveLength(8);
+    expect(here.every((r) => r.dws && r.disc === 'boulder' && !r.highball)).toBe(true);
+    // Spiked load, cold, off the top of the Deep End: the sea takes it, every day.
+    const hurt = days(1, 60).filter((day) => {
+      const s = at(9, { at: 'cove', day, today: [], load: { acute: 60, chronic: 20, today: 40 } });
+      const r = act(s, {
+        t: 'done',
+        route: 'pdeep',
+        result: { sent: false, hi: 11, fellAt: 'A', tried: ['A1'], skin: 0 },
+      });
+      return r.state.injury;
+    });
+    expect(hurt).toEqual([]);
   });
 });
 

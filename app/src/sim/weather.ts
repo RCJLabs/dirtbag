@@ -115,7 +115,11 @@ export function conditionsAt(
   const c = p?.ownSky
     ? fromSky(skyAt(seed, day, place), day > 1 ? skyAt(seed, day - 1, place) : null)
     : conditions(seed, day);
-  const closed = p?.closed && seasonOf(day) === p.closed.season ? p.closed.why : null;
+  const shut = p?.closed?.season;
+  const closed =
+    p?.closed && (Array.isArray(shut) ? shut.includes(seasonOf(day)) : seasonOf(day) === shut)
+      ? p.closed.why
+      : null;
   if (p?.desert) return { ...c, closed, windows: c.windows * CLIMB.desertFactor };
   if (!p?.shaded) return { ...c, closed };
   return {

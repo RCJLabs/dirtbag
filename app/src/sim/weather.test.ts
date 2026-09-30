@@ -91,7 +91,10 @@ describe('weather', () => {
     expect(times.at(-1)).toBe(start + CLIMB.sunSweep);
     for (let i = 1; i < times.length; i++) expect(times[i]).toBeGreaterThan(times[i - 1]!);
     // Halfway along the path, halfway across the sweep: where the single sun time used to be.
-    expect(sunOn('test', 1, 'road', path[(path.length - 1) / 2]!)).toBe(15 * 60);
+    // (With an even count of lines, halfway falls between the middle two.)
+    const lo = sunOn('test', 1, 'road', path[Math.floor((path.length - 1) / 2)]!);
+    const hi = sunOn('test', 1, 'road', path[Math.ceil((path.length - 1) / 2)]!);
+    expect(Math.abs((lo + hi) / 2 - 15 * 60)).toBeLessThanOrEqual(1);
     // The Gorge is in the shade all day, and a line off the path takes the sun with the wall.
     expect(sunOn('test', 1, 'gorge', 'gslab')).toBe(24 * 60);
     expect(sunOn('test', 1, 'road', 'nope')).toBe(start);

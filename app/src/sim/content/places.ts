@@ -10,7 +10,7 @@
 // back: there's no game over, only a bad week.
 
 import type { Need } from '../cond';
-import { DAY, DOG, MONEY } from '../dials';
+import { DAY, DOG, KIT, MONEY } from '../dials';
 import { DOG_LINES, DOG_OFFER } from './dog';
 import { clockShort } from '../format';
 import type { Delta, Skills } from '../types';
@@ -22,8 +22,9 @@ export interface PlaceDef {
   // card says until then.
   minGrade?: number;
   locked?: string;
-  // A season it's closed, and why (v0.956's closedSeason).
-  closed?: { season: Season; why: string };
+  // A season it's closed, and why (v0.956's closedSeason); or several, for a place that's
+  // only open the rest of the year (v0.956's openSeason).
+  closed?: { season: Season | Season[]; why: string };
   // Shaded rock stays cool: no afternoon grease, and heat doesn't hurt it.
   shaded?: true;
   // Desert rock: sunbaked, every window a little tighter (CLIMB.desertFactor).
@@ -42,6 +43,12 @@ export interface PlaceDef {
   sun?: string[];
   // Real rock: a trip out, and a crag's beats and people.
   crag?: true;
+  // The bond a partner needs with you to come out here when you ask: further, harder to
+  // talk them into (BOND.tiers names them).
+  invite?: number;
+  // How many climbers it draws on a plain weekday afternoon, 0 to 1 (v0.956's crag
+  // popularity). Crowds (Phase 21.6) build from it; a place without one never has one.
+  crowd?: number;
   // The side-view scene you walk around in, or null for a card-only place.
   scene: string | null;
   // The map card's line when you're elsewhere, and when you're here.
@@ -89,6 +96,11 @@ export interface ActDef {
   dog?: { adopt?: true; fill?: true; bond?: number };
   // A line picked by the day, instead of the same one every time.
   saysOneOf?: string[];
+  // What it does to your kit: sets an item to this (condition, or 1 for owned), or adds uses.
+  gear?: { id: string; set?: number; add?: number };
+  // A shift at a job (content/jobs.ts), counting this many toward promotion. Its pay is
+  // `cost.cash` at the first rank, plus the rank's raise for each shift.
+  job?: { id: string; shifts: number };
 }
 
 export interface RoadDef {
@@ -108,6 +120,7 @@ export const PLACES: Record<string, PlaceDef> = {
     acts: [],
   },
   road: {
+    crowd: 0.6,
     name: 'Roadside Crag',
     crag: true,
     scene: 'crag',
@@ -115,6 +128,7 @@ export const PLACES: Record<string, PlaceDef> = {
     away: 'Granite. {lines} lines, from a V2 warm-up to The Pump.',
     here: "You're parked here.",
     acts: [],
+    invite: 1,
     // The sun comes round the far end first: the projects out in the boulder field lose
     // their shade early, and the warm-ups by the road keep theirs longest.
     sun: [
@@ -122,6 +136,7 @@ export const PLACES: Record<string, PlaceDef> = {
       'project',
       'highball',
       'fingercrack',
+      'tradarete',
       'testpiece',
       'pump',
       'crimpfest',
@@ -132,6 +147,7 @@ export const PLACES: Record<string, PlaceDef> = {
     ],
   },
   gorge: {
+    crowd: 0.5,
     name: 'Granite Gorge',
     crag: true,
     scene: 'gorge',
@@ -140,6 +156,7 @@ export const PLACES: Record<string, PlaceDef> = {
     here: 'The canyon’s cool even at noon.',
     acts: [],
     minGrade: 4,
+    invite: 3,
     locked: 'V5 and up. It’s no place to learn: come back when you’re climbing V4.',
     closed: { season: 'spring', why: 'Closed for nesting raptors till summer' },
     shaded: true,
@@ -147,6 +164,7 @@ export const PLACES: Record<string, PlaceDef> = {
   // v0.956's third crag, "a fabled desert highball mecca, a real road trip out": V6 to
   // get in, a haul to pay for once, and a permit every trip.
   moon: {
+    crowd: 0.45,
     name: 'Moonstone Boulders',
     crag: true,
     scene: 'moon',
@@ -155,6 +173,7 @@ export const PLACES: Record<string, PlaceDef> = {
     here: 'Sand, sky, and boulders the size of houses.',
     acts: [],
     minGrade: 6,
+    invite: 5,
     locked: 'Tall, hard and a long way out. Come back when you’re climbing V6.',
     unlock: 400,
     permit: 20,
@@ -164,6 +183,124 @@ export const PLACES: Record<string, PlaceDef> = {
     // The sun comes round the far end first, like Roadside's: the project out past the
     // roof loses its shade first, the arête by the van keeps it longest.
     sun: ['mopen', 'mroof', 'msplitter', 'mhueco', 'mmoon', 'mspire', 'megg', 'mmantel', 'marete'],
+  },
+  // v0.956's fourth crag: "a famous desert destination, world-class and brutal". V7 to get
+  // in, three hours out, and shut for the summer heat. No haul to pay for: just the drive.
+  mesa: {
+    crowd: 0.45,
+    name: 'Sandstone Mesa',
+    crag: true,
+    scene: 'mesa',
+    ambience: { wind: 0.5, hawk: 0.25 },
+    away: 'Red desert sandstone, three hours out. World-class, and brutal about it.',
+    here: 'Red rock, black varnish, and nobody for miles.',
+    acts: [],
+    minGrade: 7,
+    invite: 5,
+    locked: 'V7 and up, and they mean it. Come back when you’re climbing V7.',
+    closed: { season: 'summer', why: 'Too hot to hold anything till fall' },
+    desert: true,
+    ownSky: true,
+    // The sun comes round the far end first, as at Moonstone: the project out past the
+    // Prow loses its shade first, the traverse by the van keeps it longest.
+    sun: [
+      'sopen',
+      'smega',
+      'spowerhouse',
+      'sprow',
+      'sdtrad',
+      'sbiglink',
+      'senduro',
+      'sdlap',
+      'ssplit',
+      'scrimps',
+      'svarnish',
+    ],
+  },
+  // v0.956's "valley of granite big walls, the multi-day proving ground": V8 to get in, a
+  // trip paid for once, four hours out, and shaded. Its walls come with Phase 21.5.
+  stone: {
+    crowd: 0.6,
+    name: 'The Big Stone',
+    crag: true,
+    scene: 'stone',
+    ambience: { wind: 0.3, birds: 0.3, creek: 0.4 },
+    away: 'A valley of granite big walls, four hours out. The proving ground.',
+    here: 'Granite to the sky on both sides. Your neck hurts already.',
+    acts: [],
+    minGrade: 8,
+    invite: 7,
+    locked: 'The walls are V8 and up, and they don’t care who you are. Come back when you’re climbing V8.',
+    unlock: 600,
+    shaded: true,
+    ownSky: true,
+  },
+  // v0.956's "high alpine granite cathedral, a long, costly haul for the committed": V9, a
+  // trip paid for once and a permit every time, four hours out past the Gorge, shaded, and
+  // snowed in all winter.
+  wind: {
+    crowd: 0.3,
+    name: 'Wind River Walls',
+    crag: true,
+    scene: 'wind',
+    ambience: { wind: 0.7, creek: 0.3, hawk: 0.15 },
+    away: 'High alpine granite past the Gorge. A long, costly haul for the committed.',
+    here: 'Thin air, cold rock, and weather you watch.',
+    acts: [],
+    minGrade: 9,
+    invite: 7,
+    locked: 'V9 and up, and a long way up at that. Come back when you’re climbing V9.',
+    unlock: 800,
+    permit: 35,
+    closed: { season: 'winter', why: 'Snowed in till spring' },
+    shaded: true,
+    ownSky: true,
+  },
+  // v0.956's "remote, frigid wall, where the grades run out": V11, four hours out, shaded, no
+  // haul to pay for. East out of the valley, over the pass above Midtown.
+  crucible: {
+    crowd: 0.2,
+    name: 'The Crucible',
+    crag: true,
+    scene: 'crucible',
+    ambience: { wind: 0.8, hawk: 0.1 },
+    away: 'A remote, frigid wall four hours east, over the pass. Where the grades run out.',
+    here: 'Black gneiss, cold wind, and nothing easy.',
+    acts: [],
+    minGrade: 11,
+    invite: 7,
+    locked: 'Nothing here is under V13. Come back when you’re climbing V11, and even then.',
+    shaded: true,
+    ownSky: true,
+  },
+  // v0.956's "deep-water solo over the sea, summer only, and a fall is just a splash": V4,
+  // two hours out on the coast past Old Town, no fee, and shut the rest of the year.
+  cove: {
+    crowd: 0.6,
+    name: 'Psicobloc Cove',
+    crag: true,
+    scene: 'cove',
+    ambience: { wind: 0.4, creek: 0.7, birds: 0.2 },
+    away: 'Deep-water solo on a limestone sea cliff, two hours out. A fall is just a splash.',
+    here: 'Salt on your hands, the swell under you, and no pads anywhere.',
+    acts: [],
+    minGrade: 4,
+    invite: 3,
+    locked: 'The cliff starts at V2 but the swim doesn’t. Come back when you’re climbing V4.',
+    closed: { season: ['fall', 'winter', 'spring'], why: 'Cold, rough seas till summer' },
+    ownSky: true,
+    // The sun comes up the coast from the south end: the tall lines out at the point first.
+    sun: ['pdeep', 'parete', 'poverhang', 'pleap', 'pbarnacle', 'pslab', 'pplunge', 'ptide'],
+  },
+  // v0.956's second gym: "a steep bouldering cave, no ropes, just hard plastic", V3 to V10,
+  // at the trailhead below Roadside. A day pass, and coaching for work once you can climb.
+  cave: {
+    name: 'The Cave',
+    scene: 'cave',
+    ambience: { room: 0.7, murmur: 0.3 },
+    away: 'The bouldering cave at the trailhead. Steep plastic, V3 and up. Day pass {pass}.',
+    here: 'Low ceiling, loud music, everyone upside down.',
+    acts: ['cave.pass', 'cave.coach'],
   },
   gym: {
     name: 'Send City',
@@ -180,6 +317,28 @@ export const PLACES: Record<string, PlaceDef> = {
     away: 'Old Town. The special, and bottomless coffee.',
     here: 'Old Town. Otis is reading the paper.',
     acts: ['diner.meal', 'diner.coffee'],
+  },
+  // Phase 21.1: where your kit comes from. A resole bench in the back, and on weekends the
+  // swap meet out front.
+  shop: {
+    name: 'The Gear Shop',
+    scene: null,
+    ambience: { room: 0.3, murmur: 0.25, clinks: 0.1 },
+    away: 'Midtown. Shoes, chalk, pads, and a resole bench in the back.',
+    here: "A bell on the door. Two guys by the cams, arguing about a route neither's done.",
+    acts: [
+      'shop.resole',
+      'shop.chalk',
+      'shop.tape',
+      'shop.shoes',
+      'shop.pad',
+      'shop.rack',
+      'shop.hangboard',
+      'shop.rope',
+      'shop.usedShoes',
+      'shop.usedPad',
+      'shop.usedRack',
+    ],
   },
   cafe: {
     name: 'Coffee Shop',
@@ -263,7 +422,8 @@ export const ACTS: Record<string, ActDef> = {
       { energy: 12, why: 'Too tired to pull shots.' },
     ],
     sets: ['worked'],
-    says: 'Three hours of oat milk. +$28.',
+    job: { id: 'cafe', shifts: 1 },
+    says: 'Three hours of oat milk.',
   },
   'cafe.double': {
     label: 'Pick up a double',
@@ -275,13 +435,133 @@ export const ACTS: Record<string, ActDef> = {
     ],
     note: 'The day is gone after this.',
     sets: ['worked'],
-    says: 'Six hours on your feet. +$56.',
+    job: { id: 'cafe', shifts: 2 },
+    says: 'Six hours on your feet.',
   },
   'cafe.coffee': {
     label: 'Buy a coffee',
     cost: { min: 10, cash: -4, energy: 16, fed: -2 },
     needs: [{ pay: 4 }],
     says: 'Wren makes it strong.',
+  },
+  // The gear shop (Phase 21.1). Prices, wear and what a block lasts are KIT's.
+  'shop.resole': {
+    label: 'Resole your shoes',
+    cost: { min: 10, cash: -KIT.shoes.resole },
+    needs: [
+      { has: 'shoes', why: 'Nothing to resole.' },
+      { gearBelow: `shoes/${KIT.shoes.resoleTo}`, why: 'Your rubber has life in it yet.' },
+      { pay: KIT.shoes.resole },
+    ],
+    gear: { id: 'shoes', set: KIT.shoes.resoleTo },
+    says: "Fresh rubber. For a day they'll feel like someone else's.",
+  },
+  'shop.chalk': {
+    label: 'A block of chalk',
+    cost: { min: 5, cash: -KIT.chalk.price },
+    needs: [{ pay: KIT.chalk.price }],
+    gear: { id: 'chalk', add: KIT.chalk.uses },
+    says: 'You crush half of it into the bag before you reach the door.',
+  },
+  'shop.tape': {
+    label: 'A roll of tape',
+    cost: { min: 5, cash: -KIT.tape.price },
+    needs: [{ pay: KIT.tape.price }],
+    gear: { id: 'tape', add: KIT.tape.uses },
+    says: 'Athletic tape. For cracks, and for pretending your tips are fine.',
+  },
+  'shop.shoes': {
+    label: 'New shoes',
+    cost: { min: 20, cash: -KIT.shoes.price },
+    needs: [{ gearBelow: 'shoes/100', why: 'Yours are new.' }, { pay: KIT.shoes.price }],
+    gear: { id: 'shoes', set: 100 },
+    says: "They pinch. They'll give.",
+  },
+  'shop.pad': {
+    label: 'A second pad',
+    cost: { min: 10, cash: -KIT.pad.price },
+    needs: [{ hasNot: 'pad', why: 'Two pads is plenty to carry.' }, { pay: KIT.pad.price }],
+    gear: { id: 'pad', set: 1 },
+    says: 'A second pad on the roof rack. Highballs look shorter already.',
+  },
+  'shop.usedShoes': {
+    label: 'Used shoes, from the swap meet',
+    cost: { min: 20, cash: -Math.round(KIT.used.share * KIT.shoes.price) },
+    needs: [
+      { weekend: true, why: 'The swap meet is weekends.' },
+      { gearBelow: `shoes/${KIT.used.condition}`, why: 'Yours are better than anything on the table.' },
+      { pay: Math.round(KIT.used.share * KIT.shoes.price) },
+    ],
+    gear: { id: 'shoes', set: KIT.used.condition },
+    says: 'Somebody else broke them in. Somebody with your feet, almost.',
+  },
+  'shop.usedPad': {
+    label: 'A used pad, from the swap meet',
+    cost: { min: 10, cash: -Math.round(KIT.used.share * KIT.pad.price) },
+    needs: [
+      { weekend: true, why: 'The swap meet is weekends.' },
+      { hasNot: 'pad', why: 'Two pads is plenty to carry.' },
+      { pay: Math.round(KIT.used.share * KIT.pad.price) },
+    ],
+    gear: { id: 'pad', set: 1 },
+    says: 'The foam is tired and the cover is duct tape. It still lands.',
+  },
+  'shop.rack': {
+    label: 'A rack',
+    cost: { min: 20, cash: -KIT.rack.price },
+    needs: [{ hasNot: 'rack', why: 'One rack is plenty. Two is a hobby.' }, { pay: KIT.rack.price }],
+    gear: { id: 'rack', set: 1 },
+    says: 'A rack of cams, a set of nuts, slings. It jangles like money leaving.',
+  },
+  'shop.hangboard': {
+    label: 'A hangboard',
+    cost: { min: 15, cash: -KIT.hangboard.price },
+    needs: [{ hasNot: 'hangboard', why: 'One board on the van is plenty.' }, { pay: KIT.hangboard.price }],
+    gear: { id: 'hangboard', set: 1 },
+    says: 'A slab of wood with edges in it. It goes over the back doors, and the van will never be the same.',
+  },
+  'shop.rope': {
+    label: 'A rope and a harness',
+    cost: { min: 15, cash: -KIT.rope.price },
+    needs: [{ hasNot: 'rope', why: 'One rope is enough to get you in trouble.' }, { pay: KIT.rope.price }],
+    gear: { id: 'rope', set: 1 },
+    says: 'Seventy metres of dynamic rope, and a harness that fits if you breathe in.',
+  },
+  'shop.usedRack': {
+    label: 'A used rack, from the swap meet',
+    cost: { min: 20, cash: -Math.round(KIT.used.share * KIT.rack.price) },
+    needs: [
+      { weekend: true, why: 'The swap meet is weekends.' },
+      { hasNot: 'rack', why: 'One rack is plenty. Two is a hobby.' },
+      { pay: Math.round(KIT.used.share * KIT.rack.price) },
+    ],
+    gear: { id: 'rack', set: 1 },
+    says: 'Somebody’s old rack: faded slings, cams that still cam. You check every trigger twice.',
+  },
+
+  'cave.pass': {
+    label: 'Buy a day pass',
+    cost: { min: 5, cash: -MONEY.dayPass },
+    needs: [{ notToday: 'cavepass', why: "You've got a pass for today." }, { pay: MONEY.dayPass }],
+    sets: ['cavepass'],
+    says: 'A stamp on your hand, and a nod at the steep end.',
+  },
+  // v0.956's Cave job: coaching, four hours at $34, training head and technique. Nobody
+  // pays for coaching from someone who can't climb [proposed: V5 to start].
+  'cave.coach': {
+    label: 'Coach a session',
+    cost: { min: 240, cash: 34, energy: -18, fed: -10 },
+    needs: [
+      oneShift,
+      { grade: 5, why: 'They want a coach who climbs V5.' },
+      { before: 14 * 60, why: 'Sessions start by {t}.' },
+      { energy: 18, why: 'Too tired to spot anyone.' },
+    ],
+    note: 'Trains your head and technique. Your pass is on the house.',
+    sets: ['worked', 'cavepass'],
+    trains: { head: 2, technique: 1 },
+    job: { id: 'coach', shifts: 1 },
+    says: 'Four hours of telling people to trust their feet.',
   },
   'gym.pass': {
     label: 'Buy a day pass',
@@ -301,7 +581,8 @@ export const ACTS: Record<string, ActDef> = {
     note: 'Trains technique. Your pass is on the house.',
     sets: ['worked', 'pass'],
     trains: { technique: 3 },
-    says: 'Four hours on a ladder with a drill. +$28, and a free pass.',
+    job: { id: 'set', shifts: 1 },
+    says: 'Four hours on a ladder with a drill, and a free pass.',
   },
 };
 
@@ -317,6 +598,9 @@ export const ROADS: RoadDef[] = [
   { a: 'cafe', b: 'gym', min: 5, cash: 0 },
   { a: 'cafe', b: 'diner', min: 8, cash: 1 },
   { a: 'gym', b: 'diner', min: 10, cash: 1 },
+  // The gear shop: a block from the café, on the way in from the Lot.
+  { a: 'shop', b: 'cafe', min: 4, cash: 0 },
+  { a: 'shop', b: 'lot', min: 9, cash: 1 },
   { a: 'road', b: 'lot', min: 60, cash: 12 },
   { a: 'road', b: 'cafe', min: 65, cash: 12 },
   { a: 'road', b: 'diner', min: 70, cash: 12 },
@@ -326,6 +610,23 @@ export const ROADS: RoadDef[] = [
   // Moonstone: v0.956's three hours and 30% of a tank from the Lot, north up the highway
   // past Roadside and out of the valley.
   { a: 'moon', b: 'road', min: 120, cash: 18 },
+  // The Mesa: v0.956's three hours and 35% of a tank from the Lot, west off the highway
+  // past Roadside on the desert road.
+  { a: 'mesa', b: 'road', min: 120, cash: 20 },
+  // The Big Stone: v0.956's four hours and 38% of a tank from the Lot, north past where the
+  // highway leaves the valley.
+  { a: 'stone', b: 'road', min: 180, cash: 22 },
+  // Wind River: v0.956's four hours and 40% of a tank from the Lot, on past the Gorge where
+  // its dirt road climbs out of the valley.
+  { a: 'wind', b: 'gorge', min: 120, cash: 14 },
+  // The Crucible: v0.956's four hours and 45% of a tank from the Lot, east over the pass.
+  { a: 'crucible', b: 'lot', min: 240, cash: 26 },
+  // Psicobloc Cove: v0.956's two hours and 26% of a tank from the Lot, west past Old Town
+  // to the coast.
+  { a: 'cove', b: 'diner', min: 110, cash: 14 },
+  // The Cave: at the trailhead on the highway, twenty minutes short of Roadside.
+  { a: 'cave', b: 'road', min: 20, cash: 3 },
+  { a: 'cave', b: 'gym', min: 45, cash: 8 },
 ];
 
 // A drive: its time and gas, and the places it passes on the way.

@@ -288,7 +288,8 @@ describe('goes and sends', () => {
   it('a go costs what the button says, and Hazel on belay counts as a day together', () => {
     const s = crag();
     const r = play(s, { t: 'go', route: 'pump' });
-    const c = goCost(ROUTES.pump!);
+    // Crowd and all: the button's cost is the state's, queue included.
+    const c = goCost(ROUTES.pump!, s);
     expect(r.state).toMatchObject({
       min: s.min + c.min,
       energy: s.energy + c.energy,
@@ -375,7 +376,7 @@ describe('goes and sends', () => {
     const r = play(crag(16 * 60), { t: 'go', route: 'warm' }, { t: 'go', route: 'warm' });
     expect(lines(r.events).filter((l) => l.startsWith("Sun's on"))).toHaveLength(1);
     const morning = play(crag(), { t: 'go', route: 'warm' });
-    expect(lines(morning.events)).toEqual([]);
+    expect(lines(morning.events).filter((l) => l.startsWith("Sun's on"))).toEqual([]);
     // The sun reaches the far boulders first and the Warm Boulder by the road last: at the
     // same minute, one's greasy and the other's still in the shade.
     const t = sunOn('t', 1, 'road', 'fingercrack');
@@ -383,7 +384,9 @@ describe('goes and sends', () => {
     expect(lines(play(crag(t), { t: 'go', route: 'fingercrack' }).events)).toContain(
       "Sun's on this line now. Everything feels greasy.",
     );
-    expect(lines(play(crag(t), { t: 'go', route: 'warm' }).events)).toEqual([]);
+    expect(
+      lines(play(crag(t), { t: 'go', route: 'warm' }).events).filter((l) => l.startsWith("Sun's on")),
+    ).toEqual([]);
   });
 });
 

@@ -3,10 +3,24 @@
 // at when you pick a problem. The six problems keep their places and tape colours from week
 // to week; what changes with the set is the names and the moves, which live in the sim.
 
-import { BOARD_WEEKS, TEXT_VALUES } from '../../sim';
+import { BOARD_WEEKS, SPEED, TEXT_VALUES } from '../../sim';
 import { lin, mk, poly, rad, rr, spline, type G, type Pt } from '../kit/geom';
 import { mulberry32 } from '../kit/noise';
-import { BOARD_X0, BOARD_X1, DESK_X, GND, GYM_W, H, PROBLEM_X, W } from '../layout';
+import {
+  BOARD_X0,
+  BOARD_X1,
+  CAVE_W,
+  CAVE_X,
+  DESK_X,
+  GND,
+  GYM_W,
+  H,
+  PROBLEM_X,
+  SPEED_LANE,
+  SPEED_X0,
+  SPEED_X1,
+  W,
+} from '../layout';
 import { label } from './fx';
 import { FEET, FLOOR_Y, FT, REACH } from './scale';
 
@@ -241,7 +255,61 @@ export function paintGymGround(): HTMLCanvasElement {
   for (let x = WALL_X0 + 106; x < WALL_X1; x += 120) g.fillRect(x, GND - 8, 2, 24);
 
   paintBoardInScene(g);
+  paintSpeedInScene(g);
   return c;
+}
+
+// ---- the speed wall (Phase 21.6) ----
+
+// The top of the speed wall: up through the ceiling line, as the real ones go.
+export const SPEED_TOP = 30;
+// Every speed wall in the world has the same holds in the same places: this is ours, a
+// zigzag up the lane with the big move two-thirds of the way.
+const SPEED_ZIG = [-8, 7, -5, 9, -9, 4, -6, 10, -4, 8, -10, 6, -3, 11, -12, 2, -7, 9, -5, 0];
+
+// Where the `i`th hold (0 at the start pad) sits in a lane centred on `lane`.
+export function speedHold(lane: number, i: number): Pt {
+  const k = i / (SPEED.holds - 1);
+  return [lane + SPEED_ZIG[i % SPEED_ZIG.length]!, GND - 34 - k * (GND - 34 - SPEED_TOP - 22)];
+}
+
+function paintSpeedInScene(g: G): void {
+  const x0 = SPEED_X0;
+  const x1 = SPEED_X1;
+  const mid = (x0 + x1) / 2;
+  // Two grey lanes on a steel frame, the timing lights on a pole beside them.
+  g.fillStyle = STEEL;
+  g.fillRect(x0 - 6, SPEED_TOP - 8, x1 - x0 + 12, GND - SPEED_TOP + 8);
+  g.fillStyle = '#9AA2AD';
+  g.fillRect(x0, SPEED_TOP, mid - x0 - 2, GND - SPEED_TOP);
+  g.fillRect(mid + 2, SPEED_TOP, x1 - mid - 2, GND - SPEED_TOP);
+  g.strokeStyle = 'rgba(40,44,52,.35)';
+  g.lineWidth = 1;
+  for (let y = SPEED_TOP + 50; y < GND; y += 50) {
+    g.beginPath();
+    g.moveTo(x0, y);
+    g.lineTo(x1, y);
+    g.stroke();
+  }
+  // The same red holds up both lanes.
+  for (const lane of [SPEED_LANE, x1 - (SPEED_LANE - x0)]) {
+    g.fillStyle = '#C8352B';
+    for (let i = 0; i < SPEED.holds; i++) {
+      const [x, y] = speedHold(lane, i);
+      hold(g, x, y, i % 5 === 2 ? 6.5 : 4.5, 900 + i);
+      g.fill();
+    }
+    // The buzzer at the top, the start pad at the foot.
+    g.fillStyle = '#E8A33A';
+    rr(g, lane - 9, SPEED_TOP + 4, 18, 12, 2);
+    g.fill();
+    g.fillStyle = '#2B2A33';
+    g.fillRect(lane - 12, GND - 6, 24, 5);
+  }
+  label(g, 'poster', 'SPEED', mid, SPEED_TOP - 14, { size: 13, color: '#C8352B', halo: '#E6DCC7' });
+  // Mats under it.
+  g.fillStyle = MAT;
+  g.fillRect(x0 - 10, GND - 8, x1 - x0 + 20, 24);
 }
 
 // ---- the board ----
@@ -476,27 +544,44 @@ export function paintBoardWall(g: G, slot: number, heightFt: number): void {
   for (const x of [60, 180, 300]) g.fillRect(x, FLOOR_Y, 2, H - FLOOR_Y);
 }
 
-export function gymWallArt(slot: number, heightFt: number): HTMLCanvasElement {
-  const key = slot * 100 + heightFt;
+// A gym's close-up look: its back wall, its panels, its tape colours.
+interface WallLook {
+  back: string;
+  top: string;
+  panel: [string, string];
+  tape: string[];
+  old: string[];
+}
+const SEND_CITY: WallLook = {
+  back: '#E6DCC7',
+  top: STEEL,
+  panel: [PLY_DARK, PLY],
+  tape: TAPE,
+  old: ['#A7A39A', '#C9C3B6', '#8C8A84'],
+};
+
+export function gymWallArt(slot: number, heightFt: number, cave = false): HTMLCanvasElement {
+  const key = slot * 100 + heightFt + (cave ? 10000 : 0);
   const hit = walls.get(key);
   if (hit) return hit;
   const [c, g] = mk(W, H, 2);
-  paintGymWall(g, slot, heightFt);
+  paintGymWall(g, slot, heightFt, cave);
   walls.set(key, c);
   return c;
 }
 
-// A problem's stretch of the gym wall, painted into any context (the wall view's cached art,
+// A problem's stretch of a gym's wall, painted into any context (the wall view's cached art,
 // or the send card at its own size).
-export function paintGymWall(g: G, slot: number, heightFt: number): void {
+export function paintGymWall(g: G, slot: number, heightFt: number, cave = false): void {
+  const look = cave ? CAVE_LOOK : SEND_CITY;
   const top = finishY(heightFt) - 60;
-  g.fillStyle = '#E6DCC7';
+  g.fillStyle = look.back;
   g.fillRect(0, 0, W, H);
-  g.fillStyle = STEEL;
+  g.fillStyle = look.top;
   g.fillRect(0, 0, W, 70);
   g.fillStyle = lin(g, 0, top, 0, FLOOR_Y, [
-    [0, PLY_DARK],
-    [1, PLY],
+    [0, look.panel[0]],
+    [1, look.panel[1]],
   ]);
   g.fillRect(0, top, W, FLOOR_Y - top);
   tnuts(g, 0, W, top, FLOOR_Y);
@@ -508,20 +593,20 @@ export function paintGymWall(g: G, slot: number, heightFt: number): void {
     g.lineTo(x + 59, FLOOR_Y);
     g.stroke();
   }
-  g.fillStyle = STEEL;
+  g.fillStyle = look.top;
   g.fillRect(0, top - 10, W, 12);
   // Old holds, the neighbours faded, then this problem in full colour.
   const r = mulberry32(505 + slot);
   for (let i = 0; i < 40; i++) {
-    g.fillStyle = ['#A7A39A', '#C9C3B6', '#8C8A84'][i % 3]!;
+    g.fillStyle = look.old[i % look.old.length]!;
     hold(g, r() * W, top + 16 + r() * (FLOOR_Y - top - 40), 5 + r() * 4, 700 + i);
     g.fill();
   }
-  for (let k = 0; k < 6; k++) {
+  for (let k = 0; k < look.tape.length; k++) {
     const x = cx + (k - slot) * SPACING;
     if (x < -40 || x > W + 40) continue;
     g.globalAlpha = k === slot ? 1 : 0.4;
-    g.fillStyle = TAPE[k]!;
+    g.fillStyle = look.tape[k]!;
     for (const [i, h] of holdsFor(k, x, FLOOR_Y - 12, finishY(heightFt)).entries()) {
       hold(g, h.at[0], h.at[1], h.s * 2.1, k * 31 + i);
       g.fill();
@@ -530,7 +615,7 @@ export function paintGymWall(g: G, slot: number, heightFt: number): void {
   g.globalAlpha = 1;
   // The start tape and the finish tape on this problem.
   const own = holdsFor(slot, cx, FLOOR_Y - 12, finishY(heightFt));
-  g.fillStyle = TAPE[slot]!;
+  g.fillStyle = look.tape[slot]!;
   for (const h of [own[0]!, own[own.length - 1]!]) g.fillRect(h.at[0] - 16, h.at[1] + 14, 32, 5);
   // Mats.
   g.fillStyle = MAT;
@@ -539,4 +624,107 @@ export function paintGymWall(g: G, slot: number, heightFt: number): void {
   g.fillRect(0, FLOOR_Y, W, 6);
   g.fillStyle = 'rgba(20,30,50,.35)';
   for (const x of [60, 180, 300]) g.fillRect(x, FLOOR_Y, 2, H - FLOOR_Y);
+}
+
+// ---- The Cave ----
+// A low, dark room: a black-painted back wall with a single row of lamps, then the steep
+// walls in grey and charcoal, leaning out further the deeper in you go.
+
+// Its tape, V3 to V10.
+export const CAVE_TAPE = [
+  '#E8C547',
+  '#5AA469',
+  '#3F7FB0',
+  '#D8553F',
+  '#8A5AA8',
+  '#E07B39',
+  '#6FA8C8',
+  '#111114',
+];
+const CAVE_LOOK: WallLook = {
+  back: '#2E2C2A',
+  top: '#1C1B1A',
+  panel: ['#4A4845', '#5C5956'],
+  tape: CAVE_TAPE,
+  old: ['#6E6A64', '#7E7A73', '#5E5A55'],
+};
+
+export function paintCaveBack(w: number): HTMLCanvasElement {
+  const [c, g] = mk(w, H, 2);
+  const pad = (w - W) / 2;
+  g.translate(pad, 0);
+  g.fillStyle = '#2E2C2A';
+  g.fillRect(-pad, 0, w, H);
+  g.fillStyle = '#1C1B1A';
+  g.fillRect(-pad, 0, w, 110);
+  for (let x = -Math.ceil(pad / 110) * 110 + 50; x < W + pad + 110; x += 110) {
+    g.fillStyle = rad(g, x, 120, 4, 110, [
+      [0, 'rgba(255,214,150,.45)'],
+      [1, 'rgba(255,214,150,0)'],
+    ]);
+    g.fillRect(x - 120, 100, 240, 200);
+    g.fillStyle = '#FFD9A0';
+    g.fillRect(x - 8, 108, 16, 4);
+  }
+  return c;
+}
+
+export function paintCaveGround(): HTMLCanvasElement {
+  const [c, g] = mk(CAVE_W, H, 2);
+  g.fillStyle = '#4A4744';
+  g.fillRect(-10, GND - 6, CAVE_W + 20, H);
+  label(g, 'poster', 'THE CAVE', 186, 262, { size: 44, color: '#E07B39', halo: '#2E2C2A' });
+  label(g, 'poster', 'STEEP · HARD · NO ROPES', 186, 284, { size: 12, color: '#A8A29A', halo: '#2E2C2A' });
+  // The desk, and the pass sign over it.
+  const dx = DESK_X;
+  g.fillStyle = '#3A3634';
+  g.fillRect(dx - 52, GND - 46, 104, 46);
+  g.fillStyle = '#6E6A64';
+  g.fillRect(dx - 56, GND - 50, 112, 7);
+  g.fillStyle = '#FFFDF5';
+  g.fillRect(dx - 48, GND - 150, 96, 34);
+  label(g, 'poster', `DAY PASS ${TEXT_VALUES.pass}`, dx, GND - 127, {
+    size: 15,
+    color: '#1E2B2B',
+    halo: '#FFFDF5',
+  });
+  // The walls: panels leaning out further the deeper in, charcoal and grey.
+  const x0 = 310;
+  const x1 = 1010;
+  const top = GND - 200;
+  const n = 5;
+  for (let i = 0; i < n; i++) {
+    const a = x0 + ((x1 - x0) * i) / n;
+    const b = x0 + ((x1 - x0) * (i + 1)) / n;
+    const lean = 10 + i * 14;
+    g.fillStyle = i % 2 ? '#5C5956' : '#4A4845';
+    g.beginPath();
+    g.moveTo(a, GND);
+    g.lineTo(b, GND);
+    g.lineTo(b + lean, top);
+    g.lineTo(a + lean - 14, top);
+    g.closePath();
+    g.fill();
+  }
+  g.fillStyle = '#1C1B1A';
+  g.fillRect(x0 - 10, top - 14, x1 - x0 + 90, 16);
+  const r = mulberry32(606);
+  for (let i = 0; i < 60; i++) {
+    g.fillStyle = ['#6E6A64', '#7E7A73', '#5E5A55'][i % 3]!;
+    hold(g, x0 + 10 + r() * (x1 - x0 - 10), top + 16 + r() * (GND - top - 40), 3 + r() * 3, 900 + i);
+    g.fill();
+  }
+  CAVE_X.forEach((x, slot) => {
+    g.fillStyle = CAVE_TAPE[slot]!;
+    for (const [i, h] of holdsFor(slot, x, GND - 30, top + 30).entries()) {
+      hold(g, h.at[0] + (GND - h.at[1]) * 0.12, h.at[1], h.s, slot * 37 + i);
+      g.fill();
+    }
+  });
+  // Mats wall to wall.
+  g.fillStyle = MAT;
+  g.fillRect(x0 - 20, GND - 8, x1 - x0 + 110, 24);
+  g.fillStyle = '#5585B8';
+  g.fillRect(x0 - 20, GND - 8, x1 - x0 + 110, 4);
+  return c;
 }

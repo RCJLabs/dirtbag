@@ -3,6 +3,9 @@ import {
   ACT_I,
   ACT_I_END,
   average,
+  indoor,
+  revealed,
+  roped,
   betaScale,
   currentGoal,
   goalDesc,
@@ -30,6 +33,8 @@ import {
   DOG_TIER_NAME,
   dogTier,
   FA_NAME_MAX,
+  GEAR,
+  KIT,
   faSuggestions,
   goBlocked,
   goCost,
@@ -64,6 +69,11 @@ import {
   type RouteDef,
   type Season,
   type Verb,
+  canAsk,
+  CROWD,
+  crowdNow,
+  queueMin,
+  soloed,
 } from '../sim';
 import type { Game, JournalPage, SheetId, Ui } from '../game/game';
 import { legacyFile, saveLegacyFile } from '../game/legacy';
@@ -74,6 +84,7 @@ import { CARD, cardPng } from '../view/paint/card';
 import { cardFile, cardOf, cardText } from './card';
 import { buildSheet, SKILL_NAME, type ListSpec } from './sheets';
 import { CREDITS } from './credits';
+import { kitNote, kitState } from './kit';
 import { vars } from './vars';
 
 export const VERB_TEXT: Record<Verb, string> = {
@@ -320,7 +331,7 @@ function Close({ game }: { game: Game }) {
 // What the day's doing to a line outdoors: in the sun already, or in the shade and till
 // when; and damp, the day after rain. Nothing on a day of rain: the rock's shut.
 function rockNote(s: GameState, r: RouteDef): string {
-  if (r.place === 'gym') return '';
+  if (indoor(r.place)) return '';
   const c = conditionsAt(s.seed, s.day, r.place);
   if (!c.open) return '';
   const sun = sunOn(s.seed, s.day, r.place, r.id);
@@ -355,10 +366,22 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
   const pick = picks(s, r);
   const goes = s.routes[route]?.goesToday ?? 0;
   const why = goBlocked(s, r);
-  const c = goCost(r);
+  const c = goCost(r, s);
   const cost = `${costLabel({ min: c.min })} · ${bodyNote({ energy: c.energy, skin: c.skin })}${rockNote(s, r)}`;
   const log = s.routes[route];
   const unnamed = r.open && log?.sent && !s.firsts[route];
+  // Who else is at the base: a queue for the line, and beta to be had for the asking.
+  const crowd = r.wall || indoor(r.place) ? 'empty' : crowdNow(s, r.place);
+  // A myth you can't read yet: no name, no grade, no beta. Just what it'll take.
+  if (!revealed(s, r))
+    return (
+      <>
+        <h3 id="sheet-title">A line you can’t read</h3>
+        <p className="sub">
+          There’s something here. You can’t see where it goes, or whether it goes at all. {why}.
+        </p>
+      </>
+    );
   return (
     <>
       <h3 id="sheet-title">
@@ -371,6 +394,31 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
         <p className="note">Open project: nobody’s sent it. Send it and it’s yours to name.</p>
       )}
       {r.highball && <p className="note">{landingNote(s, r)}</p>}
+      {soloed(s, r) && (
+        <p className="note" id="solo-note">
+          Free Solo: no rope. Come off and that’s the end of {s.climber.name}.
+        </p>
+      )}
+      {(crowd === 'busy' || crowd === 'packed') && (
+        <p className="note">
+          {crowd === 'packed' ? 'Packed' : 'Busy'}:{' '}
+          {queueMin(s, r) ? `${queueMin(s, r)} min in line for it` : 'no line for it'}
+          {crowd === 'packed'
+            ? ', and beta whether you want it or not.'
+            : ', and people at the base who know the beta.'}
+        </p>
+      )}
+      {canAsk(s, r) && (
+        <button type="button" className="opt" onClick={() => game.ask(route)}>
+          <span>Ask around for the beta</span>
+          <span className="c">{CROWD.ask} min</span>
+          <small>
+            {log?.goes
+              ? 'Somebody here has done it.'
+              : 'Somebody here has done it. It’ll cost you the onsight.'}
+          </small>
+        </button>
+      )}
       {s.race?.route === route && (
         <p className="note">
           Dex is racing you for it: {s.race.until - s.day + 1} day{s.race.until === s.day ? '' : 's'} left.
@@ -449,8 +497,13 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
       {!why && ratio(s.load) > LOAD.risk && (
         <p className="note">Your body’s talking: a go now could tweak something.</p>
       )}
+      {!why && kitNote(s, r) && (
+        <p className="note" id="kit-note">
+          {kitNote(s, r)}
+        </p>
+      )}
       <button type="button" className="go" disabled={!!why} onClick={() => game.go()}>
-        {why ?? (r.disc === 'sport' ? 'Tie in and go' : 'Pull on')}
+        {why ?? (r.disc === 'trad' ? 'Rack up and go' : r.disc === 'sport' ? 'Tie in and go' : 'Pull on')}
         <small>{cost}</small>
       </button>
       {log?.sent && !unnamed && (
@@ -574,8 +627,7 @@ function FaBody({ game, route, s }: { game: Game; route: string; s: GameState })
     >
       <h3 id="sheet-title">First ascent</h3>
       <p className="sub">
-        Nobody’s climbed this {r.disc === 'sport' ? 'route' : 'line'} before you. It’s yours to name, and to
-        grade.
+        Nobody’s climbed this {roped(r) ? 'route' : 'line'} before you. It’s yours to name, and to grade.
       </p>
       <p className="crux">The grade</p>
       <div role="radiogroup" aria-label="The grade" className="calls">
@@ -769,6 +821,7 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
       </p>
       <p className="crux">Load</p>
       <LoadRow s={s} />
+      <KitRows s={s} />
       <PeopleRows s={s} />
       <p className="crux">Money</p>
       <p className="sub">
@@ -783,6 +836,32 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
             <span className="c" />
           </button>
         </li>
+      </ul>
+    </>
+  );
+}
+
+// Your kit: what you've got and how it's holding up. Shoes show their rubber as a bar.
+function KitRows({ s }: { s: GameState }) {
+  const owned = Object.entries(s.gear).filter(([id, n]) => GEAR[id] && (n > 0 || GEAR[id]!.kind !== 'owned'));
+  return (
+    <>
+      <p className="crux">Kit</p>
+      <ul className="skills" id="kit">
+        {owned.map(([id, n]) => (
+          <li key={id} title={GEAR[id]!.what}>
+            <span>{GEAR[id]!.name}</span>
+            {GEAR[id]!.kind === 'wears' ? (
+              <i
+                className={n < KIT.shoes.worn ? 'hot' : undefined}
+                style={vars({ '--v': (n / 100).toFixed(3) })}
+              />
+            ) : (
+              <i className="none" />
+            )}
+            <b>{kitState(id, n)}</b>
+          </li>
+        ))}
       </ul>
     </>
   );

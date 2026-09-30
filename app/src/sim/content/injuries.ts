@@ -31,12 +31,26 @@ export const LANDING_LINE: [string, string, string] = [
   'A long way down off {route}, and nothing soft at the bottom. {Kind}. {days} days, and the clinic isn’t cheap.',
 ];
 
+// Decking off a trad line: nothing held, and the ground is where you land.
+export const DECK_LINE: [string, string, string] = [
+  'Nothing held. You hit the ground at the foot of {route}. A {kind}: {days} days off.',
+  'You deck off {route}. {Kind}. {days} days off, and a clinic visit.',
+  'You deck from high on {route}, and the ground doesn’t give. {Kind}. {days} days, and the clinic isn’t cheap.',
+];
+export const DECK_WALKED = 'You hit the ground off {route}. Nothing broken. Next time, place something.';
+
 // Said when it happens: {route}, {kind} (capitalised at the start of a sentence as {Kind}),
 // {days}. And when it's healed.
 export const HURT_LINE: [string, string, string] = [
   'Something tweaks on {route}. A {kind}: {days} days off, if you’re smart.',
   'You feel it go on {route}. {Kind}. {days} days off, and a clinic visit.',
   'A pop you hear before you feel. {Kind}, on {route}. {days} days, and the clinic isn’t cheap.',
+];
+// Hurt training: {session} is the protocol, lower case.
+export const TRAIN_HURT_LINE: [string, string, string] = [
+  'Something tweaks halfway through {session}. A {kind}: {days} days off, if you’re smart.',
+  '{Kind}, on {session}. {days} days off, and a clinic visit.',
+  'A pop on {session} you hear before you feel. {Kind}. {days} days, and the clinic isn’t cheap.',
 ];
 export const HEALED_LINE = 'Your {kind} feels normal again. Ease back in.';
 export const FIRST_FREE_LINE = 'The clinic waves off the bill. First one’s on the house, apparently.';

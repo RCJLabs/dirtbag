@@ -9,6 +9,7 @@
 
 import { Rng } from '../rng';
 import type { Style } from '../climber';
+import type { SkillId } from '../types';
 import { libraryBoulder, ROUTES, type RouteDef } from './routes';
 
 export const GYM = 'gym';
@@ -136,19 +137,91 @@ export function boardSet(seed: string, block: number): RouteDef[] {
   return set;
 }
 
+// ---- The Cave: v0.956's "steep bouldering cave, no ropes, just hard plastic" ----
+// Eight problems a week, V3 to V10 (v0.956's grades), mostly power and crimps as its were,
+// set on the steep walls of a cave by the trailhead.
+
+export const CAVE = 'cave';
+const CAVE_GRADES = [3, 4, 5, 6, 7, 8, 9, 10];
+// v0.956's Cave: power three times in six, crimps twice, a dyno once.
+const CAVE_TYPES: Style[] = ['power', 'crimp', 'dyno', 'power', 'crimp', 'power'];
+const CAVE_NAMES: Record<Style, string[]> = {
+  power: [
+    'Ceiling Crawl',
+    'The Low Roof',
+    'Undercut Engine',
+    'Stalactite',
+    'Lip Service',
+    'Heel Hook Grotto',
+  ],
+  crimp: ['Razor Rail', 'Cave Crimps', 'Fingertip Cavern', 'Dark Edges', 'The Pocket Pull'],
+  dyno: ['The Echo', 'Bat Out of Hell', 'Leap in the Dark'],
+  technical: ['Toe Hook Trap', 'Kneebar Cave'],
+  endurance: ['The Round Trip'],
+  crack: ['The Fissure'],
+};
+
+// The week's eight problems, left to right, easiest to hardest.
+export function caveSet(seed: string, week: number): RouteDef[] {
+  const key = `${seed}#cave${week}`;
+  const hit = cache.get(key);
+  if (hit) return hit;
+  const rng = Rng.fromStream(seed, 'worldgen').derive(`cave-w${week}`);
+  const used = new Set<string>();
+  const set = CAVE_GRADES.map((grade, i) => {
+    const type = CAVE_TYPES[rng.int(0, CAVE_TYPES.length - 1)]!;
+    const own = CAVE_NAMES[type].filter((n) => !used.has(n));
+    const pool = own.length
+      ? own
+      : Object.values(CAVE_NAMES)
+          .flat()
+          .filter((n) => !used.has(n));
+    const name = pool[rng.int(0, pool.length - 1)]!;
+    used.add(name);
+    const moves = rng.int(5, 8);
+    const from = Math.round(moves * rng.float(0.4, 0.6) * 100) / 100;
+    return libraryBoulder(`cv-${week}-${i + 1}`, name, grade, type, CAVE, {
+      moves,
+      from,
+      to: Math.round((from + rng.float(1.3, 1.9)) * 100) / 100,
+      cruxName: CRUX_NAME[type],
+      heightFt: 12,
+      line: `${moves} moves out the cave's roof. Tape says V${grade}.`,
+    });
+  });
+  cache.set(key, set);
+  return set;
+}
+
+// The indoor places: the tag your day pass leaves on your hand, the skills each place's
+// setting brings on faster (v0.956's gym specialties), and its closing time.
+export const INDOOR: Record<string, { pass: string; specialty: SkillId[]; name: string }> = {
+  [GYM]: { pass: 'pass', specialty: ['technique', 'endurance'], name: 'Send City' },
+  [CAVE]: { pass: 'cavepass', specialty: ['power', 'fingers'], name: 'The Cave' },
+};
+export const indoor = (place: string): boolean => place in INDOOR;
+export const INDOOR_CLOSE = 22 * 60;
+
 // Any route or problem by id. Gym problems live only in their set; the id carries its week
 // (or the board's block), so an old problem still resolves for its log.
 export function routeById(seed: string, id: string): RouteDef | undefined {
   const fixed = ROUTES[id];
   if (fixed) return fixed;
-  const m = /^(sc|bd)-(\d+)-(\d+)$/.exec(id);
+  const m = /^(sc|bd|cv)-(\d+)-(\d+)$/.exec(id);
   if (!m) return undefined;
-  const set = m[1] === 'bd' ? boardSet(seed, Number(m[2])) : gymSet(seed, Number(m[2]));
+  const set =
+    m[1] === 'bd'
+      ? boardSet(seed, Number(m[2]))
+      : m[1] === 'cv'
+        ? caveSet(seed, Number(m[2]))
+        : gymSet(seed, Number(m[2]));
   return set[Number(m[3]) - 1];
 }
 
 // The lines you can walk up to at a place today: at the gym, the week's wall, then the board.
 export function routesAt(seed: string, place: string, day: number): RouteDef[] {
   if (place === GYM) return [...gymSet(seed, weekOf(day)), ...boardSet(seed, blockOf(day))];
-  return Object.values(ROUTES).filter((r) => r.place === place);
+  if (place === CAVE) return caveSet(seed, weekOf(day));
+  // A wall's pitches aren't lines you walk up to: they're climbed from the wall, in turn.
+  return Object.values(ROUTES).filter((r) => r.place === place && !r.wall);
 }

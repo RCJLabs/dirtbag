@@ -15,10 +15,12 @@ export type Cue =
   | 'sleep'
   | 'rest'
   | 'dog'
+  | 'train'
   // On the wall.
   | 'pullon'
   | 'move'
   | 'clip'
+  | 'place'
   | 'crux'
   | 'cleared'
   | 'grip'

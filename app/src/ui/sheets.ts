@@ -45,7 +45,40 @@ import {
   type Sky,
   tonight,
   type Tonight,
+  PHASES,
+  PHASE_NAME,
+  phaseLock,
+  PREHAB,
+  prehabBlocked,
+  prehabCost,
+  PROTOCOLS,
+  sessionCost,
+  sessionGains,
+  skillsNote,
+  taperDay,
+  taperWait,
+  trainBlocked,
+  nextRank,
+  rankName,
+  indoor,
+  EXPED,
+  EXPEDITIONS,
+  gradeName,
+  has,
+  pitchOdds,
+  stormOn,
+  summitOdds,
+  WALLS,
+  wallPay,
+  CROWD,
+  crowdAt,
+  type Crowd,
+  SPEED,
+  speedBlocked,
+  speedGains,
+  runsToday,
 } from '../sim';
+import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import type { Game, SheetId } from '../game/game';
 import { CRAGS } from '../view/layout';
 import { whoAround, type Who } from './who';
@@ -106,7 +139,9 @@ function actRow(game: Game, s: GameState, id: string): Row {
   const a = ACTS[id]!;
   const why = unmet(s, a.needs);
   const cost = actCost(s, a);
-  let note = [bodyNote(cost), a.note && fill(a.note, TEXT_VALUES)].filter(Boolean).join('. ');
+  let note = [bodyNote(cost), a.note && fill(a.note, TEXT_VALUES), a.job && jobNote(s, a.job.id)]
+    .filter(Boolean)
+    .join('. ');
   if (a.sleep && !why) {
     if (headroom(s) < MONEY.vanSpot) note = "The card won't cover the spot: a cold night in the pullout.";
     if (s.fed < BODY.hungryBelow) note += ' You’ll sleep hungry.';
@@ -118,6 +153,27 @@ function actRow(game: Game, s: GameState, id: string): Row {
     off: !!why,
     run: () => game.doAct(id),
   };
+}
+
+// Into the train sheet: the block you're in, or why there's nothing to do there yet.
+function trainRow(game: Game, s: GameState): Row {
+  const board = s.at === 'lot' && !s.gear.hangboard;
+  return {
+    label: 'Train',
+    note: board ? `${blockLine(s)} A hangboard would put sessions here; prehab needs nothing.` : blockLine(s),
+    run: () => game.openSheet({ k: 'train' }),
+  };
+}
+
+// Where you stand at a job: your rank, and what the next one takes.
+function jobNote(s: GameState, job: string): string {
+  const next = nextRank(s, job);
+  if (!next) return `${rankName(s, job)}, as high as it goes`;
+  const need = [
+    next.shifts ? `${next.shifts} more shift${next.shifts > 1 ? 's' : ''}` : '',
+    next.grade !== null ? `climbing V${next.grade}` : '',
+  ].filter(Boolean);
+  return `${rankName(s, job)}. ${next.name} takes ${need.join(' and ')}`;
 }
 
 function driveRow(game: Game, s: GameState, to: string, label: string): Row {
@@ -192,6 +248,12 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         rows: [
           actRow(game, s, 'lot.cook'),
           ...(isNight(s.min) ? [] : [actRow(game, s, 'lot.rest')]),
+          trainRow(game, s),
+          {
+            label: 'Expeditions',
+            note: 'Big walls a long way from here, bought in cash and climbed a day at a time.',
+            run: () => game.openSheet({ k: 'expeds' }),
+          },
           actRow(game, s, 'lot.sleep'),
           ...(plan.length
             ? [{ label: 'Run the plan', note: `${planLine(plan)}.`, run: () => game.runPlan(plan) }]
@@ -223,13 +285,27 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     }
 
     case 'desk':
+      if (s.at === 'cave')
+        return {
+          title: 'The desk',
+          sub: s.today.includes('cavepass')
+            ? "Your hand's stamped. Climb till ten."
+            : 'Someone behind the desk is taping a finger. The set changes every seven days.',
+          close: true,
+          rows: [
+            actRow(game, s, 'cave.pass'),
+            actRow(game, s, 'cave.coach'),
+            trainRow(game, s),
+            mapRow(game),
+          ],
+        };
       return {
         title: 'The desk',
         sub: s.today.includes('pass')
           ? "Your hand's stamped. Climb till ten."
           : "The kid at the desk doesn't look up. The set changes every seven days.",
         close: true,
-        rows: [actRow(game, s, 'gym.pass'), actRow(game, s, 'gym.set'), mapRow(game)],
+        rows: [actRow(game, s, 'gym.pass'), actRow(game, s, 'gym.set'), trainRow(game, s), mapRow(game)],
       };
 
     case 'board': {
@@ -266,7 +342,9 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       const here_ = conditionsAt(s.seed, s.day, id.id);
       const shut = here_.closed;
       const sky = PLACES[id.id]?.ownSky ? [skyNote(here_.sky)] : [];
-      const notes = shut || sky.length ? [...(shut ? [`${shut}.`] : []), ...sky] : undefined;
+      const crowd = p.crowd && !shut ? [crowdNote(crowdAt(s.seed, s.day, min, id.id))] : [];
+      const extra = [...(shut ? [`${shut}.`] : []), ...sky, ...crowd];
+      const notes = extra.length ? extra : undefined;
       if (!here) {
         const locked = p.minGrade !== undefined && gradeOf(s.climber.skills) < p.minGrade;
         const drive = driveRow(game, s, id.id, 'Drive here');
@@ -287,11 +365,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       }
       if (p.scene) {
         const scene = p.scene;
-        const label = CRAGS[scene]
-          ? 'Walk to the wall'
-          : scene === 'gym'
-            ? 'Walk in'
-            : 'Walk back to the van';
+        const label = CRAGS[scene] ? 'Walk to the wall' : indoor(id.id) ? 'Walk in' : 'Walk back to the van';
         return {
           title: p.name,
           sub,
@@ -323,10 +397,13 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       const crux = r.cruxes.find((c) => c.id === id.fall.crux);
       const where = crux ? crux.name.replace(/^The /, 'the ') : 'the wall';
       const hi = s.routes[id.route]?.hi ?? 0;
-      const how =
-        r.disc === 'boulder'
+      const how = r.dws
+        ? `${aFoot(id.fall.ft)} drop into the sea from move ${id.fall.move} of ${r.moves}. You swim back to the shelf.`
+        : r.disc === 'boulder'
           ? `${aFoot(id.fall.ft)} drop to the pads from move ${id.fall.move} of ${r.moves}.`
-          : `${aFoot(id.fall.ft)} catch at move ${id.fall.move} of ${r.moves}.`;
+          : id.fall.deck
+            ? `${aFoot(id.fall.ft)} fall from move ${id.fall.move} of ${r.moves}, and nothing held it off the ground.`
+            : `${aFoot(id.fall.ft)} catch at move ${id.fall.move} of ${r.moves}.`;
       const why = goBlocked(s, r);
       const gained = gainsLine(id.gains);
       return {
@@ -356,9 +433,10 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     case 'sent': {
       const r = routeOfId(s, id.route)!;
       const gained = gainsLine(id.gains);
+      if (r.wall) return pitchSent(game, s, id, r, gained);
       return {
         title: SEND_NAME[id.style],
-        sub: `${lineName(s, r)}, ${lineGrade(s, r)}, on go ${id.go}.${r.disc === 'sport' ? " Rent's still due." : ''}`,
+        sub: `${lineName(s, r)}, ${lineGrade(s, r)}, on go ${id.go}.${r.disc === 'sport' ? " Rent's still due." : r.disc === 'trad' ? ' On gear you placed.' : ''}`,
         close: false,
         notes: [...id.notes, ...(gained ? [gained] : [])],
         rows: [
@@ -366,9 +444,13 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             label:
               r.disc === 'sport'
                 ? 'Lower off and walk out'
-                : r.place === 'gym'
-                  ? 'Drop onto the mats'
-                  : 'Walk down the back',
+                : r.disc === 'trad'
+                  ? 'Clean your gear and walk out'
+                  : r.dws
+                    ? 'Jump off, and swim back'
+                    : indoor(r.place)
+                      ? 'Drop onto the mats'
+                      : 'Walk down the back',
             run: () => game.walkOff(),
           },
           ...(id.first ? [cardRow(game, id)] : []),
@@ -437,7 +519,364 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         ],
       };
 
+    case 'train': {
+      const where = indoor(s.at) ? 'gym' : 'van';
+      const rows: Row[] = Object.entries(PROTOCOLS)
+        .filter(([, p]) => p.where === where)
+        .map(([pid, p]) => {
+          const why = trainBlocked(s, pid);
+          const got = skillsNote(sessionGains(s, p));
+          return {
+            label: p.name,
+            cost: costLabel(sessionCost(p)),
+            note: why ? `${why}.` : `${p.what} ${got}. ${bodyNote(sessionCost(p))}.`,
+            off: !!why,
+            run: () => game.train(pid),
+          };
+        });
+      if (where === 'van') {
+        const why = prehabBlocked(s);
+        rows.push({
+          label: PREHAB.name,
+          cost: costLabel(prehabCost()),
+          note: why ? `${why}.` : prehabNote(),
+          off: !!why,
+          run: () => game.train('prehab'),
+        });
+      }
+      const tw = taperWait(s);
+      const tapering = taperDay(s) > 0;
+      return {
+        title: where === 'gym' ? `Train at ${PLACES[s.at]!.name}` : 'Train at the van',
+        sub: `${blockLine(s)} One session a day.`,
+        close: true,
+        rows: [
+          ...rows,
+          {
+            label: 'Change phase',
+            note: phaseNote(s.training.phase),
+            run: () => game.openSheet({ k: 'phases' }),
+          },
+          {
+            label: 'Taper for a send',
+            note: tapering
+              ? 'You’re tapering.'
+              : tw
+                ? `Too soon after the last one: ${tw} more day${tw > 1 ? 's' : ''}.`
+                : taperNote(),
+            off: tapering || tw > 0,
+            run: () => game.taper(),
+          },
+        ],
+      };
+    }
+
+    case 'phases': {
+      const lock = phaseLock(s);
+      return {
+        title: 'Your phase',
+        sub: blockLine(s),
+        close: true,
+        rows: [
+          ...PHASES.map((ph) => {
+            const now = ph === s.training.phase;
+            return {
+              label: PHASE_NAME[ph],
+              note: now
+                ? `You’re in it. ${phaseNote(ph)}`
+                : lock
+                  ? `Locked ${lock} more day${lock > 1 ? 's' : ''}. ${phaseNote(ph)}`
+                  : phaseNote(ph),
+              off: now || lock > 0,
+              run: () => {
+                if (!game.setPhase(ph)) game.openSheet({ k: 'train' });
+              },
+            };
+          }),
+          { label: 'Back', run: () => game.openSheet({ k: 'train' }) },
+        ],
+      };
+    }
+
+    case 'wall':
+      return wallSheet(game, s, id.id);
+
+    case 'speed': {
+      const why = speedBlocked(s);
+      const left = SPEED.fresh - runsToday(s);
+      const pb = s.speed.pb;
+      return {
+        title: 'The speed wall',
+        sub: `${SPEED.holds} holds, the same on every speed wall in the world. Three lights, and go on the third.`,
+        notes: [
+          pb === null ? 'No time on the board yet.' : `Your best: ${pb.toFixed(2)} s.`,
+          left > 0
+            ? `${left} more run${left > 1 ? 's' : ''} today will teach you: ${skillsNote(speedGains(s))}.`
+            : 'Your legs are done learning today. The clock still runs.',
+        ],
+        close: true,
+        rows: [
+          {
+            label: 'Race the clock',
+            cost: costLabel({ min: SPEED.min, energy: -SPEED.energy, skin: -SPEED.skin }),
+            note: why ? `${why}.` : 'Grab with alternate hands. The same hand twice and you slip.',
+            off: !!why,
+            run: () => game.speedStart(),
+          },
+        ],
+      };
+    }
+
+    case 'dead': {
+      const d = s.dead;
+      if (!d) return null;
+      const r = routeOfId(s, d.route);
+      const sent = Object.entries(s.routes)
+        .filter(([, L]) => L.sent)
+        .map(([rid]) => routeOfId(s, rid))
+        .filter((x): x is RouteDef => !!x);
+      const hardest = [...sent].sort((a, b) => b.grade - a.grade)[0];
+      return {
+        title: 'Free Solo, over',
+        sub: `${s.climber.name} came off ${r ? lineName(s, r) : 'the wall'}${d.hi ? ` at move ${d.hi + 1}` : ''}, with no rope, on day ${d.day}.`,
+        notes: [
+          sent.length
+            ? `${sent.length} line${sent.length > 1 ? 's' : ''} sent, the hardest ${lineName(s, hardest!)}, ${lineGrade(s, hardest!)}.`
+            : 'Nothing sent. It was early.',
+        ],
+        close: false,
+        rows: [
+          {
+            label: 'Start a new climber',
+            note: 'A new first morning. There’s no next climber for this one.',
+            run: () => game.restart(),
+          },
+        ],
+      };
+    }
+
+    case 'expeds':
+      return {
+        title: 'Expeditions',
+        sub: 'Paid in cash, up front. Out there, every day is one call: lead, dig deep, rest, or go home.',
+        close: true,
+        rows: [
+          ...Object.entries(EXPEDITIONS).map(([eid, e]) => ({
+            label: e.name,
+            cost: costLabel({ cash: -e.cost }),
+            note: `${e.objective}, ${e.region}. ${oddsLine(s, eid)}`,
+            run: () => game.openSheet({ k: 'exped', id: eid }),
+          })),
+          { label: 'Back', run: () => game.openSheet({ k: 'van' }) },
+        ],
+      };
+
+    case 'exped':
+      return expedSheet(game, s, id.id);
+
     default:
       return null;
   }
+}
+
+// Who else is out, and what it means for you: the queue, and the beta.
+export function crowdNote(c: Crowd): string {
+  const q = CROWD.queue;
+  switch (c) {
+    case 'empty':
+      return 'Nobody else out. The place is yours.';
+    case 'quiet':
+      return 'A few others out. No waiting.';
+    case 'busy':
+      return `Busy: ${q.rope.busy} min in line for a rope, and people at the base who know the beta.`;
+    case 'packed':
+      return `Packed: ${q.rope.packed} min in line for a rope, ${q.boulder.packed} for a boulder, and beta whether you want it or not.`;
+  }
+}
+
+const pct = (p: number): string => `${Math.round(p * 100)}%`;
+
+// The summit's odds before you pay: leading every fair day you've the energy for, and
+// digging deep every one.
+function oddsLine(s: GameState, id: string): string {
+  const e = EXPEDITIONS[id]!;
+  const k = s.climber.skills;
+  return `${e.pitches} pitches in ${e.days} days, storms ${pct(e.stormOdds)} of them. Summit odds for you: ${pct(summitOdds(k, e, false))} leading, ${pct(summitOdds(k, e, true))} digging deep.`;
+}
+
+// A wall from its foot, or from wherever you are on it.
+function wallSheet(game: Game, s: GameState, id: string): ListSpec {
+  const w = WALLS[id]!;
+  const on = s.wall?.id === id ? s.wall : null;
+  const topped = !!s.routes[w.pitches[w.pitches.length - 1]!]?.sent;
+  const notes = w.pitches.map((pid, i) => {
+    const r = ROUTES[pid]!;
+    const mark = on && i < on.next ? ' ✓' : on && i === on.next ? ' ← next' : '';
+    return `${i + 1}. ${r.name}, ${gradeLabel(r)}${mark}`;
+  });
+  const sub = `${PLACES[w.place]!.name}. ${w.pitches.length} pitches, ${gradeName('sport', w.grade)} at the hardest. ${w.line}`;
+  if (!on) {
+    const rope = has(s, 'rope');
+    const other = s.wall ? WALLS[s.wall.id]!.name : null;
+    return {
+      title: w.name,
+      sub,
+      notes: [
+        ...notes,
+        topped
+          ? 'You’ve topped it. Again is for you.'
+          : `The first summit pays ${money(wallPay(w))} for the photos.`,
+      ],
+      close: true,
+      rows: [
+        {
+          label: 'Rack up and start',
+          note: other
+            ? `You're on ${other}. Rap off it first.`
+            : rope
+              ? 'A pitch at a time, in order. Sleep on it if the day runs out.'
+              : 'Walls need a rope of your own. The gear shop sells them.',
+          off: !rope || !!other,
+          run: () => {
+            if (!game.wall(id, 'start')) game.lookUp(w.pitches[0]!);
+          },
+        },
+      ],
+    };
+  }
+  const next = ROUTES[w.pitches[on.next]!]!;
+  const night = isNight(s.min);
+  return {
+    title: w.name,
+    sub: on.next ? `On the wall, ${on.next} of ${w.pitches.length} pitches done.` : sub,
+    notes,
+    close: true,
+    rows: [
+      {
+        label: `Climb pitch ${on.next + 1}: ${next.name}`,
+        note: goBlocked(s, next) ?? undefined,
+        run: () => game.lookUp(next.id),
+      },
+      {
+        label: 'Bivy on the ledge',
+        note: !on.next
+          ? 'You’re still on the ground. The van’s right there.'
+          : night
+            ? 'A thin night tied in: less sleep than the van, nothing to pay, and you wake where you stopped.'
+            : 'Once it’s dark. Climb while it’s light.',
+        off: !on.next || !night,
+        run: () => void game.wall(id, 'bivy'),
+      },
+      {
+        label: 'Rap off',
+        note: 'Down to the van. Next time you start from the bottom.',
+        run: () => {
+          if (!game.wall(id, 'retreat')) game.closeSheet();
+        },
+      },
+    ],
+  };
+}
+
+// A pitch sent: on to the next, or off the top.
+function pitchSent(
+  game: Game,
+  s: GameState,
+  id: SheetId & { k: 'sent' },
+  r: RouteDef,
+  gained: string,
+): ListSpec {
+  const w = WALLS[r.wall!]!;
+  const on = s.wall?.id === r.wall ? s.wall : null;
+  const next = on ? ROUTES[w.pitches[on.next]!]! : null;
+  return {
+    title: SEND_NAME[id.style],
+    sub: `${lineName(s, r)}, ${lineGrade(s, r)}, on go ${id.go}. ${
+      next ? `Pitch ${on!.next} of ${w.pitches.length}.` : `The top of ${w.name}.`
+    }`,
+    close: false,
+    notes: [...id.notes, ...(gained ? [gained] : [])],
+    rows: next
+      ? [
+          { label: `On to pitch ${on!.next + 1}: ${next.name}`, run: () => game.lookUp(next.id) },
+          {
+            label: 'Sit on the belay',
+            note: 'Back to the wall, where you can rap off or, after dark, bivy.',
+            run: () => game.walkOff(),
+          },
+        ]
+      : [{ label: 'Walk off the top', run: () => game.walkOff() }, ...(id.first ? [cardRow(game, id)] : [])],
+  };
+}
+
+// An expedition: what it asks before you go, and each day's call once you're there.
+function expedSheet(game: Game, s: GameState, id: string): ListSpec {
+  const e = EXPEDITIONS[id]!;
+  const k = s.climber.skills;
+  const x = s.expedition?.id === id ? s.expedition : null;
+  if (!x) {
+    const why = s.expedition
+      ? `You're on ${EXPEDITIONS[s.expedition.id]!.name}.`
+      : s.at !== 'lot'
+        ? 'Expeditions leave from the Lot.'
+        : gradeOf(k) < e.gradeReq
+          ? `${e.name} wants V${e.gradeReq}. You climb V${gradeOf(k)}.`
+          : s.cash < e.cost
+            ? `${money(e.cost)} in hand, not on the card. You have ${money(Math.max(0, s.cash))}.`
+            : null;
+    return {
+      title: e.name,
+      sub: `${e.objective}, ${e.region}. ${e.blurb}`,
+      notes: [oddsLine(s, id), `The summit pays ${money(e.pays)}. Anything short of it pays nothing.`],
+      close: true,
+      rows: [
+        {
+          label: 'Go',
+          cost: costLabel({ cash: -e.cost }),
+          note: why ?? 'Food, flights and a porter. The van waits at the Lot.',
+          off: !!why,
+          run: () => void game.exped(id, 'go'),
+        },
+        { label: 'Back', run: () => game.openSheet({ k: 'expeds' }) },
+      ],
+    };
+  }
+  const storm = stormOn(s.seed, id, e, s.day);
+  const from = { day: x.day, pitch: x.pitch, energy: x.energy };
+  const lead = (dig: boolean): Row => {
+    const cost = dig ? EXPED.dig : EXPED.lead;
+    const tired = x.energy < cost;
+    return {
+      label: dig ? 'Dig deep' : 'Lead the next pitch',
+      note: storm
+        ? 'Not in this.'
+        : tired
+          ? 'Not enough left in you. Rest.'
+          : `${pct(pitchOdds(k, e, dig))} to fix pitch ${x.pitch + 1}. Costs ${cost} of your ${x.energy} energy.`,
+      off: storm || tired,
+      run: () => void game.exped(id, dig ? 'dig' : 'lead'),
+    };
+  };
+  return {
+    title: `${e.name}, day ${x.day} of ${e.days}`,
+    sub: `${x.pitch} of ${e.pitches} pitches fixed. ${storm ? 'A storm on the wall today.' : 'Clear today.'}`,
+    notes: [
+      `Left in you on the wall: ${x.energy} of ${EXPED.energy}. Summit odds from here: ${pct(summitOdds(k, e, false, from))} leading, ${pct(summitOdds(k, e, true, from))} digging deep.`,
+    ],
+    close: false,
+    rows: [
+      lead(false),
+      lead(true),
+      {
+        label: 'Rest in camp',
+        note: `${EXPED.rest} energy back${storm ? ', and the storm goes by without you' : ''}.`,
+        run: () => void game.exped(id, 'rest'),
+      },
+      {
+        label: 'Call it off',
+        note: 'Home with what you’ve fixed, which pays nothing. The money’s spent either way.',
+        run: () => void game.exped(id, 'bail'),
+      },
+    ],
+  };
 }

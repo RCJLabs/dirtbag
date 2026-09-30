@@ -5,18 +5,27 @@ import { it } from 'vitest';
 import type { BotRun, Strategy } from '../src/sim/bot';
 import { gradeOf, STARTS } from '../src/sim/climber';
 import { ACTS } from '../src/sim/content/places';
+import { PROTOCOLS } from '../src/sim/content/training';
+import { newGame } from '../src/sim/game';
+import { sessionGains } from '../src/sim/sessions';
+import { SPEED, TRAIN } from '../src/sim/dials';
+import { speedGains } from '../src/sim/speed';
 import { checkpoints, contentOut, firstInjury, firstTry, median, season } from '../src/sim/harness';
 
 const SEEDS = Number(process.env.SEEDS ?? 12);
-const DAYS = Number(process.env.DAYS ?? 28);
+// Eight weeks: the first month is Phase 6's, and the second is where the mid-grades squeeze
+// (Phase 21.4 found the bots going broke at V5 from day 45, which 28 days never saw).
+const DAYS = Number(process.env.DAYS ?? 56);
 const AT = [7, 14, 21, 28, 42, 56].filter((d) => d <= DAYS);
 const out = (s = '') => process.stdout.write(`${s}\n`);
 const f1 = (x: number) => (Number.isNaN(x) ? '–' : x.toFixed(1));
-const STRATEGIES: Strategy[] = ['climber', 'balanced', 'worker'];
+// The season's three: the career bot has its own harness (career.harness.ts).
+type Seasonal = Exclude<Strategy, 'career'>;
+const STRATEGIES: Seasonal[] = ['climber', 'balanced', 'worker'];
 
 it('season', { timeout: 600_000 }, () => {
   out(`\n# Season harness: ${SEEDS} seeds × ${DAYS} days, human-ish hands\n`);
-  const all: Record<Strategy, BotRun[]> = { climber: [], balanced: [], worker: [] };
+  const all: Record<Seasonal, BotRun[]> = { climber: [], balanced: [], worker: [] };
   const reckless: BotRun[] = [];
   for (const strategy of STRATEGIES) {
     out(`## ${strategy}\n`);
@@ -55,7 +64,7 @@ it('season', { timeout: 600_000 }, () => {
 });
 
 // Phase 6's targets for a first season, from R2's plan, read off the runs.
-function targets(all: Record<Strategy, BotRun[]>, reckless: BotRun[]): void {
+function targets(all: Record<Seasonal, BotRun[]>, reckless: BotRun[]): void {
   out('## Targets\n');
   const say = (ok: boolean, what: string, how: string) => out(`- ${ok ? '✓' : '✗'} ${what}: ${how}`);
   const pct = (n: number, d: number) => `${n}/${d} (${Math.round((100 * n) / d)}%)`;
@@ -105,6 +114,42 @@ function targets(all: Record<Strategy, BotRun[]>, reckless: BotRun[]): void {
     rates.every((x) => x.rate > setRate),
     'Climbing out-teaches setting shifts at every grade',
     `skill an hour on the rock ${rates.map((x) => `V${x.g} ${x.rate.toFixed(2)}`).join(', ')}; setting ${setRate.toFixed(2)} (flat).`,
+  );
+
+  // 5. Training can't be farmed (Phase 21.3): at each grade the bots reached, an hour of the
+  // best protocol, in build (the phase that teaches most), on the skills the bots woke up
+  // with that day, teaches less than an hour on the rock did.
+  const trainRates = rates.map(({ g, rate }) => {
+    const days = moderate.flatMap((r) => r.days.filter((d) => d.climbMin && d.grade === g));
+    // Campus waits for its grade, as the rules make it.
+    const best = Object.entries(PROTOCOLS)
+      .filter(([id]) => id !== 'campus' || g >= TRAIN.campusGrade)
+      .map(([id, p]) => {
+        const per = days.map((d) => {
+          const s = { ...newGame('h'), climber: { name: 'h', start: 'allrounder', skills: d.skills } };
+          s.training = { ...s.training, phase: 'build' as const };
+          const got = sessionGains(s, p);
+          return Object.values(got).reduce((n, v) => n + v, 0) / (p.min / 60);
+        });
+        return { id, rate: per.reduce((n, v) => n + v, 0) / (per.length || 1) };
+      })
+      // The speed wall (21.6), at a fresh run's rate, as if every run of the hour taught.
+      .concat(
+        (() => {
+          const per = days.map((d) => {
+            const s = { ...newGame('h'), climber: { name: 'h', start: 'allrounder', skills: d.skills } };
+            return Object.values(speedGains(s)).reduce((n, v) => n + v, 0) / (SPEED.min / 60);
+          });
+          return [{ id: 'speed', rate: per.reduce((n, v) => n + v, 0) / (per.length || 1) }];
+        })(),
+      )
+      .sort((x, y) => y.rate - x.rate)[0]!;
+    return { g, rate, best };
+  });
+  say(
+    trainRates.every((x) => x.best.rate < x.rate),
+    'Training can’t be farmed: no protocol, and not the speed wall, out-teaches climbing at any grade',
+    `best session an hour, in build, against the rock: ${trainRates.map((x) => `V${x.g} ${x.best.id} ${x.best.rate.toFixed(2)} (${Math.round((100 * x.best.rate) / x.rate)}%)`).join(', ')}.`,
   );
 
   // 4. A median climber is on a V5 project by day 28.

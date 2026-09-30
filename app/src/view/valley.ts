@@ -92,6 +92,64 @@ export const SIDE_ROADS: Record<string, { pts: Pt[]; dirt?: true }> = {
     ],
     dirt: true,
   },
+  // Wind River: the Gorge's dirt road, and on past it up out of the valley.
+  wind: {
+    pts: [
+      [274, 168],
+      [236, 172],
+      [198, 168],
+      [160, 162],
+      [122, 156],
+      [96, 152],
+      [72, 136],
+      [54, 122],
+      [40, 108],
+    ],
+    dirt: true,
+  },
+  // West to Psicobloc Cove: the Old Town spur, and on down to the coast.
+  cove: {
+    pts: [
+      [207, 470],
+      [176, 468],
+      [146, 467],
+      [118, 466],
+      [84, 478],
+      [52, 494],
+      [24, 506],
+    ],
+  },
+  // East to The Crucible: off the highway above Midtown, up over the pass.
+  crucible: {
+    pts: [
+      [roadX(364), 364],
+      [250, 360],
+      [282, 358],
+      [312, 364],
+      [338, 372],
+    ],
+    dirt: true,
+  },
+  // On north from the highway's end to The Big Stone.
+  stone: {
+    pts: [
+      [384, 58],
+      [370, 48],
+      [356, 40],
+      [346, 34],
+    ],
+  },
+  // The desert road west to Sandstone Mesa, where the highway climbs out of the valley.
+  mesa: {
+    pts: [
+      [318, 98],
+      [290, 90],
+      [258, 80],
+      [228, 70],
+      [200, 60],
+    ],
+    dirt: true,
+  },
 };
 export const BLOCKS: [number, number, number, number][] = [
   [222, 400, 30, 20],

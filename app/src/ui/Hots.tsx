@@ -15,7 +15,7 @@ const PIN = 32;
 // with the arrow keys to bring more into view.
 export function Hots({ game, ui }: { game: Game; ui: Ui }) {
   const { cam } = useStore(game.fast);
-  if (!ui.state.climber.name || ui.sheet || ui.talk || ui.climbing || ui.driving) return null;
+  if (!ui.state.climber.name || ui.sheet || ui.talk || ui.climbing || ui.driving || ui.speed) return null;
   if (ui.view === 'scene')
     return (
       <>

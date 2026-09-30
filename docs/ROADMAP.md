@@ -65,8 +65,9 @@
 | 12 UI system | Built on the rebuild (the Journal, the wide screen, keyboard and access, Tonight, no inline styles) and closed by Evan's call. The flows the e2e doesn't play in landscape or by keyboard carry to playtesting. |
 | 13 Sound and feel | Built on the rebuild (effects and ambience made in code, the licence ledger, credits) and closed by Evan's call. Criterion 4 (music) carries with the music decision; criteria 1 and 2 wait on an ear. |
 | 14 Desktop and Steam, 15 Demo and store page | Moved after Phase 18 by Evan's call: the full game first. |
-| 16 The spine | The current milestone. |
-| 17–20 | Unchanged in intent. They target the new build. The order from here: 16, 17, 18, then 14, 15, then 19 and 20. |
+| 21 The climber, 22 The life, 23 Who you are | Added by Evan's call after the gap check; they run before 16. Phase 21 is the current milestone. |
+| 16 The spine | Next after 21–23. |
+| 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 
 ## The rebuild track
 
@@ -408,11 +409,11 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 | A. Make it safe to change | 1–4 | Source control, a safety net, load time, and pulling the simulation out of the UI | 8–14 weeks |
 | B. Decide what the game is | 5–7 | Design bible and cut list, core-loop retune, the first hour | 5–8 weeks |
 | C. Make it look like the game it is | 8–13 | Art direction, the climbing screen, crags, the town, the UI system, sound | 18–29 weeks |
-| E. Make the full game worth paying for | 16–18 | Story spine and ending, the people, careers and jobs | 11–17 weeks |
+| E. Make the full game worth paying for | 21, 22, 24, 23, then 16–18 | The climber (gear, trad, training, crags past Act I), the life (van, body, food, hustle, games), expeditions as trips, who you are (origins, stances, Record Book); then the story spine and ending, the people, careers and jobs | 37–57 weeks |
 | D. Get it in front of people | 14–15 | Desktop/Steam build, then the demo, store page and festival: after the full game, by Evan's call | 4–6 weeks |
 | F. Ship | 19–20 | Monetization, store readiness, beta, launch and after | 5–8 weeks |
 
-That adds up to about 51–82 weeks, roughly 12–19 months [INFERRED].
+That adds up to about 56–90 weeks, roughly 13–21 months [INFERRED].
 
 **Timing anchors:**
 - The next Steam Next Fest is 22 Feb – 1 Mar 2027 (register by 10 Jan). That's too early for the rebuilt demo.
@@ -661,7 +662,7 @@ Everything later in this plan (retuning, the climbing screen, the new town, the 
   - **The Record Book** — feats, each with its story card attached.
   
   Onboarding becomes Act I's first chapter.
-- **The cut list** (a starting point; confirm in the bible):
+- **The cut list** (a starting point; confirm in the bible). *Evan's call, 29 Sep 2026: blackjack, Texas hold'em, liar's dice, horseshoes and busking (the music hobby) come back, in Phase 22, on terms that stop them farming bond; trivia and a garden with farm visits are maybes.*
 
   | Keep and deepen | Merge | Defer past 1.0 | Cut |
   |---|---|---|---|
@@ -1371,7 +1372,239 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 ## Stage E — Make the full game worth paying for
 
-### Phase 16 — The spine: story, acts and endings   **<<< CURRENT MILESTONE**
+*Phases 21–23 were added by Evan's call (29 Sep 2026) after a gap check found v0.956 systems no phase covered. They run first, before Phase 16, which needs them.*
+
+### Phase 21 — The climber: gear, trad, training, and the crags past Act I   **<<< CURRENT MILESTONE**
+
+*Added 29 Sep 2026 by Evan's call, from a gap check of v0.956 against the rebuild and the phases left: none of this had a phase. Numbered 21 so older numbers don't move; it runs before Phase 16.*
+
+**Goal.** Everything a climber needs past the first season: a rack and what wears it out, trad lines, training that isn't a free exploit, and the crags, walls and expeditions from V10 to the myths.
+
+**Why.**
+- **Phase 16 needs it.** Its 15–25 hour playthrough and The Line need crags past Act I; the rebuild stops at Moonstone and an open V12 project.
+- **Trad is blocked on gear.** Roadside's and the Gorge's trad lines wait for a rack (R2).
+- **v0.956 had it:** 9 crags and 78 lines to V18 and two myths, 52 gear items with wear, 16 training protocols, 4 multi-pitch walls and 3 expeditions (`docs/audit/climbing.md` §2.3, §2.11, §2.14; `economy.md` §2.5).
+
+**Scope** (the audit's verdicts: keep, and fix the exploits):
+- **21.1 Gear.** A rack you buy, carry and wear out, checked by category (the audit's P0 fix): shoes, chalk, pads, rope and draws, crack gloves and tape, a trad rack. Far fewer than v0.956's 52 items. A shop, resoles, the swap meet. It changes the save.
+- **21.2 Trad.** A third discipline: protection you place or run out on the way up, in beta-then-send's terms. Roadside's and the Gorge's trad lines.
+- **21.3 Training.** A hangboard in the van and protocols at the gym, through the load model; phases that lock for days, a taper with a cooldown, prehab. Fewer protocols than v0.956's 16.
+- **21.4 The crags past Act I,** one per slice through "Adding a place": Sandstone Mesa, The Big Stone, Wind River Walls, The Crucible and its myths, Psicobloc Cove (deep-water solo), The Hollow, and The Cave. Lines at every grade to V18, with no V16 hole this time.
+- **21.5 Walls and expeditions.** Multi-pitch walls with bivies; expeditions as weather-window decisions with the odds shown.
+- **21.6 The rest of the rock:** crowds and spray beta, the speed wall, Free Solo mode (seeded, permadeath, chosen at the start), and highball calls where they're missing.
+
+**Done when.**
+1. A trad line can be led, with placements that change the fall.
+2. Gear wears, and worn gear changes a go the player can see.
+3. There are lines at every grade from V0 to V18, and the harness's bots reach V10+ without running out of things to try.
+4. A wall and an expedition can each be climbed and failed.
+5. Training can't be farmed: the harness finds no protocol that beats climbing at any grade.
+
+**Depends on:** Phases 9–11 (on the rebuild). **Effort:** ~8–12 weeks [INFERRED]; 21.4's crags are most of it (a scene and a topo each). **Main risk:** content volume. Each crag goes through the checklist in `app/README.md`.
+
+**Status (29 Sep 2026): 21.1 built.** Evan's calls: every climber starts with worn shoes and half a bag of chalk; a sport go still borrows the belayer's rope; the kit is sold at a new gear shop in town; wear shows on the You page and the beta sheet.
+- **The kit** (`sim/content/gear.ts`, `sim/kit.ts`, numbers in `KIT`): shoes that wear by the go and the grade, chalk by the block, tape for cracks, and a second pad. The rack, the rope and the hangboard come with the slices that use them (21.2, 21.3, 21.5), so nothing is sold before it does anything.
+- **What it does to a go:** worn shoes make every crux 5% tighter and blown ones 13%, twice that on technical lines, and an empty chalk bag 5% more. It goes through the same factor as your skills and the day, so the beta sheet's window bars show it. Tape takes half the skin a crack costs, pulling on included. A second pad halves a highball's landing, as Moonstone's haul does.
+- **The gear shop** (a card-only place a block from the café, with its own front and ambience): a resole when the rubber needs it, new shoes, chalk, tape, a pad; on weekends the swap meet sells used shoes and pads at 55%. It went through "Adding a place", and the tests named each missing piece until it was done.
+- **Save v5,** migrated from a real 0.961.0 save (v4): climbers already out here get the starting kit.
+- **The bots** stop at the shop for a resole and chalk when they can afford it. Phase 6's four targets still pass; the runway medians fell a little (days 14–28: 2.0, 2.0, 2.6 days, from 2.3, 2.5, 3.4), which is the kit costing something.
+- **The e2e** drives from the café to the shop on day five, buys chalk and reads the kit on the You page. Day three's taps and day four's plan don't move.
+- **Not in yet:** the rope and the hangboard (their slices). The rack came with 21.2.
+
+**Status (29 Sep 2026): 21.2 built.** Trad is a third discipline, and criterion 1 passes: a lead where you place two pieces falls 8 ft onto them, and the same fall with none decks from 22 ft (seen in the browser, and held in `trad.test.ts`).
+- **Placing** (numbers in `TRAD`): a trad line has stances instead of bolts, marked on the wall. Let go at one and you place a piece in 1.1 s, which costs pump where hanging would pay it back (about 7 points a piece against resting). Climb through and you've run it out. The climb panel says when a stance is coming, and how far you are over your last piece.
+- **Falling:** a fall catches on the last piece you placed, as a sport fall does on the last bolt. A fall longer than the air under you ends on the ground: a deck, with an injury roll from 6 ft up (3.6% a foot, three times a highball's, with no pad). v0.956 had no trad play at all, only a rack choice before the go.
+- **The lines:** Trad Arête (5.12b, Roadside, up the wall's right edge) and Gorge Trad (5.13a, the Gorge's corner), v0.956's two, built from the beta library as its sport lines are. A trad go takes 35 minutes; a send adds a little head, as v0.956's +3 did.
+- **The rack:** $280 at the gear shop (v0.956's price), or 55% at the weekend swap meet. Leading trad needs one and a belayer. No save change: the kit map already takes any item.
+- **A piece going in** has its own sound, made in code like the rest (`place` in the ledger).
+- **The e2e** checks the shop has a rack. It doesn't lead a trad line: that needs a rack and a belayer at once, which the five days don't reach.
+- **Not in yet:** the bots don't buy a rack, so the harness plays no trad (its numbers match 21.1's exactly). Pieces never pull out, and there's no gear quality: every piece holds.
+
+**Status (29 Sep 2026): 21.3 built.** Criterion 5 passes as a harness target: at every grade the bots reach (V0–V5 over 56 days), the best protocol for that day's skills, in build, teaches under an hour on the rock: 67% at V0, 27–44% from V1 up.
+- **Six protocols and prehab** (`sim/content/training.ts`, numbers in `TRAIN`), from v0.956's sixteen: max hangs, repeaters, and pull-ups and core on a hangboard at the van ($60 at the gear shop [proposed]); campus (from V4), 4x4s and ARC laps at the gym on a day pass. Each trains two skills, costs time, energy, food and some skin, and loads your body like a go of its energy times its intensity, so it counts toward the injury warning and the fried block.
+- **A session teaches** a lesson that grows with your grade (half a fall's), through hi() like a go. One session a day. None while you taper, hurt or fried: v0.956 allowed all three.
+- **Phases** [proposed]: base (where everyone starts, no commitment), build (sessions ×1.25, risk ×1.2), peak (every crux 4% wider, sessions ×0.7, risk ×1.3), deload (sessions half, risk ×0.6, a fifth off acute load each night). A chosen phase holds for 6 days, and peak ends itself in a deload after 7. That closes v0.956's bedtime deload and permanent peak.
+- **Taper:** 3 days of no training, every crux 3% wider and 6% on the last day, then 14 days before the next. **Prehab:** 30 minutes at the van, no gear, 40% less injury risk for 8 days; allowed hurt.
+- **Where:** a Train row on the van and the gym desk opens the sheet: the block you're in, each session with what it'd teach you today, the phase, the taper. Every number on it comes from `TRAIN`.
+- **Save v6,** migrated from a real Phase 21.2 save (v5): everyone starts in base, never tapered.
+- **The e2e** drives home from the shop on day five, opens the train sheet and does prehab. **The harness** records each day's morning skills for the check; the bots don't train, so Phase 6's targets read as before.
+- **Not in yet:** a rep minigame (v0.956 had four; sessions here are a choice, not a play), coaching, and visualise/footwork/falls work for head: head still comes only from the rock. Past V5 the check is untested: the bots don't get there.
+
+**Status (29 Sep 2026): 21.4, first crag built: Sandstone Mesa.** One crag per slice, as planned; the other six (The Big Stone, Wind River Walls, The Crucible, Psicobloc Cove, The Hollow, The Cave) are to come, and criterion 3 waits on them.
+- **The crag,** through "Adding a place": v0.956's eleven lines with its names and grades (from the v0.956 bundle at `e098332`). Seven boulders from V7 to the open V13, with The Prow a sandbag (V9, really V10); Desert Lap 5.13a, Desert Enduro 5.13b and The Big Link 5.13d bolted; the Desert Trad Line 5.13d on gear.
+- **Access** as v0.956 had it: V7 to get in, no haul to pay for, three hours from the Lot ($20 of gas past Roadside), desert rock (every window ×0.92), weather of its own, and shut in summer for the heat.
+- **Its picture:** a scene of red desert sandstone with black varnish, a pale caprock and huecos; a close-up wall with The Big Link's bulge and the trad line's crack; a boulder look; a pin west off the highway on a dirt road.
+- **A belayer:** nobody's day brings anyone to the Mesa, so Sage now takes an invite there, as she does to the Gorge (bond 3, V7). Moonstone's spire has no such invite, and Dex doesn't belay, so its two bolted lines can't be led at all. That gap predates this slice; the fix is the same invite plus a condition on the haul being paid for.
+- **The bots** drive to the Mesa once they climb V7, after Roadside and the Gorge. In 56 days they reach V5, so none gets there yet.
+- **Found on the way, not fixed:** past day 45 the balanced bots go broke. Around V5, with Roadside done, they drive to the Gorge daily ($44 of gas against a $56 shift) and fail its projects; by day 56 they're ~$150 in debt, with 81 stuck nights across the runs. It was the same at 21.3. The 28-day targets never see it. It's the mid-grade squeeze criterion 3 is about, and needs a call: cheaper gas, better pay, or more V5–V7 lines closer in.
+
+**Status (29 Sep 2026): the squeeze, fixed by Evan's call: better pay as you're promoted, and crew you can invite to any crag.** Both pull a piece forward from later phases (promotions from Phase 18, invites from Phase 17).
+- **Promotions** (`sim/content/jobs.ts`, `sim/jobs.ts`) [proposed numbers]: the café has five ranks, New hire to Veteran, at 12, 30, 54 and 84 shifts (a double counts two), each +$4 a shift; setting has four, Apprentice to Head setter, at 6, 16 and 30 shifts, each needing a grade too (V3, V5, V7), +$7 a shift. The shift that promotes you pays the old rate; the raise starts with the next. The row says your rank and what the next takes; the pay on it is the rules' own number. v0.956 promoted every three shifts on attendance alone.
+- **Invites:** "Come climbing?" to Hazel (at the Lot in the morning, or at the crag) or Sage, before 1 PM and once a day, opens a list of every crag they'd come to. Each crag names the bond it takes (`invite` on the place): Roadside an Acquaintance, the Gorge a Regular, the Mesa and Moonstone a Partner; your grade for it, dry rock, and Moonstone's haul paid. That also fixes Moonstone's spire, which nobody could belay.
+- **The harness** now runs eight weeks by default, so the squeeze stays in view. Over 56 days: no stuck nights (81 before); balanced runway 2.3, 3.7, 3.7 and 4.7 days at days 7–28, still under a week; everything else as before. A worker who barely climbs banks about $1,000 by day 56, which is what working instead of climbing should buy, but it's where v0.956's "money stops mattering" starts; worth watching when Phase 22 adds costs.
+- **Save v7,** migrated from a real Phase 21.4 save (v6): no shifts counted, so everyone starts at the first rank.
+
+**Status (29 Sep 2026): 21.4, second crag built: The Big Stone.**
+- **The crag,** through "Adding a place": v0.956's five single pitches, names and grades from its bundle. Base Camp Boulder V6, The Warm-Up Wall V9 (really V10), The Splitter Pitch V10 (a 22 ft highball); The Trad Pitch 5.13d on gear, up a corner; Valley Classic 5.14a, bolted, through a roof. Its three multi-pitch walls come with 21.5.
+- **Access** as v0.956 had it: V8, a $600 trip paid once in cash (as Moonstone's is), four hours from the Lot ($22 of gas past Roadside), shaded, weather of its own. Asking a partner out here takes Ride-or-Die, the first crag at that bond [proposed].
+- **Its picture:** a granite big wall with no top in sight, a corner and a roof, a green meadow and pines; a close-up face for its two roped lines; a boulder look; a pin north of where the highway leaves the valley.
+- **The bots** don't go: they don't pay for trips. Nothing in the harness changes.
+- **Seen on the way:** the wet-rock overlay after rain is a flat translucent box over the wall's whole span, sky edge and ground included. It's the same at every crag; a pass on it belongs with the art, not here.
+
+**Status (29 Sep 2026): 21.4, third crag built: Wind River Walls.**
+- **The crag,** through "Adding a place": v0.956's nine lines, names and grades from its bundle. Boulders: Alpine Crimps V9, The Diamond V11 (really V10), Offwidth Horror V12, Thin Air V13, and an open V15. Bolted: Glacier Point 5.13c, Skyline Traverse 5.14a, Astroman 5.14c; Alpine Trad 5.14b on gear.
+- **Access** as v0.956 had it: V9, an $800 trip paid once and a $35 permit every trip, four hours from the Lot on past the Gorge's dirt road ($14 of gas from the Gorge), shaded, its own weather, snowed in all winter. Ride-or-Die to bring a partner.
+- **Its picture:** alpine granite against a deep sky with snow on the ranges, a crack and a corner, snow lying near the top of the close-up; a boulder look by the lake; a pin on the Gorge's road where it climbs out of the valley.
+- **The map is filling up at the top:** five crags now sit in its top 150 px. The labels are clear, but the next far crags need to go somewhere else, or the map needs a way to show "out of the valley" places.
+
+**Status (29 Sep 2026): 21.4, fourth crag built: The Crucible, and the grades run to V18 with no hole.**
+- **The crag,** through "Adding a place": v0.956's lines, names and grades from its bundle. Boulders: The Reckoning V13, The Vise V14, Apparition V15 (really V14), Event Horizon V17. Bolted: Crucible Crux 5.14b, The Lifeline 5.14d, Threshold 5.15d. And its two myths, V18 and 5.16a.
+- **One line v0.956 didn't have:** The Anvil, V16 [proposed]. v0.956 had no V16 anywhere; now every grade V0 to V18 has a line (the gym to V5, the crags from V2), and `crags.test.ts` holds it.
+- **Myths** (a new rule, v0.956's revealAfter): a myth can't be read until you've sent the hardest known line under it, Event Horizon for the boulder and Threshold for the route. Until then its tag is "?", the wall shows no line, its sheet says only what it'll take, and the rules refuse a go. Both are open: the first ascent is yours to name. Their crux names and lines are v0.956's move-by-move descriptions.
+- **Access** as v0.956 had it: V11, no trip to pay for, four hours from the Lot ($26 of gas), shaded, weather of its own. Ride-or-Die to bring a partner. East out of the valley over the pass above Midtown: the top of the map was full, and the south end sits under the goal chip.
+- **Its picture:** black gneiss folded into pale bands under a flat grey sky, frost on the ground; a close-up face with the Lifeline's seam; a boulder look.
+- **Criterion 3's first half** (lines at every grade from V0 to V18) now holds. The second half, bots reaching V10+ without running out of things to try, doesn't yet: the bots don't pay for trips, and in 56 days they reach V5.
+
+**Status (30 Sep 2026): 21.4, fifth crag built: Psicobloc Cove, and deep-water solo.**
+- **The crag,** through "Adding a place": v0.956's eight deep-water lines, names and grades from its bundle: Tide Pool Traverse V2, The Plunge V3, Saltwater Slab V4, Barnacle Crimps V5, Leap of Faith V6 (really V7), Overhanging Tide V7, Psicobloc Arête V8, The Deep End V9, from 12 to 45 ft.
+- **Deep-water solo** (a new rule, v0.956's dws): a boulder problem up a sea cliff. A fall drops you into the sea and you swim back to the shelf: no pads, no landing roll, and no strain roll either, as in v0.956. The lines are drawn up the cliff like a wall's, not as boulders, with no bolts.
+- **Access** as v0.956 had it: V4, no fee, two hours from the Lot out past Old Town ($14 of gas from the Diner), weather of its own, and open in summer only: a place can now be closed for several seasons, not just one. A Regular will come out with you.
+- **Its picture:** a pale limestone sea cliff with tufas and orange streaks, a rock shelf along its foot and the sea under it; a close-up face with each line as tall as it is, the traverse along the waterline; a pin on the coast past Old Town.
+- **The bots** go there once they climb V4, after Roadside and the Gorge, when it's open. The 56-day harness doesn't reach summer, so its numbers don't change.
+- **Not quite right yet:** the scene chalks every line to the top of the cliff, even the 12 ft traverse (the close-up is right). The sea sounds like the Gorge's creek: ambience has no surf yet.
+
+**Status (30 Sep 2026): 21.4, sixth place built: The Cave, a second gym.** The Hollow waits for the quest that finds it (Evan's call): it comes with the quests.
+- **The Cave** (v0.956's "steep bouldering cave, no ropes, just hard plastic"): eight problems a week, V3 to V10, mostly power and crimps as v0.956's were, set out steep walls in a dark room at the trailhead below Roadside. Its own day pass; power and fingers come a fifth faster there (v0.956's specialty), as technique and endurance do at Send City.
+- **The gym, generalized:** "the gym" in the rules is now any indoor place (`INDOOR` in `sim/content/gym.ts`), each with its pass, specialty and closing time. The training sessions run at either gym.
+- **Coaching** (v0.956's Cave job): four hours at $34, training head and technique, from V5 [proposed]; three ranks, Assistant coach to Head coach, at 8 and 20 shifts and V6 and V8, +$8 a shift each.
+- **Its picture:** a room scene (the sign, the desk, steep charcoal panels leaning out further the deeper in, eight tapes), the gym's close-up in the Cave's colours, and a pin at the trailhead hamlet where the map had a placeholder.
+- **The bots** climb there from V3 when it has something new. Over 56 days: all five targets still pass; the first V5 go comes a little sooner (day 18 from 19–20); climbing's skill an hour at V3–V5 rises (12.7, 10.0, 8.8 from 11.1, 9.1, 8.0), and training's share of it falls. They still end at V5.
+
+**Status (30 Sep 2026): 21.5 built: walls and expeditions. Criterion 4 passes in the tests.**
+- **Walls** (v0.956's four, pitch by pitch): The Long Prow at Roadside (4 pitches, 5.11d to 5.12b; v0.956's "The Prow", renamed since the Mesa's boulder took the name), and at The Big Stone Golden Buttress (5), Obsidian Tower (7) and The Ascendant (8, to V18's sport grade). Each pitch is an ordinary go, through beta-then-send, in order, on a rope of your own ($150 at the gear shop). A fall leaves you at the pitch; after dark you can bivy on the ledge (no van spot, less sleep, and you wake where you stopped); rapping off or driving away starts you from the bottom next time. The first summit pays a magazine's fee for the photos (from `WALL`: $140 for the Prow); later ones pay nothing.
+- **Expeditions** (v0.956's three): El Capitan, Cerro Torre and Trango Tower, from the van at the Lot, V7/V10/V12 to go, paid in cash. Each day out there is one call: lead, dig deep, rest, or call it off; storm days (seeded) allow only rest or going home. The summit pays and trains your head; anything short pays nothing. **The odds are shown:** before you pay, and every day after, the summit's chance for leading every fair day and for digging deep every one, worked out exactly over every storm and fall (`summitOdds`). A V9 climber gets about 48% leading and 81% digging on El Cap; a V7 about 13% and 32%. v0.956's went about one time in twenty.
+- **Criterion 4:** `walls.test.ts` climbs a wall to the top and fails one (a fall, a retreat, a drive away), and runs 300 seeded expeditions against the exact odds (within 0.08), with summits and failures both.
+- **Its picture:** each wall's name and grade high on its crag's rock, tapped to open it; each pitch has its own line on the close-up. An expedition is a sheet over the Lot.
+- **Save v8,** migrated from a real v7 save: on no wall, away on nothing.
+- **Not quite right yet** (Phase 24 takes the first two): an expedition has no scene of its own (the Lot's sky shows behind a storm), and the HUD's energy isn't the expedition's. The bots don't climb walls or go on expeditions, so the harness says nothing about their pay. Over 56 days the harness is unchanged: all five targets pass with the same numbers as the Cave (the rope costs them nothing because they never buy one).
+
+**Status (30 Sep 2026): 21.6, first part built: crowds and spray beta.** 21.6 goes in four parts, as 21.4 did: crowds, the speed wall, Free Solo, then the highball calls still missing.
+- **Crowds** (v0.956's, built from its model): each crag draws a crowd from how popular it is (Roadside and The Big Stone most, The Crucible least), ×1.7 at the weekend (v0.956's), by the hour (nobody at dawn or after dark, the most from late morning), by the sky (a prime day brings everyone out, heat keeps them home, wet rock empties it) and the day's seeded luck: empty, quiet, busy or packed. Roadside at noon is busy about a quarter of weekdays and packed on about a fifth of weekends; it's never packed on a weekday.
+- **What a crowd does to you,** two things you can see and plan around, rather than v0.956's small odds terms: a **queue** (busy, 10 min in line for a rope; packed, 20 for a rope and 10 for a boulder; walls' pitches are above it), in the go's cost; and **beta**. At a busy or packed crag you can ask around (15 min) for a line's next beta, which makes a first-go send a flash, not an onsight. When it's packed, about two first goes in five get the beta shouted at them anyway, and the onsight goes with it: v0.956's "spray beta".
+- **Where you see it:** the place card says who's out when you'd get there, before the drive; the beta sheet says what the queue is for that line and offers "Ask around"; strangers stand and sit at the foot of the lines, one when it's quiet, three when busy, five when packed.
+- **The harness** (56 days): all five targets still pass. The queue costs the bots time: climbing's skill an hour falls about 8% at V0–V2 (V2 11.65 from 12.73) and little higher up. The first V5 go stays at day 18–18.5, and some runs now see V6. Injuries move within noise (warmed-up 3% from 2%, reckless 3% from 6%): the rolls land on different days.
+- **Not yet:** crowds on the map's pins (Phase 10's crowd markers); send trains and crowd lines that quote your record (v0.956's) wait for Phase 17's people. The bots never ask around.
+
+**Status (30 Sep 2026): 21.6, highball calls: every outdoor boulder from 16 ft up is a highball (Evan's call).**
+- **By height, not by hand.** Phase 10.3b flagged five boulders by hand, and the crags 21.4 brought had problems as tall with no flag: a fall from 18 ft on The Wind River project cost nothing, while the same fall off Roadside's Highball Arête could jam an ankle. Now `isHighball` sets the flag from the height (`HIGHBALL.fromFt`, 16 ft) on every outdoor boulder except deep-water solos, and the content test holds it there, so a new crag's tall problems can't slip through.
+- **Twelve more:** Crimp Cathedral (the Gorge), Moonstone Mantel and Hueco Pockets, The Prow, Desert Splitter and The Mesa project, The Warm-Up Wall (The Big Stone), Offwidth Horror and The Wind River project, The Vise, Event Horizon and the Crucible myth. Seventeen in all.
+- **What they cost:** their cruxes sit 9–12 ft up, so a crux fall with one pad and nobody spotting lands badly 1–5% of the time (the Crucible myth 0.8%, Moonstone Mantel 4.6%), against 6–10% on the five tall ones. Pads and a spotter halve it each, as before, and the beta sheet shows it.
+- **The Gorge now wants a spotter** as well as a belayer, and its place card says so. No crag is left with ropes and no highballs, so the "boulders only" line has nothing to say for now.
+- **The harness** (56 days) reads the same as after crowds, to the decimal: every new highball is V7 or harder (Moonstone Mantel is the easiest), past the V5 the bots reach, so nothing they do changes. Their 1–5% crux landings are all under the careful bots' 1-in-20 line anyway.
+
+**Status (30 Sep 2026): 21.6 built: the speed wall and Free Solo. 21.6 is done; Phase 21 waits on criterion 3.**
+- **The speed wall** (v0.956's, at Send City, past the board): two grey lanes taller than the room, the same 20 red holds up each, a buzzer at the top. A run is three lights a second apart, go on the third, then a hand at a time: two buttons, or F and J. The same hand twice is a slip (a third of a second lost); a grab before the green is a false start. Your time is the seconds you took times a factor from your power and technique (2.8 at V0, 0.1 less a grade, never under 1.45), so a quick thumb and a strong climber both show. A PB is kept.
+- **Not v0.956's exploit** (the audit's 20: free, no time, +1 power a run): a run needs the day pass, takes 10 minutes and a short go's energy and skin, loads you, and teaches power and technique on a training session's scale for the first three a day, false starts included, then nothing. The harness's "can't be farmed" target now includes it, at a fresh run's rate for a whole hour, and it stays under climbing at every grade.
+- **Free Solo** [proposed] (v0.956's mode): a switch on the first screen, off by default and for good once you start, with what it means said beside it. Every outdoor sport line and wall pitch is climbed without a rope: no belayer, no rope for a wall, every crux window ×0.82 (v0.956's ×0.72 was against its dice), and a send teaches the head +2. Trad keeps its rack and boulders their pads. The beta sheet says so on every soloed line.
+- **A fall ends it:** "Free Solo, over", with where, when and what you'd sent, and a new climber as the only way on. **Save-scumming can't undo it** (the audit's S7): the save knows you're on a solo from the moment you pull on, and a game that closes mid-solo opens on the fall.
+- **Save v9,** migrated from a real v8 save: no runs, on a rope, alive.
+- **Not yet:** the bots don't race or solo, so the harness says nothing about Free Solo's survival odds; the speed wall's comps (v0.956's) wait for Phase 18's comps; the run has no sound of its own beyond the game's taps.
+
+**21.6 against the Done-when:** criteria 1 (trad), 2 (gear wear), 4 (walls and expeditions) and 5 (training can't be farmed, speed wall included) pass. Criterion 3's first half passes (lines at every grade V0–V18); its second half, the bots reaching V10+, is open: over 56 days they reach V5, and they don't pay for trips. Phase 21 stays the CURRENT MILESTONE until that's met or ruled on.
+
+**Status (30 Sep 2026): the career bot, for criterion 3. Its first half passes; its second passes except on about one wet day a run. Evan's call.**
+- **Why the season bots stop at V5:** they play 56 days, climb at six places, never pay for a trip, only work café shifts, and never ask anyone along. Left to run 200 days they reach V9 and run out of things to try from about day 100.
+- **The career bot** (`strategy: 'career'` in `sim/bot.ts`; the season's three are unchanged, and so are their numbers):
+  - takes the best-paying job it can get, by the hour, travel included: café shifts, doubles when it's short, coaching from V5, setting;
+  - saves for the next trip its grade has opened, and buys it (Moonstone around day 70, The Big Stone around 120, Wind River around 160);
+  - asks Hazel along, through her talk as a player would, to any crag the bond allows, before a working morning too;
+  - picks the day's crag by the hardest line it can get on there, less a little for the drive (and for the gas, when it's short);
+  - goes to every crag and both gyms.
+- **The career harness** (`harness/career.harness.ts`, in `npm run harness`; 4 seeds × 4 starts × 224 days, human-ish hands, 30 s): every run reaches V10, median day 200 (194–214 by start); no refusals, no stuck nights; about 30 days a run the body says rest.
+- **What still fails:** 9 of 16 runs hit a day (one, twice in one run) with nothing new to try before V10. Every one is the same day: the valley's wet, the climber's V7–V10, and every indoor problem is sent (the board tops out at V7, The Cave at V10, both weekly). It's content, not the bot. Two ways to close it: (a) rule the criterion met at this level, or (b) give the rain something past V9 indoors, such as v0.956's third gym, the Training Center (14 routes a week, never planned here), or harder sets at The Cave.
+- **A finding about pace, not the criterion:** V10 on day ~200 against v0.956's typical player on day 80 (`docs/audit/climbing.md` §5.2). The first month is on Phase 6's targets; after it, work eats most mornings (the career bot works about 195 days in 224) and skill gains flatten with hi(). Whether that's the game's pace or too slow is a balance call for Evan, and Phase 22's economy will move it either way.
+
+---
+
+### Phase 22 — The life: the van, the body, food, the hustle, and the games
+
+*Added 29 Sep 2026 by Evan's call, with Phase 21. Runs after it, before Phase 16.*
+
+**Goal.** The survival layer under the climbing, as deep as v0.956's and without its busywork: every day still a trade between earning and climbing.
+
+**Scope.**
+- **The van:** fuel, parts that wear, breakdowns, upgrades and build-outs, parking spots, tickets.
+- **The body, deeper:** treatments and insurance plans, old injuries (scars and marks merged), fear; sickness, teeth and the like merged into one supplies gauge that Tonight shows; psyche.
+- **Food:** groceries, recipes and a cooking beat, fishing, with diminishing returns so food isn't a skill farm.
+- **The hustle:** cans, dumpster runs, foraging, and busking (v0.956's music hobby, as a way to earn).
+- **Events:** knocks on the van, walk-out epics, roadside stops, night events.
+- **Scout's life:** perks, aging, the vet, the end.
+- **Dreams:** the Dream Rig, the War Chest, Home Base.
+- **The games, back by Evan's call:** blackjack, Texas hold'em, liar's dice and horseshoes at the fire and in town; maybe trivia; maybe a garden, with visits to the folks' farm. The audit cut them because all six paid the same reward (psyche, bond, rep), took no time and had no daily cap, so they farmed bond for free (`docs/audit/social.md` §2.9, §439). They come back on three terms: each takes time, each is capped by the day, and each pays something the others don't (poker keeps its reads on people). Blackjack and hold'em are simulated gambling for store ratings: the Play listing's content rating is updated before they ship.
+- **Phase 6's leftovers:** weekly shift schedules, the autopilot shift, lifestyle tiers, winter prep.
+
+**Done when.**
+1. A season's runway still holds Phase 6's targets with the van's costs in.
+2. No game, meal or hustle is a farm: the harness finds none that out-earns or out-bonds its time.
+3. Every event and game has a sound and an e2e step.
+
+**Depends on:** Phase 21 (the van carries the rack). **Effort:** ~8–12 weeks [INFERRED].
+
+---
+
+### Phase 24 — Expeditions as trips
+
+*Added 30 Sep 2026 by Evan's call, after 21.5 built expeditions as a sheet of daily calls over the Lot. Numbered 24 so older numbers don't move. It runs after Phase 22 and before Phase 23 [proposed]: a trip is packed with Phase 22's food and fuel, and leaves Phase 22's van behind. It could run straight after Phase 21 instead, at the cost of building packing twice.*
+
+**Goal.** An expedition is a trip you plan, travel, live and come home from, somewhere that looks like nowhere else in the game, and its pitches are climbed, not rolled.
+
+**Why.**
+- **21.5 made the decision honest, not the trip.** The summit's odds are shown and the choices are real, but a day on El Capitan is a sheet over the Lot's sky, and a pitch is a dice roll against endurance.
+- **It's the game's biggest set piece.** An expedition is the most money, time and risk a career puts on one bet, and v0.956 gave it one menu (`docs/audit/climbing.md` §2.14).
+
+**Scope.**
+- **A scene for each,** drawn in code: El Capitan's meadow and the wall above it, Cerro Torre's wind-scoured spire over the Patagonian ice cap, and a Karakoram glacier base camp under Trango. Day and night, clear and storm, with the weather on the wall where you can see it. A wall view of each: ledges, the portaledge, the haul line, and how high you are.
+- **Planning,** from the Lot: when to go, against a forecast that's honest about how uncertain it is; what to pack, by weight, into a haul bag with a limit (food and water by the day, fuel, a portaledge, the rack); who comes, from your crew by bond, and what they're good for; permits and flights. The summit's odds update as you plan, and are shown every day after, as in 21.5.
+- **Getting there:** travel days, the approach (the glacier trek, acclimatizing for Trango), and what the valley does while you're gone: rent, your job's leave (Phase 18's rank-based leave, or losing the shifts), Scout with friends.
+- **On the wall:** each pitch a real go through beta-then-send, with its own cruxes and the altitude, cold and fatigue narrowing the windows; your partner leading in blocks; hauling; portaledge nights that cost food and water and give back less each night; the forecast changing under you; retreat at any ledge, and what it costs to go down.
+- **What happens up there:** dropped gear, a stuck haul bag, rockfall, a storm that comes early, another party in trouble. Few, seeded and consequential, not a random-event table.
+- **Coming home:** the story told at the fire, a card, a magazine's fee or a sponsor's (Phase 18), and a Record Book entry (Phase 23). A failed trip comes home with something too: a high point, beta for next time, a partner closer or further.
+- **The Unreal spec** gets the trip's rules in `Dirtbag-UE/concepts/2D-SPEC-LOG.md`.
+
+**Done when.**
+1. Each expedition has its own scene and wall view, clear and storm, day and night.
+2. An expedition can be planned, travelled, climbed and come home from, summit or not, and the e2e bot plays one through.
+3. Its pitches are climbed through beta-then-send; the dice decide only the weather and what happens up there.
+4. The summit's odds are shown while planning and every day after, and the harness checks them against the bots' own trips.
+5. No expedition is a farm: the harness finds none that out-earns its time and cost at the grade it's offered.
+
+**Depends on:** Phase 21 (21.5's walls, odds and save), Phase 22 (food, fuel, the van left behind). Uses Phase 18's leave and Phase 23's Record Book where they exist, and fills them in when they arrive. **Effort:** ~5–8 weeks [INFERRED]; the three scenes are most of it. **Main risk:** scope. Planning, packing and events can each become busywork; each earns its place by changing the summit's odds in a way the player can see.
+
+---
+
+### Phase 23 — Who you are: origins, paths, stances, and the Record Book
+
+*Added 29 Sep 2026 by Evan's call. Runs after Phases 22 and 24, before Phase 16, which keys its epilogues to all of it.*
+
+**Goal.** A climber who's somebody: where they came from, what they're becoming, what they stand for, and a book of what they've done.
+
+**Scope.**
+- **Creation:** origins (the Late Bloomer and the rest), callings, flaws, talents: v0.956's six steps, kept short (R1 cut creation to a name and a start).
+- **Paths, traits and Mastery** (hybrids and style merged), with thresholds in grades, not 0–100 relics.
+- **Personality, factions and stances:** the ethics stances with their echoes and elder options; clubs folded into faction perks.
+- **The Board and the Record Book:** one weekly board; feats, milestones and story cards in one book. Phase 14 maps the Record Book to Steam achievements.
+- **The year:** a recap, and Homecoming.
+
+**Done when.**
+1. Two climbers made differently play differently in their first week, and the harness can tell them apart.
+2. Every stance's echo lands later in the game.
+3. The Record Book holds every feat v0.956 celebrated, merged, with its story.
+
+**Depends on:** Phases 21–22. **Effort:** ~5–8 weeks [INFERRED].
+
+---
+
+### Phase 16 — The spine: story, acts and endings
 
 **Goal.** A written main story across five acts with a real ending. Epilogues are built from the player's actual history, and legacy makes the next generation feel like a continuation.
 
@@ -1672,3 +1905,21 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-29 — Phase 13.2 and 13.3: every place has ambience, from its data, turned by the hour and the sky; the licence ledger lists all 34 sounds, `npm run check` fails on unlisted audio, and Settings has credits. A click in 13.1's effects (envelopes starting at full volume) is fixed.
 - 2026-09-29 — Phase 13 closed by Evan's call: criteria 1–3 met, criterion 4 carried with the parked music decision. CURRENT MILESTONE moved to Phase 14, the desktop and Steam build.
 - 2026-09-29 — Evan's call: finish building the game before the Steam build and the demo. Phases 14 and 15 (Stage D) move after Phase 18, keeping their numbers; the order is now 16, 17, 18, 14, 15, 19, 20. CURRENT MILESTONE moved to Phase 16, the spine: story, acts and endings.
+- 2026-09-29 — A gap check of v0.956 against the rebuild and the phases left found systems nothing covered. Evan's calls: three phases added before Phase 16, numbered 21 (the climber: gear, trad, training, crags past Act I, walls and expeditions), 22 (the life: van, body, food, the hustle, events, and the games) and 23 (who you are: origins, paths, stances, the Record Book); and blackjack, hold'em, liar's dice, horseshoes and busking come back from the cut list (trivia and a garden maybe). The order is now 21, 22, 23, 16, 17, 18, 14, 15, 19, 20. CURRENT MILESTONE moved to Phase 21.
+- 2026-09-29 — Phase 21.1: your kit. Shoes that wear, chalk, tape and a second pad; worn kit tightens every crux through the same factor the beta sheet shows; a gear shop in town with resoles and a weekend swap meet; save v5 from a real 0.961.0 save; bots keep their kit up and Phase 6's targets still pass.
+- 2026-09-29 — Phase 21.2: trad. Stances where you choose to place a piece (for pump) or run it out; falls catch on what you placed, and with nothing low enough you deck, with an injury roll; Trad Arête and Gorge Trad; a rack at the gear shop and the swap meet; a sound for a piece going in.
+- 2026-09-29 — Phase 21.3: training. Six protocols and prehab at the van (a hangboard) and the gym, through the load model; one session a day, none tapering, hurt or fried; phases that hold for 6 days and a peak that ends in a deload; a taper with a 14-day cooldown; save v6; a harness target holding every protocol under climbing's rate at every grade reached.
+- 2026-09-29 — Phase 21.4: Sandstone Mesa. v0.956's eleven lines (V7 to an open V13, three bolted, one trad), V7 to get in, closed in summer, desert rock and its own weather; a red-sandstone scene, wall and boulder look; a pin on a desert road; Sage will come out to belay; the bots drive there from V7.
+- 2026-09-29 — Promotions and invites (Evan's call on the V5 squeeze): café and setting ranks that raise a shift's pay, setting's gated by grade; Hazel and Sage can be asked out to any crag, by bond; save v7; the harness runs eight weeks, with no stuck nights.
+- 2026-09-29 — Phase 21.4: The Big Stone. v0.956's five single pitches (V6 to 5.14a, one trad, one bolted), V8 and a $600 trip, four hours out, shaded; a granite big-wall scene, face and boulder look; Ride-or-Die to bring a partner.
+- 2026-09-29 — Phase 21.4: Wind River Walls. v0.956's nine lines (V9 to an open V15; three bolted to 5.14c, one trad), V9, an $800 trip and a $35 permit, four hours out past the Gorge, shaded, shut in winter; an alpine scene, face and boulder look.
+- 2026-09-29 — Phase 21.4: The Crucible. v0.956's lines V13 to its two V18 myths, and The Anvil (V16) so no grade is missing; myths that can't be read until the line under them is sent; V11, four hours east over the pass, shaded; a gneiss scene, face and boulder look.
+- 2026-09-30 — Phase 21.4: Psicobloc Cove. v0.956's eight deep-water solos, V2 to V9; a fall is a splash with no landing or strain roll; V4, two hours out on the coast, open in summer only; a sea-cliff scene, face and shelf; the bots go there from V4.
+- 2026-09-30 — Phase 21.4: The Cave. A second gym, eight problems a week V3 to V10, its own pass and a power-and-fingers specialty; indoor places generalized; coaching with three ranks; the bots climb there from V3. The Hollow waits for its quest.
+- 2026-09-30 — Phase 21.5: walls and expeditions. v0.956's four walls climbed pitch by pitch with bivies, on a rope from the gear shop; its three expeditions as a day-by-day call with the summit's odds worked out and shown; save v8. Criterion 4 passes in the tests.
+- 2026-09-30 — Evan's call: Phase 24 added, expeditions as trips: a scene for each, planning and packing, getting there, pitches climbed through beta-then-send, and coming home. It runs after Phase 22 and before 23 [proposed]; the order is now 21, 22, 24, 23, 16, 17, 18, 14, 15, 19, 20.
+- 2026-09-30 — Phase 21.6: crowds and spray beta. Each crag's crowd from its draw, the weekend, the hour, the sky and the day; a queue for the ropes in the go's cost; beta from the crowd, asked for or shouted at you, at the cost of the onsight; strangers at the base.
+- 2026-09-30 — Phase 21.6: highball calls, by Evan's call: every outdoor boulder from 16 ft up is a highball, set from its height and held by a test. Twelve more, seventeen in all; the Gorge now wants a spotter.
+- 2026-09-30 — Phase 21.6: the speed wall at Send City (a reaction start, alternate hands, a PB; time, a pass and a daily cap on what it teaches) and Free Solo (chosen at the start; outdoor sport lines and wall pitches without a rope; a fall ends the run, and reloading can't take it back); save v9. 21.6 done; Phase 21's criterion 3 (bots to V10+) still open.
+- 2026-09-30 — Phase 21, criterion 3: a career bot (best job, trips saved for, Hazel asked along, the hardest crag it can use) and a four-year career harness. Every run reaches V10 (median day 200) with no refusals or stuck nights; 9 of 16 hit about one wet day with nothing indoors past V9. Closing Phase 21 waits on Evan's call on that gap.
+- 2026-09-30 — 0.962.0 prepared for Evan to test: Phase 21 so far (gear, trad, training, the crags past Act I, walls and expeditions, crowds, highballs, the speed wall, Free Solo). Merged to main; the release tag is Evan's.

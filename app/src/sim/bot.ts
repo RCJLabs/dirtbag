@@ -14,18 +14,18 @@ import {
   type Attempt,
 } from './climb';
 import { headroom, holds, isNight, unmet } from './cond';
-import { routesAt } from './content/gym';
+import { INDOOR, routesAt } from './content/gym';
 import { ACTS, PLACES, road } from './content/places';
 import { TALK } from './content/people';
-import type { RouteDef } from './content/routes';
-import { BODY, CLIMB, LOAD, MONEY } from './dials';
+import { roped, type RouteDef } from './content/routes';
+import { BODY, BOND, CLIMB, KIT, LOAD, MONEY } from './dials';
 import { cold, freshLoad, ratio } from './body';
 import { gradeOf, average } from './climber';
-import { act, faSuggestions, goBlocked, knowsBeta, landingChance, newGame, talkStart } from './game';
+import { act, actCost, faSuggestions, goBlocked, knowsBeta, landingChance, newGame, talkStart } from './game';
 import { whereNow } from './presence';
-import type { Action, GameState, GoResult } from './types';
+import type { Action, GameState, GoResult, Skills } from './types';
 import type { Rng } from './rng';
-import { conditions } from './weather';
+import { conditions, conditionsAt } from './weather';
 
 export interface BotRun {
   state: GameState;
@@ -63,9 +63,16 @@ export interface DaySummary {
   // over all five: what climbing's worth an hour, against a setting shift's.
   climbMin: number;
   climbGain: number;
+  // The skills the day started with: what a training session would have been worth instead.
+  skills: Skills;
   // A night the rules count as failure: going to bed hungry, or with the card nearly maxed.
   stuck: boolean;
 }
+
+// Where the bots climb: the crags they drive to without paying for a haul, and the gym.
+const BOT_PLACES = ['road', 'gorge', 'cove', 'mesa', 'cave', 'gym'];
+// The Cave's problems start at V3: a bot climbs there once it's climbing that.
+const CAVE_FROM = 3;
 
 // A careful climber reads a highball's landing odds the way they read the load warning: they
 // won't work one while a fall from its crux lands badly more than 1 time in 20, so they wait
@@ -78,7 +85,10 @@ const cruxLanding = (s: GameState, r: RouteDef): number => {
 
 // How a bot spends its days. The climber works only when the money's nearly gone; the
 // balanced one keeps a cushion; the worker takes every shift going and climbs after.
-export type Strategy = 'climber' | 'balanced' | 'worker';
+// The career bot (Phase 21's criterion 3) plays the long game: the best-paying job it can
+// get, saving for the trips, asking Hazel along, and the crag with the hardest line it can
+// get on.
+export type Strategy = 'climber' | 'balanced' | 'worker' | 'career';
 
 // Reads the meter the way the e2e bot reads the screen: hold to track the tension band,
 // release a throw just inside its band, tap on the beat; shake out at the rest, and hang
@@ -215,7 +225,14 @@ export interface WeekOpts {
 }
 
 // The cash each strategy tries to keep before it'll spend a day climbing.
-const CUSHION: Record<Strategy, number> = { climber: 15, balanced: 60, worker: Infinity };
+const CUSHION: Record<Strategy, number> = { climber: 15, balanced: 60, worker: Infinity, career: 60 };
+
+// Where a career goes: every crag and both gyms.
+const CAREER_PLACES = ['road', 'gorge', 'cove', 'mesa', 'moon', 'stone', 'wind', 'crucible', 'cave', 'gym'];
+// The jobs a career bot weighs, by what they pay an hour.
+const JOB_ACTS = ['cafe.shift', 'cave.coach', 'gym.set'];
+// A crag day starts by here, or it's not worth the drive.
+const LAST_START = 14 * 60;
 
 export const playWeek = (seed: string, opts: WeekOpts = {}): BotRun => playDays(seed, { days: 7, ...opts });
 
@@ -267,6 +284,17 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     workMin += s.min - t;
   }
 
+  // Keeps the kit up, as a careful player would once the shop's line tells them: a resole
+  // when the rubber's going and there's money for it past the cushion, chalk when it's low.
+  function kit() {
+    const resole = (s.gear.shoes ?? 0) < KIT.shoes.worn + 5 && s.cash >= KIT.shoes.resole + CUSHION[strategy];
+    const chalk = (s.gear.chalk ?? 0) < 5 && s.cash >= KIT.chalk.price;
+    if (!resole && !chalk) return;
+    travel('shop');
+    if (resole) tryAct('shop.resole');
+    if (chalk) tryAct('shop.chalk');
+  }
+
   // Talks to Sage when she's here: her lesson once a day, and whatever beat of her arc is
   // due (the first answer, like a player who doesn't read).
   function maybeSage() {
@@ -286,14 +314,18 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   // can hold; failing that, a project (the unsent line with the widest window, three goes a
   // day at most, as a player would work a line above them); with everything sent, there's
   // nothing to go there for.
-  function choose(place = s.at): RouteDef | null {
-    // Plan for when you'd get there, with the pass you'd buy at the desk.
+  function choose(place = s.at, partner?: string): RouteDef | null {
+    // Plan for when you'd get there, with the pass you'd buy at the desk, and the partner
+    // you'd ask along.
     const drive = place === s.at ? 0 : (road(s.at, place)?.min ?? 0);
     const there = {
       ...s,
       at: place,
       min: s.min + drive,
-      today: place === 'gym' ? [...s.today, 'pass'] : s.today,
+      today: INDOOR[place] ? [...s.today, INDOOR[place]!.pass] : s.today,
+      people: partner
+        ? { ...s.people, [partner]: { ...s.people[partner]!, invite: { day: s.day, place, from: s.min } } }
+        : s.people,
     };
     const lines = routesAt(s.seed, place, s.day)
       .filter((r) => !goBlocked(there, r) && !s.routes[r.id]?.sent && (s.routes[r.id]?.goesToday ?? 0) < 3)
@@ -314,16 +346,27 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   function fresh(place: string): boolean {
     const p = PLACES[place];
     if (p?.minGrade !== undefined && gradeOf(s.climber.skills) < p.minGrade) return false;
+    if (p?.unlock && !s.unlocked.includes(place)) return false;
     const body: GameState = {
       ...s,
       at: place,
-      today: place === 'gym' ? [...s.today, 'pass'] : s.today,
+      today: INDOOR[place] ? [...s.today, INDOOR[place]!.pass] : s.today,
       energy: 100,
       skin: 100,
       fed: 100,
       injury: null,
       load: freshLoad(),
     };
+    // A career's day is judged from the morning, when Hazel would come if the bond's there.
+    if (strategy === 'career') {
+      body.min = 10 * 60;
+      const need = p?.invite;
+      if (need !== undefined && (s.people.hazel?.bond ?? 0) >= need)
+        body.people = {
+          ...s.people,
+          hazel: { ...s.people.hazel!, invite: { day: s.day, place, from: 9 * 60 } },
+        };
+    }
     return routesAt(s.seed, place, s.day).some((r) => !s.routes[r.id]?.sent && !goBlocked(body, r));
   }
 
@@ -355,45 +398,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     }
   }
 
-  function day() {
-    workMin = 0;
-    hardest = -1;
-    climbMin = 0;
-    climbGain = 0;
-    travel('lot');
-    if (s.fed < 70) tryAct('lot.cook');
-    work();
-    // The crag when it's dry and there's something there to try; the gym otherwise.
-    // Roadside first, the Gorge once it's open to you and there's nothing new at Roadside,
-    // the gym when the rock's wet or done.
-    const open = conditions(s.seed, s.day).open;
-    const gorge = gradeOf(s.climber.skills) >= (PLACES.gorge?.minGrade ?? 99);
-    const place =
-      open && choose('road')
-        ? 'road'
-        : open && gorge && choose('gorge')
-          ? 'gorge'
-          : choose('gym')
-            ? 'gym'
-            : null;
-    // Nothing to climb isn't the same as nothing new to try: a hurt or spent climber still
-    // has unsent lines out there, and only a day without any counts as the content running out.
-    let where = place ? 'tired' : ['road', 'gorge', 'gym'].some(fresh) ? 'resting' : 'nothing';
-    if (place && s.min < 16 * 60 && s.energy >= 30 && s.skin >= 25) {
-      travel(place);
-      if (place === 'gym') tryAct('gym.pass');
-      const t = s.min;
-      session();
-      climbMin += s.min - t;
-      where = place;
-    }
-    travel('lot');
-    if (s.fed < 60) tryAct('lot.cook');
-    if (s.fed < 40) tryAct('lot.cook');
-    // Scout: taken on when he picks you, fed when his bowl's low. No stick: bots are busy.
-    tryAct('lot.adopt');
-    if (s.dog && s.dog.fed < 40) tryAct('lot.kibble');
-    if (!isNight(s.min)) tryAct('lot.rest');
+  // The day's line in the run, at bedtime.
+  function record(where: string, morning: Skills) {
     run.days.push({
       day: s.day,
       cash: s.cash,
@@ -408,8 +414,232 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       where,
       climbMin,
       climbGain: Math.round(climbGain * 100) / 100,
+      skills: morning,
       stuck: s.fed < BODY.hungryBelow || headroom(s) < MONEY.vanSpot,
     });
+  }
+
+  function day() {
+    const morning = { ...s.climber.skills };
+    workMin = 0;
+    hardest = -1;
+    climbMin = 0;
+    climbGain = 0;
+    travel('lot');
+    if (s.fed < 70) tryAct('lot.cook');
+    work();
+    kit();
+    // The crag when it's dry and there's something there to try; the gym otherwise.
+    // Roadside first, the Gorge once it's open to you and there's nothing new at Roadside,
+    // the gym when the rock's wet or done.
+    // The Cove and the Mesa once they're open to you, their own weather and seasons deciding
+    // (Phase 21.4).
+    const open = conditions(s.seed, s.day).open;
+    const grade = gradeOf(s.climber.skills);
+    const opens = (id: string) => grade >= (PLACES[id]?.minGrade ?? 0);
+    const place =
+      open && choose('road')
+        ? 'road'
+        : open && opens('gorge') && choose('gorge')
+          ? 'gorge'
+          : opens('cove') && choose('cove')
+            ? 'cove'
+            : opens('mesa') && choose('mesa')
+              ? 'mesa'
+              : grade >= CAVE_FROM && choose('cave')
+                ? 'cave'
+                : choose('gym')
+                  ? 'gym'
+                  : null;
+    // Nothing to climb isn't the same as nothing new to try: a hurt or spent climber still
+    // has unsent lines out there, and only a day without any counts as the content running out.
+    let where = place ? 'tired' : BOT_PLACES.some(fresh) ? 'resting' : 'nothing';
+    if (place && s.min < 16 * 60 && s.energy >= 30 && s.skin >= 25) {
+      travel(place);
+      if (INDOOR[place]) tryAct(`${place}.pass`);
+      const t = s.min;
+      session();
+      climbMin += s.min - t;
+      where = place;
+    }
+    travel('lot');
+    if (s.fed < 60) tryAct('lot.cook');
+    if (s.fed < 40) tryAct('lot.cook');
+    // Scout: taken on when he picks you, fed when his bowl's low. No stick: bots are busy.
+    tryAct('lot.adopt');
+    if (s.dog && s.dog.fed < 40) tryAct('lot.kibble');
+    if (!isNight(s.min)) tryAct('lot.rest');
+    record(where, morning);
+    tryAct('lot.sleep');
+  }
+
+  // ---- the career bot ----
+
+  // Whether a place is somewhere this climber can go today: the grade for it, the trip paid
+  // for, the gas and the permit there and back, dry and open, and time to climb once there.
+  function reachable(place: string): boolean {
+    const p = PLACES[place]!;
+    const grade = gradeOf(s.climber.skills);
+    if (p.minGrade !== undefined && grade < p.minGrade) return false;
+    if (p.unlock && !s.unlocked.includes(place)) return false;
+    if (INDOOR[place]) return place !== 'cave' || grade >= CAVE_FROM;
+    const there = place === s.at ? undefined : road(s.at, place);
+    const back = road(place, 'lot');
+    const gas = (there?.cash ?? 0) + (back?.cash ?? 0) + (p.permit ?? 0);
+    if (headroom(s) < gas + MONEY.vanSpot) return false;
+    if (s.min + (there?.min ?? 0) > LAST_START) return false;
+    const c = conditionsAt(s.seed, s.day, place);
+    return !c.closed && c.open;
+  }
+
+  // Who'd come along to a crag, if asked now: Hazel, when she's here and close enough.
+  function askable(place: string): string | null {
+    const need = PLACES[place]?.invite;
+    if (need === undefined || INDOOR[place] || s.min >= BOND.inviteBefore || s.today.includes('invite'))
+      return null;
+    if (whereNow(s, 'hazel') !== s.at) return null;
+    return (s.people.hazel?.bond ?? 0) >= need ? 'hazel' : null;
+  }
+
+  // The day's crag: the one whose line for you is hardest, a little less for every hour of
+  // driving; with a partner asked along where that opens roped lines.
+  function pickPlace(): { place: string; partner: string | null } | null {
+    let best: { place: string; partner: string | null; score: number } | null = null;
+    for (const place of CAREER_PLACES) {
+      if (!reachable(place)) continue;
+      const partner = askable(place);
+      const r = choose(place, partner ?? undefined);
+      if (!r) continue;
+      const drive = place === s.at ? 0 : (road(s.at, place)?.min ?? 0);
+      // Short of money, the gas counts too: a dollar is worth a few minutes of driving.
+      const gas = (place === s.at ? 0 : (road(s.at, place)?.cash ?? 0)) + (PLACES[place]!.permit ?? 0);
+      const broke = s.cash < CUSHION.career + saving();
+      const score = r.grade - drive / 120 - (broke ? gas / 8 : 0);
+      if (!best || score > best.score) best = { place, partner, score };
+    }
+    return best;
+  }
+
+  // The crag you'd pick after a double shift and the drive, judged now while Hazel can be
+  // asked: pretend it's six hours later.
+  function pickAfterWork(): { place: string; partner: string | null } | null {
+    const was = s;
+    let best: { place: string; partner: string | null; score: number } | null = null;
+    for (const place of CAREER_PLACES) {
+      if (INDOOR[place]) continue;
+      const partner = askable(place);
+      if (!partner) continue;
+      s = { ...was, min: was.min + 6 * 60 };
+      const ok = reachable(place);
+      const r = ok ? choose(place, partner) : null;
+      s = was;
+      if (!r || !roped(r)) continue;
+      const score = r.grade;
+      if (!best || score > best.score) best = { place, partner, score };
+    }
+    return best;
+  }
+
+  // Asks a partner out to a crag, through the talk a player would use.
+  function invite(who: string, place: string): boolean {
+    const talk = who === 'hazel' ? (s.at === 'lot' ? 'hazel-lot' : 'hazel-crag') : who;
+    const node = talkStart(s, talk);
+    const nodes = TALK[talk]?.nodes;
+    if (!node || !nodes) return false;
+    const ask = nodes[node]!.opts.findIndex(
+      (o) => o.label === 'Come climbing?' && (!o.when || holds(s, o.when)),
+    );
+    if (ask < 0 || !go({ t: 'say', talk, node, opt: ask })) return false;
+    const opt = nodes.invite!.opts.findIndex(
+      (o) => o.label === PLACES[place]!.name && (!o.when || holds(s, o.when)),
+    );
+    return opt >= 0 && go({ t: 'say', talk, node: 'invite', opt });
+  }
+
+  // The next trip worth saving for: the cheapest haul the grade has opened.
+  function saving(): number {
+    const grade = gradeOf(s.climber.skills);
+    const next = CAREER_PLACES.map((id) => PLACES[id]!)
+      .filter((p) => p.unlock && (p.minGrade ?? 0) <= grade)
+      .filter((p) => !s.unlocked.includes(Object.keys(PLACES).find((k) => PLACES[k] === p)!))
+      .map((p) => p.unlock!)
+      .sort((a, b) => a - b)[0];
+    return next ?? 0;
+  }
+
+  // Buys a trip the grade has opened, once the cash is there.
+  function buyTrips() {
+    const grade = gradeOf(s.climber.skills);
+    for (const id of CAREER_PLACES) {
+      const p = PLACES[id]!;
+      if (!p.unlock || s.unlocked.includes(id) || (p.minGrade ?? 0) > grade) continue;
+      if (s.cash >= p.unlock + CUSHION.career) go({ t: 'unlock', place: id });
+    }
+  }
+
+  // A shift at the best-paying job this climber can work, an hour for an hour.
+  function shift(short: number) {
+    const rate = (id: string) => {
+      const a = ACTS[id]!;
+      const c = actCost(s, a);
+      const trip = road(s.at, id.split('.')[0]!)?.min ?? 0;
+      return (c.cash ?? 0) / ((c.min ?? 60) + 2 * trip);
+    };
+    const jobs = JOB_ACTS.filter((id) => !unmet({ ...s, at: id.split('.')[0]! }, ACTS[id]!.needs)).sort(
+      (a, b) => rate(b) - rate(a),
+    );
+    const id = jobs[0];
+    if (!id) return;
+    travel(id.split('.')[0]!);
+    const t = s.min;
+    // Short by more than a shift pays, and the café will take a double.
+    if (!(id === 'cafe.shift' && short > (actCost(s, ACTS[id]!).cash ?? 0) && tryAct('cafe.double')))
+      tryAct(id);
+    workMin += s.min - t;
+  }
+
+  function careerDay() {
+    const morning = { ...s.climber.skills };
+    workMin = 0;
+    hardest = -1;
+    climbMin = 0;
+    climbGain = 0;
+    travel('lot');
+    if (s.fed < 70) tryAct('lot.cook');
+    buyTrips();
+    kit();
+    // Money first: the cushion, the week's bills, and the next trip if there's one to save
+    // for. A working morning, then a crag near enough to reach after it.
+    // A trip's saved for with a night's costs over, so it's still there in the morning.
+    const trip = saving();
+    const want =
+      CUSHION.career + (billsSoon() ? MONEY.registration + MONEY.insurance : 0) + (trip ? trip + 50 : 0);
+    const pick = pickPlace();
+    // A working day: ask Hazel along first, to the crag you'll reach after the shift, so
+    // she's there with the rope when you are.
+    if (s.cash < want || !pick) {
+      const after = pickAfterWork();
+      if (after?.partner) invite(after.partner, after.place);
+      shift(want - s.cash);
+    }
+    const then = pickPlace();
+    let where = then ? 'tired' : CAREER_PLACES.some(fresh) ? 'resting' : 'nothing';
+    if (then && s.energy >= 30 && s.skin >= 25) {
+      if (then.partner) invite(then.partner, then.place);
+      travel(then.place);
+      if (INDOOR[then.place]) tryAct(`${then.place}.pass`);
+      const t = s.min;
+      session();
+      climbMin += s.min - t;
+      where = then.place;
+    }
+    travel('lot');
+    if (s.fed < 60) tryAct('lot.cook');
+    if (s.fed < 40) tryAct('lot.cook');
+    tryAct('lot.adopt');
+    if (s.dog && s.dog.fed < 40) tryAct('lot.kibble');
+    if (!isNight(s.min)) tryAct('lot.rest');
+    record(where, morning);
     tryAct('lot.sleep');
   }
 
@@ -418,7 +648,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   for (let guard = 0; s.day < end; guard++) {
     if (guard > (opts.days ?? 7) * 2)
       throw new Error(`the bot is stuck on day ${s.day}: ${run.refused.slice(-3).join(' | ')}`);
-    day();
+    if (strategy === 'career') careerDay();
+    else day();
   }
   run.state = s;
   return run;

@@ -30,6 +30,57 @@ export interface Look {
   tie?: string;
 }
 
+// Strangers at the base of a crag (Phase 21.6's crowds): nobody you know, dressed for it.
+export const STRANGERS: Look[] = [
+  {
+    skin: '#C98E6B',
+    shirt: '#7A8B4E',
+    pants: '#5B5048',
+    shoe: '#2B2A33',
+    hair: '#2E2320',
+    hat: null,
+    sleeve: 'long',
+  },
+  {
+    skin: '#F0C8A4',
+    shirt: '#B8483A',
+    pants: '#39424F',
+    shoe: '#2B2A33',
+    hair: '#C79A55',
+    hat: null,
+    sleeve: 'none',
+    pony: true,
+    tie: '#2B2A33',
+  },
+  {
+    skin: '#6E4630',
+    shirt: '#E4D6B8',
+    pants: '#4A5A6A',
+    shoe: '#2B2A33',
+    hair: '#1E1816',
+    hat: '#8A4B7A',
+    sleeve: 'short',
+  },
+  {
+    skin: '#D9A07A',
+    shirt: '#3F6F8F',
+    pants: '#6B5B3E',
+    shoe: '#2B2A33',
+    hair: '#6A4A2E',
+    hat: null,
+    sleeve: 'short',
+  },
+  {
+    skin: '#A8704E',
+    shirt: '#D98A3A',
+    pants: '#2F3440',
+    shoe: '#2B2A33',
+    hair: '#2A201C',
+    hat: '#3E5A3A',
+    sleeve: 'long',
+  },
+];
+
 export const LOOK: Record<string, Look> = {
   you: {
     skin: '#E2AE86',

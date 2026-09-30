@@ -124,6 +124,11 @@ export const VOICES: Record<Cue, (v: V, k: number) => void> = {
     tone(v, { type: 'sawtooth', f: 430, f2: 220, dur: 0.11, gain: 0.25 });
     tone(v, { type: 'sawtooth', f: 450, f2: 230, dur: 0.12, gain: 0.25, delay: 0.18 });
   },
+  // A board creaking under a hang, and the breath out after.
+  train: (v) => {
+    tone(v, { type: 'triangle', f: 180, f2: 150, dur: 0.35, gain: 0.25 });
+    burst(v, { filter: 'lowpass', f: 600, f2: 350, dur: 0.6, gain: 0.35, delay: 0.3, attack: 0.2 });
+  },
   // Chalked hands clapped off, then the first hold.
   pullon: (v) => {
     burst(v, { filter: 'bandpass', f: 1800, q: 0.8, dur: 0.12, gain: 0.6 });
@@ -135,6 +140,12 @@ export const VOICES: Record<Cue, (v: V, k: number) => void> = {
   clip: (v) => {
     tone(v, { f: 4200, dur: 0.03, gain: 0.3 });
     tone(v, { f: 5600, dur: 0.04, gain: 0.25, delay: 0.05 });
+  },
+  // A cam's lobes springing open in the crack, then the rope clipped to it.
+  place: (v) => {
+    burst(v, { filter: 'bandpass', f: 2600, q: 2.5, dur: 0.08, gain: 0.5 });
+    tone(v, { f: 3800, dur: 0.03, gain: 0.25, delay: 0.14 });
+    tone(v, { f: 5000, dur: 0.04, gain: 0.2, delay: 0.19 });
   },
   // Here's the hard bit.
   crux: (v) => tone(v, { type: 'triangle', f: 220, dur: 0.16, gain: 0.3 }),

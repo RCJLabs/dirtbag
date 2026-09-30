@@ -1,0 +1,67 @@
+// The career harness (Phase 21's criterion 3): the career bot plays four years (224 days)
+// from every start, and this reads how far it climbs and whether it ever runs out of things
+// to try. `npm run harness` runs it after the season; CAREER_SEEDS and CAREER_DAYS change it.
+import { it } from 'vitest';
+import type { BotRun } from '../src/sim/bot';
+import { STARTS } from '../src/sim/climber';
+import { contentOut, firstTry, median, season } from '../src/sim/harness';
+
+const SEEDS = Number(process.env.CAREER_SEEDS ?? 4);
+const DAYS = Number(process.env.CAREER_DAYS ?? 224);
+const AT = [56, 112, 168, 224].filter((d) => d <= DAYS);
+const out = (s = '') => process.stdout.write(`${s}\n`);
+const f1 = (x: number) => (Number.isNaN(x) ? '–' : x.toFixed(1));
+
+// The first day the climber's grade reached `g`, or null.
+const firstGrade = (r: BotRun, g: number): number | null => r.days.find((d) => d.grade >= g)?.day ?? null;
+
+it('career', { timeout: 1_800_000 }, () => {
+  out(`\n# Career harness: ${SEEDS} seeds × ${DAYS} days, the career bot, human-ish hands\n`);
+  out(
+    `| start | refused | stuck | ${AT.map((d) => `d${d} grade · $`).join(' | ')} | V10 on | first V10 go | trips bought | nothing new | resting |`,
+  );
+  out(`|---|---|---|${AT.map(() => '---').join('|')}|---|---|---|---|---|`);
+  const all: BotRun[] = [];
+  for (const start of Object.keys(STARTS)) {
+    const runs = Array.from({ length: SEEDS }, (_, k) =>
+      season(`c-${start}-${k}`, { start, strategy: 'career', days: DAYS, human: true }),
+    );
+    all.push(...runs);
+    const cells = AT.map((d) => {
+      const at = runs.map((r) => r.days[d - 1]!);
+      return `V${f1(median(at.map((x) => x.grade)))} · $${median(at.map((x) => x.cash)).toFixed(0)}`;
+    });
+    const v10 = runs.map((r) => firstGrade(r, 10) ?? 999);
+    const go10 = runs.map((r) => firstTry(r, 10) ?? 999);
+    const trips = runs.map((r) => r.state.unlocked.length);
+    const nothing = runs.map((r) => r.days.filter((d) => d.where === 'nothing').length);
+    const resting = runs.map((r) => r.days.filter((d) => d.where === 'resting').length);
+    const refused = runs.reduce((n, r) => n + r.refused.length, 0);
+    const stuck = runs.reduce((n, r) => n + r.days.filter((d) => d.stuck).length, 0);
+    const day = (xs: number[]) => (median(xs) >= 999 ? '–' : `day ${median(xs)}`);
+    out(
+      `| ${start} | ${refused} | ${stuck} | ${cells.join(' | ')} | ${day(v10)} (${v10.filter((d) => d < 999).length}/${SEEDS}) | ${day(go10)} | ${median(trips)} | ${median(nothing)} days | ${median(resting)} days |`,
+    );
+  }
+  out('\n## Targets\n');
+  const say = (ok: boolean, what: string, how: string) => out(`- ${ok ? '✓' : '✗'} ${what}: ${how}`);
+  const v10 = all.map((r) => firstGrade(r, 10) ?? 999);
+  const reached = v10.filter((d) => d < 999).length;
+  // Before V10, a day with nothing unsent within reach anywhere is the content running out.
+  const dry = all.filter((r) => {
+    const out = contentOut(r);
+    const at = firstGrade(r, 10) ?? 999;
+    return out !== null && out < at;
+  }).length;
+  say(
+    median(v10) < 999 && dry === 0,
+    'The career bots reach V10+ without running out of things to try',
+    `median V10 on day ${median(v10) >= 999 ? '–' : median(v10)}, ${reached}/${all.length} runs there by day ${DAYS}; ${dry} runs had a day with nothing new before it.`,
+  );
+  const bad = all.reduce((n, r) => n + r.refused.length + r.days.filter((d) => d.stuck).length, 0);
+  say(
+    bad === 0,
+    'A career is never refused or stuck',
+    `${bad} refusals and stuck nights across ${all.length} runs.`,
+  );
+});

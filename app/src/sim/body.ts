@@ -3,11 +3,12 @@
 // week can't spike it, and every roll comes from the seeded session stream, so a replay
 // replays its injuries.
 
-import { gradeOf } from './climber';
+import { gradeOf, type Style } from './climber';
 import { AREA, INJURY_NAME } from './content/injuries';
 import type { RouteDef } from './content/routes';
 import { BODY, INJURY, LOAD } from './dials';
 import { Rng } from './rng';
+import { riskFactor } from './training';
 import type { GameState, Injury, Load } from './types';
 
 const round2 = (v: number) => Math.round(v * 100) / 100;
@@ -47,9 +48,10 @@ export function zone(r: number): Zone {
 export const cold = (s: GameState, r: RouteDef): boolean =>
   !s.today.includes('warm') && r.grade >= gradeOf(s.climber.skills);
 
-// The chance this go hurts you. Nothing below the risk line; above it v0.956's slope, worse
-// on crimps and cracks, cold, or hungry, and scaled by how big the go was.
-export function injuryChance(s: GameState, r: RouteDef, load: number, wasCold: boolean): number {
+// The chance this go (or session) hurts you. Nothing below the risk line; above it v0.956's
+// slope, worse on crimps and cracks, cold, or hungry, scaled by how big the go was, and by
+// your training phase and prehab.
+export function injuryChance(s: GameState, r: { type: Style }, load: number, wasCold: boolean): number {
   const x = ratio(s.load);
   if (x <= LOAD.risk) return 0;
   const hungry = s.fed < BODY.weakBelow ? 1 + (0.5 * (BODY.weakBelow - s.fed)) / BODY.weakBelow : 1;
@@ -58,7 +60,8 @@ export function injuryChance(s: GameState, r: RouteDef, load: number, wasCold: b
     LOAD.typeRisk[r.type] *
     (wasCold ? LOAD.coldRisk : 1) *
     hungry *
-    (load / LOAD.perGo)
+    (load / LOAD.perGo) *
+    riskFactor(s)
   );
 }
 
@@ -66,7 +69,7 @@ export function injuryChance(s: GameState, r: RouteDef, load: number, wasCold: b
 // own roll and the same go always rolls the same. Worse spikes make worse injuries.
 export function rollInjury(
   s: GameState,
-  r: RouteDef,
+  r: { type: Style },
   load: number,
   wasCold: boolean,
   n: number,

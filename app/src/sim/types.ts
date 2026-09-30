@@ -56,8 +56,40 @@ export interface GameState {
   goals: number;
   // Trips you've paid to open for good, by place id (v0.956's unlocked): Moonstone's haul.
   unlocked: string[];
+  // Your kit, by id in content/gear.ts: condition, uses left, or 1 for owned (Phase 21.1).
+  gear: Record<string, number>;
+  // Your training block (Phase 21.3).
+  training: Training;
+  // Shifts worked at each job (content/jobs.ts): what your rank there is earned from.
+  jobs: Record<string, number>;
+  // On a multi-pitch wall (Phase 21.5): which, and the index of the next pitch.
+  wall: { id: string; next: number } | null;
+  // Away on an expedition: which, the day of it you're on, pitches fixed, and energy left.
+  expedition: { id: string; day: number; pitch: number; energy: number } | null;
+  // Phase 21.6. The speed wall at Send City: your best time in seconds, and today's runs.
+  speed: { pb: number | null; runs: number; day: number };
+  // How this climber climbs, chosen at the start and for good: with a rope, or Free Solo
+  // (every outdoor sport line and wall pitch without one; a fall ends it).
+  mode: 'rope' | 'solo';
+  // The solo you're on right now: set when you pull on, cleared when you top out. If the
+  // game closes with it set, you didn't.
+  soloing: string | null;
+  // How a Free Solo run ended, if it has.
+  dead: { route: string; day: number; hi: number } | null;
   // The message log: every line the game has told you, newest last.
   log: LogLine[];
+}
+
+export type PhaseId = 'base' | 'build' | 'peak' | 'deload';
+
+export interface Training {
+  phase: PhaseId;
+  // The day this phase began.
+  since: number;
+  // The day your last taper began, or null if you've never tapered.
+  taper: number | null;
+  // The last day prehab covers; 0 for never.
+  prehab: number;
 }
 
 export interface Load {
@@ -156,7 +188,7 @@ export interface Delta {
 
 export type Action =
   // `carry`: a v0.956 climber's skills, when they come across rather than picking a start.
-  | { t: 'create'; name: string; start: string; carry?: Skills }
+  | { t: 'create'; name: string; start: string; carry?: Skills; solo?: true }
   | { t: 'act'; act: string }
   | { t: 'say'; talk: string; node: string; opt: number }
   | { t: 'travel'; to: string }
@@ -166,7 +198,20 @@ export type Action =
   | { t: 'go'; route: string }
   | { t: 'rest'; route: string }
   | { t: 'done'; route: string; result: GoResult }
-  | { t: 'name'; route: string; name: string; call: -1 | 0 | 1 };
+  | { t: 'name'; route: string; name: string; call: -1 | 0 | 1 }
+  // Phase 21.3: a session (a protocol's id, or 'prehab'), a phase, a taper.
+  | { t: 'train'; protocol: string }
+  | { t: 'phase'; phase: PhaseId }
+  | { t: 'taper' }
+  // Phase 21.5: a wall (start it, bivy on it, or retreat), and an expedition (go, then a day
+  // at a time: lead, dig deep, rest in camp, or bail).
+  | { t: 'wall'; wall: string; do: 'start' | 'bivy' | 'retreat' }
+  | { t: 'exped'; id: string; do: 'go' | 'lead' | 'dig' | 'rest' | 'bail' }
+  // Phase 21.6: ask the crowd at the base for a line's beta.
+  | { t: 'ask'; route: string }
+  // A run on the speed wall: its time in real seconds, from the green light to the buzzer,
+  // or null for a false start.
+  | { t: 'speed'; real: number | null };
 
 // What a finished go hands back to the game.
 export interface GoResult {
@@ -179,6 +224,8 @@ export interface GoResult {
   tried: string[];
   // Extra skin the beta cost on the way (crimpy sequences).
   skin: number;
+  // Trad: the feet you hit the ground from, if a fall had nothing to catch it.
+  deck?: number;
 }
 
 export type GameEvent =

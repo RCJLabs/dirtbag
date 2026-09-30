@@ -98,6 +98,34 @@ const SIT: TalkOpt[] = [
   { label: 'Not tonight' },
 ];
 
+// Asking a partner out climbing: every crag they'd come to, each needing its bond
+// (PlaceDef.invite), your grade for it, dry rock, and the haul paid where there is one.
+// `say` is their answer, with {place}.
+function inviteOpts(who: string, say: string): TalkOpt[] {
+  const out: TalkOpt[] = [];
+  for (const [id, p] of Object.entries(PLACES)) {
+    if (p.invite === undefined) continue;
+    out.push({
+      label: p.name,
+      when: {
+        bond: `${who}/${p.invite}`,
+        open: id,
+        ...(p.minGrade !== undefined ? { grade: p.minGrade } : {}),
+        ...(p.unlock !== undefined ? { unlocked: id } : {}),
+      },
+      fx: { invite: id, today: 'invite', line: say.replace('{place}', p.name) },
+    });
+  }
+  return [...out, { label: 'Never mind' }];
+}
+
+// The ask itself: once a day, in the morning, with anyone you've got to know.
+const askOut = (who: string): TalkOpt => ({
+  label: 'Come climbing?',
+  when: { bond: `${who}/${BOND.tiers[1]}`, before: BOND.inviteBefore, notToday: 'invite' },
+  next: 'invite',
+});
+
 export const TALK: Record<string, TalkDef> = {
   'hazel-lot': {
     who: 'hazel',
@@ -129,7 +157,12 @@ export const TALK: Record<string, TalkDef> = {
             next: 'coffee',
           },
           { label: 'Just coffee', when: { today: 'coffee' }, next: 'no-coffee' },
+          askOut('hazel'),
         ],
+      },
+      invite: {
+        text: 'Where? Somewhere I’ve been, and somewhere dry.',
+        opts: inviteOpts('hazel', 'Hazel: "{place}. Fine. You’re driving, I’m choosing the music."'),
       },
       roof: {
         text: 'Everyone throws right at the roof. Everyone comes off right at the roof. Hook your left heel on the lip and cross to the pinch.',
@@ -149,7 +182,14 @@ export const TALK: Record<string, TalkDef> = {
     nodes: {
       sent: { text: "That's the one. Lower off, I'm hungry.", opts: [{ label: 'OK' }] },
       goes: { text: 'Clean catch. Rest up, go again.', opts: [{ label: 'OK' }] },
-      start: { text: "Rope's flaked. I'll belay whatever you want to get on.", opts: [{ label: 'OK' }] },
+      start: {
+        text: "Rope's flaked. I'll belay whatever you want to get on.",
+        opts: [{ label: 'OK' }, askOut('hazel')],
+      },
+      invite: {
+        text: 'Leave here? Where?',
+        opts: inviteOpts('hazel', 'Hazel: "{place}. Fine. You’re driving, I’m choosing the music."'),
+      },
     },
   },
   // Sage's arc is v0.956's, beat for beat. Her guiding stint is a week here, not v0.956's
@@ -178,23 +218,13 @@ export const TALK: Record<string, TalkDef> = {
         text: "Stuck on something, {name}? Point at it and I'll show you how I'd go.",
         opts: [
           { label: 'Show me the beta', primary: true, fx: { watch: true } },
-          {
-            label: 'Come out to the Gorge?',
-            when: {
-              bond: `sage/${BOND.invite}`,
-              grade: PLACES.gorge!.minGrade,
-              open: 'gorge',
-              before: BOND.inviteBefore,
-              notToday: 'invite',
-            },
-            fx: {
-              invite: 'gorge',
-              today: 'invite',
-              line: 'Sage: "Meet you at the pullout. I\'ll bring the rope."',
-            },
-          },
+          askOut('sage'),
           { label: 'Not now' },
         ],
+      },
+      invite: {
+        text: 'Where are we going? Somewhere dry, and somewhere I trust you on.',
+        opts: inviteOpts('sage', 'Sage: "{place}. Meet you there. I’ll bring the rope."'),
       },
       done: { text: "That's all you get from me today. Go climb.", opts: [{ label: 'Fair' }] },
       'beat-1': {
