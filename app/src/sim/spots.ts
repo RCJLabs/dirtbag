@@ -2,7 +2,7 @@
 // night will cost and give, and the ticket odds at the Lot. sleep() and Tonight both read
 // nightAt, so the numbers a player weighs are the ones the night uses.
 
-import { SPOT, SPOTS, type SpotId } from './dials';
+import { SPOT, SPOTS, UPGRADE, WINTER, type SpotId } from './dials';
 import { headroom } from './cond';
 import { PARTNERS, tierOf } from './presence';
 import { Rng } from './rng';
@@ -36,8 +36,12 @@ export function ticketOdds(nights: number): number {
   return n <= 0 ? 0 : Math.min(SPOT.tickets.cap, n * SPOT.tickets.per);
 }
 
+// Tonight's ticket odds at the Lot, curtains and all.
+export const ticketTonight = (s: GameState): number =>
+  ticketOdds(s.lotNights) * ((s.gear.curtains ?? 0) > 0 ? UPGRADE.curtains.tickets : 1);
+
 export const ticketRoll = (s: GameState): boolean =>
-  Rng.fromStream(s.seed, 'events').derive(`ticket-${s.day}`).next() < ticketOdds(s.lotNights);
+  Rng.fromStream(s.seed, 'events').derive(`ticket-${s.day}`).next() < ticketTonight(s);
 
 export interface Night {
   // The spot the night will be at: yours, or the Lot when yours won't have you tonight.
@@ -53,6 +57,10 @@ export interface Night {
   // The card won't cover it: the pullout.
   rough: boolean;
   ticket: number;
+  // Winter (Phase 22.2c): the cold the night takes out of you after the heater and the
+  // insulation (0 or less), and whether the heater burns a tank of propane for it.
+  cold: number;
+  heat: boolean;
 }
 
 export function nightAt(s: GameState): Night {
@@ -61,14 +69,22 @@ export function nightAt(s: GameState): Night {
   const d = SPOTS[spot];
   const cost = d.cost + d.gas;
   const rough = headroom(s) < cost;
-  const cold = seasonOf(s.day) === 'winter' ? d.winter : 0;
+  // Winter: the van's cold and the spot's, unless the heater's lit; insulation halves what's
+  // left. The pullout's as cold as the Lot.
+  const winter = seasonOf(s.day) === 'winter';
+  const heat = winter && (s.gear.heater ?? 0) > 0 && (s.gear.propane ?? 0) > 0;
+  const chill = winter && !heat ? WINTER.cold + (rough ? 0 : d.winter) : 0;
+  const cold = Math.round(chill * ((s.gear.insulation ?? 0) > 0 ? UPGRADE.insulation.cold : 1));
+  const bed = (s.gear.bed ?? 0) > 0 && !rough ? UPGRADE.bed.energy : 0;
   return {
     spot,
     wanted: spot === want ? null : want,
     cost: rough ? 0 : cost,
-    energy: rough ? 0 : d.energy + cold,
+    energy: (rough ? 0 : d.energy) + cold + bed,
     drive: rough ? 0 : d.drive,
     rough,
-    ticket: !rough && spot === 'lot' ? ticketOdds(s.lotNights) : 0,
+    ticket: !rough && spot === 'lot' ? ticketTonight(s) : 0,
+    cold,
+    heat,
   };
 }

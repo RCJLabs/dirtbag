@@ -106,7 +106,7 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 2. The bot plays it through with no errors and no cross-origin requests: Hazel's tip, the drive, a fall at crux 1 that reveals the rock-over, the send, a diner shift, the evening at the fire, sleep, and a reload that comes back to the same morning.
 3. Unit tests cover the RNG golden vectors (matching the Unreal harness), the clock and money, beta unlocks, attempt replay, and save round-trip, migration and quarantine.
 4. Nothing in `src/sim` can touch the DOM, `Math.random` or the wall clock, and CI enforces it.
-5. A player downloads under 250 KB, fonts included.
+5. A player downloads under 250 KB, fonts included. *(The budget went to 300 KB by Evan's call on 30 Sep 2026, in Phase 22.)*
 
 ### R1 — The first week
 
@@ -1684,7 +1684,31 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **A spot that won't have you tonight** falls back to the Lot, and says so. A card that won't cover it is the pullout, as before.
 - **Bots** use a driveway when they can, the trailhead once the Lot's ticket odds start, and the Lot otherwise. Every harness target passes: balanced runway 3.2, 3.3, 3.4 and 4.0 days at days 7–28, no stuck nights; the career bots at V10 by day 160.
 - **E2e:** the week sheet lists the spots, with the Lot chosen and the Ridge locked on day two.
-- **Carried:** the page is 248.5 of 250 KB. 22.2c (upgrades and winter) won't fit without raising the budget or finding room.
+- **Carried:** the page was 248.5 of 250 KB. Evan raised the budget to 300 KB for the rest of Phase 22.
+
+**Status (30 Sep 2026): 22.2c built: upgrades and winter. 22.2 is done.** 0.967.0. No save change: every upgrade is a thing you own (`content/gear.ts`).
+- **Dale fits six upgrades** at the garage, each once and for good [proposed numbers]:
+
+  | Upgrade | Price | Effect |
+  |---|---|---|
+  | A real bed | $70 | +5 energy every van night |
+  | Blackout curtains | $60 | 70% fewer tickets at the Lot |
+  | A tool kit | $85 | A bodge holds 9 times in 10 |
+  | A tune-up | $90 | 20% less gas |
+  | A diesel heater | $150 | No cold on a winter night, a tank of propane a night |
+  | Insulation | $60 | Half the cold |
+
+  None of them earns. The camp kitchen waits for 22.3's recipes.
+- **Winter** (days 15–28 of every 56: the game starts in fall) takes 10 energy off every van night, on top of the Trailhead's and the Ridge's own chill, unless the heater's lit.
+  - Propane is $18 a tank at the gear shop, 10 nights to a tank.
+  - Five days before winter, a line says it's coming and where the fixes are.
+  - Tonight shows the cold, or the heater burning.
+- **The bots** buy upgrades with money past their cushion, the winter ones first, and keep propane in winter. A bot bug the harness found: they chose repairs before paying for any, so a forced tire job was followed by an engine service they could no longer afford.
+- **Harness:** every target passes. Balanced runway 3.2, 3.3, 3.3 and 4.0 days, no stuck nights; the career bots at V10 by day 157.5; the first V5 go by day 19.5. That's Phase 22's criterion 1 with the whole van in.
+- **Size:** 249.7 of 300 KB.
+- **Carried:**
+  - Winter falls in the first month, so a new climber meets it before they can afford a heater. That's the pressure the plan asked for, but it's worth a play.
+  - v0.956's build-outs from scavenged materials aren't in; they want 22.5's hustle.
 
 ---
 
@@ -2068,3 +2092,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Phase 22.2a built: the van's three parts wear with driving and nights; a worn van breaks down on drives out of town (never a kept-up one), with a tow, a bodge, limping on or a friend; Dale's garage in Midtown puts parts back. Wear retuned to about $5 a day after the harness. Save v11. 0.965.0.
 - 2026-09-30 — Evan's call on the jobs: each pays in something besides money (coaching head, setting technique, the warehouse endurance); the café pays least a shift and is shortest; a Diner job, a little more a shift in tips for a longer one. Setting $28 → $30.
 - 2026-09-30 — Phase 22.2b built: where you sleep, a standing choice among the Lot (tickets from the fourth night running), the Upper Trailhead, the truck stop, a friend's driveway and the Ridge, each with its cost, drive and night; Tonight shows it. Save v12. 0.966.0.
+- 2026-09-30 — Evan's call: the size budget goes from 250 KB to 300 KB. Phase 22.2c built: six van upgrades at the garage (bed, curtains, tool kit, tune-up, heater, insulation), none of them income; winter nights cost energy unless the heater's burning propane, with a warning before. 22.2 done. 0.967.0.

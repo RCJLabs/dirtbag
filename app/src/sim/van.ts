@@ -1,7 +1,7 @@
 // The van (Phase 22.2a): its three parts, what driving and nights do to them, the odds of a
 // breakdown on a drive, and what the garage charges. The numbers are VAN's (dials.ts).
 
-import { VAN, type VanPart } from './dials';
+import { UPGRADE, VAN, type VanPart } from './dials';
 import { PARTNERS, tierOf } from './presence';
 import { Rng } from './rng';
 import type { GameState } from './types';
@@ -35,8 +35,14 @@ export function breakdownRoll(s: GameState, min: number, to: string): RoadPart |
 }
 
 // Whether a bodge holds.
+export const bodgeOdds = (s: GameState): number =>
+  (s.gear.toolkit ?? 0) > 0 ? UPGRADE.toolkit.bodge : VAN.bodge.odds;
 export const bodgeHolds = (s: GameState): boolean =>
-  Rng.fromStream(s.seed, 'events').derive(`bodge-${s.day}-${s.min}`).next() < VAN.bodge.odds;
+  Rng.fromStream(s.seed, 'events').derive(`bodge-${s.day}-${s.min}`).next() < bodgeOdds(s);
+
+// What a drive's gas comes to, with the tune-up (Phase 22.2c).
+export const gasFor = (s: GameState, cash: number): number =>
+  (s.gear.tuneup ?? 0) > 0 ? Math.round(cash * UPGRADE.tuneup.gas) : cash;
 
 // What the garage charges to put a part back to new.
 export function repairCost(s: GameState, part: VanPart): number {

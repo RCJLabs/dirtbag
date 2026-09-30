@@ -88,6 +88,8 @@ import {
   VAN,
   nightAt,
   SPOT_NAME,
+  gasFor,
+  bodgeOdds,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import type { Game, SheetId } from '../game/game';
@@ -202,7 +204,9 @@ function jobNote(s: GameState, job: string): string {
 }
 
 function driveRow(game: Game, s: GameState, to: string, label: string): Row {
-  const r = road(s.at, to)!;
+  const r0 = road(s.at, to)!;
+  // Gas as the drive will charge it, tune-up and all.
+  const r = { ...r0, cash: gasFor(s, r0.cash) };
   const permit = PLACES[to]?.permit ?? 0;
   const declined = r.cash > 0 && headroom(s) < r.cash + permit;
   if (permit && headroom(s) < permit)
@@ -697,7 +701,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             cost: costLabel({ min: VAN.bodge.min }),
             note: b.bodged
               ? 'You’ve tried. It isn’t going to hold.'
-              : `Tape, zip ties and hope. It holds about ${Math.round(VAN.bodge.odds * 5)} times in 5, and then it’s on to ${to}.`,
+              : `${s.gear.toolkit ? 'The tool kit, and a plan' : 'Tape, zip ties and hope'}. It holds about ${Math.round(bodgeOdds(s) * 10)} times in 10, and then it’s on to ${to}.`,
             off: b.bodged,
             run: () => game.fix('bodge'),
           },

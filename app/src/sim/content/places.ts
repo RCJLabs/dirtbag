@@ -11,7 +11,7 @@
 // back: there's no game over, only a bad week.
 
 import type { Need } from '../cond';
-import { DAY, DOG, KIT, MONEY, VAN, type VanPart } from '../dials';
+import { DAY, DOG, KIT, MONEY, UPGRADE, VAN, WINTER, type VanPart } from '../dials';
 import { DOG_LINES, DOG_OFFER } from './dog';
 import { clockShort } from '../format';
 import type { Delta, Skills } from '../types';
@@ -348,6 +348,7 @@ export const PLACES: Record<string, PlaceDef> = {
       'shop.resole',
       'shop.chalk',
       'shop.tape',
+      'shop.propane',
       'shop.shoes',
       'shop.pad',
       'shop.rack',
@@ -384,11 +385,34 @@ export const PLACES: Record<string, PlaceDef> = {
     ambience: { room: 0.35, murmur: 0.1, clinks: 0.5 },
     away: 'Edge of Midtown. Tires, engines, batteries. Dale takes cards and opinions.',
     here: 'A radio on a shelf, a calendar from 2019, and Dale under somebody’s truck.',
-    acts: ['garage.tires', 'garage.engine', 'garage.battery'],
+    acts: [
+      'garage.tires',
+      'garage.engine',
+      'garage.battery',
+      'garage.bed',
+      'garage.curtains',
+      'garage.toolkit',
+      'garage.tuneup',
+      'garage.heater',
+      'garage.insulation',
+    ],
   },
 };
 
 const oneShift: Need = { notToday: 'worked', why: "You've done your shift today." };
+// A van upgrade at the garage: fitted once, for its price and time (UPGRADE in dials.ts).
+const upgrade = (id: keyof typeof UPGRADE, label: string, says: string): Record<string, ActDef> => {
+  const u = UPGRADE[id];
+  return {
+    [`garage.${id}`]: {
+      label,
+      cost: { min: u.min, cash: -u.price },
+      needs: [{ hasNot: id, why: 'Already fitted.' }, { pay: u.price }],
+      gear: { id, set: 1 },
+      says,
+    },
+  };
+};
 // A job's shift needs one posted today, and a job that hasn't let you go (Phase 22.1).
 const onSchedule = (job: string): Need[] => [
   { posted: job, why: 'No shift posted today. The week’s schedule is under the clock.' },
@@ -538,6 +562,25 @@ export const ACTS: Record<string, ActDef> = {
     van: 'battery',
     says: 'A new battery. The van starts first time, like it’s showing off.',
   },
+  // Phase 22.2c: what Dale fits to the van, once and for good (UPGRADE in dials.ts).
+  ...upgrade(
+    'bed',
+    'Fit a real bed',
+    'A mattress that isn’t a camping pad. Your back sends a thank-you note.',
+  ),
+  ...upgrade('curtains', 'Blackout curtains', 'From outside, the van could be anyone’s. Nobody lives in it.'),
+  ...upgrade(
+    'toolkit',
+    'Buy a tool kit',
+    'Sockets, a jack that works, and a roll of duct tape the size of your head.',
+  ),
+  ...upgrade('tuneup', 'A tune-up', 'Plugs, filters, and the idle set right. It sips gas now.'),
+  ...upgrade(
+    'heater',
+    'Fit a diesel heater',
+    'A heater under the passenger seat. It runs on propane from the gear shop.',
+  ),
+  ...upgrade('insulation', 'Insulate the van', 'Foam in the walls and the ceiling. It holds the warm in.'),
   'cafe.coffee': {
     label: 'Buy a coffee',
     cost: { min: 10, cash: -4, energy: 16, fed: -2 },
@@ -562,6 +605,15 @@ export const ACTS: Record<string, ActDef> = {
     needs: [{ pay: KIT.chalk.price }],
     gear: { id: 'chalk', add: KIT.chalk.uses },
     says: 'You crush half of it into the bag before you reach the door.',
+  },
+  // Phase 22.2c: the heater's propane.
+  'shop.propane': {
+    label: 'A tank of propane',
+    cost: { min: 10, cash: -WINTER.propane.price },
+    needs: [{ pay: WINTER.propane.price }],
+    gear: { id: 'propane', add: WINTER.propane.nights },
+    note: `${WINTER.propane.nights} winter nights for the heater.`,
+    says: 'The tank rides home on the passenger seat, belted in.',
   },
   'shop.tape': {
     label: 'A roll of tape',
