@@ -37,7 +37,7 @@ import { gradeOf, average } from './climber';
 import { act, actCost, faSuggestions, goBlocked, knowsBeta, landingChance, newGame, talkStart } from './game';
 import { whereNow } from './presence';
 import { signupBlocked } from './jobs';
-import { friendFor, PARTS, repairCost } from './van';
+import { friendFor, PARTS, repairCost, unsafePart } from './van';
 import { spotBlocked, ticketOdds } from './spots';
 import { tonight } from './tonight';
 import type { Action, GameState, GoResult, Skills } from './types';
@@ -266,8 +266,11 @@ const SHIFT_OF: Record<string, string> = Object.fromEntries(JOB_ACTS.map((id) =>
 const GARAGE_AT = 45;
 // Van upgrades a bot buys, in order, and what it keeps in hand past its cushion before it
 // does (Phase 22.2c).
-const BOT_UPGRADES = ['insulation', 'heater', 'bed', 'tuneup', 'curtains', 'toolkit'] as const;
+const BOT_UPGRADES = ['heater', 'insulation', 'bed', 'tuneup', 'curtains', 'toolkit'] as const;
 const SPARE = 60;
+// What a bot keeps over the heater and its propane, or the propane alone, in winter: a
+// night at the Lot and a little, and the bills when they're close.
+const WARM_OVER = 25;
 // A crag day starts by here, or it's not worth the drive.
 const LAST_START = 14 * 60;
 
@@ -397,33 +400,56 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
 
   // Keeps the van up (Phase 22.2a): a part to the garage when it's worn and there's money
   // past the cushion for it, and at once, on the card, when it's shot or the battery's going.
+  // Whether the van will take you there today (Phase 22.2a): across town always; out of it
+  // only on sound road parts and a charged battery.
+  function vanReaches(place: string): boolean {
+    const r = road('lot', place);
+    if (!r || r.min < VAN.from) return true;
+    return !unsafePart(s) && s.van.battery > 0;
+  }
+
   function garage() {
     // Asked again before each job, so one repair's bill counts against the next.
     const needs = (p: VanPart) => {
       const c = s.van[p];
-      if (c < VAN.unsafe || (p === 'battery' && c < 8)) return true;
+      // Urgent, but not at the price of a maxed card: a van that can't leave town still gets
+      // you to a shift and the gym while the money comes in.
+      if (c < VAN.unsafe || (p === 'battery' && c < 8))
+        return headroom(s) >= repairCost(s, p) + MONEY.vanSpot + CUSHION.climber;
       return c < GARAGE_AT && s.cash >= repairCost(s, p) + CUSHION[strategy];
     };
     const due = PARTS.filter(needs);
-    // Phase 22.2c: one upgrade a day, when there's money past the cushion for it, the ones
-    // for winter first; and propane in the tank for the heater through the cold.
-    const fit = BOT_UPGRADES.find(
-      (id) => !s.gear[id] && s.cash >= UPGRADE[id].price + CUSHION[strategy] + SPARE,
-    );
+    // Phase 22.2c: before and through winter, the heater and a tank of propane come first,
+    // as soon as the cash covers them with a little over (Evan's call: a heater a player can
+    // afford before winter). Otherwise one upgrade a day, with money past the cushion.
     const cold = seasonOf(s.day) === 'winter' || seasonOf(s.day + WINTER.warnDays) === 'winter';
-    if (
+    const warm =
       cold &&
-      s.gear.heater &&
-      (s.gear.propane ?? 0) < 3 &&
-      s.cash >= WINTER.propane.price + CUSHION[strategy]
-    ) {
+      repairs() === 0 &&
+      !s.gear.heater &&
+      s.cash >=
+        UPGRADE.heater.price +
+          WINTER.propane.price +
+          WARM_OVER +
+          (billsSoon() ? MONEY.registration + MONEY.insurance : 0);
+    const fit = warm
+      ? 'heater'
+      : BOT_UPGRADES.find((id) => !s.gear[id] && s.cash >= UPGRADE[id].price + CUSHION[strategy] + SPARE);
+    if (due.length || fit) {
+      travel('garage');
+      for (const p of PARTS) if (needs(p)) tryAct(`garage.${p}`);
+      if (
+        fit &&
+        (fit === 'heater'
+          ? s.cash >= UPGRADE.heater.price
+          : s.cash >= UPGRADE[fit].price + CUSHION[strategy] + SPARE)
+      )
+        tryAct(`garage.${fit}`);
+    }
+    if (cold && s.gear.heater && (s.gear.propane ?? 0) < 2 && s.cash >= WINTER.propane.price + WARM_OVER) {
       travel('shop');
       tryAct('shop.propane');
     }
-    if (!due.length && !fit) return;
-    travel('garage');
-    for (const p of PARTS) if (needs(p)) tryAct(`garage.${p}`);
-    if (fit && s.cash >= UPGRADE[fit].price + CUSHION[strategy] + SPARE) tryAct(`garage.${fit}`);
   }
 
   // Talks to Sage when she's here: her lesson once a day, and whatever beat of her arc is
@@ -568,9 +594,9 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     // (Phase 21.4).
     const open = conditions(s.seed, s.day).open;
     const grade = gradeOf(s.climber.skills);
-    const opens = (id: string) => grade >= (PLACES[id]?.minGrade ?? 0);
+    const opens = (id: string) => grade >= (PLACES[id]?.minGrade ?? 0) && vanReaches(id);
     const place =
-      open && choose('road')
+      open && vanReaches('road') && choose('road')
         ? 'road'
         : open && opens('gorge') && choose('gorge')
           ? 'gorge'
@@ -612,6 +638,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   // Whether a place is somewhere this climber can go today: the grade for it, the trip paid
   // for, the gas and the permit there and back, dry and open, and time to climb once there.
   function reachable(place: string): boolean {
+    if (!vanReaches(place)) return false;
     const p = PLACES[place]!;
     const grade = gradeOf(s.climber.skills);
     if (p.minGrade !== undefined && grade < p.minGrade) return false;

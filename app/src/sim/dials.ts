@@ -154,7 +154,10 @@ export const UPGRADE = {
   // A tune-up: a fifth off the gas on every drive.
   tuneup: { price: 90, min: 90, gas: 0.8 },
   // A diesel heater: no cold on a winter night while there's propane for it, a tank a night.
-  heater: { price: 150, min: 90 },
+  // Evan's call: one a player can buy before the first winter (day 15). The season harness's
+  // balanced bots hold a median $83 on days 10 to 14, so $45 and a first tank ($18) is in
+  // reach; $150 wasn't.
+  heater: { price: 45, min: 90 },
   // Insulation: half the cold, heater or not.
   insulation: { price: 60, min: 120, cold: 0.5 },
 };
