@@ -1122,3 +1122,33 @@ button.pill:disabled {
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
+/* The week's shifts: each day's posted jobs, as toggles. */
+.days.shifts li {
+  align-items: center;
+}
+.posts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.post {
+  padding: 5px 8px;
+  background: none;
+  color: var(--u-ink);
+  border: 1.5px solid color-mix(in srgb, var(--u-ink) 30%, transparent);
+  border-radius: var(--u-rad);
+  font: 600 calc(12px * var(--u-fs)) / 1.1 var(--u-mono);
+  cursor: pointer;
+}
+.post[aria-pressed='true'] {
+  border-color: var(--u-ink);
+  background: var(--u-acc);
+  color: var(--u-bg);
+}
+.post:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+.post[aria-pressed='true']:disabled {
+  opacity: 1;
+}

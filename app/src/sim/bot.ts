@@ -23,6 +23,8 @@ import { cold, freshLoad, ratio } from './body';
 import { gradeOf, average } from './climber';
 import { act, actCost, faSuggestions, goBlocked, knowsBeta, landingChance, newGame, talkStart } from './game';
 import { whereNow } from './presence';
+import { signupBlocked } from './jobs';
+import { tonight } from './tonight';
 import type { Action, GameState, GoResult, Skills } from './types';
 import type { Rng } from './rng';
 import { conditions, conditionsAt } from './weather';
@@ -242,7 +244,9 @@ const CAREER_PLACES = [
   'gym',
 ];
 // The jobs a career bot weighs, by what they pay an hour.
-const JOB_ACTS = ['cafe.shift', 'cave.coach', 'gym.set'];
+const JOB_ACTS = ['cafe.shift', 'cave.coach', 'gym.set', 'warehouse.shift'];
+// Each job's one-shift act (Phase 22.1): what a bot signed up for goes to work as.
+const SHIFT_OF: Record<string, string> = Object.fromEntries(JOB_ACTS.map((id) => [ACTS[id]!.job!.id, id]));
 // A crag day starts by here, or it's not worth the drive.
 const LAST_START = 14 * 60;
 
@@ -287,13 +291,41 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
 
   const billsSoon = () => Math.ceil(s.day / 7) * 7 - s.day <= 1;
 
+  // The morning's money: the cushion, and the week's bills when they're close.
+  const wantFor = (day: number) =>
+    CUSHION[strategy] + (Math.ceil(day / 7) * 7 - day <= 1 ? MONEY.registration + MONEY.insurance : 0);
+  // Today's shift, if the bot signed up for one: it goes whatever the money says, or it's a
+  // warning.
+  const booked = (): string | null => {
+    const b = s.shifts.find((x) => x.day === s.day);
+    return b ? SHIFT_OF[b.job]! : null;
+  };
+
   function work() {
-    const want = CUSHION[strategy] + (billsSoon() ? MONEY.registration + MONEY.insurance : 0);
-    if (s.cash >= want) return;
+    const want = wantFor(s.day);
+    const b = booked();
+    if (s.cash >= want && !b) return;
     travel('cafe');
     const t = s.min;
     if (!tryAct('cafe.double')) tryAct('cafe.shift');
     workMin += s.min - t;
+  }
+
+  // Phase 22.1: at night, a bot that'll be short in the morning signs up for tomorrow's
+  // shift, so the shift counts toward a raise, like a player planning the week. The one it
+  // takes is the best-paying of `jobs` posted tomorrow, an hour for an hour from the Lot.
+  function signUp(jobs: string[], extra = 0) {
+    const day = s.day + 1;
+    if (s.shifts.some((x) => x.day === day)) return;
+    if (tonight(s).cash >= wantFor(day) + extra) return;
+    const rate = (id: string) => {
+      const c = actCost(s, ACTS[id]!);
+      return (c.cash ?? 0) / ((c.min ?? 60) + 2 * (road('lot', id.split('.')[0]!)?.min ?? 0));
+    };
+    const best = jobs
+      .filter((id) => !signupBlocked(s, ACTS[id]!.job!.id, day))
+      .sort((a, b) => rate(b) - rate(a))[0];
+    if (best) go({ t: 'signup', job: ACTS[best]!.job!.id, day, on: true });
   }
 
   // Keeps the kit up, as a careful player would once the shop's line tells them: a resole
@@ -481,6 +513,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     tryAct('lot.adopt');
     if (s.dog && s.dog.fed < 40) tryAct('lot.kibble');
     if (!isNight(s.min)) tryAct('lot.rest');
+    signUp(['cafe.shift']);
     record(where, morning);
     tryAct('lot.sleep');
   }
@@ -600,7 +633,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     const jobs = JOB_ACTS.filter((id) => !unmet({ ...s, at: id.split('.')[0]! }, ACTS[id]!.needs)).sort(
       (a, b) => rate(b) - rate(a),
     );
-    const id = jobs[0];
+    // A shift signed up for comes first, whatever pays better today.
+    const id = booked() ?? jobs[0];
     if (!id) return;
     travel(id.split('.')[0]!);
     const t = s.min;
@@ -629,7 +663,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     const pick = pickPlace();
     // A working day: ask Hazel along first, to the crag you'll reach after the shift, so
     // she's there with the rope when you are.
-    if (s.cash < want || !pick) {
+    if (s.cash < want || !pick || booked()) {
       const after = pickAfterWork();
       if (after?.partner) invite(after.partner, after.place);
       shift(want - s.cash);
@@ -651,6 +685,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     tryAct('lot.adopt');
     if (s.dog && s.dog.fed < 40) tryAct('lot.kibble');
     if (!isNight(s.min)) tryAct('lot.rest');
+    const next = saving();
+    signUp(JOB_ACTS, next ? next + 50 : 0);
     record(where, morning);
     tryAct('lot.sleep');
   }

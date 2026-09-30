@@ -363,9 +363,24 @@ export const PLACES: Record<string, PlaceDef> = {
     here: 'Midtown. Wren is on the bar.',
     acts: ['cafe.shift', 'cafe.double', 'cafe.coffee'],
   },
+  // Phase 22.1 [proposed]: a distribution warehouse on the flats by the river, south of
+  // Midtown. Long shifts from dawn, a few days a week.
+  warehouse: {
+    name: 'The Warehouse',
+    scene: null,
+    ambience: { room: 0.5, murmur: 0.15, clinks: 0.35 },
+    away: 'On the flats by the river. A few long shifts a week, from dawn.',
+    here: 'Pallets to the roof, and a forklift backing up somewhere, beeping.',
+    acts: ['warehouse.shift'],
+  },
 };
 
 const oneShift: Need = { notToday: 'worked', why: "You've done your shift today." };
+// A job's shift needs one posted today, and a job that hasn't let you go (Phase 22.1).
+const onSchedule = (job: string): Need[] => [
+  { posted: job, why: 'No shift posted today. The week’s schedule is under the clock.' },
+  { hired: job, why: 'They let you go. They’ll take you back in a week.' },
+];
 
 export const ACTS: Record<string, ActDef> = {
   'lot.cook': {
@@ -433,6 +448,7 @@ export const ACTS: Record<string, ActDef> = {
     cost: { min: 180, cash: 28, energy: -12, fed: -8 },
     needs: [
       oneShift,
+      ...onSchedule('cafe'),
       { before: 15 * 60, why: 'Shifts start by {t}.' },
       { energy: 12, why: 'Too tired to pull shots.' },
     ],
@@ -445,6 +461,7 @@ export const ACTS: Record<string, ActDef> = {
     cost: { min: 360, cash: 56, energy: -24, fed: -16 },
     needs: [
       oneShift,
+      ...onSchedule('cafe'),
       { before: 11 * 60, why: 'Doubles start by {t}.' },
       { energy: 24, why: 'Too tired for a double.' },
     ],
@@ -452,6 +469,22 @@ export const ACTS: Record<string, ActDef> = {
     sets: ['worked'],
     job: { id: 'cafe', shifts: 2 },
     says: 'Six hours on your feet.',
+  },
+  // Eight hours from dawn: the most a shift pays and the least an hour, and there's no
+  // climbing left in the day after it.
+  'warehouse.shift': {
+    label: 'Work a shift',
+    cost: { min: 480, cash: 52, energy: -40, fed: -20 },
+    needs: [
+      oneShift,
+      ...onSchedule('warehouse'),
+      { before: 9 * 60, why: 'The shift starts by {t}. Late is a no.' },
+      { energy: 40, why: 'Too tired to lift anything.' },
+    ],
+    note: 'The day is gone after this.',
+    sets: ['worked'],
+    job: { id: 'warehouse', shifts: 1 },
+    says: 'Eight hours of pallets, and a scanner that beeps at you.',
   },
   'cafe.coffee': {
     label: 'Buy a coffee',
@@ -576,6 +609,7 @@ export const ACTS: Record<string, ActDef> = {
     needs: [
       oneShift,
       { grade: 5, why: 'They want a coach who climbs V5.' },
+      ...onSchedule('coach'),
       { before: 14 * 60, why: 'Sessions start by {t}.' },
       { energy: 18, why: 'Too tired to spot anyone.' },
     ],
@@ -597,6 +631,7 @@ export const ACTS: Record<string, ActDef> = {
     cost: { min: 240, cash: 28, energy: -22, fed: -10 },
     needs: [
       oneShift,
+      ...onSchedule('set'),
       { before: 14 * 60, why: 'Setting starts by {t}.' },
       { energy: 22, why: 'Too tired to haul holds.' },
     ],
@@ -623,6 +658,9 @@ export const ROADS: RoadDef[] = [
   // The gear shop: a block from the café, on the way in from the Lot.
   { a: 'shop', b: 'cafe', min: 4, cash: 0 },
   { a: 'shop', b: 'lot', min: 9, cash: 1 },
+  // The warehouse: on the flats below Midtown, between the Lot and the shop.
+  { a: 'warehouse', b: 'lot', min: 10, cash: 1 },
+  { a: 'warehouse', b: 'shop', min: 6, cash: 1 },
   { a: 'road', b: 'lot', min: 60, cash: 12 },
   { a: 'road', b: 'cafe', min: 65, cash: 12 },
   { a: 'road', b: 'diner', min: 70, cash: 12 },

@@ -8,13 +8,13 @@
 import { CARRIED, STARTS } from './climber';
 import { GEAR } from './content/gear';
 import { PLACES } from './content/places';
-import { TRAIN } from './dials';
+import { LIFESTYLE, TRAIN } from './dials';
 import { JOBS } from './content/jobs';
 import { ROUTES, WALLS } from './content/routes';
 import { EXPEDITIONS } from './content/expeditions';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 9;
+export const SAVE_VERSION = 10;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -95,6 +95,12 @@ export const MIGRATIONS: Record<number, Migration> = {
   8: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, speed: { pb: null, runs: 0, day: 0 }, mode: 'rope', soloing: null, dead: null };
+  },
+  // v9 -> v10 (Phase 22.1): no shifts signed up for, no warnings, on every job's schedule,
+  // and living as everyone did: a dirtbag.
+  9: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, shifts: [], strikes: {}, benched: {}, lifestyle: 'dirtbag' };
   },
 };
 
@@ -220,6 +226,18 @@ export function validate(x: unknown): string[] {
     'training',
   );
   need(isObj(x.jobs) && Object.entries(x.jobs).every(([id, n]) => id in JOBS && isInt(n) && n >= 0), 'jobs');
+  need(
+    Array.isArray(x.shifts) &&
+      x.shifts.every(
+        (e) => isObj(e) && typeof e.job === 'string' && e.job in JOBS && isInt(e.day) && e.day >= 1,
+      ),
+    'shifts',
+  );
+  const perJob = (o: unknown) =>
+    isObj(o) && Object.entries(o).every(([id, n]) => id in JOBS && isInt(n) && n >= 0);
+  need(perJob(x.strikes), 'strikes');
+  need(perJob(x.benched), 'benched');
+  need(typeof x.lifestyle === 'string' && x.lifestyle in LIFESTYLE, 'lifestyle');
   const w = x.wall;
   need(
     w === null || (isObj(w) && typeof w.id === 'string' && w.id in WALLS && isInt(w.next) && w.next >= 0),

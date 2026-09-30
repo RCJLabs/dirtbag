@@ -10,7 +10,8 @@
 // onsight of the Warm Boulder and its card, a fall on The Pump that shows you the
 // rock-over, dinner, the fire, sleep, and a reload that comes back to the same morning.
 // Day two: Send City, a setting shift, Sage turning up and showing you a problem's trick,
-// a flash with it, the board, then home to lie around till dark.
+// a flash with it, the board, then home to lie around till dark, and tomorrow's café shift
+// signed up for from the week.
 // Day three is counted (Phase 11): a shift, the crag, three goes, back, dinner and bed in
 // 20 taps or fewer, not counting the climbing itself. Every trip is counted too: two taps
 // from the map, three from a scene. Day four runs day three again as a plan, and day five
@@ -671,8 +672,11 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 9 ||
-  !(st.jobs?.set >= 1) ||
+  saved?.v !== 10 ||
+  // Day two's setting shift was a walk-in: paid, and not counted.
+  st.jobs?.set !== undefined ||
+  !Array.isArray(st.shifts) ||
+  st.lifestyle !== 'dirtbag' ||
   st.training?.phase !== 'base' ||
   st.seed !== SEED ||
   !(st.gear?.shoes > 0 && st.gear.shoes < 60) ||
@@ -708,6 +712,22 @@ await tapAt(100, 560);
 await expectText('#sheet', /Your van/, 'van');
 await click('#sheet .opt', 'Lie around till dark');
 await expectText('#h-time', /^Day 2 · 5:00 PM$/, 'dark');
+
+console.log('The week: a shift signed up for, and how you live');
+// Tomorrow's café shift, signed up for from the van, so day three's shift counts toward a
+// raise. How you live stays a dirtbag's: day three's money is counted as it always was.
+await click('#sheet .opt', 'Your week');
+await expectText('#shifts', /Today.*Coffee Shop/, 'the schedule');
+await click('#sh-cafe-1');
+await until('signed up', async () => (await page.getAttribute('#sh-cafe-1', 'aria-pressed')) === 'true');
+await expectText('#living', /Dirtbag · free.*Comfortable/, 'how you live');
+if ((await page.getAttribute('#live-dirtbag', 'aria-checked')) !== 'true')
+  await fail('not living as a dirtbag');
+await shot('week');
+await click('#sheet .x');
+await tapAt(100, 560);
+await expectText('#sheet', /Your van/, 'van');
+await expectText('#sheet', /Next shift: Coffee Shop, Wed/, 'the next shift, from the van');
 await click('#sheet .opt', 'Sleep');
 await expectText('#h-time', /^Day 3 · 7:10 AM$/, 'morning');
 
@@ -720,6 +740,7 @@ const day3 = taps;
 await driveFrom('the Lot to the café', PIN.cafe, /Coffee Shop/);
 await click('#sheet .opt', 'Work a shift');
 await expectText('#h-time', /^Day 3 · 10:18 AM$/, 'clock');
+if ((await text('#toast'))?.includes('walk-in')) await fail('a signed-up shift paid as a walk-in');
 await driveOn('the café to Roadside', 'Drive to Roadside Crag');
 await until('the crag', async () => (await text('#hint'))?.includes('Boulders on the talus'));
 await wait(400);

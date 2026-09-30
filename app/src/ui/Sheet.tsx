@@ -74,6 +74,16 @@ import {
   crowdNow,
   queueMin,
   soloed,
+  dayName,
+  isPosted,
+  JOBS,
+  LIFESTYLE,
+  rankName,
+  signedUp,
+  signupBlocked,
+  benchedUntil,
+  WORK,
+  type Lifestyle,
 } from '../sim';
 import type { Game, JournalPage, SheetId, Ui } from '../game/game';
 import { legacyFile, saveLegacyFile } from '../game/legacy';
@@ -694,6 +704,17 @@ function TonightList({ t }: { t: Tonight }) {
             {t.hungry ? ` You'd go to bed hungry, and it costs you ${BODY.hungryNight} of that.` : ''}
           </small>
         </li>
+        {(t.living.cost > 0 || t.living.skimped) && (
+          <li>
+            <b>Living</b>
+            <span className="sky">{t.living.skimped ? 'Dirtbag' : money(t.living.cost)}</span>
+            <small>
+              {t.living.skimped
+                ? `The card won't stretch to ${LIVING[t.living.tier][0].toLowerCase()} tonight.`
+                : `${LIVING[t.living.tier][0]}: +${t.living.energy} of that energy, and +${t.living.skin} skin.`}
+            </small>
+          </li>
+        )}
         <li>
           <b>Bills</b>
           <span className="sky">{money(t.bills)}</span>
@@ -994,7 +1015,7 @@ function skyLine(c: Conditions): string {
   }
 }
 
-function WeekBody({ s }: { game: Game; s: GameState }) {
+function WeekBody({ game, s }: { game: Game; s: GameState }) {
   const [name, blurb] = SEASON[seasonOf(s.day)];
   return (
     <>
@@ -1022,6 +1043,105 @@ function WeekBody({ s }: { game: Game; s: GameState }) {
       <p className="sub">
         Registration and insurance, {money(MONEY.registration + MONEY.insurance)}, {billsWhen(s.day)}.
       </p>
+      <ShiftRows game={game} s={s} />
+      <LivingRows game={game} s={s} />
+    </>
+  );
+}
+
+// The week's shifts (Phase 22.1): what each job has posted, today's to walk in to and the
+// rest to sign up for, with where you stand at every job you've worked.
+function ShiftRows({ game, s }: { game: Game; s: GameState }) {
+  const days = Array.from({ length: WORK.ahead + 1 }, (_, i) => s.day + i);
+  const known = Object.keys(JOBS).filter((j) => s.jobs[j] || s.strikes[j] || benchedUntil(s, j) !== null);
+  return (
+    <>
+      <p className="crux">Shifts</p>
+      <p className="sub">
+        Sign up to {WORK.ahead} days ahead. Only those count toward a raise: today&rsquo;s are walk-ins. Skip
+        one you signed up for and it&rsquo;s a warning; {WORK.strikes} cost the job.
+      </p>
+      <ul className="days shifts" id="shifts">
+        {days.map((d) => (
+          <li key={d}>
+            <b>{d === s.day ? 'Today' : dayName(d)}</b>
+            <span className="posts">
+              {Object.keys(JOBS)
+                .filter((j) => isPosted(s.seed, j, d))
+                .map((j) => {
+                  const on = signedUp(s, j, d);
+                  const why = d === s.day ? null : signupBlocked(s, j, d, !on);
+                  return (
+                    <button
+                      type="button"
+                      key={j}
+                      id={`sh-${j}-${d - s.day}`}
+                      className="post"
+                      aria-pressed={on}
+                      disabled={d === s.day || !!why}
+                      title={why ?? undefined}
+                      onClick={() => game.signup(j, d, !on)}
+                    >
+                      {JOBS[j]!.name}
+                    </button>
+                  );
+                })}
+            </span>
+          </li>
+        ))}
+      </ul>
+      {known.length > 0 && (
+        <p className="sub" id="ranks">
+          {known.map((j) => workLine(s, j)).join(' ')}
+        </p>
+      )}
+    </>
+  );
+}
+
+function workLine(s: GameState, job: string): string {
+  const n = s.strikes[job] ?? 0;
+  const back = benchedUntil(s, job);
+  if (back !== null) return `${JOBS[job]!.name}: let go, back from day ${back}.`;
+  return `${JOBS[job]!.name}: ${rankName(s, job)}${n ? `, ${n} warning${n > 1 ? 's' : ''}` : ''}.`;
+}
+
+const LIVING: Record<Lifestyle, [string, string]> = {
+  dirtbag: ['Dirtbag', 'The van, a foam pad, and whatever’s in the cooler.'],
+  comfortable: ['Comfortable', 'A proper pad, a gym shower, salve for your tips.'],
+  plush: ['Plush', 'The good bag, clean clothes, a hot shower every night.'],
+};
+
+// How you live: chosen here, paid at the van every night, and on Tonight's list.
+function LivingRows({ game, s }: { game: Game; s: GameState }) {
+  return (
+    <>
+      <p className="crux">How you live</p>
+      <div role="radiogroup" aria-label="How you live" id="living">
+        {(Object.keys(LIFESTYLE) as Lifestyle[]).map((k) => {
+          const l = LIFESTYLE[k];
+          return (
+            <button
+              type="button"
+              key={k}
+              id={`live-${k}`}
+              className="beta choice"
+              role="radio"
+              aria-checked={s.lifestyle === k}
+              onClick={() => game.live(k)}
+            >
+              <span className="dot" />
+              <span>
+                {LIVING[k][0]} · {l.cost ? `${money(l.cost)} a night` : 'free'}
+              </span>
+              <small>
+                {LIVING[k][1]}
+                {l.cost ? ` +${l.energy} energy and +${l.skin} skin by morning.` : ''}
+              </small>
+            </button>
+          );
+        })}
+      </div>
     </>
   );
 }

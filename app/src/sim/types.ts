@@ -62,6 +62,13 @@ export interface GameState {
   training: Training;
   // Shifts worked at each job (content/jobs.ts): what your rank there is earned from.
   jobs: Record<string, number>;
+  // Phase 22.1. The shifts you've signed up for, soonest first; warnings for signed-up
+  // shifts you didn't work, by job; and the day each job that let you go will take you back.
+  shifts: { job: string; day: number }[];
+  strikes: Record<string, number>;
+  benched: Record<string, number>;
+  // How you live (dials.ts LIFESTYLE): paid at the van every night.
+  lifestyle: 'dirtbag' | 'comfortable' | 'plush';
   // On a multi-pitch wall (Phase 21.5): which, and the index of the next pitch.
   wall: { id: string; next: number } | null;
   // Away on an expedition: which, the day of it you're on, pitches fixed, and energy left.
@@ -211,7 +218,10 @@ export type Action =
   | { t: 'ask'; route: string }
   // A run on the speed wall: its time in real seconds, from the green light to the buzzer,
   // or null for a false start.
-  | { t: 'speed'; real: number | null };
+  | { t: 'speed'; real: number | null }
+  // Phase 22.1: sign up for a job's shift on a day (or drop it), and how you live.
+  | { t: 'signup'; job: string; day: number; on: boolean }
+  | { t: 'lifestyle'; tier: 'dirtbag' | 'comfortable' | 'plush' };
 
 // What a finished go hands back to the game.
 export interface GoResult {

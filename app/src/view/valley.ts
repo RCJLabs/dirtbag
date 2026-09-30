@@ -147,6 +147,13 @@ export const SIDE_ROADS: Record<string, { pts: Pt[]; dirt?: true }> = {
       [184, 402],
     ],
   },
+  // The Warehouse: a short spur west off the highway, onto the flats by the river.
+  warehouse: {
+    pts: [
+      [roadX(572), 572],
+      [202, 572],
+    ],
+  },
   // The desert road west to Sandstone Mesa, where the highway climbs out of the valley.
   mesa: {
     pts: [
@@ -174,6 +181,8 @@ export const BLOCKS: [number, number, number, number][] = [
   [98, 467, 24, 17],
   [256, 328, 18, 12],
   [236, 342, 16, 10],
+  // The Warehouse's shed, long and low, behind its pin.
+  [176, 552, 30, 12],
 ];
 export const LOT_RECT: [number, number, number, number] = [242, 598, 44, 28];
 

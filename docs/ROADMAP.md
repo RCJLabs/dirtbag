@@ -1559,6 +1559,99 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 **Depends on:** Phase 21 (the van carries the rack). **Effort:** ~8–12 weeks [INFERRED].
 
+**Plan on the rebuild (30 Sep 2026) [proposed].** Written from the audit (`docs/audit/core-loop.md` §2.2–2.8, §5.1–5.7, §8; `economy.md` §2.4–2.5, §8; `social.md` §2.6–2.9, §5, §8) against what the rebuild has: the van spot, weekly bills, gas by the drive, the card limit, three jobs with ranks, energy, skin, fed, load, injuries in three tiers, ramen and the diner, Scout, and the Tonight panel. There's no event system yet.
+
+*The principles, from the audit's verdicts:*
+- **Survival pressure that changes, not disappears.** v0.956's money stopped mattering after about day 15 (`economy.md` §1.1). Here every new cost is a choice with a visible trade: where to sleep, what to eat, whether to fix the van now.
+- **No farms.** Everything takes time, is capped by the day, and pays through the same curves as climbing (`hi()`) or as a day's buff, never flat skill. The harness holds each one under an hour on the rock and under a shift's pay.
+- **One night.** Every way a night passes (the van, a ledge, an expedition, a motel if one comes) goes through `sleep()`, so nothing skips the bills (v0.956's motel bug).
+- **Tonight shows it.** Each new meter appears in the Tonight panel with its number and its fix; no hidden meters.
+- **Seeded, and written.** Events come off one seeded deck. At most one a day. The vignettes keep v0.956's voice (the audit's keep list), and a bad outcome never pays more than a good one.
+
+*The slices, in order.* Each goes through the harness, the e2e and a save migration where it changes the state.
+
+- **22.1 The week and the money.**
+  - Each job posts 3–4 shifts a week that you sign up for, so the week is planned around the weather (`economy.md` §8 #15). A signed-up no-show costs a warning, and three cost the job.
+  - Jobs differ (Decision 1, Evan's call): some pay more an hour and some less, some take longer shifts and some shorter. Every job starts on low pay, and promotion is how you earn more.
+  - Lifestyle tiers you choose replace v0.956's hidden grade multiplier: dirtbag, comfortable, plush. Each has its nightly cost, sleep and supplies.
+  - The autopilot shift is moot here: shifts are already one tap.
+- **22.2 The van.**
+  - **Parts wear by the mile and the night:** three parts, not v0.956's six (tires, engine, battery [proposed]). A worn part raises the breakdown odds on a drive.
+  - **Breakdowns** are written vignettes with v0.956's ways out: a tow, a spare, a bodge, limping home, or a friend.
+  - **Repairs** happen at a garage in Midtown.
+  - **Where you sleep** is a nightly choice:
+    - the Lot ($18, and tickets in cash after too many nights in a row);
+    - the Upper Trailhead (free, cold, far);
+    - the truck stop (a shower, and a bad night);
+    - a friend's driveway (bond, and a cooldown);
+    - the Ridge (standing).
+  - **Upgrades:** a bed, a camp kitchen, curtains, a tool kit, a tune-up, and a heater that burns propane every winter night. There's no passive income: v0.956's solar and power station paid the whole nut (`core-loop.md` §5.1).
+  - **Winter** is a season you prepare for: the heater's fuel, insulation, a winter-kit goal.
+- **22.3 Food.**
+  - A pantry you stock at a Midtown market.
+  - Recipes cooked at the van with the camp kitchen, as a short cooking beat. They give food and a day's buff (wider windows for the day), not v0.956's flat skill, which was a farm to V18 (`climbing.md` §5.3).
+  - Variety matters: four of the same meal in a row raise sickness odds, and Tonight says so.
+  - The lake (the map's dimmed pin) opens: fishing, food not cash, seeded catches by season and hour; a swim; water.
+  - Coffee gets a crash after two a day.
+  - Starving eats the pantry first.
+- **22.4 The body, deeper.**
+  - Insurance plans (none, catastrophic, full) replace the flat weekly premium.
+  - A clinic: urgent care, physio (days off an injury, two hours, once a day), and cortisone (fast, at a risk).
+  - Old injuries: v0.956's scars and marks, merged (`core-loop.md` §8 CUT 3). A tier-2+ injury can leave one: more risk in its style, and a flare that physio settles, felt only when you climb that style, so it isn't a chore.
+  - Fear: after a deck, a bad landing or a tier-3 injury, that style's windows are tighter until you send one; the beta sheet says so.
+  - One supplies gauge, merging water, propane and hygiene (`core-loop.md` §8 CUT 1). Refilled at the gas station, the gym's shower or the lake.
+  - Sickness: a seeded nightly chance from winter, supplies, hunger and a same-meal diet; it takes teeth in with it.
+  - Psyche (Decision 2, kept): a slow mood that variety and company raise (a new crag, a send, a night with people) and grind lowers (the same gym, shift after shift). It moves the windows a little, and no single ritual fixes it. Tonight shows it.
+- **22.5 The hustle.** Cans, dumpster runs and foraging keep v0.956's thematic safety net. The game teaches it the first time you're hungry and broke. Busking in Old Town is a timing beat that pays by the crowd there (21.6's crowds), capped by the day, with lines of its own, not "Solid set." None out-earns a shift an hour.
+- **22.6 Events.**
+  - One seeded deck, at most one encounter a day.
+  - Knocks on the van at night (by where you're parked); roadside stops and hitchhikers on drives (a hitchhiker remembers what you did, and may be the friend at your next breakdown); walk-out epics on late crag days (headlamp, weather, energy).
+  - v0.956's Gen-1 one-liners stay cut (`social.md` §8 #11).
+  - Each has a sound and an e2e step (criterion 3).
+- **22.7 Scout's life.**
+  - Perks at bond: settles at the fire; finds food overnight; watches the van, halving tickets. v0.956's bug let any dog block every ticket.
+  - Aging in dog-years, vet scares with bills, and the end: v0.956's full lifecycle to his death and a farewell (Decision 3, kept).
+  - No new stray for a month after.
+- **22.8 Dreams.**
+  - A protected savings pot the broke check counts.
+  - The Dream Rig: van life halved, the upgrades done.
+  - The War Chest: expeditions halved, ready for Phase 24.
+  - Home Base: a cabin at the Lot, no van spot, a kitchen. It says exactly what it stops charging, unlike v0.956's "ever".
+- **22.9 The games, by Evan's call.**
+  - At the fire, with the people there: hold'em, blackjack, liar's dice, horseshoes. Each takes an hour or two and once a night, and pays something of its own:
+    - hold'em keeps reads on each person, and what they know;
+    - blackjack is money, with a buy-in cap;
+    - liar's dice and horseshoes are bond with whoever's playing, at most once a night each.
+  - Trivia becomes the glossary. The garden and farm visits are cut from Phase 22 (Decision 4), and their plan is kept for later: see "Saved for later" below.
+  - Blackjack and hold'em are simulated gambling: the Play listing's content rating changes before they ship, and that's Evan's step in the Play Console.
+
+*The decisions, as Evan called them (30 Sep 2026):*
+1. **Pace and pay:** jobs differ in pay and in hours. Starting jobs pay less, and promotion is required to earn more. There is no pace target for the harness; it reports each job's pay an hour at each rank instead.
+2. **Psyche:** kept, as a slow mood (22.4).
+3. **Scout's end:** kept, v0.956's full lifecycle (22.7).
+4. **The garden and the farm:** cut from Phase 22, with the plan saved for later.
+5. **Van parts:** three (tires, engine, battery).
+
+*Saved for later: the garden and the farm* (from v0.956, `core-loop.md` §2.6, `social.md` §2.5). The folks' farm, a drive out of the valley: a visit takes the day, helps with the chores for a little money, and brings home produce; the garden there has beds you plant and harvest on their own clocks. The audit's problem to solve first: eight hours for food dearer than the diner. It comes back when it pays in something the diner can't: family, a place to rest, seasons you can see.
+
+**Status (30 Sep 2026): 22.1 built: the week and the money.** Save v10, 0.964.0.
+- **Four jobs, posted by the week.** The café posts every day (it's the job that's always there); coaching and setting post 4 days a week, and the new Warehouse [proposed] 3, on days seeded by job and week. Tap the clock (or "Your week" in the van) for the schedule.
+- **Sign-up.** You sign up for a posted shift from tomorrow up to 7 days ahead, one a day. Only signed-up shifts count toward promotion; today's are walk-ins, which pay the same and count nothing. A signed-up shift you don't work is a warning, and the third costs the job: back to its first rank, and off its schedule for 7 days.
+- **Pay by rank** (Decision 1; the career harness prints this table now):
+
+  | Job | Shift | Start | Top |
+  |---|---|---|---|
+  | Café | 3 h | $28 ($9.33/h) | $48 ($16.00/h) |
+  | Coaching | 4 h | $34 ($8.50/h) | $68 ($17.00/h) |
+  | Setting | 4 h | $28 ($7.00/h) | $58 ($14.50/h), and it trains |
+  | Warehouse | 8 h | $52 ($6.50/h) | $103 ($12.88/h) |
+
+  The café's raise came down from $7 to $5 after the first harness run: at $7 its top rank out-earned every job an hour.
+- **How you live:** dirtbag (free), comfortable ($12 a night, +8 energy, +4 skin by morning), plush ($28, +15, +8) [proposed]. It's paid at the van after the spot, and only while the card covers it. Tonight shows it. Supplies join it in 22.4.
+- **The bots** sign up for tomorrow when they'll be short in the morning. The harness passes every season target: balanced runway 2.3, 3.5, 3.6 and 4.5 days at days 7–28, no stuck nights. The career bots reach V10 in every run (median day 161) with no warnings.
+- **A finding for Evan:** the career bots still spend their whole career at the café, to Veteran. They choose by today's pay an hour, and an assistant coach ($8.50/h) earns less than a café regular ($11.00/h), so they never start the coaching ladder. A player who looks ahead would. Whether a starting coach should pay more, or the bots should plan a ladder, is open.
+- **Carried:** warnings never expire [proposed]. Nothing cancels your shifts when you leave on an expedition; each missed one is a warning. The page size is 243.6 of 250 KB.
+
 ---
 
 ### Phase 24 — Expeditions as trips
@@ -1935,3 +2028,6 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — 0.962.1: the map fits the valley between the HUD and the buttons (MAP_FIT), so The Big Stone and Sandstone Mesa no longer hide under the HUD on a phone (Evan's report); the map's toast moves to the new gap.
 - 2026-09-30 — 0.962.2, from Evan's testing: the pump bar's hot pulse animates its colour, not a filter (phone Chrome drew the filtered layer as a striped red box over the climb panel); sound quieter (master 0.5 on, 0.15 quiet, from 0.9 and 0.35; ambience a notch under the effects); the gyms sound like gyms: falls onto the pads, chalk claps and hands on holds, less room rumble, and voices that come and go instead of a breeze.
 - 2026-09-30 — Phase 21 closed by Evan's call. The wet-day gap is closed with content: The Cave sets V5 to V12, and the Training Center (v0.956's third gym) sets eight comp-style problems a week, V7 to V14, from V7. The career bots reach V10 in every run (median day 162) and never run out of things to try. 0.963.0. CURRENT MILESTONE moved to Phase 22, the life; it gets planned on the rebuild next.
+- 2026-09-30 — Phase 22 planned on the rebuild [proposed]: nine slices (the week and the money, the van, food, the body, the hustle, events, Scout's life, dreams, the games) on the audit's principles (pressure that changes, no farms, one night, Tonight shows it, seeded and written), with five decisions for Evan before their slices: pace, psyche, Scout's end, the garden and farm, and van parts.
+- 2026-09-30 — Evan's calls on Phase 22's decisions: jobs differ in pay and hours, starting low with promotion the way up (no pace target); psyche kept as a slow mood; Scout's full lifecycle kept; the garden and farm cut, their plan saved for later; three van parts.
+- 2026-09-30 — Phase 22.1 built: shifts posted by the week and signed up for ahead (only those count toward a raise; three no-shows cost the job), the Warehouse as a fourth job, pay that starts low and roughly doubles by the top rank, and how you live (dirtbag, comfortable, plush) paid nightly. Save v10. 0.964.0.

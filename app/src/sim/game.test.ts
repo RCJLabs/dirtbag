@@ -5,6 +5,7 @@ import { ACTS } from './content/places';
 import { ROUTES } from './content/routes';
 import { BODY, CLIMB, DAY, MONEY } from './dials';
 import { act, actCost, goBlocked, goCost, lessonAt, LOG_MAX, NAME_MAX, newGame, talkStart } from './game';
+import { postedIn } from './jobs';
 import type { Action, GameEvent, GameState, GoResult } from './types';
 import { skyOn, sunOn } from './weather';
 
@@ -199,7 +200,7 @@ describe('the day', () => {
       k: 'refused',
       why: "You've done your shift today.",
     });
-    const gym = at(newGame('t'), 'gym');
+    const gym = { ...at(newGame('t'), 'gym'), day: postedIn('t', 'set', 1)[0]! };
     const set = play(gym, { t: 'act', act: 'gym.set' }).state;
     expect(set.climber.skills.technique).toBe(gym.climber.skills.technique + 3);
     expect(set.today).toEqual(expect.arrayContaining(['worked', 'pass']));

@@ -5,6 +5,8 @@ import { it } from 'vitest';
 import type { BotRun } from '../src/sim/bot';
 import { STARTS } from '../src/sim/climber';
 import { contentOut, firstTry, median, season } from '../src/sim/harness';
+import { JOBS } from '../src/sim/content/jobs';
+import { ACTS } from '../src/sim/content/places';
 
 const SEEDS = Number(process.env.CAREER_SEEDS ?? 4);
 const DAYS = Number(process.env.CAREER_DAYS ?? 224);
@@ -15,12 +17,27 @@ const f1 = (x: number) => (Number.isNaN(x) ? '–' : x.toFixed(1));
 // The first day the climber's grade reached `g`, or null.
 const firstGrade = (r: BotRun, g: number): number | null => r.days.find((d) => d.grade >= g)?.day ?? null;
 
+// Phase 22.1, Decision 1: no pace target; every job's pay a shift and an hour, by rank.
+function payTable() {
+  out('\n## Pay by rank: a shift, and an hour of it\n');
+  out('| job | shift | ranks |');
+  out('|---|---|---|');
+  for (const [id, j] of Object.entries(JOBS)) {
+    const a = Object.values(ACTS).find((x) => x.job?.id === id && x.job.shifts === 1)!;
+    const pay = (r: number) => (a.cost.cash ?? 0) + j.raise * r;
+    const hours = (a.cost.min ?? 60) / 60;
+    const ranks = j.ranks.map((n, r) => `${n} $${pay(r)} ($${(pay(r) / hours).toFixed(2)}/h)`).join(' · ');
+    out(`| ${j.name} | ${hours} h, ${j.posts ?? 7} a week | ${ranks} |`);
+  }
+}
+
 it('career', { timeout: 1_800_000 }, () => {
+  payTable();
   out(`\n# Career harness: ${SEEDS} seeds × ${DAYS} days, the career bot, human-ish hands\n`);
   out(
-    `| start | refused | stuck | ${AT.map((d) => `d${d} grade · $`).join(' | ')} | V10 on | first V10 go | trips bought | nothing new | resting |`,
+    `| start | refused | stuck | ${AT.map((d) => `d${d} grade · $`).join(' | ')} | V10 on | first V10 go | trips bought | nothing new | resting | warnings · top rank |`,
   );
-  out(`|---|---|---|${AT.map(() => '---').join('|')}|---|---|---|---|---|`);
+  out(`|---|---|---|${AT.map(() => '---').join('|')}|---|---|---|---|---|---|`);
   const all: BotRun[] = [];
   for (const start of Object.keys(STARTS)) {
     const runs = Array.from({ length: SEEDS }, (_, k) =>
@@ -39,8 +56,19 @@ it('career', { timeout: 1_800_000 }, () => {
     const refused = runs.reduce((n, r) => n + r.refused.length, 0);
     const stuck = runs.reduce((n, r) => n + r.days.filter((d) => d.stuck).length, 0);
     const day = (xs: number[]) => (median(xs) >= 999 ? '–' : `day ${median(xs)}`);
+    const warned = runs.map((r) => r.lines.filter((l) => l.includes("You didn't show")).length);
+    const let_go = runs.reduce((n, r) => n + r.lines.filter((l) => l.includes('lets you go')).length, 0);
+    // The highest rank the run reached at any job, named.
+    const top = runs.map((r) => {
+      const [job, n] = Object.entries(r.state.jobs).sort((a, b) => b[1] - a[1])[0] ?? ['', 0];
+      const j = JOBS[job];
+      if (!j) return 'none';
+      let k = 0;
+      j.at.forEach((at, i) => (n >= at ? (k = i) : null));
+      return `${j.ranks[k]} (${j.name})`;
+    });
     out(
-      `| ${start} | ${refused} | ${stuck} | ${cells.join(' | ')} | ${day(v10)} (${v10.filter((d) => d < 999).length}/${SEEDS}) | ${day(go10)} | ${median(trips)} | ${median(nothing)} days | ${median(resting)} days |`,
+      `| ${start} | ${refused} | ${stuck} | ${cells.join(' | ')} | ${day(v10)} (${v10.filter((d) => d < 999).length}/${SEEDS}) | ${day(go10)} | ${median(trips)} | ${median(nothing)} days | ${median(resting)} days | ${median(warned)}${let_go ? `, ${let_go} let go` : ''} · ${top[0]} |`,
     );
   }
   out('\n## Targets\n');

@@ -33,6 +33,7 @@ import {
   type GameState,
   type GoStyle,
   type PhaseId,
+  type Lifestyle,
   type SendStyle,
   type Skills,
   unfinishedSolo,
@@ -732,6 +733,15 @@ export class Game {
   }
 
   // Pay for a trip once (Moonstone's haul): the place card rebuilds with the drive on it.
+  // Phase 22.1: sign up for a shift (or drop it), and how you live.
+  signup(job: string, day: number, on: boolean): string | null {
+    return refusal(this.dispatch({ t: 'signup', job, day, on }));
+  }
+
+  live(tier: Lifestyle): void {
+    this.dispatch({ t: 'lifestyle', tier });
+  }
+
   unlock(place: string): void {
     this.dispatch({ t: 'unlock', place });
   }

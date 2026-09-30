@@ -52,6 +52,25 @@ export const MONEY = {
   insurance: 25,
 };
 
+// Phase 22.1: the week's shifts. You sign up for a posted shift up to a week ahead (from
+// tomorrow: today's you walk in to). A shift you signed up for and didn't work is a
+// warning; the third costs the job: back to its first rank, and off its schedule for a week.
+export const WORK = {
+  ahead: 7,
+  strikes: 3,
+  benchDays: 7,
+};
+
+// Phase 22.1: how you live, chosen in the week and paid at the van every night, on top of
+// the spot. v0.956 raised your costs with your grade behind your back; here you pick. More
+// a night buys more back by morning: a better pad, a shower, salve for your tips [proposed].
+export type Lifestyle = 'dirtbag' | 'comfortable' | 'plush';
+export const LIFESTYLE: Record<Lifestyle, { cost: number; energy: number; skin: number }> = {
+  dirtbag: { cost: 0, energy: 0, skin: 0 },
+  comfortable: { cost: 12, energy: 8, skin: 4 },
+  plush: { cost: 28, energy: 15, skin: 8 },
+};
+
 export const BODY = {
   startEnergy: 78,
   startSkin: 64,
