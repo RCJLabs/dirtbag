@@ -675,7 +675,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 22 ||
+  saved?.v !== 23 ||
   st.encounter !== null ||
   !Array.isArray(st.deck?.seen) ||
   !(st.guitar >= 0) ||
@@ -1326,6 +1326,66 @@ console.log('A walk-out from Roadside');
   if (!after.log.some((l) => /The Walk Out at Roadside Crag/.test(l.text)))
     await fail('the journal missed it');
   log('walk-out: three careful calls, out clean, in the journal');
+  await ctx.close();
+}
+
+console.log('Scout’s last day');
+// Phase 22.7. Scout, sixteen in dog-years tomorrow, and a best friend: bed, the morning, the
+// chord (heard), his card with no ✕, the van doors open, and the journal keeps him.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  const day = 300;
+  saved.state = {
+    ...saved.state,
+    day,
+    min: 21 * 60,
+    at: 'lot',
+    x: null,
+    cash: 150,
+    trips: 20,
+    dog: { name: 'Scout', since: day + 1 - 16 * 18, fed: 80, bond: 85 },
+    dogs: [],
+    deck: { last: 0, knock: day, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0 },
+    encounter: null,
+  };
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  await ctx.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+    window.cues = [];
+    window.addEventListener('dirtbag:sound', (e) => window.cues.push(e.detail));
+  }, JSON.stringify(saved));
+  const last = await ctx.newPage();
+  last.on('pageerror', (e) => problems.push(`farewell: uncaught: ${e.message}`));
+  last.on('console', (m) => m.type() === 'error' && problems.push(`farewell: console.error: ${m.text()}`));
+  await last.goto(server.url, { waitUntil: 'load' });
+  await last.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Map');
+  await last.waitForTimeout(600);
+  await last.mouse.click(100, 560);
+  await last.waitForFunction(() => /Your van/.test(document.querySelector('#sheet')?.textContent ?? ''));
+  await last.locator('#sheet .opt', { hasText: 'Sleep' }).first().click();
+  await last.waitForFunction(
+    () => /not getting up the step into the van/.test(document.querySelector('#sheet')?.textContent ?? ''),
+    null,
+    { timeout: 10_000 },
+  );
+  if (await last.$('#sheet .x')) await fail('his last day can be closed without spending it');
+  if (!(await last.evaluate(() => window.cues.includes('farewell'))))
+    await fail('the last morning was never heard');
+  await last.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-farewell.png`) });
+  await last.locator('#sheet .opt', { hasText: 'Just the two of you' }).first().click();
+  await last.waitForFunction(
+    () => JSON.parse(localStorage.getItem('dirtbag.save')).state.dog === null,
+    null,
+    {
+      timeout: 10_000,
+    },
+  );
+  const after = await last.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  if (after.dogs?.[0]?.name !== 'Scout' || after.dogs[0].years !== 16)
+    await fail(`after: ${JSON.stringify(after.dogs)}`);
+  if (!after.log.some((l) => /Scout, 16 years\. Spent it with the van doors open/.test(l.text)))
+    await fail('the journal missed him');
+  log('farewell: the van doors open, and the journal keeps him');
   await ctx.close();
 }
 

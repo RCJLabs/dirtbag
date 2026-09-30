@@ -152,6 +152,8 @@ export {
   epicRisk,
 } from './events';
 export { EPICS, type Epic } from './content/epics';
+export { dogAge, dogStage, hasPerk, nextDogName } from './scout';
+export { DOG_FAREWELL } from './content/dog';
 export { HITCHERS, STOPS, type Hitcher, type RoadStop } from './content/road';
 export { KNOCKS, type Knock } from './content/knocks';
 export { buskBlocked, buskHeads, buskRate, guitarRank, guitarSkill, RANK_NAME } from './busk';

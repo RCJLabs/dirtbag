@@ -89,6 +89,12 @@ export const VOICES: Record<Cue, (v: V, k: number) => void> = {
     );
     if (k < 1) burst(v, { filter: 'bandpass', f: 900, q: 1.2, dur: 0.06, gain: 0.5 * (1 - k) });
   },
+  // A low open chord, held and let go slowly: nothing else.
+  farewell: (v) => {
+    [98, 147, 196].forEach((f, i) =>
+      tone(v, { type: 'sine', f, dur: 2.6, gain: 0.16, delay: i * 0.05, attack: 0.4 }),
+    );
+  },
   // Four boots on loose ground in the dark, under a long gust through the trees.
   walkout: (v) => {
     burst(v, { filter: 'bandpass', f: 500, f2: 300, q: 0.7, dur: 1.6, gain: 0.3, attack: 0.5 });

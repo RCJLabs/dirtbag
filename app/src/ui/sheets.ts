@@ -102,6 +102,10 @@ import {
   stopById,
   EVENTS,
   epicByKind,
+  DOG_FAREWELL,
+  dogAge,
+  dogStage,
+  nextDogName,
   buskRate,
   guitarRank,
   RANK_NAME,
@@ -303,6 +307,16 @@ function buskRow(game: Game, s: GameState): Row {
     run: () => game.buskStart(),
   };
 }
+
+const cap = (x: string) => `${x[0]!.toUpperCase()}${x.slice(1)}`;
+// Phase 22.7: how old your dog is, in a few words (v0.956's).
+const DOG_STAGE = {
+  pup: 'still a pup',
+  prime: 'in his prime',
+  gray: 'going gray',
+  senior: 'slowing down',
+  old: 'old, and yours',
+};
 
 export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | null {
   switch (id.k) {
@@ -567,8 +581,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       const d = s.dog;
       if (!d)
         return {
-          title: 'Scout',
-          sub: DOG_OFFER.sub,
+          title: nextDogName(s),
+          sub: DOG_OFFER.sub.replaceAll('Scout', nextDogName(s)),
           close: true,
           rows: [
             actRow(game, s, 'lot.adopt'),
@@ -590,7 +604,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             : 'He could eat.';
       return {
         title: d.name,
-        sub: `${DOG_TIER_NAME[dogTier(d.bond)]}. ${days ? `With you ${days} day${days > 1 ? 's' : ''}.` : 'Yours since this morning.'} ${fed}`,
+        sub: `${DOG_TIER_NAME[dogTier(d.bond)]}. ${cap(DOG_STAGE[dogStage(d, s.day)])}: ${dogAge(d, s.day)} in dog years. ${days ? `With you ${days} day${days > 1 ? 's' : ''}.` : 'Yours since this morning.'} ${fed}`,
         close: true,
         rows: [actRow(game, s, 'lot.kibble'), actRow(game, s, 'lot.play')],
       };
@@ -747,6 +761,17 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             : `${h.sign === 'no sign' ? 'No sign.' : `“${h.sign}”, the sign says.`} ${h.look} ${h.pitch}`,
           close: false,
           rows: hitchOpts(s, h).map((o, i) => ({ label: o.label, run: () => game.answer(i) })),
+        };
+      }
+      // Phase 22.7: your dog's last day. No close: there's only how you spend it.
+      if (e?.kind === 'farewell') {
+        const d = s.dog;
+        if (!d) return null;
+        return {
+          title: d.name,
+          sub: DOG_FAREWELL.sit,
+          close: false,
+          rows: DOG_FAREWELL.opts.map((o, i) => ({ label: o.label, run: () => game.answer(i) })),
         };
       }
       // Phase 22.6c: a walk-out, a stage at a time.

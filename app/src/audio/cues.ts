@@ -28,6 +28,8 @@ export type Cue =
   | 'pullover'
   // Boots on a dark trail, and the wind in the trees (Phase 22.6c).
   | 'walkout'
+  // The morning of your dog's last day (Phase 22.7): one low, held chord.
+  | 'farewell'
   // On the wall.
   | 'pullon'
   | 'move'

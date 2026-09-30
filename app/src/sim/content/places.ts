@@ -673,11 +673,11 @@ export const ACTS: Record<string, ActDef> = {
     says: DOG_OFFER.took,
   },
   'lot.kibble': {
-    label: 'Feed Scout',
+    label: 'Feed the dog',
     cost: { min: 5, cash: -DOG.kibble },
     needs: [{ dog: true }, { dogFedBelow: 80, why: "He's good. He'd eat it anyway." }, { pay: DOG.kibble }],
     dog: { fill: true, bond: DOG.kibbleBond },
-    says: 'Scout eats like it was a race, and wins.',
+    says: 'He eats like it was a race, and wins.',
   },
   'lot.play': {
     label: 'Throw the stick',

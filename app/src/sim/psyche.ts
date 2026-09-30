@@ -2,7 +2,8 @@
 // Variety and company lift it, grind wears it down, and a nightly drift back to even means no
 // single ritual holds it up. The numbers are PSYCHE (dials.ts).
 
-import { PSYCHE } from './dials';
+import { DOG, PSYCHE } from './dials';
+import { hasPerk } from './scout';
 import type { GameState } from './types';
 
 export type PsycheWord = 'low' | 'flat' | 'steady' | 'keen' | 'psyched';
@@ -30,7 +31,11 @@ export function psycheDay(
   if (s.today.includes('new-crag')) lift(PSYCHE.newCrag, 'somewhere new');
   else if (away || s.today.includes('crag')) lift(PSYCHE.crag, 'a day out');
   if (Object.values(s.people).some((p) => p.last === s.day)) lift(PSYCHE.company, 'company');
-  if (s.today.includes('fire')) lift(PSYCHE.fire, 'the fire');
+  // Your dog settles at the fire with the perk (Phase 22.7), and it's worth a little more.
+  if (s.today.includes('fire'))
+    hasPerk(s, 'settle')
+      ? lift(PSYCHE.fire + DOG.settle, `the fire, and ${s.dog!.name}`)
+      : lift(PSYCHE.fire, 'the fire');
   const stale = up.length ? 0 : s.psyche.stale + 1;
   if (s.today.includes('worked')) {
     d += PSYCHE.shift;
