@@ -73,6 +73,7 @@ import {
   CROWD,
   crowdNow,
   queueMin,
+  soloed,
 } from '../sim';
 import type { Game, JournalPage, SheetId, Ui } from '../game/game';
 import { legacyFile, saveLegacyFile } from '../game/legacy';
@@ -393,6 +394,11 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
         <p className="note">Open project: nobody’s sent it. Send it and it’s yours to name.</p>
       )}
       {r.highball && <p className="note">{landingNote(s, r)}</p>}
+      {soloed(s, r) && (
+        <p className="note" id="solo-note">
+          Free Solo: no rope. Come off and that’s the end of {s.climber.name}.
+        </p>
+      )}
       {(crowd === 'busy' || crowd === 'packed') && (
         <p className="note">
           {crowd === 'packed' ? 'Packed' : 'Busy'}:{' '}

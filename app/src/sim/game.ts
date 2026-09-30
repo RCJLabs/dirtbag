@@ -50,6 +50,8 @@ import {
   BODY,
   CLIMB,
   CROWD,
+  FREESOLO,
+  SPEED,
   DAY,
   DOG,
   EXPED,
@@ -65,6 +67,8 @@ import {
 import { EXPEDITIONS } from './content/expeditions';
 import { pitchOdds, pitchRoll, stormOn, wallPay } from './expeditions';
 import { canAsk, queueMin, sprayable, sprayedOn } from './crowds';
+import { soloed } from './solo';
+import { speedBlocked, speedGains, speedLoad, speedTime, runsToday } from './speed';
 import { fill, money, skillsNote } from './format';
 import { PARTNERS, tierOf, whereNow } from './presence';
 import { hashSeed, Rng } from './rng';
@@ -117,6 +121,10 @@ export function newGame(seed: string): GameState {
     jobs: {},
     wall: null,
     expedition: null,
+    speed: { pb: null, runs: 0, day: 0 },
+    mode: 'rope',
+    soloing: null,
+    dead: null,
     log: [],
   };
 }
@@ -292,7 +300,7 @@ export function goBlocked(s: GameState, r: RouteDef): string | null {
       const next = w.pitches[s.wall.next];
       if (next !== r.id) return `Pitch ${s.wall.next + 1} is next: ${ROUTES[next!]?.name ?? 'the next one'}`;
     }
-    if (roped(r) && !belayer(s)) return 'Nobody here to belay you';
+    if (roped(r) && !soloed(s, r) && !belayer(s)) return 'Nobody here to belay you';
   }
   const off = daysOff(s);
   if (off > 0) return `Your ${s.injury!.kind} needs ${off} more day${off > 1 ? 's' : ''}`;
@@ -623,6 +631,9 @@ export function act(s0: GameState, a: Action): Result {
     if (!s.today.includes(who)) s.today.push(who);
   };
 
+  // A Free Solo run that ended: nothing more happens to this climber.
+  if (s.dead) return refuse('That climber is gone.');
+
   // Away on an expedition: the valley waits. Only the expedition's own day goes on.
   if (s.expedition && a.t !== 'exped' && a.t !== 'stand' && a.t !== 'pick')
     return refuse(`You're on ${EXPEDITIONS[s.expedition.id]!.name}.`);
@@ -634,7 +645,8 @@ export function act(s0: GameState, a: Action): Result {
       if (a.do === 'start') {
         if (s.at !== w.place) return refuse(`${w.name} is at ${PLACES[w.place]!.name}.`);
         if (s.wall) return refuse(`You're on ${WALLS[s.wall.id]!.name}.`);
-        if (!has(s, 'rope')) return refuse('Walls need a rope of your own. The gear shop sells them.');
+        if (!has(s, 'rope') && s.mode !== 'solo')
+          return refuse('Walls need a rope of your own. The gear shop sells them.');
         const c = conditionsAt(s.seed, s.day, w.place);
         if (c.closed) return refuse(`${c.closed}.`);
         if (!c.open) return refuse('The rock is soaked.');
@@ -714,6 +726,7 @@ export function act(s0: GameState, a: Action): Result {
       const start = STARTS[a.start];
       if (!start) return refuse('Pick how you climb.');
       s.climber = { name, start: a.start, skills: { ...start.skills } };
+      if (a.solo) s.mode = 'solo';
       break;
     }
 
@@ -842,6 +855,10 @@ export function act(s0: GameState, a: Action): Result {
       L.goes += 1;
       L.goesToday += 1;
       if (queued && L.goesToday === 1) line(`A queue for it. You wait ${queued} minutes for your turn.`);
+      if (soloed(s, r)) {
+        s.soloing = r.id;
+        if (L.goesToday === 1) line('No rope. Nothing between you and the ground but the next move.');
+      }
       if (sprayed) {
         const b = sprayable(s, r)[0]!;
         learn(r.id, b, 'told', '');
@@ -866,6 +883,35 @@ export function act(s0: GameState, a: Action): Result {
         s.today.push('grease');
         line("Sun's on this line now. Everything feels greasy.");
       }
+      break;
+    }
+
+    case 'speed': {
+      const why = speedBlocked(s);
+      if (why) return refuse(`${why}.`);
+      if (a.real !== null && !(a.real > 0)) return refuse('Not a time.');
+      const was = s.speed.pb;
+      const got = a.real === null ? {} : speedGains(s);
+      spend({ min: SPEED.min, energy: -SPEED.energy, skin: -SPEED.skin, fed: -SPEED.fed });
+      s.load.today = round2(s.load.today + speedLoad(s));
+      s.speed = { pb: was, runs: runsToday(s) + 1, day: s.day };
+      if (a.real === null) {
+        line('False start. The lights hadn’t gone green.');
+        break;
+      }
+      const time = speedTime(s.climber.skills, a.real);
+      train(got);
+      if (was === null || time < was) {
+        s.speed.pb = time;
+        line(
+          was === null
+            ? `${time.toFixed(2)} s. Your first time on the board.`
+            : `${time.toFixed(2)} s. A PB, by ${(was - time).toFixed(2)}.`,
+        );
+      } else line(`${time.toFixed(2)} s. Your best is ${was.toFixed(2)}.`);
+      if (Object.keys(got).length) line(`${skillsNote(got)}.`);
+      else if (runsToday(s) === SPEED.fresh + 1)
+        line('Your legs are done learning today. The clock doesn’t care.');
       break;
     }
 
@@ -895,6 +941,17 @@ export function act(s0: GameState, a: Action): Result {
       const L = logOf(s, a.route);
       const res = a.result;
       const lap = L.sent !== null;
+      // A solo: off it is the end of it; up it is a lesson for the head.
+      if (soloed(s, r)) {
+        s.soloing = null;
+        if (!res.sent) {
+          s.dead = { route: r.id, day: s.day, hi: Math.max(0, Math.floor(res.hi)) };
+          line(`${s.climber.name} came off ${r.name}, with no rope.`);
+          break;
+        }
+        train({ head: FREESOLO.head });
+        line(`${r.name}, without a rope. ${skillsNote({ head: FREESOLO.head })}.`);
+      }
       // What the go put through you, and whether it cost you: judged on the state it was
       // climbed in, before it counts as your warm-up.
       const wasCold = cold(s, r);
@@ -1136,3 +1193,14 @@ export function faSuggestions(s: GameState, r: RouteDef): string[] {
     s.cash < 0 ? 'Rent’s Due' : s.routes.pump?.told.includes('B2') ? 'Hazel Was Right' : 'Coffee Money',
   ];
 }
+
+// A game that closed mid-solo: whatever happened up there, you didn't top out. Reloading
+// can't take back a solo, which is what makes Free Solo mean it (the audit's S7).
+export const unfinishedSolo = (s: GameState): GameState =>
+  s.soloing
+    ? act(s, {
+        t: 'done',
+        route: s.soloing,
+        result: { sent: false, hi: 0, fellAt: null, tried: [], skin: 0 },
+      }).state
+    : s;

@@ -66,6 +66,16 @@ export interface GameState {
   wall: { id: string; next: number } | null;
   // Away on an expedition: which, the day of it you're on, pitches fixed, and energy left.
   expedition: { id: string; day: number; pitch: number; energy: number } | null;
+  // Phase 21.6. The speed wall at Send City: your best time in seconds, and today's runs.
+  speed: { pb: number | null; runs: number; day: number };
+  // How this climber climbs, chosen at the start and for good: with a rope, or Free Solo
+  // (every outdoor sport line and wall pitch without one; a fall ends it).
+  mode: 'rope' | 'solo';
+  // The solo you're on right now: set when you pull on, cleared when you top out. If the
+  // game closes with it set, you didn't.
+  soloing: string | null;
+  // How a Free Solo run ended, if it has.
+  dead: { route: string; day: number; hi: number } | null;
   // The message log: every line the game has told you, newest last.
   log: LogLine[];
 }
@@ -178,7 +188,7 @@ export interface Delta {
 
 export type Action =
   // `carry`: a v0.956 climber's skills, when they come across rather than picking a start.
-  | { t: 'create'; name: string; start: string; carry?: Skills }
+  | { t: 'create'; name: string; start: string; carry?: Skills; solo?: true }
   | { t: 'act'; act: string }
   | { t: 'say'; talk: string; node: string; opt: number }
   | { t: 'travel'; to: string }
@@ -198,7 +208,10 @@ export type Action =
   | { t: 'wall'; wall: string; do: 'start' | 'bivy' | 'retreat' }
   | { t: 'exped'; id: string; do: 'go' | 'lead' | 'dig' | 'rest' | 'bail' }
   // Phase 21.6: ask the crowd at the base for a line's beta.
-  | { t: 'ask'; route: string };
+  | { t: 'ask'; route: string }
+  // A run on the speed wall: its time in real seconds, from the green light to the buzzer,
+  // or null for a false start.
+  | { t: 'speed'; real: number | null };
 
 // What a finished go hands back to the game.
 export interface GoResult {

@@ -35,7 +35,7 @@ export const screenWidth = (aspect: number): number => Math.min(W_MAX, Math.max(
 // What tapping a thing in a scene does. A gym problem is named by its place on the wall,
 // since the set (and so its id) changes every week.
 export type Use =
-  | { sheet: 'van' | 'cragVan' | 'desk' | 'board' }
+  | { sheet: 'van' | 'cragVan' | 'desk' | 'board' | 'speed' }
   | { talk: string }
   | { thing: string; wag?: true }
   | { route: string }
@@ -282,7 +282,12 @@ export const DESK_X = 170;
 export const PROBLEM_X = [384, 474, 564, 654, 744, 834];
 export const BOARD_X0 = 990;
 export const BOARD_X1 = 1190;
-export const GYM_W = 1250;
+// Past the board, the speed wall (Phase 21.6): two lanes, taller than the room.
+export const SPEED_X0 = 1270;
+export const SPEED_X1 = 1400;
+// The lane you race in, and the one beside it.
+export const SPEED_LANE = 1302;
+export const GYM_W = 1470;
 // The Cave: the desk by the door, then eight problems out its steep walls, V3 to V10.
 export const CAVE_X = [360, 440, 520, 600, 690, 780, 870, 960];
 export const CAVE_W = 1150;
@@ -404,6 +409,15 @@ export const SCENES: Record<string, SceneLayout> = {
         stand: (BOARD_X0 + BOARD_X1) / 2 - 40,
         face: 1,
         use: { sheet: 'board' },
+      },
+      {
+        x0: SPEED_X0,
+        x1: SPEED_X1,
+        y0: 20,
+        y1: GND + 8,
+        stand: SPEED_LANE,
+        face: 1,
+        use: { sheet: 'speed' },
       },
     ],
   },

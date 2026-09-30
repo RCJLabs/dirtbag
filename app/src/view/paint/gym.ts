@@ -3,10 +3,24 @@
 // at when you pick a problem. The six problems keep their places and tape colours from week
 // to week; what changes with the set is the names and the moves, which live in the sim.
 
-import { BOARD_WEEKS, TEXT_VALUES } from '../../sim';
+import { BOARD_WEEKS, SPEED, TEXT_VALUES } from '../../sim';
 import { lin, mk, poly, rad, rr, spline, type G, type Pt } from '../kit/geom';
 import { mulberry32 } from '../kit/noise';
-import { BOARD_X0, BOARD_X1, CAVE_W, CAVE_X, DESK_X, GND, GYM_W, H, PROBLEM_X, W } from '../layout';
+import {
+  BOARD_X0,
+  BOARD_X1,
+  CAVE_W,
+  CAVE_X,
+  DESK_X,
+  GND,
+  GYM_W,
+  H,
+  PROBLEM_X,
+  SPEED_LANE,
+  SPEED_X0,
+  SPEED_X1,
+  W,
+} from '../layout';
 import { label } from './fx';
 import { FEET, FLOOR_Y, FT, REACH } from './scale';
 
@@ -241,7 +255,61 @@ export function paintGymGround(): HTMLCanvasElement {
   for (let x = WALL_X0 + 106; x < WALL_X1; x += 120) g.fillRect(x, GND - 8, 2, 24);
 
   paintBoardInScene(g);
+  paintSpeedInScene(g);
   return c;
+}
+
+// ---- the speed wall (Phase 21.6) ----
+
+// The top of the speed wall: up through the ceiling line, as the real ones go.
+export const SPEED_TOP = 30;
+// Every speed wall in the world has the same holds in the same places: this is ours, a
+// zigzag up the lane with the big move two-thirds of the way.
+const SPEED_ZIG = [-8, 7, -5, 9, -9, 4, -6, 10, -4, 8, -10, 6, -3, 11, -12, 2, -7, 9, -5, 0];
+
+// Where the `i`th hold (0 at the start pad) sits in a lane centred on `lane`.
+export function speedHold(lane: number, i: number): Pt {
+  const k = i / (SPEED.holds - 1);
+  return [lane + SPEED_ZIG[i % SPEED_ZIG.length]!, GND - 34 - k * (GND - 34 - SPEED_TOP - 22)];
+}
+
+function paintSpeedInScene(g: G): void {
+  const x0 = SPEED_X0;
+  const x1 = SPEED_X1;
+  const mid = (x0 + x1) / 2;
+  // Two grey lanes on a steel frame, the timing lights on a pole beside them.
+  g.fillStyle = STEEL;
+  g.fillRect(x0 - 6, SPEED_TOP - 8, x1 - x0 + 12, GND - SPEED_TOP + 8);
+  g.fillStyle = '#9AA2AD';
+  g.fillRect(x0, SPEED_TOP, mid - x0 - 2, GND - SPEED_TOP);
+  g.fillRect(mid + 2, SPEED_TOP, x1 - mid - 2, GND - SPEED_TOP);
+  g.strokeStyle = 'rgba(40,44,52,.35)';
+  g.lineWidth = 1;
+  for (let y = SPEED_TOP + 50; y < GND; y += 50) {
+    g.beginPath();
+    g.moveTo(x0, y);
+    g.lineTo(x1, y);
+    g.stroke();
+  }
+  // The same red holds up both lanes.
+  for (const lane of [SPEED_LANE, x1 - (SPEED_LANE - x0)]) {
+    g.fillStyle = '#C8352B';
+    for (let i = 0; i < SPEED.holds; i++) {
+      const [x, y] = speedHold(lane, i);
+      hold(g, x, y, i % 5 === 2 ? 6.5 : 4.5, 900 + i);
+      g.fill();
+    }
+    // The buzzer at the top, the start pad at the foot.
+    g.fillStyle = '#E8A33A';
+    rr(g, lane - 9, SPEED_TOP + 4, 18, 12, 2);
+    g.fill();
+    g.fillStyle = '#2B2A33';
+    g.fillRect(lane - 12, GND - 6, 24, 5);
+  }
+  label(g, 'poster', 'SPEED', mid, SPEED_TOP - 14, { size: 13, color: '#C8352B', halo: '#E6DCC7' });
+  // Mats under it.
+  g.fillStyle = MAT;
+  g.fillRect(x0 - 10, GND - 8, x1 - x0 + 20, 24);
 }
 
 // ---- the board ----

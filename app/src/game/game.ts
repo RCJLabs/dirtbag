@@ -35,6 +35,10 @@ import {
   type PhaseId,
   type SendStyle,
   type Skills,
+  unfinishedSolo,
+  SPEED,
+  speedBlocked,
+  speedTime,
 } from '../sim';
 import { bedFor, ON_THE_MAP } from '../audio/beds';
 import { actCue, VERB_CUES } from '../audio/cues';
@@ -117,7 +121,10 @@ export type SheetId =
   // Phase 21.5: a wall and its pitches; the expeditions, and one of them.
   | { k: 'wall'; id: string }
   | { k: 'expeds' }
-  | { k: 'exped'; id: string };
+  | { k: 'exped'; id: string }
+  // Phase 21.6: the speed wall, and how a Free Solo run ended.
+  | { k: 'speed' }
+  | { k: 'dead' };
 
 export interface Hud {
   day: number;
@@ -151,7 +158,26 @@ export interface Ui {
   // A plan being run: its steps, the one it's on, whether it's waiting while you climb, and
   // why it stopped, if the day refused it.
   plan: { steps: PlanStep[]; i: number; waiting: boolean; stopped: string | null } | null;
+  // A run on the speed wall: the lights, how many holds you've taken, and how it ended.
+  speed: SpeedUi | null;
 }
+
+export interface SpeedUi {
+  phase: 'set' | 'climb' | 'done';
+  lights: number;
+  holds: number;
+  slips: number;
+  // The clock's time, or null for a false start; and your best after it.
+  time: number | null;
+  pb: number | null;
+  newPb: boolean;
+}
+
+// The speed wall's start: a light a second, and go on the third.
+const SPEED_LIGHT = 1;
+const SPEED_GO = 3;
+// A same-hand grab: you slip and lose this long.
+const SPEED_SLIP = 0.35;
 
 export interface Fast {
   cam: number;
@@ -195,6 +221,8 @@ export class Game {
   // Whether the device asks for reduced motion; the settings can override it.
   private readonly systemStill: boolean;
 
+  // The run on the speed wall: seconds since the lights started, when the last grab was.
+  private speedRun: { t: number; last: number; slipUntil: number } | null = null;
   private player = { x: 300, tx: 300, dir: 1, phase: 0, speed: 0, onArrive: null as (() => void) | null };
   private scout = { x: 436, wag: 0 };
   // The sound, and when on the wall the next breath is due, in the go's own seconds.
@@ -225,17 +253,21 @@ export class Game {
     this.systemStill = !!opts.still;
     const settings = persist.loadSettings();
     const b = persist.boot(freshSeed);
-    this.state = b.state;
+    // A game closed halfway up a solo comes back to the fall.
+    this.state = unfinishedSolo(b.state);
+    if (this.state !== b.state) persist.save(this.state);
     const home = PLACES[this.state.at];
     this.ui = createStore<Ui>({
       state: this.state,
       view: home?.scene ? 'scene' : 'map',
       scene: home?.scene ?? 'lot',
-      sheet: this.state.expedition
-        ? { k: 'exped', id: this.state.expedition.id }
-        : home?.scene
-          ? null
-          : { k: 'place', id: this.state.at },
+      sheet: this.state.dead
+        ? { k: 'dead' }
+        : this.state.expedition
+          ? { k: 'exped', id: this.state.expedition.id }
+          : home?.scene
+            ? null
+            : { k: 'place', id: this.state.at },
       talk: null,
       toast: null,
       stamp: null,
@@ -250,6 +282,7 @@ export class Game {
       w: W,
       plans: loadPlans(),
       plan: null,
+      speed: null,
     });
     this.fast = createStore<Fast>({ cam: 0, att: null });
     this.sound.configure(settings);
@@ -305,6 +338,11 @@ export class Game {
     if (changed) this.noteComings(before);
     if (changed && !persist.save(this.state)) this.toast("Couldn't save. The browser's storage may be full.");
     this.sync();
+    // Off a solo: the go's over, and so is everything else.
+    if (this.state.dead && !before.dead) {
+      this.att = null;
+      this.set({ sheet: { k: 'dead' }, climbing: false });
+    }
     this.maybeCard();
     return r.events;
   }
@@ -332,6 +370,8 @@ export class Game {
     // tries to clear or replace it.
     const x = this.state.expedition;
     if (x && 'sheet' in p && p.sheet?.k !== 'exped') p = { ...p, sheet: { k: 'exped', id: x.id } };
+    // A Free Solo climber who fell: that's all there is, until a new one.
+    if (this.state.dead && 'sheet' in p && p.sheet?.k !== 'dead') p = { ...p, sheet: { k: 'dead' } };
     this.ui.update((u) => ({ ...u, ...p }));
   }
 
@@ -388,8 +428,14 @@ export class Game {
   }
 
   // `carry`: a v0.956 climber's skills, to come across as they were (the sim caps them).
-  create(name: string, start: string, carry?: Skills): void {
-    const ev = this.dispatch(carry ? { t: 'create', name, start, carry } : { t: 'create', name, start });
+  create(name: string, start: string, carry?: Skills, solo = false): void {
+    const ev = this.dispatch({
+      t: 'create',
+      name,
+      start,
+      ...(carry ? { carry } : {}),
+      ...(solo ? { solo: true as const } : {}),
+    });
     if (ev.some((e) => e.k === 'refused')) return;
     this.set({ hint: SCENES[this.ui.get().scene]?.hint ?? null });
   }
@@ -438,6 +484,7 @@ export class Game {
 
   openMap(): void {
     this.hush();
+    this.speedDone();
     this.sound.play('paper');
     this.fadeTo(() => this.set({ view: 'map', sheet: null, hint: null }));
   }
@@ -445,6 +492,8 @@ export class Game {
   // The HUD's one button: Map in a scene, Close on the map, Down on the wall.
   nav(): void {
     if (this.busy) return;
+    // Off the speed wall first: a run doesn't follow you out.
+    if (this.ui.get().speed) return this.speedDone();
     const u = this.ui.get();
     if (u.view === 'map') {
       const scene = PLACES[this.state.at]?.scene;
@@ -455,6 +504,7 @@ export class Game {
   }
 
   navLabel(u: Ui): string | null {
+    if (u.speed) return u.speed.phase === 'done' ? 'Off' : null;
     if (u.view === 'wall') return u.climbing ? null : 'Down';
     if (u.view === 'map') return u.driving || !PLACES[this.state.at]?.scene ? null : 'Close';
     return 'Map';
@@ -553,7 +603,7 @@ export class Game {
 
   // A tap on the screen, in logical pixels.
   tap(sx: number, sy: number): void {
-    if (this.busy || !this.state.climber.name) return;
+    if (this.busy || !this.state.climber.name || this.ui.get().speed) return;
     const u = this.ui.get();
     if (u.view === 'scene') {
       if (u.sheet) {
@@ -741,6 +791,88 @@ export class Game {
       this.fast.set({ cam: this.cam, att: null });
       this.set({ view: 'wall', wallRoute: route, sheet: { k: 'beta', route }, hint: null });
     });
+  }
+
+  // ---- the speed wall (Phase 21.6) ----
+
+  speedStart(): void {
+    const why = speedBlocked(this.state);
+    if (why) {
+      this.toast(`${why}.`);
+      return;
+    }
+    this.speedRun = { t: 0, last: -1, slipUntil: 0 };
+    this.set({
+      sheet: null,
+      speed: {
+        phase: 'set',
+        lights: 0,
+        holds: 0,
+        slips: 0,
+        time: null,
+        pb: this.state.speed.pb,
+        newPb: false,
+      },
+    });
+  }
+
+  private stepSpeed(dt: number): void {
+    const run = this.speedRun;
+    const u = this.ui.get().speed;
+    if (!run || !u || u.phase === 'done') return;
+    run.t += dt;
+    const lights = Math.min(3, Math.floor(run.t / SPEED_LIGHT));
+    if (lights !== u.lights) {
+      this.sound.play(lights === 3 ? 'send' : 'tap');
+      this.set({ speed: { ...u, lights, phase: run.t >= SPEED_GO ? 'climb' : 'set' } });
+    }
+  }
+
+  // A grab with one hand (0) or the other (1). Before the green light it's a false start;
+  // the same hand twice is a slip.
+  speedGrab(hand: 0 | 1): void {
+    const run = this.speedRun;
+    const u = this.ui.get().speed;
+    if (!run || !u || u.phase === 'done') return;
+    if (u.phase === 'set') return this.speedEnd(null);
+    if (run.t < run.slipUntil) return;
+    if (hand === run.last) {
+      run.slipUntil = run.t + SPEED_SLIP;
+      this.sound.play('fell');
+      this.set({ speed: { ...u, slips: u.slips + 1 } });
+      return;
+    }
+    run.last = hand;
+    const holds = u.holds + 1;
+    this.sound.play('move');
+    if (holds >= SPEED.holds) {
+      this.set({ speed: { ...u, holds } });
+      this.speedEnd(run.t - SPEED_GO);
+    } else this.set({ speed: { ...u, holds } });
+  }
+
+  private speedEnd(real: number | null): void {
+    const u = this.ui.get().speed!;
+    const was = this.state.speed.pb;
+    const skills = this.state.climber.skills;
+    const ev = this.dispatch({ t: 'speed', real });
+    const ok = !ev.some((e) => e.k === 'refused');
+    const time = ok && real !== null ? speedTime(skills, real) : null;
+    const pb = this.state.speed.pb;
+    this.speedRun = null;
+    this.set({ speed: { ...u, phase: 'done', time, pb, newPb: time !== null && pb !== was } });
+  }
+
+  speedDone(): void {
+    this.speedRun = null;
+    this.set({ speed: null });
+  }
+
+  // The climber on the speed wall, for the renderer: how far up, and slipping or not.
+  private speedView(): Frame['speed'] {
+    const u = this.ui.get().speed;
+    if (!u) return null;
+    return { holds: u.holds, slip: !!this.speedRun && this.speedRun.t < this.speedRun.slipUntil };
   }
 
   // Ask the crowd at the base for a line's beta.
@@ -1015,6 +1147,7 @@ export class Game {
         this.applyAttempt(stepAttempt(this.att, STEP));
       }
     }
+    this.stepSpeed(dt);
     this.sound.tick(dt);
     if (this.scout.wag > 0) this.scout.wag -= dt;
     const f = this.fast.get();
@@ -1070,6 +1203,7 @@ export class Game {
       trip: tripView,
       wallRoute: u.wallRoute,
       att: this.att,
+      speed: this.speedView(),
     };
   }
 

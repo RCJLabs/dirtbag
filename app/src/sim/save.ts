@@ -10,11 +10,11 @@ import { GEAR } from './content/gear';
 import { PLACES } from './content/places';
 import { TRAIN } from './dials';
 import { JOBS } from './content/jobs';
-import { WALLS } from './content/routes';
+import { ROUTES, WALLS } from './content/routes';
 import { EXPEDITIONS } from './content/expeditions';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 8;
+export const SAVE_VERSION = 9;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -90,6 +90,11 @@ export const MIGRATIONS: Record<number, Migration> = {
   7: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, wall: null, expedition: null };
+  },
+  // v8 -> v9 (Phase 21.6): no speed runs yet, and climbing on a rope, as everyone did.
+  8: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, speed: { pb: null, runs: 0, day: 0 }, mode: 'rope', soloing: null, dead: null };
   },
 };
 
@@ -234,6 +239,19 @@ export function validate(x: unknown): string[] {
         e.energy >= 0),
     'expedition',
   );
+  const sp = x.speed;
+  need(
+    isObj(sp) &&
+      (sp.pb === null || (isNum(sp.pb) && sp.pb > 0)) &&
+      isInt(sp.runs) &&
+      sp.runs >= 0 &&
+      isInt(sp.day),
+    'speed',
+  );
+  need(x.mode === 'rope' || x.mode === 'solo', 'mode');
+  need(x.soloing === null || (typeof x.soloing === 'string' && x.soloing in ROUTES), 'soloing');
+  const dd = x.dead;
+  need(dd === null || (isObj(dd) && typeof dd.route === 'string' && isInt(dd.day) && isNum(dd.hi)), 'dead');
   const dog = x.dog;
   const pct = (v: unknown) => isNum(v) && v >= 0 && v <= 100;
   need(

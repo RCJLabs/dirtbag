@@ -16,7 +16,8 @@
 import { margin, pumpFactor, windowFactor } from './climber';
 import { effGrade, PUMPED, type BetaDef, type CruxDef, type RouteDef, type Verb } from './content/routes';
 import { cold } from './body';
-import { BODY, CLIMB, LOAD, TRAD } from './dials';
+import { BODY, CLIMB, FREESOLO, LOAD, TRAD } from './dials';
+import { soloed } from './solo';
 import { kitFactor } from './kit';
 import { indoor } from './content/gym';
 import { trainWindows } from './training';
@@ -133,7 +134,9 @@ export function dayFactor(s: GameState, r: RouteDef): { windows: number; grease:
   if (indoor(r.place)) return { windows: body, grease: false };
   const c = conditionsAt(s.seed, s.day, r.place);
   const grease = s.min >= sunOn(s.seed, s.day, r.place, r.id);
-  return { windows: c.windows * (grease ? CLIMB.greaseFactor : 1) * body, grease };
+  // No rope: your body climbs tighter, whatever you tell it.
+  const solo = soloed(s, r) ? FREESOLO.windows : 1;
+  return { windows: c.windows * (grease ? CLIMB.greaseFactor : 1) * body * solo, grease };
 }
 
 // A beta's scale for you, today: your skills in its style against the route's grade, and

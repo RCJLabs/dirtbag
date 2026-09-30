@@ -4,6 +4,7 @@ import { useStore } from '../game/store';
 import { H, screenWidth, WIDE } from '../view/layout';
 import { Bubble } from './Bubble';
 import { ClimbPanel } from './ClimbPanel';
+import { SpeedPanel } from './SpeedPanel';
 import { Create } from './Create';
 import { Goal } from './Goal';
 import { PlanChip } from './PlanChip';
@@ -68,6 +69,20 @@ export function App({ game }: { game: Game }) {
       const a = document.activeElement;
       const onButton = a instanceof HTMLButtonElement;
       const u = game.ui.get();
+      // On the speed wall: F and J (or the arrows) are your hands.
+      if (u.speed && u.speed.phase !== 'done') {
+        const hand =
+          e.key === 'f' || e.key === 'F' || e.key === 'ArrowLeft'
+            ? 0
+            : e.key === 'j' || e.key === 'J' || e.key === 'ArrowRight'
+              ? 1
+              : null;
+        if (hand !== null) {
+          e.preventDefault();
+          if (!e.repeat) game.speedGrab(hand);
+        }
+        return;
+      }
       // Escape puts down whatever's open, the most recent first: a conversation, a sheet
       // that has a close button, then the map, back to where you are.
       if (e.key === 'Escape') {
@@ -152,6 +167,7 @@ export function App({ game }: { game: Game }) {
           {ui.talk && <Bubble game={game} talk={ui.talk.talk} node={ui.talk.node} />}
           {ui.sheet && <Sheet game={game} id={ui.sheet} ui={ui} />}
           {ui.climbing && <ClimbPanel game={game} />}
+          {ui.speed && <SpeedPanel game={game} />}
           {ui.view === 'map' && !ui.driving && !ui.sheet && (
             <div className="corner">
               <button type="button" className="restart" onClick={() => game.openSheet({ k: 'restart' })}>

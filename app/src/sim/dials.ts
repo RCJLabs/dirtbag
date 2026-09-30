@@ -460,3 +460,34 @@ export const CROWD = {
   ask: 15,
   spray: 0.4,
 };
+
+// The speed wall at Send City (v0.956's, which cost no time and no pass: the audit's
+// exploit 20). A run is 20 holds, lights to buzzer. Your time is the seconds you took on
+// the screen times `factor`, which is `v0` at V0 and `perGrade` less a grade of power and
+// technique (power counted 60/40), down to `floor`, so a fast thumb and a strong climber
+// both show. A run takes `min` (the queue, the lower-off, the walk back), costs like a
+// short go, and teaches power and technique a little (`trains`, on a session's scale) for
+// the first `fresh` a day, then nothing: PB chasing, not a skill farm. `minReal`: faster
+// than a thumb can go.
+export const SPEED = {
+  holds: 20,
+  min: 10,
+  energy: 7,
+  skin: 2,
+  fed: 2,
+  intensity: 0.8,
+  factor: { v0: 2.8, perGrade: 0.1, floor: 1.45 },
+  minReal: 1.5,
+  fresh: 3,
+  trains: { power: 0.14, technique: 0.06 },
+};
+
+// Free Solo [proposed] (v0.956's mode): every outdoor sport line and wall pitch is climbed
+// without a rope, so no belayer or rope is needed and a fall ends the run. Trad keeps its
+// rack and boulders their pads, as v0.956's boulders did. With no rope your body climbs
+// tighter: `windows` on every crux (v0.956's 0.72 was set against its dice; this is
+// against the verbs). A solo send teaches the head `head` more, as v0.956's +8 did.
+export const FREESOLO = {
+  windows: 0.82,
+  head: 2,
+};

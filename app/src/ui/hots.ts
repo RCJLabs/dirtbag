@@ -14,7 +14,13 @@ import {
 } from '../sim';
 import type { Hot } from '../view/layout';
 
-const SHEET_NAME = { van: 'Your van', cragVan: 'Your van', desk: 'The desk', board: 'The board' } as const;
+const SHEET_NAME = {
+  van: 'Your van',
+  cragVan: 'Your van',
+  desk: 'The desk',
+  board: 'The board',
+  speed: 'The speed wall',
+} as const;
 
 export function hotLabel(s: GameState, h: Hot): string {
   const u = h.use;

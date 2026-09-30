@@ -14,6 +14,7 @@ export function Create({ game }: { game: Game }) {
   const [name, setName] = useState((old?.name ?? '').slice(0, NAME_MAX));
   const [start, setStart] = useState(carry ? CARRIED : 'allrounder');
   const [kept, setKept] = useState(false);
+  const [solo, setSolo] = useState(false);
   const ok = name.trim().length > 0;
   return (
     <form
@@ -22,7 +23,7 @@ export function Create({ game }: { game: Game }) {
       aria-labelledby="create-title"
       onSubmit={(e) => {
         e.preventDefault();
-        if (ok) game.create(name, start, start === CARRIED ? (old?.skills ?? undefined) : undefined);
+        if (ok) game.create(name, start, start === CARRIED ? (old?.skills ?? undefined) : undefined, solo);
       }}
     >
       <h2 id="create-title">Who's in the van?</h2>
@@ -83,9 +84,26 @@ export function Create({ game }: { game: Game }) {
           </button>
         ))}
       </div>
+      <button
+        type="button"
+        className="opt"
+        id="c-solo"
+        role="switch"
+        aria-checked={solo}
+        onClick={() => setSolo(!solo)}
+      >
+        <span>{solo ? 'Free Solo: on' : 'Free Solo: off'}</span>
+        <span className="c">{solo ? 'No rope' : 'Rope'}</span>
+        <small>
+          Every sport line and wall pitch outdoors, without a rope. Boulders keep their pads and trad its
+          rack. One fall, and there’s no next climber. You can’t change it later.
+        </small>
+      </button>
       <button type="submit" className="go" id="c-go" disabled={!ok}>
         Start
-        <small>${MONEY.start}, a van, and Hazel at the fire.</small>
+        <small>
+          ${MONEY.start}, a van, and Hazel at the fire.{solo ? ' No rope.' : ''}
+        </small>
       </button>
     </form>
   );

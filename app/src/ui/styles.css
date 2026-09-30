@@ -1091,3 +1091,28 @@ button.pill:disabled {
 .hot.pin {
   border-radius: 50%;
 }
+
+/* The speed wall's run (Phase 21.6): its lights, and a hand each. */
+.speed .lights {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+.speed .lights i {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--u-ink);
+  background: transparent;
+}
+.speed .lights i.on {
+  background: var(--u-acc);
+}
+.speed .lights i.green {
+  background: #36c27a;
+}
+.speed .hands {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}

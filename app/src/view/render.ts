@@ -22,6 +22,7 @@ import {
   TALK,
   WALLS,
   crowdNow,
+  SPEED,
   type Attempt,
   type GameState,
   type RouteDef,
@@ -41,6 +42,7 @@ import {
   PROBLEM_X,
   CAVE_X,
   SCENES,
+  SPEED_LANE,
   W,
   Z,
   type PinKind,
@@ -60,7 +62,7 @@ import {
   tapeTag,
   vanIcon,
 } from './paint/fx';
-import { CAVE_TAPE, TAPE } from './paint/gym';
+import { CAVE_TAPE, speedHold, TAPE } from './paint/gym';
 import { mapArt } from './paint/map';
 import { drawBelayerBack, drawClimber, drawDog, drawPerson, INK, LOOK, STRANGERS } from './paint/people';
 import { BIG } from './paint/scale';
@@ -85,6 +87,8 @@ export interface Frame {
   trip: { pts: Pt[]; pos: Pt } | null;
   wallRoute: string;
   att: Attempt | null;
+  // A run on the speed wall: holds taken, and whether you're slipping.
+  speed: { holds: number; slip: boolean } | null;
 }
 
 export function render(g: G, f: Frame): void {
@@ -145,6 +149,7 @@ interface Company {
   still: boolean;
   player?: Frame['player'];
   scout?: Frame['scout'];
+  speed?: Frame['speed'];
 }
 
 // The live part of a scene, over its painted back: the fire, the light and the wet on the
@@ -272,7 +277,14 @@ export function sceneLive(g: G, s: GameState, scene: string, cam: number, eye: E
     const opener = talkStart(s, p.talk);
     if (opener && TALK[p.talk]?.nodes[opener]?.calls) speechMark(g, p.x - cam, HEAD_Y - 10, f.t, f.still);
   }
-  const p = f.player;
+  // On the speed wall: you're up it, not standing in the room.
+  if (gym && f.speed) {
+    const n = Math.min(f.speed.holds, SPEED.holds - 1);
+    const [hx, hy] = speedHold(SPEED_LANE, n);
+    const slip = f.speed.slip && !f.still ? 3 : 0;
+    drawClimber(g, LOOK.you!, hx - cam, hy + 24 + slip, f.speed.holds % 2, false);
+  }
+  const p = f.speed && gym ? null : f.player;
   if (p)
     drawPerson(g, LOOK.you!, {
       x: p.x - cam,

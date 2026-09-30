@@ -73,6 +73,10 @@ import {
   CROWD,
   crowdAt,
   type Crowd,
+  SPEED,
+  speedBlocked,
+  speedGains,
+  runsToday,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import type { Game, SheetId } from '../game/game';
@@ -596,6 +600,60 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
 
     case 'wall':
       return wallSheet(game, s, id.id);
+
+    case 'speed': {
+      const why = speedBlocked(s);
+      const left = SPEED.fresh - runsToday(s);
+      const pb = s.speed.pb;
+      return {
+        title: 'The speed wall',
+        sub: `${SPEED.holds} holds, the same on every speed wall in the world. Three lights, and go on the third.`,
+        notes: [
+          pb === null ? 'No time on the board yet.' : `Your best: ${pb.toFixed(2)} s.`,
+          left > 0
+            ? `${left} more run${left > 1 ? 's' : ''} today will teach you: ${skillsNote(speedGains(s))}.`
+            : 'Your legs are done learning today. The clock still runs.',
+        ],
+        close: true,
+        rows: [
+          {
+            label: 'Race the clock',
+            cost: costLabel({ min: SPEED.min, energy: -SPEED.energy, skin: -SPEED.skin }),
+            note: why ? `${why}.` : 'Grab with alternate hands. The same hand twice and you slip.',
+            off: !!why,
+            run: () => game.speedStart(),
+          },
+        ],
+      };
+    }
+
+    case 'dead': {
+      const d = s.dead;
+      if (!d) return null;
+      const r = routeOfId(s, d.route);
+      const sent = Object.entries(s.routes)
+        .filter(([, L]) => L.sent)
+        .map(([rid]) => routeOfId(s, rid))
+        .filter((x): x is RouteDef => !!x);
+      const hardest = [...sent].sort((a, b) => b.grade - a.grade)[0];
+      return {
+        title: 'Free Solo, over',
+        sub: `${s.climber.name} came off ${r ? lineName(s, r) : 'the wall'}${d.hi ? ` at move ${d.hi + 1}` : ''}, with no rope, on day ${d.day}.`,
+        notes: [
+          sent.length
+            ? `${sent.length} line${sent.length > 1 ? 's' : ''} sent, the hardest ${lineName(s, hardest!)}, ${lineGrade(s, hardest!)}.`
+            : 'Nothing sent. It was early.',
+        ],
+        close: false,
+        rows: [
+          {
+            label: 'Start a new climber',
+            note: 'A new first morning. There’s no next climber for this one.',
+            run: () => game.restart(),
+          },
+        ],
+      };
+    }
 
     case 'expeds':
       return {

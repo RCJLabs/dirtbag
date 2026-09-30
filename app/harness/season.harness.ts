@@ -8,7 +8,8 @@ import { ACTS } from '../src/sim/content/places';
 import { PROTOCOLS } from '../src/sim/content/training';
 import { newGame } from '../src/sim/game';
 import { sessionGains } from '../src/sim/sessions';
-import { TRAIN } from '../src/sim/dials';
+import { SPEED, TRAIN } from '../src/sim/dials';
+import { speedGains } from '../src/sim/speed';
 import { checkpoints, contentOut, firstInjury, firstTry, median, season } from '../src/sim/harness';
 
 const SEEDS = Number(process.env.SEEDS ?? 12);
@@ -130,12 +131,22 @@ function targets(all: Record<Strategy, BotRun[]>, reckless: BotRun[]): void {
         });
         return { id, rate: per.reduce((n, v) => n + v, 0) / (per.length || 1) };
       })
+      // The speed wall (21.6), at a fresh run's rate, as if every run of the hour taught.
+      .concat(
+        (() => {
+          const per = days.map((d) => {
+            const s = { ...newGame('h'), climber: { name: 'h', start: 'allrounder', skills: d.skills } };
+            return Object.values(speedGains(s)).reduce((n, v) => n + v, 0) / (SPEED.min / 60);
+          });
+          return [{ id: 'speed', rate: per.reduce((n, v) => n + v, 0) / (per.length || 1) }];
+        })(),
+      )
       .sort((x, y) => y.rate - x.rate)[0]!;
     return { g, rate, best };
   });
   say(
     trainRates.every((x) => x.best.rate < x.rate),
-    'Training can’t be farmed: no protocol out-teaches climbing at any grade',
+    'Training can’t be farmed: no protocol, and not the speed wall, out-teaches climbing at any grade',
     `best session an hour, in build, against the rock: ${trainRates.map((x) => `V${x.g} ${x.best.id} ${x.best.rate.toFixed(2)} (${Math.round((100 * x.best.rate) / x.rate)}%)`).join(', ')}.`,
   );
 

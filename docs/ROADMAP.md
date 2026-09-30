@@ -1502,6 +1502,16 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The Gorge now wants a spotter** as well as a belayer, and its place card says so. No crag is left with ropes and no highballs, so the "boulders only" line has nothing to say for now.
 - **The harness** (56 days) reads the same as after crowds, to the decimal: every new highball is V7 or harder (Moonstone Mantel is the easiest), past the V5 the bots reach, so nothing they do changes. Their 1–5% crux landings are all under the careful bots' 1-in-20 line anyway.
 
+**Status (30 Sep 2026): 21.6 built: the speed wall and Free Solo. 21.6 is done; Phase 21 waits on criterion 3.**
+- **The speed wall** (v0.956's, at Send City, past the board): two grey lanes taller than the room, the same 20 red holds up each, a buzzer at the top. A run is three lights a second apart, go on the third, then a hand at a time: two buttons, or F and J. The same hand twice is a slip (a third of a second lost); a grab before the green is a false start. Your time is the seconds you took times a factor from your power and technique (2.8 at V0, 0.1 less a grade, never under 1.45), so a quick thumb and a strong climber both show. A PB is kept.
+- **Not v0.956's exploit** (the audit's 20: free, no time, +1 power a run): a run needs the day pass, takes 10 minutes and a short go's energy and skin, loads you, and teaches power and technique on a training session's scale for the first three a day, false starts included, then nothing. The harness's "can't be farmed" target now includes it, at a fresh run's rate for a whole hour, and it stays under climbing at every grade.
+- **Free Solo** [proposed] (v0.956's mode): a switch on the first screen, off by default and for good once you start, with what it means said beside it. Every outdoor sport line and wall pitch is climbed without a rope: no belayer, no rope for a wall, every crux window ×0.82 (v0.956's ×0.72 was against its dice), and a send teaches the head +2. Trad keeps its rack and boulders their pads. The beta sheet says so on every soloed line.
+- **A fall ends it:** "Free Solo, over", with where, when and what you'd sent, and a new climber as the only way on. **Save-scumming can't undo it** (the audit's S7): the save knows you're on a solo from the moment you pull on, and a game that closes mid-solo opens on the fall.
+- **Save v9,** migrated from a real v8 save: no runs, on a rope, alive.
+- **Not yet:** the bots don't race or solo, so the harness says nothing about Free Solo's survival odds; the speed wall's comps (v0.956's) wait for Phase 18's comps; the run has no sound of its own beyond the game's taps.
+
+**21.6 against the Done-when:** criteria 1 (trad), 2 (gear wear), 4 (walls and expeditions) and 5 (training can't be farmed, speed wall included) pass. Criterion 3's first half passes (lines at every grade V0–V18); its second half, the bots reaching V10+, is open: over 56 days they reach V5, and they don't pay for trips. Phase 21 stays the CURRENT MILESTONE until that's met or ruled on.
+
 ---
 
 ### Phase 22 — The life: the van, the body, food, the hustle, and the games
@@ -1898,3 +1908,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Evan's call: Phase 24 added, expeditions as trips: a scene for each, planning and packing, getting there, pitches climbed through beta-then-send, and coming home. It runs after Phase 22 and before 23 [proposed]; the order is now 21, 22, 24, 23, 16, 17, 18, 14, 15, 19, 20.
 - 2026-09-30 — Phase 21.6: crowds and spray beta. Each crag's crowd from its draw, the weekend, the hour, the sky and the day; a queue for the ropes in the go's cost; beta from the crowd, asked for or shouted at you, at the cost of the onsight; strangers at the base.
 - 2026-09-30 — Phase 21.6: highball calls, by Evan's call: every outdoor boulder from 16 ft up is a highball, set from its height and held by a test. Twelve more, seventeen in all; the Gorge now wants a spotter.
+- 2026-09-30 — Phase 21.6: the speed wall at Send City (a reaction start, alternate hands, a PB; time, a pass and a daily cap on what it teaches) and Free Solo (chosen at the start; outdoor sport lines and wall pitches without a rope; a fall ends the run, and reloading can't take it back); save v9. 21.6 done; Phase 21's criterion 3 (bots to V10+) still open.
