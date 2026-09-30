@@ -8,9 +8,10 @@ import { extname, join, relative } from 'node:path';
 import { gzipSync } from 'node:zlib';
 
 const DIST = new URL('../dist/', import.meta.url).pathname;
-// R0's budget (docs/ROADMAP.md, rebuild track). The art is code, so the game is mostly
+// R0's budget was 250 KB (docs/ROADMAP.md, rebuild track). Evan raised it to 300 KB on
+// 30 Sep 2026, when Phase 22's van reached 248.5 KB. The art is code, so the game is mostly
 // React, the fonts and the painters; this catches an accidental asset or dependency.
-const BUDGET = 250 * 1024;
+const BUDGET = 300 * 1024;
 
 const PART = { '.js': 'script', '.css': 'styles', '.html': 'page', '.svg': 'icon', '.woff2': 'fonts' };
 const TEXT = new Set(['.js', '.css', '.html', '.svg']);
