@@ -1,6 +1,7 @@
 // The ambience engine: continuous layers (wind, rain, the room, voices, water, the fire's
 // hiss) made from looped noise through filters, and the things that happen now and then
-// (a bird, crickets, a crackle, a cup, a hawk, a drip) scattered over them. A new bed
+// (a bird, crickets, a crackle, a cup, a hawk, a drip, a fall onto the pads) scattered over
+// them. A new bed
 // crossfades in over a second or so; nothing stops dead.
 import { QUIET, type Bed } from './beds';
 import { burst, jitter, tone, type V } from './voices';
@@ -12,14 +13,16 @@ const LOOPS: Record<Loop, { type: BiquadFilterType; f: number; q: number; gain: 
   wind: { type: 'lowpass', f: 480, q: 0.4, gain: 0.5 },
   rain: { type: 'highpass', f: 1300, q: 0.3, gain: 0.07 },
   room: { type: 'lowpass', f: 170, q: 0.5, gain: 0.7 },
-  murmur: { type: 'bandpass', f: 650, q: 1.3, gain: 0.35 },
+  // Voices: a narrower band that comes and goes quickly (WANDER), so it reads as talk and
+  // not as a breeze, which a slow wide band of noise always sounds like.
+  murmur: { type: 'bandpass', f: 800, q: 2.4, gain: 0.3 },
   creek: { type: 'bandpass', f: 1700, q: 0.7, gain: 0.3 },
   fire: { type: 'bandpass', f: 900, q: 0.5, gain: 0.08 },
 };
 
 // The things that happen now and then: how often at a bed's 1 (per second), and how. Each
 // kind plays through a gain at its layer's level, so a quieter bed has quieter birds too.
-type Event = 'birds' | 'crickets' | 'fire' | 'clinks' | 'hawk' | 'rain';
+type Event = 'birds' | 'crickets' | 'fire' | 'clinks' | 'hawk' | 'rain' | 'gym';
 const EVENTS: { layer: Event; rate: number; play: (v: V) => void }[] = [
   {
     layer: 'birds',
@@ -60,6 +63,37 @@ const EVENTS: { layer: Event; rate: number; play: (v: V) => void }[] = [
     rate: 0.04,
     play: (v) => tone(v, { f: 2000, f2: 1300, dur: 0.9, gain: 0.05, attack: 0.1 }),
   },
+  // The gym: someone coming off onto the pads (a low thump and the pad's huff), a chalk clap,
+  // and hands slapping plastic.
+  {
+    layer: 'gym',
+    rate: 0.18,
+    play: (v) => {
+      tone(v, { f: jitter(85, 0.15), f2: 45, dur: 0.22, gain: 0.16 });
+      burst(v, { filter: 'lowpass', f: 320, q: 0.7, dur: 0.18, gain: 0.12 });
+    },
+  },
+  {
+    layer: 'gym',
+    rate: 0.22,
+    play: (v) => {
+      const n = 1 + Math.floor(Math.random() * 2);
+      for (let i = 0; i < n; i++)
+        burst(v, {
+          filter: 'bandpass',
+          f: jitter(1400, 0.2),
+          q: 0.9,
+          dur: 0.05,
+          gain: 0.05,
+          delay: i * 0.14,
+        });
+    },
+  },
+  {
+    layer: 'gym',
+    rate: 0.7,
+    play: (v) => burst(v, { filter: 'bandpass', f: jitter(2300, 0.25), q: 2, dur: 0.018, gain: 0.03 }),
+  },
   {
     layer: 'rain',
     rate: 5,
@@ -71,7 +105,7 @@ const EVENTS: { layer: Event; rate: number; play: (v: V) => void }[] = [
 // voices come and go, water burbles.
 const WANDER: Partial<Record<Loop, { every: number; by: number }>> = {
   wind: { every: 1.6, by: 0.45 },
-  murmur: { every: 0.25, by: 0.5 },
+  murmur: { every: 0.12, by: 0.75 },
   creek: { every: 0.15, by: 0.3 },
   fire: { every: 0.2, by: 0.5 },
 };
@@ -109,7 +143,15 @@ export class Ambience {
       g.connect(out);
       return g;
     };
-    this.events = { birds: bus(), crickets: bus(), fire: bus(), clinks: bus(), hawk: bus(), rain: bus() };
+    this.events = {
+      birds: bus(),
+      crickets: bus(),
+      fire: bus(),
+      clinks: bus(),
+      hawk: bus(),
+      rain: bus(),
+      gym: bus(),
+    };
     this.loops = {
       wind: mk('wind'),
       rain: mk('rain'),
