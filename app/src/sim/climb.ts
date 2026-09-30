@@ -18,6 +18,7 @@ import { effGrade, PUMPED, type BetaDef, type CruxDef, type RouteDef, type Verb 
 import { cold } from './body';
 import { BODY, CLIMB, FOOD, FREESOLO, LOAD, TRAD } from './dials';
 import { historyWindows } from './scars';
+import { sickWindows } from './sick';
 import { soloed } from './solo';
 import { kitFactor } from './kit';
 import { indoor } from './content/gym';
@@ -135,7 +136,12 @@ export function dayFactor(s: GameState, r: RouteDef): { windows: number; grease:
   const fuel = s.fueled === s.day ? FOOD.fueled : 1;
   // An old injury flaring where this line loads you, and fear of its style (Phase 22.4b).
   const body =
-    weak * (cold(s, r) ? LOAD.coldWindows : 1) * trainWindows(s) * fuel * historyWindows(s, r.type);
+    weak *
+    (cold(s, r) ? LOAD.coldWindows : 1) *
+    trainWindows(s) *
+    fuel *
+    historyWindows(s, r.type) *
+    sickWindows(s);
   if (indoor(r.place)) return { windows: body, grease: false };
   const c = conditionsAt(s.seed, s.day, r.place);
   const grease = s.min >= sunOn(s.seed, s.day, r.place, r.id);

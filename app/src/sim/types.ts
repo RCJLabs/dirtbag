@@ -90,6 +90,10 @@ export interface GameState {
   scars: string[];
   flare: { area: string; until: number } | null;
   fear: string[];
+  // Phase 22.4c. Water and washing, 0 to 100; and what you're sick with, if anything, and the
+  // day it passes (a toothache waits for the clinic).
+  supplies: number;
+  sick: { kind: 'cold' | 'bug' | 'toothache'; until: number } | null;
   meals: string[];
   fueled: number;
   breakdown: { part: 'tires' | 'engine'; to: string; rest: number; bodged: boolean } | null;

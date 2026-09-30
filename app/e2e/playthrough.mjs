@@ -673,7 +673,8 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 15 ||
+  saved?.v !== 16 ||
+  !(st.supplies >= 0) ||
   !Array.isArray(st.scars) ||
   st.insurance !== 'catastrophic' ||
   !Array.isArray(st.meals) ||
@@ -742,7 +743,11 @@ await click('#sheet .x');
 await tapAt(100, 560);
 await expectText('#sheet', /Your van/, 'van');
 await expectText('#sheet', /Next shift: Coffee Shop, Wed/, 'the next shift, from the van');
-await expectText('#sheet', /The pantry.*Empty\. The market’s in Midtown/, 'the pantry, from the van');
+await expectText(
+  '#sheet',
+  /The pantry.*Empty\. Supplies \d+\. The market’s in Midtown/,
+  'the pantry, from the van',
+);
 await click('#sheet .opt', 'Sleep');
 await expectText('#h-time', /^Day 3 · 7:10 AM$/, 'morning');
 
@@ -1012,6 +1017,47 @@ console.log('Broken down on the road');
     await fail(`after the tow and the tires: ${JSON.stringify({ at: after.at, cash: after.cash })}`);
   log(`towed and fixed: at the garage, $${after.cash}, tires ${after.van.tires}`);
   await road.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-garage.png`) });
+  await ctx.close();
+}
+
+console.log('A tap on the van, on a phone');
+// A touch opens the van's sheet on the press; the same tap's click must not land on a row
+// the sheet put under the finger (it cooked ramen, on Evan's phone). Standing by the van at
+// night, four taps low on it: the sheet, and nothing spent.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  saved.state = { ...saved.state, at: 'lot', x: 300, min: 18 * 60, cash: 50, breakdown: null };
+  const ctx = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    deviceScaleFactor: 2,
+    hasTouch: true,
+    isMobile: true,
+  });
+  await ctx.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+  }, JSON.stringify(saved));
+  const phone = await ctx.newPage();
+  phone.on('pageerror', (e) => problems.push(`phone: uncaught: ${e.message}`));
+  await phone.goto(server.url, { waitUntil: 'load' });
+  await phone.waitForSelector('#h-cash', { timeout: 10_000 });
+  await phone.waitForTimeout(800);
+  for (const [x, y] of [
+    [100, 560],
+    [120, 620],
+    [60, 650],
+    [150, 680],
+  ]) {
+    await phone.touchscreen.tap(x, y);
+    await phone.waitForTimeout(600);
+    const sheet = await phone.evaluate(() => document.querySelector('#sheet')?.textContent ?? '');
+    if (!/Your van/.test(sheet)) await fail(`a tap at ${x},${y} didn't open the van: ${sheet.slice(0, 80)}`);
+    await phone.evaluate(() => document.querySelector('#sheet .x')?.click());
+    await phone.waitForTimeout(300);
+  }
+  const after = [await phone.textContent('#h-cash'), await phone.textContent('#h-time')];
+  if (after[0] !== '$50' || !/6:00 PM$/.test(after[1] ?? ''))
+    await fail(`the taps on the van did something: ${after.join(' ')}`);
+  log('four taps on the van: its sheet each time, nothing spent');
   await ctx.close();
 }
 

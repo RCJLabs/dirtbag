@@ -12,7 +12,20 @@
 
 import type { Need } from '../cond';
 import { INGREDIENTS, RECIPES } from './food';
-import { CLINIC, DAY, DOG, KIT, LAKE, MONEY, UPGRADE, VAN, WINTER, type VanPart } from '../dials';
+import {
+  CLINIC,
+  DAY,
+  DOG,
+  KIT,
+  LAKE,
+  MONEY,
+  SICK,
+  SUPPLIES,
+  UPGRADE,
+  VAN,
+  WINTER,
+  type VanPart,
+} from '../dials';
 import { DOG_LINES, DOG_OFFER } from './dog';
 import { clockShort } from '../format';
 import type { Delta, Skills } from '../types';
@@ -115,6 +128,9 @@ export interface ActDef {
   fish?: true;
   // Phase 22.4a: care at the clinic, priced on your plan (clinic.ts).
   clinic?: 'physio' | 'cortisone';
+  // Phase 22.4c: supplies it puts back, and a doctor for what you're sick with (sick.ts).
+  supplies?: number;
+  doctor?: true;
   // A shift at a job (content/jobs.ts), counting this many toward promotion. Its pay is
   // `cost.cash` at the first rank, plus the rank's raise for each shift.
   job?: { id: string; shifts: number };
@@ -337,7 +353,7 @@ export const PLACES: Record<string, PlaceDef> = {
     ambience: { room: 0.25, murmur: 0.45, gym: 0.8 },
     away: 'The gym downtown. New problems every week. Day pass {pass}.',
     here: 'Plastic, chalk dust, a playlist nobody chose.',
-    acts: ['gym.pass', 'gym.set'],
+    acts: ['gym.pass', 'gym.set', 'gym.shower'],
   },
   diner: {
     name: 'The Diner',
@@ -395,7 +411,7 @@ export const PLACES: Record<string, PlaceDef> = {
     ambience: { room: 0.4, murmur: 0.2, clinks: 0.15 },
     away: 'Old Town, round the corner from the diner. Physio, and a cortisone shot if you’re in a hurry.',
     here: 'A waiting room full of runners, and a poster of the knee nobody reads.',
-    acts: ['clinic.physio', 'clinic.cortisone'],
+    acts: ['clinic.physio', 'clinic.cortisone', 'clinic.doctor'],
   },
   // Phase 22.3b [proposed]: the lake west of the Lot, down a dirt track past the creek.
   lake: {
@@ -404,7 +420,7 @@ export const PLACES: Record<string, PlaceDef> = {
     ambience: { wind: 0.3, birds: 0.6, creek: 0.5 },
     away: 'West of the Lot, past the creek. Fish at dawn and dusk, and a swim when it’s warm.',
     here: 'Still water, a half-sunk dock, and somebody’s lawn chair nobody’s claimed in years.',
-    acts: ['lake.fish', 'lake.swim'],
+    acts: ['lake.fish', 'lake.swim', 'lake.water'],
   },
   // Phase 22.3 [proposed]: the market in Midtown, across from the café. Groceries for the
   // camp kitchen.
@@ -527,6 +543,42 @@ export const ACTS: Record<string, ActDef> = {
     sets: ['jab'],
     clinic: 'cortisone',
     says: 'A cold swab, a long needle, and the doctor’s look that says she’d rather you rested.',
+  },
+  // Supplies (Phase 22.4c): the lake's water, jugs at the market, the gym's shower.
+  'lake.water': {
+    label: 'Fill the jugs and wash',
+    cost: { min: 30 },
+    needs: [
+      { suppliesBelow: 100, why: 'The jugs are full and so are you.' },
+      { notSeason: 'winter', why: 'Ice on the edges. Not for washing.' },
+    ],
+    supplies: SUPPLIES.lake,
+    says: 'Cold water, a bar of soap and nobody watching. The jugs ride home full.',
+  },
+  'market.water': {
+    label: 'Water and a wash kit',
+    cost: { min: 5, cash: -SUPPLIES.market.price },
+    needs: [{ suppliesBelow: 100, why: 'You’re stocked.' }, { pay: SUPPLIES.market.price }],
+    supplies: SUPPLIES.market.add,
+  },
+  'gym.shower': {
+    label: 'Take a shower',
+    cost: { min: 20 },
+    needs: [
+      { today: 'pass', why: 'Showers are for people with a pass.' },
+      { suppliesBelow: 100, why: 'You’re clean.' },
+      { notToday: 'shower', why: 'One is plenty.' },
+    ],
+    sets: ['shower'],
+    supplies: SUPPLIES.shower,
+    says: 'Hot water that someone else pays for. You stay in until it runs lukewarm.',
+  },
+  'clinic.doctor': {
+    label: 'See a doctor',
+    cost: { min: SICK.doctor.min },
+    needs: [{ sick: true, why: 'Nothing wrong with you. The receptionist looks almost sorry.' }],
+    doctor: true,
+    note: 'Half what’s left of a cold or a bug; a toothache seen to.',
   },
   // The lake (Phase 22.3b): a line in the water, and a swim.
   'lake.fish': {

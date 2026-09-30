@@ -3,7 +3,8 @@
 // sleeping are the ones sleep will use. Pure: nothing here changes the state.
 import { projected, ratio, zone, daysOff, type Zone } from './body';
 import { ACTS } from './content/places';
-import { BODY, FOOD, LIFESTYLE, MONEY, type Lifestyle } from './dials';
+import { BODY, FOOD, LIFESTYLE, MONEY, SUPPLIES, type Lifestyle } from './dials';
+import { isSick, SICK_NAME, sickOdds } from './sick';
 import { MEAL_NAME } from './content/food';
 import { livingTonight } from './jobs';
 import { weeklyBills } from './clinic';
@@ -25,6 +26,10 @@ export interface Tonight {
   night: Night;
   // The meal you've had the last FOOD.same times running, if you have (Phase 22.3).
   same: string | null;
+  // Phase 22.4c: supplies by morning, tonight's chance of waking sick, and what you have now.
+  supplies: number;
+  sickOdds: number;
+  sick: string | null;
   // Energy back by morning, after a rough or hungry night.
   energy: number;
   hungry: boolean;
@@ -60,6 +65,12 @@ export function tonight(s: GameState): Tonight {
     spot,
     rough,
     night,
+    supplies: Math.max(
+      0,
+      Math.min(100, s.supplies - SUPPLIES.night + (night.spot === 'truckstop' ? SUPPLIES.truckstop : 0)),
+    ),
+    sickOdds: isSick(s) ? 0 : sickOdds(s, night.heat).odds,
+    sick: isSick(s) && s.sick ? SICK_NAME[s.sick.kind] : null,
     same:
       s.meals.length >= FOOD.same && s.meals.every((m) => m === s.meals[0]) ? MEAL_NAME[s.meals[0]!]! : null,
     energy:

@@ -27,6 +27,8 @@ import {
   KIT,
   LOAD,
   MONEY,
+  SICK,
+  SUPPLIES,
   UPGRADE,
   VAN,
   WINTER,
@@ -272,6 +274,8 @@ const BOT_UPGRADES = ['heater', 'kitchen', 'insulation', 'bed', 'tuneup', 'curta
 // Meals a bot cooks, best first (Phase 22.3).
 const MEAL_ORDER = ['burritos', 'pasta', 'ricebeans', 'oatmeal'];
 const SPARE = 60;
+// Supplies under this, a bot buys water (Phase 22.4c).
+const BOT_SUPPLIES = 40;
 // What a bot keeps over the heater and its propane, or the propane alone, in winter: a
 // night at the Lot and a little, and the bills when they're close.
 const WARM_OVER = 25;
@@ -402,6 +406,11 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
 
   // Phase 22.4a: physio when hurt, with money past the cushion for it and days to save.
   function physio() {
+    // A toothache won't pass on its own (Phase 22.4c).
+    if (s.sick?.kind === 'toothache' && s.cash >= SICK.doctor.price + CUSHION.climber) {
+      travel('clinic');
+      tryAct('clinic.doctor');
+    }
     if (!s.injury || s.injury.until - s.day < 2) return;
     if (s.cash < carePrice(s, 'physio') + CUSHION[strategy]) return;
     travel('clinic');
@@ -418,6 +427,11 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   // With a kitchen, a run to the market when the pantry's low: a pack of each for rice and
   // beans and for burritos, while the money past the cushion lasts.
   function groceries() {
+    // Phase 22.4c: water and a wash kit when supplies run low.
+    if (s.supplies < BOT_SUPPLIES && s.cash >= SUPPLIES.market.price + CUSHION.climber) {
+      travel('market');
+      tryAct('market.water');
+    }
     if (!s.gear.kitchen) return;
     const low = ['rice', 'beans', 'tortillas', 'eggs', 'cheese'].filter((id) => (s.pantry[id] ?? 0) < 1);
     const cost = low.reduce((n, id) => n + INGREDIENTS[id]!.price, 0);

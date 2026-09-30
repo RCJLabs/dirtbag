@@ -3,7 +3,7 @@
 // burns propane.
 import { describe, expect, it } from 'vitest';
 import { road } from './content/places';
-import { BODY, SPOT, UPGRADE, VAN, WINTER } from './dials';
+import { BODY, SICK, SPOT, UPGRADE, VAN, WINTER } from './dials';
 import { act, newGame } from './game';
 import { nightAt, ticketOdds } from './spots';
 import type { GameState } from './types';
@@ -24,7 +24,8 @@ const lines = (r: ReturnType<typeof act>) => r.events.flatMap((e) => (e.k === 'l
 describe('winter in the van', () => {
   it('costs energy on a winter night, and says so', () => {
     const r = night({ day: WINTER_DAY });
-    expect(r.state.energy).toBe(20 + BODY.sleepEnergy + WINTER.cold);
+    // Sickness (Phase 22.4c) can come with a winter night: its cost is its own.
+    expect(r.state.energy).toBe(20 + BODY.sleepEnergy + WINTER.cold + (r.state.sick ? SICK.energy : 0));
     expect(lines(r).some((l) => /winter night in the van/.test(l))).toBe(true);
     expect(night({ day: 2 }).state.energy).toBe(20 + BODY.sleepEnergy);
   });
