@@ -490,7 +490,7 @@ export function wallOf(r: RouteDef): Wall {
     const art = r.board
       ? boardWallArt(boardPattern(r.id), r.heightFt)
       : indoor(r.place)
-        ? gymWallArt(slotOf(r.id), r.heightFt, r.place === 'cave')
+        ? gymWallArt(slotOf(r.id), r.heightFt, r.place)
         : boulderArt(r);
     w = { art, topo: topoFor(r), big: true };
     close.set(key, w);
@@ -1457,6 +1457,6 @@ const FACE: Record<string, Pt[]> = {
 export function paintRouteArt(g: G, r: RouteDef): void {
   if (onWall(r)) paintWall(g, r.place, r.id);
   else if (r.board) paintBoardWall(g, boardPattern(r.id), r.heightFt);
-  else if (indoor(r.place)) paintGymWall(g, slotOf(r.id), r.heightFt, r.place === 'cave');
+  else if (indoor(r.place)) paintGymWall(g, slotOf(r.id), r.heightFt, r.place);
   else paintBoulderArt(g, r);
 }

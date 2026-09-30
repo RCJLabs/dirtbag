@@ -52,7 +52,7 @@ The game has its own commands (tests, types, the e2e bot, the balance harness) i
 
 ## Status
 
-The live site is 0.961.0, released 29 Sep 2026: the rebuilt game's first season, Act I, from gym plastic to your first V5 project (0.960.0, R3), plus Phase 10 (Send City's board, conditions you can see, Moonstone Boulders) and Phase 11 (the valley's roads, place cards, the daily plan). A v0.956 player who opens the new game is told v0.956 has retired, can keep their career as a file, and can carry on under their old name. The current milestone is Phase 21, the climber: gear, trad, training and the crags past Act I ([`docs/ROADMAP.md`](docs/ROADMAP.md)).
+The live site is 0.961.0, released 29 Sep 2026: the rebuilt game's first season, Act I, from gym plastic to your first V5 project (0.960.0, R3), plus Phase 10 (Send City's board, conditions you can see, Moonstone Boulders) and Phase 11 (the valley's roads, place cards, the daily plan). A v0.956 player who opens the new game is told v0.956 has retired, can keep their career as a file, and can carry on under their old name. Phase 21 (the climber: gear, trad, training, the crags past Act I, walls, expeditions, the speed wall, Free Solo) is built and closed, as 0.962.x and 0.963.0; the release tags are Evan's. The current milestone is Phase 22, the life: the van, the body, food, the hustle and the games ([`docs/ROADMAP.md`](docs/ROADMAP.md)).
 
 ## Credits
 

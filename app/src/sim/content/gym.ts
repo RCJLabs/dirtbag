@@ -138,11 +138,12 @@ export function boardSet(seed: string, block: number): RouteDef[] {
 }
 
 // ---- The Cave: v0.956's "steep bouldering cave, no ropes, just hard plastic" ----
-// Eight problems a week, V3 to V10 (v0.956's grades), mostly power and crimps as its were,
-// set on the steep walls of a cave by the trailhead.
+// Eight problems a week, mostly power and crimps as v0.956's were, set on the steep walls of
+// a cave by the trailhead. v0.956 set V3 to V10; raised to V5 to V12 (Evan's call, 30 Sep
+// 2026), so a V8 climber on a wet day still has a week's work there.
 
 export const CAVE = 'cave';
-const CAVE_GRADES = [3, 4, 5, 6, 7, 8, 9, 10];
+const CAVE_GRADES = [5, 6, 7, 8, 9, 10, 11, 12];
 // v0.956's Cave: power three times in six, crimps twice, a dyno once.
 const CAVE_TYPES: Style[] = ['power', 'crimp', 'dyno', 'power', 'crimp', 'power'];
 const CAVE_NAMES: Record<Style, string[]> = {
@@ -193,11 +194,62 @@ export function caveSet(seed: string, week: number): RouteDef[] {
   return set;
 }
 
+// ---- The Training Center: v0.956's third gym, where the comp team trains ----
+// Eight comp-style problems a week, V7 to V14 (Evan's call, 30 Sep 2026): run-and-jumps,
+// coordination and volumes more than crimps, on tall white walls. v0.956 set fourteen a
+// week; eight fit the room and the Cave's rhythm.
+
+export const CENTER = 'center';
+const CENTER_GRADES = [7, 8, 9, 10, 11, 12, 13, 14];
+// Comp setting: dynos most, then slabs on volumes and compression, a crimp line now and then.
+const CENTER_TYPES: Style[] = ['dyno', 'dyno', 'technical', 'power', 'dyno', 'technical', 'power', 'crimp'];
+const CENTER_NAMES: Record<Style, string[]> = {
+  dyno: ['Run and Jump', 'Double Clutch', 'The Lache', 'Paddle Dyno', 'Catch and Swing', 'Three Point Start'],
+  technical: ['Volume Slab', 'Balance Beam', 'Smear Test', 'The Pinch Slab', 'Glass Feet'],
+  power: ['Compression Box', 'Swing Start', 'Big Volumes', 'Bat Hang', 'The Hug'],
+  crimp: ['Micro Edges', 'The Crimp Ladder', 'Chips'],
+  endurance: ['Circuit Board'],
+  crack: ['The Fake Crack'],
+};
+
+// The week's eight problems, left to right, easiest to hardest.
+export function centerSet(seed: string, week: number): RouteDef[] {
+  const key = `${seed}#center${week}`;
+  const hit = cache.get(key);
+  if (hit) return hit;
+  const rng = Rng.fromStream(seed, 'worldgen').derive(`center-w${week}`);
+  const used = new Set<string>();
+  const set = CENTER_GRADES.map((grade, i) => {
+    const type = CENTER_TYPES[rng.int(0, CENTER_TYPES.length - 1)]!;
+    const own = CENTER_NAMES[type].filter((n) => !used.has(n));
+    const pool = own.length
+      ? own
+      : Object.values(CENTER_NAMES)
+          .flat()
+          .filter((n) => !used.has(n));
+    const name = pool[rng.int(0, pool.length - 1)]!;
+    used.add(name);
+    const moves = rng.int(5, 9);
+    const from = Math.round(moves * rng.float(0.4, 0.65) * 100) / 100;
+    return libraryBoulder(`tc-${week}-${i + 1}`, name, grade, type, CENTER, {
+      moves,
+      from,
+      to: Math.round((from + rng.float(1.3, 1.9)) * 100) / 100,
+      cruxName: CRUX_NAME[type],
+      heightFt: 14,
+      line: `${moves} moves on a comp wall. Tape says V${grade}.`,
+    });
+  });
+  cache.set(key, set);
+  return set;
+}
+
 // The indoor places: the tag your day pass leaves on your hand, the skills each place's
 // setting brings on faster (v0.956's gym specialties), and its closing time.
 export const INDOOR: Record<string, { pass: string; specialty: SkillId[]; name: string }> = {
   [GYM]: { pass: 'pass', specialty: ['technique', 'endurance'], name: 'Send City' },
   [CAVE]: { pass: 'cavepass', specialty: ['power', 'fingers'], name: 'The Cave' },
+  [CENTER]: { pass: 'centerpass', specialty: ['power', 'technique'], name: 'The Training Center' },
 };
 export const indoor = (place: string): boolean => place in INDOOR;
 export const INDOOR_CLOSE = 22 * 60;
@@ -207,14 +259,16 @@ export const INDOOR_CLOSE = 22 * 60;
 export function routeById(seed: string, id: string): RouteDef | undefined {
   const fixed = ROUTES[id];
   if (fixed) return fixed;
-  const m = /^(sc|bd|cv)-(\d+)-(\d+)$/.exec(id);
+  const m = /^(sc|bd|cv|tc)-(\d+)-(\d+)$/.exec(id);
   if (!m) return undefined;
   const set =
     m[1] === 'bd'
       ? boardSet(seed, Number(m[2]))
       : m[1] === 'cv'
         ? caveSet(seed, Number(m[2]))
-        : gymSet(seed, Number(m[2]));
+        : m[1] === 'tc'
+          ? centerSet(seed, Number(m[2]))
+          : gymSet(seed, Number(m[2]));
   return set[Number(m[3]) - 1];
 }
 
@@ -222,6 +276,7 @@ export function routeById(seed: string, id: string): RouteDef | undefined {
 export function routesAt(seed: string, place: string, day: number): RouteDef[] {
   if (place === GYM) return [...gymSet(seed, weekOf(day)), ...boardSet(seed, blockOf(day))];
   if (place === CAVE) return caveSet(seed, weekOf(day));
+  if (place === CENTER) return centerSet(seed, weekOf(day));
   // A wall's pitches aren't lines you walk up to: they're climbed from the wall, in turn.
   return Object.values(ROUTES).filter((r) => r.place === place && !r.wall);
 }

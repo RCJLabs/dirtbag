@@ -295,15 +295,27 @@ export const PLACES: Record<string, PlaceDef> = {
     // The sun comes up the coast from the south end: the tall lines out at the point first.
     sun: ['pdeep', 'parete', 'poverhang', 'pleap', 'pbarnacle', 'pslab', 'pplunge', 'ptide'],
   },
-  // v0.956's second gym: "a steep bouldering cave, no ropes, just hard plastic", V3 to V10,
-  // at the trailhead below Roadside. A day pass, and coaching for work once you can climb.
+  // v0.956's second gym: "a steep bouldering cave, no ropes, just hard plastic", V5 to V12
+  // here (v0.956's V3 to V10, raised), at the trailhead below Roadside. A day pass, and coaching for work once you can climb.
   cave: {
     name: 'The Cave',
     scene: 'cave',
     ambience: { room: 0.3, murmur: 0.3, gym: 1 },
-    away: 'The bouldering cave at the trailhead. Steep plastic, V3 and up. Day pass {pass}.',
+    away: 'The bouldering cave at the trailhead. Steep plastic, V5 and up. Day pass {pass}.',
     here: 'Low ceiling, loud music, everyone upside down.',
     acts: ['cave.pass', 'cave.coach'],
+  },
+  // v0.956's third gym, where the comp team trains: comp-style setting, V7 to V14, in Midtown
+  // west of the highway. You need V7 to get past the desk.
+  center: {
+    name: 'The Training Center',
+    scene: 'center',
+    ambience: { room: 0.2, murmur: 0.5, gym: 1 },
+    away: 'The comp gym in Midtown. Run-and-jumps and volumes, V7 to V14. Day pass {centerPass}.',
+    here: 'White walls, big volumes, a comp clock nobody turns off.',
+    acts: ['center.pass'],
+    minGrade: 7,
+    locked: 'The desk checks your ticklist: V7 and up. Come back when you’re climbing V7.',
   },
   gym: {
     name: 'Send City',
@@ -542,6 +554,13 @@ export const ACTS: Record<string, ActDef> = {
     says: 'Somebody’s old rack: faded slings, cams that still cam. You check every trigger twice.',
   },
 
+  'center.pass': {
+    label: 'Buy a day pass',
+    cost: { min: 5, cash: -MONEY.centerPass },
+    needs: [{ notToday: 'centerpass', why: "You've got a pass for today." }, { pay: MONEY.centerPass }],
+    sets: ['centerpass'],
+    says: 'A wristband, and a look that says the comp wall is not for warming up on.',
+  },
   'cave.pass': {
     label: 'Buy a day pass',
     cost: { min: 5, cash: -MONEY.dayPass },
@@ -630,6 +649,7 @@ export const ROADS: RoadDef[] = [
   // The Cave: at the trailhead on the highway, twenty minutes short of Roadside.
   { a: 'cave', b: 'road', min: 20, cash: 3 },
   { a: 'cave', b: 'gym', min: 45, cash: 8 },
+  { a: 'center', b: 'gym', min: 10, cash: 1 },
 ];
 
 // A drive: its time and gas, and the places it passes on the way.
@@ -679,5 +699,6 @@ function quickest(from: string, to: string): Trip | undefined {
 export const TEXT_VALUES = {
   spot: `$${MONEY.vanSpot}`,
   pass: `$${MONEY.dayPass}`,
+  centerPass: `$${MONEY.centerPass}`,
   wake: clockShort(DAY.wakeMin),
 };

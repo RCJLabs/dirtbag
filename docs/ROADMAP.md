@@ -1374,7 +1374,7 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 *Phases 21–23 were added by Evan's call (29 Sep 2026) after a gap check found v0.956 systems no phase covered. They run first, before Phase 16, which needs them.*
 
-### Phase 21 — The climber: gear, trad, training, and the crags past Act I   **<<< CURRENT MILESTONE**
+### Phase 21 — The climber: gear, trad, training, and the crags past Act I
 
 *Added 29 Sep 2026 by Evan's call, from a gap check of v0.956 against the rebuild and the phases left: none of this had a phase. Numbered 21 so older numbers don't move; it runs before Phase 16.*
 
@@ -1524,9 +1524,18 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **What still fails:** 9 of 16 runs hit a day (one, twice in one run) with nothing new to try before V10. Every one is the same day: the valley's wet, the climber's V7–V10, and every indoor problem is sent (the board tops out at V7, The Cave at V10, both weekly). It's content, not the bot. Two ways to close it: (a) rule the criterion met at this level, or (b) give the rain something past V9 indoors, such as v0.956's third gym, the Training Center (14 routes a week, never planned here), or harder sets at The Cave.
 - **A finding about pace, not the criterion:** V10 on day ~200 against v0.956's typical player on day 80 (`docs/audit/climbing.md` §5.2). The first month is on Phase 6's targets; after it, work eats most mornings (the career bot works about 195 days in 224) and skill gains flatten with hi(). Whether that's the game's pace or too slow is a balance call for Evan, and Phase 22's economy will move it either way.
 
+**Status (30 Sep 2026): Phase 21 closed by Evan's call, once the wet-day gap was closed. Every criterion passes.**
+- **The gap, closed with content:**
+  - **The Cave** sets V5 to V12 now, not v0.956's V3 to V10. The bots climb there from V5.
+  - **The Training Center** is v0.956's third gym, where the comp team trains. It sets eight comp-style problems a week, V7 to V14: dynos most (run-and-jumps, double clutches, a lache), then slabs on volumes and compression, and a crimp line now and then. It has its own $20 pass [proposed], brings on power and technique a fifth faster, and wants V7 to get past the desk, like the Mesa. It sits on a Midtown side street west of the highway.
+  - **Its picture** is a white comp hall under skylights, with big coloured volumes, neon tape, and a comp clock over the desk. The close-up wall is in its colours (gym close-ups now take their look by place).
+- **Criterion 3, on the career harness** (4 seeds × 4 starts × 224 days): every run reaches V10, median day 162 (from 200); no run has a day with nothing new to try; no refusals, no stuck nights.
+- **The season harness** (56 days) passes all five targets. With The Cave from V5, the V3–V4 bots climb elsewhere: climbing's skill an hour at V3 is 10.6 (from 12.4) and V4 8.9 (from 9.6); first-month injuries are 6% warmed-up and 8% reckless (from 3% and 3%), under the 35% ceiling; the first V5 go comes on day 18.5–19; no run ever has nothing new to try.
+- **Carried forward:** the pace against v0.956's (V10 by about day 160 against its 80) goes to Phase 22's economy. Crowds on the map's pins, send trains, the bots' own races, solos and expeditions, Phase 24's trips, and The Hollow with the quests.
+
 ---
 
-### Phase 22 — The life: the van, the body, food, the hustle, and the games
+### Phase 22 — The life: the van, the body, food, the hustle, and the games   **<<< CURRENT MILESTONE**
 
 *Added 29 Sep 2026 by Evan's call, with Phase 21. Runs after it, before Phase 16.*
 
@@ -1925,3 +1934,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — 0.962.0 prepared for Evan to test: Phase 21 so far (gear, trad, training, the crags past Act I, walls and expeditions, crowds, highballs, the speed wall, Free Solo). Merged to main; the release tag is Evan's.
 - 2026-09-30 — 0.962.1: the map fits the valley between the HUD and the buttons (MAP_FIT), so The Big Stone and Sandstone Mesa no longer hide under the HUD on a phone (Evan's report); the map's toast moves to the new gap.
 - 2026-09-30 — 0.962.2, from Evan's testing: the pump bar's hot pulse animates its colour, not a filter (phone Chrome drew the filtered layer as a striped red box over the climb panel); sound quieter (master 0.5 on, 0.15 quiet, from 0.9 and 0.35; ambience a notch under the effects); the gyms sound like gyms: falls onto the pads, chalk claps and hands on holds, less room rumble, and voices that come and go instead of a breeze.
+- 2026-09-30 — Phase 21 closed by Evan's call. The wet-day gap is closed with content: The Cave sets V5 to V12, and the Training Center (v0.956's third gym) sets eight comp-style problems a week, V7 to V14, from V7. The career bots reach V10 in every run (median day 162) and never run out of things to try. 0.963.0. CURRENT MILESTONE moved to Phase 22, the life; it gets planned on the rebuild next.

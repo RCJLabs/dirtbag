@@ -165,4 +165,4 @@ export { PHASES, PHASE_NAME, phaseLock, taperDay, taperWait, prehabbed, trainWin
 export { sessionCost, prehabCost, sessionGains, sessionLoad, trainBlocked, prehabBlocked } from './sessions';
 export { JOBS } from './content/jobs';
 export { rankAt, rankName, nextRank, raiseAt, shiftsAt } from './jobs';
-export { caveSet, CAVE, INDOOR, indoor } from './content/gym';
+export { caveSet, CAVE, centerSet, CENTER, INDOOR, indoor } from './content/gym';

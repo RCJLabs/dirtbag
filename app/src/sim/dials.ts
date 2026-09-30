@@ -42,6 +42,8 @@ export const MONEY = {
   vanSpot: 18,
   // Send City's day pass. v0.956 charged $5 a go; a pass lets you keep trying.
   dayPass: 14,
+  // The Training Center's: dearer, for the walls and the setting [proposed].
+  centerPass: 20,
   // How far the card goes. Past it, gas and the van spot are declined: you drive nowhere
   // and sleep rough. Bills still land. No game over: v0.956's hard wipe is gone.
   cardLimit: 150,

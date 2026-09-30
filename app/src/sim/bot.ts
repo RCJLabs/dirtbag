@@ -71,8 +71,8 @@ export interface DaySummary {
 
 // Where the bots climb: the crags they drive to without paying for a haul, and the gym.
 const BOT_PLACES = ['road', 'gorge', 'cove', 'mesa', 'cave', 'gym'];
-// The Cave's problems start at V3: a bot climbs there once it's climbing that.
-const CAVE_FROM = 3;
+// The Cave's problems start at V5: a bot climbs there once it's climbing that.
+const CAVE_FROM = 5;
 
 // A careful climber reads a highball's landing odds the way they read the load warning: they
 // won't work one while a fall from its crux lands badly more than 1 time in 20, so they wait
@@ -228,7 +228,19 @@ export interface WeekOpts {
 const CUSHION: Record<Strategy, number> = { climber: 15, balanced: 60, worker: Infinity, career: 60 };
 
 // Where a career goes: every crag and both gyms.
-const CAREER_PLACES = ['road', 'gorge', 'cove', 'mesa', 'moon', 'stone', 'wind', 'crucible', 'cave', 'gym'];
+const CAREER_PLACES = [
+  'road',
+  'gorge',
+  'cove',
+  'mesa',
+  'moon',
+  'stone',
+  'wind',
+  'crucible',
+  'cave',
+  'center',
+  'gym',
+];
 // The jobs a career bot weighs, by what they pay an hour.
 const JOB_ACTS = ['cafe.shift', 'cave.coach', 'gym.set'];
 // A crag day starts by here, or it's not worth the drive.
