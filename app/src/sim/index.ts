@@ -129,10 +129,13 @@ export {
   PLANS,
   CLINIC,
   LAKE,
+  SUPPLIES,
+  SICK,
 } from './dials';
 export type { Plan } from './dials';
 export { weeklyBills, clinicBill, carePrice, jabbed } from './clinic';
 export { flaring, scarred, historyWindows } from './scars';
+export { isSick, sickOdds, SICK_NAME } from './sick';
 export { MARK_NAME, STYLE_NAME, type Mark } from './content/injuries';
 export { INGREDIENTS, RECIPES, MEAL_NAME } from './content/food';
 export type { SpotId } from './dials';

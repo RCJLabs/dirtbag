@@ -67,6 +67,8 @@ import {
   PLANS,
   RIVAL,
   SCARS,
+  SICK,
+  SUPPLIES,
   TRAD,
   TRAIN,
   SPOT,
@@ -83,6 +85,7 @@ import { soloed } from './solo';
 import { fishCatch } from './lake';
 import { carePrice, clinicBill, jabbed, weeklyBills, worsened } from './clinic';
 import { flareRoll, scarRoll, scarred } from './scars';
+import { isSick, SICK_NAME, sickRoll } from './sick';
 import { AREA, MARK_NAME, STYLE_NAME, type Mark } from './content/injuries';
 import { drivewayHost, nightAt, spotBlocked, ticketRoll } from './spots';
 import { SPOT_LINE, SPOT_NAME } from './content/spots';
@@ -156,6 +159,8 @@ export function newGame(seed: string): GameState {
     scars: [],
     flare: null,
     fear: [],
+    supplies: SUPPLIES.start,
+    sick: null,
     wall: null,
     expedition: null,
     speed: { pb: null, runs: 0, day: 0 },
@@ -226,8 +231,9 @@ export function actCost(s: GameState, d: ActDef): Delta {
   if (d.job) return { ...d.cost, cash: (d.cost.cash ?? 0) + raiseAt(s, d.job.id) * d.job.shifts };
   // A repair costs its share of the part's price, by wear.
   if (d.van) return { ...d.cost, cash: -repairCost(s, d.van) };
-  // The clinic's care, on your plan (Phase 22.4a).
+  // The clinic's care, on your plan (Phase 22.4a), and a doctor's (22.4c).
   if (d.clinic) return { ...d.cost, cash: -carePrice(s, d.clinic) };
+  if (d.doctor) return { ...d.cost, cash: -Math.round(SICK.doctor.price * PLANS[s.insurance].care) };
   // Bed costs wherever you're parked tonight (Phase 22.2b).
   if (d.sleep) return { ...d.cost, cash: -nightAt(s).cost };
   // Past a couple of cups a day, coffee is jitters, not energy (Phase 22.3).
@@ -494,6 +500,16 @@ export function act(s0: GameState, a: Action): Result {
       if (ticket) s.cash -= SPOT.tickets.fine;
     }
     s.cash -= life.cost;
+    // Supplies and sickness (Phase 22.4c): a van night uses water and washing (the truck
+    // stop's shower puts some back), and might leave you sick, from what the night was like.
+    let fell: ReturnType<typeof sickRoll> = null;
+    if (night) {
+      if (!isSick(s)) fell = sickRoll(s, night.heat);
+      s.supplies = Math.max(
+        0,
+        Math.min(100, s.supplies - SUPPLIES.night + (night.spot === 'truckstop' ? SUPPLIES.truckstop : 0)),
+      );
+    }
     s.day += 1;
     // A spot out of town is a drive back in the morning.
     s.min = DAY.wakeMin + (night?.drive ?? 0);
@@ -504,7 +520,9 @@ export function act(s0: GameState, a: Action): Result {
           (hungry ? BODY.hungryNight : 0) +
           life.energy +
           (night?.energy ?? 0);
-    s.energy = clamp100(s.energy + rest);
+    if (fell) s.sick = { kind: fell.kind, until: s.day + fell.days };
+    // Sick, you get less back from a night.
+    s.energy = clamp100(s.energy + rest + (isSick(s) ? SICK.energy : 0));
     s.skin = clamp100(s.skin + BODY.sleepSkin + life.skin);
     if (where !== 'away') s.fed = clamp100(s.fed - (where === 'ledge' ? WALL.bivy.fed : BODY.nightFed));
     // The day's load folds into the averages; a deload sheds some of the acute.
@@ -590,6 +608,16 @@ export function act(s0: GameState, a: Action): Result {
     if (charged && s.van.battery <= 0)
       line('The van won’t turn over. The battery’s flat. A jump gets you across town, and no further.');
     if (s.injury && s.day >= s.injury.until) heal();
+    if (fell)
+      line(
+        `You wake up with ${SICK_NAME[fell.kind]}. ${fell.kind === 'toothache' ? 'It won’t pass on its own: the clinic.' : 'A few days of feeling it.'}`,
+      );
+    else if (s.sick && s.sick.kind !== 'toothache' && s.day >= s.sick.until) {
+      line('You wake up feeling human again.');
+      s.sick = null;
+    }
+    if (night && s.supplies < SUPPLIES.low && s.supplies + SUPPLIES.night >= SUPPLIES.low)
+      line('The water jugs are nearly dry and you could use a shower. The lake, the market or the gym.');
     if (ended % 7 === 0) {
       const bills = weeklyBills(s);
       s.cash -= bills;
@@ -729,6 +757,18 @@ export function act(s0: GameState, a: Action): Result {
     if (d.meal) {
       s.meals.push(d.meal);
       if (s.meals.length > FOOD.same) s.meals.splice(0, s.meals.length - FOOD.same);
+    }
+    // Supplies (Phase 22.4c).
+    if (d.supplies) s.supplies = Math.min(100, s.supplies + d.supplies);
+    // A doctor (Phase 22.4c): half of what's left of a sickness, and a toothache seen to.
+    if (d.doctor && s.sick) {
+      if (s.sick.kind === 'toothache' || s.sick.until - s.day <= 1) {
+        s.sick = null;
+        line('Seen to. You feel better before you’re back at the van.');
+      } else {
+        s.sick = { ...s.sick, until: s.day + Math.ceil((s.sick.until - s.day) / 2) };
+        line('Rest, fluids, and something from the pharmacy. It’ll pass sooner.');
+      }
     }
     // The clinic (Phase 22.4a): physio takes a day off, cortisone half of what's left.
     if (d.clinic && s.injury) {

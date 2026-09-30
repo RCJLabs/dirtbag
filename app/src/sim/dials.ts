@@ -384,6 +384,33 @@ export const SCARS = {
 };
 export const FEAR = { windows: 0.9 };
 
+// Phase 22.4c: supplies and sickness [proposed]. One gauge for water and washing, 0 to 100
+// (propane stays the heater's own, by tank). It runs down every night at the van and comes
+// back at the lake, the market, the gym's shower and the truck stop's.
+export const SUPPLIES = {
+  start: 80,
+  night: 8,
+  low: 25,
+  lake: 40,
+  market: { price: 4, add: 30 },
+  shower: 30,
+  truckstop: 20,
+};
+// Sickness: a seeded chance every night from what the night and the week were like. A cold
+// or a bug lasts a few days: less back each night and every window tighter. A toothache
+// (low supplies) lasts until the clinic sees it. A doctor halves what's left.
+export const SICK = {
+  base: 0.01,
+  winter: 0.03,
+  supplies: 0.04,
+  hungry: 0.04,
+  same: 0.03,
+  days: [2, 4] as [number, number],
+  energy: -20,
+  windows: 0.85,
+  doctor: { price: 30, min: 60 },
+};
+
 export const INJURY = {
   days: [
     [2, 4],

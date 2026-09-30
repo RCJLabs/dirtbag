@@ -15,7 +15,7 @@ import { EXPEDITIONS } from './content/expeditions';
 import { INGREDIENTS, MEAL_NAME } from './content/food';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 15;
+export const SAVE_VERSION = 16;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -130,6 +130,11 @@ export const MIGRATIONS: Record<number, Migration> = {
   14: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, scars: [], flare: null, fear: [] };
+  },
+  // v15 -> v16 (Phase 22.4c): supplies at a new climber's, and well.
+  15: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, supplies: 80, sick: null };
   },
 };
 
@@ -285,6 +290,12 @@ export function validate(x: unknown): string[] {
     'flare',
   );
   need(isStrs(x.fear) && x.fear.every((f) => STYLES.includes(f)), 'fear');
+  need(isNum(x.supplies) && x.supplies >= 0 && x.supplies <= 100, 'supplies');
+  const sk = x.sick;
+  need(
+    sk === null || (isObj(sk) && ['cold', 'bug', 'toothache'].includes(sk.kind as string) && isInt(sk.until)),
+    'sick',
+  );
   need(isInt(x.lotNights) && x.lotNights >= 0, 'lotNights');
   need(isInt(x.driveway) && x.driveway >= 0, 'driveway');
   const pct = (v: unknown) => isNum(v) && v >= 0 && v <= 100;

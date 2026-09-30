@@ -1774,6 +1774,20 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - Every harness target passes (injuries in the first month: 9%).
 - **Carried:** no bot aims to send its feared style first. A player would.
 
+**Status (30 Sep 2026): 22.4c built: supplies and sickness.** Save v16, 0.972.0.
+- **Supplies** are one gauge for water and washing, 0 to 100 [proposed numbers].
+  - It starts at 80 and drops 8 each night at the van.
+  - It comes back at the lake (free, +40, not in winter), the market ($4 water and a wash kit, +30), the gym's shower (with a pass, +30) and the truck stop (+20 a night).
+  - Tonight shows it, and a line warns when it's low.
+  - **Where this differs from the plan:** propane stays the heater's, by the tank (22.2c), rather than folding into the gauge. The heater's already tuned around tanks, and one gauge driving both the cold and hygiene muddied the Tonight line.
+- **Sickness** is a seeded chance each night at the van.
+  - The odds: 1% base, +3% on a winter night without heat, +4% on low supplies, +4% going to bed hungry, +3% for four of the same meal.
+  - A cold or a stomach bug lasts 2 to 4 days: 20 less energy back each night, and every window 15% tighter.
+  - A toothache (only from low supplies) stays until a doctor sees it. A doctor at the clinic ($30 on your plan's share) halves what's left of a cold or a bug.
+  - Tonight gives the odds when they're 5% or more.
+- **The bots** buy water when supplies fall under 40 and see the doctor for a toothache. A balanced bot is sick about twice in 56 days, with no toothaches. Every harness target passes.
+- **Carried:** teeth are the toothache. v0.956's separate tooth meter isn't back, and doesn't need to be.
+
 ---
 
 ### Phase 24 — Expeditions as trips
@@ -2163,3 +2177,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Phase 22.4a built: insurance plans (none, catastrophic, full cover) replace the flat premium and set the clinic's bills; the Clinic in Old Town has physio (a day off an injury, once a day) and cortisone (half off, and the next injury in three weeks a tier worse). Save v14. 0.970.0.
 - 2026-09-30 — Phase 22.4b built: old injuries (a healed tier-2+ injury may leave a mark: more risk there, and flares physio settles) and fear (after a landing, a deck or the worst injury, that style's windows tighter until you send one). Save v15. 0.971.0.
 - 2026-09-30 — Fixes from Evan's phone: the van's lit windows spilled past the cab's roof (now clipped to the body), and a tap on the van while standing by it opened its sheet and let the same tap's click pick a row (it cooked ramen). A sheet now ignores a click whose press came before it opened; an e2e step taps the van on a touch screen. 0.971.1.
+- 2026-09-30 — Phase 22.4c built: one supplies gauge (water and washing) refilled at the lake, the market, the gym and the truck stop; a seeded nightly chance of a cold, a bug or a toothache from the cold, low supplies, hunger and a samey diet; a doctor at the clinic. Save v16. 0.972.0.

@@ -103,6 +103,7 @@ import {
   flaring,
   type Mark,
   type Style,
+  SUPPLIES,
 } from '../sim';
 import type { Game, JournalPage, SheetId, Ui } from '../game/game';
 import { legacyFile, saveLegacyFile } from '../game/legacy';
@@ -770,6 +771,20 @@ function TonightList({ t }: { t: Tonight }) {
                 ? ` Winter: ${t.night.cold} energy of that is the cold.`
                 : ''}
             {t.hungry ? ` You'd go to bed hungry, and it costs you ${BODY.hungryNight} of that.` : ''}
+          </small>
+        </li>
+        <li id="supplies">
+          <b>Supplies</b>
+          <span className="sky">{Math.round(t.supplies)}</span>
+          <small>
+            {t.sick
+              ? `You have ${t.sick}. `
+              : t.sickOdds >= 0.05
+                ? `A ${Math.round(t.sickOdds * 100)}% chance of waking sick. `
+                : ''}
+            {t.supplies < SUPPLIES.low
+              ? 'Water and washing by morning: low. The lake, the market or the gym.'
+              : 'Water and washing by morning.'}
           </small>
         </li>
         {t.same && (

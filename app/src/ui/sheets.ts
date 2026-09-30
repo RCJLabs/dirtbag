@@ -191,7 +191,7 @@ function pantryNote(s: GameState): string {
     .filter(([, n]) => n > 0)
     .map(([id, n]) => `${n} ${INGREDIENTS[id]!.name.toLowerCase()}`);
   const stove = s.gear.kitchen ? '' : ' A camp kitchen from the garage would cook it.';
-  return `${have.length ? have.join(', ') : 'Empty'}. The market’s in Midtown.${stove}`;
+  return `${have.length ? have.join(', ') : 'Empty'}. Supplies ${Math.round(s.supplies)}. The market’s in Midtown.${stove}`;
 }
 
 // Your next shift, from the van: where the week's schedule and how you live are.
@@ -371,7 +371,13 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           ? "Your hand's stamped. Climb till ten."
           : "The kid at the desk doesn't look up. The set changes every seven days.",
         close: true,
-        rows: [actRow(game, s, 'gym.pass'), actRow(game, s, 'gym.set'), trainRow(game, s), mapRow(game)],
+        rows: [
+          actRow(game, s, 'gym.pass'),
+          actRow(game, s, 'gym.set'),
+          actRow(game, s, 'gym.shower'),
+          trainRow(game, s),
+          mapRow(game),
+        ],
       };
 
     case 'board': {
