@@ -85,6 +85,11 @@ export interface GameState {
   // shot (0 for never): the next injury inside three weeks lands a tier worse.
   insurance: 'none' | 'catastrophic' | 'full';
   jab: number;
+  // Phase 22.4b. Where old injuries left a mark (content/injuries.ts Mark); a flare of one,
+  // and the day it passes; and the styles a bad fall left you afraid of.
+  scars: string[];
+  flare: { area: string; until: number } | null;
+  fear: string[];
   meals: string[];
   fueled: number;
   breakdown: { part: 'tires' | 'engine'; to: string; rest: number; bodged: boolean } | null;

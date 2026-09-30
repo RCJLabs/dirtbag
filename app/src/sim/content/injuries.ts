@@ -4,6 +4,8 @@
 import type { Style } from '../climber';
 
 export type Area = 'fingers' | 'shoulder' | 'forearm' | 'leg';
+// Where an injury can leave a mark: the areas, and an ankle from a landing (Phase 22.4b).
+export type Mark = Area | 'ankle';
 
 // Where each style is hardest on you.
 export const AREA: Record<Style, Area> = {
@@ -55,3 +57,28 @@ export const TRAIN_HURT_LINE: [string, string, string] = [
 export const HEALED_LINE = 'Your {kind} feels normal again. Ease back in.';
 export const FIRST_FREE_LINE = 'The clinic waves off the bill. First one’s on the house, apparently.';
 export const CLINIC_LINE = 'The clinic takes {cost}. Insurance covers the rest, eventually.';
+
+// Where an injury was, from its name (Phase 22.4b): an area's, or a landing's ankle.
+export function markOf(kind: string): Mark | null {
+  if (LANDING_NAME.includes(kind)) return 'ankle';
+  for (const [a, names] of Object.entries(INJURY_NAME)) if (names.includes(kind)) return a as Area;
+  return null;
+}
+
+export const MARK_NAME: Record<Mark, string> = {
+  fingers: 'fingers',
+  shoulder: 'shoulder',
+  forearm: 'elbow',
+  leg: 'knee',
+  ankle: 'ankle',
+};
+
+// A line's style, said (Phase 22.4b's fear lines, and the beta sheet).
+export const STYLE_NAME: Record<Style, string> = {
+  crimp: 'Crimpy',
+  power: 'Powerful',
+  endurance: 'Pumpy',
+  technical: 'Technical',
+  dyno: 'Dynamic',
+  crack: 'Crack',
+};

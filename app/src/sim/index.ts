@@ -132,6 +132,8 @@ export {
 } from './dials';
 export type { Plan } from './dials';
 export { weeklyBills, clinicBill, carePrice, jabbed } from './clinic';
+export { flaring, scarred, historyWindows } from './scars';
+export { MARK_NAME, STYLE_NAME, type Mark } from './content/injuries';
 export { INGREDIENTS, RECIPES, MEAL_NAME } from './content/food';
 export type { SpotId } from './dials';
 export { SPOT_IDS, nightAt, spotBlocked, ticketOdds, drivewayHost, type Night } from './spots';
