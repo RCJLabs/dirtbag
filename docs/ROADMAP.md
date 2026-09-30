@@ -1733,6 +1733,19 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
   - The lake (fishing, a swim, water) is 22.3b.
   - The page is 251.6 of 300 KB.
 
+**Status (30 Sep 2026): 22.3b built: the lake. 22.3 is done, but for the cooking beat.** 0.969.0. No save change.
+- **The Lake**, the map's dimmed pin since R1, opens: a card-only place west of the Lot, down a dirt track past the creek.
+- **Fishing:** two hours, once a day, and food, not cash [proposed].
+  - Up to three trout, each +15 food, cooked on the shore.
+  - Each fish's chance goes by season (half in summer and fall, 15% in winter) and by the hour: half again before 9 and from 5.
+  - The catch is rolled when you cast, seeded by the day and the minute, so a reload can't reroll it.
+  - At best it's a diner meal for two hours: no hustle out-earns a shift (Phase 22's criterion 2, tested).
+- **A swim:** 45 minutes, +8 energy, once a day, not in winter.
+- **Carried:**
+  - Water at the lake waits for 22.4's supplies gauge.
+  - The bots don't fish.
+  - There's no e2e step at the lake: fishing and the swim are acts on a card, as at the diner.
+
 ---
 
 ### Phase 24 — Expeditions as trips
@@ -2118,3 +2131,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Evan's call: the size budget goes from 250 KB to 300 KB. Phase 22.2c built: six van upgrades at the garage (bed, curtains, tool kit, tune-up, heater, insulation), none of them income; winter nights cost energy unless the heater's burning propane, with a warning before. 22.2 done. 0.967.0.
 - 2026-09-30 — Evan's call: the heater costs $45 (from $150), within reach before the first winter; the bots buy it first. 0.967.1.
 - 2026-09-30 — Phase 22.3a built: the Market, a camp kitchen and four recipes (two fuel you: wider windows for the day, never a skill), the last four meals counted for variety, coffee crashing past two, and a hungry bedtime eating the pantry first. Save v13. 0.968.0.
+- 2026-09-30 — Phase 22.3b built: the lake opens, with fishing (food, not cash, seeded by season and hour, once a day) and a swim. 0.969.0.

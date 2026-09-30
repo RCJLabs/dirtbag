@@ -3,7 +3,7 @@
 // unoutlined, at the hour you'd get there: lit windows after dark, and rain when it's
 // raining in the valley. Whoever works there is at the window.
 
-import { conditionsAt, isNight, isWeekend, type GameState } from '../../sim';
+import { conditionsAt, isNight, isWeekend, seasonOf, type GameState } from '../../sim';
 import { lin, rad, rr, type G } from '../kit/geom';
 import { drawRain, label } from './fx';
 import { drawPerson, LOOK, type Look, type Pose } from './people';
@@ -540,4 +540,53 @@ const market: Front = (g, s, w, h) => {
   if (wet(s, 'market')) drawRain(g, w, h, 0, true);
 };
 
-export const FRONTS: Record<string, Front> = { diner, cafe, shop, warehouse, garage, market };
+// The Lake (Phase 22.3b): still water under the far ridges, reeds at the edge, a half-sunk
+// dock and a lawn chair on it. Frost on the reeds in winter.
+const lake: Front = (g, s, w, h) => {
+  const night = isNight(s.min);
+  const P = valley(night ? 'night' : 'morning');
+  g.fillStyle = lin(g, 0, 0, 0, h, P.sky);
+  g.fillRect(0, 0, w, h);
+  g.fillStyle = P.far;
+  g.beginPath();
+  ridgeLine(w, h * 0.55, h * 0.22, 7, 0.01, true).forEach(([x, y], i) =>
+    i ? g.lineTo(x, y) : g.moveTo(x, y),
+  );
+  g.lineTo(w + 12, h);
+  g.lineTo(-12, h);
+  g.closePath();
+  g.fill();
+  const shore = Math.round(h * 0.62);
+  g.fillStyle = night ? '#1E3440' : '#5E8FA0';
+  g.fillRect(0, shore, w, h - shore);
+  g.fillStyle = night ? 'rgba(255,255,255,.08)' : 'rgba(255,255,255,.22)';
+  for (let i = 0; i < 6; i++) g.fillRect(w * (0.1 + i * 0.14), shore + 10 + (i % 3) * 9, w * 0.08, 1.5);
+  // The dock, and the chair on it.
+  const dx = Math.round(w * 0.55);
+  g.fillStyle = '#6A4A36';
+  g.fillRect(dx, shore + 18, w * 0.3, 5);
+  for (let i = 0; i < 4; i++) g.fillRect(dx + 6 + i * (w * 0.07), shore + 23, 3, 12);
+  g.strokeStyle = '#C9523F';
+  g.lineWidth = 2;
+  g.beginPath();
+  g.moveTo(dx + w * 0.18, shore + 18);
+  g.lineTo(dx + w * 0.2, shore + 6);
+  g.lineTo(dx + w * 0.24, shore + 6);
+  g.moveTo(dx + w * 0.2, shore + 12);
+  g.lineTo(dx + w * 0.25, shore + 12);
+  g.lineTo(dx + w * 0.26, shore + 18);
+  g.stroke();
+  // Reeds along the near edge.
+  const winter = seasonOf(s.day) === 'winter';
+  g.strokeStyle = winter ? '#C8D4D8' : '#4E6B3A';
+  g.lineWidth = 1.5;
+  for (let x = 6; x < w * 0.45; x += 5) {
+    g.beginPath();
+    g.moveTo(x, h);
+    g.lineTo(x + ((x * 7) % 5) - 2, h - 14 - ((x * 13) % 11));
+    g.stroke();
+  }
+  if (wet(s, 'lake')) drawRain(g, w, h, 0, true);
+};
+
+export const FRONTS: Record<string, Front> = { diner, cafe, shop, warehouse, garage, market, lake };

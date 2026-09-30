@@ -12,7 +12,7 @@
 
 import type { Need } from '../cond';
 import { INGREDIENTS, RECIPES } from './food';
-import { DAY, DOG, KIT, MONEY, UPGRADE, VAN, WINTER, type VanPart } from '../dials';
+import { DAY, DOG, KIT, LAKE, MONEY, UPGRADE, VAN, WINTER, type VanPart } from '../dials';
 import { DOG_LINES, DOG_OFFER } from './dog';
 import { clockShort } from '../format';
 import type { Delta, Skills } from '../types';
@@ -111,6 +111,8 @@ export interface ActDef {
   buys?: string;
   meal?: string;
   coffee?: true;
+  // Phase 22.3b: a line in the lake; the catch is food (lake.ts).
+  fish?: true;
   // A shift at a job (content/jobs.ts), counting this many toward promotion. Its pay is
   // `cost.cash` at the first rank, plus the rank's raise for each shift.
   job?: { id: string; shifts: number };
@@ -384,6 +386,15 @@ export const PLACES: Record<string, PlaceDef> = {
     here: 'Pallets to the roof, and a forklift backing up somewhere, beeping.',
     acts: ['warehouse.shift'],
   },
+  // Phase 22.3b [proposed]: the lake west of the Lot, down a dirt track past the creek.
+  lake: {
+    name: 'The Lake',
+    scene: null,
+    ambience: { wind: 0.3, birds: 0.6, creek: 0.5 },
+    away: 'West of the Lot, past the creek. Fish at dawn and dusk, and a swim when it’s warm.',
+    here: 'Still water, a half-sunk dock, and somebody’s lawn chair nobody’s claimed in years.',
+    acts: ['lake.fish', 'lake.swim'],
+  },
   // Phase 22.3 [proposed]: the market in Midtown, across from the café. Groceries for the
   // camp kitchen.
   market: {
@@ -480,6 +491,28 @@ export const ACTS: Record<string, ActDef> = {
       },
     ]),
   ),
+  // The lake (Phase 22.3b): a line in the water, and a swim.
+  'lake.fish': {
+    label: 'Fish for a couple of hours',
+    cost: { min: 120, energy: -6 },
+    needs: [
+      { notToday: 'fished', why: 'You’ve fished today. The fish have noticed.' },
+      { energy: 6, why: 'Too tired to hold a rod.' },
+    ],
+    note: 'Whatever bites, you cook on the shore. Dawn and dusk are best, winter’s slim.',
+    sets: ['fished'],
+    fish: true,
+  },
+  'lake.swim': {
+    label: 'Go for a swim',
+    cost: { min: LAKE.swim.min, energy: LAKE.swim.energy },
+    needs: [
+      { notToday: 'swam', why: 'Once is plenty. Your fingers are prunes.' },
+      { notSeason: 'winter', why: 'There’s ice along the edges. Not today.' },
+    ],
+    sets: ['swam'],
+    says: 'Cold enough to shout. You come out a different person, briefly.',
+  },
   'lot.cook': {
     label: 'Cook ramen',
     cost: { min: 20, cash: -2, fed: 25, energy: 6 },
@@ -834,6 +867,8 @@ export const ROADS: RoadDef[] = [
   // The warehouse: on the flats below Midtown, between the Lot and the shop.
   { a: 'warehouse', b: 'lot', min: 10, cash: 1 },
   { a: 'warehouse', b: 'shop', min: 6, cash: 1 },
+  // The lake: a dirt track west from the Lot, past the creek.
+  { a: 'lake', b: 'lot', min: 12, cash: 1 },
   // The market: across from the café, a block from Send City.
   { a: 'market', b: 'cafe', min: 3, cash: 0 },
   { a: 'market', b: 'gym', min: 4, cash: 0 },

@@ -527,6 +527,8 @@ export const MAP_PINS: Record<string, Pin> = {
   shop: { x: 240, y: 540, side: 1, kind: 'town' },
   // The Warehouse: on the flats by the river, down a short spur west of the highway.
   warehouse: { x: 190, y: 572, side: -1, kind: 'town' },
+  // The Lake: west of the Lot, on its east shore, past the creek (Phase 22.3b).
+  lake: { x: 108, y: 604, side: 1, kind: 'camp', dy: -12 },
   // The Market: Midtown, across the street from the café.
   market: { x: 318, y: 446, side: 1, kind: 'town' },
   // The Garage: east of the highway past the gear shop, down a short street.
@@ -550,7 +552,8 @@ export const MAP_PINS: Record<string, Pin> = {
   // The Training Center: Midtown, west of the highway, down a side street between blocks.
   center: { x: 172, y: 402, side: -1, kind: 'town' },
 };
-export const DIM_PINS: [number, number][] = [[78, 612]];
+// The lake was dimmed until Phase 22.3b opened it; nothing is dimmed now.
+export const DIM_PINS: [number, number][] = [];
 
 // The valley on the screen: scaled a little, about the middle, so its pins (The Big Stone
 // at the top, the Lot at the bottom) sit between the HUD and the caption above and the goal

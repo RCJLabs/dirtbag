@@ -53,6 +53,7 @@ import {
   CROWD,
   FOOD,
   FREESOLO,
+  LAKE,
   SPEED,
   DAY,
   DOG,
@@ -76,6 +77,7 @@ import { EXPEDITIONS } from './content/expeditions';
 import { pitchOdds, pitchRoll, stormOn, wallPay } from './expeditions';
 import { canAsk, queueMin, sprayable, sprayedOn } from './crowds';
 import { soloed } from './solo';
+import { fishCatch } from './lake';
 import { drivewayHost, nightAt, spotBlocked, ticketRoll } from './spots';
 import { SPOT_LINE, SPOT_NAME } from './content/spots';
 import { bodgeHolds, breakdownRoll, friendFor, gasFor, PART_NAME, repairCost, unsafePart } from './van';
@@ -672,6 +674,8 @@ export function act(s0: GameState, a: Action): Result {
       return null;
     }
     const cost = actCost(s, d);
+    // The lake's catch is rolled when you cast, at the hour you cast (Phase 22.3b).
+    const caught = d.fish ? fishCatch(s) : 0;
     spend(cost);
     for (const f of d.sets ?? []) if (!s.today.includes(f)) s.today.push(f);
     if (d.trains) train(d.trains);
@@ -690,6 +694,16 @@ export function act(s0: GameState, a: Action): Result {
     if (d.meal) {
       s.meals.push(d.meal);
       if (s.meals.length > FOOD.same) s.meals.splice(0, s.meals.length - FOOD.same);
+    }
+    // The lake: whatever bites, cooked on the shore.
+    if (d.fish) {
+      const n = caught;
+      s.fed = clamp100(s.fed + n * LAKE.fish);
+      line(
+        n === 0
+          ? 'Two hours, one nibble, no fish. The lake wins this round.'
+          : `${n === 1 ? 'A trout' : `${n} trout`}, cooked on a flat rock by the water. +${n * LAKE.fish} food.`,
+      );
     }
     if (d.coffee) {
       if (coffeesToday(s) >= FOOD.coffees)

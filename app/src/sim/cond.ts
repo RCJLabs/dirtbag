@@ -9,7 +9,7 @@ import { repairCost } from './van';
 import { clockShort, fill } from './format';
 import { benchedUntil, isPosted } from './jobs';
 import type { GameState } from './types';
-import { conditionsAt, skyOn, type Sky } from './weather';
+import { conditionsAt, seasonOf, skyOn, type Season, type Sky } from './weather';
 
 export interface Cond {
   night?: boolean; // true: only at night; false: only by day
@@ -50,6 +50,7 @@ export interface Cond {
   worn?: VanPart; // that part of the van could use the garage (under 95)
   payVan?: VanPart; // the card covers the garage's bill for that part
   stock?: string; // a serving of that ingredient in the pantry (Phase 22.3)
+  notSeason?: Season; // it isn't this season (the lake's swim, not in winter)
 }
 
 // The last two days of every seven are the weekend: the week's bills land on its last night.
@@ -135,6 +136,7 @@ export function holds(s: GameState, c: Cond): boolean {
   if (c.worn !== undefined && !(s.van[c.worn] < 95)) return false;
   if (c.payVan !== undefined && headroom(s) < repairCost(s, c.payVan)) return false;
   if (c.stock !== undefined && !((s.pantry[c.stock] ?? 0) > 0)) return false;
+  if (c.notSeason !== undefined && seasonOf(s.day) === c.notSeason) return false;
   return true;
 }
 
