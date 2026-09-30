@@ -5,6 +5,7 @@ import { needFor } from './climber';
 import { caveSet, routeById, routesAt } from './content/gym';
 import { CLIMB } from './dials';
 import { act, goBlocked, newGame } from './game';
+import { postedIn } from './jobs';
 import { trainBlocked } from './sessions';
 import type { GameState } from './types';
 
@@ -12,6 +13,9 @@ const at = (grade: number, over: Partial<GameState> = {}): GameState => {
   const k = needFor(grade);
   return {
     ...newGame('cave'),
+    // A day coaching's posted, signed up for.
+    day: postedIn('cave', 'coach', 1)[0]!,
+    shifts: [{ job: 'coach', day: postedIn('cave', 'coach', 1)[0]! }],
     at: 'cave',
     min: 10 * 60,
     today: ['warm'],

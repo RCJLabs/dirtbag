@@ -77,6 +77,9 @@ import {
   speedBlocked,
   speedGains,
   runsToday,
+  signedUp,
+  dayName,
+  JOBS,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import type { Game, SheetId } from '../game/game';
@@ -139,7 +142,9 @@ function actRow(game: Game, s: GameState, id: string): Row {
   const a = ACTS[id]!;
   const why = unmet(s, a.needs);
   const cost = actCost(s, a);
-  let note = [bodyNote(cost), a.note && fill(a.note, TEXT_VALUES), a.job && jobNote(s, a.job.id)]
+  // A shift you didn't sign up for is a walk-in: it pays, and that's all.
+  const walkIn = a.job && !signedUp(s, a.job.id, s.day) ? 'A walk-in: it won’t count toward a raise' : '';
+  let note = [bodyNote(cost), a.note && fill(a.note, TEXT_VALUES), a.job && jobNote(s, a.job.id), walkIn]
     .filter(Boolean)
     .join('. ');
   if (a.sleep && !why) {
@@ -163,6 +168,15 @@ function trainRow(game: Game, s: GameState): Row {
     note: board ? `${blockLine(s)} A hangboard would put sessions here; prehab needs nothing.` : blockLine(s),
     run: () => game.openSheet({ k: 'train' }),
   };
+}
+
+// Your next shift, from the van: where the week's schedule and how you live are.
+function weekNote(s: GameState): string {
+  const next = s.shifts[0];
+  const shift = next
+    ? `Next shift: ${JOBS[next.job]!.name}, ${next.day === s.day ? 'today' : dayName(next.day)}.`
+    : 'No shifts signed up for.';
+  return `${shift} The schedule, and how you live.`;
 }
 
 // Where you stand at a job: your rank, and what the next one takes.
@@ -249,6 +263,11 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           actRow(game, s, 'lot.cook'),
           ...(isNight(s.min) ? [] : [actRow(game, s, 'lot.rest')]),
           trainRow(game, s),
+          {
+            label: 'Your week',
+            note: weekNote(s),
+            run: () => game.openSheet({ k: 'week' }),
+          },
           {
             label: 'Expeditions',
             note: 'Big walls a long way from here, bought in cash and climbed a day at a time.',

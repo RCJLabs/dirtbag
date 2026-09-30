@@ -3,7 +3,8 @@
 // sleeping are the ones sleep will use. Pure: nothing here changes the state.
 import { projected, ratio, zone, daysOff, type Zone } from './body';
 import { ACTS } from './content/places';
-import { BODY, MONEY } from './dials';
+import { BODY, LIFESTYLE, MONEY, type Lifestyle } from './dials';
+import { livingTonight } from './jobs';
 import { headroom } from './cond';
 import { conditions, type Sky } from './weather';
 import type { GameState } from './types';
@@ -21,6 +22,11 @@ export interface Tonight {
   // Energy back by morning, after a rough or hungry night.
   energy: number;
   hungry: boolean;
+  // How you live tonight (Phase 22.1): the tier you chose, what it costs and gives back, and
+  // whether the card's too short for it, so it's a dirtbag's night instead.
+  living: { tier: Lifestyle; cost: number; energy: number; skin: number; skimped: boolean };
+  // Skin back by morning.
+  skin: number;
   // The week's bills: due tonight (billsIn 0) or in so many nights.
   bills: number;
   billsIn: number;
@@ -40,13 +46,16 @@ export function tonight(s: GameState): Tonight {
   const hungry = s.fed < BODY.hungryBelow;
   const billsIn = (7 - (s.day % 7)) % 7;
   const bills = MONEY.registration + MONEY.insurance;
-  const cash = s.cash - spot - (billsIn === 0 ? bills : 0);
+  const life = rough ? LIFESTYLE.dirtbag : livingTonight(s);
+  const cash = s.cash - spot - life.cost - (billsIn === 0 ? bills : 0);
   const p = projected(s.load);
   return {
     spot,
     rough,
-    energy: (rough ? BODY.roughEnergy : BODY.sleepEnergy) - (hungry ? BODY.hungryNight : 0),
+    energy: (rough ? BODY.roughEnergy : BODY.sleepEnergy) - (hungry ? BODY.hungryNight : 0) + life.energy,
     hungry,
+    living: { tier: s.lifestyle, ...life, skimped: !rough && life !== LIFESTYLE[s.lifestyle] },
+    skin: BODY.sleepSkin + life.skin,
     bills,
     billsIn,
     cash,

@@ -4,6 +4,9 @@
 
 import { gradeOf } from './climber';
 import { JOBS } from './content/jobs';
+import { WEEK_DAYS, weekOf } from './content/gym';
+import { LIFESTYLE, MONEY, WORK, type Lifestyle } from './dials';
+import { Rng } from './rng';
 import type { GameState } from './types';
 
 export const shiftsAt = (s: GameState, job: string): number => s.jobs[job] ?? 0;
@@ -38,4 +41,57 @@ export function nextRank(
     shifts: Math.max(0, j.at[r + 1]! - shiftsAt(s, job)),
     grade: gradeOf(s.climber.skills) < g ? g : null,
   };
+}
+
+// ---- Phase 22.1: the week's schedule ----
+
+// The days a job posts a shift in a week (weekOf's numbering), in order. A job that posts
+// every day has no draw to make; the rest come off the world's seed, by job and week, so
+// next week's are already up and a reload never moves them.
+export function postedIn(seed: string, job: string, week: number): number[] {
+  const j = JOBS[job];
+  const days = Array.from({ length: WEEK_DAYS }, (_, i) => (week - 1) * WEEK_DAYS + i + 1);
+  if (!j || !j.posts || j.posts >= WEEK_DAYS) return days;
+  const r = Rng.fromStream(seed, 'worldgen').derive(`shifts-${job}-w${week}`);
+  for (let i = days.length - 1; i > 0; i--) {
+    const k = r.int(0, i);
+    [days[i], days[k]] = [days[k]!, days[i]!];
+  }
+  return days.slice(0, j.posts).sort((a, b) => a - b);
+}
+
+export const isPosted = (seed: string, job: string, day: number): boolean =>
+  postedIn(seed, job, weekOf(day)).includes(day);
+
+// The day you're back on a job's schedule after it let you go, or null if you're on it.
+export const benchedUntil = (s: GameState, job: string): number | null => {
+  const d = s.benched[job];
+  return d !== undefined && s.day < d ? d : null;
+};
+
+export const signedUp = (s: GameState, job: string, day: number): boolean =>
+  s.shifts.some((x) => x.job === job && x.day === day);
+
+// Why you can't sign up for a job's shift that day, or null when you can. `on: false`
+// asks about dropping one instead.
+export function signupBlocked(s: GameState, job: string, day: number, on = true): string | null {
+  const j = JOBS[job];
+  if (!j) return 'No such job.';
+  if (!on)
+    return signedUp(s, job, day) ? (day > s.day ? null : "It's today. Go, or don't.") : 'Not signed up.';
+  if (day <= s.day) return "Today's shifts are walk-ins.";
+  if (day > s.day + WORK.ahead) return 'Not posted yet.';
+  if ((j.grade?.[0] ?? 0) > gradeOf(s.climber.skills)) return `They want V${j.grade![0]}.`;
+  if (!isPosted(s.seed, job, day)) return 'No shift posted.';
+  const back = benchedUntil(s, job);
+  if (back !== null && day < back) return `Off the schedule till day ${back}.`;
+  if (s.shifts.some((x) => x.day === day)) return 'You’ve a shift that day.';
+  return null;
+}
+
+// What tonight's living costs and gives back: how you live, if the card takes it after the
+// van spot; a dirtbag's night if it won't.
+export function livingTonight(s: GameState): (typeof LIFESTYLE)[Lifestyle] {
+  const l = LIFESTYLE[s.lifestyle];
+  return s.cash - MONEY.vanSpot + MONEY.cardLimit >= l.cost ? l : LIFESTYLE.dirtbag;
 }

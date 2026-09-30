@@ -357,4 +357,77 @@ const shop: Front = (g, s, w, h) => {
   if (wet(s, 'shop')) drawRain(g, w, h, 0, true);
 };
 
-export const FRONTS: Record<string, Front> = { diner, cafe, shop };
+// The Warehouse (Phase 22.1): a long corrugated shed on the flats, roll-up doors at the dock,
+// one of them open on the racking inside, pallets stacked by the wall and a forklift out
+// front. The dock lights burn from before dawn.
+const warehouse: Front = (g, s, w, h) => {
+  const night = isNight(s.min);
+  const kerb = street(g, valley(night ? 'night' : 'morning'), w, h, night);
+  const x0 = Math.round(w * 0.08);
+  const x1 = Math.round(w * 0.86);
+  const top = Math.round(h * 0.22);
+  const bw = x1 - x0;
+  // The shed: pale steel with its ribs, and a low-pitched roof.
+  g.fillStyle = night ? '#4A5058' : '#AEB4B4';
+  g.fillRect(x0, top, bw, kerb - top);
+  g.fillStyle = night ? 'rgba(0,0,0,.2)' : 'rgba(60,70,75,.18)';
+  for (let x = x0 + 4; x < x1; x += 6) g.fillRect(x, top, 1.5, kerb - top);
+  g.fillStyle = night ? '#33373E' : '#7D8686';
+  g.beginPath();
+  g.moveTo(x0 - 6, top + 2);
+  g.lineTo(x0 + bw / 2, top - 10);
+  g.lineTo(x1 + 6, top + 2);
+  g.closePath();
+  g.fill();
+  label(g, 'poster', 'DOCK', x0 + 34, top + 16, { size: 12, color: '#F3E6CB', halo: '#2B2825' });
+
+  // The dock: three roll-up doors on a raised apron. The middle one's open.
+  const apron = kerb - 8;
+  g.fillStyle = night ? '#2B2825' : '#6A625A';
+  g.fillRect(x0, apron, bw, kerb - apron);
+  const dw = Math.round(bw * 0.18);
+  const dy = top + 26;
+  for (let i = 0; i < 3; i++) {
+    const dx = x0 + Math.round(bw * 0.3) + i * (dw + 8);
+    if (i === 1) {
+      g.fillStyle = night ? LIT : '#3A3530';
+      g.fillRect(dx, dy, dw, apron - dy);
+      // Racking inside, and the shutter rolled up at the top.
+      g.fillStyle = night ? '#B08A3A' : '#C9523F';
+      for (let y = dy + 8; y < apron - 4; y += 10) g.fillRect(dx + 3, y, dw - 6, 2);
+      g.fillStyle = night ? '#5A6068' : '#8C9494';
+      g.fillRect(dx - 1, dy, dw + 2, 5);
+    } else {
+      g.fillStyle = night ? '#5A6068' : '#8C9494';
+      g.fillRect(dx, dy, dw, apron - dy);
+      g.fillStyle = 'rgba(0,0,0,.18)';
+      for (let y = dy + 4; y < apron; y += 4) g.fillRect(dx, y, dw, 1);
+    }
+    // A lamp over every door.
+    g.fillStyle = night ? LIT : '#E8D9A8';
+    g.fillRect(dx + dw / 2 - 3, dy - 6, 6, 3);
+  }
+
+  // Pallets stacked by the wall, and a forklift out front, forks down.
+  const px = x0 + 8;
+  g.fillStyle = '#B08A5A';
+  for (let i = 0; i < 4; i++) g.fillRect(px, kerb - 5 - i * 6, 26, 4);
+  g.fillStyle = '#7A5A3A';
+  for (let i = 0; i < 4; i++) g.fillRect(px + 2, kerb - 2 - i * 6, 22, 1);
+  const fx = x1 + 4;
+  g.fillStyle = '#D8B43A';
+  g.fillRect(fx, kerb - 16, 20, 11);
+  g.fillStyle = '#2B2825';
+  g.fillRect(fx + 4, kerb - 30, 2, 14);
+  g.fillRect(fx + 16, kerb - 30, 2, 14);
+  g.fillRect(fx + 4, kerb - 31, 14, 2);
+  g.fillRect(fx - 6, kerb - 26, 2, 24);
+  g.fillRect(fx - 14, kerb - 3, 12, 2);
+  g.beginPath();
+  g.arc(fx + 4, kerb - 3, 3.5, 0, Math.PI * 2);
+  g.arc(fx + 16, kerb - 3, 3.5, 0, Math.PI * 2);
+  g.fill();
+  if (wet(s, 'warehouse')) drawRain(g, w, h, 0, true);
+};
+
+export const FRONTS: Record<string, Front> = { diner, cafe, shop, warehouse };

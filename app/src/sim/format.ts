@@ -73,3 +73,8 @@ export function skillsNote(t: Partial<Skills>): string {
     .map(([k, v]) => signed(v, k))
     .join(', ');
 }
+
+// The day of the week a game day falls on. Day 1 is a Monday, so days 6 and 7 are the
+// weekend (cond.ts isWeekend) and the week's bills land on a Sunday night.
+const WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+export const dayName = (day: number): string => WEEKDAY[day % 7]!;

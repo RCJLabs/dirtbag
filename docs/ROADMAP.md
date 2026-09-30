@@ -1634,6 +1634,24 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 *Saved for later: the garden and the farm* (from v0.956, `core-loop.md` §2.6, `social.md` §2.5). The folks' farm, a drive out of the valley: a visit takes the day, helps with the chores for a little money, and brings home produce; the garden there has beds you plant and harvest on their own clocks. The audit's problem to solve first: eight hours for food dearer than the diner. It comes back when it pays in something the diner can't: family, a place to rest, seasons you can see.
 
+**Status (30 Sep 2026): 22.1 built: the week and the money.** Save v10, 0.964.0.
+- **Four jobs, posted by the week.** The café posts every day (it's the job that's always there); coaching and setting post 4 days a week, and the new Warehouse [proposed] 3, on days seeded by job and week. Tap the clock (or "Your week" in the van) for the schedule.
+- **Sign-up.** You sign up for a posted shift from tomorrow up to 7 days ahead, one a day. Only signed-up shifts count toward promotion; today's are walk-ins, which pay the same and count nothing. A signed-up shift you don't work is a warning, and the third costs the job: back to its first rank, and off its schedule for 7 days.
+- **Pay by rank** (Decision 1; the career harness prints this table now):
+
+  | Job | Shift | Start | Top |
+  |---|---|---|---|
+  | Café | 3 h | $28 ($9.33/h) | $48 ($16.00/h) |
+  | Coaching | 4 h | $34 ($8.50/h) | $68 ($17.00/h) |
+  | Setting | 4 h | $28 ($7.00/h) | $58 ($14.50/h), and it trains |
+  | Warehouse | 8 h | $52 ($6.50/h) | $103 ($12.88/h) |
+
+  The café's raise came down from $7 to $5 after the first harness run: at $7 its top rank out-earned every job an hour.
+- **How you live:** dirtbag (free), comfortable ($12 a night, +8 energy, +4 skin by morning), plush ($28, +15, +8) [proposed]. It's paid at the van after the spot, and only while the card covers it. Tonight shows it. Supplies join it in 22.4.
+- **The bots** sign up for tomorrow when they'll be short in the morning. The harness passes every season target: balanced runway 2.3, 3.5, 3.6 and 4.5 days at days 7–28, no stuck nights. The career bots reach V10 in every run (median day 161) with no warnings.
+- **A finding for Evan:** the career bots still spend their whole career at the café, to Veteran. They choose by today's pay an hour, and an assistant coach ($8.50/h) earns less than a café regular ($11.00/h), so they never start the coaching ladder. A player who looks ahead would. Whether a starting coach should pay more, or the bots should plan a ladder, is open.
+- **Carried:** warnings never expire [proposed]. Nothing cancels your shifts when you leave on an expedition; each missed one is a warning. The page size is 243.6 of 250 KB.
+
 ---
 
 ### Phase 24 — Expeditions as trips
@@ -2012,3 +2030,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Phase 21 closed by Evan's call. The wet-day gap is closed with content: The Cave sets V5 to V12, and the Training Center (v0.956's third gym) sets eight comp-style problems a week, V7 to V14, from V7. The career bots reach V10 in every run (median day 162) and never run out of things to try. 0.963.0. CURRENT MILESTONE moved to Phase 22, the life; it gets planned on the rebuild next.
 - 2026-09-30 — Phase 22 planned on the rebuild [proposed]: nine slices (the week and the money, the van, food, the body, the hustle, events, Scout's life, dreams, the games) on the audit's principles (pressure that changes, no farms, one night, Tonight shows it, seeded and written), with five decisions for Evan before their slices: pace, psyche, Scout's end, the garden and farm, and van parts.
 - 2026-09-30 — Evan's calls on Phase 22's decisions: jobs differ in pay and hours, starting low with promotion the way up (no pace target); psyche kept as a slow mood; Scout's full lifecycle kept; the garden and farm cut, their plan saved for later; three van parts.
+- 2026-09-30 — Phase 22.1 built: shifts posted by the week and signed up for ahead (only those count toward a raise; three no-shows cost the job), the Warehouse as a fourth job, pay that starts low and roughly doubles by the top rank, and how you live (dirtbag, comfortable, plush) paid nightly. Save v10. 0.964.0.

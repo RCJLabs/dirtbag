@@ -34,7 +34,7 @@ import {
   trainBlocked,
 } from './sessions';
 import { JOBS } from './content/jobs';
-import { raiseAt, rankAt, rankName, shiftsAt } from './jobs';
+import { livingTonight, raiseAt, rankAt, rankName, shiftsAt, signupBlocked } from './jobs';
 import { freshTraining, PHASE_NAME, phaseLock, taperDay, taperWait } from './training';
 import {
   ROUTES,
@@ -57,12 +57,14 @@ import {
   EXPED,
   HIGHBALL,
   INJURY,
+  LIFESTYLE,
   LOAD,
   MONEY,
   RIVAL,
   TRAD,
   TRAIN,
   WALL,
+  WORK,
 } from './dials';
 import { EXPEDITIONS } from './content/expeditions';
 import { pitchOdds, pitchRoll, stormOn, wallPay } from './expeditions';
@@ -119,6 +121,10 @@ export function newGame(seed: string): GameState {
     gear: { ...START_KIT },
     training: freshTraining(1),
     jobs: {},
+    shifts: [],
+    strikes: {},
+    benched: {},
+    lifestyle: 'dirtbag',
     wall: null,
     expedition: null,
     speed: { pb: null, runs: 0, day: 0 },
@@ -400,15 +406,19 @@ export function act(s0: GameState, a: Action): Result {
 
     const hungry = where !== 'away' && s.fed < BODY.hungryBelow;
     const rough = where === 'van' && headroom(s) < MONEY.vanSpot;
+    // How you live is paid at the van, after the spot, while the card still takes it.
+    const life = where === 'van' && !rough ? livingTonight(s) : LIFESTYLE.dirtbag;
     if (where === 'van' && !rough) s.cash -= MONEY.vanSpot;
+    const skimped = where === 'van' && !rough && life !== LIFESTYLE[s.lifestyle];
+    s.cash -= life.cost;
     s.day += 1;
     s.min = DAY.wakeMin;
     const rest =
       where === 'ledge'
         ? WALL.bivy.energy
-        : (rough ? BODY.roughEnergy : BODY.sleepEnergy) - (hungry ? BODY.hungryNight : 0);
+        : (rough ? BODY.roughEnergy : BODY.sleepEnergy) - (hungry ? BODY.hungryNight : 0) + life.energy;
     s.energy = clamp100(s.energy + rest);
-    s.skin = clamp100(s.skin + BODY.sleepSkin);
+    s.skin = clamp100(s.skin + BODY.sleepSkin + life.skin);
     if (where !== 'away') s.fed = clamp100(s.fed - (where === 'ledge' ? WALL.bivy.fed : BODY.nightFed));
     // The day's load folds into the averages; a deload sheds some of the acute.
     const p = projected(s.load);
@@ -440,7 +450,29 @@ export function act(s0: GameState, a: Action): Result {
           ? `Van spot, ${TEXT_VALUES.spot}. You're $${-s.cash} in the hole.`
           : `Van spot, ${TEXT_VALUES.spot}. Morning comes anyway.`,
       );
+    if (skimped) line('The card won’t stretch to how you like to live. A dirtbag night, then.');
     if (hungry) line('You went to bed hungry, and it shows.');
+    // Signed-up shifts you didn't work: a warning each, and the last one costs the job.
+    const missed = s.shifts.filter((x) => x.day <= ended);
+    s.shifts = s.shifts.filter((x) => x.day > ended);
+    for (const m of missed) {
+      const j = JOBS[m.job]!;
+      const n = (s.strikes[m.job] ?? 0) + 1;
+      if (n < WORK.strikes) {
+        s.strikes[m.job] = n;
+        line(
+          `You didn't show for your shift at ${PLACES[j.place]!.name}. That's a warning, ${n} of ${WORK.strikes - 1}.`,
+        );
+        continue;
+      }
+      delete s.strikes[m.job];
+      s.jobs[m.job] = 0;
+      s.benched[m.job] = ended + 1 + WORK.benchDays;
+      s.shifts = s.shifts.filter((x) => x.job !== m.job);
+      line(
+        `Another no-show, and ${PLACES[j.place]!.name} lets you go. They'll take you back from day ${s.benched[m.job]}, as ${j.ranks[0]!.toLowerCase()}.`,
+      );
+    }
     if (s.dog && where !== 'away') {
       s.dog.fed = Math.max(0, s.dog.fed - DOG.nightFed);
       if (s.dog.fed < DOG.hungryBelow)
@@ -575,12 +607,20 @@ export function act(s0: GameState, a: Action): Result {
     if (d.says) line(d.job ? `${d.says} +${money(cost.cash ?? 0)}.` : d.says);
     if (d.saysOneOf) line(ofDay(s, id, d.saysOneOf));
     if (d.job) {
-      const was = rankAt(s, d.job.id);
-      s.jobs[d.job.id] = shiftsAt(s, d.job.id) + d.job.shifts;
-      const now = rankAt(s, d.job.id);
+      // Only a shift you signed up for counts toward promotion; a walk-in just pays.
+      const job = d.job.id;
+      const booked = s.shifts.findIndex((x) => x.job === job && x.day === s.day);
+      if (booked < 0) {
+        line('A walk-in: paid, and that’s all. Signed-up shifts are the ones that count toward a raise.');
+        return null;
+      }
+      s.shifts.splice(booked, 1);
+      const was = rankAt(s, job);
+      s.jobs[job] = shiftsAt(s, job) + d.job.shifts;
+      const now = rankAt(s, job);
       if (now > was)
         line(
-          `Promoted: ${rankName(s, d.job.id)}. That's +${money(raiseAt(s, d.job.id) - JOBS[d.job.id]!.raise * was)} a shift.`,
+          `Promoted: ${rankName(s, job)}. That's +${money(raiseAt(s, job) - JOBS[job]!.raise * was)} a shift.`,
         );
     }
     return null;
@@ -710,6 +750,22 @@ export function act(s0: GameState, a: Action): Result {
           `You back off pitch ${x.pitch + 1}. ${dig ? 'You dug deep, and it still said no.' : 'Tomorrow.'}`,
         );
       expedDay();
+      break;
+    }
+
+    case 'signup': {
+      const why = signupBlocked(s, a.job, a.day, a.on);
+      if (why) return refuse(why);
+      if (a.on) {
+        s.shifts.push({ job: a.job, day: a.day });
+        s.shifts.sort((x, y) => x.day - y.day);
+      } else s.shifts = s.shifts.filter((x) => !(x.job === a.job && x.day === a.day));
+      break;
+    }
+
+    case 'lifestyle': {
+      if (!(a.tier in LIFESTYLE)) return refuse('Not a way to live.');
+      s.lifestyle = a.tier;
       break;
     }
 
