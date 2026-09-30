@@ -14,9 +14,10 @@ import { ROUTES, WALLS } from './content/routes';
 import { EXPEDITIONS } from './content/expeditions';
 import { INGREDIENTS, MEAL_NAME } from './content/food';
 import { KNOCKS } from './content/knocks';
+import { HITCHERS, STOPS } from './content/road';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 20;
+export const SAVE_VERSION = 21;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -157,6 +158,12 @@ export const MIGRATIONS: Record<number, Migration> = {
   19: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, deck: { last: 0, knock: 0, seen: [] }, encounter: null };
+  },
+  // v20 -> v21 (Phase 22.6b): nobody picked up yet, no stops found.
+  20: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const deck = isObj(x.deck) ? x.deck : {};
+    return { ...x, deck: { ...deck, hitch: 0, stop: 0, stops: [], met: {} } };
   },
 };
 
@@ -327,11 +334,22 @@ export function validate(x: unknown): string[] {
   need(isStrs(x.seen), 'seen');
   need(isNum(x.guitar) && x.guitar >= 0, 'guitar');
   const dk = x.deck;
-  need(isObj(dk) && isInt(dk.last) && isInt(dk.knock) && isStrs(dk.seen), 'deck');
-  const en = x.encounter;
   need(
-    en === null ||
-      (isObj(en) && en.kind === 'knock' && typeof en.id === 'string' && KNOCKS.some((k) => k.id === en.id)),
+    isObj(dk) &&
+      isInt(dk.last) &&
+      isInt(dk.knock) &&
+      isStrs(dk.seen) &&
+      isInt(dk.hitch) &&
+      isInt(dk.stop) &&
+      isStrs(dk.stops) &&
+      isObj(dk.met) &&
+      Object.entries(dk.met).every(([id, i]) => HITCHERS.some((h) => h.id === id) && isInt(i)),
+    'deck',
+  );
+  const en = x.encounter;
+  const ids = { knock: KNOCKS, hitch: HITCHERS, stop: STOPS } as Record<string, { id: string }[]>;
+  need(
+    en === null || (isObj(en) && typeof en.kind === 'string' && !!ids[en.kind]?.some((k) => k.id === en.id)),
     'encounter',
   );
   need(isInt(x.lotNights) && x.lotNights >= 0, 'lotNights');

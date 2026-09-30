@@ -463,11 +463,21 @@ export const BUSK = {
 // knock's psyche is v0.956's scale, which moved further than the rebuild's: `psyche` scales
 // it to ours.
 export const EVENTS = {
+  // Nothing before this day: the first two are for learning the valley [proposed].
+  from: 3,
   knock: {
     odds: 0.11,
     every: 4,
     spot: { lot: 1.4, truckstop: 1.2, trailhead: 0.9, ridge: 0.6, driveway: 0.5 },
   },
+  // Phase 22.6b, on a drive to or from a crag that doesn't break down. A hitchhiker [v0.956's:
+  // 14%, five days apart], one you've met `again` times likelier than a stranger; else a
+  // roadside stop [proposed: v0.956 offered one on three drives in four], a detour of `min`,
+  // worth `again` of itself after the first time. At a breakdown, a hitchhiker you were good
+  // to pulls up behind you `friend` of the time, if nobody you'd call can.
+  hitch: { odds: 0.14, every: 5, again: 2.6 },
+  stop: { odds: 0.2, every: 3, min: 40, again: 0.4 },
+  friend: 0.5,
   psyche: 0.5,
   // Knocks heard lately that the deck passes over while there are others for the spot.
   fresh: 3,

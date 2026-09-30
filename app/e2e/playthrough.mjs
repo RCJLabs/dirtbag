@@ -675,7 +675,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 20 ||
+  saved?.v !== 21 ||
   st.encounter !== null ||
   !Array.isArray(st.deck?.seen) ||
   !(st.guitar >= 0) ||
@@ -825,6 +825,19 @@ await warmGoes();
 await until('the crag again', async () => (await text('#b-nav')) === 'Map');
 await wait(600);
 await click('#plan-go');
+// Someone on the road home (Phase 22.6b, this seed's runaway): an answer is a choice, not
+// a chore, so it isn't counted; the plan waits for it and carries on.
+await until(
+  'the next morning, or someone on the road',
+  async () =>
+    /^Day 5 · 7:10 AM$/.test((await text('#h-time')) ?? '') ||
+    /Drive on past/.test((await text('#sheet')) ?? ''),
+  30_000,
+);
+if (/Drive on past/.test((await text('#sheet')) ?? '')) {
+  log(`on the road home: ${(await text('#sheet'))?.slice(0, 60)}`);
+  await page.locator('#sheet .opt').first().click();
+}
 await until('the next morning', async () => /^Day 5 · 7:10 AM$/.test((await text('#h-time')) ?? ''), 30_000);
 const byPlan = taps - day4;
 log(`day four, by the plan: ${byPlan} taps, the most being 13`);
@@ -1122,6 +1135,68 @@ console.log('A knock on the van');
   if (after.encounter !== null || after.deck.knock !== 7)
     await fail(`after the knock: ${JSON.stringify(after.deck)}`);
   log('knock: answered, and morning');
+  await ctx.close();
+}
+
+console.log('A hitchhiker on the way to Roadside');
+// Phase 22.6b. The day-five climber on the morning of day four, whose drive to Roadside this
+// seed's deck puts a busker beside: the map, the drive, the door (heard), their card with
+// no ✕, three chords, and the crag. The busker remembers what you asked for.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  saved.state = {
+    ...saved.state,
+    day: 4,
+    min: 9 * 60,
+    at: 'lot',
+    x: null,
+    cash: 150,
+    energy: 80,
+    guitar: 0,
+    van: { tires: 100, engine: 100, battery: 100 },
+    deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {} },
+    encounter: null,
+  };
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  await ctx.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+    window.cues = [];
+    window.addEventListener('dirtbag:sound', (e) => window.cues.push(e.detail));
+  }, JSON.stringify(saved));
+  const trip = await ctx.newPage();
+  trip.on('pageerror', (e) => problems.push(`hitchhiker: uncaught: ${e.message}`));
+  trip.on('console', (m) => m.type() === 'error' && problems.push(`hitchhiker: console.error: ${m.text()}`));
+  await trip.goto(server.url, { waitUntil: 'load' });
+  const sheetOf = () => trip.evaluate(() => document.querySelector('#sheet')?.textContent ?? '');
+  await trip.waitForFunction(() =>
+    /Tap anywhere to walk/.test(document.querySelector('#hint')?.textContent ?? ''),
+  );
+  await trip.click('#b-nav');
+  await trip.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Close');
+  await trip.waitForTimeout(450);
+  const box = await trip.locator('#cv').boundingBox();
+  const [rx, ry] = fit([292, 220]);
+  await trip.mouse.click(box.x + (rx * box.height) / 740, box.y + (ry * box.height) / 740);
+  await trip.waitForFunction(() => /Roadside Crag/.test(document.querySelector('#sheet')?.textContent ?? ''));
+  await trip.locator('#sheet .opt', { hasText: 'Drive here' }).first().click();
+  await trip.waitForFunction(
+    () => /A busker with a guitar/.test(document.querySelector('#sheet')?.textContent ?? ''),
+    null,
+    { timeout: 15_000 },
+  );
+  const card = await sheetOf();
+  log(`hitchhiker: ${card.slice(0, 110)}`);
+  if (!/Ask them to teach you three chords/.test(card) || !/Drive on past/.test(card))
+    await fail(`the answers: ${card}`);
+  if (await trip.$('#sheet .x')) await fail('a hitchhiker can be closed without an answer');
+  if (!(await trip.evaluate(() => window.cues.includes('door')))) await fail('the door was never heard');
+  await trip.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-hitchhiker.png`) });
+  await trip.locator('#sheet .opt', { hasText: 'Ask them to teach you three chords' }).first().click();
+  await trip.waitForFunction(() => !document.querySelector('#sheet'), null, { timeout: 10_000 });
+  const after = await trip.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  if (after.at !== 'road' || after.guitar !== 3 || after.deck.met.busker !== 2 || after.encounter !== null)
+    await fail(`after the ride: at ${after.at}, guitar ${after.guitar}, ${JSON.stringify(after.deck)}`);
+  log('hitchhiker: three chords, and Roadside');
   await ctx.close();
 }
 

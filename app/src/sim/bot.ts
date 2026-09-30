@@ -43,6 +43,7 @@ import { act, actCost, faSuggestions, goBlocked, knowsBeta, landingChance, newGa
 import { whereNow } from './presence';
 import { signupBlocked } from './jobs';
 import { friendFor, PARTS, repairCost, unsafePart } from './van';
+import { hitchFriend } from './events';
 import { carePrice, weeklyBills } from './clinic';
 import { spotBlocked, ticketOdds } from './spots';
 import { tonight } from './tonight';
@@ -331,9 +332,11 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   const travel = (to: string): boolean => {
     if (s.at === to) return true;
     if (!go({ t: 'travel', to })) return false;
+    // Someone on the road (Phase 22.6b): the first answer, as a bot takes things.
+    if (s.encounter) go({ t: 'answer', opt: 0 });
     if (s.breakdown) {
       const ok =
-        (friendFor(s) && go({ t: 'fix', how: 'friend' })) ||
+        ((friendFor(s) || hitchFriend(s)) && go({ t: 'fix', how: 'friend' })) ||
         (go({ t: 'fix', how: 'bodge' }) && !s.breakdown) ||
         (s.energy >= 40 && go({ t: 'fix', how: 'limp' })) ||
         go({ t: 'fix', how: 'tow' });

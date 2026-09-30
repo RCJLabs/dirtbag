@@ -68,6 +68,7 @@ import {
   RIVAL,
   SCARS,
   BUSK,
+  EVENTS,
   PSYCHE,
   SICK,
   SUPPLIES,
@@ -86,7 +87,18 @@ import { canAsk, queueMin, sprayable, sprayedOn } from './crowds';
 import { soloed } from './solo';
 import { fishCatch } from './lake';
 import { HUSTLE_TEACH, hustleTake, needsTeaching } from './hustle';
-import { knockById, knockPsyche, knockTonight } from './events';
+import {
+  driveEncounter,
+  hitchFriend,
+  hitcherById,
+  hitchOpts,
+  knockById,
+  knockPsyche,
+  knockTonight,
+  roadPsyche,
+  stopById,
+} from './events';
+import type { RoadFx } from './content/road';
 import { buskBlocked, buskHeads, buskTips, guitarRank, practiceOf, RANK_LINE } from './busk';
 import { carePrice, clinicBill, jabbed, weeklyBills, worsened } from './clinic';
 import { flareRoll, scarRoll, scarred } from './scars';
@@ -171,7 +183,7 @@ export function newGame(seed: string): GameState {
     crags: [],
     seen: [],
     guitar: 0,
-    deck: { last: 0, knock: 0, seen: [] },
+    deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {} },
     encounter: null,
     wall: null,
     expedition: null,
@@ -755,7 +767,7 @@ export function act(s0: GameState, a: Action): Result {
       const k = night.rough ? null : knockTonight(s, night.spot);
       if (k) {
         s.encounter = { kind: 'knock', id: k.id };
-        s.deck = { last: s.day, knock: s.day, seen: [...s.deck.seen, k.id].slice(-10) };
+        s.deck = { ...s.deck, last: s.day, knock: s.day, seen: [...s.deck.seen, k.id].slice(-10) };
         events.push({ k: 'encounter', kind: 'knock', id: k.id });
         return null;
       }
@@ -947,12 +959,67 @@ export function act(s0: GameState, a: Action): Result {
     if (!s.today.includes(who)) s.today.push(who);
   };
 
+  // What a hitchhiker or a stop does to you (Phase 22.6b), a share `k` of it for a stop
+  // you've pulled in at before.
+  const roadFx = (fx: RoadFx, k = 1) => {
+    if (fx.cash) spend({ cash: fx.cash });
+    if (fx.energy) s.energy = clamp100(s.energy + Math.round(fx.energy * k));
+    if (fx.skin) s.skin = clamp100(s.skin + Math.round(fx.skin * k));
+    if (fx.fed) s.fed = clamp100(s.fed + Math.round(fx.fed * k));
+    const p = roadPsyche((fx.psyche ?? 0) * k);
+    if (p) s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + p) };
+    if (fx.guitar) s.guitar = round2(s.guitar + fx.guitar);
+    if (fx.beta) {
+      const l = lessonAt(s);
+      if (l) {
+        const c = l.r.cruxes.find((x) => x.id === l.crux)!;
+        const b = l.r.beta[l.beta]!;
+        learn(
+          l.r.id,
+          l.beta,
+          'told',
+          `On the receipt: ${l.r.name}, at ${c.name.replace(/^The /, 'the ')}, ${b.short}. New beta: ${b.name.toLowerCase()}.`,
+        );
+      }
+    }
+  };
+  // An answer on the road: false if there's no such answer.
+  const road_ = (e: NonNullable<GameState['encounter']>, i: number): boolean => {
+    if (e.kind === 'hitch') {
+      const h = hitcherById(e.id);
+      const opts = h ? hitchOpts(s, h) : [];
+      const o = opts[i];
+      if (!h || !o) return false;
+      s.encounter = null;
+      // The first time you pick them up, they remember what you did; drive past, and they
+      // don't know you yet.
+      if (s.deck.met[h.id] === undefined && i < h.opts.length)
+        s.deck = { ...s.deck, met: { ...s.deck.met, [h.id]: i } };
+      line(o.out);
+      roadFx(o.fx);
+      return true;
+    }
+    const x = stopById(e.id);
+    if (!x || i > 1) return false;
+    s.encounter = null;
+    if (i === 1) {
+      line('You keep driving. It’ll be there next time.');
+      return true;
+    }
+    const first = !s.deck.stops.includes(x.id);
+    spend({ min: EVENTS.stop.min });
+    if (first) s.deck = { ...s.deck, stops: [...s.deck.stops, x.id] };
+    line(first ? `${x.name}. ${x.blurb}` : `${x.name} again. Still good, if not quite like the first time.`);
+    roadFx(x.fx, first ? 1 : EVENTS.stop.again);
+    return true;
+  };
+
   // A Free Solo run that ended: nothing more happens to this climber.
   if (s.dead) return refuse('That climber is gone.');
 
   // Someone at the door (Phase 22.6): nothing happens until you've answered.
   if (s.encounter && a.t !== 'answer' && a.t !== 'stand' && a.t !== 'pick')
-    return refuse('Someone’s at the door.');
+    return refuse(s.encounter.kind === 'knock' ? 'Someone’s at the door.' : 'First things first: an answer.');
 
   // Broken down on the road: nothing happens until you've found a way out.
   if (s.breakdown && a.t !== 'fix' && a.t !== 'stand' && a.t !== 'pick')
@@ -1134,6 +1201,7 @@ export function act(s0: GameState, a: Action): Result {
     }
 
     case 'travel': {
+      const from = s.at;
       const r = road(s.at, a.to);
       const to = PLACES[a.to];
       if (!r || !to) return refuse("There's no road there.");
@@ -1183,6 +1251,13 @@ export function act(s0: GameState, a: Action): Result {
       }
       spend({ min: r.min });
       arriveAt(a.to);
+      // On the road (Phase 22.6b): a hitchhiker or a stop, waiting on you at the other end.
+      const e = driveEncounter(s, from, a.to);
+      if (e) {
+        s.encounter = e;
+        s.deck = { ...s.deck, last: s.day, [e.kind]: s.day };
+        events.push({ k: 'encounter', kind: e.kind, id: e.id });
+      }
       break;
     }
 
@@ -1218,12 +1293,16 @@ export function act(s0: GameState, a: Action): Result {
         arriveAt(b.to);
       } else {
         const who = friendFor(s);
-        if (!who) return refuse('Nobody you’d call for this. Not yet.');
+        // A hitchhiker you were good to, if nobody you'd call can (Phase 22.6b).
+        const hitch = who ? null : hitchFriend(s);
+        if (!who && !hitch) return refuse('Nobody you’d call for this. Not yet.');
         spend({ min: VAN.friend.min });
         s.van[b.part] = Math.max(s.van[b.part], VAN.friend.to);
         s.breakdown = null;
         line(
-          `${PEOPLE[who]!.name} drives out with a jack and a thermos, and doesn't mention it again. Not much, anyway.`,
+          who
+            ? `${PEOPLE[who]!.name} drives out with a jack and a thermos, and doesn't mention it again. Not much, anyway.`
+            : `${hitch!.friend![0]!.toUpperCase()}${hitch!.friend!.slice(1)} pulls up behind you. They remember the ride: a jack, a hand, and no talk of owing anybody.`,
         );
         spend({ min: b.rest });
         arriveAt(b.to);
@@ -1332,6 +1411,10 @@ export function act(s0: GameState, a: Action): Result {
     // the night.
     case 'answer': {
       const e = s.encounter;
+      if (e?.kind === 'hitch' || e?.kind === 'stop') {
+        if (!road_(e, a.opt)) return refuse('Nobody’s asking.');
+        break;
+      }
       const k = e ? knockById(e.id) : undefined;
       const o = k?.opts[a.opt];
       if (!e || !k || !o) return refuse('Nobody’s asking.');

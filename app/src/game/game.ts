@@ -132,8 +132,8 @@ export type SheetId =
   | { k: 'dead' }
   // Broken down on the road (Phase 22.2a): the ways out.
   | { k: 'breakdown' }
-  // Phase 22.6a: someone at the door of the van.
-  | { k: 'knock' };
+  // Phase 22.6: an encounter waiting on your answer: a knock, a hitchhiker, a stop.
+  | { k: 'encounter' };
 
 export interface Hud {
   day: number;
@@ -291,7 +291,7 @@ export class Game {
         : this.state.breakdown
           ? { k: 'breakdown' }
           : this.state.encounter
-            ? { k: 'knock' }
+            ? { k: 'encounter' }
             : this.state.expedition
               ? { k: 'exped', id: this.state.expedition.id }
               : home?.scene
@@ -402,8 +402,9 @@ export class Game {
     if (x && 'sheet' in p && p.sheet?.k !== 'exped') p = { ...p, sheet: { k: 'exped', id: x.id } };
     // A Free Solo climber who fell: that's all there is, until a new one.
     if (this.state.dead && 'sheet' in p && p.sheet?.k !== 'dead') p = { ...p, sheet: { k: 'dead' } };
-    // Someone at the door (Phase 22.6a): their card, until you've answered.
-    if (this.state.encounter && 'sheet' in p && p.sheet?.k !== 'knock') p = { ...p, sheet: { k: 'knock' } };
+    // An encounter (Phase 22.6): its card, until you've answered; on the road, once you're there.
+    if (this.state.encounter && !this.trip && 'sheet' in p && p.sheet?.k !== 'encounter')
+      p = { ...p, sheet: { k: 'encounter' } };
     // Broken down, once the van's stopped rolling: the ways out, until you've taken one.
     if (this.state.breakdown && !this.trip && 'sheet' in p && p.sheet?.k !== 'breakdown')
       p = { ...p, sheet: { k: 'breakdown' } };
@@ -731,7 +732,7 @@ export class Game {
         // A knock (Phase 22.6a): the night waits on your answer.
         if (this.state.encounter) {
           this.sound.play('knock');
-          this.set({ sheet: { k: 'knock' } });
+          this.set({ sheet: { k: 'encounter' } });
           return;
         }
         this.dayDone();
@@ -792,8 +793,17 @@ export class Game {
     this.dispatch({ t: 'spot', spot });
   }
 
-  // An answer at the door (Phase 22.6a), and then the rest of the night.
+  // An answer (Phase 22.6). On the road, and you're where you were going; at the door, and
+  // then the rest of the night.
   answer(opt: number): void {
+    if (this.state.encounter?.kind !== 'knock') {
+      const ev = this.dispatch({ t: 'answer', opt });
+      if (ev.some((e) => e.k === 'refused')) return;
+      const here = PLACES[this.state.at];
+      this.set({ sheet: here?.scene ? null : { k: 'place', id: this.state.at } });
+      if (this.run) this.later(() => this.planStep(), FADE_MS + PLAN_BEAT);
+      return;
+    }
     this.fadeTo(() => {
       const ev = this.dispatch({ t: 'answer', opt });
       if (ev.some((e) => e.k === 'refused')) return;
@@ -867,6 +877,16 @@ export class Game {
       return;
     }
     const scene = PLACES[trip.to]?.scene;
+    // Someone on the road (Phase 22.6b): heard as you pull in, and their card once you're there.
+    const met = this.state.encounter;
+    if (met) {
+      // A plan waits on your answer, then carries on (answer()).
+      this.sound.play(met.kind === 'hitch' ? 'door' : 'pullover');
+      const show = () => (this.set({ sheet: { k: 'encounter' } }), say());
+      if (scene) this.fadeTo(() => (this.enter(scene), show()));
+      else show();
+      return;
+    }
     if (scene) this.fadeTo(() => (this.enter(scene), say()));
     else {
       this.openSheet({ k: 'place', id: trip.to });
