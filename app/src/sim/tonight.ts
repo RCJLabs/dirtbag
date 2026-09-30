@@ -6,6 +6,7 @@ import { ACTS } from './content/places';
 import { BODY, FOOD, LIFESTYLE, MONEY, type Lifestyle } from './dials';
 import { MEAL_NAME } from './content/food';
 import { livingTonight } from './jobs';
+import { weeklyBills } from './clinic';
 import { nightAt, type Night } from './spots';
 import { conditions, type Sky } from './weather';
 import type { GameState } from './types';
@@ -51,7 +52,7 @@ export function tonight(s: GameState): Tonight {
   const spot = night.cost;
   const hungry = s.fed < BODY.hungryBelow;
   const billsIn = (7 - (s.day % 7)) % 7;
-  const bills = MONEY.registration + MONEY.insurance;
+  const bills = weeklyBills(s);
   const life = rough ? LIFESTYLE.dirtbag : livingTonight(s, spot);
   const cash = s.cash - spot - life.cost - (billsIn === 0 ? bills : 0);
   const p = projected(s.load);

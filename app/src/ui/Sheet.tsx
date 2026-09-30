@@ -94,6 +94,10 @@ import {
   spotBlocked,
   type SpotId,
   FOOD,
+  weeklyBills,
+  PLANS,
+  INJURY,
+  type Plan,
 } from '../sim';
 import type { Game, JournalPage, SheetId, Ui } from '../game/game';
 import { legacyFile, saveLegacyFile } from '../game/legacy';
@@ -845,7 +849,7 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
   const g = gradeOf(c.skills);
   const scale = needFor(g + 2);
   const room = headroom(s);
-  const bills = MONEY.registration + MONEY.insurance;
+  const bills = weeklyBills(s);
   return (
     <>
       <p className="sub">
@@ -1081,10 +1085,11 @@ function WeekBody({ game, s }: { game: Game; s: GameState }) {
         })}
       </ul>
       <p className="sub">
-        Registration and insurance, {money(MONEY.registration + MONEY.insurance)}, {billsWhen(s.day)}.
+        Registration and insurance, {money(weeklyBills(s))}, {billsWhen(s.day)}.
       </p>
       <ShiftRows game={game} s={s} />
       <SpotRows game={game} s={s} />
+      <PlanRows game={game} s={s} />
       <LivingRows game={game} s={s} />
     </>
   );
@@ -1189,6 +1194,48 @@ function SpotRows({ game, s }: { game: Game; s: GameState }) {
             </button>
           );
         })}
+      </div>
+    </>
+  );
+}
+
+// Insurance (Phase 22.4a): chosen here, paid with the week's bills.
+const PLAN_NAME: Record<Plan, string> = {
+  none: 'No insurance',
+  catastrophic: 'Catastrophic',
+  full: 'Full cover',
+};
+
+function planNote(p: Plan): string {
+  const d = PLANS[p];
+  const [, t2, t3] = INJURY.clinic;
+  if (d.copay !== undefined)
+    return `Every clinic bill is ${money(d.copay)}. Physio and cortisone for a quarter.`;
+  return `A bad injury's bill: ${money(t2! * d.bill)}, or ${money(t3! * d.bill)} for the worst.`;
+}
+
+function PlanRows({ game, s }: { game: Game; s: GameState }) {
+  return (
+    <>
+      <p className="crux">Insurance</p>
+      <div role="radiogroup" aria-label="Insurance" id="plans">
+        {(Object.keys(PLANS) as Plan[]).map((k) => (
+          <button
+            type="button"
+            key={k}
+            id={`plan-${k}`}
+            className="beta choice"
+            role="radio"
+            aria-checked={s.insurance === k}
+            onClick={() => game.insure(k)}
+          >
+            <span className="dot" />
+            <span>
+              {PLAN_NAME[k]} · {PLANS[k].premium ? `${money(PLANS[k].premium)} a week` : 'free'}
+            </span>
+            <small>{planNote(k)}</small>
+          </button>
+        ))}
       </div>
     </>
   );

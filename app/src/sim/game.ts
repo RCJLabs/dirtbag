@@ -50,6 +50,7 @@ import {
 import {
   BODY,
   CLIMB,
+  CLINIC,
   CROWD,
   FOOD,
   FREESOLO,
@@ -63,6 +64,7 @@ import {
   LIFESTYLE,
   LOAD,
   MONEY,
+  PLANS,
   RIVAL,
   TRAD,
   TRAIN,
@@ -78,6 +80,7 @@ import { pitchOdds, pitchRoll, stormOn, wallPay } from './expeditions';
 import { canAsk, queueMin, sprayable, sprayedOn } from './crowds';
 import { soloed } from './solo';
 import { fishCatch } from './lake';
+import { carePrice, clinicBill, jabbed, weeklyBills, worsened } from './clinic';
 import { drivewayHost, nightAt, spotBlocked, ticketRoll } from './spots';
 import { SPOT_LINE, SPOT_NAME } from './content/spots';
 import { bodgeHolds, breakdownRoll, friendFor, gasFor, PART_NAME, repairCost, unsafePart } from './van';
@@ -145,6 +148,8 @@ export function newGame(seed: string): GameState {
     pantry: {},
     meals: [],
     fueled: 0,
+    insurance: 'catastrophic',
+    jab: 0,
     wall: null,
     expedition: null,
     speed: { pb: null, runs: 0, day: 0 },
@@ -215,6 +220,8 @@ export function actCost(s: GameState, d: ActDef): Delta {
   if (d.job) return { ...d.cost, cash: (d.cost.cash ?? 0) + raiseAt(s, d.job.id) * d.job.shifts };
   // A repair costs its share of the part's price, by wear.
   if (d.van) return { ...d.cost, cash: -repairCost(s, d.van) };
+  // The clinic's care, on your plan (Phase 22.4a).
+  if (d.clinic) return { ...d.cost, cash: -carePrice(s, d.clinic) };
   // Bed costs wherever you're parked tonight (Phase 22.2b).
   if (d.sleep) return { ...d.cost, cash: -nightAt(s).cost };
   // Past a couple of cups a day, coffee is jitters, not energy (Phase 22.3).
@@ -418,12 +425,18 @@ export function act(s0: GameState, a: Action): Result {
   };
   // An injury lands: the line, the clinic's bill (the first one's waived), the count.
   const injure = (hurt: Injury, text: string) => {
+    // Cortisone hid how bad things were (Phase 22.4a): this one lands a tier worse.
+    if (jabbed(s) && hurt.tier < 3) {
+      hurt = worsened(hurt);
+      s.jab = 0;
+      text = `${text} The cortisone was hiding how bad it had got.`;
+    }
     s.injury = hurt;
     const days = hurt.until - s.day - 1;
     events.push({ k: 'injured', kind: hurt.kind, tier: hurt.tier, days, text });
     note(text);
-    const bill = s.hurt === 0 ? 0 : INJURY.clinic[hurt.tier - 1]!;
-    if (hurt.tier > 1) line(bill ? fill(CLINIC_LINE, { cost: money(bill) }) : FIRST_FREE_LINE);
+    const bill = clinicBill(s, hurt.tier);
+    if (hurt.tier > 1) line(s.hurt === 0 ? FIRST_FREE_LINE : fill(CLINIC_LINE, { cost: money(bill) }));
     if (bill) spend({ cash: -bill });
     s.hurt += 1;
   };
@@ -560,9 +573,13 @@ export function act(s0: GameState, a: Action): Result {
       s.injury = null;
     }
     if (ended % 7 === 0) {
-      const bills = MONEY.registration + MONEY.insurance;
+      const bills = weeklyBills(s);
       s.cash -= bills;
-      line(`Registration and insurance: $${bills}. The week's bills don't care about your card.`);
+      line(
+        s.insurance === 'none'
+          ? `Registration: $${bills}. No insurance: the week's bills don't care about your card.`
+          : `Registration and insurance: $${bills}. The week's bills don't care about your card.`,
+      );
     }
     rivalNight(ended);
   };
@@ -694,6 +711,17 @@ export function act(s0: GameState, a: Action): Result {
     if (d.meal) {
       s.meals.push(d.meal);
       if (s.meals.length > FOOD.same) s.meals.splice(0, s.meals.length - FOOD.same);
+    }
+    // The clinic (Phase 22.4a): physio takes a day off, cortisone half of what's left.
+    if (d.clinic && s.injury) {
+      const left = s.injury.until - s.day;
+      const cut = d.clinic === 'physio' ? CLINIC.physio.days : Math.floor(left / 2);
+      s.injury = { ...s.injury, until: s.injury.until - cut };
+      if (d.clinic === 'cortisone') s.jab = s.day;
+      if (s.injury.until <= s.day) {
+        line(fill(HEALED_LINE, { kind: s.injury.kind }));
+        s.injury = null;
+      } else line(`${cut === 1 ? 'A day' : `${cut} days`} off your ${s.injury.kind}.`);
     }
     // The lake: whatever bites, cooked on the shore.
     if (d.fish) {
@@ -906,6 +934,12 @@ export function act(s0: GameState, a: Action): Result {
       const why = spotBlocked(s, a.spot);
       if (why) return refuse(why);
       s.spot = a.spot;
+      break;
+    }
+
+    case 'insure': {
+      if (!(a.plan in PLANS)) return refuse('No such plan.');
+      s.insurance = a.plan;
       break;
     }
 

@@ -51,6 +51,7 @@ export interface Cond {
   payVan?: VanPart; // the card covers the garage's bill for that part
   stock?: string; // a serving of that ingredient in the pantry (Phase 22.3)
   notSeason?: Season; // it isn't this season (the lake's swim, not in winter)
+  injured?: boolean; // you've an injury (the clinic)
 }
 
 // The last two days of every seven are the weekend: the week's bills land on its last night.
@@ -137,6 +138,7 @@ export function holds(s: GameState, c: Cond): boolean {
   if (c.payVan !== undefined && headroom(s) < repairCost(s, c.payVan)) return false;
   if (c.stock !== undefined && !((s.pantry[c.stock] ?? 0) > 0)) return false;
   if (c.notSeason !== undefined && seasonOf(s.day) === c.notSeason) return false;
+  if (c.injured !== undefined && !!s.injury !== c.injured) return false;
   return true;
 }
 

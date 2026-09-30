@@ -126,7 +126,12 @@ export {
   UPGRADE,
   WINTER,
   FOOD,
+  PLANS,
+  CLINIC,
+  LAKE,
 } from './dials';
+export type { Plan } from './dials';
+export { weeklyBills, clinicBill, carePrice, jabbed } from './clinic';
 export { INGREDIENTS, RECIPES, MEAL_NAME } from './content/food';
 export type { SpotId } from './dials';
 export { SPOT_IDS, nightAt, spotBlocked, ticketOdds, drivewayHost, type Night } from './spots';

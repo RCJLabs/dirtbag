@@ -1746,6 +1746,23 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
   - The bots don't fish.
   - There's no e2e step at the lake: fishing and the swim are acts on a card, as at the diner.
 
+**Status (30 Sep 2026): 22.4a built: insurance plans and the clinic.** Save v14, 0.970.0. 22.4 goes in four parts: insurance and the clinic; old injuries and fear; the supplies gauge and sickness; psyche.
+- **Insurance** is a choice on the week sheet, paid with the week's bills. It replaces the flat $25 premium [proposed numbers]:
+
+  | Plan | A week | A bad injury's bill |
+  |---|---|---|
+  | None | $0 | Double: $90, or $420 for the worst |
+  | Catastrophic | $25 | $45, or $210: the plan everyone had, and new and migrated climbers are on it |
+  | Full cover | $45 | A $20 copay; physio and cortisone at a quarter price |
+
+  The first injury is still free.
+- **The Clinic**, round the corner from the diner in Old Town:
+  - **Physio:** 2 h, $40, once a day, takes a day off an injury.
+  - **Cortisone:** 30 min, $60, halves the days left. The next injury within three weeks lands a tier worse, and says why.
+- **Bots:** they take physio when hurt and there's money past their cushion. Every harness target passes.
+- **E2e:** the week sheet offers the three plans, catastrophic chosen.
+- **Carried:** v0.956's urgent care isn't separate: the clinic bill at the moment you're hurt is it.
+
 ---
 
 ### Phase 24 — Expeditions as trips
@@ -2132,3 +2149,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Evan's call: the heater costs $45 (from $150), within reach before the first winter; the bots buy it first. 0.967.1.
 - 2026-09-30 — Phase 22.3a built: the Market, a camp kitchen and four recipes (two fuel you: wider windows for the day, never a skill), the last four meals counted for variety, coffee crashing past two, and a hungry bedtime eating the pantry first. Save v13. 0.968.0.
 - 2026-09-30 — Phase 22.3b built: the lake opens, with fishing (food, not cash, seeded by season and hour, once a day) and a swim. 0.969.0.
+- 2026-09-30 — Phase 22.4a built: insurance plans (none, catastrophic, full cover) replace the flat premium and set the clinic's bills; the Clinic in Old Town has physio (a day off an injury, once a day) and cortisone (half off, and the next injury in three weeks a tier worse). Save v14. 0.970.0.
