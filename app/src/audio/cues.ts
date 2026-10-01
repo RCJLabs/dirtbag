@@ -30,6 +30,10 @@ export type Cue =
   | 'walkout'
   // The morning of your dog's last day (Phase 22.7): one low, held chord.
   | 'farewell'
+  // At the fire (Phase 22.9a): a horseshoe on the stake, ringing when it's a ringer and a
+  // thud in the dirt when it's not; dice rattled in a cup and set down.
+  | 'clang'
+  | 'dice'
   // On the wall.
   | 'pullon'
   | 'move'

@@ -44,6 +44,8 @@ import {
   speedTime,
   BUSK,
   buskBlocked,
+  GAMES,
+  gameBlocked,
 } from '../sim';
 import { bedFor, ON_THE_MAP } from '../audio/beds';
 import { actCue, VERB_CUES } from '../audio/cues';
@@ -135,7 +137,9 @@ export type SheetId =
   // Phase 22.6: an encounter waiting on your answer: a knock, a hitchhiker, a stop.
   | { k: 'encounter' }
   // Phase 22.8: your dreams, and the jar.
-  | { k: 'dreams' };
+  | { k: 'dreams' }
+  // Phase 22.9a: the fire at night: who's there, the games, and a hand of dice on the go.
+  | { k: 'fire' };
 
 export interface Hud {
   day: number;
@@ -176,8 +180,10 @@ export interface Ui {
 }
 
 // A set: the note you're on, the marker's sweep across the bar (0 to 1), each note's score
-// (1 in the band, a half near it, 0 off it), and when it's done, what the set came to.
+// (1 in the band, a half near it, 0 off it), and when it's done, what the set came to. The
+// same beat throws horseshoes at the fire (Phase 22.9a), a throw a sweep.
 export interface BuskUi {
+  kind: 'busk' | 'shoes';
   phase: 'play' | 'done';
   note: number;
   pos: number;
@@ -294,11 +300,13 @@ export class Game {
           ? { k: 'breakdown' }
           : this.state.encounter
             ? { k: 'encounter' }
-            : this.state.expedition
-              ? { k: 'exped', id: this.state.expedition.id }
-              : home?.scene
-                ? null
-                : { k: 'place', id: this.state.at },
+            : this.state.table
+              ? { k: 'fire' }
+              : this.state.expedition
+                ? { k: 'exped', id: this.state.expedition.id }
+                : home?.scene
+                  ? null
+                  : { k: 'place', id: this.state.at },
       talk: null,
       toast: null,
       stamp: null,
@@ -407,6 +415,8 @@ export class Game {
     // An encounter (Phase 22.6): its card, until you've answered; on the road, once you're there.
     if (this.state.encounter && !this.trip && 'sheet' in p && p.sheet?.k !== 'encounter')
       p = { ...p, sheet: { k: 'encounter' } };
+    // A hand of dice on the go (Phase 22.9a): the fire's card, until it's played out.
+    if (this.state.table && 'sheet' in p && p.sheet?.k !== 'fire') p = { ...p, sheet: { k: 'fire' } };
     // Broken down, once the van's stopped rolling: the ways out, until you've taken one.
     if (this.state.breakdown && !this.trip && 'sheet' in p && p.sheet?.k !== 'breakdown')
       p = { ...p, sheet: { k: 'breakdown' } };
@@ -629,6 +639,8 @@ export class Game {
       const s = this.state;
       const night = isNight(s.min);
       if (th.away && whereNow(s, th.away.who) !== s.at) this.toast(th.away.text);
+      // The fire at night (Phase 22.9a): its card, with the games.
+      else if (night && u.thing === 'fire') this.openSheet({ k: 'fire' });
       else if (night && th.nightAct) this.dispatch({ t: 'act', act: th.nightAct });
       else this.toast(night ? (th.night ?? th.day) : th.day);
     } else if ('route' in u) this.lookUp(u.route);
@@ -1025,7 +1037,27 @@ export class Game {
       this.toast(`${why}.`);
       return;
     }
-    this.set({ sheet: null, busk: { phase: 'play', note: 0, pos: 0, scores: [], said: null } });
+    this.set({ sheet: null, busk: { kind: 'busk', phase: 'play', note: 0, pos: 0, scores: [], said: null } });
+  }
+
+  // Horseshoes at the fire (Phase 22.9a): the same beat, a throw a sweep.
+  shoesStart(): void {
+    const why = gameBlocked(this.state, 'shoes');
+    if (why) {
+      this.toast(`${why}.`);
+      return;
+    }
+    this.set({
+      sheet: null,
+      busk: { kind: 'shoes', phase: 'play', note: 0, pos: 0, scores: [], said: null },
+    });
+  }
+
+  // A hand of liar's dice: dealt, then called or raised. The fire's card shows it.
+  dice(what: 'deal' | 'call' | 'raise'): void {
+    this.sound.play('dice');
+    this.dispatch({ t: 'dice', do: what });
+    this.openSheet({ k: 'fire' });
   }
 
   private stepBusk(dt: number): void {
@@ -1046,22 +1078,23 @@ export class Game {
   }
 
   private buskScore(u: BuskUi, score: number): void {
-    this.sound.play('strum', score);
+    this.sound.play(u.kind === 'shoes' ? 'clang' : 'strum', score);
     const scores = [...u.scores, score];
-    if (scores.length < BUSK.notes) {
+    if (scores.length < (u.kind === 'shoes' ? GAMES.shoes.throws : BUSK.notes)) {
       this.set({ busk: { ...u, note: scores.length, pos: 0, scores } });
       return;
     }
     const acc = scores.reduce((a, b) => a + b, 0) / scores.length;
-    const ev = this.dispatch({ t: 'busk', acc });
+    const ev = this.dispatch(u.kind === 'shoes' ? { t: 'shoes', throws: scores } : { t: 'busk', acc });
     const said = ev.flatMap((e) => (e.k === 'line' ? [e.text] : [])).join(' ') || null;
     this.set({ busk: { ...u, phase: 'done', pos: 0, scores, said } });
   }
 
-  // Packed up: back to the café's card, where you were.
+  // Packed up: back to the café's card, or the fire's, where you were.
   buskDone(): void {
+    const kind = this.ui.get().busk?.kind;
     this.set({ busk: null });
-    this.openSheet({ k: 'place', id: this.state.at });
+    this.openSheet(kind === 'shoes' ? { k: 'fire' } : { k: 'place', id: this.state.at });
   }
 
   // Ask the crowd at the base for a line's beta.

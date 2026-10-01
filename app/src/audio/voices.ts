@@ -89,6 +89,21 @@ export const VOICES: Record<Cue, (v: V, k: number) => void> = {
     );
     if (k < 1) burst(v, { filter: 'bandpass', f: 900, q: 1.2, dur: 0.06, gain: 0.5 * (1 - k) });
   },
+  // A shoe on the stake: iron ringing on iron when it's a ringer (k = 1), a shorter clink
+  // for a leaner, and only the thud of it landing in the dirt when it's off.
+  clang: (v, k) => {
+    burst(v, { filter: 'lowpass', f: 260, q: 0.9, dur: 0.12, gain: 0.6 });
+    if (k > 0)
+      [1180, 1810, 2630].forEach((f, i) =>
+        tone(v, { type: 'sine', f: jitter(f, 0.02), dur: 0.15 + 0.9 * k, gain: 0.08 / (i + 1), delay: 0.01 }),
+      );
+  },
+  // Five dice in a cup, a shake, and the cup down on the tailgate.
+  dice: (v) => {
+    for (let i = 0; i < 7; i++)
+      burst(v, { filter: 'bandpass', f: jitter(2400, 0.25), q: 2, dur: 0.03, gain: 0.35, delay: i * 0.045 });
+    burst(v, { filter: 'lowpass', f: 320, q: 0.8, dur: 0.1, gain: 0.7, delay: 0.38 });
+  },
   // A low open chord, held and let go slowly: nothing else.
   farewell: (v) => {
     [98, 147, 196].forEach((f, i) =>

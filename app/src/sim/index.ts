@@ -119,6 +119,7 @@ export {
   SPEED,
   BUSK,
   EVENTS,
+  GAMES,
   FREESOLO,
   WORK,
   LIFESTYLE,
@@ -155,6 +156,7 @@ export { EPICS, type Epic } from './content/epics';
 export { dogAge, dogStage, hasPerk, nextDogName } from './scout';
 export { expedCost, owns, spotCost, worth } from './dreams';
 export { DREAMS, dreamById, type Dream } from './content/dreams';
+export { atFire, bidWords, gameBlocked, GAME_NAME, yourRaise, type Game } from './fire';
 export { DOG_FAREWELL } from './content/dog';
 export { HITCHERS, STOPS, type Hitcher, type RoadStop } from './content/road';
 export { KNOCKS, type Knock } from './content/knocks';

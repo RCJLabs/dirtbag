@@ -119,7 +119,8 @@ export interface GameState {
     // Phase 22.6c: the day of the last walk-out.
     epic: number;
   };
-  // A walk-out (Phase 22.6c) has stages: the one you're on, and what the calls so far add up to.
+  // Phase 22.9a. A hand of liar's dice you're in: who with, the dice, and the bid on it.
+  table: { who: string; mine: number[]; theirs: number[]; bid: { n: number; face: number } } | null;
   // Phase 22.8. Your dream: the one you're saving for, the pot (the card and the bills never
   // touch it), and the ones you own.
   dream: {
@@ -129,6 +130,7 @@ export interface GameState {
   };
   // Phase 22.7. The dogs you've had, and lost: their names, their years, the day.
   dogs: { name: string; years: number; day: number }[];
+  // A walk-out (Phase 22.6c) has stages: the one you're on, and what the calls so far add up to.
   encounter: {
     kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell';
     id: string;
@@ -302,7 +304,11 @@ export type Action =
   // Phase 22.6: an answer to the encounter you're in, by its option's index.
   | { t: 'answer'; opt: number }
   // Phase 22.8: a dream to pick, cash for the pot, the pot back, or the dream claimed.
-  | { t: 'dream'; do: 'pick' | 'stash' | 'take' | 'claim'; id?: string; amount?: number };
+  | { t: 'dream'; do: 'pick' | 'stash' | 'take' | 'claim'; id?: string; amount?: number }
+  // Phase 22.9a: horseshoes, with each throw's score (1 clean, a half near, 0 off), and a
+  // hand of liar's dice: dealt, then called or raised.
+  | { t: 'shoes'; throws: number[] }
+  | { t: 'dice'; do: 'deal' | 'call' | 'raise' };
 
 // What a finished go hands back to the game.
 export interface GoResult {

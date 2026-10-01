@@ -18,7 +18,7 @@ import { HITCHERS, STOPS } from './content/road';
 import { EPICS } from './content/epics';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 24;
+export const SAVE_VERSION = 25;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -182,6 +182,11 @@ export const MIGRATIONS: Record<number, Migration> = {
   23: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, dream: { pick: null, pot: 0, owned: [] } };
+  },
+  // v24 -> v25 (Phase 22.9a): no hand of dice on the go.
+  24: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, table: null };
   },
 };
 
@@ -372,6 +377,19 @@ export function validate(x: unknown): string[] {
     stop: STOPS,
     epic: EPICS.map((e) => ({ id: e.kind })),
   } as Record<string, { id: string }[]>;
+  const tb = x.table;
+  const dice = (d: unknown) => Array.isArray(d) && d.every((v) => isInt(v) && v >= 1 && v <= 6);
+  need(
+    tb === null ||
+      (isObj(tb) &&
+        typeof tb.who === 'string' &&
+        dice(tb.mine) &&
+        dice(tb.theirs) &&
+        isObj(tb.bid) &&
+        isInt(tb.bid.n) &&
+        isInt(tb.bid.face)),
+    'table',
+  );
   const dr = x.dream;
   const DREAMS = ['rig', 'warchest', 'homebase'];
   need(
