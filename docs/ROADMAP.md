@@ -2008,6 +2008,18 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Size:** 295.4 of 340 KB.
 - **E2e:** any event that comes is answered with its first call; then the haul bag jams on the reload, the card shows each call's cost, and cutting the food loose leaves two days less in the bag.
 
+**Status (1 Oct 2026): 24.5 built: coming home.** Save v30, 0.989.0.
+- **The book:** every trip you come home from goes in it: which, the day you got back, how it ended (summit, rapped off, out of water, out of days), the pitches fixed, who was on the rope, the nights, what happened up there, and whether you've told it. It's the stub Phase 23's Record Book will read.
+- **Your high point:** the most pitches fixed on an objective, from every trip there; the planner shows it, or that you've stood on top.
+- **Your partner, closer or further** [proposed]: a summit together +2 bond, half the wall or more +1, the water run out on them −1; anything else, no change.
+- **The trip's card,** on the way back to the Lot: how it ended and with whom, the nights, what happened up there, the pay, where it leaves your high point, your partner.
+- **The story at the fire** [proposed]: once a trip, after dark, with someone there. Half an hour; +8 psyche for a summit, +4 for anything else; the people there count it as a day together (once a day, as the games do, so it can't stack with them).
+- **The pay** stays 21.5's ($2,400, $6,000, $12,000); 24.9's harness checks it's no farm.
+- **The beta** you worked out on the pitches you led is kept as any line's is (what you know, your picks, where you fell), so the next trip starts from it, and the odds, which play each go with your picks, show it. Nothing new was needed.
+- **Not built: the drawn keepsake card.** The send card paints a line on its own wall, and the expeditions' walls are 24.6–24.8's; a summit card painted on Roadside's wall would be wrong. It comes with the scenes.
+- **Size:** 296.8 of 340 KB.
+- **E2e:** rap off; the trip's card ("You rapped off with 0 of 6 pitches fixed, with Hazel."); the book has it; that night at the fire, its story.
+
 ---
 
 ### Phase 23 — Who you are: origins, paths, stances, and the Record Book
@@ -2385,3 +2397,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-01 — Phase 24.2 built: expeditions are booked up to a week out against a forecast that's vaguer the further out it is, with a partner you choose and a haul bag you pack (food and water by the day, the portaledge, a stove where the water's snow), the odds moving with every choice; Evan confirmed 24.1's partner grades and handing over a pitch. Save v28. 0.986.0.
 - 2026-10-01 — Phase 24.3 built: travel days each way (Trango's walk-in acclimatizes), the trip taking your signed-up shifts off with a week's notice and leaving them to miss without, no sign-ups while you're booked away; three leads a day on the wall; the odds carry your skin through the trip and the harness checks them over 300 trips. 0.987.0.
 - 2026-10-01 — Phase 24.4 built: six things that happen up on a wall (a dropped cam, a jammed haul bag, rockfall, a squall, another party in trouble, a dead stove), some mornings, never twice a trip, each two calls with their costs shown; the odds count them as days that might be lost. Save v29. 0.988.0.
+- 2026-10-01 — Phase 24.5 built: coming home. Every trip goes in the book (the Record Book's stub), with your high point on each objective; your partner closer or further for how it went; the trip's card on the way home; its story at the fire, once. The drawn keepsake card waits for 24.6–24.8's walls. Save v30. 0.989.0.

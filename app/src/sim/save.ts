@@ -20,7 +20,7 @@ import { HITCHERS, STOPS } from './content/road';
 import { EPICS } from './content/epics';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 29;
+export const SAVE_VERSION = 30;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -236,6 +236,10 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     const e = x.expedition;
     return isObj(e) ? { ...x, expedition: { ...e, seen: [] } } : x;
+  }, // v29 -> v30 (Phase 24.5): no trips in the book yet. One under way goes in when it's over.
+  29: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, book: [] };
   },
 };
 
@@ -541,6 +545,26 @@ export function validate(x: unknown): string[] {
         Array.isArray(e.seen) &&
         e.seen.every((v) => typeof v === 'string')),
     'expedition',
+  );
+  const book = x.book;
+  need(
+    Array.isArray(book) &&
+      book.every(
+        (t) =>
+          isObj(t) &&
+          typeof t.id === 'string' &&
+          t.id in EXPEDITIONS &&
+          isInt(t.day) &&
+          ['summit', 'bail', 'water', 'time'].includes(t.end as string) &&
+          isInt(t.high) &&
+          t.high >= 0 &&
+          (t.partner === null || (typeof t.partner === 'string' && t.partner in PEOPLE)) &&
+          isInt(t.nights) &&
+          t.nights >= 0 &&
+          isStrs(t.seen) &&
+          typeof t.told === 'boolean',
+      ),
+    'book',
   );
   const bk = x.booked;
   need(

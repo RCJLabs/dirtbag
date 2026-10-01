@@ -843,6 +843,12 @@ export const EXPED = {
   // first, and at most `max` a trip.
   events: { odds: 0.15, max: 2 },
   head: 2,
+  // Phase 24.5 [proposed]. Coming home: bond with your partner moves with how it went (a
+  // summit together, half the wall or more, the water run out on them; anything else, no
+  // change). The story at the fire, once a trip: half an hour, and psyche, more for a summit;
+  // the people there count it as a day together.
+  home: { bond: { summit: 2, half: 1, water: -1 } },
+  story: { min: 30, psyche: { summit: 8, short: 4 } },
   // Phase 24.2 [proposed]. You book up to `ahead` days out. The forecast calls each day storm
   // or clear, right `acc` of the time on the day itself, falling to a coin toss `horizon` days
   // out. The haul bag holds `max` kg: food and water at `perDay` a day (twice that without a

@@ -51,6 +51,7 @@ const V25 = readFileSync(new URL('./fixtures/save-v25.json', import.meta.url), '
 const V26 = readFileSync(new URL('./fixtures/save-v26.json', import.meta.url), 'utf8');
 const V27 = readFileSync(new URL('./fixtures/save-v27.json', import.meta.url), 'utf8');
 const V28 = readFileSync(new URL('./fixtures/save-v28.json', import.meta.url), 'utf8');
+const V29 = readFileSync(new URL('./fixtures/save-v29.json', import.meta.url), 'utf8');
 // What R2's migration adds to any older save.
 const R2_BODY = {
   load: { acute: 20, chronic: 20, today: 0 },
@@ -100,6 +101,7 @@ const P226A = {
   cards: null,
   reads: {},
   booked: null,
+  book: [],
 };
 
 describe('saves', () => {
@@ -561,6 +563,7 @@ describe('saves', () => {
       cards: null,
       reads: {},
       booked: null,
+      book: [],
     });
   });
 
@@ -579,6 +582,7 @@ describe('saves', () => {
       cards: null,
       reads: {},
       booked: null,
+      book: [],
     });
     expect(r.state.deck.met).toEqual({ busker: 2 });
   });
@@ -596,6 +600,7 @@ describe('saves', () => {
       cards: null,
       reads: {},
       booked: null,
+      book: [],
     });
     expect(r.state.dog).toEqual({ name: 'Scout', since: 12, fed: 70, bond: 55 });
   });
@@ -612,6 +617,7 @@ describe('saves', () => {
       cards: null,
       reads: {},
       booked: null,
+      book: [],
     });
     expect(r.state.dogs).toEqual([{ name: 'Scout', years: 16, day: 301 }]);
   });
@@ -621,7 +627,14 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(24);
-    expect(r.state).toEqual({ ...JSON.parse(V24).state, table: null, cards: null, reads: {}, booked: null });
+    expect(r.state).toEqual({
+      ...JSON.parse(V24).state,
+      table: null,
+      cards: null,
+      reads: {},
+      booked: null,
+      book: [],
+    });
     expect(r.state.dream).toEqual({ pick: 'rig', pot: 300, owned: [] });
   });
 
@@ -630,7 +643,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(25);
-    expect(r.state).toEqual({ ...JSON.parse(V25).state, cards: null, reads: {}, booked: null });
+    expect(r.state).toEqual({ ...JSON.parse(V25).state, cards: null, reads: {}, booked: null, book: [] });
     expect(r.state.table?.who).toBe('hazel');
   });
 
@@ -655,6 +668,7 @@ describe('saves', () => {
         seen: [],
       },
       booked: null,
+      book: [],
     });
   });
 
@@ -668,6 +682,7 @@ describe('saves', () => {
       ...old,
       expedition: { ...old.expedition, food: 14, ledge: true, stove: true, seen: [] },
       booked: null,
+      book: [],
     });
   });
 
@@ -678,7 +693,30 @@ describe('saves', () => {
     expect(r.from).toBe(28);
     const old = JSON.parse(V28).state;
     expect(old.expedition).toMatchObject({ id: 'elcap', day: 2, pitch: 1, nights: 1 });
-    expect(r.state).toEqual({ ...old, expedition: { ...old.expedition, seen: [] } });
+    expect(r.state).toEqual({ ...old, expedition: { ...old.expedition, seen: [] }, book: [] });
+  });
+
+  it('load a real 0.988.0 save a night up El Cap: an empty book, and the trip goes in it when it’s over', () => {
+    const r = fromSave(V29);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(29);
+    const old = JSON.parse(V29).state;
+    expect(r.state).toEqual({ ...old, book: [] });
+    const home = act(r.state, { t: 'exped', id: 'elcap', do: 'bail' }).state;
+    expect(home.expedition).toBeNull();
+    expect(home.book).toEqual([
+      {
+        id: 'elcap',
+        day: home.day,
+        end: 'bail',
+        high: 1,
+        partner: 'hazel',
+        nights: 1,
+        seen: [],
+        told: false,
+      },
+    ]);
   });
 
   // These pretend a longer history: a v1 file that stored `money` where the state now has
@@ -688,7 +726,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(29);
+    expect(SAVE_VERSION).toBe(30);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;
