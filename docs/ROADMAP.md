@@ -2020,6 +2020,15 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Size:** 296.8 of 340 KB.
 - **E2e:** rap off; the trip's card ("You rapped off with 0 of 6 pitches fixed, with Hazel."); the book has it; that night at the fire, its story.
 
+**Status (1 Oct 2026): 24.6 built: El Capitan's scene.** 0.990.0. No save change, no rule change.
+- **The scene:** while you're on El Cap, the day's card sits over El Cap Meadow instead of the Lot: the wall above the forest, the Nose between the southwest face in the light and the southeast in shade, the Heart and the diorite North America on it, pines on the rim, the meadow to the road. Painted in code, once per light, into a screen-fixed canvas: there's no walking up there.
+- **Day and night, clear and storm:** by moon, with stars and other parties' headlamps; under a storm, the summit in cloud and the rain falling; a storm at night, both.
+- **Where you are:** your portaledge on the wall, as far up its line as the pitches you've fixed, with a lamp at night and the count beside it ("1 of 6").
+- **Pressed into the top half of the screen,** where the day's card leaves it showing: the summit under the HUD, the wall's foot about where the card starts. In landscape the card docks to the side and the meadow shows.
+- **The wall view:** El Cap's pitches are climbed on its own granite: a clean face, the corner and crack system, black streaks, the belay ledge with your partner on it (your partner belays up there now, not whoever's at the Lot), and under it the haul bag, the portaledge, and the meadow a long way down. A storm rains on it and the night darkens it, though you can't lead in either.
+- **Cerro Torre and Trango** keep the Lot and Roadside's wall until 24.7 and 24.8.
+- **Size:** 299.2 of 340 KB (El Cap: 2.4 KB).
+
 ---
 
 ### Phase 23 — Who you are: origins, paths, stances, and the Record Book
@@ -2398,3 +2407,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-01 — Phase 24.3 built: travel days each way (Trango's walk-in acclimatizes), the trip taking your signed-up shifts off with a week's notice and leaving them to miss without, no sign-ups while you're booked away; three leads a day on the wall; the odds carry your skin through the trip and the harness checks them over 300 trips. 0.987.0.
 - 2026-10-01 — Phase 24.4 built: six things that happen up on a wall (a dropped cam, a jammed haul bag, rockfall, a squall, another party in trouble, a dead stove), some mornings, never twice a trip, each two calls with their costs shown; the odds count them as days that might be lost. Save v29. 0.988.0.
 - 2026-10-01 — Phase 24.5 built: coming home. Every trip goes in the book (the Record Book's stub), with your high point on each objective; your partner closer or further for how it went; the trip's card on the way home; its story at the fire, once. The drawn keepsake card waits for 24.6–24.8's walls. Save v30. 0.989.0.
+- 2026-10-01 — Phase 24.6 built: El Capitan's scene, day and night, clear and storm, with your portaledge on the wall as high as you've got; its pitches climbed on its own granite, your partner belaying from the ledge. 0.990.0.
