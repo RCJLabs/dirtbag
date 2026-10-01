@@ -67,6 +67,8 @@ import {
   has,
   expedPitches,
   tripDays,
+  wallEventById,
+  wallNote,
   CLIMB,
   goCost,
   nightBack,
@@ -960,6 +962,23 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           sub: DOG_FAREWELL.sit,
           close: false,
           rows: DOG_FAREWELL.opts.map((o, i) => ({ label: o.label, run: () => game.answer(i) })),
+        };
+      }
+      // Phase 24.4: something happening up on the wall, and its calls.
+      if (e?.kind === 'wall') {
+        const w = wallEventById(e.id);
+        if (!w) return null;
+        const p = s.expedition?.partner;
+        const who = p ? (PEOPLE[p]?.name ?? p) : undefined;
+        return {
+          title: w.title,
+          sub: w.sit,
+          close: false,
+          rows: w.opts.map((o, i) => ({
+            label: o.label,
+            note: `${o.sub} ${wallNote(o.fx, who)}.`,
+            run: () => game.answer(i),
+          })),
         };
       }
       // Phase 22.6c: a walk-out, a stage at a time.

@@ -13,13 +13,14 @@ import { JOBS } from './content/jobs';
 import { ROUTES, WALLS } from './content/routes';
 import { EXPEDITIONS } from './content/expeditions';
 import { PEOPLE } from './content/people';
+import { WALL_EVENTS } from './content/wallevents';
 import { INGREDIENTS, MEAL_NAME } from './content/food';
 import { KNOCKS } from './content/knocks';
 import { HITCHERS, STOPS } from './content/road';
 import { EPICS } from './content/epics';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 28;
+export const SAVE_VERSION = 29;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -230,6 +231,11 @@ export const MIGRATIONS: Record<number, Migration> = {
         stove: !!def?.melt,
       },
     };
+  }, // v28 -> v29 (Phase 24.4): a trip under way has had nothing happen to it yet.
+  28: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const e = x.expedition;
+    return isObj(e) ? { ...x, expedition: { ...e, seen: [] } } : x;
   },
 };
 
@@ -419,6 +425,7 @@ export function validate(x: unknown): string[] {
     hitch: HITCHERS,
     stop: STOPS,
     epic: EPICS.map((e) => ({ id: e.kind })),
+    wall: WALL_EVENTS,
   } as Record<string, { id: string }[]>;
   const tb = x.table;
   const dice = (d: unknown) => Array.isArray(d) && d.every((v) => isInt(v) && v >= 1 && v <= 6);
@@ -530,7 +537,9 @@ export function validate(x: unknown): string[] {
         isInt(e.food) &&
         e.food >= 0 &&
         typeof e.ledge === 'boolean' &&
-        typeof e.stove === 'boolean'),
+        typeof e.stove === 'boolean' &&
+        Array.isArray(e.seen) &&
+        e.seen.every((v) => typeof v === 'string')),
     'expedition',
   );
   const bk = x.booked;

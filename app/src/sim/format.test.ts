@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bodyNote, clock, clockShort, costLabel, duration, fill, money } from './format';
+import { bodyNote, clock, clockShort, costLabel, duration, fill, money, wallNote } from './format';
 
 describe('format', () => {
   it('writes clock times the way the HUD shows them', () => {
@@ -21,6 +21,11 @@ describe('format', () => {
     expect(costLabel({ min: 60, cash: -12 }, 'gas')).toBe('1 h · $12 gas');
     expect(bodyNote({ energy: -25, skin: -8 })).toBe('−25 energy · −8 skin');
     expect(bodyNote({ energy: 15 })).toBe('+15 energy');
+    expect(wallNote({ day: true, energy: -10 })).toBe('The day goes · −10 energy');
+    expect(wallNote({ food: -1 })).toBe('−1 day of food and water');
+    expect(wallNote({ pitch: -2, bond: 1, psyche: 4 }, 'Hazel')).toBe(
+      '−2 pitches fixed · +4 psyche · +1 bond with Hazel',
+    );
     expect(bodyNote({ fed: 50, energy: 4 })).toBe('+50 food · +4 energy');
   });
 

@@ -839,6 +839,9 @@ export const EXPED = {
   // How many goes a day of yours on the wall usually is, for the odds' guess at your skin
   // as a long trip wears it down.
   typicalGoes: 3,
+  // Phase 24.4 [proposed]: something happens some mornings on the wall (`odds`), never the
+  // first, and at most `max` a trip.
+  events: { odds: 0.15, max: 2 },
   head: 2,
   // Phase 24.2 [proposed]. You book up to `ahead` days out. The forecast calls each day storm
   // or clear, right `acc` of the time on the day itself, falling to a coin toss `horizon` days

@@ -171,6 +171,7 @@ export {
   type CardGame,
 } from './cards';
 export { STYLES } from './content/cards';
+export { WALL_EVENTS, wallEventById, type WallEvent } from './content/wallevents';
 export { WORDS, WORD_GROUP, type Word, type WordGroup } from './content/glossary';
 export { DOG_FAREWELL } from './content/dog';
 export { HITCHERS, STOPS, type Hitcher, type RoadStop } from './content/road';

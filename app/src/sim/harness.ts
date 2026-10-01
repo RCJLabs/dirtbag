@@ -194,6 +194,11 @@ export function expedTrip(s0: GameState, id: string, hands: string): boolean {
   let s = run(run(s0, { t: 'exped', id, do: 'book', plan }), { t: 'exped', id, do: 'go' });
   if (!s.expedition) return false;
   for (let guard = 0; s.expedition && guard < 400; guard++) {
+    // Something happened up there (Phase 24.4): the bots take the first call.
+    if (s.encounter?.kind === 'wall') {
+      s = run(s, { t: 'answer', opt: 0 });
+      continue;
+    }
     const x = s.expedition;
     const r = expedPitches(id)[x.pitch]!;
     const storm = stormOn(s.seed, id, e, s.day);

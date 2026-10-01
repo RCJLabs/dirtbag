@@ -680,7 +680,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 28 ||
+  saved?.v !== 29 ||
   st.encounter !== null ||
   st.table !== null ||
   st.cards !== null ||
@@ -1676,6 +1676,20 @@ console.log('An expedition');
     await ex.locator('#sheet .opt', { hasText: text }).first().click();
   };
   const trip = () => ex.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.expedition);
+  const asking = () =>
+    ex.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.encounter?.kind === 'wall');
+  // Something happening up there (Phase 24.4) can come with any morning: take the first call.
+  const calls = async () => {
+    for (let i = 0; i < 3 && (await asking()); i++) {
+      const id = await ex.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.encounter.id);
+      log(`exped: up there, ${id}`);
+      await ex.locator('#sheet .opt').first().click();
+      await ex.waitForFunction(
+        (was) => JSON.parse(localStorage.getItem('dirtbag.save')).state.encounter?.id !== was,
+        id,
+      );
+    }
+  };
   await pick('Expeditions');
   await pick('El Capitan');
   // The planner (Phase 24.2): the odds with this plan and the haul bag; book it, and leave.
@@ -1701,6 +1715,7 @@ console.log('An expedition');
       (was) => JSON.parse(localStorage.getItem('dirtbag.save')).state.expedition?.day === was + 1,
       day,
     );
+    await calls();
   }
   // The first pitch's beta, on the wall, and back to the day's card.
   await pick('Lead pitch 1');
@@ -1725,6 +1740,24 @@ console.log('An expedition');
   if (!after || after.partner !== 'hazel' || after.nights !== before.nights + 1 || after.pitch < before.pitch)
     await fail(`after a day on El Cap: ${JSON.stringify({ before, after })}`);
   log(`exped: day ${after.day}, pitches fixed: ${after.pitch}, nights on the portaledge: ${after.nights}`);
+  // The haul bag jams (Phase 24.4): its card on the reload, each call's cost beside it; cut
+  // the food loose, and back to the day's card two days lighter.
+  await ex.evaluate(() => {
+    const f = JSON.parse(localStorage.getItem('dirtbag.save'));
+    f.state.encounter = { kind: 'wall', id: 'haulbag' };
+    localStorage.setItem('dirtbag.save', JSON.stringify(f));
+  });
+  await ex.reload({ waitUntil: 'load' });
+  await ex.waitForFunction(() => /^The Pig/.test(document.querySelector('#sheet-title')?.textContent ?? ''));
+  if (!(await sheetText()).includes('−2 days of food and water'))
+    await fail(`the haul bag's card doesn't say what cutting it costs: ${await sheetText()}`);
+  await ex.waitForTimeout(500);
+  await ex.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-exped-wall.png`) });
+  const pig = await trip();
+  await pick('Cut the bag loose');
+  await ex.waitForFunction(() => /El Capitan, day/.test(document.querySelector('#sheet')?.textContent ?? ''));
+  const cut = await trip();
+  if (cut.food !== pig.food - 2) await fail(`the haul bag cut loose: ${JSON.stringify({ pig, cut })}`);
   await ctx.close();
 }
 
