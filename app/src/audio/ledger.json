@@ -157,6 +157,14 @@
       "made": "code",
       "in": "src/audio/voices.ts"
     },
+    "clang": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "dice": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
     "knock": {
       "made": "code",
       "in": "src/audio/voices.ts"

@@ -94,6 +94,11 @@ import {
   RECIPES,
   BUSK,
   buskBlocked,
+  atFire,
+  bidWords,
+  gameBlocked,
+  GAMES,
+  yourRaise,
   knockById,
   drivewayHost,
   expedCost,
@@ -333,6 +338,14 @@ function dreamNote(s: GameState): string {
   return owned.length ? `${saving} Yours: ${owned.join(', ')}.` : saving;
 }
 
+// Phase 22.9a: who's at the fire, for the van.
+function fireNote(s: GameState): string {
+  const here = atFire(s).map((w) => PEOPLE[w]?.name ?? w);
+  return here.length
+    ? `${here.join(' and ')} ${here.length > 1 ? 'are' : 'is'} up. Horseshoes, or dice.`
+    : 'Just the coals.';
+}
+
 export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | null {
   switch (id.k) {
     case 'van': {
@@ -376,6 +389,10 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             note: 'Big walls a long way from here, bought in cash and climbed a day at a time.',
             run: () => game.openSheet({ k: 'expeds' }),
           },
+          // Phase 22.9a: the fire, and the games there.
+          ...(isNight(s.min)
+            ? [{ label: 'The fire', note: fireNote(s), run: () => game.openSheet({ k: 'fire' }) }]
+            : []),
           actRow(game, s, 'lot.sleep'),
           ...(plan.length
             ? [{ label: 'Run the plan', note: `${planLine(plan)}.`, run: () => game.runPlan(plan) }]
@@ -835,6 +852,67 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         sub: fill(k.sit, { who: host ? PEOPLE[host]!.name : 'Your friend' }),
         close: false,
         rows: k.opts.map((o, i) => ({ label: o.label, run: () => game.answer(i) })),
+      };
+    }
+
+    // Phase 22.9a: the fire at night, and the games with whoever's there.
+    case 'fire': {
+      const tb = s.table;
+      if (tb) {
+        const name = PEOPLE[tb.who]?.name ?? tb.who;
+        const up = yourRaise(tb);
+        return {
+          title: 'Liar’s dice',
+          sub: `Your cup: ${[...tb.mine].sort().join(' ')}. ${name} bids ${bidWords(tb.bid.n, tb.bid.face)}, between the two cups.`,
+          close: false,
+          rows: [
+            {
+              label: 'Call it',
+              note: `You’re right if there are fewer than ${bidWords(tb.bid.n, tb.bid.face)} under both cups.`,
+              run: () => game.dice('call'),
+            },
+            {
+              label: `Raise: ${bidWords(up.n, up.face)}`,
+              note: `${name} can call it, or let it go.`,
+              run: () => game.dice('raise'),
+            },
+          ],
+        };
+      }
+      const here = atFire(s).map((w) => PEOPLE[w]?.name ?? w);
+      const game_ = (label: string, g: 'shoes' | 'dice', note: string, run: () => void): Row => {
+        const why = gameBlocked(s, g);
+        return {
+          label,
+          cost: costLabel({ min: GAMES.min, energy: -GAMES.energy }),
+          note: why ? `${why}.` : note,
+          off: !!why,
+          run,
+        };
+      };
+      return {
+        title: 'The fire',
+        sub: !isNight(s.min)
+          ? 'Coals and a coffee pot. It’s lit again after dark.'
+          : here.length
+            ? `${here.join(' and ')}, and a camp chair with your name on it.`
+            : 'Just you and the coals tonight.',
+        close: true,
+        rows: [
+          actRow(game, s, 'lot.sit'),
+          game_(
+            'Horseshoes',
+            'shoes',
+            `Four throws each against ${here.join(' and ') || 'whoever’s up'}. Throw as the marker crosses the band.`,
+            () => game.shoesStart(),
+          ),
+          game_(
+            'Liar’s dice',
+            'dice',
+            `Five dice each, no wilds, a hand with ${here[0] ?? 'whoever’s up'}. One bid: call it or raise.`,
+            () => game.dice('deal'),
+          ),
+        ],
       };
     }
 

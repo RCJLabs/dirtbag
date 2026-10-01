@@ -1884,6 +1884,14 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The bots** don't save for dreams. Every harness target passes.
 - **E2e:** a climber with $3,000 at the van picks the Rig, puts everything in, and claims it: every upgrade fitted, $200 left in the jar.
 
+**Status (1 Oct 2026): 22.9a built: horseshoes and liar's dice.** Save v25, 0.981.0. 22.9b (blackjack and hold'em, after Evan's Play Console content rating) and 22.9c (the glossary) are next.
+- **The fire at night:** tap it (or "The fire" at the van after dark) for a card: sit a while, as before, or a game. Hazel's there every night; Sage some nights (40%) once you're regulars [proposed]. Each game is an hour and 3 energy, once a night.
+- **Horseshoes:** four throws on busking's beat, a ringer (3) in the band and a leaner (1) near it, against everyone there; their throws come from the seed (a ringer 25% of the time, a leaner 35%) [proposed]. A clang that rings for a ringer and thuds for a miss.
+- **Liar's dice:** five dice each, no wilds, one bid. Their opener is on the face they hold most of: what they hold, one more, or two (a bluff), 35/40/25% [proposed]. Call it, or raise (the least that beats it, on your best face); they call a raise that needs more than one of your dice. What's in your cup is the tell: holding none of their face, calling is right 64% of the time; one, 25%; two, never. Picking well wins about three hands in four. The hand holds the night until it's played, and saves.
+- **What they pay** [proposed]: bond with whoever's playing, as a day climbing together does, and no faster: a person's bond moves once a day, climbing or at the fire, however many games. That's company, for psyche. v0.956's paid +1 bond to all three of Sage, Rico and Mara per game, with no time and no cap, the audit's bond farm (`docs/audit/social.md` §1.3); its psyche and rep bonuses aren't carried.
+- **The bots** don't play. Every harness target passes.
+- **E2e:** half nine at the Lot with Hazel up: the van, the fire, four horseshoes thrown on the beat, back to the fire, and a hand of liar's dice called. Both heard, both once tonight, and Hazel's bond up one.
+
 ---
 
 ### Phase 24 — Expeditions as trips
@@ -2282,3 +2290,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Phase 22.6c built, and 22.6 with it: v0.956's five walk-out epics (the dark, a storm, off route, the cold, a stuck rope), three stages of calls that add up to getting out clean, rough or hurt; triggered leaving a crag late, spent, alone, in rain or winter; a headlamp at the gear shop. Every event has a sound and an e2e step. Save v22. 0.978.0.
 - 2026-09-30 — Phase 22.7 built: Scout's life, v0.956's lifecycle: perks by bond (the fire, finds on his rounds, halved tickets), dog-years, going gray, two vet scares with bills, and at 16 his last day, spent your way and kept in the journal; no new stray for a month after, and the next has a name of his own. Save v23. 0.979.0.
 - 2026-09-30 — Phase 22.8 built: dreams, v0.956's three at its prices (the Dream Rig, the War Chest, Home Base), saved for in a jar at the van that the card and the bills never touch and the broke check counts; Home Base says exactly what it stops charging. Save v24. 0.980.0.
+- 2026-10-01 — Phase 22.9a built: horseshoes on busking's beat and liar's dice a bid at a time, at the fire at night with Hazel and (some nights) Sage; each an hour, once a night, and bond with whoever's playing no faster than a day climbing together (v0.956's paid everyone, uncapped). Save v25. 0.981.0.

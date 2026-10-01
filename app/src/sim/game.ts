@@ -31,6 +31,19 @@ import {
 } from './content/dog';
 import { dogAge, nextDogName, scoutFinds, type Perk } from './scout';
 import { expedCost, owns } from './dreams';
+import {
+  atFire,
+  bidSaid,
+  bidWords,
+  count,
+  dealDice,
+  gameBlocked,
+  theirShoes,
+  theyCall,
+  ringersSaid,
+  throwPoints,
+  yourRaise,
+} from './fire';
 import { dreamById } from './content/dreams';
 import { PEOPLE, RACE_ROUTE, RIVAL_FA_NAMES, TALK } from './content/people';
 import { ACT_I_END } from './content/story';
@@ -81,6 +94,7 @@ import {
   SCARS,
   BUSK,
   EVENTS,
+  GAMES,
   PSYCHE,
   SICK,
   SUPPLIES,
@@ -203,6 +217,7 @@ export function newGame(seed: string): GameState {
     encounter: null,
     dogs: [],
     dream: { pick: null, pot: 0, owned: [] },
+    table: null,
     wall: null,
     expedition: null,
     speed: { pb: null, runs: 0, day: 0 },
@@ -1110,6 +1125,9 @@ export function act(s0: GameState, a: Action): Result {
   // A Free Solo run that ended: nothing more happens to this climber.
   if (s.dead) return refuse('That climber is gone.');
 
+  // A hand of liar's dice (Phase 22.9a): finish it first.
+  if (s.table && a.t !== 'dice' && a.t !== 'stand' && a.t !== 'pick') return refuse('Finish the hand first.');
+
   // Someone at the door (Phase 22.6): nothing happens until you've answered.
   if (s.encounter && a.t !== 'answer' && a.t !== 'stand' && a.t !== 'pick')
     return refuse(s.encounter.kind === 'knock' ? 'Someone’s at the door.' : 'First things first: an answer.');
@@ -1513,6 +1531,74 @@ export function act(s0: GameState, a: Action): Result {
       if (Object.keys(got).length) line(`${skillsNote(got)}.`);
       else if (runsToday(s) === SPEED.fresh + 1)
         line('Your legs are done learning today. The clock doesn’t care.');
+      break;
+    }
+
+    // Phase 22.9a: horseshoes at the fire, against everyone there. Bond with each, as a day
+    // climbing together gives, and no more than one a day.
+    case 'shoes': {
+      const why = gameBlocked(s, 'shoes');
+      if (why) return refuse(`${why}.`);
+      if (a.throws.length !== GAMES.shoes.throws || !a.throws.every((x) => [0, 0.5, 1].includes(x)))
+        return refuse('Not a game.');
+      const mine = a.throws.reduce((t, x) => t + throwPoints(x), 0);
+      const ringers = a.throws.filter((x) => x === 1).length;
+      const players = atFire(s);
+      spend({ min: GAMES.min, energy: -GAMES.energy });
+      s.today.push('shoes');
+      const results = players.map((w) => {
+        const them = theirShoes(s, w);
+        const name = PEOPLE[w]?.name ?? w;
+        climbedWith(w);
+        return mine > them
+          ? `you beat ${name}, ${mine} to ${them}`
+          : mine < them
+            ? `${name} beats you, ${them} to ${mine}`
+            : `you and ${name} tie at ${mine}`;
+      });
+      line(
+        `${ringersSaid(ringers)} in four throws, and ${results.join('; ')}. The stake rings the rest of the night in your head.`,
+      );
+      break;
+    }
+
+    // Phase 22.9a: a hand of liar's dice with whoever's first at the fire.
+    case 'dice': {
+      if (a.do === 'deal') {
+        const why = gameBlocked(s, 'dice');
+        if (why) return refuse(`${why}.`);
+        const who = atFire(s)[0]!;
+        spend({ min: GAMES.min, energy: -GAMES.energy });
+        s.today.push('dice');
+        s.table = dealDice(s, who);
+        climbedWith(who);
+        break;
+      }
+      const t = s.table;
+      if (!t) return refuse('No hand on the go.');
+      const name = PEOPLE[t.who]?.name ?? t.who;
+      const total = (face: number) => count(t.mine, face) + count(t.theirs, face);
+      s.table = null;
+      if (a.do === 'call') {
+        const n = total(t.bid.face);
+        line(
+          n >= t.bid.n
+            ? `You call it. The cups come up: ${bidWords(n, t.bid.face)}. ${name} was telling the truth, and enjoys it.`
+            : `You call it. The cups come up: ${bidWords(n, t.bid.face)}. ${name} was bluffing, and takes it well, mostly.`,
+        );
+        break;
+      }
+      const bid = yourRaise(t);
+      if (!theyCall(t, bid)) {
+        line(`${bidSaid(bid.n, bid.face)}, you say. ${name} looks into the cup a long time and lets it go.`);
+        break;
+      }
+      const n = total(bid.face);
+      line(
+        n >= bid.n
+          ? `${bidSaid(bid.n, bid.face)}, you say, and ${name} calls it. ${bidSaid(n, bid.face)} on the table. Yours.`
+          : `${bidSaid(bid.n, bid.face)}, you say, and ${name} calls it. ${bidSaid(n, bid.face)} on the table. ${name} is insufferable about it.`,
+      );
       break;
     }
 

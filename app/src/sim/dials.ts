@@ -519,6 +519,22 @@ export const EVENTS = {
   fresh: 3,
 };
 
+// Phase 22.9a: the games at the fire [proposed]. Each takes `min` and `energy`, once a night.
+// They pay bond with whoever's playing, as a day climbing together does, and no faster: a
+// person's bond moves once a day, climbing or at the fire (no game out-bonds its time).
+// Sage stays over at the Lot `sage` of nights once you're regulars. Horseshoes is `throws`
+// throws, a ringer `ringer` points and a leaner `leaner`; the others throw a ringer `odds`
+// of the time and a leaner `lean`. Liar's dice is `n` dice each, no wilds, and one bid: their
+// opener is what they hold (safe), one more, or two more (a bluff), `bids` of the time, so
+// what's in your cup is the tell; they call a raise that needs more than `call` of your dice.
+export const GAMES = {
+  min: 60,
+  energy: 3,
+  sage: 0.4,
+  shoes: { throws: 4, ringer: 3, leaner: 1, odds: 0.25, lean: 0.35 },
+  dice: { n: 5, bids: [0.35, 0.4], call: 1 },
+};
+
 // Phase 22.8: dreams, v0.956's. What the Rig takes off every spot, and the War Chest off
 // every expedition. Their prices are content/dreams.ts's.
 export const DREAM = { rig: 0.5, warchest: 0.5 };

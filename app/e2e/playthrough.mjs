@@ -675,8 +675,9 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 24 ||
+  saved?.v !== 25 ||
   st.encounter !== null ||
+  st.table !== null ||
   !Array.isArray(st.deck?.seen) ||
   !(st.guitar >= 0) ||
   !Array.isArray(st.seen) ||
@@ -1432,6 +1433,97 @@ console.log('A dream');
     await fail(`after the Rig: ${JSON.stringify(after.dream)}, ${JSON.stringify(after.gear)}`);
   await jar.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-dream.png`) });
   log('dream: the Dream Rig, claimed from the jar, and fitted out');
+  await ctx.close();
+}
+
+console.log('Games at the fire');
+// Phase 22.9a. Half nine at the Lot, Hazel up: the van, the fire, four horseshoes thrown as
+// the marker crosses the band (the busking beat), back to the fire, and a hand of liar's
+// dice called. Both are heard, both are played once tonight, and Hazel's bond moves once.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  saved.state = {
+    ...saved.state,
+    day: 20,
+    min: 21 * 60 + 30,
+    at: 'lot',
+    x: null,
+    energy: 60,
+    today: [],
+    people: { ...saved.state.people, hazel: { bond: 12, last: 18 } },
+    deck: { ...saved.state.deck, knock: 20 },
+    encounter: null,
+    table: null,
+  };
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  await ctx.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+    window.cues = [];
+    window.addEventListener('dirtbag:sound', (e) => window.cues.push(e.detail));
+  }, JSON.stringify(saved));
+  const fire = await ctx.newPage();
+  fire.on('pageerror', (e) => problems.push(`fire: uncaught: ${e.message}`));
+  fire.on('console', (m) => m.type() === 'error' && problems.push(`fire: console.error: ${m.text()}`));
+  await fire.goto(server.url, { waitUntil: 'load' });
+  await fire.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Map');
+  await fire.waitForTimeout(600);
+  await fire.mouse.click(100, 560);
+  await fire.waitForFunction(() => /Your van/.test(document.querySelector('#sheet')?.textContent ?? ''));
+  const pick = async (text) => {
+    await fire.waitForFunction(
+      (t) => (document.querySelector('#sheet')?.textContent ?? '').includes(t),
+      text,
+    );
+    await fire.locator('#sheet .opt', { hasText: text }).first().click();
+  };
+  await pick('The fire');
+  await pick('Horseshoes');
+  await fire.waitForSelector('#busk');
+  for (let n = 0; n < 4; n++) {
+    const ok = await fire.evaluate(
+      () =>
+        new Promise((done) => {
+          const t0 = performance.now();
+          const look = () => {
+            const m = document.querySelector('#busk .mark');
+            const x = m ? parseFloat(getComputedStyle(m).getPropertyValue('--x')) : NaN;
+            if (x >= 46 && x <= 54) {
+              document
+                .querySelector('#b-strum')
+                .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+              done(true);
+            } else if (performance.now() - t0 > 5000) done(false);
+            else requestAnimationFrame(look);
+          };
+          look();
+        }),
+    );
+    if (!ok) await fail('fire: the shoe never crossed the band');
+    await fire.waitForTimeout(120);
+  }
+  await fire.waitForFunction(() =>
+    /in four throws.*Hazel/.test(document.querySelector('#b-status')?.textContent ?? ''),
+  );
+  const shoes = await fire.evaluate(() => document.querySelector('#b-status').textContent);
+  await fire.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-horseshoes.png`) });
+  await fire.click('#b-done');
+  await pick('Liar’s dice');
+  await fire.waitForFunction(() => /Your cup/.test(document.querySelector('#sheet')?.textContent ?? ''));
+  await fire.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-liars-dice.png`) });
+  await pick('Call it');
+  await fire.waitForFunction(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.table === null);
+  const after = await fire.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  const heard = await fire.evaluate(() => window.cues);
+  if (
+    !after.today.includes('shoes') ||
+    !after.today.includes('dice') ||
+    after.people.hazel.bond !== 13 ||
+    after.people.hazel.last !== 20 ||
+    !heard.includes('clang') ||
+    !heard.includes('dice')
+  )
+    await fail(`after the fire: ${JSON.stringify({ today: after.today, hazel: after.people.hazel, heard })}`);
+  log(`fire: ${shoes}`);
   await ctx.close();
 }
 
