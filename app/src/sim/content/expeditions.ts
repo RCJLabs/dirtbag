@@ -29,6 +29,8 @@ export interface ExpeditionDef {
   pays: number;
   blurb: string;
   thin: number;
+  // Phase 24.2: the water up there is snow, melted on a stove (Cerro Torre, Trango).
+  melt?: true;
   // The pitches, bottom to top: a name, a grade and a style each.
   line: [string, number, Style][];
 }
@@ -74,6 +76,7 @@ export const EXPEDITIONS: Record<string, ExpeditionDef> = {
       'A fang of rime ice in the worst weather on the planet. You will wait out storms, and the good days are everything.',
     // No ice climbing in the game (Evan's call): rock pitches, narrowed by the cold and wind.
     thin: 0.65,
+    melt: true,
     line: [
       ['The Col of Patience', 10, 'endurance'],
       ['The Ice Towers', 11, 'crack'],
@@ -99,6 +102,7 @@ export const EXPEDITIONS: Record<string, ExpeditionDef> = {
     blurb:
       'A twenty-thousand-foot granite spire at the edge of the world. Weeks in, and one shot at the top.',
     thin: 0.65,
+    melt: true,
     line: [
       ['The Approach Gully', 11, 'endurance'],
       ['The Lower Cracks', 12, 'crack'],

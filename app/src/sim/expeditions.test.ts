@@ -6,10 +6,23 @@ import { describe, expect, it } from 'vitest';
 import { gradeOf, needFor } from './climber';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches } from './content/expeditions';
 import { EXPED } from './dials';
-import { nightBack, partners, stormOn, summitOdds, yourPitch } from './expeditions';
+import {
+  bagKg,
+  defaultPlan,
+  forecastCall,
+  nightBack,
+  nightGives,
+  partners,
+  planCost,
+  planOdds,
+  stormChance,
+  stormOn,
+  summitOdds,
+  yourPitch,
+} from './expeditions';
 import { act, newGame } from './game';
 import { expedTrip } from './harness';
-import type { Action, GameState } from './types';
+import type { Action, GameState, TripPlan } from './types';
 
 const k = (g: number) => {
   const n = needFor(g) + 0.3;
@@ -39,6 +52,13 @@ const ready = (grade: number, seed = 'exped', over: Partial<GameState> = {}): Ga
   ...over,
 });
 const sent = { sent: true, hi: 16, fellAt: null, tried: ['A1'], skin: 0 };
+// Book the plan the planner starts from (or this one), and leave today.
+const leave = (s: GameState, id = 'elcap', over: Partial<TripPlan> = {}): GameState =>
+  play(
+    s,
+    { t: 'exped', id, do: 'book', plan: { ...defaultPlan(s, id)!, ...over } },
+    { t: 'exped', id, do: 'go' },
+  );
 // A clear day on El Cap for this seed, from day `from`.
 const clear = (s: GameState, from = s.day) => {
   for (let d = from; ; d++) if (!stormOn(s.seed, 'elcap', EXPEDITIONS.elcap!, d)) return d;
@@ -74,23 +94,123 @@ describe('expedition pitches', () => {
   });
 });
 
-describe('going', () => {
+describe('booking and going', () => {
   it('needs the grade, the money in hand, and a partner close enough, unless you solo', () => {
-    expect(refused(act(ready(6), { t: 'exped', id: 'elcap', do: 'go' }))).toMatch(/V7/);
-    expect(refused(act(ready(8, 'x', { cash: 800 }), { t: 'exped', id: 'elcap', do: 'go' }))).toMatch(
-      /\$900/,
-    );
-    const lonely = ready(8, 'x', { people: { hazel: { bond: 1, last: 0 } } });
-    expect(refused(act(lonely, { t: 'exped', id: 'elcap', do: 'go' }))).toMatch(/close enough/);
+    const plan = defaultPlan(ready(8), 'elcap')!;
+    expect(refused(act(ready(6), { t: 'exped', id: 'elcap', do: 'book', plan }))).toMatch(/V7/);
+    const cost = planCost(ready(8), 'elcap', plan);
+    expect(cost).toBe(EXPEDITIONS.elcap!.cost + plan.food * EXPED.food);
     expect(
-      act({ ...lonely, mode: 'solo' }, { t: 'exped', id: 'elcap', do: 'go' }).state.expedition?.partner,
-    ).toBeNull();
-    // The closest comes.
+      refused(act(ready(8, 'x', { cash: cost - 1 }), { t: 'exped', id: 'elcap', do: 'book', plan })),
+    ).toMatch(new RegExp(`\\$${cost}`));
+    const lonely = ready(8, 'x', { people: { hazel: { bond: 1, last: 0 } } });
+    expect(defaultPlan(lonely, 'elcap')).toBeNull();
+    expect(refused(act(lonely, { t: 'exped', id: 'elcap', do: 'book', plan }))).toMatch(/close enough/);
+    expect(leave({ ...lonely, mode: 'solo' }).expedition?.partner).toBeNull();
+    // The closest comes, unless you choose.
     expect(partners(ready(8))).toEqual(['hazel', 'sage']);
-    const s = play(ready(8), { t: 'exped', id: 'elcap', do: 'go' });
-    expect(s.expedition).toEqual({ id: 'elcap', day: 1, pitch: 0, partner: 'hazel', nights: 0 });
-    expect(s.cash).toBe(5000 - EXPEDITIONS.elcap!.cost);
+    expect(leave(ready(8), 'elcap', { partner: 'sage' }).expedition?.partner).toBe('sage');
+    const s = leave(ready(8));
+    expect(s.expedition).toEqual({
+      id: 'elcap',
+      day: 1,
+      pitch: 0,
+      partner: 'hazel',
+      nights: 0,
+      food: plan.food,
+      ledge: true,
+      stove: false,
+    });
+    expect(s.cash).toBe(5000 - cost);
+    expect(s.booked).toBeNull();
     expect(refused(act(s, { t: 'travel', to: 'gym' }))).toMatch(/El Capitan/);
+  });
+
+  it('books up to a week out; you leave on the day, and miss it if you don’t', () => {
+    const s = ready(9);
+    const plan = { ...defaultPlan(s, 'elcap')!, day: s.day + 3 };
+    expect(
+      refused(act(s, { t: 'exped', id: 'elcap', do: 'book', plan: { ...plan, day: s.day + 8 } })),
+    ).toMatch(/7 days/);
+    const booked = play(s, { t: 'exped', id: 'elcap', do: 'book', plan });
+    expect(booked.booked).toMatchObject({ id: 'elcap', day: s.day + 3 });
+    expect(refused(act(booked, { t: 'exped', id: 'elcap', do: 'go' }))).toMatch(/flight is on day/);
+    // Day three comes and goes at the van.
+    let late = booked;
+    for (let n = 0; n < 4; n++)
+      late = play(
+        { ...late, min: 21 * 60, deck: { ...late.deck, knock: late.day, last: late.day } },
+        { t: 'act', act: 'lot.sleep' },
+      );
+    expect(late.booked).toBeNull();
+    expect(late.log.some((l) => /left without you/.test(l.text))).toBe(true);
+  });
+
+  it('gives half back if you cancel', () => {
+    const s = ready(9);
+    const plan = defaultPlan(s, 'elcap')!;
+    const c = play(
+      s,
+      { t: 'exped', id: 'elcap', do: 'book', plan },
+      { t: 'exped', id: 'elcap', do: 'cancel' },
+    );
+    expect(c.booked).toBeNull();
+    expect(c.cash).toBe(
+      5000 - planCost(s, 'elcap', plan) + Math.round(planCost(s, 'elcap', plan) * EXPED.refund),
+    );
+  });
+
+  it('packs a bag under its limit: water twice the weight without a stove where it’s snow', () => {
+    const torre = EXPEDITIONS.cerrotorre!;
+    expect(bagKg(torre, 5, true, false)).toBe(5 * EXPED.haul.perDay * 2 + EXPED.haul.ledge);
+    expect(bagKg(torre, 5, true, true)).toBe(5 * EXPED.haul.perDay + EXPED.haul.ledge + EXPED.haul.stove);
+    expect(bagKg(EXPEDITIONS.elcap!, 5, false, false)).toBe(5 * EXPED.haul.perDay);
+    const s = ready(12);
+    const heavy = { ...defaultPlan(s, 'cerrotorre')!, food: 15, stove: false };
+    expect(refused(act(s, { t: 'exped', id: 'cerrotorre', do: 'book', plan: heavy }))).toMatch(
+      /won’t take it/,
+    );
+    // Every kg over the free load costs a night's energy, and no portaledge halves it.
+    expect(nightGives(0, true, EXPED.haul.free)).toBe(nightBack(0));
+    expect(nightGives(0, true, EXPED.haul.free + 10)).toBe(Math.round(nightBack(0) - 10 * EXPED.haul.perKg));
+    expect(nightGives(0, false, 0)).toBe(Math.round(nightBack(0) * EXPED.noLedge));
+  });
+});
+
+describe('the forecast', () => {
+  it('knows today, gets the days ahead right less often the further out, and the odds use it', () => {
+    const s = ready(9, 'fc');
+    const e = EXPEDITIONS.elcap!;
+    expect(stormChance(s, 'elcap', s.day)).toBe(stormOn(s.seed, 'elcap', e, s.day) ? 1 : 0);
+    const right = (lead: number) => {
+      let n = 0;
+      for (let d = 0; d < 400; d++) {
+        const t = { ...s, day: s.day + d };
+        const day = t.day + lead;
+        if ((forecastCall(t, 'elcap', day) === 'storm') === stormOn(s.seed, 'elcap', e, day)) n++;
+      }
+      return n / 400;
+    };
+    expect(right(1)).toBeGreaterThan(right(8));
+    expect(right(1)).toBeGreaterThan(0.85);
+    // A storm called is likelier than the climate, a clear call less likely.
+    for (let d = 1; d < EXPED.forecast.horizon; d++) {
+      const c = stormChance(s, 'elcap', s.day + d);
+      if (forecastCall(s, 'elcap', s.day + d) === 'storm') expect(c).toBeGreaterThan(e.stormOdds);
+      else expect(c).toBeLessThan(e.stormOdds);
+    }
+  });
+
+  it('moves the odds with the plan: a better partner, a dry week, a bag that’s too light', () => {
+    const s = ready(9, 'plan');
+    const plan = defaultPlan(s, 'elcap')!;
+    const base = planOdds(s, 'elcap', plan);
+    expect(planOdds(s, 'elcap', { ...plan, partner: 'sage' })).toBeGreaterThan(base);
+    expect(planOdds(s, 'elcap', { ...plan, food: 2 })).toBeLessThan(base);
+    const days = Array.from({ length: EXPED.ahead + 1 }, (_, d) =>
+      planOdds(s, 'elcap', { ...plan, day: s.day + d }),
+    );
+    expect(Math.max(...days)).toBeGreaterThan(Math.min(...days));
   });
 });
 
@@ -98,7 +218,7 @@ describe('up there', () => {
   const start = (grade = 9) => {
     let s = ready(grade);
     s = { ...s, day: clear(s) };
-    return play(s, { t: 'exped', id: 'elcap', do: 'go' });
+    return leave(s);
   };
 
   it('climbs your pitches as goes, in order, and only yours', () => {
@@ -120,7 +240,7 @@ describe('up there', () => {
     expect(handed.state.energy).toBe(100 - EXPED.follow);
     expect(refused(act(handed.state, { t: 'exped', id: 'elcap', do: 'follow' }))).toMatch(/the day/);
     // Alone, there's nobody to hand it to.
-    s = play({ ...ready(9), mode: 'solo', day: clear(ready(9)) }, { t: 'exped', id: 'elcap', do: 'go' });
+    s = leave({ ...ready(9), mode: 'solo', day: clear(ready(9)) });
     expect(refused(act(s, { t: 'exped', id: 'elcap', do: 'follow' }))).toMatch(/alone/);
   });
 
@@ -131,17 +251,21 @@ describe('up there', () => {
     const e0 = s.energy;
     s = play(s, { t: 'exped', id: 'elcap', do: 'camp' });
     expect(s.expedition).toMatchObject({ day: 2, nights: 1 });
-    expect(s.energy).toBe(Math.min(100, e0 + nightBack(0)));
+    const x = s.expedition!;
+    expect(s.energy).toBe(
+      Math.min(100, e0 + nightGives(0, true, bagKg(EXPEDITIONS.elcap!, x.food, true, false))),
+    );
     expect(s.fed).toBeGreaterThanOrEqual(EXPED.ration);
+    expect(s.expedition!.food).toBe(defaultPlan(ready(9), 'elcap')!.food - 1);
   });
 
   it('won’t lead in a storm or in the dark', () => {
     let s = ready(9);
     let d = s.day;
     while (!stormOn(s.seed, 'elcap', EXPEDITIONS.elcap!, d)) d++;
-    s = play({ ...s, day: d }, { t: 'exped', id: 'elcap', do: 'go' });
+    s = leave({ ...s, day: d });
     expect(refused(act(s, { t: 'go', route: 'elcap-1' }))).toMatch(/storm/);
-    const dark = play({ ...ready(9), day: clear(ready(9)) }, { t: 'exped', id: 'elcap', do: 'go' });
+    const dark = leave({ ...ready(9), day: clear(ready(9)) });
     expect(refused(act({ ...dark, min: 20 * 60 }, { t: 'go', route: 'elcap-1' }))).toMatch(/dark/);
   });
 
@@ -158,20 +282,20 @@ describe('up there', () => {
     out = play(out, { t: 'exped', id: 'elcap', do: 'camp' });
     expect(out.expedition).toBeNull();
     expect(play(start(), { t: 'exped', id: 'elcap', do: 'bail' }).expedition).toBeNull();
+    // Out of food and water: down at the next night.
+    let dry = start();
+    dry = { ...dry, expedition: { ...dry.expedition!, food: 0 } };
+    dry = play(dry, { t: 'exped', id: 'elcap', do: 'camp' });
+    expect(dry.expedition).toBeNull();
+    expect(dry.log.some((l) => /water's gone/.test(l.text))).toBe(true);
   });
 });
 
 describe('the odds', () => {
-  const from = (s: GameState) => ({
-    day: 1,
-    pitch: 0,
-    energy: s.energy,
-    nights: 0,
-    partner: s.expedition!.partner,
-  });
+  const from = (s: GameState) => ({ ...s.expedition!, day: 1, on: s.day, energy: s.energy });
   it('rise with your grade and a stronger partner, and the gate hardly ever goes', () => {
     const odds = (g: number, people: GameState['people']) => {
-      const s = play(ready(g, 'odds', { people }), { t: 'exped', id: 'elcap', do: 'go' });
+      const s = leave(ready(g, 'odds', { people }));
       return summitOdds(s, 'elcap', from(s));
     };
     const hazel = { hazel: { bond: 8, last: 0 } };
@@ -188,7 +312,7 @@ describe('the odds', () => {
     const N = 40;
     for (let i = 0; i < N; i++) {
       const s0 = ready(9, `cal-${i}`);
-      const s = play(s0, { t: 'exped', id: 'elcap', do: 'go' });
+      const s = leave(s0);
       shown += summitOdds(s, 'elcap', from(s));
       if (expedTrip(s0, 'elcap', `hands-${i}`)) got++;
     }

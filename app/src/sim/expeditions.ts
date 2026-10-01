@@ -14,7 +14,8 @@ import type { RouteDef, WallDef } from './content/routes';
 import { gradeOf } from './climber';
 import { BOND, CLIMB, DAY, EXPED, WALL } from './dials';
 import { Rng } from './rng';
-import type { GameState } from './types';
+import type { GameState, TripPlan } from './types';
+import { expedCost } from './dreams';
 
 const clamp = (v: number, lo: number, hi: number) => (v < lo ? lo : v > hi ? hi : v);
 
@@ -30,6 +31,46 @@ export const yourPitch = (pitch: number, solo: boolean): boolean =>
 // A night on the portaledge: what it gives back, less each night.
 export const nightBack = (nights: number): number =>
   Math.round(EXPED.night.energy * EXPED.night.decay ** nights);
+
+// Phase 24.2. The haul bag's weight: food and water by the day (twice the weight where the
+// water's snow and there's no stove to melt it), the portaledge, the stove.
+export function bagKg(e: ExpeditionDef, food: number, ledge: boolean, stove: boolean): number {
+  const H = EXPED.haul;
+  return food * H.perDay * (e.melt && !stove ? 2 : 1) + (ledge ? H.ledge : 0) + (stove ? H.stove : 0);
+}
+// What a night gives back once the bag's been hauled: the portaledge or not, and every kg over
+// the free load costing energy for tomorrow's hauling.
+export const nightGives = (nights: number, ledge: boolean, kg: number): number =>
+  Math.max(
+    0,
+    Math.round(
+      nightBack(nights) * (ledge ? 1 : EXPED.noLedge) - Math.max(0, kg - EXPED.haul.free) * EXPED.haul.perKg,
+    ),
+  );
+
+// The forecast for a day out there, as it stands today: storm or clear, right more often the
+// nearer the day. Today itself, you can see it.
+const accuracy = (lead: number): number =>
+  lead <= 0 ? 1 : Math.max(0.5, 1 - lead / (2 * EXPED.forecast.horizon));
+export function forecastCall(s: GameState, id: string, day: number): 'storm' | 'clear' {
+  const e = EXPEDITIONS[id]!;
+  const lead = day - s.day;
+  const truth = stormOn(s.seed, id, e, day);
+  const flip = Rng.fromStream(s.seed, 'events').derive(`fc-${id}-${day}-${lead}`).next() >= accuracy(lead);
+  return truth !== flip ? 'storm' : 'clear';
+}
+// The chance of a storm that day, from what the forecast says and how often it's right that
+// far out.
+export function stormChance(s: GameState, id: string, day: number): number {
+  const e = EXPEDITIONS[id]!;
+  const lead = day - s.day;
+  if (lead <= 0) return stormOn(s.seed, id, e, day) ? 1 : 0;
+  const a = accuracy(lead);
+  const q = e.stormOdds;
+  return forecastCall(s, id, day) === 'storm'
+    ? (q * a) / (q * a + (1 - q) * (1 - a))
+    : (q * (1 - a)) / (q * (1 - a) + (1 - q) * a);
+}
 
 // A partner's grade: they've been climbing too. Yours, give or take what they're like
 // (content/people.ts: Hazel a grade under you, Sage one over) [proposed].
@@ -92,11 +133,21 @@ const goesFor = (energy: number): number =>
 // blocks a go at a time while the light and your energy last, at each pitch's chance for
 // you; your partner's on the seed's odds. Exact over those, with your send chances as the
 // go's model has them for you today.
-export function summitOdds(
-  s: GameState,
-  id: string,
-  from: { day: number; pitch: number; energy: number; nights: number; partner: string | null },
-): number {
+export interface OddsFrom {
+  // The day of the trip, and the calendar day it is (or will be, before you leave).
+  day: number;
+  on: number;
+  pitch: number;
+  energy: number;
+  nights: number;
+  partner: string | null;
+  food: number;
+  ledge: boolean;
+  stove: boolean;
+}
+// `force`: today's choice on your block, made for you (the bots weigh both); otherwise the
+// better of the two.
+export function summitOdds(s: GameState, id: string, from: OddsFrom, force?: 'lead' | 'hand'): number {
   const e = EXPEDITIONS[id]!;
   const ps = expedPitches(id);
   const solo = from.partner === null;
@@ -122,8 +173,21 @@ export function summitOdds(
     const key = `${day}/${pitch}/${energy}/${nights}`;
     const hit = memo.get(key);
     if (hit !== undefined) return hit;
-    const night = (spent: number) => Math.min(100, Math.max(0, energy - spent) + nightBack(nights));
-    const wait = go(day + 1, pitch, night(0), nights + 1);
+    // A night, and on to tomorrow: if there's food and water left for it.
+    const food = from.food - (nights - from.nights);
+    const kg = bagKg(e, Math.max(0, food - 1), from.ledge, from.stove);
+    const next = (pt: number, spent: number): number =>
+      pt >= ps.length
+        ? 1
+        : food <= 0
+          ? 0
+          : go(
+              day + 1,
+              pt,
+              Math.min(100, Math.max(0, energy - spent) + nightGives(nights, from.ledge, kg)),
+              nights + 1,
+            );
+    const wait = next(pitch, 0);
     // A day of your partner's leading, from here: each try fixes the pitch they're on or not.
     const theirs = (): number => {
       let dist = new Map<number, number>([[pitch, 1]]);
@@ -141,7 +205,7 @@ export function summitOdds(
         dist = next;
       }
       let v = 0;
-      for (const [pt, pr] of dist) v += pr * go(day + 1, pt, night(EXPED.follow), nights + 1);
+      for (const [pt, pr] of dist) v += pr * next(pt, EXPED.follow);
       return v;
     };
     let fair: number;
@@ -151,7 +215,7 @@ export function summitOdds(
       const inDay = new Map<string, number>();
       const day1 = (pt: number, g: number, spent: number): number => {
         if (pt >= ps.length) return 1;
-        if (g === 0 || !yourPitch(pt, solo)) return go(day + 1, pt, night(spent), nights + 1);
+        if (g === 0 || !yourPitch(pt, solo)) return next(pt, spent);
         const k = `${pt}/${g}`;
         const hit = inDay.get(k);
         if (hit !== undefined) return hit;
@@ -165,9 +229,17 @@ export function summitOdds(
       const goes = goesFor(energy);
       const mine = goes > 0 ? day1(pitch, goes, 0) : wait;
       // Stuck, you can hand it over: the odds take whichever's better each day.
-      fair = solo ? mine : Math.max(mine, theirs());
+      const root = day === from.day && pitch === from.pitch;
+      fair = solo
+        ? mine
+        : root && force === 'lead'
+          ? mine
+          : root && force === 'hand'
+            ? theirs()
+            : Math.max(mine, theirs());
     }
-    const v = e.stormOdds * wait + (1 - e.stormOdds) * fair;
+    const storm = stormChance(s, id, from.on + day - from.day);
+    const v = storm * wait + (1 - storm) * fair;
     memo.set(key, v);
     return v;
   };
@@ -180,15 +252,62 @@ export const wallPay = (w: WallDef): number =>
 
 export const onExpedition = (s: GameState): boolean => s.expedition !== null;
 
-// The odds before you pay: as if you set off this morning, with whoever'd come. Null when
-// nobody would (roped, you need someone).
-export function previewOdds(s: GameState, id: string): { odds: number; partner: string | null } | null {
-  const partner = s.mode === 'solo' ? null : (partners(s)[0] ?? null);
-  if (s.mode !== 'solo' && !partner) return null;
+// Phase 24.2. A plan's odds before you pay: leaving on its day, with its partner and its bag.
+export function planOdds(s: GameState, id: string, plan: TripPlan): number {
+  const e = EXPEDITIONS[id]!;
   const t: GameState = {
     ...s,
     min: DAY.wakeMin,
-    expedition: { id, day: 1, pitch: 0, partner, nights: 0 },
+    expedition: {
+      id,
+      day: 1,
+      pitch: 0,
+      partner: plan.partner,
+      nights: 0,
+      food: plan.food,
+      ledge: plan.ledge,
+      stove: plan.stove,
+    },
   };
-  return { odds: summitOdds(t, id, { day: 1, pitch: 0, energy: s.energy, nights: 0, partner }), partner };
+  void e;
+  const { partner, food, ledge, stove } = plan;
+  return summitOdds(t, id, {
+    day: 1,
+    on: plan.day,
+    pitch: 0,
+    energy: s.energy,
+    nights: 0,
+    partner,
+    food,
+    ledge,
+    stove,
+  });
+}
+
+// The plan to start from: today, the closest partner, food and water for as many days as the
+// bag takes, the portaledge, and the stove where the water's snow. Null roped with nobody close enough.
+export function defaultPlan(s: GameState, id: string): TripPlan | null {
+  const e = EXPEDITIONS[id]!;
+  const partner = s.mode === 'solo' ? null : (partners(s)[0] ?? null);
+  if (s.mode !== 'solo' && !partner) return null;
+  // As much food and water as the bag takes, up to every day of the trip.
+  const H = EXPED.haul;
+  const fits = Math.floor((H.max - H.ledge - (e.melt ? H.stove : 0)) / H.perDay);
+  return { day: s.day, partner, food: Math.min(e.days - 1, fits), ledge: true, stove: !!e.melt };
+}
+
+// What a plan costs up front, and why it can't go.
+export const planCost = (s: GameState, id: string, plan: TripPlan): number =>
+  expedCost(s, EXPEDITIONS[id]!.cost) + plan.food * EXPED.food;
+export function planBlocked(s: GameState, id: string, plan: TripPlan): string | null {
+  const e = EXPEDITIONS[id]!;
+  if (gradeOf(s.climber.skills) < e.gradeReq) return `${e.name} wants V${e.gradeReq}`;
+  if (s.mode !== 'solo' && (!plan.partner || !partners(s).includes(plan.partner)))
+    return 'Nobody you climb with is close enough yet to come';
+  if (s.mode === 'solo' && plan.partner) return 'Free Solo goes alone';
+  if (plan.day < s.day || plan.day > s.day + EXPED.ahead) return `Up to ${EXPED.ahead} days out`;
+  if (plan.food < 1 || plan.food > e.days - 1) return `Between 1 and ${e.days - 1} days of food and water`;
+  if (bagKg(e, plan.food, plan.ledge, plan.stove) > EXPED.haul.max)
+    return `The bag won’t take it: ${EXPED.haul.max} kg at most`;
+  return null;
 }

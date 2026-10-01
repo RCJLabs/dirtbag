@@ -19,7 +19,7 @@ import { HITCHERS, STOPS } from './content/road';
 import { EPICS } from './content/epics';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 27;
+export const SAVE_VERSION = 28;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -210,6 +210,24 @@ export const MIGRATIONS: Record<number, Migration> = {
         ...rest,
         partner: 'hazel' in people ? 'hazel' : null,
         nights: Math.max(0, Number(e.day) - 1),
+      },
+    };
+  },
+  // v27 -> v28 (Phase 24.2): nothing booked; a trip under way packed food and water for every
+  // day it has left, the portaledge, and the stove where the water's snow.
+  27: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const e = x.expedition;
+    if (!isObj(e)) return { ...x, booked: null };
+    const def = EXPEDITIONS[String(e.id)];
+    return {
+      ...x,
+      booked: null,
+      expedition: {
+        ...e,
+        food: Math.max(0, (def?.days ?? 0) - Number(e.day)),
+        ledge: true,
+        stove: !!def?.melt,
       },
     };
   },
@@ -508,8 +526,26 @@ export function validate(x: unknown): string[] {
         e.pitch >= 0 &&
         (e.partner === null || (typeof e.partner === 'string' && e.partner in PEOPLE)) &&
         isInt(e.nights) &&
-        e.nights >= 0),
+        e.nights >= 0 &&
+        isInt(e.food) &&
+        e.food >= 0 &&
+        typeof e.ledge === 'boolean' &&
+        typeof e.stove === 'boolean'),
     'expedition',
+  );
+  const bk = x.booked;
+  need(
+    bk === null ||
+      (isObj(bk) &&
+        typeof bk.id === 'string' &&
+        bk.id in EXPEDITIONS &&
+        isInt(bk.day) &&
+        (bk.partner === null || (typeof bk.partner === 'string' && bk.partner in PEOPLE)) &&
+        isInt(bk.food) &&
+        bk.food >= 0 &&
+        typeof bk.ledge === 'boolean' &&
+        typeof bk.stove === 'boolean'),
+    'booked',
   );
   const sp = x.speed;
   need(

@@ -70,7 +70,14 @@ import {
   goCost,
   nightBack,
   partnerTry,
-  previewOdds,
+  bagKg,
+  forecastCall,
+  defaultPlan,
+  partnerGrade,
+  partners,
+  planBlocked,
+  planCost,
+  planOdds,
   sendChance,
   stormOn,
   summitOdds,
@@ -516,6 +523,16 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             note: `${PARTS.map((p) => `${PART_NAME[p]} ${partWord(s.van[p])}`).join(', ')}. The garage is in Midtown.`,
             run: () => game.openSheet({ k: 'journal', page: 'you' }),
           },
+          // Phase 24.2: a trip you've booked, and the day you fly.
+          ...(s.booked
+            ? [
+                {
+                  label: `${EXPEDITIONS[s.booked.id]!.name}, booked`,
+                  note: s.booked.day === s.day ? 'You fly out today.' : `You fly out on day ${s.booked.day}.`,
+                  run: () => game.openSheet({ k: 'exped', id: s.booked!.id }),
+                },
+              ]
+            : []),
           {
             label: 'Expeditions',
             note: 'Big walls a long way from here, bought in cash and climbed a day at a time.',
@@ -1262,11 +1279,11 @@ const pct = (p: number): string => `${Math.round(p * 100)}%`;
 // The summit's odds before you pay, with whoever'd come, as the go's own model has them.
 function oddsLine(s: GameState, id: string): string {
   const e = EXPEDITIONS[id]!;
-  const pv = previewOdds(s, id);
+  const plan = defaultPlan(s, id);
   const head = `${e.pitches} pitches in ${e.days} days, storms ${pct(e.stormOdds)} of them.`;
-  if (!pv) return `${head} Nobody you climb with is close enough yet to come.`;
-  const who = pv.partner ? `with ${PEOPLE[pv.partner]?.name ?? pv.partner}` : 'alone';
-  return `${head} Summit odds for you, ${who}: ${pct(pv.odds)}, choosing well each day.`;
+  if (!plan) return `${head} Nobody you climb with is close enough yet to come.`;
+  const who = plan.partner ? `with ${PEOPLE[plan.partner]?.name ?? plan.partner}` : 'alone';
+  return `${head} Summit odds for you, ${who}, leaving today: ${pct(planOdds(s, id, plan))}.`;
 }
 
 // A wall from its foot, or from wherever you are on it.
@@ -1375,39 +1392,153 @@ function pitchSent(
 }
 
 // An expedition: what it asks before you go, and each day's call once you're there.
+// Phase 24.2: an expedition booked, or being planned: who comes, when, and the haul bag, with
+// the odds moving as you choose.
+function planSheet(game: Game, s: GameState, id: string): ListSpec {
+  const e = EXPEDITIONS[id]!;
+  const head = { title: e.name, sub: `${e.objective}, ${e.region}. ${e.blurb}`, close: true };
+  const back: Row = { label: 'Back', run: () => game.openSheet({ k: 'expeds' }) };
+  const b = s.booked;
+  if (b) {
+    const mine = b.id === id;
+    const when = b.day === s.day ? 'today' : `on day ${b.day}`;
+    if (!mine)
+      return {
+        ...head,
+        notes: [`You’re booked for ${EXPEDITIONS[b.id]!.name}, leaving ${when}.`],
+        rows: [back],
+      };
+    const away = s.at !== 'lot' ? 'Expeditions leave from the Lot.' : null;
+    return {
+      ...head,
+      notes: [
+        `Booked: you leave ${when}${b.partner ? `, with ${PEOPLE[b.partner]?.name ?? b.partner}` : ', alone'}, with food and water for ${b.food + 1} days.`,
+        `Summit odds: ${pct(planOdds(s, id, b))}, choosing well each day.`,
+      ],
+      rows: [
+        ...(b.day === s.day
+          ? [
+              {
+                label: 'Leave now',
+                note: away ?? `The van waits at the Lot.${s.dog ? ' The dog stays with friends.' : ''}`,
+                off: !!away,
+                run: () => void game.exped(id, 'go'),
+              },
+            ]
+          : []),
+        {
+          label: 'Cancel the trip',
+          note: `${money(Math.round(planCost(s, id, b) * EXPED.refund))} back. The rest is the airline’s.`,
+          run: () => void game.exped(id, 'cancel'),
+        },
+        back,
+      ],
+    };
+  }
+  const plan = game.tripPlan(id);
+  if (!plan)
+    return {
+      ...head,
+      notes: ['Nobody you climb with is close enough yet to come. Free Solo goes alone.'],
+      rows: [back],
+    };
+  const who = plan.partner ? (PEOPLE[plan.partner]?.name ?? plan.partner) : null;
+  const crew = partners(s);
+  const kg = bagKg(e, plan.food, plan.ledge, plan.stove);
+  const H = EXPED.haul;
+  const why = planBlocked(s, id, plan);
+  const cost = planCost(s, id, plan);
+  const short =
+    s.cash < cost ? `${money(cost)} in hand, not on the card. You have ${money(Math.max(0, s.cash))}.` : null;
+  // The forecast for the first week from the day you'd leave: a word a day.
+  const calls = Array.from({ length: Math.min(7, e.days) }, (_, i) => {
+    const d = plan.day + i;
+    return d - s.day >= EXPED.forecast.horizon ? 'anyone’s guess' : forecastCall(s, id, d);
+  });
+  const leaveOn = (d: number) => (d === s.day ? 'today' : `on day ${d} (in ${d - s.day})`);
+  return {
+    ...head,
+    notes: [
+      `Summit odds with this plan: ${pct(planOdds(s, id, plan))}, choosing well each day.`,
+      `The haul bag: ${kg} of ${H.max} kg, with food and water for ${plan.food + 1} days. When it runs out, you come down. Every kg over ${H.free} costs you energy each night, hauling it.`,
+    ],
+    rows: [
+      ...(who
+        ? [
+            {
+              label: `With ${who}`,
+              note:
+                crew.length > 1
+                  ? `${who} leads about ${gradeName('boulder', partnerGrade(s, plan.partner!))} up there. Tap for someone else.`
+                  : `${who} leads about ${gradeName('boulder', partnerGrade(s, plan.partner!))} up there. Nobody else is close enough.`,
+              run: () => {
+                if (crew.length > 1)
+                  game.planTrip(id, { partner: crew[(crew.indexOf(plan.partner!) + 1) % crew.length]! });
+              },
+            },
+          ]
+        : [{ label: 'Alone', note: 'Free Solo: every pitch is yours.', off: true, run: () => undefined }]),
+      {
+        label: `Leave ${leaveOn(plan.day)}`,
+        note: `Forecast from then: ${calls.join(', ')}. The further out, the less it knows. Tap for a later day.`,
+        run: () => game.planTrip(id, { day: plan.day >= s.day + EXPED.ahead ? s.day : plan.day + 1 }),
+      },
+      {
+        label: 'A day more food and water',
+        cost: costLabel({ cash: -EXPED.food }),
+        note:
+          plan.food >= e.days - 1
+            ? `Enough for all ${e.days} days already.`
+            : `${H.perDay * (e.melt && !plan.stove ? 2 : 1)} kg heavier.`,
+        off: plan.food >= e.days - 1,
+        run: () => game.planTrip(id, { food: plan.food + 1 }),
+      },
+      {
+        label: 'A day less',
+        note:
+          plan.food <= 1
+            ? 'Two days is the least.'
+            : `${H.perDay * (e.melt && !plan.stove ? 2 : 1)} kg lighter.`,
+        off: plan.food <= 1,
+        run: () => game.planTrip(id, { food: plan.food - 1 }),
+      },
+      {
+        label: plan.ledge ? 'The portaledge: packed' : 'The portaledge: left behind',
+        note: plan.ledge
+          ? `${H.ledge} kg. Tap to leave it: nights on a ledge give back half.`
+          : `Nights on a ledge give back half. Tap to pack it: ${H.ledge} kg.`,
+        run: () => game.planTrip(id, { ledge: !plan.ledge }),
+      },
+      ...(e.melt
+        ? [
+            {
+              label: plan.stove ? 'The stove and fuel: packed' : 'The stove: left behind',
+              note: plan.stove
+                ? `${H.stove} kg, to melt snow for water. Tap to leave it and carry your water instead.`
+                : `You carry your water: twice the weight a day. Tap to pack it: ${H.stove} kg.`,
+              run: () => game.planTrip(id, { stove: !plan.stove }),
+            },
+          ]
+        : []),
+      {
+        label: 'Book it',
+        cost: costLabel({ cash: -cost }),
+        note: why
+          ? `${why}.`
+          : (short ?? 'Flights, permits, food and water, paid now. The van waits at the Lot.'),
+        off: !!why || !!short,
+        run: () => void game.book(id),
+      },
+      back,
+    ],
+  };
+}
+
 function expedSheet(game: Game, s: GameState, id: string): ListSpec {
   const e = EXPEDITIONS[id]!;
   const k = s.climber.skills;
   const x = s.expedition?.id === id ? s.expedition : null;
-  if (!x) {
-    const why = s.expedition
-      ? `You're on ${EXPEDITIONS[s.expedition.id]!.name}.`
-      : s.at !== 'lot'
-        ? 'Expeditions leave from the Lot.'
-        : gradeOf(k) < e.gradeReq
-          ? `${e.name} wants V${e.gradeReq}. You climb V${gradeOf(k)}.`
-          : !previewOdds(s, id)
-            ? 'Nobody you climb with is close enough yet to come. Free Solo goes alone.'
-            : s.cash < expedCost(s, e.cost)
-              ? `${money(expedCost(s, e.cost))} in hand, not on the card. You have ${money(Math.max(0, s.cash))}.`
-              : null;
-    return {
-      title: e.name,
-      sub: `${e.objective}, ${e.region}. ${e.blurb}`,
-      notes: [oddsLine(s, id), `The summit pays ${money(e.pays)}. Anything short of it pays nothing.`],
-      close: true,
-      rows: [
-        {
-          label: 'Go',
-          cost: costLabel({ cash: -expedCost(s, e.cost) }),
-          note: why ?? 'Food, flights, the portaledge and a porter. The van waits at the Lot.',
-          off: !!why,
-          run: () => void game.exped(id, 'go'),
-        },
-        { label: 'Back', run: () => game.openSheet({ k: 'expeds' }) },
-      ],
-    };
-  }
+  if (!x) return planSheet(game, s, id);
   const storm = stormOn(s.seed, id, e, s.day);
   const ps = expedPitches(id);
   const r = ps[x.pitch]!;
@@ -1415,7 +1546,7 @@ function expedSheet(game: Game, s: GameState, id: string): ListSpec {
   const who = x.partner ? (PEOPLE[x.partner]?.name ?? x.partner) : null;
   const done = s.today.includes('exped');
   const dark = s.min >= CLIMB.darkFrom;
-  const odds = summitOdds(s, id, { ...x, energy: s.energy });
+  const odds = summitOdds(s, id, { ...x, on: s.day, energy: s.energy });
   const pitch = `pitch ${x.pitch + 1}, ${r.name} (${gradeLabel(r)}, ${r.type})`;
   const theirTry = x.partner ? partnerTry(s, e, x.partner, r, x.day) : 0;
   const rows: Row[] = [];

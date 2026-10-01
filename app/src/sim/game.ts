@@ -124,7 +124,17 @@ import {
   WORK,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches } from './content/expeditions';
-import { nightBack, partnerDay, partners, stormOn, wallPay, yourPitch } from './expeditions';
+import {
+  bagKg,
+  nightGives,
+  partnerDay,
+  partners,
+  planBlocked,
+  planCost,
+  stormOn,
+  wallPay,
+  yourPitch,
+} from './expeditions';
 import { canAsk, queueMin, sprayable, sprayedOn } from './crowds';
 import { soloed } from './solo';
 import { fishCatch } from './lake';
@@ -237,6 +247,7 @@ export function newGame(seed: string): GameState {
     reads: {},
     wall: null,
     expedition: null,
+    booked: null,
     speed: { pb: null, runs: 0, day: 0 },
     mode: 'rope',
     soloing: null,
@@ -637,6 +648,11 @@ export function act(s0: GameState, a: Action): Result {
       line(`${TRAIN.peakDays} days at peak is all you get. Your body calls a deload, and it isn’t asking.`);
     }
     s.today = [];
+    // A flight you didn't take (Phase 24.2): the booking's gone, and the money with it.
+    if (s.booked && s.booked.day < s.day && !s.expedition) {
+      line(`The flight to ${EXPEDITIONS[s.booked.id]!.name} left without you. The money went with it.`);
+      s.booked = null;
+    }
     for (const r of Object.values(s.routes)) {
       r.goesToday = 0;
       r.sentToday = false;
@@ -804,7 +820,15 @@ export function act(s0: GameState, a: Action): Result {
   const portaledge = () => {
     const x = s.expedition!;
     const e = EXPEDITIONS[x.id]!;
-    const back = nightBack(x.nights);
+    // Out of food and water (Phase 24.2): there's no night up here without them.
+    if (x.food <= 0) {
+      s.expedition = null;
+      line(`${e.name}: the water's gone. You rap off with ${x.pitch} of ${e.pitches} pitches fixed.`);
+      sleep('away');
+      return;
+    }
+    x.food -= 1;
+    const back = nightGives(x.nights, x.ledge, bagKg(e, x.food, x.ledge, x.stove));
     sleep('exped', back);
     s.fed = clamp100(Math.max(s.fed, EXPED.ration));
     x.nights += 1;
@@ -1297,23 +1321,56 @@ export function act(s0: GameState, a: Action): Result {
     case 'exped': {
       const e = EXPEDITIONS[a.id];
       if (!e) return refuse('No such expedition.');
-      if (a.do === 'go') {
+      // Phase 24.2: book a trip, paid up front; cancel it for half back; leave on the day.
+      if (a.do === 'book') {
         if (s.expedition) return refuse("You're already away.");
-        if (s.at !== 'lot') return refuse('Expeditions leave from the Lot.');
-        if (gradeOf(s.climber.skills) < e.gradeReq) return refuse(`${e.name} wants V${e.gradeReq}.`);
-        // Roped, you need someone to be roped to (Evan's call, 1 Oct 2026); Free Solo goes alone.
-        const partner = s.mode === 'solo' ? null : (partners(s)[0] ?? null);
-        if (s.mode !== 'solo' && !partner)
-          return refuse(`Nobody you climb with is close enough yet to go to ${e.name} with you.`);
-        // The War Chest (Phase 22.8) halves it.
-        const cost = expedCost(s, e.cost);
+        if (s.booked) return refuse(`You’re booked for ${EXPEDITIONS[s.booked.id]!.name} already.`);
+        if (!a.plan) return refuse('Plan it first.');
+        const why = planBlocked(s, a.id, a.plan);
+        if (why) return refuse(`${why}.`);
+        const cost = planCost(s, a.id, a.plan);
         if (s.cash < cost) return refuse(`${e.name} costs ${money(cost)}, in hand.`);
-        if (s.wall) s.wall = null;
         spend({ cash: -cost });
-        s.expedition = { id: a.id, day: 1, pitch: 0, partner, nights: 0 };
+        s.booked = { id: a.id, ...a.plan };
+        line(
+          a.plan.day === s.day
+            ? `${e.name}, booked and paid for. You leave today.`
+            : `${e.name}, booked and paid for. You fly out on day ${a.plan.day}.`,
+        );
+        break;
+      }
+      if (a.do === 'cancel') {
+        const b = s.booked;
+        if (!b || b.id !== a.id) return refuse('Nothing booked.');
+        const back = Math.round(planCost(s, b.id, b) * EXPED.refund);
+        s.booked = null;
+        spend({ cash: back });
+        line(`You cancel ${e.name}. ${money(back)} comes back; the rest is the airline's.`);
+        break;
+      }
+      if (a.do === 'go') {
+        const b = s.booked;
+        if (s.expedition) return refuse("You're already away.");
+        if (!b || b.id !== a.id) return refuse('Book it first.');
+        if (b.day !== s.day) return refuse(`Your flight is on day ${b.day}.`);
+        if (s.at !== 'lot') return refuse('Expeditions leave from the Lot.');
+        if (s.mode !== 'solo' && (!b.partner || !partners(s).includes(b.partner)))
+          return refuse(`${PEOPLE[b.partner ?? '']?.name ?? 'Your partner'} won’t come now.`);
+        if (s.wall) s.wall = null;
+        s.booked = null;
+        s.expedition = {
+          id: a.id,
+          day: 1,
+          pitch: 0,
+          partner: b.partner,
+          nights: 0,
+          food: b.food,
+          ledge: b.ledge,
+          stove: b.stove,
+        };
         s.min = DAY.wakeMin;
         line(
-          `${e.name}, ${e.region}: ${e.objective}. ${e.days} days, ${e.pitches} pitches${partner ? `, with ${PEOPLE[partner]?.name ?? partner}. You lead first` : ', alone'}.${s.dog ? ' The dog stays with friends at the Lot.' : ''}`,
+          `${e.name}, ${e.region}: ${e.objective}. ${e.pitches} pitches, food and water for ${b.food + 1} days${b.partner ? `, with ${PEOPLE[b.partner]?.name ?? b.partner}. You lead first` : ', alone'}.${s.dog ? ' The dog stays with friends at the Lot.' : ''}`,
         );
         break;
       }

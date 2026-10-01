@@ -680,10 +680,11 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 27 ||
+  saved?.v !== 28 ||
   st.encounter !== null ||
   st.table !== null ||
   st.cards !== null ||
+  st.booked !== null ||
   !Array.isArray(st.deck?.seen) ||
   !(st.guitar >= 0) ||
   !Array.isArray(st.seen) ||
@@ -1677,11 +1678,17 @@ console.log('An expedition');
   const trip = () => ex.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.expedition);
   await pick('Expeditions');
   await pick('El Capitan');
+  // The planner (Phase 24.2): the odds with this plan and the haul bag; book it, and leave.
   await ex.waitForFunction(() =>
-    /Summit odds for you, with Hazel: \d+%/.test(document.querySelector('#sheet')?.textContent ?? ''),
+    /Summit odds with this plan: \d+%/.test(document.querySelector('#sheet')?.textContent ?? ''),
   );
-  log(`exped: ${(await sheetText()).match(/Summit odds for you[^.]*\./)?.[0]}`);
-  await pick('Go');
+  const planned = await sheetText();
+  log(
+    `exped: ${planned.match(/Summit odds with this plan[^,]*/)?.[0]}; ${planned.match(/The haul bag: [^.]*/)?.[0]}`,
+  );
+  await ex.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-exped-plan.png`) });
+  await pick('Book it');
+  await pick('Leave now');
   await ex.waitForFunction(() =>
     /El Capitan, day 1 of 10/.test(document.querySelector('#sheet')?.textContent ?? ''),
   );

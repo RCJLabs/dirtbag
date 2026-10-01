@@ -167,7 +167,21 @@ export interface GameState {
   wall: { id: string; next: number } | null;
   // Away on an expedition (Phase 24): which, the day of it you're on, pitches fixed, who
   // you're roped to (none, soloing), and the nights on the portaledge so far.
-  expedition: { id: string; day: number; pitch: number; partner: string | null; nights: number } | null;
+  // Phase 24.2: and what's in the haul bag: days of food and water left, the portaledge, the
+  // stove.
+  expedition: {
+    id: string;
+    day: number;
+    pitch: number;
+    partner: string | null;
+    nights: number;
+    food: number;
+    ledge: boolean;
+    stove: boolean;
+  } | null;
+  // Phase 24.2. An expedition booked and paid for: the day you leave, who's coming, and the
+  // haul bag you packed.
+  booked: (TripPlan & { id: string }) | null;
   // Phase 21.6. The speed wall at Send City: your best time in seconds, and today's runs.
   speed: { pb: number | null; runs: number; day: number };
   // How this climber climbs, chosen at the start and for good: with a rope, or Free Solo
@@ -309,7 +323,7 @@ export type Action =
   // at a time (Phase 24): your pitches are goes; second your partner's block, make camp for
   // the night, or bail).
   | { t: 'wall'; wall: string; do: 'start' | 'bivy' | 'retreat' }
-  | { t: 'exped'; id: string; do: 'go' | 'follow' | 'camp' | 'bail' }
+  | { t: 'exped'; id: string; do: 'book' | 'cancel' | 'go' | 'follow' | 'camp' | 'bail'; plan?: TripPlan }
   // Phase 21.6: ask the crowd at the base for a line's beta.
   | { t: 'ask'; route: string }
   // A run on the speed wall: its time in real seconds, from the green light to the buzzer,
@@ -338,6 +352,15 @@ export type Action =
   // and get up with what's in front of you.
   | { t: 'bj'; do: 'sit' | 'deal' | 'hit' | 'stand' | 'double' | 'leave' }
   | { t: 'holdem'; do: 'sit' | 'deal' | 'fold' | 'call' | 'bet' | 'leave'; who?: string };
+
+// Phase 24.2. A trip as you plan it: the day you leave, who comes, and the haul bag.
+export interface TripPlan {
+  day: number;
+  partner: string | null;
+  food: number;
+  ledge: boolean;
+  stove: boolean;
+}
 
 // What a finished go hands back to the game.
 export interface GoResult {

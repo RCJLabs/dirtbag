@@ -49,6 +49,7 @@ const V23 = readFileSync(new URL('./fixtures/save-v23.json', import.meta.url), '
 const V24 = readFileSync(new URL('./fixtures/save-v24.json', import.meta.url), 'utf8');
 const V25 = readFileSync(new URL('./fixtures/save-v25.json', import.meta.url), 'utf8');
 const V26 = readFileSync(new URL('./fixtures/save-v26.json', import.meta.url), 'utf8');
+const V27 = readFileSync(new URL('./fixtures/save-v27.json', import.meta.url), 'utf8');
 // What R2's migration adds to any older save.
 const R2_BODY = {
   load: { acute: 20, chronic: 20, today: 0 },
@@ -97,6 +98,7 @@ const P226A = {
   table: null,
   cards: null,
   reads: {},
+  booked: null,
 };
 
 describe('saves', () => {
@@ -557,6 +559,7 @@ describe('saves', () => {
       table: null,
       cards: null,
       reads: {},
+      booked: null,
     });
   });
 
@@ -574,6 +577,7 @@ describe('saves', () => {
       table: null,
       cards: null,
       reads: {},
+      booked: null,
     });
     expect(r.state.deck.met).toEqual({ busker: 2 });
   });
@@ -590,6 +594,7 @@ describe('saves', () => {
       table: null,
       cards: null,
       reads: {},
+      booked: null,
     });
     expect(r.state.dog).toEqual({ name: 'Scout', since: 12, fed: 70, bond: 55 });
   });
@@ -605,6 +610,7 @@ describe('saves', () => {
       table: null,
       cards: null,
       reads: {},
+      booked: null,
     });
     expect(r.state.dogs).toEqual([{ name: 'Scout', years: 16, day: 301 }]);
   });
@@ -614,7 +620,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(24);
-    expect(r.state).toEqual({ ...JSON.parse(V24).state, table: null, cards: null, reads: {} });
+    expect(r.state).toEqual({ ...JSON.parse(V24).state, table: null, cards: null, reads: {}, booked: null });
     expect(r.state.dream).toEqual({ pick: 'rig', pot: 300, owned: [] });
   });
 
@@ -623,7 +629,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(25);
-    expect(r.state).toEqual({ ...JSON.parse(V25).state, cards: null, reads: {} });
+    expect(r.state).toEqual({ ...JSON.parse(V25).state, cards: null, reads: {}, booked: null });
     expect(r.state.table?.who).toBe('hazel');
   });
 
@@ -636,7 +642,30 @@ describe('saves', () => {
     expect(old.expedition).toEqual({ id: 'elcap', day: 3, pitch: 0, energy: 100 });
     expect(r.state).toEqual({
       ...old,
-      expedition: { id: 'elcap', day: 3, pitch: 0, partner: 'hazel', nights: 2 },
+      expedition: {
+        id: 'elcap',
+        day: 3,
+        pitch: 0,
+        partner: 'hazel',
+        nights: 2,
+        food: 7,
+        ledge: true,
+        stove: false,
+      },
+      booked: null,
+    });
+  });
+
+  it('load a real 0.985.0 save up Cerro Torre: food for the days left, the ledge and a stove', () => {
+    const r = fromSave(V27);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(27);
+    const old = JSON.parse(V27).state;
+    expect(r.state).toEqual({
+      ...old,
+      expedition: { ...old.expedition, food: 14, ledge: true, stove: true },
+      booked: null,
     });
   });
 
@@ -647,7 +676,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(27);
+    expect(SAVE_VERSION).toBe(28);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

@@ -6,7 +6,7 @@ import { humanHands, playDays, playGo, type BotRun, type Strategy } from './bot'
 import { bjTotal, boardAt, equity, handNeeds } from './cards';
 import { CLIMB, EXPED, GAMES } from './dials';
 import { EXPEDITIONS, expedPitches } from './content/expeditions';
-import { partnerTry, previewOdds, sendChance, stormOn, yourPitch } from './expeditions';
+import { defaultPlan, planOdds, stormOn, summitOdds, yourPitch } from './expeditions';
 import { needFor } from './climber';
 import { atFire } from './fire';
 import { act, newGame } from './game';
@@ -189,7 +189,9 @@ export function expedTrip(s0: GameState, id: string, hands: string): boolean {
     if (r.events.some((ev) => ev.k === 'line' && /the summit of/.test(ev.text))) top = true;
     return r.state;
   };
-  let s = run(s0, { t: 'exped', id, do: 'go' });
+  const plan = defaultPlan(s0, id);
+  if (!plan) return false;
+  let s = run(run(s0, { t: 'exped', id, do: 'book', plan }), { t: 'exped', id, do: 'go' });
   if (!s.expedition) return false;
   for (let guard = 0; s.expedition && guard < 400; guard++) {
     const x = s.expedition;
@@ -197,11 +199,10 @@ export function expedTrip(s0: GameState, id: string, hands: string): boolean {
     const storm = stormOn(s.seed, id, e, s.day);
     if (!storm && !s.today.includes('exped')) {
       const mine = yourPitch(x.pitch, !x.partner);
-      const goes = Math.max(1, Math.floor((s.energy - CLIMB.minEnergy) / EXPED.pitch.energy) + 1);
+      // On your block, lead or hand it over: whichever the odds say is the better day.
+      const from = { ...x, on: s.day, energy: s.energy };
       const handOver =
-        x.partner &&
-        1 - (1 - sendChance(s, r)) ** goes <
-          1 - (1 - partnerTry(s, e, x.partner, r, x.day)) ** EXPED.partner.tries;
+        mine && !!x.partner && summitOdds(s, id, from, 'hand') > summitOdds(s, id, from, 'lead');
       if (!mine || handOver) {
         s = run(s, { t: 'exped', id, do: 'follow' });
         continue;
@@ -240,7 +241,8 @@ export function expedCalibration(trips: number) {
         climber: { ...base.climber, skills: { power: v, fingers: v, endurance: v, technique: v, head: v } },
         people: { sage: { bond: 8, last: 0 } },
       };
-      shown += previewOdds(s0, id)?.odds ?? 0;
+      const plan = defaultPlan(s0, id);
+      shown += plan ? planOdds(s0, id, plan) : 0;
       if (expedTrip(s0, id, `hands-${id}-${k}`)) got++;
     }
     return { id, grade: e.grade, shown: shown / trips, got: got / trips };
