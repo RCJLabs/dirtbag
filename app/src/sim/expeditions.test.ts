@@ -353,5 +353,6 @@ describe('the odds', () => {
     }
     expect(gradeOf(k(9))).toBe(9);
     expect(Math.abs(shown / N - got / N)).toBeLessThan(0.2);
-  });
+    // Forty whole trips, each choosing every day from the odds: past vitest's 5 s on CI.
+  }, 60_000);
 });
