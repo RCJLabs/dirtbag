@@ -106,7 +106,7 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 2. The bot plays it through with no errors and no cross-origin requests: Hazel's tip, the drive, a fall at crux 1 that reveals the rock-over, the send, a diner shift, the evening at the fire, sleep, and a reload that comes back to the same morning.
 3. Unit tests cover the RNG golden vectors (matching the Unreal harness), the clock and money, beta unlocks, attempt replay, and save round-trip, migration and quarantine.
 4. Nothing in `src/sim` can touch the DOM, `Math.random` or the wall clock, and CI enforces it.
-5. A player downloads under 250 KB, fonts included. *(The budget went to 300 KB by Evan's call on 30 Sep 2026, in Phase 22.)*
+5. A player downloads under 250 KB, fonts included. *(The budget went to 300 KB by Evan's call on 30 Sep 2026, in Phase 22, and to 340 KB on 1 Oct 2026, for Phase 24's scenes.)*
 
 ### R1 — The first week
 
@@ -1946,6 +1946,31 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 **Depends on:** Phase 21 (21.5's walls, odds and save), Phase 22 (food, fuel, the van left behind). Uses Phase 18's leave and Phase 23's Record Book where they exist, and fills them in when they arrive. **Effort:** ~5–8 weeks [INFERRED]; the three scenes are most of it. **Main risk:** scope. Planning, packing and events can each become busywork; each earns its place by changing the summit's odds in a way the player can see.
 
+**Plan on the rebuild (1 Oct 2026), with Evan's calls.**
+
+*Two problems first:*
+- **The download.** The game was 287.4 of its 300 KB budget at 0.984.0, and the painters are the heaviest code in it (the scenes module alone is about 12 KB compressed). Three expedition scenes and their wall views will likely add 12–20 KB, and loading them later doesn't help: the service worker precaches everything for offline play. *Evan's call: the budget goes to 340 KB.*
+- **The odds.** 21.5's summit odds are exact because a pitch is one roll against endurance. Once pitches are climbed, a pitch's chance comes from your skills against its cruxes; the odds work it out from the same model the go uses, and the harness checks them against the bots' trips (criterion 4). This is the phase's riskiest engineering, so it goes first.
+
+*The principles:*
+- **The valley's walls, far away.** 21.5 already climbs Golden Buttress pitch by pitch with ledge nights. An expedition is a long wall somewhere else: each pitch a line with cruxes, climbed through beta-then-send, and altitude, cold and fatigue narrowing every window the way psyche does.
+- **Dice for the weather and what happens up there,** nothing else.
+- **Every planning choice moves the visible odds,** or it's cut.
+- **Mechanics before art.** 24.1–24.5 play on the existing wall view, so the trip can be tested and tuned before the scenes.
+
+*The slices:*
+- **24.1 The wall: real pitches and honest odds.** Each objective's pitches as lines with cruxes. You and your partner lead in blocks: you climb yours, and theirs go by the seed against their grade, which the odds include (Evan's call). Hauling, portaledge nights from what you packed (each gives back less), retreat from any ledge at a cost. The odds each day. Save change.
+- **24.2 Planning and packing.** When to go, against a forecast that's vaguer the further out it is. A haul bag with a weight limit: food and water by the day, fuel, the portaledge, the rack; too light and you run out, too heavy and the hauling slows you. Your partner, from the crew by bond (required on a rope; Free Solo goes alone, as the mode does). Permits and flights in the cost. The odds move as you choose.
+- **24.3 Getting there, and the valley while you're gone.** Travel days; Trango's glacier walk-in and days to acclimatize. The weekly bills come; Scout stays with friends. Your job (Phase 18's leave isn't built): a trip blocks signing up for its dates, and shifts you'd signed up for drop without a warning if you booked a week or more ahead, and count as missed if you didn't (Evan's call).
+- **24.4 What happens up there.** A few seeded events per objective: dropped gear, a stuck haul bag, rockfall, a storm that comes early, another party in trouble. Each a real choice with a visible cost, built as 22.6c's walk-outs are.
+- **24.5 Coming home.** The story at the fire, a card, the pay (21.5's $2,400, $6,000 and $12,000, which the harness holds to no farm; Evan's call). A failed trip keeps its high point, the beta, and a partner closer or further. A stub for Phase 23's Record Book. Save change.
+- **24.6–24.8 The scenes.** El Capitan, Cerro Torre and Trango, each with a wall view, day and night, clear and storm. Most of the phase's work.
+- **24.9 The harness and the e2e.** The odds against the bots' trips; no objective out-earns its time and cost; the e2e bot plays a trip through.
+
+*Evan's calls on the content (1 Oct 2026):*
+- **Cerro Torre's ice:** the game has no ice or mixed climbing, and gets none. Its pitches are the styles there are (cracks, technical, endurance), with the cold and the wind narrowing them.
+- **Cerro Torre's objective:** the Southeast Ridge. The Compressor Route's bolt ladder was chopped in 2012, and the line has been climbed by fair means since; a game set now names it that way.
+
 ---
 
 ### Phase 23 — Who you are: origins, paths, stances, and the Record Book
@@ -2318,3 +2343,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-01 — Phase 22.9b built, by Evan's calls: blackjack ($5 hands, $40 a night, hit, stand and double) and heads-up hold'em (cash under the same cap, three decisions a hand) at the fire. Hold'em keeps reads on each person at 5 and 12 hands, and they read you back. Neither is a living. Simulated gambling: the Play content rating changes before it ships. Save v26. 0.982.0.
 - 2026-10-01 — Phase 22.9c built, and 22.9 with it: trivia becomes the glossary, a Words page in the journal with every term v0.956's trivia asked and the ones the rebuild leans on; its history questions aren't carried. The harness holds the games to criterion 2. Phase 22's three Done-when criteria pass on the build; closing it is Evan's call. 0.983.0.
 - 2026-10-01 — Phase 22 closed by Evan's call, with his calls on 22.8 and 22.9's open questions (the games' once-a-day bond kept, Sage 40%, $8 blackjacks, no insurance, cards count as company for psyche, the dreams' prices kept); tappable glossary words carried to a later UI pass. CURRENT MILESTONE moved to Phase 24, expeditions as trips; it gets planned on the rebuild next.
+- 2026-10-01 — Phase 24 planned on the rebuild, with Evan's calls: the valley's walls, far away (real pitches, climbed in blocks with a partner), odds from the go's own model, mechanics before the scenes; the download budget to 340 KB; Cerro Torre's pitches in the existing styles, and its objective the Southeast Ridge; a trip blocks sign-ups, and booking a week ahead drops your shifts without a warning; 21.5's pay kept, under the harness's no-farm check.
