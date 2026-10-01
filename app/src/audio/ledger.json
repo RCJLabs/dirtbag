@@ -165,6 +165,14 @@
       "made": "code",
       "in": "src/audio/voices.ts"
     },
+    "card": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
+    "chips": {
+      "made": "code",
+      "in": "src/audio/voices.ts"
+    },
     "knock": {
       "made": "code",
       "in": "src/audio/voices.ts"

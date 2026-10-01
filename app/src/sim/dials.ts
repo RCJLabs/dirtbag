@@ -533,6 +533,26 @@ export const GAMES = {
   sage: 0.4,
   shoes: { throws: 4, ringer: 3, leaner: 1, odds: 0.25, lean: 0.35 },
   dice: { n: 5, bids: [0.35, 0.4], call: 1 },
+  // Phase 22.9b [proposed]: cards, for money. You sit down with what's in hand up to `cap`, the
+  // most a night can cost. Blackjack is `bet` a hand, up to `hands` a night: a fresh deck each,
+  // the dealer standing on every 17, 3:2 for a blackjack (to the dollar up), double on two
+  // cards, no split.
+  // Played right that's about even: variance, not a living. Hold'em is heads-up, `ante` each,
+  // then `bets` before the flop, on the flop, and on the turn and river together; `hands` a
+  // night. Their play weighs a `samples`-deal guess at how often their hand wins. Reads come at
+  // `reads` hands played; once you've been caught betting a loser `caughtShare` of your hands,
+  // they call `adapt` lighter.
+  bj: { cap: 40, bet: 5, hands: 10 },
+  holdem: {
+    cap: 40,
+    ante: 1,
+    bets: [2, 4, 4],
+    hands: 6,
+    samples: 60,
+    reads: [5, 12],
+    caughtShare: 0.25,
+    adapt: 0.15,
+  },
 };
 
 // Phase 22.8: dreams, v0.956's. What the Rig takes off every spot, and the War Chest off

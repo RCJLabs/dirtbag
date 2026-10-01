@@ -1892,6 +1892,17 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The bots** don't play. Every harness target passes.
 - **E2e:** half nine at the Lot with Hazel up: the van, the fire, four horseshoes thrown on the beat, back to the fire, and a hand of liar's dice called. Both heard, both once tonight, and Hazel's bond up one.
 
+**Status (1 Oct 2026): 22.9b built: blackjack and hold'em, for money.** Save v26, 0.982.0. Simulated gambling: the Play listing's content rating changes before this ships (Evan's step in the Play Console). 22.9c, the glossary, is next.
+- **Evan's calls (1 Oct 2026):** both play for cash under a nightly cap; hold'em is heads-up with three decisions a hand; blackjack is $40 a night at $5 a hand, with hit, stand and double, and no split.
+- **Sitting down:** at the fire at night, from its card. You sit with what's in hand up to $40, the most a night can cost, and get up with what's in front of you. Each is an hour and 3 energy, once a night; nothing else happens till you get up, and it saves.
+- **Blackjack:** dealt by whoever's at the fire. A fresh deck a hand, the dealer peeks and stands on every 17, 3:2 for a blackjack (to the dollar up: $8 on $5, which about pays back what no split costs), double on two cards. Up to 10 hands a night. Played by the book it's about even: +0.6% of what's wagered over 300 nights, $0.28 a night.
+- **Hold'em:** heads-up with Hazel, or Sage when she's there. An ante each, then one bet a street ($2 before the flop, $4 on it, $4 on the turn and river together); you check, bet or fold, or call or fold their bet. Up to 6 hands a night. Their play weighs how often their hand would win against a random one (a 60-deal seeded sample) against their style [proposed]: Hazel bets only good hands and bluffs one in twenty; Sage bets and calls looser and bluffs one in three.
+- **Reads, and what they know:** after 5 hands with someone you get how they bet; after 12, how often they bluff and what to do about it, said when you earn it and shown at the table. They read you back: a bet of yours on the river that they call and beat goes down as caught, and once you've been caught on a quarter of your hands they call lighter.
+- **It isn't a living:** over 120 nights, playing on your hand's odds wins about $1 a night against either; always calling loses $5–10 a night; always betting loses $4.56 a night to Hazel once she's caught you (and wins $1.35 off Sage, who calls light). A test holds every simple way of playing under a quarter of a café shift a night.
+- **No bond** from cards: blackjack pays money, hold'em reads.
+- **The bots** don't play. Every harness target passes.
+- **E2e:** half nine at the Lot with $100: blackjack, a hand stood on and up again; hold'em with Hazel, a hand checked and called to the end, and up again. The cash comes back to your pocket, both are once tonight, and Hazel has a hand played on her.
+
 ---
 
 ### Phase 24 — Expeditions as trips
@@ -2291,3 +2302,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Phase 22.7 built: Scout's life, v0.956's lifecycle: perks by bond (the fire, finds on his rounds, halved tickets), dog-years, going gray, two vet scares with bills, and at 16 his last day, spent your way and kept in the journal; no new stray for a month after, and the next has a name of his own. Save v23. 0.979.0.
 - 2026-09-30 — Phase 22.8 built: dreams, v0.956's three at its prices (the Dream Rig, the War Chest, Home Base), saved for in a jar at the van that the card and the bills never touch and the broke check counts; Home Base says exactly what it stops charging. Save v24. 0.980.0.
 - 2026-10-01 — Phase 22.9a built: horseshoes on busking's beat and liar's dice a bid at a time, at the fire at night with Hazel and (some nights) Sage; each an hour, once a night, and bond with whoever's playing no faster than a day climbing together (v0.956's paid everyone, uncapped). Save v25. 0.981.0.
+- 2026-10-01 — Phase 22.9b built, by Evan's calls: blackjack ($5 hands, $40 a night, hit, stand and double) and heads-up hold'em (cash under the same cap, three decisions a hand) at the fire. Hold'em keeps reads on each person at 5 and 12 hands, and they read you back. Neither is a living. Simulated gambling: the Play content rating changes before it ships. Save v26. 0.982.0.
