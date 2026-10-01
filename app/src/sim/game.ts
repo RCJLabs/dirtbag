@@ -123,7 +123,7 @@ import {
   WINTER,
   WORK,
 } from './dials';
-import { EXPED_ROUTES, EXPEDITIONS, expedPitches } from './content/expeditions';
+import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
 import {
   bagKg,
   nightGives,
@@ -435,6 +435,8 @@ function expedBlocked(s: GameState, r: RouteDef): string | null {
     return `${PEOPLE[x.partner!]?.name ?? 'Your partner'}’s block. Second it`;
   if (stormOn(s.seed, x.id, EXPEDITIONS[x.id]!, s.day)) return 'A storm’s on the wall. Nobody leads in this';
   if (s.min >= CLIMB.darkFrom) return 'Too dark to climb. Make camp';
+  const led = expedPitches(x.id).reduce((n, p) => n + (s.routes[p.id]?.goesToday ?? 0), 0);
+  if (led >= EXPED.perDay) return 'That’s the day’s leading. Make camp';
   const off = daysOff(s);
   if (off > 0) return `Your ${s.injury!.kind} needs ${off} more day${off > 1 ? 's' : ''}`;
   if (s.fed <= 0) return "You're running on empty";
@@ -804,6 +806,13 @@ export function act(s0: GameState, a: Action): Result {
         : `Pitch ${x.pitch} fixed. That's your block. ${PEOPLE[x.partner!]?.name ?? 'Your partner'} leads the next.`,
     );
   };
+  // Phase 24.3. Getting home, however it ended: the days go by on the way back to the Lot.
+  const homeward = (e: { name: string; home: number }) => {
+    for (let d = 0; d < e.home; d++) sleep('away');
+    line(
+      `Back at the Lot after ${e.home === 1 ? 'a day' : `${e.home} days`} on the road home from ${e.name}.`,
+    );
+  };
   // Phase 24. The summit: home, paid, and a lesson for the head.
   const summit = () => {
     const x = s.expedition!;
@@ -814,6 +823,7 @@ export function act(s0: GameState, a: Action): Result {
     line(
       `${e.name}: the summit of ${e.objective}, on day ${x.day}${x.partner ? `, with ${PEOPLE[x.partner]?.name ?? x.partner}` : ', alone'}. The sponsors pay ${money(e.pays)}, and you'll be telling this one for years. ${skillsNote({ head: EXPED.head })}.`,
     );
+    homeward(e);
   };
   // A night on the portaledge: less back than the night before, the rations eaten, the wall a
   // day older. Out of days, and it's home with what you fixed.
@@ -824,7 +834,7 @@ export function act(s0: GameState, a: Action): Result {
     if (x.food <= 0) {
       s.expedition = null;
       line(`${e.name}: the water's gone. You rap off with ${x.pitch} of ${e.pitches} pitches fixed.`);
-      sleep('away');
+      homeward(e);
       return;
     }
     x.food -= 1;
@@ -838,6 +848,7 @@ export function act(s0: GameState, a: Action): Result {
       line(
         `${e.name}: out of time, ${x.pitch} of ${e.pitches} pitches fixed. You fly home with a story and nothing else.`,
       );
+      homeward(e);
     }
   };
   // Overnight news about the people you know: Dex's race, his season, and who's climbing
@@ -1332,6 +1343,19 @@ export function act(s0: GameState, a: Action): Result {
         if (s.cash < cost) return refuse(`${e.name} costs ${money(cost)}, in hand.`);
         spend({ cash: -cost });
         s.booked = { id: a.id, ...a.plan };
+        // A week's notice and the shifts in the trip come off the schedule; any less and
+        // they're still yours to miss (Phase 24.3).
+        const w = tripDays(a.id, a.plan.day);
+        const clash = s.shifts.filter((x) => x.day >= w.from && x.day <= w.to);
+        if (clash.length && a.plan.day - s.day >= EXPED.notice) {
+          s.shifts = s.shifts.filter((x) => !clash.includes(x));
+          line(
+            `You give notice: ${clash.length === 1 ? 'a shift comes' : `${clash.length} shifts come`} off your week.`,
+          );
+        } else if (clash.length)
+          line(
+            `That's ${clash.length === 1 ? 'a shift' : `${clash.length} shifts`} you're signed up for while you're away. Short notice: they'll count as missed.`,
+          );
         line(
           a.plan.day === s.day
             ? `${e.name}, booked and paid for. You leave today.`
@@ -1358,6 +1382,9 @@ export function act(s0: GameState, a: Action): Result {
           return refuse(`${PEOPLE[b.partner ?? '']?.name ?? 'Your partner'} won’t come now.`);
         if (s.wall) s.wall = null;
         s.booked = null;
+        // Getting there (Phase 24.3): the days go by on the way.
+        line(e.getThere);
+        for (let d = 0; d < e.out; d++) sleep('away');
         s.expedition = {
           id: a.id,
           day: 1,
@@ -1381,6 +1408,7 @@ export function act(s0: GameState, a: Action): Result {
         line(
           `${e.name}: you rap off, ${x.pitch} of ${e.pitches} pitches fixed. Nobody argues with going home alive.`,
         );
+        homeward(e);
         break;
       }
       if (a.do === 'camp') {

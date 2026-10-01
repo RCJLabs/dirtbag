@@ -825,6 +825,9 @@ export const WALL = {
 export const EXPED = {
   // A big-wall pitch, hauling and all: longer and harder on you than a valley wall's.
   pitch: { min: 150, energy: 15, fed: 6 },
+  // Three leads a day at most, hauling and all: past that, the bots on Trango were hurting
+  // themselves on two trips in three, and nobody leads five big-wall pitches a day.
+  perDay: 3,
   block: 2,
   partnerTier: 2,
   partner: { base: 0.4, perGrade: 0.1, floor: 0.05, ceiling: 0.95, tries: 2 },
@@ -833,6 +836,9 @@ export const EXPED = {
   ration: 60,
   fatigue: { perDay: 0.015, floor: 0.82 },
   samples: 24,
+  // How many goes a day of yours on the wall usually is, for the odds' guess at your skin
+  // as a long trip wears it down.
+  typicalGoes: 3,
   head: 2,
   // Phase 24.2 [proposed]. You book up to `ahead` days out. The forecast calls each day storm
   // or clear, right `acc` of the time on the day itself, falling to a coin toss `horizon` days
@@ -842,6 +848,9 @@ export const EXPED = {
   // `food` a day. Without the portaledge a night gives back `noLedge` of what it would.
   // Cancelling refunds `refund` of what you paid.
   ahead: 7,
+  // Phase 24.3: booking this many days ahead or more drops the shifts you'd signed up for in
+  // the trip, without a warning (Evan's call); later, they're missed shifts.
+  notice: 7,
   forecast: { horizon: 10 },
   haul: { max: 80, free: 35, perKg: 0.4, perDay: 3, ledge: 9, stove: 2 },
   food: 12,

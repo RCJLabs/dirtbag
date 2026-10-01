@@ -1990,6 +1990,14 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Against the bots' trips:** the bots now choose each day from the odds model too (leading or handing over, whichever it says is better), so they choose well, as the odds assume. El Cap shows 71% and the bots get 75%; Cerro Torre 52% and 46%; Trango 34% and 30%.
 - **E2e:** the planner's odds and bag, booked, and away.
 
+**Status (1 Oct 2026): 24.3 built: getting there, and the valley while you're gone.** 0.987.0. No save change.
+- **Travel:** El Cap is a day each way (the drive to the Valley); Cerro Torre two (flights to El Chaltén and the walk in); Trango eight out (flights and a jeep to Skardu, then five days up the Baltoro, acclimatizing as you go) and six home [proposed]. The days pass on the way, the week's bills with them; the wall's first day is the day you get there, and the forecast and the odds start from it.
+- **Your job** (Evan's call): booking a week or more ahead takes the shifts you'd signed up for in the trip off your week; less, and they're still yours, to miss with a warning each. You can't sign up for a day you're booked to be away. The planner says which.
+- **Scout** stays with friends, as before.
+- **Three leads a day** at most up there [proposed]. Measured: the bots on Trango, leading up to five a day after a week of travel off the rock, were hurt on 33 trips of 60, and the odds can't see an injury coming; at three, the odds hold.
+- **The odds** also carry your skin through a long trip now: a go on the wall costs some, a night gives 22 back, and the odds read it at the third go of each day.
+- **Against the bots' trips,** 300 each now (at 100, the bots' own luck moved Trango twelve points between runs): El Cap shows 65% and the bots get 66%; Cerro Torre 42% and 40%; Trango 30% and 25%.
+
 ---
 
 ### Phase 23 — Who you are: origins, paths, stances, and the Record Book
@@ -2365,3 +2373,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-01 — Phase 24 planned on the rebuild, with Evan's calls: the valley's walls, far away (real pitches, climbed in blocks with a partner), odds from the go's own model, mechanics before the scenes; the download budget to 340 KB; Cerro Torre's pitches in the existing styles, and its objective the Southeast Ridge; a trip blocks sign-ups, and booking a week ahead drops your shifts without a warning; 21.5's pay kept, under the harness's no-farm check.
 - 2026-10-01 — Phase 24.1 built: expedition pitches are lines climbed as goes, led in blocks with a partner whose grade moves with yours, and handed over when you're stuck; portaledge nights give back less each time, and the days narrow every window; the summit odds come from the go's own model, and the harness holds them within ten points of the bots' trips. Save v27. 0.985.0.
 - 2026-10-01 — Phase 24.2 built: expeditions are booked up to a week out against a forecast that's vaguer the further out it is, with a partner you choose and a haul bag you pack (food and water by the day, the portaledge, a stove where the water's snow), the odds moving with every choice; Evan confirmed 24.1's partner grades and handing over a pitch. Save v28. 0.986.0.
+- 2026-10-01 — Phase 24.3 built: travel days each way (Trango's walk-in acclimatizes), the trip taking your signed-up shifts off with a week's notice and leaving them to miss without, no sign-ups while you're booked away; three leads a day on the wall; the odds carry your skin through the trip and the harness checks them over 300 trips. 0.987.0.

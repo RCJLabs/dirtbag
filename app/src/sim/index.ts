@@ -212,7 +212,7 @@ export {
   WALLS,
 } from './content/routes';
 export type { RouteDef, CruxDef, BetaDef, Verb, Disc, WallDef } from './content/routes';
-export { EXPEDITIONS, EXPED_ROUTES, expedPitches } from './content/expeditions';
+export { EXPEDITIONS, EXPED_ROUTES, expedPitches, tripDays } from './content/expeditions';
 export type { ExpeditionDef } from './content/expeditions';
 export {
   expedWindows,

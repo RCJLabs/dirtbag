@@ -12,7 +12,7 @@ export { expedWindows };
 import { PEOPLE } from './content/people';
 import type { RouteDef, WallDef } from './content/routes';
 import { gradeOf } from './climber';
-import { BOND, CLIMB, DAY, EXPED, WALL } from './dials';
+import { BODY, BOND, CLIMB, DAY, EXPED, WALL } from './dials';
 import { Rng } from './rng';
 import type { GameState, TripPlan } from './types';
 import { expedCost } from './dreams';
@@ -127,7 +127,10 @@ export function sendChance(s: GameState, r: RouteDef): number {
 // Goes in a day: what the light allows, and what you've the energy for.
 const daylightGoes = Math.ceil((CLIMB.darkFrom - DAY.wakeMin) / EXPED.pitch.min);
 const goesFor = (energy: number): number =>
-  Math.max(0, Math.min(daylightGoes, Math.floor((energy - CLIMB.minEnergy) / EXPED.pitch.energy) + 1));
+  Math.max(
+    0,
+    Math.min(daylightGoes, EXPED.perDay, Math.floor((energy - CLIMB.minEnergy) / EXPED.pitch.energy) + 1),
+  );
 
 // The chance of the summit from where you stand: every day ahead, a storm or not; your
 // blocks a go at a time while the light and your energy last, at each pitch's chance for
@@ -157,8 +160,15 @@ export function summitOdds(s: GameState, id: string, from: OddsFrom, force?: 'le
   const anchors = [from.day, Math.ceil((from.day + e.days) / 2), e.days];
   // A typical go of the day is the third: two goes' food gone since the morning's rations.
   const fedAt = (d: number) => Math.max(0, (d === from.day ? s.fed : EXPED.ration) - 2 * EXPED.pitch.fed);
-  const at = (d: number): GameState =>
-    x ? { ...s, fed: fedAt(d), expedition: { ...x, day: d } } : { ...s, fed: fedAt(d) };
+  // And skin: each go on this wall costs some, a night gives some back, and on a long trip it
+  // runs down; the third go of each day is two goes' skin under the morning's.
+  const perGo = ps.reduce((n, r) => n + CLIMB.skin[r.type] * CLIMB.rockSkin, 0) / ps.length;
+  const drift = Math.max(0, EXPED.typicalGoes * perGo - BODY.sleepSkin);
+  const skinAt = (d: number) => Math.max(0, Math.min(100, s.skin - (d - from.day) * drift) - 2 * perGo);
+  const at = (d: number): GameState => {
+    const t = { ...s, fed: fedAt(d), skin: skinAt(d) };
+    return x ? { ...t, expedition: { ...x, day: d } } : t;
+  };
   const table = anchors.map((d) => ps.map((r, i) => (yourPitch(i, solo) ? sendChance(at(d), r) : 0)));
   const pAt = (pt: number, day: number): number => {
     const [a0, a1, a2] = anchors as [number, number, number];
@@ -271,9 +281,10 @@ export function planOdds(s: GameState, id: string, plan: TripPlan): number {
   };
   void e;
   const { partner, food, ledge, stove } = plan;
+  // You're on the wall once you've got there (Phase 24.3): the forecast for those days.
   return summitOdds(t, id, {
     day: 1,
-    on: plan.day,
+    on: plan.day + EXPEDITIONS[id]!.out,
     pitch: 0,
     energy: s.energy,
     nights: 0,
