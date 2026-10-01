@@ -1535,7 +1535,7 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 ---
 
-### Phase 22 — The life: the van, the body, food, the hustle, and the games   **<<< CURRENT MILESTONE**
+### Phase 22 — The life: the van, the body, food, the hustle, and the games
 
 *Added 29 Sep 2026 by Evan's call, with Phase 21. Runs after it, before Phase 16.*
 
@@ -1885,10 +1885,10 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **E2e:** a climber with $3,000 at the van picks the Rig, puts everything in, and claims it: every upgrade fitted, $200 left in the jar.
 
 **Status (1 Oct 2026): 22.9a built: horseshoes and liar's dice.** Save v25, 0.981.0. 22.9b (blackjack and hold'em, after Evan's Play Console content rating) and 22.9c (the glossary) are next.
-- **The fire at night:** tap it (or "The fire" at the van after dark) for a card: sit a while, as before, or a game. Hazel's there every night; Sage some nights (40%) once you're regulars [proposed]. Each game is an hour and 3 energy, once a night.
+- **The fire at night:** tap it (or "The fire" at the van after dark) for a card: sit a while, as before, or a game. Hazel's there every night; Sage some nights (40%, Evan's call) once you're regulars. Each game is an hour and 3 energy, once a night.
 - **Horseshoes:** four throws on busking's beat, a ringer (3) in the band and a leaner (1) near it, against everyone there; their throws come from the seed (a ringer 25% of the time, a leaner 35%) [proposed]. A clang that rings for a ringer and thuds for a miss.
 - **Liar's dice:** five dice each, no wilds, one bid. Their opener is on the face they hold most of: what they hold, one more, or two (a bluff), 35/40/25% [proposed]. Call it, or raise (the least that beats it, on your best face); they call a raise that needs more than one of your dice. What's in your cup is the tell: holding none of their face, calling is right 64% of the time; one, 25%; two, never. Picking well wins about three hands in four. The hand holds the night until it's played, and saves.
-- **What they pay** [proposed]: bond with whoever's playing, as a day climbing together does, and no faster: a person's bond moves once a day, climbing or at the fire, however many games. That's company, for psyche. v0.956's paid +1 bond to all three of Sage, Rico and Mara per game, with no time and no cap, the audit's bond farm (`docs/audit/social.md` §1.3); its psyche and rep bonuses aren't carried.
+- **What they pay** (Evan's call, 1 Oct 2026: kept): bond with whoever's playing, as a day climbing together does, and no faster: a person's bond moves once a day, climbing or at the fire, however many games. That's company, for psyche. v0.956's paid +1 bond to all three of Sage, Rico and Mara per game, with no time and no cap, the audit's bond farm (`docs/audit/social.md` §1.3); its psyche and rep bonuses aren't carried (Evan's call: not coming back).
 - **The bots** don't play. Every harness target passes.
 - **E2e:** half nine at the Lot with Hazel up: the van, the fire, four horseshoes thrown on the beat, back to the fire, and a hand of liar's dice called. Both heard, both once tonight, and Hazel's bond up one.
 
@@ -1896,10 +1896,11 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Evan's calls (1 Oct 2026):** both play for cash under a nightly cap; hold'em is heads-up with three decisions a hand; blackjack is $40 a night at $5 a hand, with hit, stand and double, and no split.
 - **Sitting down:** at the fire at night, from its card. You sit with what's in hand up to $40, the most a night can cost, and get up with what's in front of you. Each is an hour and 3 energy, once a night; nothing else happens till you get up, and it saves.
 - **Blackjack:** dealt by whoever's at the fire. A fresh deck a hand, the dealer peeks and stands on every 17, 3:2 for a blackjack (to the dollar up: $8 on $5, which about pays back what no split costs), double on two cards. Up to 10 hands a night. Played by the book it's about even: +0.6% of what's wagered over 300 nights, $0.28 a night.
-- **Hold'em:** heads-up with Hazel, or Sage when she's there. An ante each, then one bet a street ($2 before the flop, $4 on it, $4 on the turn and river together); you check, bet or fold, or call or fold their bet. Up to 6 hands a night. Their play weighs how often their hand would win against a random one (a 60-deal seeded sample) against their style [proposed]: Hazel bets only good hands and bluffs one in twenty; Sage bets and calls looser and bluffs one in three.
+- **Hold'em:** heads-up with Hazel, or Sage when she's there. An ante each, then one bet a street ($2 before the flop, $4 on it, $4 on the turn and river together); you check, bet or fold, or call or fold their bet. Up to 6 hands a night. Their play weighs how often their hand would win against a random one (a 60-deal seeded sample) against their style (as built, by Evan's call): Hazel bets only good hands and bluffs one in twenty; Sage bets and calls looser and bluffs one in three.
 - **Reads, and what they know:** after 5 hands with someone you get how they bet; after 12, how often they bluff and what to do about it, said when you earn it and shown at the table. They read you back: a bet of yours on the river that they call and beat goes down as caught, and once you've been caught on a quarter of your hands they call lighter.
 - **It isn't a living:** over 120 nights, playing on your hand's odds wins about $1 a night against either; always calling loses $5–10 a night; always betting loses $4.56 a night to Hazel once she's caught you (and wins $1.35 off Sage, who calls light). A test holds every simple way of playing under a quarter of a café shift a night.
-- **No bond** from cards: blackjack pays money, hold'em reads.
+- **No bond** from cards: blackjack pays money, hold'em reads. Both count as company for psyche (Evan's call, 1 Oct 2026), so a night at cards lifts it as company does, without moving anyone's bond.
+- **Also Evan's calls:** a $5 blackjack pays $8 (kept), and no insurance.
 - **The bots** don't play. Every harness target passes.
 - **E2e:** half nine at the Lot with $100: blackjack, a hand stood on and up again; hold'em with Hazel, a hand checked and called to the end, and up again. The cash comes back to your pocket, both are once tonight, and Hazel has a hand played on her.
 
@@ -1909,13 +1910,17 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The harness** gets Phase 22's criterion 2 for the games: over 60 nights with Hazel and Sage both up, a night of every game moves anyone's bond by 1 at most, and no way of playing blackjack or hold'em earns what the worst-paid shift does an hour (blackjack by the book −$3.07/h on this seed; hold'em −$9.42 to −$0.73/h by strategy and opponent; the shift $6.50/h).
 - **E2e:** the journal's Words page, grouped, after day one.
 
-**Phase 22 against its Done-when (1 Oct 2026):** all three pass on the build. 1: a season's runway holds Phase 6's targets with the van's costs in (the harness's runway target). 2: no game, meal or hustle out-earns or out-bonds its time (the harness's hustle and games targets; busking by Evan's exception). 3: every event and game has a sound and an e2e step (22.6 for the events; horseshoes, liar's dice, blackjack and hold'em in 22.9a and 22.9b). Closing it, and the CURRENT MILESTONE's next stop (Phase 24 before 23, as proposed), are Evan's calls.
+**Phase 22 against its Done-when (1 Oct 2026):** all three pass on the build. 1: a season's runway holds Phase 6's targets with the van's costs in (the harness's runway target). 2: no game, meal or hustle out-earns or out-bonds its time (the harness's hustle and games targets; busking by Evan's exception). 3: every event and game has a sound and an e2e step (22.6 for the events; horseshoes, liar's dice, blackjack and hold'em in 22.9a and 22.9b). Closed by Evan's call (1 Oct 2026); the CURRENT MILESTONE moves to Phase 24, then 23.
+
+*Evan's calls at the close (1 Oct 2026):* the games' bond stays once a day per person however many games; v0.956's win bonuses don't come back; Sage is at the fire 40% of nights; a $5 blackjack pays $8; both card games count as company for psyche; the hold'em styles stand as built; no insurance; v0.956's history trivia stays out; the dreams keep v0.956's prices (the Rig about day 172 at the worker bots' rate, the War Chest 307, Home Base 552), as long goals.
+
+*Carried:* the glossary's words, tappable where they appear (place cards, route sheets, the lines a go ends with), opening their entry. Evan's call: yes, in a later UI pass.
 
 ---
 
-### Phase 24 — Expeditions as trips
+### Phase 24 — Expeditions as trips   **<<< CURRENT MILESTONE**
 
-*Added 30 Sep 2026 by Evan's call, after 21.5 built expeditions as a sheet of daily calls over the Lot. Numbered 24 so older numbers don't move. It runs after Phase 22 and before Phase 23 [proposed]: a trip is packed with Phase 22's food and fuel, and leaves Phase 22's van behind. It could run straight after Phase 21 instead, at the cost of building packing twice.*
+*Added 30 Sep 2026 by Evan's call, after 21.5 built expeditions as a sheet of daily calls over the Lot. Numbered 24 so older numbers don't move. It runs after Phase 22 and before Phase 23 (Evan's call, 1 Oct 2026): a trip is packed with Phase 22's food and fuel, and leaves Phase 22's van behind. It could run straight after Phase 21 instead, at the cost of building packing twice.*
 
 **Goal.** An expedition is a trip you plan, travel, live and come home from, somewhere that looks like nowhere else in the game, and its pitches are climbed, not rolled.
 
@@ -2312,3 +2317,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-01 — Phase 22.9a built: horseshoes on busking's beat and liar's dice a bid at a time, at the fire at night with Hazel and (some nights) Sage; each an hour, once a night, and bond with whoever's playing no faster than a day climbing together (v0.956's paid everyone, uncapped). Save v25. 0.981.0.
 - 2026-10-01 — Phase 22.9b built, by Evan's calls: blackjack ($5 hands, $40 a night, hit, stand and double) and heads-up hold'em (cash under the same cap, three decisions a hand) at the fire. Hold'em keeps reads on each person at 5 and 12 hands, and they read you back. Neither is a living. Simulated gambling: the Play content rating changes before it ships. Save v26. 0.982.0.
 - 2026-10-01 — Phase 22.9c built, and 22.9 with it: trivia becomes the glossary, a Words page in the journal with every term v0.956's trivia asked and the ones the rebuild leans on; its history questions aren't carried. The harness holds the games to criterion 2. Phase 22's three Done-when criteria pass on the build; closing it is Evan's call. 0.983.0.
+- 2026-10-01 — Phase 22 closed by Evan's call, with his calls on 22.8 and 22.9's open questions (the games' once-a-day bond kept, Sage 40%, $8 blackjacks, no insurance, cards count as company for psyche, the dreams' prices kept); tappable glossary words carried to a later UI pass. CURRENT MILESTONE moved to Phase 24, expeditions as trips; it gets planned on the rebuild next.

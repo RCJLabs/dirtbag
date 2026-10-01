@@ -519,7 +519,9 @@ export const EVENTS = {
   fresh: 3,
 };
 
-// Phase 22.9a: the games at the fire [proposed]. Each takes `min` and `energy`, once a night.
+// Phase 22.9a: the games at the fire. The once-a-day bond and Sage's 40% are Evan's calls
+// (1 Oct 2026); the others' throws and bids [proposed]. Each takes `min` and `energy`, once a
+// night.
 // They pay bond with whoever's playing, as a day climbing together does, and no faster: a
 // person's bond moves once a day, climbing or at the fire (no game out-bonds its time).
 // Sage stays over at the Lot `sage` of nights once you're regulars. Horseshoes is `throws`
@@ -533,7 +535,7 @@ export const GAMES = {
   sage: 0.4,
   shoes: { throws: 4, ringer: 3, leaner: 1, odds: 0.25, lean: 0.35 },
   dice: { n: 5, bids: [0.35, 0.4], call: 1 },
-  // Phase 22.9b [proposed]: cards, for money. You sit down with what's in hand up to `cap`, the
+  // Phase 22.9b, by Evan's calls (1 Oct 2026): cards, for money. You sit down with what's in hand up to `cap`, the
   // most a night can cost. Blackjack is `bet` a hand, up to `hands` a night: a fresh deck each,
   // the dealer standing on every 17, 3:2 for a blackjack (to the dollar up), double on two
   // cards, no split.
