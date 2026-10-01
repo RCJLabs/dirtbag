@@ -834,6 +834,19 @@ export const EXPED = {
   fatigue: { perDay: 0.015, floor: 0.82 },
   samples: 24,
   head: 2,
+  // Phase 24.2 [proposed]. You book up to `ahead` days out. The forecast calls each day storm
+  // or clear, right `acc` of the time on the day itself, falling to a coin toss `horizon` days
+  // out. The haul bag holds `max` kg: food and water at `perDay` a day (twice that without a
+  // stove where the water's snow), the portaledge, the stove and its fuel. Each night costs
+  // `perKg` energy for every kg over `free` to haul up the next day. Food and water cost
+  // `food` a day. Without the portaledge a night gives back `noLedge` of what it would.
+  // Cancelling refunds `refund` of what you paid.
+  ahead: 7,
+  forecast: { horizon: 10 },
+  haul: { max: 80, free: 35, perKg: 0.4, perDay: 3, ledge: 9, stove: 2 },
+  food: 12,
+  noLedge: 0.5,
+  refund: 0.5,
 };
 
 // Crowds (Phase 21.6, v0.956's): a crag's `crowd` scaled by the weekend (v0.956's ×1.7),

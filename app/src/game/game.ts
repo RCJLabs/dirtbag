@@ -47,6 +47,8 @@ import {
   GAMES,
   gameBlocked,
   EXPED_ROUTES,
+  defaultPlan,
+  type TripPlan,
 } from '../sim';
 import { bedFor, ON_THE_MAP } from '../audio/beds';
 import { actCue, VERB_CUES } from '../audio/cues';
@@ -179,6 +181,8 @@ export interface Ui {
   speed: SpeedUi | null;
   // A set outside the café (Phase 22.5b).
   busk: BuskUi | null;
+  // Phase 24.2: an expedition being planned, before it's booked.
+  trip: { id: string; plan: TripPlan } | null;
 }
 
 // A set: the note you're on, the marker's sweep across the bar (0 to 1), each note's score
@@ -325,6 +329,7 @@ export class Game {
       plan: null,
       speed: null,
       busk: null,
+      trip: null,
     });
     this.fast = createStore<Fast>({ cam: 0, att: null });
     this.sound.configure(settings);
@@ -795,11 +800,33 @@ export class Game {
   }
 
   // An expedition: go, then a day at a time.
-  exped(id: string, what: 'go' | 'follow' | 'camp' | 'bail'): string | null {
+  exped(id: string, what: 'go' | 'cancel' | 'follow' | 'camp' | 'bail'): string | null {
     const why = refusal(this.dispatch({ t: 'exped', id, do: what }));
     // Home again, summit or not: the lines already said how it went.
-    if (!why && !this.state.expedition) this.closeSheet();
+    if (!why && !this.state.expedition && what !== 'cancel') this.closeSheet();
     else if (!why) this.openSheet({ k: 'exped', id });
+    return why;
+  }
+
+  // Phase 24.2: the plan on the expedition's card, as you've changed it or as it starts.
+  tripPlan(id: string): TripPlan | null {
+    const t = this.ui.get().trip;
+    return t?.id === id ? t.plan : defaultPlan(this.state, id);
+  }
+
+  planTrip(id: string, change: Partial<TripPlan>): void {
+    const plan = this.tripPlan(id);
+    if (!plan) return;
+    this.set({ trip: { id, plan: { ...plan, ...change } } });
+    this.openSheet({ k: 'exped', id });
+  }
+
+  book(id: string): string | null {
+    const plan = this.tripPlan(id);
+    if (!plan) return 'Nobody to go with.';
+    const why = refusal(this.dispatch({ t: 'exped', id, do: 'book', plan }));
+    if (!why) this.set({ trip: null });
+    this.openSheet({ k: 'exped', id });
     return why;
   }
 
