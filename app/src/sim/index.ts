@@ -171,6 +171,7 @@ export {
   type CardGame,
 } from './cards';
 export { STYLES } from './content/cards';
+export { WORDS, WORD_GROUP, type Word, type WordGroup } from './content/glossary';
 export { DOG_FAREWELL } from './content/dog';
 export { HITCHERS, STOPS, type Hitcher, type RoadStop } from './content/road';
 export { KNOCKS, type Knock } from './content/knocks';

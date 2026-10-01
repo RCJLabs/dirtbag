@@ -74,7 +74,8 @@ import { createStore, type Store } from './store';
 
 export type View = 'scene' | 'map' | 'wall';
 
-export type JournalPage = 'you' | 'lately';
+// Phase 22.9c: the words, a glossary.
+export type JournalPage = 'you' | 'lately' | 'words';
 
 // Past this many words a line goes on a card, not a toast: nobody reads 40 words in the
 // few seconds a toast stays up.

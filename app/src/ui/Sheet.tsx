@@ -106,6 +106,9 @@ import {
   type Mark,
   type Style,
   SUPPLIES,
+  WORDS,
+  WORD_GROUP,
+  type WordGroup,
 } from '../sim';
 import type { Game, JournalPage, SheetId, Ui } from '../game/game';
 import { legacyFile, saveLegacyFile } from '../game/legacy';
@@ -887,7 +890,13 @@ function JournalBody({ game, page, s }: { game: Game; page: JournalPage; s: Game
           </button>
         ))}
       </div>
-      {page === 'you' ? <YouBody game={game} s={s} /> : <LatelyBody s={s} />}
+      {page === 'you' ? (
+        <YouBody game={game} s={s} />
+      ) : page === 'words' ? (
+        <WordsBody />
+      ) : (
+        <LatelyBody s={s} />
+      )}
     </>
   );
 }
@@ -895,7 +904,29 @@ function JournalBody({ game, page, s }: { game: Game; page: JournalPage; s: Game
 const JOURNAL_PAGES: [JournalPage, string][] = [
   ['you', 'You'],
   ['lately', 'Lately'],
+  ['words', 'Words'],
 ];
+
+// Phase 22.9c: the glossary, by group.
+function WordsBody() {
+  return (
+    <div id="words">
+      {(Object.keys(WORD_GROUP) as WordGroup[]).map((g) => (
+        <Fragment key={g}>
+          <p className="crux">{WORD_GROUP[g]}</p>
+          <dl className="words">
+            {WORDS.filter((w) => w.group === g).map((w) => (
+              <Fragment key={w.term}>
+                <dt>{w.term}</dt>
+                <dd>{w.says}</dd>
+              </Fragment>
+            ))}
+          </dl>
+        </Fragment>
+      ))}
+    </div>
+  );
+}
 
 function LatelyBody({ s }: { s: GameState }) {
   if (!s.log.length) return <p className="sub">Nothing yet. Give it a day.</p>;

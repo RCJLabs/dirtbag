@@ -583,6 +583,11 @@ if (!days.startsWith('Day 2, Day 1')) await fail(`the log's days: ${days}`);
 log(`lately: ${days}`);
 await expectText('#log', /Van spot, \$18\. Morning comes anyway\./, 'last night, in full');
 await shot('journal');
+// Phase 22.9c: the words, a glossary, grouped.
+await click('#j-words');
+await expectText('#words', /On the wall.*Crimp.*How it went.*Onsight.*The life.*Dirtbag/, 'the words');
+log(`words: ${await page.evaluate(() => document.querySelectorAll('#words dt').length)} of them`);
+await shot('words');
 await click('#sheet .x');
 
 // ---- day two ----
