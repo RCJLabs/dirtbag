@@ -133,6 +133,8 @@ export type SheetId =
   | { k: 'wall'; id: string }
   | { k: 'expeds' }
   | { k: 'exped'; id: string }
+  // Phase 24.5: home from one, its card.
+  | { k: 'home' }
   // Phase 21.6: the speed wall, and how a Free Solo run ended.
   | { k: 'speed' }
   | { k: 'dead' }
@@ -381,6 +383,7 @@ export class Game {
       if (e.k === 'line') this.toast(e.text);
       else if (e.k === 'refused') this.toast(e.why);
       else if (e.k === 'act') this.cards.push({ k: 'act' });
+      else if (e.k === 'home') this.cards.push({ k: 'home' });
     }
     if (changed) this.noteComings(before);
     if (changed && !persist.save(this.state)) this.toast("Couldn't save. The browser's storage may be full.");
@@ -877,8 +880,10 @@ export class Game {
         this.set({ sheet: { k: 'encounter' } });
         return;
       }
+      // Home, if the call cost the last day: the trip's card comes up once the sheet's down.
       const x = this.state.expedition;
-      this.set({ sheet: x ? { k: 'exped', id: x.id } : null });
+      if (x) this.set({ sheet: { k: 'exped', id: x.id } });
+      else this.closeSheet();
       return;
     }
     // A walk-out's calls, one stage at a time; out, and you're back at the van.
@@ -1120,6 +1125,12 @@ export class Game {
   }
 
   // A hand of liar's dice: dealt, then called or raised. The fire's card shows it.
+  // Phase 24.5: the last trip, told at the fire.
+  story(): void {
+    this.dispatch({ t: 'story' });
+    this.openSheet({ k: 'fire' });
+  }
+
   dice(what: 'deal' | 'call' | 'raise'): void {
     this.sound.play('dice');
     this.dispatch({ t: 'dice', do: what });

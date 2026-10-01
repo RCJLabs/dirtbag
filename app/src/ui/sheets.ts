@@ -69,6 +69,13 @@ import {
   tripDays,
   wallEventById,
   wallNote,
+  highPoint,
+  lastTrip,
+  storyBlocked,
+  tripBond,
+  tripWords,
+  TRIP_BOND,
+  TRIP_END,
   CLIMB,
   goCost,
   nightBack,
@@ -488,6 +495,72 @@ function fireNote(s: GameState): string {
     : 'Just the coals.';
 }
 
+// Phase 24.5: the last trip's story at the fire, while it's still untold.
+const storyRow = (game: Game, s: GameState): Row[] => {
+  const t = lastTrip(s);
+  if (!t || t.told) return [];
+  const why = storyBlocked(s);
+  const here = atFire(s).map((w) => PEOPLE[w]?.name ?? w);
+  const ps = EXPED.story.psyche;
+  return [
+    {
+      label: `Tell them about ${EXPEDITIONS[t.id]!.name}`,
+      cost: costLabel({ min: EXPED.story.min }),
+      note: why
+        ? `${why}.`
+        : `+${t.end === 'summit' ? ps.summit : ps.short} psyche, and a night with ${here.join(' and ')} that counts as a day together.`,
+      off: !!why,
+      run: () => game.story(),
+    },
+  ];
+};
+
+// Phase 24.5: where you got to on an objective before, for the planner.
+const highNote = (s: GameState, id: string): string[] => {
+  const hp = highPoint(s, id);
+  if (!hp) return [];
+  const e = EXPEDITIONS[id]!;
+  return [
+    hp.summit
+      ? `You’ve stood on top of ${e.objective}.`
+      : `Your high point: ${hp.high} of ${e.pitches} pitches.`,
+  ];
+};
+
+// Phase 24.5: a trip's card, home again: how it ended, what happened, what it paid, your
+// partner, and where it leaves your high point.
+function homeSheet(game: Game, s: GameState): ListSpec | null {
+  const t = lastTrip(s);
+  if (!t) return null;
+  const e = EXPEDITIONS[t.id]!;
+  const w = tripWords(t);
+  const before = highPoint({ ...s, book: s.book.slice(0, -1) }, t.id);
+  const d = t.partner ? tripBond(e, t.end, t.high) : 0;
+  const happened = t.seen.map((id) => wallEventById(id)?.title).filter(Boolean);
+  const notes = [
+    `${t.nights === 1 ? 'A night' : `${t.nights} nights`} on the wall.${happened.length ? ` Up there: ${happened.join('; ')}.` : ''}`,
+  ];
+  if (t.end === 'summit') notes.push(`The sponsors paid ${money(e.pays)}.`);
+  else if (!before) {
+    if (t.high) notes.push('Your high point on it, for next time.');
+  } else if (before.summit || t.high <= before.high)
+    notes.push(
+      before.summit
+        ? `You’ve stood on top of it before.`
+        : `Your high point is still ${before.high} pitches.`,
+    );
+  else notes.push(`A new high point: ${t.high} pitches, past your ${before.high}.`);
+  if (d) notes.push(fill(d > 0 ? TRIP_BOND.closer : TRIP_BOND.further, w));
+  if (!t.told) notes.push('Tell it at the fire some night.');
+  return {
+    title: e.name,
+    sub: `${fill(TRIP_END[t.end], w)}, ${t.partner ? `with ${w.partner}` : 'alone'}.`,
+    notes,
+    close: false,
+    rows: [{ label: 'Right', run: () => game.closeSheet() }],
+  };
+}
+
 export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | null {
   switch (id.k) {
     case 'van': {
@@ -809,6 +882,9 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         rows: [{ label: 'Right', run: () => game.closeSheet() }],
       };
 
+    case 'home':
+      return homeSheet(game, s);
+
     case 'act':
       return {
         title: ACT_I_END.title,
@@ -1070,6 +1146,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         close: true,
         rows: [
           actRow(game, s, 'lot.sit'),
+          ...storyRow(game, s),
           game_(
             'Horseshoes',
             'shoes',
@@ -1487,6 +1564,7 @@ function planSheet(game: Game, s: GameState, id: string): ListSpec {
     ...head,
     notes: [
       `Summit odds with this plan: ${pct(planOdds(s, id, plan))}, choosing well each day.`,
+      ...highNote(s, id),
       `Away from the valley days ${span.from} to ${span.to} at the most. The week’s bills still come.${clashNote}`,
       `The haul bag: ${kg} of ${H.max} kg, with food and water for ${plan.food + 1} days. When it runs out, you come down. Every kg over ${H.free} costs you energy each night, hauling it.`,
     ],

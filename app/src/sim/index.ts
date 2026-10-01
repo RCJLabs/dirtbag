@@ -233,9 +233,15 @@ export {
   sendChance,
   stormOn,
   summitOdds,
+  highPoint,
+  lastTrip,
+  storyBlocked,
+  tripBond,
+  tripWords,
   wallPay,
   yourPitch,
 } from './expeditions';
+export { TRIP_BOND, TRIP_END, TRIP_STORY } from './content/tripstories';
 export { soloed } from './solo';
 export { speedBlocked, speedFactor, speedGains, speedTime, runsToday, SPEED_WALL } from './speed';
 export { crowdAt, crowdNow, crowdLevel, queueMin, sprayable, canAsk, type Crowd } from './crowds';

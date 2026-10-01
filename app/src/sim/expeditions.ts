@@ -13,8 +13,10 @@ import { PEOPLE } from './content/people';
 import type { RouteDef, WallDef } from './content/routes';
 import { gradeOf } from './climber';
 import { BODY, BOND, CLIMB, DAY, EXPED, WALL } from './dials';
+import { isNight } from './cond';
+import { atFire } from './fire';
 import { Rng } from './rng';
-import type { GameState, TripPlan } from './types';
+import type { GameState, TripEnd, TripLog, TripPlan } from './types';
 import { expedCost } from './dreams';
 
 const clamp = (v: number, lo: number, hi: number) => (v < lo ? lo : v > hi ? hi : v);
@@ -327,5 +329,48 @@ export function planBlocked(s: GameState, id: string, plan: TripPlan): string | 
   if (plan.food < 1 || plan.food > e.days - 1) return `Between 1 and ${e.days - 1} days of food and water`;
   if (bagKg(e, plan.food, plan.ledge, plan.stove) > EXPED.haul.max)
     return `The bag won’t take it: ${EXPED.haul.max} kg at most`;
+  return null;
+}
+
+// Phase 24.5. What a trip does to you and your partner, by how it ended: a summit together,
+// half the wall or more, or the water run out on them. Anything else leaves it where it was.
+export function tripBond(e: ExpeditionDef, end: TripEnd, high: number): number {
+  const b = EXPED.home.bond;
+  if (end === 'summit') return b.summit;
+  if (end === 'water') return b.water;
+  return high * 2 >= e.pitches ? b.half : 0;
+}
+
+// The newest trip in the book, if there's one.
+export const lastTrip = (s: GameState): TripLog | null => s.book[s.book.length - 1] ?? null;
+
+// Your high point on an objective, from every trip there before: the most pitches fixed, and
+// whether you've stood on top.
+export function highPoint(s: GameState, id: string): { high: number; summit: boolean } | null {
+  const ts = s.book.filter((t) => t.id === id);
+  if (!ts.length) return null;
+  return { high: Math.max(...ts.map((t) => t.high)), summit: ts.some((t) => t.end === 'summit') };
+}
+
+// The words a trip's lines are filled with.
+export function tripWords(t: TripLog): Record<string, string | number> {
+  const e = EXPEDITIONS[t.id]!;
+  return {
+    name: e.name,
+    objective: e.objective,
+    partner: t.partner ? (PEOPLE[t.partner]?.name ?? t.partner) : 'nobody',
+    high: t.high,
+    pitches: e.pitches,
+    next: Math.min(e.pitches, t.high + 1),
+  };
+}
+
+// Why the last trip's story can't be told now, or null.
+export function storyBlocked(s: GameState): string | null {
+  const t = lastTrip(s);
+  if (!t || t.told) return 'No trip you haven’t told yet';
+  if (s.at !== 'lot') return 'Stories are told at the fire at the Lot';
+  if (!isNight(s.min)) return 'Nobody’s at the fire till dark';
+  if (!atFire(s).length) return 'Nobody’s at the fire tonight';
   return null;
 }

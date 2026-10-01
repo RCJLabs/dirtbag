@@ -125,14 +125,19 @@ import {
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
 import { WALL_EVENTS, wallEventById } from './content/wallevents';
+import { TRIP_STORY } from './content/tripstories';
 import {
   bagKg,
+  lastTrip,
   nightGives,
   partnerDay,
   partners,
   planBlocked,
   planCost,
   stormOn,
+  storyBlocked,
+  tripBond,
+  tripWords,
   wallPay,
   yourPitch,
 } from './expeditions';
@@ -173,6 +178,7 @@ import { aimMet, currentGoal } from './story';
 import type {
   PhaseId,
   Action,
+  TripEnd,
   Delta,
   GameEvent,
   GameState,
@@ -249,6 +255,7 @@ export function newGame(seed: string): GameState {
     wall: null,
     expedition: null,
     booked: null,
+    book: [],
     speed: { pb: null, runs: 0, day: 0 },
     mode: 'rope',
     soloing: null,
@@ -814,17 +821,37 @@ export function act(s0: GameState, a: Action): Result {
       `Back at the Lot after ${e.home === 1 ? 'a day' : `${e.home} days`} on the road home from ${e.name}.`,
     );
   };
-  // Phase 24. The summit: home, paid, and a lesson for the head.
-  const summit = () => {
+  // Phase 24.5. Home, however it ended: your partner closer or further for it, the road
+  // back, the trip in the book, and its card.
+  const cameHome = (end: TripEnd) => {
     const x = s.expedition!;
     const e = EXPEDITIONS[x.id]!;
     s.expedition = null;
+    const d = x.partner ? tripBond(e, end, x.pitch) : 0;
+    if (x.partner && d) bond(x.partner, meet(x.partner).bond + d);
+    homeward(e);
+    s.book.push({
+      id: x.id,
+      day: s.day,
+      end,
+      high: x.pitch,
+      partner: x.partner,
+      nights: x.nights,
+      seen: [...x.seen],
+      told: false,
+    });
+    events.push({ k: 'home', id: x.id });
+  };
+  // Phase 24. The summit: paid, a lesson for the head, and home.
+  const summit = () => {
+    const x = s.expedition!;
+    const e = EXPEDITIONS[x.id]!;
     spend({ cash: e.pays });
     train({ head: EXPED.head });
     line(
       `${e.name}: the summit of ${e.objective}, on day ${x.day}${x.partner ? `, with ${PEOPLE[x.partner]?.name ?? x.partner}` : ', alone'}. The sponsors pay ${money(e.pays)}, and you'll be telling this one for years. ${skillsNote({ head: EXPED.head })}.`,
     );
-    homeward(e);
+    cameHome('summit');
   };
   // A night on the portaledge: less back than the night before, the rations eaten, the wall a
   // day older. Out of days, and it's home with what you fixed.
@@ -833,9 +860,8 @@ export function act(s0: GameState, a: Action): Result {
     const e = EXPEDITIONS[x.id]!;
     // Out of food and water (Phase 24.2): there's no night up here without them.
     if (x.food <= 0) {
-      s.expedition = null;
       line(`${e.name}: the water's gone. You rap off with ${x.pitch} of ${e.pitches} pitches fixed.`);
-      homeward(e);
+      cameHome('water');
       return;
     }
     x.food -= 1;
@@ -845,11 +871,10 @@ export function act(s0: GameState, a: Action): Result {
     x.nights += 1;
     x.day += 1;
     if (x.day > e.days) {
-      s.expedition = null;
       line(
         `${e.name}: out of time, ${x.pitch} of ${e.pitches} pitches fixed. You fly home with a story and nothing else.`,
       );
-      homeward(e);
+      cameHome('time');
       return;
     }
     // Phase 24.4: some mornings, something happens up there. Never twice a trip, never more
@@ -1423,11 +1448,10 @@ export function act(s0: GameState, a: Action): Result {
       const x = s.expedition;
       if (!x || x.id !== a.id) return refuse("You're not on it.");
       if (a.do === 'bail') {
-        s.expedition = null;
         line(
           `${e.name}: you rap off, ${x.pitch} of ${e.pitches} pitches fixed. Nobody argues with going home alive.`,
         );
-        homeward(e);
+        cameHome('bail');
         break;
       }
       if (a.do === 'camp') {
@@ -1814,6 +1838,24 @@ export function act(s0: GameState, a: Action): Result {
       line(
         `${ringersSaid(ringers)} in four throws, and ${results.join('; ')}. The stake rings the rest of the night in your head.`,
       );
+      break;
+    }
+
+    // Phase 24.5: the last trip told at the fire, once. Everyone there counts it as a day
+    // together, as the games do; psyche for you, more for a summit.
+    case 'story': {
+      const why = storyBlocked(s);
+      if (why) return refuse(`${why}.`);
+      const t = lastTrip(s)!;
+      const ps = EXPED.story.psyche;
+      spend({ min: EXPED.story.min });
+      t.told = true;
+      for (const w of atFire(s)) climbedWith(w);
+      s.psyche = {
+        ...s.psyche,
+        level: clamp100(s.psyche.level + (t.end === 'summit' ? ps.summit : ps.short)),
+      };
+      line(fill(TRIP_STORY[t.end], tripWords(t)));
       break;
     }
 

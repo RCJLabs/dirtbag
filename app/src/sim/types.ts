@@ -184,6 +184,9 @@ export interface GameState {
   // Phase 24.2. An expedition booked and paid for: the day you leave, who's coming, and the
   // haul bag you packed.
   booked: (TripPlan & { id: string }) | null;
+  // Phase 24.5. Every expedition you've come home from, oldest first: the stub of Phase 23's
+  // Record Book, and where a high point is kept.
+  book: TripLog[];
   // Phase 21.6. The speed wall at Send City: your best time in seconds, and today's runs.
   speed: { pb: number | null; runs: number; day: number };
   // How this climber climbs, chosen at the start and for good: with a rope, or Free Solo
@@ -350,10 +353,27 @@ export type Action =
   // hand of liar's dice: dealt, then called or raised.
   | { t: 'shoes'; throws: number[] }
   | { t: 'dice'; do: 'deal' | 'call' | 'raise' }
+  // Phase 24.5: the last trip's story, told at the fire.
+  | { t: 'story' }
   // Phase 22.9b: cards at the fire. Sit down (with whom, for hold'em), deal a hand, play it,
   // and get up with what's in front of you.
   | { t: 'bj'; do: 'sit' | 'deal' | 'hit' | 'stand' | 'double' | 'leave' }
   | { t: 'holdem'; do: 'sit' | 'deal' | 'fold' | 'call' | 'bet' | 'leave'; who?: string };
+
+// Phase 24.5. A trip come home from: which, the calendar day you got back, how it ended, the
+// pitches fixed, who was on the rope, the nights up there, what happened, and whether you've
+// told it at the fire yet.
+export type TripEnd = 'summit' | 'bail' | 'water' | 'time';
+export interface TripLog {
+  id: string;
+  day: number;
+  end: TripEnd;
+  high: number;
+  partner: string | null;
+  nights: number;
+  seen: string[];
+  told: boolean;
+}
 
 // Phase 24.2. A trip as you plan it: the day you leave, who comes, and the haul bag.
 export interface TripPlan {
@@ -398,6 +418,8 @@ export type GameEvent =
   | { k: 'talk'; node: string | null }
   // An encounter begins (Phase 22.6): it waits for an answer.
   | { k: 'encounter'; kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell' | 'wall'; id: string }
+  // Back from an expedition (Phase 24.5): its card, from the newest entry in the book.
+  | { k: 'home'; id: string }
   // The action wasn't allowed; `why` says so in the game's voice.
   | { k: 'refused'; why: string };
 

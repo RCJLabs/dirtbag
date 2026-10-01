@@ -11,6 +11,7 @@ import {
   bagKg,
   defaultPlan,
   forecastCall,
+  highPoint,
   nightBack,
   nightGives,
   partners,
@@ -19,8 +20,12 @@ import {
   stormChance,
   stormOn,
   summitOdds,
+  storyBlocked,
+  tripBond,
+  tripWords,
   yourPitch,
 } from './expeditions';
+import { TRIP_END, TRIP_STORY } from './content/tripstories';
 import { act, newGame } from './game';
 import { expedTrip } from './harness';
 import type { Action, GameState, TripPlan } from './types';
@@ -409,6 +414,106 @@ describe('what happens up there', () => {
     for (const w of WALL_EVENTS) {
       expect(w.opts).toHaveLength(2);
       for (const o of w.opts) expect(Object.keys(o.fx).length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('coming home', () => {
+  // Away on El Cap with Hazel, the first day on the wall a clear one.
+  const away = (seed = 'home') => {
+    let s = ready(9, seed);
+    s = { ...s, day: clear(s, s.day + EXPEDITIONS.elcap!.out) - EXPEDITIONS.elcap!.out };
+    return leave(s);
+  };
+  const at = (s: GameState, pitch: number): GameState => ({ ...s, expedition: { ...s.expedition!, pitch } });
+  const E = EXPEDITIONS.elcap!;
+  const B = EXPED.home.bond;
+
+  it('tops out: paid, Hazel closer, the trip in the book, and its card', () => {
+    let s = away();
+    const last = E.pitches - 1;
+    expect(yourPitch(last, false)).toBe(true);
+    s = at(s, last);
+    const bond0 = s.people.hazel!.bond;
+    const cash0 = s.cash;
+    const go = act(s, { t: 'go', route: `elcap-${E.pitches}` });
+    const r = act(go.state, { t: 'done', route: `elcap-${E.pitches}`, result: sent });
+    expect(refused(r)).toBeNull();
+    s = r.state;
+    expect(s.expedition).toBeNull();
+    expect(s.cash).toBeGreaterThanOrEqual(cash0 + E.pays - 1);
+    expect(s.people.hazel!.bond).toBeGreaterThanOrEqual(bond0 + B.summit);
+    expect(s.book).toEqual([
+      {
+        id: 'elcap',
+        day: s.day,
+        end: 'summit',
+        high: E.pitches,
+        partner: 'hazel',
+        nights: 0,
+        seen: [],
+        told: false,
+      },
+    ]);
+    expect(r.events).toContainEqual({ k: 'home', id: 'elcap' });
+    expect(highPoint(s, 'elcap')).toEqual({ high: E.pitches, summit: true });
+  });
+
+  it('a trip that fails keeps its high point, and Hazel moves with how far you got', () => {
+    const bail = (pitch: number) => {
+      const s = at(away(), pitch);
+      const b = s.people.hazel!.bond;
+      const h = play(s, { t: 'exped', id: 'elcap', do: 'bail' });
+      return { d: h.people.hazel!.bond - b, h };
+    };
+    expect(bail(1).d).toBe(0);
+    const half = Math.ceil(E.pitches / 2);
+    expect(bail(half).d).toBe(B.half);
+    expect(bail(half).h.book[0]).toMatchObject({ end: 'bail', high: half });
+    // Out of water: down, and Hazel a little further off.
+    const dry = { ...away(), expedition: { ...away().expedition!, food: 0 } };
+    const b0 = dry.people.hazel!.bond;
+    const wet = play(dry, { t: 'exped', id: 'elcap', do: 'camp' });
+    expect(wet.book[0]!.end).toBe('water');
+    expect(wet.people.hazel!.bond).toBe(b0 + B.water);
+    // A high point is the best of every trip there.
+    const two = { ...bail(half).h, expedition: null };
+    const both = { ...two, book: [...two.book, { ...two.book[0]!, high: 2 }] };
+    expect(highPoint(both, 'elcap')).toEqual({ high: half, summit: false });
+    expect(highPoint(both, 'cerrotorre')).toBeNull();
+    expect(tripBond(E, 'time', 1)).toBe(0);
+  });
+
+  it('is told at the fire once: psyche, and a night with whoever’s there', () => {
+    const home = play(at(away(), 3), { t: 'exped', id: 'elcap', do: 'bail' });
+    expect(storyBlocked({ ...home, min: 10 * 60 })).toMatch(/dark/);
+    const night = { ...home, at: 'lot', min: 21 * 60, psyche: { ...home.psyche, level: 50 } };
+    expect(storyBlocked(night)).toBeNull();
+    const r = act(night, { t: 'story' });
+    expect(refused(r)).toBeNull();
+    expect(r.state.psyche.level).toBe(50 + EXPED.story.psyche.short);
+    expect(r.state.min).toBe(night.min + EXPED.story.min);
+    expect(r.state.book[0]!.told).toBe(true);
+    expect(r.state.people.hazel!.last).toBe(r.state.day);
+    expect(refused(act(r.state, { t: 'story' }))).toMatch(/told/);
+  });
+
+  it('says every ending in words, nothing left unfilled', () => {
+    for (const end of ['summit', 'bail', 'water', 'time'] as const) {
+      const w = tripWords({
+        id: 'elcap',
+        day: 1,
+        end,
+        high: 4,
+        partner: 'hazel',
+        nights: 2,
+        seen: [],
+        told: false,
+      });
+      for (const t of [TRIP_STORY[end], TRIP_END[end]]) {
+        const out = t.replace(/\{(\w+)\}/g, (m, k: string) => String(w[k] ?? m));
+        expect(out).not.toMatch(/[{}]/);
+      }
     }
   });
 });

@@ -680,7 +680,8 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 29 ||
+  saved?.v !== 30 ||
+  !Array.isArray(st.book) ||
   st.encounter !== null ||
   st.table !== null ||
   st.cards !== null ||
@@ -1758,6 +1759,33 @@ console.log('An expedition');
   await ex.waitForFunction(() => /El Capitan, day/.test(document.querySelector('#sheet')?.textContent ?? ''));
   const cut = await trip();
   if (cut.food !== pig.food - 2) await fail(`the haul bag cut loose: ${JSON.stringify({ pig, cut })}`);
+  // Coming home (Phase 24.5): rap off, the road back, and the trip's card; then that night at
+  // the fire, its story.
+  await pick('Rap off and go home');
+  await ex.waitForFunction(() =>
+    /^El Capitan$/.test(document.querySelector('#sheet-title')?.textContent ?? ''),
+  );
+  const card = await sheetText();
+  if (!/You rapped off with \d+ of \d+ pitches fixed, with Hazel\./.test(card))
+    await fail(`the trip's card: ${card}`);
+  log(`exped: home, ${card.replace(/^El Capitan/, '').slice(0, 140)}`);
+  await ex.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-exped-home.png`) });
+  await pick('Right');
+  const book = await ex.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.book);
+  if (book.length !== 1 || book[0].end !== 'bail' || book[0].told)
+    await fail(`the book: ${JSON.stringify(book)}`);
+  await ex.evaluate(() => {
+    const f = JSON.parse(localStorage.getItem('dirtbag.save'));
+    f.state.min = 21 * 60;
+    localStorage.setItem('dirtbag.save', JSON.stringify(f));
+  });
+  await ex.reload({ waitUntil: 'load' });
+  await ex.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Map');
+  await ex.waitForTimeout(600);
+  await ex.mouse.click(100, 560);
+  await pick('The fire');
+  await pick('Tell them about El Capitan');
+  await ex.waitForFunction(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.book[0].told);
   await ctx.close();
 }
 
