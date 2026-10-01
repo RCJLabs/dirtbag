@@ -10,6 +10,7 @@ import { H, W } from '../layout';
 import { coniferPath, rock } from '../shapes';
 import { boulderArt, boulderOutline, boulderTopo, paintBoulderArt } from './boulder';
 import { boardTopo, boardWallArt, gymTopo, gymWallArt, paintBoardWall, paintGymWall } from './gym';
+import { EXPED_FACE, paintExpedWall, SCENED } from './expeds';
 
 const SKY: Pt[] = [
   [-4, 130],
@@ -430,8 +431,8 @@ function pitchPts(r: RouteDef): Pt[] {
 }
 
 for (const r of Object.values(ROUTES)) if (r.wall) TOPO_PTS[r.id] = pitchPts(r);
-// An expedition's pitches (Phase 24) climb the same way, on Roadside's wall until 24.6–24.8
-// paint their own.
+// An expedition's pitches (Phase 24) climb the same way: on their own wall where 24.6–24.8
+// have painted one, on Roadside's until then.
 for (const r of Object.values(EXPED_ROUTES)) TOPO_PTS[r.id] = pitchPts(r);
 
 const TOPO: Record<string, Topo> = Object.fromEntries(
@@ -1432,6 +1433,7 @@ function paintWall(g: G, place: string, selected: string): void {
   else if (place === 'wind') paintWind(g);
   else if (place === 'crucible') paintCrucible(g);
   else if (place === 'cove') paintCove(g);
+  else if (SCENED.includes(place)) paintExpedWall(g, place);
   else paintRoadside(g);
   paintLines(g, place, selected);
 }
@@ -1453,6 +1455,7 @@ const FACE: Record<string, Pt[]> = {
   wind: R_WALL,
   crucible: C_WALL,
   cove: P_WALL,
+  elcap: EXPED_FACE,
 };
 
 // A route's wall, painted into any context in wall units: what the wall view caches at 2x,

@@ -22,7 +22,9 @@ import {
   TALK,
   WALLS,
   crowdNow,
+  EXPEDITIONS,
   SPEED,
+  stormOn,
   type Attempt,
   type GameState,
   type RouteDef,
@@ -72,6 +74,7 @@ import { BIG } from './paint/scale';
 import { drawSkyMarks, FIRE_X, LIGHTS, sceneArt, SKY_W, type SceneArt, type Tod } from './paint/scenes';
 import { belayAt, onRoute, rockPath, routeStretch, topoFor, traceSelected, wallOf } from './paint/wall';
 import { sceneSun, sunLight, wallSun, wetness } from './sun';
+import { EXPED_SKY_W, expedScene, expedSpot, SCENED } from './paint/expeds';
 
 export interface Frame {
   state: GameState;
@@ -122,9 +125,45 @@ export const todAt = (scene: string, min: number): Tod =>
   scene === 'lot' ? (isNight(min) ? 'night' : 'morning') : 'day';
 
 function renderScene(g: G, f: Frame, company: Company = f): void {
+  const x = f.state.expedition;
+  if (x && SCENED.includes(x.id)) return renderExped(g, f, x.id);
   const eye: Eye = { w: f.w, h: H, z: Z, oy: OY, px: f.px };
   sceneBack(g, sceneArt(f.scene, todAt(f.scene, f.state.min)), f.cam, eye);
   sceneLive(g, f.state, f.scene, f.cam, eye, company);
+}
+
+// Away on an expedition (Phase 24.6–24.8): its own scene, in its light and weather, and where
+// you've got to on the wall, flagged, with your portaledge.
+function renderExped(g: G, f: Frame, id: string): void {
+  const s = f.state;
+  const x = s.expedition!;
+  const e = EXPEDITIONS[id]!;
+  const night = isNight(s.min);
+  const storm = stormOn(s.seed, id, e, s.day);
+  const x0 = (EXPED_SKY_W - f.w) / 2;
+  g.setTransform(f.px, 0, 0, f.px, 0, 0);
+  g.drawImage(expedScene(id, night, storm), x0, 0, f.w, H, 0, 0, f.w, H);
+  const [sx, sy] = expedSpot(id, x.pitch / e.pitches);
+  const px = sx - x0;
+  if (night) {
+    g.fillStyle = rad(g, px, sy, 0, 14, [
+      [0, 'rgba(255,231,168,.7)'],
+      [1, 'rgba(255,231,168,0)'],
+    ]);
+    g.fillRect(px - 14, sy - 14, 28, 28);
+  }
+  g.fillStyle = '#D8693A';
+  g.fillRect(px - 5, sy - 4, 10, 4);
+  g.fillStyle = INK;
+  g.fillRect(px - 5, sy, 10, 1.5);
+  g.strokeStyle = ACC.comic;
+  g.lineWidth = 1.4;
+  g.beginPath();
+  g.moveTo(px + 7, sy - 2);
+  g.lineTo(px + 30, sy - 14);
+  g.stroke();
+  label(g, 'comic', `${x.pitch} of ${e.pitches}`, px + 33, sy - 12, { size: 13, align: 'left' });
+  if (storm) drawRain(g, f.w, H, f.t, f.still);
 }
 
 // The painted part of a scene: its sky, then its layers, each moved by the camera as far as
@@ -441,7 +480,15 @@ function renderWall(g: G, f: Frame): void {
 // much as the ends.
 function wallWeather(g: G, f: Frame, r: RouteDef): void {
   const s = f.state;
-  if (!indoor(r.place) && wet(s, r.place)) drawRain(g, f.w, H, f.t, f.still);
+  if (r.exped) {
+    // Up on an expedition (Phase 24.6): its storm, and its night.
+    const e = EXPEDITIONS[r.exped];
+    if (e && stormOn(s.seed, r.exped, e, s.day)) drawRain(g, f.w, H, f.t, f.still);
+    if (isNight(s.min)) {
+      g.fillStyle = 'rgba(16,22,48,.55)';
+      g.fillRect(0, 0, f.w, H);
+    }
+  } else if (!indoor(r.place) && wet(s, r.place)) drawRain(g, f.w, H, f.t, f.still);
   const pump = f.att && (f.att.phase === 'climb' || f.att.phase === 'crux') ? f.att.pump : 0;
   if (pump > 45) {
     const beat = f.still || pump < 80 ? 1 : 0.85 + 0.15 * Math.sin(f.t * 8);
@@ -538,7 +585,8 @@ function wallPanel(g: G, f: Frame, r: RouteDef): void {
     // Quickdraws on every bolt you've clipped, or the pieces you've placed, and the rope
     // running through them to whoever's belaying. A trad line shows its stances too: the
     // ones you've passed without placing are where you ran it out.
-    const who = belayer(s);
+    // Up on an expedition, your partner belays from the anchor (Phase 24.6).
+    const who = r.exped ? (s.expedition?.partner ?? null) : belayer(s);
     const [bx0, by0] = belayAt(r);
     const rope: Pt[] = who ? [drawBelayerBack(g, LOOK[who]!, bx0, by0)] : [];
     const trad = r.disc === 'trad';
