@@ -12,7 +12,15 @@ import { HUSTLE, SPEED, TRAIN } from '../src/sim/dials';
 import { DREAMS } from '../src/sim/content/dreams';
 import { JOBS } from '../src/sim/content/jobs';
 import { speedGains } from '../src/sim/speed';
-import { checkpoints, contentOut, firstInjury, firstTry, median, season } from '../src/sim/harness';
+import {
+  checkpoints,
+  contentOut,
+  firstInjury,
+  firstTry,
+  gamesAtFire,
+  median,
+  season,
+} from '../src/sim/harness';
 
 const SEEDS = Number(process.env.SEEDS ?? 12);
 // Eight weeks: the first month is Phase 6's, and the second is where the mid-grades squeeze
@@ -181,6 +189,19 @@ function targets(all: Record<Seasonal, BotRun[]>, reckless: BotRun[]): void {
     Object.values(hustles).every((h) => h < shiftHour),
     'No hustle out-earns a shift an hour',
     `at best, cans $${hustles.cans.toFixed(2)}/h, the bins $${hustles.bins.toFixed(2)}/h, foraging $${hustles.forage.toFixed(2)}/h; the worst shift $${shiftHour.toFixed(2)}/h. Cans and bins a season, per run: ${STRATEGIES.map((k) => `${k} ${used(all[k], /bag of cans/).toFixed(1)} and ${used(all[k], /bins/i).toFixed(1)}`).join(', ')}.`,
+  );
+  // 6. Phase 22's criterion 2, for the games at the fire (22.9): none out-bonds a day climbing
+  // together (one a day), and none out-earns the worst-paid shift an hour, however it's played.
+  const games = gamesAtFire('h-games', 60);
+  const money = [games.bj, ...Object.values(games.holdem)];
+  say(
+    games.bondDay <= 1 && money.every((x) => x < shiftHour),
+    'No game at the fire out-bonds a day climbing together or out-earns a shift an hour',
+    `most bond anyone moved in a night of every game: ${games.bondDay}; blackjack by the book $${games.bj.toFixed(2)}/h; hold'em ${Object.entries(
+      games.holdem,
+    )
+      .map(([k, v]) => `${k} $${v.toFixed(2)}/h`)
+      .join(', ')}; the worst shift $${shiftHour.toFixed(2)}/h.`,
   );
   // Phase 22.8: how long a dream takes, at what the worker bots put by: their median cash at
   // the season's end, a day at a time. A guide, not a target.

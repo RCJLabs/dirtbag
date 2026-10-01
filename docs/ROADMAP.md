@@ -1903,6 +1903,14 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The bots** don't play. Every harness target passes.
 - **E2e:** half nine at the Lot with $100: blackjack, a hand stood on and up again; hold'em with Hazel, a hand checked and called to the end, and up again. The cash comes back to your pocket, both are once tonight, and Hazel has a hand played on her.
 
+**Status (1 Oct 2026): 22.9c built: the words, and 22.9 with it.** 0.983.0. No save change.
+- **Trivia becomes the glossary:** a third page in the journal, Words, beside You and Lately. 45 entries in five groups (on the wall, how it went, kit, grades, the life), each a term and a sentence or two, in the game's voice. Every technique, gear and culture term v0.956's trivia asked about is there (a test holds it), with the words the rebuild leans on that it never asked: pump, crux, project, send train, highball, and the rest.
+- **Not carried:** v0.956's history questions (who freed the Nose, who summited Everest without oxygen). Facts about real people belong somewhere they can be checked, and a quiz wasn't the point. Nor is it a fire game: the glossary is there whenever you want it, and nothing pays for reading it.
+- **The harness** gets Phase 22's criterion 2 for the games: over 60 nights with Hazel and Sage both up, a night of every game moves anyone's bond by 1 at most, and no way of playing blackjack or hold'em earns what the worst-paid shift does an hour (blackjack by the book −$3.07/h on this seed; hold'em −$9.42 to −$0.73/h by strategy and opponent; the shift $6.50/h).
+- **E2e:** the journal's Words page, grouped, after day one.
+
+**Phase 22 against its Done-when (1 Oct 2026):** all three pass on the build. 1: a season's runway holds Phase 6's targets with the van's costs in (the harness's runway target). 2: no game, meal or hustle out-earns or out-bonds its time (the harness's hustle and games targets; busking by Evan's exception). 3: every event and game has a sound and an e2e step (22.6 for the events; horseshoes, liar's dice, blackjack and hold'em in 22.9a and 22.9b). Closing it, and the CURRENT MILESTONE's next stop (Phase 24 before 23, as proposed), are Evan's calls.
+
 ---
 
 ### Phase 24 — Expeditions as trips
@@ -2303,3 +2311,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-09-30 — Phase 22.8 built: dreams, v0.956's three at its prices (the Dream Rig, the War Chest, Home Base), saved for in a jar at the van that the card and the bills never touch and the broke check counts; Home Base says exactly what it stops charging. Save v24. 0.980.0.
 - 2026-10-01 — Phase 22.9a built: horseshoes on busking's beat and liar's dice a bid at a time, at the fire at night with Hazel and (some nights) Sage; each an hour, once a night, and bond with whoever's playing no faster than a day climbing together (v0.956's paid everyone, uncapped). Save v25. 0.981.0.
 - 2026-10-01 — Phase 22.9b built, by Evan's calls: blackjack ($5 hands, $40 a night, hit, stand and double) and heads-up hold'em (cash under the same cap, three decisions a hand) at the fire. Hold'em keeps reads on each person at 5 and 12 hands, and they read you back. Neither is a living. Simulated gambling: the Play content rating changes before it ships. Save v26. 0.982.0.
+- 2026-10-01 — Phase 22.9c built, and 22.9 with it: trivia becomes the glossary, a Words page in the journal with every term v0.956's trivia asked and the ones the rebuild leans on; its history questions aren't carried. The harness holds the games to criterion 2. Phase 22's three Done-when criteria pass on the build; closing it is Evan's call. 0.983.0.

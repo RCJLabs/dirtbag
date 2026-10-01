@@ -861,6 +861,19 @@ button.pill:disabled {
 .pages {
   margin: 2px 0 8px;
 }
+/* The words (Phase 22.9c): a term, and what it means under it. */
+.words {
+  margin: 2px 0 6px;
+}
+.words dt {
+  padding-top: 6px;
+  border-top: 1px solid color-mix(in srgb, var(--u-ink) 20%, transparent);
+  font: 700 calc(14px * var(--u-fs)) / 1.2 var(--u-mono);
+}
+.words dd {
+  margin: 2px 0 6px;
+  font: 500 calc(13px * var(--u-fs)) / 1.35 var(--u-mono);
+}
 .days .sky {
   color: var(--u-acc);
 }
