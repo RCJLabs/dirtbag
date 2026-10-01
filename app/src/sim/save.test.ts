@@ -48,6 +48,7 @@ const V22 = readFileSync(new URL('./fixtures/save-v22.json', import.meta.url), '
 const V23 = readFileSync(new URL('./fixtures/save-v23.json', import.meta.url), 'utf8');
 const V24 = readFileSync(new URL('./fixtures/save-v24.json', import.meta.url), 'utf8');
 const V25 = readFileSync(new URL('./fixtures/save-v25.json', import.meta.url), 'utf8');
+const V26 = readFileSync(new URL('./fixtures/save-v26.json', import.meta.url), 'utf8');
 // What R2's migration adds to any older save.
 const R2_BODY = {
   load: { acute: 20, chronic: 20, today: 0 },
@@ -626,6 +627,19 @@ describe('saves', () => {
     expect(r.state.table?.who).toBe('hazel');
   });
 
+  it('load a real 0.984.0 save away on El Cap: the trip kept, roped to Hazel, nights counted', () => {
+    const r = fromSave(V26);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(26);
+    const old = JSON.parse(V26).state;
+    expect(old.expedition).toEqual({ id: 'elcap', day: 3, pitch: 0, energy: 100 });
+    expect(r.state).toEqual({
+      ...old,
+      expedition: { id: 'elcap', day: 3, pitch: 0, partner: 'hazel', nights: 2 },
+    });
+  });
+
   // These pretend a longer history: a v1 file that stored `money` where the state now has
   // `cash`, loaded by a build two versions on, with test migrations in place of the real ones.
   it('run the migration chain in order, and stop at a gap or a throw', () => {
@@ -633,7 +647,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(26);
+    expect(SAVE_VERSION).toBe(27);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

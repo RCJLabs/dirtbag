@@ -2,9 +2,12 @@
 // 6's targets are written against. Pure like the rest of the sim; `npm run harness` prints
 // the tables (harness/season.harness.ts).
 
-import { humanHands, playDays, type BotRun, type Strategy } from './bot';
+import { humanHands, playDays, playGo, type BotRun, type Strategy } from './bot';
 import { bjTotal, boardAt, equity, handNeeds } from './cards';
-import { GAMES } from './dials';
+import { CLIMB, EXPED, GAMES } from './dials';
+import { EXPEDITIONS, expedPitches } from './content/expeditions';
+import { partnerTry, previewOdds, sendChance, stormOn, yourPitch } from './expeditions';
+import { needFor } from './climber';
 import { atFire } from './fire';
 import { act, newGame } from './game';
 import type { Action, GameState } from './types';
@@ -172,4 +175,74 @@ export function gamesAtFire(seed: string, nights: number) {
       ['hazel', 'sage'].flatMap((w) => ways.map((k) => [`${w} ${k}`, holdem(k, w)])),
     ) as Record<string, number>,
   };
+}
+
+// Phase 24: an expedition played through by a climber's hands, choosing each day as the odds
+// assume: wait out a storm; on your block, lead it a go at a time while you can, or hand it to
+// your partner when their day is the better bet; on theirs, second it. Whether it summited.
+export function expedTrip(s0: GameState, id: string, hands: string): boolean {
+  const e = EXPEDITIONS[id]!;
+  const rng = Rng.fromSeed(hands);
+  let top = false;
+  const run = (st: GameState, a: Action): GameState => {
+    const r = act(st, a);
+    if (r.events.some((ev) => ev.k === 'line' && /the summit of/.test(ev.text))) top = true;
+    return r.state;
+  };
+  let s = run(s0, { t: 'exped', id, do: 'go' });
+  if (!s.expedition) return false;
+  for (let guard = 0; s.expedition && guard < 400; guard++) {
+    const x = s.expedition;
+    const r = expedPitches(id)[x.pitch]!;
+    const storm = stormOn(s.seed, id, e, s.day);
+    if (!storm && !s.today.includes('exped')) {
+      const mine = yourPitch(x.pitch, !x.partner);
+      const goes = Math.max(1, Math.floor((s.energy - CLIMB.minEnergy) / EXPED.pitch.energy) + 1);
+      const handOver =
+        x.partner &&
+        1 - (1 - sendChance(s, r)) ** goes <
+          1 - (1 - partnerTry(s, e, x.partner, r, x.day)) ** EXPED.partner.tries;
+      if (!mine || handOver) {
+        s = run(s, { t: 'exped', id, do: 'follow' });
+        continue;
+      }
+      // Your block: goes until the light, your energy or the block runs out.
+      for (let g = 0; g < 20 && s.expedition && yourPitch(s.expedition.pitch, !s.expedition.partner); g++) {
+        const p = expedPitches(id)[s.expedition.pitch]!;
+        const went = act(s, { t: 'go', route: p.id });
+        if (went.events[0]?.k === 'refused') break;
+        s = went.state;
+        const res = playGo(s, p, humanHands(rng.derive(`go-${g}-${s.day}`)));
+        s = run(s, { t: 'done', route: p.id, result: res });
+      }
+      if (!s.expedition) break;
+    }
+    s = run(s, { t: 'exped', id, do: 'camp' });
+  }
+  return top;
+}
+
+// Phase 24's criterion 4: for each objective, a climber at its grade roped to Sage, `trips`
+// times on different seeds: the summit odds shown the morning they set off, and how often the
+// bots' hands got up it.
+export function expedCalibration(trips: number) {
+  return Object.entries(EXPEDITIONS).map(([id, e]) => {
+    let shown = 0;
+    let got = 0;
+    for (let k = 0; k < trips; k++) {
+      const base = act(newGame(`cal-${id}-${k}`), { t: 'create', name: 'Bot', start: 'allrounder' }).state;
+      const v = needFor(e.grade) + 0.3;
+      const s0: GameState = {
+        ...base,
+        cash: e.cost + 1000,
+        energy: 100,
+        fed: 90,
+        climber: { ...base.climber, skills: { power: v, fingers: v, endurance: v, technique: v, head: v } },
+        people: { sage: { bond: 8, last: 0 } },
+      };
+      shown += previewOdds(s0, id)?.odds ?? 0;
+      if (expedTrip(s0, id, `hands-${id}-${k}`)) got++;
+    }
+    return { id, grade: e.grade, shown: shown / trips, got: got / trips };
+  });
 }

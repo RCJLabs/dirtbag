@@ -46,6 +46,7 @@ import {
   buskBlocked,
   GAMES,
   gameBlocked,
+  EXPED_ROUTES,
 } from '../sim';
 import { bedFor, ON_THE_MAP } from '../audio/beds';
 import { actCue, VERB_CUES } from '../audio/cues';
@@ -410,7 +411,14 @@ export class Game {
     // Away on an expedition, the day's call is the only sheet there is, whatever else
     // tries to clear or replace it.
     const x = this.state.expedition;
-    if (x && 'sheet' in p && p.sheet?.k !== 'exped') p = { ...p, sheet: { k: 'exped', id: x.id } };
+    // Phase 24: up there, a pitch of yours has its beta, its fall and its send like any line.
+    const pitchSheet =
+      !!p.sheet &&
+      'route' in p.sheet &&
+      ['beta', 'fall', 'sent', 'fa', 'card'].includes(p.sheet.k) &&
+      EXPED_ROUTES[p.sheet.route]?.exped === x?.id;
+    if (x && 'sheet' in p && p.sheet?.k !== 'exped' && !pitchSheet)
+      p = { ...p, sheet: { k: 'exped', id: x.id } };
     // A Free Solo climber who fell: that's all there is, until a new one.
     if (this.state.dead && 'sheet' in p && p.sheet?.k !== 'dead') p = { ...p, sheet: { k: 'dead' } };
     // An encounter (Phase 22.6): its card, until you've answered; on the road, once you're there.
@@ -787,11 +795,20 @@ export class Game {
   }
 
   // An expedition: go, then a day at a time.
-  exped(id: string, what: 'go' | 'lead' | 'dig' | 'rest' | 'bail'): string | null {
+  exped(id: string, what: 'go' | 'follow' | 'camp' | 'bail'): string | null {
     const why = refusal(this.dispatch({ t: 'exped', id, do: what }));
     // Home again, summit or not: the lines already said how it went.
     if (!why && !this.state.expedition) this.closeSheet();
+    else if (!why) this.openSheet({ k: 'exped', id });
     return why;
+  }
+
+  // Phase 24: back from a pitch to the portaledge, and the day's card; home if that was the top.
+  backToWall(): void {
+    this.att = null;
+    this.fast.set({ cam: this.cam, att: null });
+    const x = this.state.expedition;
+    this.set({ view: 'scene', climbing: false, sheet: x ? { k: 'exped', id: x.id } : null });
   }
 
   // Pay for a trip once (Moonstone's haul): the place card rebuilds with the drive on it.
@@ -1159,6 +1176,7 @@ export class Game {
   walkOff(): void {
     const route = this.ui.get().wallRoute;
     const r = routeOfId(this.state, route);
+    if (r?.exped) return this.backToWall();
     const scene = (r && PLACES[r.place]?.scene) ?? 'crag';
     const slot =
       r && indoor(r.place)

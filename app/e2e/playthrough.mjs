@@ -680,7 +680,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 26 ||
+  saved?.v !== 27 ||
   st.encounter !== null ||
   st.table !== null ||
   st.cards !== null ||
@@ -1626,6 +1626,98 @@ console.log('Cards at the fire');
       `after the cards: ${JSON.stringify({ today: after.today, reads: after.reads, cash: after.cash, heard })}`,
     );
   log(`cards: up from the fire with $${after.cash}, one hand each`);
+  await ctx.close();
+}
+
+console.log('An expedition');
+// Phase 24.1. A V9 climber with Hazel close and $3,000 at the van in the morning: the
+// expeditions, El Capitan's odds with Hazel, and away. Each day up there: wait out a storm, or
+// look up at the first pitch (its beta on the wall), then hand it to Hazel and make camp. The
+// trip is a day on, a night on the portaledge counted, and the valley waits.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  const v = 267;
+  saved.state = {
+    ...saved.state,
+    day: 22,
+    min: 9 * 60,
+    at: 'lot',
+    x: null,
+    cash: 3000,
+    energy: 100,
+    fed: 90,
+    today: [],
+    climber: {
+      ...saved.state.climber,
+      skills: { power: v, fingers: v, endurance: v, technique: v, head: v },
+    },
+    people: { ...saved.state.people, hazel: { bond: 8, last: 20 } },
+    deck: { ...saved.state.deck, knock: 40, last: 40 },
+    encounter: null,
+    expedition: null,
+    wall: null,
+  };
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  await ctx.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+  }, JSON.stringify(saved));
+  const ex = await ctx.newPage();
+  ex.on('pageerror', (e) => problems.push(`exped: uncaught: ${e.message}`));
+  ex.on('console', (m) => m.type() === 'error' && problems.push(`exped: console.error: ${m.text()}`));
+  await ex.goto(server.url, { waitUntil: 'load' });
+  await ex.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Map');
+  await ex.waitForTimeout(600);
+  await ex.mouse.click(100, 560);
+  await ex.waitForFunction(() => /Your van/.test(document.querySelector('#sheet')?.textContent ?? ''));
+  const sheetText = () => ex.evaluate(() => document.querySelector('#sheet')?.textContent ?? '');
+  const pick = async (text) => {
+    await ex.waitForFunction((t) => (document.querySelector('#sheet')?.textContent ?? '').includes(t), text);
+    await ex.locator('#sheet .opt', { hasText: text }).first().click();
+  };
+  const trip = () => ex.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.expedition);
+  await pick('Expeditions');
+  await pick('El Capitan');
+  await ex.waitForFunction(() =>
+    /Summit odds for you, with Hazel: \d+%/.test(document.querySelector('#sheet')?.textContent ?? ''),
+  );
+  log(`exped: ${(await sheetText()).match(/Summit odds for you[^.]*\./)?.[0]}`);
+  await pick('Go');
+  await ex.waitForFunction(() =>
+    /El Capitan, day 1 of 10/.test(document.querySelector('#sheet')?.textContent ?? ''),
+  );
+  await ex.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-exped.png`) });
+  // Storms first: sit them out.
+  for (let d = 0; d < 6 && /A storm on the wall today/.test(await sheetText()); d++) {
+    const day = (await trip()).day;
+    await pick('Make camp');
+    await ex.waitForFunction(
+      (was) => JSON.parse(localStorage.getItem('dirtbag.save')).state.expedition?.day === was + 1,
+      day,
+    );
+  }
+  // The first pitch's beta, on the wall, and back to the day's card.
+  await pick('Lead pitch 1');
+  await ex.waitForFunction(() =>
+    /^Sickle Ledge/.test(document.querySelector('#sheet-title')?.textContent ?? ''),
+  );
+  await ex.waitForTimeout(500);
+  await ex.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-exped-pitch.png`) });
+  await ex.click('#sheet .x');
+  await ex.waitForFunction(() => /El Capitan, day/.test(document.querySelector('#sheet')?.textContent ?? ''));
+  const before = await trip();
+  await pick('Hand it to Hazel');
+  await ex.waitForFunction(() =>
+    JSON.parse(localStorage.getItem('dirtbag.save')).state.today.includes('exped'),
+  );
+  await pick('Make camp');
+  await ex.waitForFunction(
+    (d) => JSON.parse(localStorage.getItem('dirtbag.save')).state.expedition?.day === d + 1,
+    before.day,
+  );
+  const after = await trip();
+  if (!after || after.partner !== 'hazel' || after.nights !== before.nights + 1 || after.pitch < before.pitch)
+    await fail(`after a day on El Cap: ${JSON.stringify({ before, after })}`);
+  log(`exped: day ${after.day}, pitches fixed: ${after.pitch}, nights on the portaledge: ${after.nights}`);
   await ctx.close();
 }
 

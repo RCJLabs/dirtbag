@@ -3,7 +3,7 @@
 // close-up walls of their own (boulder.ts, gym.ts). Whatever the wall, a route is mapped
 // from moves (the sim's unit) to points along its line here, so the rules never see a pixel.
 
-import { indoor, onWall, ROUTES, type RouteDef } from '../../sim';
+import { EXPED_ROUTES, indoor, onWall, ROUTES, type RouteDef } from '../../sim';
 import { arcTable, atLen, lin, mk, poly, spline, trace, type G, type Pt } from '../kit/geom';
 import { mulberry32 } from '../kit/noise';
 import { H, W } from '../layout';
@@ -430,6 +430,9 @@ function pitchPts(r: RouteDef): Pt[] {
 }
 
 for (const r of Object.values(ROUTES)) if (r.wall) TOPO_PTS[r.id] = pitchPts(r);
+// An expedition's pitches (Phase 24) climb the same way, on Roadside's wall until 24.6–24.8
+// paint their own.
+for (const r of Object.values(EXPED_ROUTES)) TOPO_PTS[r.id] = pitchPts(r);
 
 const TOPO: Record<string, Topo> = Object.fromEntries(
   Object.entries(TOPO_PTS).map(([id, pts]) => [id, topoOf(spline(pts, 14))]),

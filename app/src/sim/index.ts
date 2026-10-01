@@ -212,9 +212,22 @@ export {
   WALLS,
 } from './content/routes';
 export type { RouteDef, CruxDef, BetaDef, Verb, Disc, WallDef } from './content/routes';
-export { EXPEDITIONS } from './content/expeditions';
+export { EXPEDITIONS, EXPED_ROUTES, expedPitches } from './content/expeditions';
 export type { ExpeditionDef } from './content/expeditions';
-export { pitchOdds, stormOn, summitOdds, onExpedition, wallPay } from './expeditions';
+export {
+  expedWindows,
+  nightBack,
+  onExpedition,
+  partnerGrade,
+  partners,
+  partnerTry,
+  previewOdds,
+  sendChance,
+  stormOn,
+  summitOdds,
+  wallPay,
+  yourPitch,
+} from './expeditions';
 export { soloed } from './solo';
 export { speedBlocked, speedFactor, speedGains, speedTime, runsToday, SPEED_WALL } from './speed';
 export { crowdAt, crowdNow, crowdLevel, queueMin, sprayable, canAsk, type Crowd } from './crowds';

@@ -97,6 +97,8 @@ export interface RouteDef {
   dws?: true;
   // A pitch of a multi-pitch wall (WALLS): climbed only in its turn, on the wall.
   wall?: string;
+  // A pitch of an expedition (Phase 24): climbed only up there, in your block.
+  exped?: string;
 }
 
 // The grade a line really climbs at.
@@ -423,7 +425,7 @@ export function libraryTrad(...args: Parameters<typeof librarySport>): RouteDef 
 
 // One pitch of a multi-pitch wall: a single crux of its style two-thirds of the way up, bolts
 // all the way, and a belay ledge at the top.
-function libraryPitch(
+export function libraryPitch(
   wall: string,
   n: number,
   name: string,

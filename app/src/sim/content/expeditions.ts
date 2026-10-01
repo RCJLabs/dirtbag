@@ -3,6 +3,16 @@
 // allowed, a cost up front in cash, a number of pitches to fix and days to do it in, the
 // chance any day is a storm, and what the summit pays. v0.956 also wanted reputation; the
 // rebuild has none yet, so the grade gate stands alone.
+//
+// Phase 24 climbs them: each objective's pitches are lines with a crux, led in blocks with a
+// partner, and `thin` is how much narrower every window is up there: the length of the
+// pitches, the cold, the wind and the altitude [proposed]. Tuned (Phase 24.1) so El Cap at its
+// grade goes a little over half the time with Hazel and at its gate hardly ever, as 21.5's
+// did; the further objectives are harder, and a stronger partner counts.
+
+import type { Style } from '../climber';
+import { EXPED } from '../dials';
+import { libraryPitch, type RouteDef } from './routes';
 
 export interface ExpeditionDef {
   name: string;
@@ -18,6 +28,9 @@ export interface ExpeditionDef {
   cost: number;
   pays: number;
   blurb: string;
+  thin: number;
+  // The pitches, bottom to top: a name, a grade and a style each.
+  line: [string, number, Style][];
 }
 
 export const EXPEDITIONS: Record<string, ExpeditionDef> = {
@@ -34,11 +47,22 @@ export const EXPEDITIONS: Record<string, ExpeditionDef> = {
     pays: 2400,
     blurb:
       'Three thousand feet of golden granite, the most famous big wall on Earth. A week living on portaledges.',
+    thin: 0.6,
+    line: [
+      ['Sickle Ledge', 7, 'endurance'],
+      ['The Stovelegs', 8, 'crack'],
+      ['The King Swing', 8, 'dyno'],
+      ['The Great Roof', 9, 'technical'],
+      ['The Changing Corners', 9, 'technical'],
+      ['Up to the Bolt Ladder', 8, 'endurance'],
+    ],
   },
   cerrotorre: {
     name: 'Cerro Torre',
     region: 'Patagonia, Argentina',
-    objective: 'the Compressor Route',
+    // Evan's call (1 Oct 2026): the Compressor's line, climbed by fair means since its bolt
+    // ladder was chopped in 2012.
+    objective: 'the Southeast Ridge',
     grade: 12,
     gradeReq: 10,
     pitches: 8,
@@ -48,6 +72,18 @@ export const EXPEDITIONS: Record<string, ExpeditionDef> = {
     pays: 6000,
     blurb:
       'A fang of rime ice in the worst weather on the planet. You will wait out storms, and the good days are everything.',
+    // No ice climbing in the game (Evan's call): rock pitches, narrowed by the cold and wind.
+    thin: 0.65,
+    line: [
+      ['The Col of Patience', 10, 'endurance'],
+      ['The Ice Towers', 11, 'crack'],
+      ['The Rime Corners', 11, 'technical'],
+      ['The Traverse', 11, 'technical'],
+      ['The Headwall', 12, 'crack'],
+      ['Where the Bolts Were', 12, 'crimp'],
+      ['The Last Cracks', 12, 'crack'],
+      ['The Mushroom', 11, 'endurance'],
+    ],
   },
   trango: {
     name: 'Trango Tower',
@@ -62,5 +98,36 @@ export const EXPEDITIONS: Record<string, ExpeditionDef> = {
     pays: 12000,
     blurb:
       'A twenty-thousand-foot granite spire at the edge of the world. Weeks in, and one shot at the top.',
+    thin: 0.65,
+    line: [
+      ['The Approach Gully', 11, 'endurance'],
+      ['The Lower Cracks', 12, 'crack'],
+      ['The Ramp', 12, 'technical'],
+      ['The Snow Ledge', 12, 'endurance'],
+      ['The Splitter', 13, 'crack'],
+      ['The Pendulum', 13, 'dyno'],
+      ['The Crux', 14, 'technical'],
+      ['The Upper Cracks', 13, 'crack'],
+      ['The Ice Chimney', 13, 'endurance'],
+      ['The Headwall', 14, 'crimp'],
+      ['The Summit Block', 13, 'power'],
+    ],
   },
 };
+
+// Every expedition's pitches as lines: `elcap-1` is El Cap's first. They're nowhere in the
+// valley: their place is the expedition.
+export const EXPED_ROUTES: Record<string, RouteDef> = Object.fromEntries(
+  Object.entries(EXPEDITIONS).flatMap(([id, e]) =>
+    e.line.map(([name, grade, type], i) => {
+      const r = libraryPitch(id, i + 1, name, grade, type, id);
+      return [r.id, { ...r, wall: undefined, exped: id }];
+    }),
+  ),
+);
+export const expedPitches = (id: string): RouteDef[] =>
+  Object.values(EXPED_ROUTES).filter((r) => r.exped === id);
+
+// What the cold, the wind, the altitude and the days up there do to every window.
+export const expedWindows = (e: ExpeditionDef, onWall: number): number =>
+  e.thin * Math.max(EXPED.fatigue.floor, 1 - EXPED.fatigue.perDay * Math.max(0, onWall - 1));

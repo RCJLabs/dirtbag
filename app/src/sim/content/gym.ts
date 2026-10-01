@@ -10,6 +10,7 @@
 import { Rng } from '../rng';
 import type { Style } from '../climber';
 import type { SkillId } from '../types';
+import { EXPED_ROUTES } from './expeditions';
 import { libraryBoulder, ROUTES, type RouteDef } from './routes';
 
 export const GYM = 'gym';
@@ -257,7 +258,7 @@ export const INDOOR_CLOSE = 22 * 60;
 // Any route or problem by id. Gym problems live only in their set; the id carries its week
 // (or the board's block), so an old problem still resolves for its log.
 export function routeById(seed: string, id: string): RouteDef | undefined {
-  const fixed = ROUTES[id];
+  const fixed = ROUTES[id] ?? EXPED_ROUTES[id];
   if (fixed) return fixed;
   const m = /^(sc|bd|cv|tc)-(\d+)-(\d+)$/.exec(id);
   if (!m) return undefined;

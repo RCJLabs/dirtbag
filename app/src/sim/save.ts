@@ -12,13 +12,14 @@ import { LIFESTYLE, PLANS, SPOTS, TRAIN } from './dials';
 import { JOBS } from './content/jobs';
 import { ROUTES, WALLS } from './content/routes';
 import { EXPEDITIONS } from './content/expeditions';
+import { PEOPLE } from './content/people';
 import { INGREDIENTS, MEAL_NAME } from './content/food';
 import { KNOCKS } from './content/knocks';
 import { HITCHERS, STOPS } from './content/road';
 import { EPICS } from './content/epics';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 26;
+export const SAVE_VERSION = 27;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -192,6 +193,25 @@ export const MIGRATIONS: Record<number, Migration> = {
   25: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, cards: null, reads: {} };
+  },
+  // v26 -> v27 (Phase 24.1): an expedition you're away on keeps its day and its pitches, and
+  // ropes up with Hazel if you know her (alone if not); 21.5's energy on the wall goes, since
+  // up there it's your own.
+  26: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const e = x.expedition;
+    if (!isObj(e)) return x;
+    const people = isObj(x.people) ? x.people : {};
+    const { energy: _gone, ...rest } = e;
+    void _gone;
+    return {
+      ...x,
+      expedition: {
+        ...rest,
+        partner: 'hazel' in people ? 'hazel' : null,
+        nights: Math.max(0, Number(e.day) - 1),
+      },
+    };
   },
 };
 
@@ -486,8 +506,9 @@ export function validate(x: unknown): string[] {
         e.day >= 1 &&
         isInt(e.pitch) &&
         e.pitch >= 0 &&
-        isNum(e.energy) &&
-        e.energy >= 0),
+        (e.partner === null || (typeof e.partner === 'string' && e.partner in PEOPLE)) &&
+        isInt(e.nights) &&
+        e.nights >= 0),
     'expedition',
   );
   const sp = x.speed;

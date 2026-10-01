@@ -62,13 +62,16 @@ export interface PersonDef {
   shows?: string[];
   // Not a partner: someone who climbs against you. What they're like, in v0.956's words.
   rival?: string;
+  // What they lead on an expedition (Phase 24) [proposed]: a grade over yours (or under),
+  // since they've been climbing all this time too.
+  grade?: number;
 }
 
 export const PEOPLE: Record<string, PersonDef> = {
   // Parked next to you, with the coffee on, since before the game began.
-  hazel: { name: 'Hazel', known: true },
+  hazel: { name: 'Hazel', known: true, grade: -1 },
   // v0.956's Sage: technical, and the partner whose perk was beta.
-  sage: { name: 'Sage', shows: ['road', 'gym'] },
+  sage: { name: 'Sage', shows: ['road', 'gym'], grade: 1 },
   // v0.956's default rival.
   dex: { name: 'Dex', full: 'Dex Calloway', rival: 'A power monster, a bitter nemesis.' },
 };
