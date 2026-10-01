@@ -31,6 +31,10 @@ export interface ExpeditionDef {
   thin: number;
   // Phase 24.2: the water up there is snow, melted on a stove (Cerro Torre, Trango).
   melt?: true;
+  // Phase 24.3 [proposed]: the days getting there and getting home, and what they are.
+  out: number;
+  home: number;
+  getThere: string;
   // The pitches, bottom to top: a name, a grade and a style each.
   line: [string, number, Style][];
 }
@@ -50,6 +54,9 @@ export const EXPEDITIONS: Record<string, ExpeditionDef> = {
     blurb:
       'Three thousand feet of golden granite, the most famous big wall on Earth. A week living on portaledges.',
     thin: 0.6,
+    out: 1,
+    home: 1,
+    getThere: 'A day’s drive to the Valley, and the haul bags up to the base of the Nose.',
     line: [
       ['Sickle Ledge', 7, 'endurance'],
       ['The Stovelegs', 8, 'crack'],
@@ -77,6 +84,9 @@ export const EXPEDITIONS: Record<string, ExpeditionDef> = {
     // No ice climbing in the game (Evan's call): rock pitches, narrowed by the cold and wind.
     thin: 0.65,
     melt: true,
+    out: 2,
+    home: 2,
+    getThere: 'Two days of flights to El Chaltén, then the walk in under the Torre glacier.',
     line: [
       ['The Col of Patience', 10, 'endurance'],
       ['The Ice Towers', 11, 'crack'],
@@ -103,6 +113,10 @@ export const EXPEDITIONS: Record<string, ExpeditionDef> = {
       'A twenty-thousand-foot granite spire at the edge of the world. Weeks in, and one shot at the top.',
     thin: 0.65,
     melt: true,
+    out: 8,
+    home: 6,
+    getThere:
+      'Three days of flights and a jeep to Skardu, then five days up the Baltoro, acclimatizing as you go.',
     line: [
       ['The Approach Gully', 11, 'endurance'],
       ['The Lower Cracks', 12, 'crack'],
@@ -135,3 +149,10 @@ export const expedPitches = (id: string): RouteDef[] =>
 // What the cold, the wind, the altitude and the days up there do to every window.
 export const expedWindows = (e: ExpeditionDef, onWall: number): number =>
   e.thin * Math.max(EXPED.fatigue.floor, 1 - EXPED.fatigue.perDay * Math.max(0, onWall - 1));
+
+// Phase 24.3. The days a trip leaving on `day` keeps you from the valley, at most: getting
+// there, every day of the wall, and getting home.
+export const tripDays = (id: string, day: number): { from: number; wall: number; to: number } => {
+  const e = EXPEDITIONS[id]!;
+  return { from: day, wall: day + e.out, to: day + e.out + e.days + e.home - 1 };
+};

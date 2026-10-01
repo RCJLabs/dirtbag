@@ -2,6 +2,7 @@
 // pays at it. The ranks are data (content/jobs.ts); every act that's a shift says which
 // job and how many shifts it counts for (ActDef.job).
 
+import { EXPEDITIONS, tripDays } from './content/expeditions';
 import { gradeOf } from './climber';
 import { JOBS } from './content/jobs';
 import { WEEK_DAYS, weekOf } from './content/gym';
@@ -87,6 +88,12 @@ export function signupBlocked(s: GameState, job: string, day: number, on = true)
   const back = benchedUntil(s, job);
   if (back !== null && day < back) return `Off the schedule till day ${back}.`;
   if (s.shifts.some((x) => x.day === day)) return 'You’ve a shift that day.';
+  // Phase 24.3: not while you're booked to be away.
+  const b = s.booked;
+  if (b) {
+    const w = tripDays(b.id, b.day);
+    if (day >= w.from && day <= w.to) return `You’re away on ${EXPEDITIONS[b.id]!.name} then.`;
+  }
   return null;
 }
 

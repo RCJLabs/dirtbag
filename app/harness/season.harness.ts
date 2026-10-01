@@ -205,8 +205,9 @@ function targets(all: Record<Seasonal, BotRun[]>, reckless: BotRun[]): void {
       .join(', ')}; the worst shift $${shiftHour.toFixed(2)}/h.`,
   );
   // 7. Phase 24's criterion 4: the summit odds shown are the odds the bots get, within ten
-  // points, for a climber at each objective's grade roped to Sage.
-  const cal = expedCalibration(Number(process.env.TRIPS ?? 100));
+  // points, for a climber at each objective's grade roped to Sage. 300 trips each: at 100 the
+  // bots' own luck moved Trango by twelve points between runs.
+  const cal = expedCalibration(Number(process.env.TRIPS ?? 300));
   say(
     cal.every((c) => Math.abs(c.shown - c.got) <= 0.1),
     'The summit odds shown are the odds you get: within ten points of the bots’ trips',

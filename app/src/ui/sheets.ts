@@ -66,6 +66,7 @@ import {
   gradeName,
   has,
   expedPitches,
+  tripDays,
   CLIMB,
   goCost,
   nightBack,
@@ -1451,15 +1452,23 @@ function planSheet(game: Game, s: GameState, id: string): ListSpec {
   const short =
     s.cash < cost ? `${money(cost)} in hand, not on the card. You have ${money(Math.max(0, s.cash))}.` : null;
   // The forecast for the first week from the day you'd leave: a word a day.
+  const span = tripDays(id, plan.day);
   const calls = Array.from({ length: Math.min(7, e.days) }, (_, i) => {
-    const d = plan.day + i;
+    const d = span.wall + i;
     return d - s.day >= EXPED.forecast.horizon ? 'anyone’s guess' : forecastCall(s, id, d);
   });
+  const clash = s.shifts.filter((x) => x.day >= span.from && x.day <= span.to).length;
+  const clashNote = !clash
+    ? ''
+    : plan.day - s.day >= EXPED.notice
+      ? ` ${clash === 1 ? 'A shift' : `${clash} shifts`} in it come off your week: that’s a week’s notice.`
+      : ` ${clash === 1 ? 'A shift' : `${clash} shifts`} in it, at short notice: missed, and a warning each.`;
   const leaveOn = (d: number) => (d === s.day ? 'today' : `on day ${d} (in ${d - s.day})`);
   return {
     ...head,
     notes: [
       `Summit odds with this plan: ${pct(planOdds(s, id, plan))}, choosing well each day.`,
+      `Away from the valley days ${span.from} to ${span.to} at the most. The week’s bills still come.${clashNote}`,
       `The haul bag: ${kg} of ${H.max} kg, with food and water for ${plan.food + 1} days. When it runs out, you come down. Every kg over ${H.free} costs you energy each night, hauling it.`,
     ],
     rows: [
@@ -1480,7 +1489,7 @@ function planSheet(game: Game, s: GameState, id: string): ListSpec {
         : [{ label: 'Alone', note: 'Free Solo: every pitch is yours.', off: true, run: () => undefined }]),
       {
         label: `Leave ${leaveOn(plan.day)}`,
-        note: `Forecast from then: ${calls.join(', ')}. The further out, the less it knows. Tap for a later day.`,
+        note: `${e.getThere} On the wall from day ${span.wall}; the forecast from then: ${calls.join(', ')}. The further out, the less it knows. Tap for a later day.`,
         run: () => game.planTrip(id, { day: plan.day >= s.day + EXPED.ahead ? s.day : plan.day + 1 }),
       },
       {

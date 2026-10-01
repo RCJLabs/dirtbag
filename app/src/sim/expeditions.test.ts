@@ -177,6 +177,33 @@ describe('booking and going', () => {
   });
 });
 
+describe('getting there and back', () => {
+  it('takes days each way, and the valley’s weeks go on without you', () => {
+    const s = ready(9, 'travel');
+    const e = EXPEDITIONS.trango!;
+    const t = leave(ready(14, 'travel', { people: { sage: { bond: 8, last: 0 } } }), 'trango');
+    expect(t.day).toBe(s.day + e.out);
+    expect(t.expedition!.day).toBe(1);
+    const home = play(t, { t: 'exped', id: 'trango', do: 'bail' });
+    expect(home.day).toBe(s.day + e.out + e.home);
+    expect(home.at).toBe('lot');
+    expect(home.log.some((l) => /Back at the Lot after 6 days/.test(l.text))).toBe(true);
+  });
+
+  it('drops the shifts in the trip with a week’s notice; with less, they’re yours to miss', () => {
+    const s = { ...ready(9, 'notice'), shifts: [{ job: 'cafe', day: 9 }] };
+    const plan = defaultPlan(s, 'elcap')!;
+    const early = play(s, { t: 'exped', id: 'elcap', do: 'book', plan: { ...plan, day: s.day + 7 } });
+    expect(early.shifts).toEqual([]);
+    const late = play(s, { t: 'exped', id: 'elcap', do: 'book', plan: { ...plan, day: s.day + 6 } });
+    expect(late.shifts).toEqual([{ job: 'cafe', day: 9 }]);
+    // And you can't sign up for a day you'll be away.
+    expect(refused(act(early, { t: 'signup', job: 'cafe', day: s.day + 7, on: true }))).toMatch(
+      /away on El Capitan/,
+    );
+  });
+});
+
 describe('the forecast', () => {
   it('knows today, gets the days ahead right less often the further out, and the odds use it', () => {
     const s = ready(9, 'fc');
@@ -217,7 +244,8 @@ describe('the forecast', () => {
 describe('up there', () => {
   const start = (grade = 9) => {
     let s = ready(grade);
-    s = { ...s, day: clear(s) };
+    // Leave so the first day on the wall is a clear one.
+    s = { ...s, day: clear(s, s.day + EXPEDITIONS.elcap!.out) - EXPEDITIONS.elcap!.out };
     return leave(s);
   };
 
@@ -240,7 +268,11 @@ describe('up there', () => {
     expect(handed.state.energy).toBe(100 - EXPED.follow);
     expect(refused(act(handed.state, { t: 'exped', id: 'elcap', do: 'follow' }))).toMatch(/the day/);
     // Alone, there's nobody to hand it to.
-    s = leave({ ...ready(9), mode: 'solo', day: clear(ready(9)) });
+    s = leave({
+      ...ready(9),
+      mode: 'solo',
+      day: clear(ready(9), 1 + EXPEDITIONS.elcap!.out) - EXPEDITIONS.elcap!.out,
+    });
     expect(refused(act(s, { t: 'exped', id: 'elcap', do: 'follow' }))).toMatch(/alone/);
   });
 
@@ -262,10 +294,13 @@ describe('up there', () => {
   it('won’t lead in a storm or in the dark', () => {
     let s = ready(9);
     let d = s.day;
-    while (!stormOn(s.seed, 'elcap', EXPEDITIONS.elcap!, d)) d++;
+    while (!stormOn(s.seed, 'elcap', EXPEDITIONS.elcap!, d + EXPEDITIONS.elcap!.out)) d++;
     s = leave({ ...s, day: d });
     expect(refused(act(s, { t: 'go', route: 'elcap-1' }))).toMatch(/storm/);
-    const dark = leave({ ...ready(9), day: clear(ready(9)) });
+    const dark = leave({
+      ...ready(9),
+      day: clear(ready(9), 1 + EXPEDITIONS.elcap!.out) - EXPEDITIONS.elcap!.out,
+    });
     expect(refused(act({ ...dark, min: 20 * 60 }, { t: 'go', route: 'elcap-1' }))).toMatch(/dark/);
   });
 
@@ -318,5 +353,6 @@ describe('the odds', () => {
     }
     expect(gradeOf(k(9))).toBe(9);
     expect(Math.abs(shown / N - got / N)).toBeLessThan(0.2);
-  });
+    // Forty whole trips, each choosing every day from the odds: past vitest's 5 s on CI.
+  }, 60_000);
 });
