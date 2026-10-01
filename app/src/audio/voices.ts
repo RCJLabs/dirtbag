@@ -104,6 +104,11 @@ export const VOICES: Record<Cue, (v: V, k: number) => void> = {
       burst(v, { filter: 'bandpass', f: jitter(2400, 0.25), q: 2, dur: 0.03, gain: 0.35, delay: i * 0.045 });
     burst(v, { filter: 'lowpass', f: 320, q: 0.8, dur: 0.1, gain: 0.7, delay: 0.38 });
   },
+  // A crack high on the wall, then the rumble of it coming down the face.
+  upthere: (v) => {
+    burst(v, { filter: 'highpass', f: 2600, q: 0.8, dur: 0.06, gain: 0.5 });
+    burst(v, { filter: 'lowpass', f: 180, f2: 90, q: 0.7, dur: 1.4, gain: 0.55, attack: 0.15, delay: 0.1 });
+  },
   // A card flicked onto the tailgate: a short dry snap.
   card: (v) => {
     burst(v, { filter: 'highpass', f: jitter(3200, 0.15), q: 0.7, dur: 0.04, gain: 0.4 });

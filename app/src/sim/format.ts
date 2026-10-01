@@ -2,6 +2,7 @@
 // numbers the rules use, never typed by hand: the audit found v0.956's hand-written hints
 // drifting from its rules ("van $18" when it cost more, "35 energy / 3 h" for the crag).
 
+import type { WallFx } from './content/wallevents';
 import type { Delta, Skills } from './types';
 
 // The typographic minus, as in the rest of the UI.
@@ -50,6 +51,21 @@ export function bodyNote(d: Delta): string {
   if (d.fed) parts.push(signed(d.fed, 'food'));
   if (d.energy) parts.push(signed(d.energy, 'energy'));
   if (d.skin) parts.push(signed(d.skin, 'skin'));
+  return parts.join(' · ');
+}
+
+// What a call up on the wall costs (Phase 24.4), from its effects. "The day goes · −10
+// energy", "−2 days of food and water", "+1 bond with Hazel".
+export function wallNote(fx: WallFx, partner = 'your partner'): string {
+  const parts: string[] = [];
+  if (fx.day) parts.push('The day goes');
+  if (fx.energy) parts.push(signed(fx.energy, 'energy'));
+  if (fx.food)
+    parts.push(signed(fx.food, Math.abs(fx.food) === 1 ? 'day of food and water' : 'days of food and water'));
+  if (fx.pitch) parts.push(signed(fx.pitch, Math.abs(fx.pitch) === 1 ? 'pitch fixed' : 'pitches fixed'));
+  if (fx.ledge === false) parts.push('No portaledge');
+  if (fx.psyche) parts.push(signed(fx.psyche, 'psyche'));
+  if (fx.bond) parts.push(signed(fx.bond, `bond with ${partner}`));
   return parts.join(' · ');
 }
 

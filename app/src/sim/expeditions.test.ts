@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { gradeOf, needFor } from './climber';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches } from './content/expeditions';
+import { WALL_EVENTS } from './content/wallevents';
 import { EXPED } from './dials';
 import {
   bagKg,
@@ -120,6 +121,7 @@ describe('booking and going', () => {
       food: plan.food,
       ledge: true,
       stove: false,
+      seen: [],
     });
     expect(s.cash).toBe(5000 - cost);
     expect(s.booked).toBeNull();
@@ -323,6 +325,91 @@ describe('up there', () => {
     dry = play(dry, { t: 'exped', id: 'elcap', do: 'camp' });
     expect(dry.expedition).toBeNull();
     expect(dry.log.some((l) => /water's gone/.test(l.text))).toBe(true);
+  });
+});
+
+describe('what happens up there', () => {
+  // Camp out a whole trip, answering whatever comes with `opt`, and say what came.
+  const sitOut = (s: GameState, id = 'elcap', opt = 0) => {
+    const came: string[] = [];
+    while (s.expedition) {
+      if (s.encounter?.kind === 'wall') {
+        came.push(s.encounter.id);
+        s = play(s, { t: 'answer', opt });
+      } else s = play(s, { t: 'exped', id, do: 'camp' });
+    }
+    return came;
+  };
+  const trips = (n: number, over: Partial<TripPlan> = {}, id = 'elcap') =>
+    Array.from({ length: n }, (_, i) => sitOut(leave(ready(12, `wall-${i}`), id, over), id));
+
+  it('comes some mornings, never twice a trip, never more than a couple', () => {
+    const all = trips(40);
+    expect(all.some((c) => c.length > 0)).toBe(true);
+    expect(all.some((c) => c.length === 0)).toBe(true);
+    for (const c of all) {
+      expect(new Set(c).size).toBe(c.length);
+      expect(c.length).toBeLessThanOrEqual(EXPED.events.max);
+    }
+  });
+
+  it('brings the stove only where there’s one and the water’s snow, and a stranger only to a pair', () => {
+    expect(EXPEDITIONS.elcap!.melt).toBeFalsy();
+    expect(trips(40).flat()).not.toContain('stove');
+    const alone = Array.from({ length: 40 }, (_, i) => {
+      const s = leave(ready(12, `wall-${i}`));
+      return sitOut({ ...s, expedition: { ...s.expedition!, partner: null } });
+    });
+    expect(alone.flat()).not.toContain('party');
+    const torre = trips(40, {}, 'cerrotorre').flat();
+    expect(new Set(torre).size).toBeGreaterThan(3);
+  });
+
+  it('waits on your call, and the call costs what it says', () => {
+    const at = (id: string) => {
+      const s = leave(ready(12, 'call'));
+      return { ...s, encounter: { kind: 'wall' as const, id } };
+    };
+    // Nothing else while it's asking.
+    expect(refused(act(at('cam'), { t: 'exped', id: 'elcap', do: 'camp' }))).toBeTruthy();
+    // Food cut loose.
+    const pig = at('haulbag');
+    expect(play(pig, { t: 'answer', opt: 1 }).expedition!.food).toBe(pig.expedition!.food - 2);
+    // A day gone: a night up there, and still on the wall.
+    const fall = at('rockfall');
+    const sat = play(fall, { t: 'answer', opt: 0 });
+    expect(sat.encounter?.kind === 'wall' ? null : sat.encounter).toBeNull();
+    expect(sat.expedition).toMatchObject({ day: fall.expedition!.day + 1, nights: 1 });
+    // Hurt by going through it.
+    expect(play(fall, { t: 'answer', opt: 1 }).energy).toBe(fall.energy - 30);
+    // A pitch to fix again, and never below the ground.
+    const sq = at('squall');
+    expect(play(sq, { t: 'answer', opt: 1 }).expedition!.pitch).toBe(0);
+    const up = { ...sq, expedition: { ...sq.expedition!, pitch: 3 } };
+    expect(play(up, { t: 'answer', opt: 1 }).expedition!.pitch).toBe(2);
+    // Your partner sees you help.
+    const party = at('party');
+    const p = party.expedition!.partner!;
+    expect(play(party, { t: 'answer', opt: 0 }).people[p]!.bond).toBe(party.people[p]!.bond + 1);
+    // An answer that isn't there.
+    expect(refused(act(at('cam'), { t: 'answer', opt: 5 }))).toBeTruthy();
+  });
+
+  it('shows in the odds: a trip where nothing can happen is likelier', () => {
+    const s = leave(ready(9, 'odds'));
+    const from = { ...s.expedition!, day: 1, on: s.day, energy: s.energy };
+    const calm = summitOdds(s, 'elcap', {
+      ...from,
+      seen: WALL_EVENTS.slice(0, EXPED.events.max).map((w) => w.id),
+    });
+    expect(summitOdds(s, 'elcap', from)).toBeLessThan(calm);
+  });
+
+  it('every event has two calls, each with a cost', () => {
+    for (const w of WALL_EVENTS) {
+      expect(w.opts).toHaveLength(2);
+      for (const o of w.opts) expect(Object.keys(o.fx).length).toBeGreaterThan(0);
+    }
   });
 });
 

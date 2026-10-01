@@ -37,6 +37,9 @@ export type Cue =
   // Cards (Phase 22.9b): one flicked onto the tailgate; a short stack of chips set down.
   | 'card'
   | 'chips'
+  // Something happening up on an expedition's wall (Phase 24.4): a crack high above, and a
+  // long low rumble down the face.
+  | 'upthere'
   // On the wall.
   | 'pullon'
   | 'move'

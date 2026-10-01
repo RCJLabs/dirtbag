@@ -50,6 +50,7 @@ const V24 = readFileSync(new URL('./fixtures/save-v24.json', import.meta.url), '
 const V25 = readFileSync(new URL('./fixtures/save-v25.json', import.meta.url), 'utf8');
 const V26 = readFileSync(new URL('./fixtures/save-v26.json', import.meta.url), 'utf8');
 const V27 = readFileSync(new URL('./fixtures/save-v27.json', import.meta.url), 'utf8');
+const V28 = readFileSync(new URL('./fixtures/save-v28.json', import.meta.url), 'utf8');
 // What R2's migration adds to any older save.
 const R2_BODY = {
   load: { acute: 20, chronic: 20, today: 0 },
@@ -651,6 +652,7 @@ describe('saves', () => {
         food: 7,
         ledge: true,
         stove: false,
+        seen: [],
       },
       booked: null,
     });
@@ -664,9 +666,19 @@ describe('saves', () => {
     const old = JSON.parse(V27).state;
     expect(r.state).toEqual({
       ...old,
-      expedition: { ...old.expedition, food: 14, ledge: true, stove: true },
+      expedition: { ...old.expedition, food: 14, ledge: true, stove: true, seen: [] },
       booked: null,
     });
+  });
+
+  it('load a real 0.987.0 save a night up El Cap: the trip kept, nothing yet happened up there', () => {
+    const r = fromSave(V28);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(28);
+    const old = JSON.parse(V28).state;
+    expect(old.expedition).toMatchObject({ id: 'elcap', day: 2, pitch: 1, nights: 1 });
+    expect(r.state).toEqual({ ...old, expedition: { ...old.expedition, seen: [] } });
   });
 
   // These pretend a longer history: a v1 file that stored `money` where the state now has
@@ -676,7 +688,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(28);
+    expect(SAVE_VERSION).toBe(29);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

@@ -147,6 +147,8 @@ export interface OddsFrom {
   food: number;
   ledge: boolean;
   stove: boolean;
+  // What's happened up there this trip (Phase 24.4).
+  seen?: string[];
 }
 // `force`: today's choice on your block, made for you (the bots weigh both); otherwise the
 // better of the two.
@@ -177,16 +179,16 @@ export function summitOdds(s: GameState, id: string, from: OddsFrom, force?: 'le
     return a2 === a1 ? t1[pt]! : t1[pt]! + ((t2[pt]! - t1[pt]!) * (day - a1)) / (a2 - a1);
   };
   const memo = new Map<string, number>();
-  const go = (day: number, pitch: number, energy: number, nights: number): number => {
+  const go = (day: number, pitch: number, energy: number, nights: number, ev: number): number => {
     if (pitch >= ps.length) return 1;
     if (day > e.days) return 0;
-    const key = `${day}/${pitch}/${energy}/${nights}`;
+    const key = `${day}/${pitch}/${energy}/${nights}/${ev}`;
     const hit = memo.get(key);
     if (hit !== undefined) return hit;
     // A night, and on to tomorrow: if there's food and water left for it.
     const food = from.food - (nights - from.nights);
     const kg = bagKg(e, Math.max(0, food - 1), from.ledge, from.stove);
-    const next = (pt: number, spent: number): number =>
+    const next = (pt: number, spent: number, evs = ev): number =>
       pt >= ps.length
         ? 1
         : food <= 0
@@ -196,6 +198,7 @@ export function summitOdds(s: GameState, id: string, from: OddsFrom, force?: 'le
               pt,
               Math.min(100, Math.max(0, energy - spent) + nightGives(nights, from.ledge, kg)),
               nights + 1,
+              evs,
             );
     const wait = next(pitch, 0);
     // A day of your partner's leading, from here: each try fixes the pitch they're on or not.
@@ -249,11 +252,14 @@ export function summitOdds(s: GameState, id: string, from: OddsFrom, force?: 'le
             : Math.max(mine, theirs());
     }
     const storm = stormChance(s, id, from.on + day - from.day);
-    const v = storm * wait + (1 - storm) * fair;
+    // Something happening up there (Phase 24.4) some mornings after the first: most calls cost
+    // about a day, so the odds count it as one.
+    const pe = day > 1 && day !== from.day && ev < EXPED.events.max ? EXPED.events.odds : 0;
+    const v = pe * (pe ? next(pitch, 0, ev + 1) : 0) + (1 - pe) * (storm * wait + (1 - storm) * fair);
     memo.set(key, v);
     return v;
   };
-  return go(from.day, from.pitch, from.energy, from.nights);
+  return go(from.day, from.pitch, from.energy, from.nights, from.seen?.length ?? 0);
 }
 
 // What a wall's first summit pays: a magazine buys the photos.
@@ -277,6 +283,7 @@ export function planOdds(s: GameState, id: string, plan: TripPlan): number {
       food: plan.food,
       ledge: plan.ledge,
       stove: plan.stove,
+      seen: [],
     },
   };
   void e;

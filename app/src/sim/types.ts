@@ -155,7 +155,7 @@ export interface GameState {
   dogs: { name: string; years: number; day: number }[];
   // A walk-out (Phase 22.6c) has stages: the one you're on, and what the calls so far add up to.
   encounter: {
-    kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell';
+    kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell' | 'wall';
     id: string;
     stage?: number;
     tally?: { risk: number; energy: number; fed: number; skin: number; psyche: number; hours: number };
@@ -178,6 +178,8 @@ export interface GameState {
     food: number;
     ledge: boolean;
     stove: boolean;
+    // Phase 24.4: what's happened up there this trip.
+    seen: string[];
   } | null;
   // Phase 24.2. An expedition booked and paid for: the day you leave, who's coming, and the
   // haul bag you packed.
@@ -395,7 +397,7 @@ export type GameEvent =
   // A conversation moves to another node, or ends (null).
   | { k: 'talk'; node: string | null }
   // An encounter begins (Phase 22.6): it waits for an answer.
-  | { k: 'encounter'; kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell'; id: string }
+  | { k: 'encounter'; kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell' | 'wall'; id: string }
   // The action wasn't allowed; `why` says so in the game's voice.
   | { k: 'refused'; why: string };
 

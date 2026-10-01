@@ -1998,6 +1998,16 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The odds** also carry your skin through a long trip now: a go on the wall costs some, a night gives 22 back, and the odds read it at the third go of each day.
 - **Against the bots' trips,** 300 each now (at 100, the bots' own luck moved Trango twelve points between runs): El Cap shows 65% and the bots get 66%; Cerro Torre 42% and 40%; Trango 30% and 25%.
 
+**Status (1 Oct 2026): 24.4 built: what happens up there.** Save v29, 0.988.0.
+- **Six events** [proposed], as data (`sim/content/wallevents.ts`): a cam dropped at the belay, the haul bag jammed under a flake, rockfall, a squall the forecast missed, another party in trouble (only with a partner on your rope), and the stove quitting (only where the water's snow and you brought one). Each has two calls, with what each costs beside it, formatted from the same numbers the rules use: energy, days of food and water, a pitch to fix again, psyche, bond with your partner, or the day.
+- **When:** some mornings up there, 15% of them, never the first; never the same one twice a trip, two at most [proposed]. Seeded on the trip and the day. A call that loses the day is a night where you are, and the next morning can bring another.
+- **The odds** count them: any morning but the first might be a day lost, until two have come. Without that the odds ran about eight points over the bots'.
+- **Against the bots' trips** (300 each; the bots take the first call): El Cap shows 52% and the bots get 56%; Cerro Torre 32% and 34%; Trango 22% and 22%. The shown odds dropped from 24.3's 65/42/30 because events cost days and energy now.
+- **Sound:** a crack high up, then a rumble, as the card comes up.
+- **The scene behind the card** is still the Lot's, until 24.6–24.8 paint the walls.
+- **Size:** 295.4 of 340 KB.
+- **E2e:** any event that comes is answered with its first call; then the haul bag jams on the reload, the card shows each call's cost, and cutting the food loose leaves two days less in the bag.
+
 ---
 
 ### Phase 23 — Who you are: origins, paths, stances, and the Record Book
@@ -2374,3 +2384,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-01 — Phase 24.1 built: expedition pitches are lines climbed as goes, led in blocks with a partner whose grade moves with yours, and handed over when you're stuck; portaledge nights give back less each time, and the days narrow every window; the summit odds come from the go's own model, and the harness holds them within ten points of the bots' trips. Save v27. 0.985.0.
 - 2026-10-01 — Phase 24.2 built: expeditions are booked up to a week out against a forecast that's vaguer the further out it is, with a partner you choose and a haul bag you pack (food and water by the day, the portaledge, a stove where the water's snow), the odds moving with every choice; Evan confirmed 24.1's partner grades and handing over a pitch. Save v28. 0.986.0.
 - 2026-10-01 — Phase 24.3 built: travel days each way (Trango's walk-in acclimatizes), the trip taking your signed-up shifts off with a week's notice and leaving them to miss without, no sign-ups while you're booked away; three leads a day on the wall; the odds carry your skin through the trip and the harness checks them over 300 trips. 0.987.0.
+- 2026-10-01 — Phase 24.4 built: six things that happen up on a wall (a dropped cam, a jammed haul bag, rockfall, a squall, another party in trouble, a dead stove), some mornings, never twice a trip, each two calls with their costs shown; the odds count them as days that might be lost. Save v29. 0.988.0.

@@ -124,6 +124,7 @@ import {
   WORK,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
+import { WALL_EVENTS, wallEventById } from './content/wallevents';
 import {
   bagKg,
   nightGives,
@@ -849,7 +850,22 @@ export function act(s0: GameState, a: Action): Result {
         `${e.name}: out of time, ${x.pitch} of ${e.pitches} pitches fixed. You fly home with a story and nothing else.`,
       );
       homeward(e);
+      return;
     }
+    // Phase 24.4: some mornings, something happens up there. Never twice a trip, never more
+    // than a couple; the stove's only where there's one and the water's snow, and somebody
+    // else's bad day only with a partner to share it.
+    if (x.seen.length >= EXPED.events.max) return;
+    const roll = Rng.fromStream(s.seed, 'events').derive(`wall-${x.id}-${s.day}`);
+    if (roll.next() >= EXPED.events.odds) return;
+    const can = WALL_EVENTS.filter(
+      (w) => !x.seen.includes(w.id) && (!w.melt || (e.melt && x.stove)) && (!w.roped || x.partner),
+    );
+    const w = can[Math.floor(roll.next() * can.length)];
+    if (!w) return;
+    x.seen.push(w.id);
+    s.encounter = { kind: 'wall', id: w.id };
+    events.push({ k: 'encounter', kind: 'wall', id: w.id });
   };
   // Overnight news about the people you know: Dex's race, his season, and who's climbing
   // harder than whom.
@@ -1299,7 +1315,9 @@ export function act(s0: GameState, a: Action): Result {
   const upThere =
     (a.t === 'go' || a.t === 'done' || a.t === 'rest' || a.t === 'name') &&
     EXPED_ROUTES[a.route]?.exped === s.expedition?.id;
-  if (s.expedition && a.t !== 'exped' && a.t !== 'stand' && a.t !== 'pick' && !upThere)
+  // Something happening up there (Phase 24.4) is answered like any encounter.
+  const wallCall = a.t === 'answer' && s.encounter?.kind === 'wall';
+  if (s.expedition && a.t !== 'exped' && a.t !== 'stand' && a.t !== 'pick' && !upThere && !wallCall)
     return refuse(`You're on ${EXPEDITIONS[s.expedition.id]!.name}.`);
 
   switch (a.t) {
@@ -1394,6 +1412,7 @@ export function act(s0: GameState, a: Action): Result {
           food: b.food,
           ledge: b.ledge,
           stove: b.stove,
+          seen: [],
         };
         s.min = DAY.wakeMin;
         line(
@@ -2033,6 +2052,24 @@ export function act(s0: GameState, a: Action): Result {
       }
       if (e?.kind === 'epic') {
         if (!walkOut(e, a.opt)) return refuse('Nobody’s asking.');
+        break;
+      }
+      // Phase 24.4: up on the wall, the call and what it costs.
+      if (e?.kind === 'wall') {
+        const w = wallEventById(e.id);
+        const o = w?.opts[a.opt];
+        const x = s.expedition;
+        if (!w || !o || !x) return refuse('Nobody’s asking.');
+        s.encounter = null;
+        const fx = o.fx;
+        line(o.out);
+        if (fx.energy) s.energy = clamp100(s.energy + fx.energy);
+        if (fx.food) x.food = Math.max(0, x.food + fx.food);
+        if (fx.pitch) x.pitch = Math.max(0, x.pitch + fx.pitch);
+        if (fx.ledge === false) x.ledge = false;
+        if (fx.bond && x.partner) bond(x.partner, meet(x.partner).bond + fx.bond);
+        if (fx.psyche) s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + fx.psyche) };
+        if (fx.day) portaledge();
         break;
       }
       if (e?.kind === 'hitch' || e?.kind === 'stop') {

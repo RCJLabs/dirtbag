@@ -802,6 +802,12 @@ export class Game {
   // An expedition: go, then a day at a time.
   exped(id: string, what: 'go' | 'cancel' | 'follow' | 'camp' | 'bail'): string | null {
     const why = refusal(this.dispatch({ t: 'exped', id, do: what }));
+    // Phase 24.4: the morning brings something up there; its card comes up with it.
+    if (!why && this.state.encounter?.kind === 'wall') {
+      this.sound.play('upthere');
+      this.set({ sheet: { k: 'encounter' } });
+      return null;
+    }
     // Home again, summit or not: the lines already said how it went.
     if (!why && !this.state.expedition && what !== 'cancel') this.closeSheet();
     else if (!why) this.openSheet({ k: 'exped', id });
@@ -861,6 +867,20 @@ export class Game {
   // An answer (Phase 22.6). On the road, and you're where you were going; at the door, and
   // then the rest of the night.
   answer(opt: number): void {
+    // Something up on the wall (Phase 24.4): the call, then the day's card, or home.
+    if (this.state.encounter?.kind === 'wall') {
+      const ev = this.dispatch({ t: 'answer', opt });
+      if (ev.some((e) => e.k === 'refused')) return;
+      // A day lost can bring the next morning's trouble with it.
+      if (this.state.encounter?.kind === 'wall') {
+        this.sound.play('upthere');
+        this.set({ sheet: { k: 'encounter' } });
+        return;
+      }
+      const x = this.state.expedition;
+      this.set({ sheet: x ? { k: 'exped', id: x.id } : null });
+      return;
+    }
     // A walk-out's calls, one stage at a time; out, and you're back at the van.
     if (this.state.encounter?.kind === 'epic') {
       const ev = this.dispatch({ t: 'answer', opt });
