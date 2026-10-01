@@ -44,6 +44,13 @@ describe('psyche', () => {
     expect(psycheDay(base({ routes: { pump: { ...sent, sent: { ...sent.sent, day: 0 } } } })).up).toEqual([]);
   });
 
+  it('counts a night at cards as company, once, without moving anyone’s bond', () => {
+    for (const g of ['bj', 'holdem']) expect(psycheDay(base({ today: [g] })).up).toEqual(['company']);
+    expect(psycheDay(base({ today: ['bj', 'holdem'], people: { hazel: { bond: 2, last: 1 } } })).up).toEqual([
+      'company',
+    ]);
+  });
+
   it('counts somewhere new more than a day out, and only the first time', () => {
     const there = act(base({ min: 9 * 60 }), { t: 'travel', to: 'road' }).state;
     expect(psycheDay(there).up).toEqual(['somewhere new']);

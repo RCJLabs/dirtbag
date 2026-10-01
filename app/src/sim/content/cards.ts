@@ -1,6 +1,6 @@
-// How the people at the fire play hold'em (Phase 22.9b) [proposed]. Each calls a bet with a
-// hand that wins `call` of the time against a random one, bets one that wins `bet`, and bluffs
-// `bluff` of the hands they'd otherwise check. Your first read is how they bet; the second,
+// How the people at the fire play hold'em (Phase 22.9b), as built by Evan's call. Each calls
+// a bet with a hand that wins `call` of the time against a random one, bets one that wins `bet`,
+// and bluffs `bluff` of the hands they'd otherwise check. Your first read is how they bet; the second,
 // how often they bluff, and what to do about it.
 export interface Style {
   call: number;

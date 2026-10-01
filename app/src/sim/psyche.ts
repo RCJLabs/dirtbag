@@ -30,7 +30,13 @@ export function psycheDay(
     lift(PSYCHE.send, 'a new send');
   if (s.today.includes('new-crag')) lift(PSYCHE.newCrag, 'somewhere new');
   else if (away || s.today.includes('crag')) lift(PSYCHE.crag, 'a day out');
-  if (Object.values(s.people).some((p) => p.last === s.day)) lift(PSYCHE.company, 'company');
+  // Cards at the fire count as company (Evan, 1 Oct 2026), though they move no bond.
+  if (
+    Object.values(s.people).some((p) => p.last === s.day) ||
+    s.today.includes('bj') ||
+    s.today.includes('holdem')
+  )
+    lift(PSYCHE.company, 'company');
   // Your dog settles at the fire with the perk (Phase 22.7), and it's worth a little more.
   if (s.today.includes('fire'))
     hasPerk(s, 'settle')
