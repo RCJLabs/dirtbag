@@ -675,9 +675,10 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 25 ||
+  saved?.v !== 26 ||
   st.encounter !== null ||
   st.table !== null ||
+  st.cards !== null ||
   !Array.isArray(st.deck?.seen) ||
   !(st.guitar >= 0) ||
   !Array.isArray(st.seen) ||
@@ -1524,6 +1525,102 @@ console.log('Games at the fire');
   )
     await fail(`after the fire: ${JSON.stringify({ today: after.today, hazel: after.people.hazel, heard })}`);
   log(`fire: ${shoes}`);
+  await ctx.close();
+}
+
+console.log('Cards at the fire');
+// Phase 22.9b. Half nine at the Lot with $100: blackjack, a hand stood on and up again; then
+// hold'em with Hazel, a hand checked and called to the end, and up again. The money in front
+// of you comes back to your pocket, both games are played once tonight, and Hazel's had a
+// hand played on her.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  saved.state = {
+    ...saved.state,
+    day: 21,
+    min: 21 * 60 + 30,
+    at: 'lot',
+    x: null,
+    energy: 60,
+    cash: 100,
+    today: [],
+    people: { ...saved.state.people, hazel: { bond: 12, last: 18 } },
+    deck: { ...saved.state.deck, knock: 21 },
+    encounter: null,
+    table: null,
+    cards: null,
+    reads: {},
+  };
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  await ctx.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+    window.cues = [];
+    window.addEventListener('dirtbag:sound', (e) => window.cues.push(e.detail));
+  }, JSON.stringify(saved));
+  const cards = await ctx.newPage();
+  cards.on('pageerror', (e) => problems.push(`cards: uncaught: ${e.message}`));
+  cards.on('console', (m) => m.type() === 'error' && problems.push(`cards: console.error: ${m.text()}`));
+  await cards.goto(server.url, { waitUntil: 'load' });
+  await cards.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Map');
+  await cards.waitForTimeout(600);
+  await cards.mouse.click(100, 560);
+  await cards.waitForFunction(() => /Your van/.test(document.querySelector('#sheet')?.textContent ?? ''));
+  const sheet = () => cards.evaluate(() => document.querySelector('#sheet')?.textContent ?? '');
+  const pick = async (text) => {
+    await cards.waitForFunction(
+      (t) => (document.querySelector('#sheet')?.textContent ?? '').includes(t),
+      text,
+    );
+    await cards.locator('#sheet .opt', { hasText: text }).first().click();
+  };
+  const seated = () => cards.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.cards);
+  await pick('The fire');
+  await pick('Blackjack');
+  await cards.waitForFunction(() =>
+    /In front of you: \$40/.test(document.querySelector('#sheet')?.textContent ?? ''),
+  );
+  await pick('Deal');
+  await cards.waitForFunction(() => {
+    const c = JSON.parse(localStorage.getItem('dirtbag.save')).state.cards;
+    return c && (c.bj || c.hands === 1);
+  });
+  if ((await seated()).bj) {
+    await cards.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-blackjack.png`) });
+    await pick('Stand');
+  }
+  await cards.waitForFunction(
+    () => JSON.parse(localStorage.getItem('dirtbag.save')).state.cards?.hands === 1,
+  );
+  await pick('Get up');
+  await cards.waitForFunction(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.cards === null);
+  await pick('Hold’em with Hazel');
+  await pick('Deal');
+  await cards.waitForFunction(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.cards?.he);
+  await cards.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-holdem.png`) });
+  for (let g = 0; g < 8 && (await seated())?.he; g++) {
+    const was = JSON.stringify(await seated());
+    await pick(/Check/.test(await sheet()) ? 'Check' : 'Call');
+    await cards.waitForFunction(
+      (w) => JSON.stringify(JSON.parse(localStorage.getItem('dirtbag.save')).state.cards) !== w,
+      was,
+    );
+  }
+  await pick('Get up');
+  await cards.waitForFunction(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.cards === null);
+  const after = await cards.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  const heard = await cards.evaluate(() => window.cues);
+  if (
+    !after.today.includes('bj') ||
+    !after.today.includes('holdem') ||
+    after.reads.hazel?.hands !== 1 ||
+    !(after.cash > 100 - 40 && after.cash < 100 + 40) ||
+    !heard.includes('card') ||
+    !heard.includes('chips')
+  )
+    await fail(
+      `after the cards: ${JSON.stringify({ today: after.today, reads: after.reads, cash: after.cash, heard })}`,
+    );
+  log(`cards: up from the fire with $${after.cash}, one hand each`);
   await ctx.close();
 }
 

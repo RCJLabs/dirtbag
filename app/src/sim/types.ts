@@ -121,6 +121,29 @@ export interface GameState {
   };
   // Phase 22.9a. A hand of liar's dice you're in: who with, the dice, and the bid on it.
   table: { who: string; mine: number[]; theirs: number[]; bid: { n: number; face: number } } | null;
+  // Phase 22.9b. Sat down to cards at the fire: which game, who with, what's in front of you,
+  // hands played tonight, and the hand on the go (cards are 0–51: rank, then suit).
+  cards: {
+    game: 'bj' | 'holdem';
+    who: string;
+    chips: number;
+    hands: number;
+    bj: { you: number[]; dealer: number[]; next: number; bet: number } | null;
+    // A hold'em hand: the street (0 before the flop, 1 the flop, 2 the turn and river), the
+    // pot, a bet of theirs you're facing, and whether you bet the last street.
+    he: {
+      you: number[];
+      them: number[];
+      board: number[];
+      street: number;
+      pot: number;
+      facing: number;
+      bet: boolean;
+    } | null;
+  } | null;
+  // Phase 22.9b. Hold'em with each person: hands played, and the times they caught you
+  // betting a loser.
+  reads: Record<string, { hands: number; caught: number }>;
   // Phase 22.8. Your dream: the one you're saving for, the pot (the card and the bills never
   // touch it), and the ones you own.
   dream: {
@@ -308,7 +331,11 @@ export type Action =
   // Phase 22.9a: horseshoes, with each throw's score (1 clean, a half near, 0 off), and a
   // hand of liar's dice: dealt, then called or raised.
   | { t: 'shoes'; throws: number[] }
-  | { t: 'dice'; do: 'deal' | 'call' | 'raise' };
+  | { t: 'dice'; do: 'deal' | 'call' | 'raise' }
+  // Phase 22.9b: cards at the fire. Sit down (with whom, for hold'em), deal a hand, play it,
+  // and get up with what's in front of you.
+  | { t: 'bj'; do: 'sit' | 'deal' | 'hit' | 'stand' | 'double' | 'leave' }
+  | { t: 'holdem'; do: 'sit' | 'deal' | 'fold' | 'call' | 'bet' | 'leave'; who?: string };
 
 // What a finished go hands back to the game.
 export interface GoResult {

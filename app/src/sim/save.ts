@@ -18,7 +18,7 @@ import { HITCHERS, STOPS } from './content/road';
 import { EPICS } from './content/epics';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 25;
+export const SAVE_VERSION = 26;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -187,6 +187,11 @@ export const MIGRATIONS: Record<number, Migration> = {
   24: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, table: null };
+  },
+  // v25 -> v26 (Phase 22.9b): not sat at cards, and no reads on anyone.
+  25: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, cards: null, reads: {} };
   },
 };
 
@@ -389,6 +394,35 @@ export function validate(x: unknown): string[] {
         isInt(tb.bid.n) &&
         isInt(tb.bid.face)),
     'table',
+  );
+  const cd = x.cards;
+  const cards = (d: unknown) => Array.isArray(d) && d.every((v) => isInt(v) && v >= 0 && v <= 51);
+  const bjOk = (h: unknown) =>
+    h === null || (isObj(h) && cards(h.you) && cards(h.dealer) && isInt(h.next) && isNum(h.bet));
+  const heOk = (h: unknown) =>
+    h === null ||
+    (isObj(h) &&
+      cards(h.you) &&
+      cards(h.them) &&
+      cards(h.board) &&
+      isInt(h.street) &&
+      isNum(h.pot) &&
+      isNum(h.facing) &&
+      typeof h.bet === 'boolean');
+  need(
+    cd === null ||
+      (isObj(cd) &&
+        (cd.game === 'bj' || cd.game === 'holdem') &&
+        typeof cd.who === 'string' &&
+        isNum(cd.chips) &&
+        isInt(cd.hands) &&
+        bjOk(cd.bj) &&
+        heOk(cd.he)),
+    'cards',
+  );
+  need(
+    isObj(x.reads) && Object.values(x.reads).every((r) => isObj(r) && isInt(r.hands) && isInt(r.caught)),
+    'reads',
   );
   const dr = x.dream;
   const DREAMS = ['rig', 'warchest', 'homebase'];

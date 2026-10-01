@@ -157,6 +157,20 @@ export { dogAge, dogStage, hasPerk, nextDogName } from './scout';
 export { expedCost, owns, spotCost, worth } from './dreams';
 export { DREAMS, dreamById, type Dream } from './content/dreams';
 export { atFire, bidWords, gameBlocked, GAME_NAME, yourRaise, type Game } from './fire';
+export {
+  bjTotal,
+  CARD_NAME,
+  cardName,
+  cardsBlocked,
+  cardsName,
+  boardAt,
+  handNeeds,
+  handWord,
+  readsOn,
+  theyKnow,
+  type CardGame,
+} from './cards';
+export { STYLES } from './content/cards';
 export { DOG_FAREWELL } from './content/dog';
 export { HITCHERS, STOPS, type Hitcher, type RoadStop } from './content/road';
 export { KNOCKS, type Knock } from './content/knocks';

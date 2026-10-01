@@ -34,6 +34,9 @@ export type Cue =
   // thud in the dirt when it's not; dice rattled in a cup and set down.
   | 'clang'
   | 'dice'
+  // Cards (Phase 22.9b): one flicked onto the tailgate; a short stack of chips set down.
+  | 'card'
+  | 'chips'
   // On the wall.
   | 'pullon'
   | 'move'

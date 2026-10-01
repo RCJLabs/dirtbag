@@ -300,7 +300,7 @@ export class Game {
           ? { k: 'breakdown' }
           : this.state.encounter
             ? { k: 'encounter' }
-            : this.state.table
+            : this.state.table || this.state.cards
               ? { k: 'fire' }
               : this.state.expedition
                 ? { k: 'exped', id: this.state.expedition.id }
@@ -416,7 +416,8 @@ export class Game {
     if (this.state.encounter && !this.trip && 'sheet' in p && p.sheet?.k !== 'encounter')
       p = { ...p, sheet: { k: 'encounter' } };
     // A hand of dice on the go (Phase 22.9a): the fire's card, until it's played out.
-    if (this.state.table && 'sheet' in p && p.sheet?.k !== 'fire') p = { ...p, sheet: { k: 'fire' } };
+    if ((this.state.table || this.state.cards) && 'sheet' in p && p.sheet?.k !== 'fire')
+      p = { ...p, sheet: { k: 'fire' } };
     // Broken down, once the van's stopped rolling: the ways out, until you've taken one.
     if (this.state.breakdown && !this.trip && 'sheet' in p && p.sheet?.k !== 'breakdown')
       p = { ...p, sheet: { k: 'breakdown' } };
@@ -1057,6 +1058,19 @@ export class Game {
   dice(what: 'deal' | 'call' | 'raise'): void {
     this.sound.play('dice');
     this.dispatch({ t: 'dice', do: what });
+    this.openSheet({ k: 'fire' });
+  }
+
+  // Cards at the fire (Phase 22.9b): sit down, play, get up. The fire's card is the table.
+  bj(what: 'sit' | 'deal' | 'hit' | 'stand' | 'double' | 'leave'): void {
+    this.sound.play(what === 'sit' || what === 'leave' ? 'chips' : 'card');
+    this.dispatch({ t: 'bj', do: what });
+    this.openSheet({ k: 'fire' });
+  }
+
+  holdem(what: 'sit' | 'deal' | 'fold' | 'call' | 'bet' | 'leave', who?: string): void {
+    this.sound.play(what === 'sit' || what === 'leave' || what === 'bet' ? 'chips' : 'card');
+    this.dispatch({ t: 'holdem', do: what, who });
     this.openSheet({ k: 'fire' });
   }
 

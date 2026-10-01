@@ -94,6 +94,16 @@ import {
   RECIPES,
   BUSK,
   buskBlocked,
+  bjTotal,
+  boardAt,
+  CARD_NAME,
+  cardName,
+  cardsBlocked,
+  cardsName,
+  handNeeds,
+  readsOn,
+  STYLES,
+  type CardGame,
   atFire,
   bidWords,
   gameBlocked,
@@ -336,6 +346,121 @@ function dreamNote(s: GameState): string {
       ? `${money(s.dream.pot)} in the jar, and no dream picked.`
       : 'Pick one, and put something toward it.';
   return owned.length ? `${saving} Yours: ${owned.join(', ')}.` : saving;
+}
+
+// Phase 22.9b: sitting down to cards: what it costs, or why not.
+function sitRow(
+  game: Game,
+  s: GameState,
+  label: string,
+  g: CardGame,
+  who: string | undefined,
+  note: string,
+): Row {
+  const why = cardsBlocked(s, g, who);
+  return {
+    label,
+    cost: costLabel({ min: GAMES.min, energy: -GAMES.energy }),
+    note: why ? `${why}.` : note,
+    off: !!why,
+    run: () => (g === 'bj' ? game.bj('sit') : game.holdem('sit', who)),
+  };
+}
+
+// How far off the next read on someone is.
+function readsLeft(s: GameState, who: string): string {
+  const played = s.reads[who]?.hands ?? 0;
+  const next = GAMES.holdem.reads.find((n) => n > played);
+  const name = PEOPLE[who]?.name ?? who;
+  return next === undefined ? '' : `${next - played} more hands and you’ll have a read on ${name}.`;
+}
+
+// Phase 22.9b: the card table, sat down: the hand on the go, or the next one, and getting up.
+function cardsSheet(game: Game, s: GameState, c: NonNullable<GameState['cards']>): ListSpec {
+  const name = PEOPLE[c.who]?.name ?? c.who;
+  const front = `In front of you: ${money(c.chips)}.`;
+  const last = c.game === 'bj' ? GAMES.bj.hands : GAMES.holdem.hands;
+  const between = (deal: Row): ListSpec => ({
+    title: CARD_NAME[c.game],
+    sub: `${front} ${c.hands ? `${c.hands} of ${last} hands played.` : `Up to ${last} hands tonight.`}`,
+    notes: c.game === 'holdem' ? readsOn(s, c.who) : undefined,
+    close: false,
+    rows: [
+      c.hands >= last ? { ...deal, off: true, note: 'That’s the last hand tonight.' } : deal,
+      {
+        label: 'Get up',
+        note: `${money(c.chips)} back in your pocket.`,
+        run: () => (c.game === 'bj' ? game.bj('leave') : game.holdem('leave')),
+      },
+    ],
+  });
+  if (c.game === 'bj') {
+    const h = c.bj;
+    if (!h) {
+      const short = c.chips < GAMES.bj.bet;
+      return between({
+        label: 'Deal',
+        cost: costLabel({ cash: -GAMES.bj.bet }),
+        note: short ? 'Not enough in front of you for a hand.' : undefined,
+        off: short,
+        run: () => game.bj('deal'),
+      });
+    }
+    const can = h.you.length === 2 && c.chips >= h.bet;
+    return {
+      title: 'Blackjack',
+      sub: `You have ${cardsName(h.you)} (${bjTotal(h.you).n}). ${name} shows ${cardName(h.dealer[0]!)}. ${money(h.bet)} on it; ${money(c.chips)} in front of you.`,
+      close: false,
+      rows: [
+        { label: 'Hit', run: () => game.bj('hit') },
+        { label: 'Stand', run: () => game.bj('stand') },
+        {
+          label: 'Double',
+          cost: costLabel({ cash: -h.bet }),
+          note: can
+            ? 'One more card, then you stand.'
+            : h.you.length === 2
+              ? 'Not enough in front of you.'
+              : 'Only on your first two cards.',
+          off: !can,
+          run: () => game.bj('double'),
+        },
+      ],
+    };
+  }
+  const he = c.he;
+  if (!he) {
+    const short = c.chips < handNeeds('holdem');
+    const [b0, b1, b2] = GAMES.holdem.bets;
+    return between({
+      label: 'Deal',
+      cost: costLabel({ cash: -GAMES.holdem.ante }),
+      note: short
+        ? 'Not enough in front of you for a hand.'
+        : `An ante each, then bets of ${money(b0!)} before the flop, ${money(b1!)} on it, and ${money(b2!)} on the turn and river.`,
+      off: short,
+      run: () => game.holdem('deal'),
+    });
+  }
+  const shown = boardAt(he.street);
+  const board = shown ? `On the board: ${cardsName(he.board.slice(0, shown))}.` : 'Nothing on the board yet.';
+  const B = GAMES.holdem.bets[he.street]!;
+  return {
+    title: `Hold’em with ${name}`,
+    sub: `You have ${cardsName(he.you)}. ${board} The pot’s ${money(he.pot)}.${he.facing ? ` ${name} bets ${money(he.facing)}.` : ''} ${front}`,
+    notes: readsOn(s, c.who),
+    close: false,
+    rows: he.facing
+      ? [
+          { label: 'Call', cost: costLabel({ cash: -he.facing }), run: () => game.holdem('call') },
+          { label: 'Fold', run: () => game.holdem('fold') },
+        ]
+      : [
+          { label: 'Check', run: () => game.holdem('call') },
+          { label: 'Bet', cost: costLabel({ cash: -B }), run: () => game.holdem('bet') },
+          { label: 'Fold', run: () => game.holdem('fold') },
+        ],
+  };
 }
 
 // Phase 22.9a: who's at the fire, for the van.
@@ -857,6 +982,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
 
     // Phase 22.9a: the fire at night, and the games with whoever's there.
     case 'fire': {
+      if (s.cards) return cardsSheet(game, s, s.cards);
       const tb = s.table;
       if (tb) {
         const name = PEOPLE[tb.who]?.name ?? tb.who;
@@ -912,6 +1038,29 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             `Five dice each, no wilds, a hand with ${here[0] ?? 'whoever’s up'}. One bid: call it or raise.`,
             () => game.dice('deal'),
           ),
+          // Phase 22.9b: cards, for money.
+          sitRow(
+            game,
+            s,
+            'Blackjack',
+            'bj',
+            undefined,
+            `${money(GAMES.bj.bet)} a hand, up to ${GAMES.bj.hands} hands, and you sit down with ${money(GAMES.bj.cap)} at most. ${here[0] ?? 'Whoever’s up'} deals.`,
+          ),
+          ...atFire(s)
+            .filter((w) => STYLES[w])
+            .map((w) => {
+              const name = PEOPLE[w]?.name ?? w;
+              const reads = readsOn(s, w);
+              return sitRow(
+                game,
+                s,
+                `Hold’em with ${name}`,
+                'holdem',
+                w,
+                `Heads-up, ${money(GAMES.holdem.cap)} at most. ${reads.length ? reads.join(' ') : readsLeft(s, w)}`,
+              );
+            }),
         ],
       };
     }

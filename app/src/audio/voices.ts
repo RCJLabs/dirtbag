@@ -104,6 +104,17 @@ export const VOICES: Record<Cue, (v: V, k: number) => void> = {
       burst(v, { filter: 'bandpass', f: jitter(2400, 0.25), q: 2, dur: 0.03, gain: 0.35, delay: i * 0.045 });
     burst(v, { filter: 'lowpass', f: 320, q: 0.8, dur: 0.1, gain: 0.7, delay: 0.38 });
   },
+  // A card flicked onto the tailgate: a short dry snap.
+  card: (v) => {
+    burst(v, { filter: 'highpass', f: jitter(3200, 0.15), q: 0.7, dur: 0.04, gain: 0.4 });
+    burst(v, { filter: 'bandpass', f: 700, q: 1, dur: 0.05, gain: 0.25, delay: 0.02 });
+  },
+  // A few clay chips set down on wood, one on another.
+  chips: (v) => {
+    for (let i = 0; i < 4; i++)
+      tone(v, { type: 'triangle', f: jitter(2100, 0.06), dur: 0.05, gain: 0.07, delay: i * 0.035 });
+    burst(v, { filter: 'lowpass', f: 400, q: 0.8, dur: 0.06, gain: 0.3, delay: 0.12 });
+  },
   // A low open chord, held and let go slowly: nothing else.
   farewell: (v) => {
     [98, 147, 196].forEach((f, i) =>
