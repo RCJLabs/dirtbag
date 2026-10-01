@@ -15,6 +15,7 @@ import { speedGains } from '../src/sim/speed';
 import {
   checkpoints,
   contentOut,
+  expedCalibration,
   firstInjury,
   firstTry,
   gamesAtFire,
@@ -202,6 +203,14 @@ function targets(all: Record<Seasonal, BotRun[]>, reckless: BotRun[]): void {
     )
       .map(([k, v]) => `${k} $${v.toFixed(2)}/h`)
       .join(', ')}; the worst shift $${shiftHour.toFixed(2)}/h.`,
+  );
+  // 7. Phase 24's criterion 4: the summit odds shown are the odds the bots get, within ten
+  // points, for a climber at each objective's grade roped to Sage.
+  const cal = expedCalibration(Number(process.env.TRIPS ?? 100));
+  say(
+    cal.every((c) => Math.abs(c.shown - c.got) <= 0.1),
+    'The summit odds shown are the odds you get: within ten points of the bots’ trips',
+    `${cal.map((c) => `${c.id} at V${c.grade}, shown ${Math.round(100 * c.shown)}%, the bots ${Math.round(100 * c.got)}%`).join('; ')}.`,
   );
   // Phase 22.8: how long a dream takes, at what the worker bots put by: their median cash at
   // the season's end, a day at a time. A guide, not a target.

@@ -1,10 +1,8 @@
-// Phase 21.5: multi-pitch walls and expeditions, each climbed and each failed (criterion 4).
+// Phase 21.5: multi-pitch walls, each climbed and each failed (criterion 4).
 import { describe, expect, it } from 'vitest';
 import { needFor } from './climber';
-import { EXPEDITIONS } from './content/expeditions';
 import { WALLS } from './content/routes';
-import { EXPED, WALL } from './dials';
-import { summitOdds, stormOn } from './expeditions';
+import { WALL } from './dials';
 import { act, goBlocked, newGame } from './game';
 import type { Action, GameState } from './types';
 import { conditionsAt } from './weather';
@@ -86,55 +84,4 @@ describe('walls', () => {
 import { ROUTES } from './content/routes';
 const routes = (w: (typeof WALLS)[string]) => w.pitches.map((id) => ROUTES[id]!);
 
-describe('expeditions', () => {
-  const e = EXPEDITIONS.elcap!;
-  const ready = (grade: number, seed = 'exped'): GameState => ({
-    ...newGame(seed),
-    at: 'lot',
-    cash: 1000,
-    climber: { name: 'Kit', start: 'allrounder', skills: k(grade) },
-  });
-  // Lead every fair day you've the energy for, rest otherwise: the policy the odds assume.
-  const run = (s: GameState, dig = false): GameState => {
-    s = play(s, { t: 'exped', id: 'elcap', do: 'go' });
-    while (s.expedition) {
-      const x = s.expedition;
-      const cost = dig ? EXPED.dig : EXPED.lead;
-      const storm = stormOn(s.seed, 'elcap', e, s.day);
-      s = play(s, {
-        t: 'exped',
-        id: 'elcap',
-        do: !storm && x.energy >= cost ? (dig ? 'dig' : 'lead') : 'rest',
-      });
-    }
-    return s;
-  };
-
-  it('need the grade and the cost in hand, and keep you away from the valley till it ends', () => {
-    expect(refused(act(ready(6), { t: 'exped', id: 'elcap', do: 'go' }))).toMatch(/V7/);
-    expect(refused(act({ ...ready(8), cash: 800 }, { t: 'exped', id: 'elcap', do: 'go' }))).toMatch(/\$900/);
-    const s = play(ready(8), { t: 'exped', id: 'elcap', do: 'go' });
-    expect(s.cash).toBe(100);
-    expect(refused(act(s, { t: 'travel', to: 'gym' }))).toMatch(/El Capitan/);
-  });
-
-  it('can be climbed, and failed, and the odds shown up front are the odds you get', () => {
-    const seeds = Array.from({ length: 300 }, (_, i) => `x${i}`);
-    for (const grade of [7, 10]) {
-      const runs = seeds.map((sd) => run(ready(grade, sd)));
-      const summits = runs.filter((s) => s.cash > 1000 - e.cost).length / runs.length;
-      const odds = summitOdds(k(grade), e, false);
-      expect(Math.abs(summits - odds), `V${grade}: ${summits} vs ${odds}`).toBeLessThan(0.08);
-      // Both happen: some get up it, some don't.
-      if (grade === 10) expect(summits).toBeGreaterThan(0.5);
-      if (grade === 7) expect(summits).toBeLessThan(0.5);
-    }
-    expect(summitOdds(k(12), e, false)).toBeGreaterThan(summitOdds(k(8), e, false));
-  });
-
-  it('can be called off, with nothing to show for it', () => {
-    const s = play(ready(9), { t: 'exped', id: 'elcap', do: 'go' }, { t: 'exped', id: 'elcap', do: 'bail' });
-    expect(s.expedition).toBeNull();
-    expect(s.cash).toBe(1000 - e.cost);
-  });
-});
+// Expeditions moved to expeditions.test.ts in Phase 24, when their pitches became climbs.

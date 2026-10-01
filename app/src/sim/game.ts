@@ -123,8 +123,8 @@ import {
   WINTER,
   WORK,
 } from './dials';
-import { EXPEDITIONS } from './content/expeditions';
-import { pitchOdds, pitchRoll, stormOn, wallPay } from './expeditions';
+import { EXPED_ROUTES, EXPEDITIONS, expedPitches } from './content/expeditions';
+import { nightBack, partnerDay, partners, stormOn, wallPay, yourPitch } from './expeditions';
 import { canAsk, queueMin, sprayable, sprayedOn } from './crowds';
 import { soloed } from './solo';
 import { fishCatch } from './lake';
@@ -289,7 +289,7 @@ export const routeOfId = (s: GameState, id: string): RouteDef | undefined => rou
 // What a go costs you. Given your state, tape on a crack takes its share off the skin.
 export function goCost(r: RouteDef, s?: GameState): Required<Pick<Delta, 'min' | 'energy' | 'fed' | 'skin'>> {
   const kind = indoor(r.place) ? 'gym' : r.disc;
-  const c = r.wall ? WALL.pitch : CLIMB.go[kind];
+  const c = r.exped ? EXPED.pitch : r.wall ? WALL.pitch : CLIMB.go[kind];
   const bare = CLIMB.skin[r.type] * (indoor(r.place) ? 1 : CLIMB.rockSkin);
   const skin = Math.round(s ? tapedSkin(s, r, bare) : bare);
   // A busy crag's queue comes first.
@@ -414,7 +414,25 @@ const TIER_LINE = [
 export const revealed = (s: GameState, r: RouteDef): boolean =>
   !r.hiddenUntil || !!s.routes[r.hiddenUntil]?.sent;
 
+// Phase 24: a pitch up there goes only in its turn, in your block, on a clear day, in the light.
+function expedBlocked(s: GameState, r: RouteDef): string | null {
+  const x = s.expedition;
+  if (!x || x.id !== r.exped) return 'You’re nowhere near it';
+  const ps = expedPitches(x.id);
+  if (ps[x.pitch]?.id !== r.id) return `Pitch ${x.pitch + 1} is next: ${ps[x.pitch]?.name ?? 'the top'}`;
+  if (!yourPitch(x.pitch, !x.partner))
+    return `${PEOPLE[x.partner!]?.name ?? 'Your partner'}’s block. Second it`;
+  if (stormOn(s.seed, x.id, EXPEDITIONS[x.id]!, s.day)) return 'A storm’s on the wall. Nobody leads in this';
+  if (s.min >= CLIMB.darkFrom) return 'Too dark to climb. Make camp';
+  const off = daysOff(s);
+  if (off > 0) return `Your ${s.injury!.kind} needs ${off} more day${off > 1 ? 's' : ''}`;
+  if (s.fed <= 0) return "You're running on empty";
+  if (s.energy < CLIMB.minEnergy) return 'Too tired to lead. Make camp';
+  return null;
+}
+
 export function goBlocked(s: GameState, r: RouteDef): string | null {
+  if (r.exped) return expedBlocked(s, r);
   if (!revealed(s, r))
     return `You can't read this line yet. Send ${routeOfId(s, r.hiddenUntil!)?.name ?? 'the hardest line here'} first`;
   const inside = INDOOR[r.place];
@@ -545,11 +563,13 @@ export function act(s0: GameState, a: Action): Result {
   };
   // A night: in the van at the Lot, on a ledge halfway up a wall, or away on an expedition
   // (where the food's paid for, the van waits, and friends feed the dog).
-  const sleep = (where: 'van' | 'ledge' | 'away' = 'van') => {
+  // `back`: a portaledge night's energy (Phase 24), which gives back less every night.
+  const sleep = (where: 'van' | 'ledge' | 'away' | 'exped' = 'van', back = 0) => {
     const ended = s.day;
+    const away = where === 'away' || where === 'exped';
 
     // Going to bed hungry with food in the pantry: you eat some of it cold first (Phase 22.3).
-    if (where !== 'away' && s.fed < BODY.hungryBelow) {
+    if (!away && s.fed < BODY.hungryBelow) {
       const cold: string[] = [];
       for (let n = 0; n < FOOD.coldMax && s.fed < BODY.hungryBelow; n++) {
         const id = Object.keys(INGREDIENTS).find((k) => (s.pantry[k] ?? 0) > 0);
@@ -560,7 +580,7 @@ export function act(s0: GameState, a: Action): Result {
       }
       if (cold.length) line(`Too hungry to cook: ${cold.join(' and ')}, cold, from the pantry.`);
     }
-    const hungry = where !== 'away' && s.fed < BODY.hungryBelow;
+    const hungry = !away && s.fed < BODY.hungryBelow;
     // Where the van's parked tonight (Phase 22.2b), and what it costs; the pullout if the
     // card won't cover it.
     const night = where === 'van' ? nightAt(s) : null;
@@ -593,17 +613,19 @@ export function act(s0: GameState, a: Action): Result {
     // A spot out of town is a drive back in the morning.
     s.min = DAY.wakeMin + (night?.drive ?? 0);
     const rest =
-      where === 'ledge'
-        ? WALL.bivy.energy
-        : (rough ? BODY.roughEnergy : BODY.sleepEnergy) -
-          (hungry ? BODY.hungryNight : 0) +
-          life.energy +
-          (night?.energy ?? 0);
+      where === 'exped'
+        ? back
+        : where === 'ledge'
+          ? WALL.bivy.energy
+          : (rough ? BODY.roughEnergy : BODY.sleepEnergy) -
+            (hungry ? BODY.hungryNight : 0) +
+            life.energy +
+            (night?.energy ?? 0);
     if (fell) s.sick = { kind: fell.kind, until: s.day + fell.days };
     // Sick, you get less back from a night.
     s.energy = clamp100(s.energy + rest + (isSick(s) ? SICK.energy : 0));
     s.skin = clamp100(s.skin + BODY.sleepSkin + life.skin);
-    if (where !== 'away') s.fed = clamp100(s.fed - (where === 'ledge' ? WALL.bivy.fed : BODY.nightFed));
+    if (!away) s.fed = clamp100(s.fed - (where === 'ledge' ? WALL.bivy.fed : BODY.nightFed));
     // The day's load folds into the averages; a deload sheds some of the acute.
     const p = projected(s.load);
     const shed = s.training.phase === 'deload' ? TRAIN.phases.deload.acute : 1;
@@ -625,7 +647,7 @@ export function act(s0: GameState, a: Action): Result {
     }
     if (where === 'ledge')
       line('A night on a ledge, clipped in, the valley lit up a long way down. You sleep some.');
-    else if (where === 'away') {
+    else if (away) {
       // Nothing to say: the expedition's day says it.
     } else if (rough) line("The card won't take the van spot. You sleep in the pullout. It's cold.");
     else if (night && night.spot !== 'lot')
@@ -676,7 +698,7 @@ export function act(s0: GameState, a: Action): Result {
         `Another no-show, and ${PLACES[j.place]!.name} lets you go. They'll take you back from day ${s.benched[m.job]}, as ${j.ranks[0]!.toLowerCase()}.`,
       );
     }
-    if (s.dog && where !== 'away') {
+    if (s.dog && !away) {
       s.dog.fed = Math.max(0, s.dog.fed - DOG.nightFed);
       if (s.dog.fed < DOG.hungryBelow)
         line(`${s.dog.name}'s bowl is empty. He's been decent about it, which is worse.`);
@@ -751,31 +773,48 @@ export function act(s0: GameState, a: Action): Result {
       );
     }
   };
-  // A day of an expedition gone: home at the summit or when time runs out.
-  const expedDay = () => {
+  // Phase 24. A pitch of yours fixed: on up, or the summit.
+  const expedPitch = () => {
     const x = s.expedition!;
     const e = EXPEDITIONS[x.id]!;
+    x.pitch += 1;
     if (x.pitch >= e.pitches) {
-      s.expedition = null;
-      spend({ cash: e.pays });
-      train({ head: EXPED.head });
-      line(
-        `${e.name}: the summit of ${e.objective}, on day ${x.day}. The sponsors pay ${money(e.pays)}, and you'll be telling this one for years. ${skillsNote({ head: EXPED.head })}.`,
-      );
-      sleep('away');
+      summit();
       return;
     }
-    if (x.day >= e.days) {
+    line(
+      yourPitch(x.pitch, !x.partner)
+        ? `Pitch ${x.pitch} fixed. ${e.pitches - x.pitch} to go, and the next is yours too.`
+        : `Pitch ${x.pitch} fixed. That's your block. ${PEOPLE[x.partner!]?.name ?? 'Your partner'} leads the next.`,
+    );
+  };
+  // Phase 24. The summit: home, paid, and a lesson for the head.
+  const summit = () => {
+    const x = s.expedition!;
+    const e = EXPEDITIONS[x.id]!;
+    s.expedition = null;
+    spend({ cash: e.pays });
+    train({ head: EXPED.head });
+    line(
+      `${e.name}: the summit of ${e.objective}, on day ${x.day}${x.partner ? `, with ${PEOPLE[x.partner]?.name ?? x.partner}` : ', alone'}. The sponsors pay ${money(e.pays)}, and you'll be telling this one for years. ${skillsNote({ head: EXPED.head })}.`,
+    );
+  };
+  // A night on the portaledge: less back than the night before, the rations eaten, the wall a
+  // day older. Out of days, and it's home with what you fixed.
+  const portaledge = () => {
+    const x = s.expedition!;
+    const e = EXPEDITIONS[x.id]!;
+    const back = nightBack(x.nights);
+    sleep('exped', back);
+    s.fed = clamp100(Math.max(s.fed, EXPED.ration));
+    x.nights += 1;
+    x.day += 1;
+    if (x.day > e.days) {
       s.expedition = null;
       line(
         `${e.name}: out of time, ${x.pitch} of ${e.pitches} pitches fixed. You fly home with a story and nothing else.`,
       );
-      sleep('away');
-      return;
     }
-    x.day += 1;
-    x.energy = Math.min(EXPED.energy, x.energy + EXPED.night);
-    sleep('away');
   };
   // Overnight news about the people you know: Dex's race, his season, and who's climbing
   // harder than whom.
@@ -1221,7 +1260,11 @@ export function act(s0: GameState, a: Action): Result {
     return refuse('The van’s broken down. First things first.');
 
   // Away on an expedition: the valley waits. Only the expedition's own day goes on.
-  if (s.expedition && a.t !== 'exped' && a.t !== 'stand' && a.t !== 'pick')
+  // Phase 24: up there, a pitch of yours is a go like any other.
+  const upThere =
+    (a.t === 'go' || a.t === 'done' || a.t === 'rest' || a.t === 'name') &&
+    EXPED_ROUTES[a.route]?.exped === s.expedition?.id;
+  if (s.expedition && a.t !== 'exped' && a.t !== 'stand' && a.t !== 'pick' && !upThere)
     return refuse(`You're on ${EXPEDITIONS[s.expedition.id]!.name}.`);
 
   switch (a.t) {
@@ -1258,14 +1301,19 @@ export function act(s0: GameState, a: Action): Result {
         if (s.expedition) return refuse("You're already away.");
         if (s.at !== 'lot') return refuse('Expeditions leave from the Lot.');
         if (gradeOf(s.climber.skills) < e.gradeReq) return refuse(`${e.name} wants V${e.gradeReq}.`);
+        // Roped, you need someone to be roped to (Evan's call, 1 Oct 2026); Free Solo goes alone.
+        const partner = s.mode === 'solo' ? null : (partners(s)[0] ?? null);
+        if (s.mode !== 'solo' && !partner)
+          return refuse(`Nobody you climb with is close enough yet to go to ${e.name} with you.`);
         // The War Chest (Phase 22.8) halves it.
         const cost = expedCost(s, e.cost);
         if (s.cash < cost) return refuse(`${e.name} costs ${money(cost)}, in hand.`);
         if (s.wall) s.wall = null;
         spend({ cash: -cost });
-        s.expedition = { id: a.id, day: 1, pitch: 0, energy: EXPED.energy };
+        s.expedition = { id: a.id, day: 1, pitch: 0, partner, nights: 0 };
+        s.min = DAY.wakeMin;
         line(
-          `${e.name}, ${e.region}: ${e.objective}. ${e.days} days, ${e.pitches} pitches.${s.dog ? ' The dog stays with friends at the Lot.' : ''}`,
+          `${e.name}, ${e.region}: ${e.objective}. ${e.days} days, ${e.pitches} pitches${partner ? `, with ${PEOPLE[partner]?.name ?? partner}. You lead first` : ', alone'}.${s.dog ? ' The dog stays with friends at the Lot.' : ''}`,
         );
         break;
       }
@@ -1274,30 +1322,38 @@ export function act(s0: GameState, a: Action): Result {
       if (a.do === 'bail') {
         s.expedition = null;
         line(
-          `${e.name}: you call it, ${x.pitch} of ${e.pitches} pitches fixed. Nobody argues with going home alive.`,
+          `${e.name}: you rap off, ${x.pitch} of ${e.pitches} pitches fixed. Nobody argues with going home alive.`,
         );
         break;
       }
-      const storm = stormOn(s.seed, a.id, e, s.day);
-      if (a.do === 'rest') {
-        x.energy = Math.min(EXPED.energy, x.energy + EXPED.rest);
-        line(storm ? 'Storm. You sit it out in the tent.' : 'A day in camp. You eat everything.');
-        expedDay();
-        break;
-      }
-      if (storm) return refuse('A storm’s on the wall. Nobody leads in this.');
-      const dig = a.do === 'dig';
-      const cost = dig ? EXPED.dig : EXPED.lead;
-      if (x.energy < cost) return refuse('Not enough left in you to lead. Rest in camp.');
-      x.energy -= cost;
-      if (pitchRoll(s.seed, a.id, s.day, x.pitch) < pitchOdds(s.climber.skills, e, dig)) {
-        x.pitch += 1;
-        line(`Pitch ${x.pitch} fixed${dig ? ', and it took everything' : ''}. ${e.pitches - x.pitch} to go.`);
-      } else
+      if (a.do === 'camp') {
         line(
-          `You back off pitch ${x.pitch + 1}. ${dig ? 'You dug deep, and it still said no.' : 'Tomorrow.'}`,
+          stormOn(s.seed, a.id, e, s.day)
+            ? 'The storm on the wall all day. You sit it out on the portaledge.'
+            : 'You clip in for the night. The ledge creaks; the haul bag swings.',
         );
-      expedDay();
+        portaledge();
+        break;
+      }
+      // Their block, or yours handed over: you second and haul while they lead, and the day's done.
+      if (!x.partner) return refuse('Nobody to hand it to. You’re alone up here.');
+      if (stormOn(s.seed, a.id, e, s.day)) return refuse('A storm’s on the wall. Nobody leads in this.');
+      if (s.today.includes('exped')) return refuse('That’s the day.');
+      const name = PEOPLE[x.partner]?.name ?? x.partner;
+      const fixed = partnerDay(s, e, a.id, x.partner, x.pitch);
+      spend({ energy: -EXPED.follow });
+      s.today.push('exped');
+      climbedWith(x.partner);
+      x.pitch += fixed;
+      if (x.pitch >= e.pitches) {
+        summit();
+        break;
+      }
+      line(
+        fixed
+          ? `${name} leads ${fixed === 1 ? 'a pitch' : `${fixed} pitches`}. You jug and haul behind. ${e.pitches - x.pitch} to go.`
+          : `${name} spends the day on pitch ${x.pitch + 1} and comes back down it. Tomorrow.`,
+      );
       break;
     }
 
@@ -1547,9 +1603,20 @@ export function act(s0: GameState, a: Action): Result {
 
     case 'go': {
       const r = routeOfId(s, a.route);
-      if (!r || r.place !== s.at) return refuse("That line isn't here.");
+      if (!r || (r.exped ? r.exped !== s.expedition?.id : r.place !== s.at))
+        return refuse("That line isn't here.");
       const why = goBlocked(s, r);
       if (why) return refuse(`${why}.`);
+      // Phase 24: up there there's no crowd, no queue and no sun on it; your partner belays.
+      if (r.exped) {
+        spend(goCost(r, s));
+        const L = logOf(s, a.route);
+        L.goes += 1;
+        L.goesToday += 1;
+        if (s.expedition!.partner) climbedWith(s.expedition!.partner);
+        if (!s.today.includes('exped')) s.today.push('exped');
+        break;
+      }
       // Whether the crowd shouts the beta at you, decided at the base, before the queue.
       const sprayed = sprayedOn(s, r);
       const queued = queueMin(s, r);
@@ -2001,6 +2068,7 @@ export function act(s0: GameState, a: Action): Result {
         L.sentToday = true;
         events.push({ k: 'sent', route: a.route, style, go: L.goes });
         if (r.wall && s.wall?.id === r.wall) wallPitch(r.wall, lap);
+        if (r.exped && s.expedition?.id === r.exped) expedPitch();
         if (r.open && !s.firsts[r.id] && L.sent.day === s.day && L.sent.go === L.goes)
           events.push({ k: 'fa', route: r.id });
         if (s.race?.route === a.route) {

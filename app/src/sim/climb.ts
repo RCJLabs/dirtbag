@@ -23,6 +23,7 @@ import { psycheWindows } from './psyche';
 import { soloed } from './solo';
 import { kitFactor } from './kit';
 import { indoor } from './content/gym';
+import { EXPEDITIONS, expedWindows } from './content/expeditions';
 import { trainWindows } from './training';
 import type { GameState, GoResult } from './types';
 import { conditionsAt, sunOn } from './weather';
@@ -145,6 +146,12 @@ export function dayFactor(s: GameState, r: RouteDef): { windows: number; grease:
     sickWindows(s) *
     psycheWindows(s);
   if (indoor(r.place)) return { windows: body, grease: false };
+  // An expedition's pitch (Phase 24): no valley weather up there, only the wall's own.
+  if (r.exped) {
+    const e = EXPEDITIONS[r.exped]!;
+    const onWall = s.expedition?.id === r.exped ? s.expedition.day : 1;
+    return { windows: body * expedWindows(e, onWall), grease: false };
+  }
   const c = conditionsAt(s.seed, s.day, r.place);
   const grease = s.min >= sunOn(s.seed, s.day, r.place, r.id);
   // No rope: your body climbs tighter, whatever you tell it.

@@ -813,25 +813,26 @@ export const WALL = {
   bivy: { energy: 40, fed: 20 },
 };
 
-// Expeditions (Phase 21.5): v0.956's day loop. Leading a pitch costs energy (more if you dig
-// deep, for better odds); a day in camp gives 48 back (v0.956's), and any night 10. A
-// pitch's odds come from your endurance against the objective's grade: `base` at the grade
-// (v0.956's 0.68 at El Cap for a V9), `perGrade` a grade either side, from `floor` to
-// `ceiling` (v0.956's 0.45 and 0.97), and `digBonus` more if you dig deep. Tuned so El Cap
-// at its grade goes a little over half the time and at its V7 gate hardly ever, as the
-// audit found v0.956's did.
+// Expeditions (Phase 24): a long wall led in blocks of `block` pitches, yours first, with a
+// partner at bond tier `partnerTier` or better. Your pitches are goes, each at WALL.pitch's
+// cost; your partner's day on their block is `partner.tries` tries, each fixing the pitch at
+// v0.956's odds for their grade against it (`base` at its grade, `perGrade` a grade either
+// side, from `floor` to `ceiling`), narrowed as your windows are. Seconding their block costs
+// you `follow` energy. A portaledge night gives back `night.energy`, `night.decay` less each
+// night after, and the rations bring food back to `ration`. Every day after the first narrows
+// every window by `fatigue.perDay`, down to `fatigue.floor`. The odds play each of your
+// pitches `samples` times. The summit teaches the head `head` [proposed, all but v0.956's].
 export const EXPED = {
-  energy: 100,
-  lead: 22,
-  dig: 36,
-  rest: 48,
-  night: 10,
-  base: 0.68,
-  perGrade: 0.1,
-  digBonus: 0.25,
-  floor: 0.45,
-  ceiling: 0.97,
-  // The summit's lesson for the head, as v0.956's +8 head was, scaled to a go's lessons.
+  // A big-wall pitch, hauling and all: longer and harder on you than a valley wall's.
+  pitch: { min: 150, energy: 15, fed: 6 },
+  block: 2,
+  partnerTier: 2,
+  partner: { base: 0.4, perGrade: 0.1, floor: 0.05, ceiling: 0.95, tries: 2 },
+  follow: 15,
+  night: { energy: 45, decay: 0.92 },
+  ration: 60,
+  fatigue: { perDay: 0.015, floor: 0.82 },
+  samples: 24,
   head: 2,
 };
 

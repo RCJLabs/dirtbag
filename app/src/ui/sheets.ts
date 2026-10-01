@@ -65,9 +65,16 @@ import {
   EXPEDITIONS,
   gradeName,
   has,
-  pitchOdds,
+  expedPitches,
+  CLIMB,
+  goCost,
+  nightBack,
+  partnerTry,
+  previewOdds,
+  sendChance,
   stormOn,
   summitOdds,
+  yourPitch,
   WALLS,
   wallPay,
   CROWD,
@@ -1252,12 +1259,14 @@ export function crowdNote(c: Crowd): string {
 
 const pct = (p: number): string => `${Math.round(p * 100)}%`;
 
-// The summit's odds before you pay: leading every fair day you've the energy for, and
-// digging deep every one.
+// The summit's odds before you pay, with whoever'd come, as the go's own model has them.
 function oddsLine(s: GameState, id: string): string {
   const e = EXPEDITIONS[id]!;
-  const k = s.climber.skills;
-  return `${e.pitches} pitches in ${e.days} days, storms ${pct(e.stormOdds)} of them. Summit odds for you: ${pct(summitOdds(k, e, false))} leading, ${pct(summitOdds(k, e, true))} digging deep.`;
+  const pv = previewOdds(s, id);
+  const head = `${e.pitches} pitches in ${e.days} days, storms ${pct(e.stormOdds)} of them.`;
+  if (!pv) return `${head} Nobody you climb with is close enough yet to come.`;
+  const who = pv.partner ? `with ${PEOPLE[pv.partner]?.name ?? pv.partner}` : 'alone';
+  return `${head} Summit odds for you, ${who}: ${pct(pv.odds)}, choosing well each day.`;
 }
 
 // A wall from its foot, or from wherever you are on it.
@@ -1377,9 +1386,11 @@ function expedSheet(game: Game, s: GameState, id: string): ListSpec {
         ? 'Expeditions leave from the Lot.'
         : gradeOf(k) < e.gradeReq
           ? `${e.name} wants V${e.gradeReq}. You climb V${gradeOf(k)}.`
-          : s.cash < expedCost(s, e.cost)
-            ? `${money(expedCost(s, e.cost))} in hand, not on the card. You have ${money(Math.max(0, s.cash))}.`
-            : null;
+          : !previewOdds(s, id)
+            ? 'Nobody you climb with is close enough yet to come. Free Solo goes alone.'
+            : s.cash < expedCost(s, e.cost)
+              ? `${money(expedCost(s, e.cost))} in hand, not on the card. You have ${money(Math.max(0, s.cash))}.`
+              : null;
     return {
       title: e.name,
       sub: `${e.objective}, ${e.region}. ${e.blurb}`,
@@ -1389,7 +1400,7 @@ function expedSheet(game: Game, s: GameState, id: string): ListSpec {
         {
           label: 'Go',
           cost: costLabel({ cash: -expedCost(s, e.cost) }),
-          note: why ?? 'Food, flights and a porter. The van waits at the Lot.',
+          note: why ?? 'Food, flights, the portaledge and a porter. The van waits at the Lot.',
           off: !!why,
           run: () => void game.exped(id, 'go'),
         },
@@ -1398,41 +1409,66 @@ function expedSheet(game: Game, s: GameState, id: string): ListSpec {
     };
   }
   const storm = stormOn(s.seed, id, e, s.day);
-  const from = { day: x.day, pitch: x.pitch, energy: x.energy };
-  const lead = (dig: boolean): Row => {
-    const cost = dig ? EXPED.dig : EXPED.lead;
-    const tired = x.energy < cost;
-    return {
-      label: dig ? 'Dig deep' : 'Lead the next pitch',
+  const ps = expedPitches(id);
+  const r = ps[x.pitch]!;
+  const mine = yourPitch(x.pitch, !x.partner);
+  const who = x.partner ? (PEOPLE[x.partner]?.name ?? x.partner) : null;
+  const done = s.today.includes('exped');
+  const dark = s.min >= CLIMB.darkFrom;
+  const odds = summitOdds(s, id, { ...x, energy: s.energy });
+  const pitch = `pitch ${x.pitch + 1}, ${r.name} (${gradeLabel(r)}, ${r.type})`;
+  const theirTry = x.partner ? partnerTry(s, e, x.partner, r, x.day) : 0;
+  const rows: Row[] = [];
+  if (mine) {
+    const why = storm
+      ? 'Not in this.'
+      : dark
+        ? 'Too dark. Make camp.'
+        : s.energy < CLIMB.minEnergy
+          ? 'Nothing left in you today. Make camp.'
+          : null;
+    rows.push({
+      label: `Lead ${pitch}`,
+      cost: why ? undefined : costLabel(goCost(r, s)),
+      note: why ?? `About ${pct(sendChance(s, r))} a go for you, today.`,
+      off: !!why,
+      run: () => game.lookUp(r.id),
+    });
+  }
+  if (who && !done) {
+    const why = storm ? 'Not in this.' : dark ? 'Too dark. Make camp.' : null;
+    rows.push({
+      label: mine ? `Hand it to ${who}` : `Second ${who}’s block`,
+      cost: why ? undefined : costLabel({ energy: -EXPED.follow }),
+      note:
+        why ??
+        `${who} leads ${mine ? 'it' : pitch} and on, the rest of the day: about ${pct(theirTry)} a try, ${EXPED.partner.tries} tries. You jug and haul.`,
+      off: !!why,
+      run: () => void game.exped(id, 'follow'),
+    });
+  }
+  rows.push(
+    {
+      label: 'Make camp',
       note: storm
-        ? 'Not in this.'
-        : tired
-          ? 'Not enough left in you. Rest.'
-          : `${pct(pitchOdds(k, e, dig))} to fix pitch ${x.pitch + 1}. Costs ${cost} of your ${x.energy} energy.`,
-      off: storm || tired,
-      run: () => void game.exped(id, dig ? 'dig' : 'lead'),
-    };
-  };
+        ? `Sit the storm out on the portaledge. The night gives back ${nightBack(x.nights)} energy.`
+        : `Clip in for the night. It gives back ${nightBack(x.nights)} energy, less than the last.`,
+      run: () => void game.exped(id, 'camp'),
+    },
+    {
+      label: 'Rap off and go home',
+      note: 'Home with what you’ve fixed, which pays nothing. The money’s spent either way.',
+      run: () => void game.exped(id, 'bail'),
+    },
+  );
   return {
     title: `${e.name}, day ${x.day} of ${e.days}`,
-    sub: `${x.pitch} of ${e.pitches} pitches fixed. ${storm ? 'A storm on the wall today.' : 'Clear today.'}`,
+    sub: `${x.pitch} of ${e.pitches} pitches fixed. ${storm ? 'A storm on the wall today.' : 'Clear today.'} ${mine ? (who ? 'Your block.' : 'Every pitch is yours.') : `${who}’s block.`}`,
     notes: [
-      `Left in you on the wall: ${x.energy} of ${EXPED.energy}. Summit odds from here: ${pct(summitOdds(k, e, false, from))} leading, ${pct(summitOdds(k, e, true, from))} digging deep.`,
+      `Summit odds from here: ${pct(odds)}, choosing well each day.`,
+      `Energy ${Math.round(s.energy)}. ${who ? `Roped to ${who}.` : 'Alone.'}`,
     ],
     close: false,
-    rows: [
-      lead(false),
-      lead(true),
-      {
-        label: 'Rest in camp',
-        note: `${EXPED.rest} energy back${storm ? ', and the storm goes by without you' : ''}.`,
-        run: () => void game.exped(id, 'rest'),
-      },
-      {
-        label: 'Call it off',
-        note: 'Home with what you’ve fixed, which pays nothing. The money’s spent either way.',
-        run: () => void game.exped(id, 'bail'),
-      },
-    ],
+    rows,
   };
 }

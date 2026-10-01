@@ -400,7 +400,8 @@ function Close({ game }: { game: Game }) {
 // What the day's doing to a line outdoors: in the sun already, or in the shade and till
 // when; and damp, the day after rain. Nothing on a day of rain: the rock's shut.
 function rockNote(s: GameState, r: RouteDef): string {
-  if (indoor(r.place)) return '';
+  // Up on an expedition (Phase 24) the valley's sun and rain don't reach: its storms do.
+  if (indoor(r.place) || r.exped) return '';
   const c = conditionsAt(s.seed, s.day, r.place);
   if (!c.open) return '';
   const sun = sunOn(s.seed, s.day, r.place, r.id);
@@ -440,7 +441,7 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
   const log = s.routes[route];
   const unnamed = r.open && log?.sent && !s.firsts[route];
   // Who else is at the base: a queue for the line, and beta to be had for the asking.
-  const crowd = r.wall || indoor(r.place) ? 'empty' : crowdNow(s, r.place);
+  const crowd = r.wall || r.exped || indoor(r.place) ? 'empty' : crowdNow(s, r.place);
   // A myth you can't read yet: no name, no grade, no beta. Just what it'll take.
   if (!revealed(s, r))
     return (
