@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { needFor } from './climber';
 import { WALLS } from './content/routes';
 import { WALL } from './dials';
-import { act, goBlocked, newGame } from './game';
+import { belayer, act, goBlocked, newGame } from './game';
 import type { Action, GameState } from './types';
 import { conditionsAt } from './weather';
 
@@ -77,6 +77,14 @@ describe('walls', () => {
     expect(night.cash).toBe(s.cash);
     expect(play(night, { t: 'wall', wall: 'prow', do: 'retreat' }).wall).toBeNull();
     expect(play(night, { t: 'travel', to: 'lot' }).wall).toBeNull();
+  });
+
+  it('keep whoever bivied with you there in the morning, to belay the next pitch', () => {
+    const s = send(play(atProw(), { t: 'wall', wall: 'prow', do: 'start' }), w.pitches[0]!);
+    expect(belayer(s)).toBe('hazel');
+    const night = play({ ...s, min: 21 * 60 }, { t: 'wall', wall: 'prow', do: 'bivy' });
+    expect(night.people.hazel?.invite).toEqual({ day: night.day, place: 'road', from: night.min });
+    expect(belayer(night)).toBe('hazel');
   });
 });
 

@@ -966,5 +966,10 @@ export const YEAR = { days: 56 };
 // `warn` the You page counts the days down. 22 to 45 is day 415, about V14 for the career
 // bot: inside Phase 16's 15–25 hours, where V18 (day ~900) isn't. No decline with age.
 export const AGE = { start: 22, days: 18, from: 30, warn: 43, forced: 45 };
+// How long a day takes a player (Phase 16.6), for criterion 1's hours: seconds a tap (the
+// e2e's count, reading included) and seconds a go (holding to climb, and the stamp). Not
+// measured: stated, so the hours the harness reports can be checked against testers' and
+// the numbers moved [proposed].
+export const PACE = { tapSec: 4, goSec: 15 };
 export const HOME = { people: 2, tier: 2, cash: 200, psyche: 20 };
 export const QUIRK = { after: 30, fresh: 70, tired: 35, evening: 17 * 60, dawn: 9 * 60, easy: 2 };

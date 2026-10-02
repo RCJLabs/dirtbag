@@ -2,11 +2,11 @@
 // 6's targets are written against. Pure like the rest of the sim; `npm run harness` prints
 // the tables (harness/season.harness.ts).
 
-import { humanHands, playDays, playGo, type BotRun, type Strategy } from './bot';
+import { expedLoop, humanHands, playDays, type BotRun, type Strategy } from './bot';
 import { bjTotal, boardAt, equity, handNeeds } from './cards';
 import { CLIMB, EXPED, GAMES } from './dials';
-import { EXPEDITIONS, expedPitches } from './content/expeditions';
-import { defaultPlan, planOdds, stormOn, summitOdds, tripPay, yourPitch } from './expeditions';
+import { EXPEDITIONS } from './content/expeditions';
+import { defaultPlan, planOdds, tripPay } from './expeditions';
 import { needFor, STARTS } from './climber';
 import { ECHOES } from './content/scene';
 import { ORIGINS } from './content/origins';
@@ -214,38 +214,18 @@ export function expedRun(
   let net = booked.cash - s0.cash;
   let s = run(booked, { t: 'exped', id, do: 'go' });
   if (!s.expedition) return none;
-  for (let guard = 0; s.expedition && guard < 400; guard++) {
-    // Something happened up there (Phase 24.4): the bots take the first call.
-    if (s.encounter?.kind === 'wall') {
-      s = run(s, { t: 'answer', opt: 0 });
-      continue;
-    }
-    const x = s.expedition;
-    const r = expedPitches(id)[x.pitch]!;
-    const storm = stormOn(s.seed, id, e, s.day);
-    if (!storm && !s.today.includes('exped')) {
-      const mine = yourPitch(x.pitch, !x.partner);
-      // On your block, lead or hand it over: whichever the odds say is the better day.
-      const from = { ...x, on: s.day, energy: s.energy };
-      const handOver =
-        mine && !!x.partner && summitOdds(s, id, from, 'hand') > summitOdds(s, id, from, 'lead');
-      if (!mine || handOver) {
-        s = run(s, { t: 'exped', id, do: 'follow' });
-        continue;
-      }
-      // Your block: goes until the light, your energy or the block runs out.
-      for (let g = 0; g < 20 && s.expedition && yourPitch(s.expedition.pitch, !s.expedition.partner); g++) {
-        const p = expedPitches(id)[s.expedition.pitch]!;
-        const went = act(s, { t: 'go', route: p.id });
-        if (went.events[0]?.k === 'refused') break;
-        s = went.state;
-        const res = playGo(s, p, humanHands(rng.derive(`go-${g}-${s.day}`)));
-        s = run(s, { t: 'done', route: p.id, result: res });
-      }
-      if (!s.expedition) break;
-    }
-    s = run(s, { t: 'exped', id, do: 'camp' });
-  }
+  // Played as the career bot plays it (bot.ts).
+  expedLoop(
+    () => s,
+    (a) => {
+      const r = act(s, a);
+      if (r.events[0]?.k === 'refused') return false;
+      if (r.events.some((ev) => ev.k === 'line' && /the summit of/.test(ev.text))) top = true;
+      s = r.state;
+      return true;
+    },
+    (g) => humanHands(rng.derive(`go-${g}-${s.day}`)),
+  );
   if (top) net += tripPay(s0, id);
   return { top, days: s.day - s0.day, net };
 }
