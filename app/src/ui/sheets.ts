@@ -7,6 +7,7 @@ import {
   tierOf,
   AGE,
   ageOf,
+  epilogue,
   epitaph,
   startAge,
   tallyLines,
@@ -194,6 +195,8 @@ export interface ListSpec {
   rows: Row[];
   close: boolean;
   notes?: string[];
+  // Plain lines under the sub, for a sheet that tells rather than warns (the tally).
+  lines?: string[];
   // How far a go got, in moves, against your best before it (none on a first go), with the
   // cruxes shaded.
   reach?: { moves: number; cruxes: [number, number][]; go: number; best: number | null };
@@ -1441,7 +1444,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       return {
         title: 'A climbing life',
         sub: `${s.climber.name}, ${t.age}: ${t.years} years on rock. ${r.forced ? 'Your body called it.' : 'You called it yourself.'} ${epitaph(t)}`,
-        notes: tallyLines(t),
+        // What became of you (Phase 16.4), then the numbers.
+        lines: [...epilogue(s).map((l) => l.text), ...tallyLines(t)],
         close: false,
         rows: [
           {

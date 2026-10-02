@@ -951,7 +951,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   go({ t: 'create', name: 'Bot', start: opts.start ?? 'allrounder', origin: opts.origin });
   if (opts.calling) go({ t: 'calling', id: opts.calling });
   const end = s.day + (opts.days ?? 7);
-  for (let guard = 0; s.day < end; guard++) {
+  // A climber who's hung it up (Phase 16.1) has no more days to play.
+  for (let guard = 0; s.day < end && !s.life.retired; guard++) {
     if (guard > (opts.days ?? 7) * 2)
       throw new Error(`the bot is stuck on day ${s.day}: ${run.refused.slice(-3).join(' | ')}`);
     if (strategy === 'career') careerDay();

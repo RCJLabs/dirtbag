@@ -203,7 +203,8 @@ const ACT_III: Goal[] = [
   },
 ];
 
-// Act IV, V11 to V14: The Crucible, The Tower's Due, Patagonia and the Karakoram.
+// Act IV, V11 to V14: The Crucible, Patagonia, and The Tower's Due. One expedition (Evan's
+// call: two was a cash gate between a player and the act's end).
 const ACT_IV: Goal[] = [
   {
     id: 'crucible',
@@ -214,15 +215,6 @@ const ACT_IV: Goal[] = [
     done: 'The lines out here have reputations. Now one of them has a story with you in it.',
   },
   {
-    id: 'tower',
-    title: 'The Tower’s Due',
-    text: 'Someone fell from the Obsidian Roof years back and never topped out. Every pitch of the Obsidian Tower, to the summit: for them.',
-    aim: { wall: 'obsidian' },
-    desc: 'Top out the Obsidian Tower',
-    done: 'You sat on the summit longer than you needed to. It felt like the polite thing to do.',
-    train: { head: 2 },
-  },
-  {
     id: 'cerro',
     title: 'Patagonia',
     text: 'Cerro Torre. The wind is a character in every story anyone tells about it, and it is never the hero.',
@@ -231,12 +223,21 @@ const ACT_IV: Goal[] = [
     done: 'The summit of Cerro Torre, and the wind let you have it. This time.',
   },
   {
-    id: 'trango',
-    title: 'The Karakoram',
-    text: 'Trango Tower. Thin air, a long walk in, and a line people plan their whole lives around.',
-    aim: { summit: 'trango' },
-    desc: 'Top out Trango Tower',
-    done: 'You planned your life around it, and then you did it. Not many people get to say that.',
+    id: 'twelve',
+    title: 'Twelve',
+    text: 'Somewhere around V12 the climbing stops being about strength and starts being about whether you believe it goes.',
+    aim: { outside: 1, grade: 12 },
+    desc: 'Send a line outside at V{g} or harder',
+    done: 'It went. You believed it would, mostly.',
+  },
+  {
+    id: 'tower',
+    title: 'The Tower’s Due',
+    text: 'Someone fell from the Obsidian Roof years back and never topped out. Every pitch of the Obsidian Tower, to the summit: for them.',
+    aim: { wall: 'obsidian' },
+    desc: 'Top out the Obsidian Tower',
+    done: 'You sat on the summit longer than you needed to. It felt like the polite thing to do.',
+    train: { head: 2 },
   },
   {
     id: 'fourteen',

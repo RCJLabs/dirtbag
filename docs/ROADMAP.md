@@ -2271,6 +2271,18 @@ Players will ask "what am I working towards?" by hour 3.
 - **The race isn't a stage:** it only starts once you've met Dex, and a stage that waits on it could wait for ever.
 - **E2e:** the later life is past Act I, and the You page shows "Act II, The Local's Project · 1 of 5 · Earn some trust". The act-end card is checked by the sim's tests, not played.
 
+**After 16.2, Evan's calls (2 Oct 2026).** 0.999.6.
+- **Act IV has one expedition:** Cerro Torre stays; Trango's stage is a V12 outside, and the stages run in grade order (The Crucible, Cerro Torre, V12, the Obsidian Tower, V14). Two expeditions were $6,700 between a player and the act's end.
+- **The Late Bloomer starts at 26,** its only cost (the 12% slower power and fingers is gone): your body calls it on day 343, 72 days before anyone else's. It's the speed-run origin, and it must still be possible to reach the ending: measured, the Late Bloomer bots reach V13 around day 300 and are still V13 on day 343, where bots of no origin reach V14 between days 365 and 403. Reaching Act V (and the clock on hold) as a Late Bloomer takes a player about a tenth faster than the bots, which is inferred, not shown: no bot can get past Act III yet (they don't go on expeditions or climb walls; 16.6's).
+- **The tally is plain text,** not the red of an outcome note.
+- **The e2e's intermittent toast problem was the check, not the game:** a sheet scrolled down clips the rows above it, but their boxes still report where they'd be, up by the HUD where the toast is. It counts what you can see now.
+
+**Status (2 Oct 2026): 16.4 built: epilogues.** 0.999.6.
+- **What became of you,** on the tally before the numbers, from what the save kept: where you came from (each origin, said back), your hardest first ascent by name and crag, the summits, the path you went furthest on (its title at the top, or how far), the quirk the scene named you, your masteries, the calling and how many of its rungs, the first and last calls you made in your own words, either crowd at either end, Hazel, Sage and Dex by how close you got, the dog (with you, or the collar in the glovebox), the Homecoming, and the page of the Record Book you'd show people.
+- **Criterion 2 passes:** each line says whether it names something you did; a new harness target holds every career bot's ending at five or more (fewest 6, at day 224), and the bots take no calling and claim no path, which a player would.
+- **The people and the dog** moved out of the tally's numbers into the epilogue, so nobody's said twice.
+- **E2e:** the tally after hanging it up has the Sold It All climber's origin said back and the Record Book's page.
+
 ---
 
 ### Phase 17 — The people
@@ -2616,3 +2628,5 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-02 — Phase 16 planned on the rebuild, with Evan's calls: two endings (retirement inside the hours, The Line for whoever reaches V18, measured at ~day 900); v0.956's age clock with a countdown, retiring from 30, forced at 45; Acts II–V on the crags and trips that exist, comps later; the heir a kid you've coached. Six slices.
 - 2026-10-02 — Phase 16.1 built: age on v0.956's clock (22, a year every 18 days, the Late Bloomer 32); hanging it up from 30, asked first; your body calls it at 45, with a countdown from 43; the tally of a climbing life with an epitaph from what you did; The Long Game in the Record Book; old saves held back to 43. Save v38. 0.999.4.
 - 2026-10-02 — Phase 16.2 built: Acts II to V as content on the crags, walls, expeditions and myths, each ending in a scene with whoever's close; Evan's call that Act V puts your body on hold, since forced retirement came before The Line; old saves move on quietly. Save v39. 0.999.5.
+- 2026-10-02 — After 16.2, Evan's calls: Act IV with one expedition; the Late Bloomer starts at 26, the speed-run origin, with time its only cost; the tally in plain text. The e2e's toast check now counts only what a sheet shows. 0.999.6.
+- 2026-10-02 — Phase 16.4 built: the epilogue, from the save (origin, first ascents, summits, paths, quirk, masteries, calling, calls made, crowds, people, the dog, the Homecoming, the book); criterion 2 passes, every career bot's ending naming five or more things it did. 0.999.6.

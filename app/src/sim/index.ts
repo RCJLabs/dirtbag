@@ -278,6 +278,7 @@ export {
   tallyOf,
   type Tally,
 } from './age';
+export { epilogue, namedDeeds, type EpilogueLine } from './epilogue';
 export {
   echoOpts,
   perksOf,

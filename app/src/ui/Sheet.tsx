@@ -267,6 +267,11 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
       {spec.head && <PlaceHead s={state} {...spec.head} />}
       {spec.reach && <Reach {...spec.reach} />}
       {spec.sub && <p className="sub">{spec.sub}</p>}
+      {spec.lines?.map((l) => (
+        <p className="sub" key={l}>
+          {l}
+        </p>
+      ))}
       {spec.notes?.map((n) => (
         <p className="note" key={n}>
           {n}

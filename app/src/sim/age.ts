@@ -160,8 +160,7 @@ export function tallyLines(t: Tally): string[] {
     );
   if (t.never.length) out.push(`You never walked ${list(t.never)}. Somebody else did.`);
   if (t.scars) out.push(`${n(t.scars, 'old injury', 'old injuries')} you still feel when it rains.`);
-  if (t.people.length) out.push(`${list(t.people)}, there to the end.`);
-  if (t.dogs.length) out.push(`${list(t.dogs)}, who never cared what grade it was.`);
+  // The people and the dog are the epilogue's (Phase 16.4).
   out.push(`${n(t.record, 'entry', 'entries')} in the Record Book.`);
   return out;
 }
