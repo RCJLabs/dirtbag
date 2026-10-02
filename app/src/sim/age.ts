@@ -9,6 +9,7 @@ import { PEOPLE } from './content/people';
 import { PLACES } from './content/places';
 import { AGE, HOME } from './dials';
 import { originOf } from './identity';
+import { actOf } from './story';
 import { tierOf } from './presence';
 import type { GameState } from './types';
 
@@ -31,9 +32,13 @@ export function retireBlocked(s: GameState): string | null {
   return null;
 }
 
+// On The Line (Phase 16.2, Evan's call): from Act V your body waits on you. No countdown and
+// no forced end; hanging it up stays yours.
+export const bodyWaits = (s: GameState): boolean => actOf(s) >= 5;
+
 // Days left before your body calls it, once the countdown's on; null before then.
 export function daysLeft(s: GameState): number | null {
-  if (s.life.retired || ageOf(s) < AGE.warn) return null;
+  if (s.life.retired || bodyWaits(s) || ageOf(s) < AGE.warn) return null;
   return Math.max(0, dayAtAge(s, AGE.forced) - s.day);
 }
 
@@ -42,7 +47,7 @@ export function birthdayLine(s: GameState): string | null {
   const a = ageOf(s);
   if (a === AGE.from)
     return `${AGE.from}. Hanging it up is on the You page now, whenever you want it. Nobody’s making you.`;
-  if (a === AGE.warn || a === AGE.forced - 1) {
+  if ((a === AGE.warn || a === AGE.forced - 1) && !bodyWaits(s)) {
     const d = daysLeft(s) ?? 0;
     return `${a}. Your body’s started keeping count: ${d} days before it calls it at ${AGE.forced}, whatever you’ve got left on your list.`;
   }

@@ -3,7 +3,8 @@
 // sim's numbers through its formatters.
 
 import {
-  ACT_I_END,
+  STORY,
+  tierOf,
   AGE,
   ageOf,
   epitaph,
@@ -973,13 +974,21 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       };
     }
 
-    case 'act':
+    // An act's end (Phase 16.2): its scene, and a line for each person close enough to be there.
+    case 'act': {
+      const end = STORY[id.n - 1]?.end;
+      if (!end) return null;
+      const there = Object.entries(end.with ?? {})
+        .filter(([who]) => tierOf(s.people[who]?.bond ?? 0) >= HOME.tier)
+        .map(([, l]) => l);
       return {
-        title: ACT_I_END.title,
-        sub: ACT_I_END.text,
+        title: end.title,
+        sub: [end.text, ...there].join(' '),
+        notes: [`${money(end.cash)}.`],
         close: false,
         rows: [{ label: 'Keep climbing', run: () => game.closeSheet() }],
       };
+    }
 
     case 'restart':
       return {

@@ -116,7 +116,7 @@ export type SheetId =
       from: 'send' | 'wall';
     }
   | { k: 'dog' }
-  | { k: 'act' }
+  | { k: 'act'; n: number }
   // Your journal: you as a climber, or the log of what's happened lately.
   | { k: 'journal'; page: JournalPage }
   // A line too long for a toast, on a card you put down yourself.
@@ -394,7 +394,7 @@ export class Game {
     for (const e of r.events) {
       if (e.k === 'line') this.toast(e.text);
       else if (e.k === 'refused') this.toast(e.why);
-      else if (e.k === 'act') this.cards.push({ k: 'act' });
+      else if (e.k === 'act') this.cards.push({ k: 'act', n: e.n });
       else if (e.k === 'home') this.cards.push({ k: 'home' });
       else if (e.k === 'record') this.cards.push({ k: 'record', ids: e.ids });
       else if (e.k === 'calling') this.cards.push({ k: 'calling' });

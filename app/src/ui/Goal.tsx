@@ -1,4 +1,4 @@
-import { currentGoal, goalDesc, progress } from '../sim';
+import { counted, currentGoal, goalDesc, progress } from '../sim';
 import type { Game, Ui } from '../game/game';
 
 // The act's next goal, where you can always see it (Phase 7: a new player can say what they
@@ -18,7 +18,7 @@ export function Goal({ game, ui }: { game: Game; ui: Ui }) {
   )
     return null;
   const p = progress(ui.state, g.aim);
-  const counted = p.need > 1 && !('cash' in g.aim) && !('grade' in g.aim) && !('regular' in g.aim);
+  const count = p.need > 1 && counted(g.aim);
   return (
     <button
       type="button"
@@ -28,7 +28,7 @@ export function Goal({ game, ui }: { game: Game; ui: Ui }) {
     >
       <b>Next</b>
       {goalDesc(g)}
-      {counted && (
+      {count && (
         <span>
           {Math.min(p.have, p.need)}/{p.need}
         </span>

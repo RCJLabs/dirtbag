@@ -1,9 +1,15 @@
-// Act I: v0.956's first-season stages, in order, each said and rewarded, and the act's end.
+// The story (Phase 16.2): Act I, v0.956's first-season stages, in order, each said and
+// rewarded, and the act's end; then Acts II to V, on the crags, walls, trips and myths.
 import { describe, expect, it } from 'vitest';
 import { needFor } from './climber';
-import { ACT_I, ACT_I_END } from './content/story';
+import { ACT_I, ACT_I_END, STORY } from './content/story';
+import { EXPEDITIONS } from './content/expeditions';
+import { PLACES } from './content/places';
+import { ROUTES, WALLS } from './content/routes';
+import { AGE } from './dials';
+import { dayAtAge, daysLeft } from './age';
 import { act, emptyLog, newGame } from './game';
-import { currentGoal, goalDesc, progress } from './story';
+import { actOf, currentGoal, goalDesc, LADDER, progress, stageOf } from './story';
 import type { GameEvent, GameState, RouteLog } from './types';
 
 const lines = (ev: GameEvent[]) => ev.flatMap((e) => (e.k === 'line' ? [e.text] : []));
@@ -69,7 +75,9 @@ describe('Act I', () => {
     });
     const r = tick(s);
     expect(r.state.goals).toBe(ACT_I.length);
-    expect(currentGoal(r.state)).toBeNull();
+    // On into Act II.
+    expect(currentGoal(r.state)?.id).toBe('trust');
+    expect(actOf(r.state)).toBe(2);
     expect(r.state.cash).toBe(10 + ACT_I_END.cash);
     expect(r.state.climber.skills.head).toBe(k + 2);
     expect(r.events).toContainEqual({ k: 'act', n: 1 });
@@ -84,5 +92,97 @@ describe('Act I', () => {
   it('waits until there is someone to play it', () => {
     const r = act({ ...newGame('story'), cash: 100 }, { t: 'stand', x: 10 });
     expect(r.state.goals).toBe(0);
+  });
+});
+
+const at = (id: string, day = 1): RouteLog => ({
+  ...emptyLog(),
+  goes: 1,
+  sent: { day, go: 1, style: 'redpoint' },
+});
+const first = (n: number) => LADDER.findIndex((e) => e.act === n);
+
+describe('Acts II to V', () => {
+  it('are five acts, each at a fixed count, each asking for things that exist', () => {
+    expect(STORY.map((a) => a.goals.length)).toEqual([5, 5, 5, 5, 4]);
+    for (const { goal } of LADDER) {
+      const a = goal.aim;
+      if ('at' in a) expect(PLACES[a.at]?.crag).toBe(true);
+      if ('wall' in a) expect(WALLS[a.wall]).toBeDefined();
+      if ('summit' in a) expect(EXPEDITIONS[a.summit]).toBeDefined();
+      expect(goalDesc(goal)).not.toMatch(/\{/);
+    }
+    expect(new Set(LADDER.map((e) => e.goal.id)).size).toBe(LADDER.length);
+  });
+
+  it('asks in their own numbers', () => {
+    expect(STORY[1]!.goals.map(goalDesc)).toEqual([
+      'Send 3 lines outside at V4 or harder',
+      'Send a line at Granite Gorge',
+      'Send 2 lines outside at V6 or harder',
+      'Send a line at Moonstone Boulders',
+      'Send a line outside at V7 or harder',
+    ]);
+  });
+
+  it('counts sends outside at a grade, and a crag, from what you sent', () => {
+    const gorge = Object.values(ROUTES).filter(
+      (r) => r.place === 'gorge' && r.grade >= 4 && !r.wall && !r.open,
+    );
+    const s = made({ goals: first(2), routes: { [gorge[0]!.id]: at(gorge[0]!.id) } });
+    expect(progress(s, { outside: 3, grade: 4 })).toEqual({ have: 1, need: 3 });
+    expect(progress(s, { at: 'gorge' })).toEqual({ have: 1, need: 1 });
+    expect(progress(s, { at: 'gorge', grade: 15 })).toEqual({ have: 0, need: 1 });
+    expect(stageOf(s)).toEqual({ n: 1, of: 5 });
+  });
+
+  it('knows a wall topped, a summit, a myth you can read and one you put up', () => {
+    const w = WALLS.obsidian!;
+    expect(progress(made(), { wall: 'obsidian' }).have).toBe(0);
+    expect(progress(made({ routes: { [w.pitches.at(-1)!]: at('x') } }), { wall: 'obsidian' }).have).toBe(1);
+    const trip = {
+      id: 'elcap',
+      day: 30,
+      end: 'summit' as const,
+      high: 0,
+      partner: null,
+      nights: 4,
+      seen: [],
+      told: true,
+    };
+    expect(progress(made({ book: [trip] }), { summit: 'elcap' }).have).toBe(1);
+    expect(progress(made({ book: [{ ...trip, end: 'bail' as never }] }), { summit: 'elcap' }).have).toBe(0);
+    const myth = ROUTES.cmyth!;
+    expect(progress(made({ routes: { [myth.hiddenUntil!]: at('x') } }), { reveal: true }).have).toBe(1);
+    const mine = made({ firsts: { cmyth: { name: 'The Long Dark', call: 0, day: 400 } } });
+    expect(progress(mine, { myth: true }).have).toBe(1);
+    const his = made({ firsts: { cmyth: { name: 'Dex Was Here', call: 0, day: 400, by: 'dex' } } });
+    expect(progress(his, { myth: true }).have).toBe(0);
+  });
+
+  it('ends each act with its scene, its pay and its card, and goes on to the next', () => {
+    const last = first(3) - 1;
+    const moon = Object.values(ROUTES).find((r) => r.place === 'moon' && r.grade >= 7 && !r.open)!;
+    const s = made({ goals: last, cash: 0, routes: { [moon.id]: at(moon.id) } });
+    const r = tick(s);
+    expect(r.state.goals).toBe(last + 1);
+    expect(r.events).toContainEqual({ k: 'act', n: 2 });
+    expect(r.state.cash).toBe(STORY[1]!.end.cash);
+    expect(r.state.log.map((l) => l.text)).toContain(STORY[1]!.end.text);
+    expect(actOf(r.state)).toBe(3);
+    expect(currentGoal(r.state)?.id).toBe('stone');
+  });
+
+  it('on The Line, your body waits on you: no countdown, no forced end', () => {
+    const base = made({ day: dayAtAge(made(), AGE.forced) - 1 });
+    expect(daysLeft(base)).not.toBeNull();
+    const line = { ...base, goals: first(5) };
+    expect(daysLeft(line)).toBeNull();
+    const r = act(
+      { ...line, at: 'lot', min: 18 * 60, cash: 500, energy: 50, encounter: null },
+      { t: 'act', act: 'lot.sleep' },
+    );
+    expect(r.state.day).toBe(line.day + 1);
+    expect(r.state.life.retired).toBeNull();
   });
 });

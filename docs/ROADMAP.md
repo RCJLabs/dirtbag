@@ -2259,6 +2259,18 @@ Players will ask "what am I working towards?" by hour 3.
 - **No harness run:** no bot retires, and the season (56 days) and career (224) end before 45. The Late Bloomer at 32 is v0.956's cost and is now on top of its less spring (0.88): that may be one cost too many, [proposed], for Evan.
 - **E2e:** the day-five climber at day 380 sees the countdown, hangs it up, gets the tally, reloads to it, and starts again.
 
+**Status (2 Oct 2026): 16.2 built: Acts II to V.** Save v39, 0.999.5.
+- **Five acts, one ladder:** Act I as it was, then four more at a fixed count (5, 5, 5, 4), as content checked by tests, each stage asking for something that exists and said from its own numbers.
+  - **II, The Local's Project (V4–V7):** three sends outside at V4; past Roadside to the Gorge; two at V6; Moonstone; the project, a V7 outside (v0.956's quest of that name).
+  - **III, The Road (V8–V10):** The Big Stone; Send Season's V8; The Nose on El Cap; Hazel's Pilgrimage, a V9 at Wind River; a V10 outside.
+  - **IV, The Crucible (V11–V14):** The Crucible; The Tower's Due, the Obsidian Tower topped; Cerro Torre; Trango; a V14 outside.
+  - **V, The Line (V15–V18):** the Anvil's grade at The Crucible; a V17 outside; reading a myth (the line under it sent); a myth's first ascent.
+- **Each act ends in a scene,** not a toast: what happened, then a line for each of Hazel, Sage and Dex who's close enough to be there, and its pay [proposed]: $120, $200, $300, $500, each said where it came from. A few stages train a skill, as Act I's did.
+- **Evan's call on Act V:** forced retirement at 45 (day ~415, about V14) made The Line, V18 at day ~900 for the bots, unreachable. Now finishing Act IV puts your body on hold: in Act V there's no countdown and no forced end, and hanging it up stays yours. Most players will retire inside the window; The Line is the long game for whoever keeps going.
+- **An old save** past Act I moves on, quietly, past the later stages it's already done (no cards, no pay for them), to the first it hasn't.
+- **The race isn't a stage:** it only starts once you've met Dex, and a stage that waits on it could wait for ever.
+- **E2e:** the later life is past Act I, and the You page shows "Act II, The Local's Project · 1 of 5 · Earn some trust". The act-end card is checked by the sim's tests, not played.
+
 ---
 
 ### Phase 17 — The people
@@ -2603,3 +2615,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-02 — Phase 23 closed by Evan's call; the boulderer and the all-rounder alike in week one carry. CURRENT MILESTONE moved to Phase 16, the spine; it gets planned on the rebuild next.
 - 2026-10-02 — Phase 16 planned on the rebuild, with Evan's calls: two endings (retirement inside the hours, The Line for whoever reaches V18, measured at ~day 900); v0.956's age clock with a countdown, retiring from 30, forced at 45; Acts II–V on the crags and trips that exist, comps later; the heir a kid you've coached. Six slices.
 - 2026-10-02 — Phase 16.1 built: age on v0.956's clock (22, a year every 18 days, the Late Bloomer 32); hanging it up from 30, asked first; your body calls it at 45, with a countdown from 43; the tally of a climbing life with an epitaph from what you did; The Long Game in the Record Book; old saves held back to 43. Save v38. 0.999.4.
+- 2026-10-02 — Phase 16.2 built: Acts II to V as content on the crags, walls, expeditions and myths, each ending in a scene with whoever's close; Evan's call that Act V puts your body on hold, since forced retirement came before The Line; old saves move on quietly. Save v39. 0.999.5.
