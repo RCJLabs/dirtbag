@@ -306,8 +306,8 @@ export {
 } from './content/gym';
 export { TALK, PEOPLE, THINGS, RACE_ROUTE } from './content/people';
 export { DOG_OFFER, DOG_TIER_NAME } from './content/dog';
-export { ACT_I, ACT_I_END } from './content/story';
-export { currentGoal, goalDesc, progress } from './story';
+export { ACT_I, ACT_I_END, STORY } from './content/story';
+export { actEndedBy, actOf, counted, currentGoal, goalDesc, LADDER, progress, ROMAN, stageOf } from './story';
 export type { TalkDef, TalkNode, TalkOpt, TalkFx, PersonDef, ThingDef } from './content/people';
 export { PROTOCOLS, PREHAB } from './content/training';
 export type { ProtocolDef } from './content/training';

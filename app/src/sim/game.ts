@@ -61,7 +61,7 @@ import {
 } from './cards';
 import { dreamById } from './content/dreams';
 import { PEOPLE, RACE_ROUTE, RIVAL_FA_NAMES, TALK } from './content/people';
-import { ACT_I_END } from './content/story';
+import { ACT_PAID } from './content/story';
 import { START_KIT } from './content/gear';
 import { INGREDIENTS, RECIPES } from './content/food';
 import { has, tapedSkin, wearKit } from './kit';
@@ -180,7 +180,7 @@ import { speedBlocked, speedGains, speedLoad, speedTime, runsToday } from './spe
 import { fill, money, skillsNote } from './format';
 import { PARTNERS, tierOf, whereNow } from './presence';
 import { hashSeed, Rng } from './rng';
-import { aimMet, currentGoal } from './story';
+import { actEndedBy, aimMet, currentGoal } from './story';
 import { newlyEarned } from './record';
 import { callingOf, dealTalents, gainMult, payMult, shopMult, talentsShowing } from './identity';
 import { callingDue, newRungs, rungText } from './calling';
@@ -199,7 +199,7 @@ import { CALLING_SCENE, ECHOES } from './content/scene';
 import { echoDue, echoOpts, permitFor, shift, stanceDue, stanceOpts } from './scene';
 import { boardWeek, jobProgress, postBoard } from './board';
 import { homeCrowd, homeReady, yearsDone } from './year';
-import { ageOf, birthdayLine, retireBlocked } from './age';
+import { ageOf, birthdayLine, bodyWaits, retireBlocked } from './age';
 import { BOARD_JOBS } from './content/board';
 import { CALLINGS, OPEN_CALLINGS } from './content/callings';
 import { CAME_ACROSS, ORIGINS } from './content/origins';
@@ -838,7 +838,7 @@ export function act(s0: GameState, a: Action): Result {
         const b = birthdayLine(s);
         if (b) line(b);
       }
-      if (where === 'van' && age >= AGE.forced) retire(true);
+      if (where === 'van' && age >= AGE.forced && !bodyWaits(s)) retire(true);
     }
   };
   // Phase 16.1: hung up, by choice or by your body: nothing more happens to this climber.
@@ -2576,16 +2576,19 @@ export function act(s0: GameState, a: Action): Result {
   }
   // Act I's goals, after whatever just happened: each one done says so, and the last ends
   // the act.
+  // Phase 16.2: on through all five acts; each act's last stage ends it, with its scene.
   for (let g = currentGoal(s); s.climber.name && g && aimMet(s, g.aim); g = currentGoal(s)) {
+    const ended = actEndedBy(s.goals);
     s.goals += 1;
     if (g.train) train(g.train);
     events.push({ k: 'goal', id: g.id });
     line(g.train ? `${g.done} ${skillsNote(g.train)}.` : g.done);
-    if (!currentGoal(s)) {
-      s.cash += ACT_I_END.cash;
-      events.push({ k: 'act', n: 1 });
-      note(ACT_I_END.text);
-      line(`First season done. There's ${money(ACT_I_END.cash)} in the glovebox you'd forgotten about.`);
+    if (ended) {
+      const end = ended.act.end;
+      s.cash += end.cash;
+      events.push({ k: 'act', n: ended.n });
+      note(end.text);
+      line(fill(ACT_PAID[ended.n - 1]!, { cash: money(end.cash) }));
     }
   }
   // Phase 23.2: a talent you didn't know you had, now you do.

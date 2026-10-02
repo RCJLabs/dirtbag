@@ -1,13 +1,16 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
-  ACT_I,
+  actOf,
+  ROMAN,
+  stageOf,
+  STORY,
   AGE,
   ageOf,
   daysLeft,
   retireBlocked,
   guitarRank,
   RANK_NAME,
-  ACT_I_END,
+  counted,
   average,
   indoor,
   revealed,
@@ -1428,28 +1431,30 @@ function LoadRow({ s }: { s: GameState }) {
   );
 }
 
-// Act I: the stage you're on, why, and how far along it is; or that the season's done.
+// The story (Phase 16.2): the act and the stage you're on, why, and how far along it is; or
+// that it's all done.
 function ActRow({ s }: { s: GameState }) {
   const g = currentGoal(s);
-  if (!g)
+  const n = actOf(s);
+  if (!g) {
+    const last = STORY[STORY.length - 1]!;
     return (
       <>
-        <p className="crux">Act I · done</p>
-        <p className="sub">{ACT_I_END.text}</p>
+        <p className="crux">{last.title} · done</p>
+        <p className="sub">{last.end.text}</p>
       </>
     );
+  }
   const p = progress(s, g.aim);
+  const st = stageOf(s)!;
   return (
     <>
-      <p className="crux">
-        Act I · {s.goals + 1} of {ACT_I.length} · {g.title}
+      <p className="crux" id="act">
+        Act {ROMAN[n - 1]}, {STORY[n - 1]!.title} · {st.n} of {st.of} · {g.title}
       </p>
       <p className="sub">
         {g.text} <b>{goalDesc(g)}</b>
-        {p.need > 1 && !('cash' in g.aim) && !('grade' in g.aim) && !('regular' in g.aim)
-          ? ` (${Math.min(p.have, p.need)} of ${p.need})`
-          : ''}
-        .
+        {p.need > 1 && counted(g.aim) ? ` (${Math.min(p.have, p.need)} of ${p.need})` : ''}.
       </p>
     </>
   );

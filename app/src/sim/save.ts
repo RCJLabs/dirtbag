@@ -27,9 +27,11 @@ import { ECHOES, STANCES } from './content/scene';
 import { BOARD_JOBS } from './content/board';
 import { newMastery } from './paths';
 import { newlyEarned } from './record';
+import { aimMet, currentGoal } from './story';
+import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 38;
+export const SAVE_VERSION = 39;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -315,6 +317,16 @@ export const MIGRATIONS: Record<number, Migration> = {
     const held = Math.max(0, day - warnDay);
     const told = start + Math.floor(Math.max(0, day - 1 - held) / AGE.days);
     return { ...x, life: { held, told, retired: null } };
+  },
+  // v38 -> v39 (Phase 16.2): the story goes on past Act I. A save that's finished it moves on,
+  // quietly, past every later stage it's already done (no cards, no pay for what came
+  // before the story could say so), to the first it hasn't.
+  38: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const s = { ...x } as unknown as GameState;
+    if (!isInt(s.goals) || s.goals < ACT_I.length) return s;
+    for (let g = currentGoal(s); g && aimMet(s, g.aim); g = currentGoal(s)) s.goals += 1;
+    return s;
   },
 };
 

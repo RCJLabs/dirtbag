@@ -742,7 +742,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 38 ||
+  saved?.v !== 39 ||
   st.life?.retired !== null ||
   st.life.told !== 22 ||
   st.year?.home !== 'none' ||
@@ -2188,6 +2188,8 @@ console.log('A later life');
     calling: { id: null, since: 0, rungs: [], offered: true },
     year: { recapped: 0, home: 'none' },
     encounter: { kind: 'stance', id: 'chip' },
+    // Phase 16.2: Act I done; on into Act II.
+    goals: 5,
   };
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
   await ctx.addInitScript((s) => {
@@ -2228,6 +2230,10 @@ console.log('A later life');
   // The You page: where you stand, the call in your words, the Homecoming; a calling.
   await later.click('#h-you');
   await later.waitForSelector('#scene');
+  const actRow = await later.evaluate(() => document.querySelector('#act')?.textContent ?? '');
+  if (!/^Act II, The Local’s Project · 1 of 5 · Earn some trust$/.test(actRow))
+    await fail(`later: the act: ${actRow}`);
+  log(`later: ${actRow}`);
   const you = await sheet();
   if (!/In with the old guard/.test(you) || !/Ended the chipping quietly/.test(you))
     await fail(`the scene on the You page: ${you.slice(0, 400)}`);
