@@ -18,9 +18,11 @@ import { INGREDIENTS, MEAL_NAME } from './content/food';
 import { KNOCKS } from './content/knocks';
 import { HITCHERS, STOPS } from './content/road';
 import { EPICS } from './content/epics';
+import { recordById } from './content/record';
+import { newlyEarned } from './record';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 30;
+export const SAVE_VERSION = 31;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -240,6 +242,14 @@ export const MIGRATIONS: Record<number, Migration> = {
   29: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, book: [] };
+  }, // v30 -> v31 (Phase 23.1): the Record Book, holding what you'd already done, as of the
+  // day you load it. No cards for those: they go in quietly.
+  30: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const s = { ...x, record: {} } as unknown as GameState;
+    const record: Record<string, number> = {};
+    for (const r of newlyEarned(s)) record[r.id] = s.day;
+    return { ...x, record };
   },
 };
 
@@ -566,6 +576,8 @@ export function validate(x: unknown): string[] {
       ),
     'book',
   );
+  const rec = x.record;
+  need(isObj(rec) && Object.entries(rec).every(([k, v]) => !!recordById(k) && isInt(v) && v >= 0), 'record');
   const bk = x.booked;
   need(
     bk === null ||

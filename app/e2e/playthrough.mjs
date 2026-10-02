@@ -132,6 +132,8 @@ async function until(what, fn, ms = 10_000) {
     const v = await fn();
     if (v) return v;
     if (Date.now() - t0 > ms) await fail(`timed out waiting for ${what}`);
+    // Whatever's being waited on, a Record Book card isn't it.
+    if (!/Record Book|"Right"/.test(what)) await bookCards();
     await wait(50);
   }
 }
@@ -150,7 +152,30 @@ async function expectText(sel, re, what) {
 let taps = 0;
 
 // Taps on the game screen in its own logical pixels: 740 tall, and 360 across in portrait.
+// Phase 23.1: an entry just gone in the Record Book comes up as a card when the sheet before
+// it closes. A one-off, not part of a routine day, so taking it isn't counted against
+// Phase 11's budgets; what went in is logged.
+const booked = [];
+async function bookCards() {
+  for (let i = 0; i < 4; i++) {
+    const t = await page.evaluate(() => {
+      const sh = document.querySelector('#sheet');
+      return sh && /In the Record Book/.test(sh.textContent ?? '')
+        ? (document.querySelector('#sheet-title')?.textContent ?? '?')
+        : null;
+    });
+    if (!t) return;
+    booked.push(t);
+    log(`record book: ${t}`);
+    // On the keyboard day, as a keyboard player would: the sheet focuses its button.
+    if (holdKey) await page.keyboard.press('Enter');
+    else await page.locator('#sheet .opt', { hasText: 'Right' }).first().click();
+    await page.waitForTimeout(150);
+  }
+}
+
 async function tapAt(x, y) {
+  await bookCards();
   const box = await page.locator('#cv').boundingBox();
   const k = box.height / 740;
   await page.mouse.click(box.x + x * k, box.y + y * k);
@@ -158,6 +183,7 @@ async function tapAt(x, y) {
 }
 
 const click = async (sel, name) => {
+  if (name !== 'Right') await bookCards();
   await until(`"${name ?? sel}"`, () =>
     page
       .locator(sel, name ? { hasText: name } : {})
@@ -173,6 +199,7 @@ const click = async (sel, name) => {
 };
 
 const press = async (key) => {
+  await bookCards();
   await page.keyboard.press(key);
   taps++;
 };
@@ -281,6 +308,7 @@ const screenX = (worldX, standX, w) => (worldX - camFor(standX, w)) * Z;
 const screenY = (worldY) => worldY * Z + (612 - 560 * Z);
 
 async function walk(dx) {
+  await bookCards();
   const key = dx < 0 ? 'ArrowLeft' : 'ArrowRight';
   await page.keyboard.down(key);
   await wait((Math.abs(dx) / WALK) * 1000);
@@ -588,6 +616,10 @@ await click('#j-words');
 await expectText('#words', /On the wall.*Crimp.*How it went.*Onsight.*The life.*Dirtbag/, 'the words');
 log(`words: ${await page.evaluate(() => document.querySelectorAll('#words dt').length)} of them`);
 await shot('words');
+// Phase 23.1: the Record Book, with the first day in it.
+await click('#j-book');
+await expectText('#book', /\d+ of \d+ in the book\..*First Send · day 1/, 'the record book');
+await shot('record-book');
 await click('#sheet .x');
 
 // ---- day two ----
@@ -680,8 +712,9 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 30 ||
+  saved?.v !== 31 ||
   !Array.isArray(st.book) ||
+  st.record?.firstsend !== 1 ||
   st.encounter !== null ||
   st.table !== null ||
   st.cards !== null ||
