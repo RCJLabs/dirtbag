@@ -2176,6 +2176,11 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **A bonus, not a living** (Evan's call 7): $8 to $18 a job [proposed]; a new harness target holds the best possible week ($54) under two days of the worst shift ($56). The bots took $14 to $15 a week off it.
 - **The e2e** opens the Board page, and pays a job on day two: at V0, a grade job asks for V0, which is easy; it gets harder as you do.
 
+**Status (2 Oct 2026): 23.7 built: the year and the Homecoming.** Save v37, 0.999.1.
+- **A year is 56 days** (Evan's call 10), and the day the next begins, a card says what the last held, from what the game keeps: lines sent and the hardest, the crags, first ascents, expeditions home, the Record Book, the calls you made, what's in hand. A save already past a year counts it as said.
+- **The Homecoming,** once a life (Evan's call 9): once two people are close (Regular or better), the You page offers it; tell them, and your next send outside, they're all at the bottom of it. v0.956's $200 and +20 psyche [proposed]. The audit's B6 is fixed: it counts people now, not diary entries.
+- **No harness run:** bots never call a Homecoming, and a recap changes nothing.
+
 ---
 
 ### Phase 16 — The spine: story, acts and endings
@@ -2544,3 +2549,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-02 — Phase 23.4 built: five paths claimed a tier at a time on grade gates near V4, V9 and V14, two at most; one Mastery track of style mastery and v0.956's hybrids; a quirk named from your habits after 30 goes; all one kind of edge on the existing dials [proposed]. Expedition send chances now key on your edges. Save v34. 0.997.0.
 - 2026-10-02 — Phase 23.5 built: two crowds, the old guard and the gym crowd; v0.956's five calls put to you at the crag, with the elder's answer once the old guard listens, and six echoes weeks later; clubs folded in as perks of standing [proposed]. Save v35. 0.998.0.
 - 2026-10-02 — Phase 23.6 built: one weekly board of three jobs from v0.956's four boards, de-duplicated, pitched at your grade, paying itself small cash the moment a job's done [proposed]; a harness target keeps the best week under two days of the worst shift. Save v36. 0.999.0.
+- 2026-10-02 — Phase 23.7 built: a recap card every 56-day year, from what the game keeps; the Homecoming once a life, once two people are close, paying v0.956's cash and psyche on your next send outside [proposed]. Save v37. 0.999.1.

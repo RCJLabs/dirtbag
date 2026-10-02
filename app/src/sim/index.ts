@@ -135,6 +135,7 @@ export {
   SUPPLIES,
   SICK,
   PATH,
+  HOME,
 } from './dials';
 export type { Plan } from './dials';
 export { weeklyBills, clinicBill, carePrice, jabbed } from './clinic';
@@ -264,6 +265,7 @@ export { deedText, edgeText, masteryOf, pathBlocked, pathsTaken, tiersOn } from 
 export { STANCES, ECHOES, FACTIONS, FACTION_PERKS, type Faction } from './content/scene';
 export { BOARD_JOBS } from './content/board';
 export { boardWeek, jobProgress, jobText } from './board';
+export { homeCrowd, homeReady, recapLines, recapOf, yearsDone } from './year';
 export {
   echoOpts,
   perksOf,

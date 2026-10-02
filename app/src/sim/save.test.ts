@@ -58,6 +58,7 @@ const V32 = readFileSync(new URL('./fixtures/save-v32.json', import.meta.url), '
 const V33 = readFileSync(new URL('./fixtures/save-v33.json', import.meta.url), 'utf8');
 const V34 = readFileSync(new URL('./fixtures/save-v34.json', import.meta.url), 'utf8');
 const V35 = readFileSync(new URL('./fixtures/save-v35.json', import.meta.url), 'utf8');
+const V36 = readFileSync(new URL('./fixtures/save-v36.json', import.meta.url), 'utf8');
 // What R2's migration adds to any older save.
 const R2_BODY = {
   load: { acute: 20, chronic: 20, today: 0 },
@@ -118,6 +119,7 @@ const P226A = {
   habits: expect.any(Object),
   scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
   board: { week: 0, jobs: [], shifts0: 0, sessions: 0 },
+  year: expect.any(Object),
 };
 
 describe('saves', () => {
@@ -590,6 +592,7 @@ describe('saves', () => {
       habits: expect.any(Object),
       scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
       board: { week: 0, jobs: [], shifts0: 0, sessions: 0 },
+      year: expect.any(Object),
     });
   });
 
@@ -619,6 +622,7 @@ describe('saves', () => {
       habits: expect.any(Object),
       scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
       board: { week: 0, jobs: [], shifts0: 0, sessions: 0 },
+      year: expect.any(Object),
     });
     expect(r.state.deck.met).toEqual({ busker: 2 });
   });
@@ -647,6 +651,7 @@ describe('saves', () => {
       habits: expect.any(Object),
       scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
       board: { week: 0, jobs: [], shifts0: 0, sessions: 0 },
+      year: expect.any(Object),
     });
     expect(r.state.dog).toEqual({ name: 'Scout', since: 12, fed: 70, bond: 55 });
   });
@@ -674,6 +679,7 @@ describe('saves', () => {
       habits: expect.any(Object),
       scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
       board: { week: 0, jobs: [], shifts0: 0, sessions: 0 },
+      year: expect.any(Object),
     });
     expect(r.state.dogs).toEqual([{ name: 'Scout', years: 16, day: 301 }]);
   });
@@ -700,6 +706,7 @@ describe('saves', () => {
       habits: expect.any(Object),
       scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
       board: { week: 0, jobs: [], shifts0: 0, sessions: 0 },
+      year: expect.any(Object),
     });
     expect(r.state.dream).toEqual({ pick: 'rig', pot: 300, owned: [] });
   });
@@ -725,6 +732,7 @@ describe('saves', () => {
       habits: expect.any(Object),
       scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
       board: { week: 0, jobs: [], shifts0: 0, sessions: 0 },
+      year: expect.any(Object),
     });
     expect(r.state.table?.who).toBe('hazel');
   });
@@ -761,6 +769,7 @@ describe('saves', () => {
       habits: expect.any(Object),
       scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
       board: { week: 0, jobs: [], shifts0: 0, sessions: 0 },
+      year: expect.any(Object),
     });
   });
 
@@ -785,6 +794,7 @@ describe('saves', () => {
       habits: expect.any(Object),
       scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
       board: { week: 0, jobs: [], shifts0: 0, sessions: 0 },
+      year: expect.any(Object),
     });
   });
 
@@ -809,6 +819,7 @@ describe('saves', () => {
       habits: expect.any(Object),
       scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
       board: { week: 0, jobs: [], shifts0: 0, sessions: 0 },
+      year: expect.any(Object),
     });
   });
 
@@ -831,6 +842,7 @@ describe('saves', () => {
       habits: expect.any(Object),
       scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
       board: { week: 0, jobs: [], shifts0: 0, sessions: 0 },
+      year: expect.any(Object),
     });
     const home = act(r.state, { t: 'exped', id: 'elcap', do: 'bail' }).state;
     expect(home.expedition).toBeNull();
@@ -854,7 +866,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(30);
     const old = JSON.parse(V30).state;
-    const { record, origin, talents, calling, paths, mastery, quirk, habits, scene, board, ...rest } =
+    const { record, origin, talents, calling, paths, mastery, quirk, habits, scene, board, year, ...rest } =
       r.state;
     expect(rest).toEqual(old);
     expect(origin).toBeNull();
@@ -870,7 +882,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(31);
-    const { origin, talents, calling, paths, mastery, quirk, habits, scene, board, ...rest } = r.state;
+    const { origin, talents, calling, paths, mastery, quirk, habits, scene, board, year, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V31).state);
     expect(calling.id).toBeNull();
     expect(origin).toBeNull();
@@ -882,7 +894,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(32);
-    const { calling, paths, mastery, quirk, habits, scene, board, ...rest } = r.state;
+    const { calling, paths, mastery, quirk, habits, scene, board, year, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V32).state);
     expect(rest.origin).toBe('desert');
     expect(calling).toEqual({ id: null, since: 0, rungs: [], offered: false });
@@ -893,7 +905,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(33);
-    const { paths, mastery, quirk, habits, scene, board, ...rest } = r.state;
+    const { paths, mastery, quirk, habits, scene, board, year, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V33).state);
     expect(rest.calling.id).toBe('sendorbust');
     expect(paths).toEqual({ tiers: {}, told: [] });
@@ -907,7 +919,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(34);
-    const { scene, board, ...rest } = r.state;
+    const { scene, board, year, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V34).state);
     expect(rest.quirk).toBe('nightowl');
     expect(scene).toEqual({ old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 });
@@ -918,10 +930,21 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(35);
-    const { board, ...rest } = r.state;
+    const { board, year, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V35).state);
     expect(rest.scene.old).toBe(62);
     expect(board).toEqual({ week: 0, jobs: [], shifts0: 0, sessions: 0 });
+  });
+
+  it('load a real 0.999.0 save past its first year: that year counts as recapped, quietly; no Homecoming', () => {
+    const r = fromSave(V36);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(36);
+    const { year, ...rest } = r.state;
+    expect(rest).toEqual(JSON.parse(V36).state);
+    expect(rest.day).toBe(70);
+    expect(year).toEqual({ recapped: 1, home: 'none' });
   });
 
   // These pretend a longer history: a v1 file that stored `money` where the state now has
@@ -931,7 +954,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(36);
+    expect(SAVE_VERSION).toBe(37);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

@@ -130,6 +130,9 @@ import {
   jobText,
   ECHOES,
   FACTIONS,
+  homeCrowd,
+  homeReady,
+  HOME,
   perksOf,
   stanceAnswer,
   standingWord,
@@ -1187,6 +1190,42 @@ function PathsRow({ game, s }: { game: Game; s: GameState }) {
   );
 }
 
+// Phase 23.7: the Homecoming, once you've people enough to come; armed, or had.
+function HomeRow({ game, s }: { game: Game; s: GameState }) {
+  const h = s.year.home;
+  if (typeof h === 'number')
+    return (
+      <>
+        <p className="crux">The Homecoming</p>
+        <p className="sub">Day {h}. Everyone came.</p>
+      </>
+    );
+  const crowd = homeCrowd(s);
+  if (h === 'none' && !homeReady(s)) return null;
+  return (
+    <>
+      <p className="crux">The Homecoming</p>
+      <p className="sub">
+        {crowd.join(', ')}: close enough now to come out for it. One send outside, whenever you’re ready, and
+        they’ll all be there. Once.
+      </p>
+      <button
+        type="button"
+        className="opt"
+        id="home"
+        onClick={() => game.dispatch({ t: 'home', arm: h !== 'armed' })}
+      >
+        <span>{h === 'armed' ? 'Not yet' : 'Tell them'}</span>
+        <small>
+          {h === 'armed'
+            ? 'Your next send outside. Or put it off.'
+            : `${money(HOME.cash)} and a lift, for the next send outside.`}
+        </small>
+      </button>
+    </>
+  );
+}
+
 const upFirst = (w: string) => w[0]!.toUpperCase() + w.slice(1);
 
 // Phase 23.5: where you stand with each crowd, what it's got you, and the calls you've made.
@@ -1251,6 +1290,7 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
       <CallingRow game={game} s={s} />
       <PathsRow game={game} s={s} />
       <SceneRow s={s} />
+      <HomeRow game={game} s={s} />
       <p className="crux">Body</p>
       <p className="sub">
         Energy {Math.round(s.energy)}, skin {Math.round(s.skin)}, food {Math.round(s.fed)}.

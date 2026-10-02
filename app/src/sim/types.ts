@@ -222,6 +222,9 @@ export interface GameState {
     shifts0: number;
     sessions: number;
   };
+  // Phase 23.7. The last year recapped (0 before the first); and the Homecoming: not yet,
+  // armed for your next send outside, or had (and the day).
+  year: { recapped: number; home: 'none' | 'armed' | number };
   habits: {
     goes: number;
     outdoor: number;
@@ -361,6 +364,8 @@ export type Action =
   | { t: 'calling'; id: string }
   // Phase 23.4: claim a path's next tier.
   | { t: 'path'; id: string }
+  // Phase 23.7: the Homecoming, armed for your next send outside (or not, yet).
+  | { t: 'home'; arm: boolean }
   | { t: 'act'; act: string }
   | { t: 'say'; talk: string; node: string; opt: number }
   | { t: 'travel'; to: string }
@@ -480,6 +485,9 @@ export type GameEvent =
   | { k: 'record'; ids: string[] }
   // Phase 23.3: a calling offered, or a rung of its ambition met.
   | { k: 'calling' }
+  // Phase 23.7: a year done, its recap; the Homecoming, had.
+  | { k: 'year'; n: number }
+  | { k: 'homecoming'; route: string; who: string[] }
   // The action wasn't allowed; `why` says so in the game's voice.
   | { k: 'refused'; why: string };
 

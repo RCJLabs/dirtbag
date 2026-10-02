@@ -8,7 +8,7 @@
 import { CARRIED, SKILLS, STARTS } from './climber';
 import { GEAR } from './content/gear';
 import { PLACES } from './content/places';
-import { FACTION, LIFESTYLE, PLANS, SPOTS, TRAIN } from './dials';
+import { FACTION, LIFESTYLE, PLANS, SPOTS, TRAIN, YEAR } from './dials';
 import { JOBS } from './content/jobs';
 import { ROUTES, WALLS } from './content/routes';
 import { EXPEDITIONS } from './content/expeditions';
@@ -29,7 +29,7 @@ import { newMastery } from './paths';
 import { newlyEarned } from './record';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 36;
+export const SAVE_VERSION = 37;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -296,6 +296,13 @@ export const MIGRATIONS: Record<number, Migration> = {
   35: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, board: { week: 0, jobs: [], shifts0: 0, sessions: 0 } };
+  },
+  // v36 -> v37 (Phase 23.7): the years already done count as recapped, quietly (no card for a
+  // year that ended before the game could say so); no Homecoming yet.
+  36: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const day = isInt(x.day) ? x.day : 1;
+    return { ...x, year: { recapped: Math.floor((day - 1) / YEAR.days), home: 'none' } };
   },
 };
 
@@ -713,6 +720,14 @@ export function validate(x: unknown): string[] {
       isInt(brd.shifts0) &&
       isInt(brd.sessions),
     'board',
+  );
+  const yr = x.year;
+  need(
+    isObj(yr) &&
+      isInt(yr.recapped) &&
+      yr.recapped >= 0 &&
+      (yr.home === 'none' || yr.home === 'armed' || (isInt(yr.home) && yr.home >= 0)),
+    'year',
   );
   const hb = x.habits;
   need(
