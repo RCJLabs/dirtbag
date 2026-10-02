@@ -187,6 +187,11 @@ export interface GameState {
   // Phase 24.5. Every expedition you've come home from, oldest first: the stub of Phase 23's
   // Record Book, and where a high point is kept.
   book: TripLog[];
+  // Phase 23.2. Where you came from (content/origins.ts), null for a climber from before
+  // origins; and the talents you were dealt, the ones you've found out, and your skills the
+  // day you started, which they show against.
+  origin: string | null;
+  talents: { ids: string[]; known: string[]; from: Skills };
   // Phase 23.1. The Record Book: each entry you've earned (content/record.ts), and the day.
   record: Record<string, number>;
   // Phase 21.6. The speed wall at Send City: your best time in seconds, and today's runs.
@@ -311,7 +316,7 @@ export interface Delta {
 
 export type Action =
   // `carry`: a v0.956 climber's skills, when they come across rather than picking a start.
-  | { t: 'create'; name: string; start: string; carry?: Skills; solo?: true }
+  | { t: 'create'; name: string; start: string; origin?: string; carry?: Skills; solo?: true }
   | { t: 'act'; act: string }
   | { t: 'say'; talk: string; node: string; opt: number }
   | { t: 'travel'; to: string }

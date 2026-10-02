@@ -1012,6 +1012,12 @@ button.pill:disabled {
   font: 500 calc(12px * var(--u-fs)) / 1.3 var(--u-mono);
   color: var(--u-dim);
 }
+.start small.perk {
+  color: var(--u-ink);
+}
+.start small.cost {
+  color: var(--u-acc, var(--u-dim));
+}
 .start .bars {
   display: grid;
   grid-template-columns: repeat(5, 1fr);

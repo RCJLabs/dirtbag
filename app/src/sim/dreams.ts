@@ -4,6 +4,7 @@
 import type { DreamId } from './content/dreams';
 import { DREAM } from './dials';
 import type { GameState } from './types';
+import { livingMult } from './identity';
 
 export const owns = (s: GameState, id: DreamId): boolean => s.dream.owned.includes(id);
 
@@ -13,7 +14,9 @@ export const expedCost = (s: GameState, cost: number): number =>
 
 // A spot's price for the night, with the Rig and Home Base.
 export const spotCost = (s: GameState, spot: GameState['spot'], cost: number): number =>
-  spot === 'lot' && owns(s, 'homebase') ? 0 : Math.round(cost * (owns(s, 'rig') ? DREAM.rig : 1));
+  spot === 'lot' && owns(s, 'homebase')
+    ? 0
+    : Math.round(cost * (owns(s, 'rig') ? DREAM.rig : 1) * livingMult(s));
 
 // Money that's yours, pot and all: what "broke" means.
 export const worth = (s: GameState): number => s.cash + s.dream.pot;

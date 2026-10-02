@@ -10,6 +10,7 @@ import { LIFESTYLE, MONEY, WORK, type Lifestyle } from './dials';
 import { isWeekend } from './cond';
 import { Rng } from './rng';
 import type { GameState } from './types';
+import { livingMult } from './identity';
 
 export const shiftsAt = (s: GameState, job: string): number => s.jobs[job] ?? 0;
 
@@ -99,10 +100,15 @@ export function signupBlocked(s: GameState, job: string, day: number, on = true)
 
 // What tonight's living costs and gives back: how you live, if the card takes it after the
 // night's spot (`spot`, what it costs); a dirtbag's night if it won't.
+// Living on nothing comes cheaper to some (Phase 23.2): the cost is on your origin's terms.
 export function livingTonight(s: GameState, spot: number): (typeof LIFESTYLE)[Lifestyle] {
-  const l = LIFESTYLE[s.lifestyle];
-  return s.cash - spot + MONEY.cardLimit >= l.cost ? l : LIFESTYLE.dirtbag;
+  const base = skimps(s, spot) ? LIFESTYLE.dirtbag : LIFESTYLE[s.lifestyle];
+  return { ...base, cost: Math.round(base.cost * livingMult(s)) };
 }
+
+// Whether the card won't stretch to how you like to live tonight.
+export const skimps = (s: GameState, spot: number): boolean =>
+  s.cash - spot + MONEY.cardLimit < Math.round(LIFESTYLE[s.lifestyle].cost * livingMult(s));
 
 // A shift's tips (the diner's), seeded by the job and the day: a weekday's range, half again
 // at the weekend. Zero for a job without them.

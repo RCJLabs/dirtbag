@@ -5,7 +5,7 @@
 // Changing the shape of GameState means: bump SAVE_VERSION, register MIGRATIONS[old] that
 // turns an old state into the new shape, and add a test that loads a real old save.
 
-import { CARRIED, STARTS } from './climber';
+import { CARRIED, SKILLS, STARTS } from './climber';
 import { GEAR } from './content/gear';
 import { PLACES } from './content/places';
 import { LIFESTYLE, PLANS, SPOTS, TRAIN } from './dials';
@@ -19,10 +19,12 @@ import { KNOCKS } from './content/knocks';
 import { HITCHERS, STOPS } from './content/road';
 import { EPICS } from './content/epics';
 import { recordById } from './content/record';
+import { CAME_ACROSS, ORIGINS } from './content/origins';
+import { TALENTS } from './content/talents';
 import { newlyEarned } from './record';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 31;
+export const SAVE_VERSION = 32;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -250,6 +252,13 @@ export const MIGRATIONS: Record<number, Migration> = {
     const record: Record<string, number> = {};
     for (const r of newlyEarned(s)) record[r.id] = s.day;
     return { ...x, record };
+  }, // v31 -> v32 (Phase 23.2): a climber from before origins has none, and nothing's dealt
+  // them now; their talents would show against the skills they have today.
+  31: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const c = x.climber;
+    const skills = isObj(c) && isObj(c.skills) ? { ...c.skills } : {};
+    return { ...x, origin: null, talents: { ids: [], known: [], from: skills } };
   },
 };
 
@@ -575,6 +584,21 @@ export function validate(x: unknown): string[] {
           typeof t.told === 'boolean',
       ),
     'book',
+  );
+  need(
+    x.origin === null || (typeof x.origin === 'string' && (x.origin in ORIGINS || x.origin === CAME_ACROSS)),
+    'origin',
+  );
+  const tals = x.talents;
+  need(
+    isObj(tals) &&
+      isStrs(tals.ids) &&
+      tals.ids.every((id) => id in TALENTS) &&
+      isStrs(tals.known) &&
+      tals.known.every((id) => (tals.ids as string[]).includes(id)) &&
+      isObj(tals.from) &&
+      SKILLS.every((k) => typeof (tals.from as Record<string, unknown>)[k] === 'number'),
+    'talents',
   );
   const rec = x.record;
   need(isObj(rec) && Object.entries(rec).every(([k, v]) => !!recordById(k) && isInt(v) && v >= 0), 'record');

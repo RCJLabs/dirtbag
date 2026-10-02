@@ -449,10 +449,16 @@ await shot('create');
 console.log('Make a climber');
 await page.fill('#c-name', 'Robin');
 await click('#c-technician');
+// Where you came from (Phase 23.2): Sold It All, the one already picked, says so and starts richer.
+await click('#o-quit');
+await expectText('#o-quit', /Every shift pays 12% more/, 'the origin’s terms');
+await expectText('#c-go', /\$191, a van/, 'the start with the origin’s cash');
 await click('#c-go', 'Start');
 await until('the climber screen to go', async () => !(await page.locator('#create').count()));
+await expectText('#h-cash', /^\$191$/, 'cash');
 await expectText('#hint', /Tap anywhere to walk/, 'hint');
-await expectText('#goal', /Have \$60 in hand/, 'the first goal');
+// $191 is past the first goal's $60, as Sold It All's $300 was in v0.956: it's done at the start.
+await expectText('#goal', /Send 3 lines anywhere/, 'the first goal, the money one already met');
 await wait(400);
 await shot('lot-morning');
 
@@ -478,7 +484,8 @@ await driveFrom('the Lot to the café', PIN.cafe, /Coffee Shop/, {
 });
 await expectText('#sheet', /Wren is on the bar/, 'at the café');
 await click('#sheet .opt', 'Pick up a double');
-await expectText('#h-cash', /^\$96$/, 'paid');
+// The double's $56, 12% more for Sold It All.
+await expectText('#h-cash', /^\$253$/, 'paid');
 await expectText('#h-time', /1:48 PM$/, 'clock');
 
 console.log('Drive to Roadside Crag');
@@ -486,7 +493,7 @@ await driveOn('the café to Roadside', 'Drive to Roadside Crag');
 await wait(800);
 await shot('driving');
 await until('arrival', async () => (await text('#h-time')) === 'Day 1 · 2:53 PM');
-await expectText('#h-cash', /^\$84$/, 'cash after gas');
+await expectText('#h-cash', /^\$241$/, 'cash after gas');
 await until('the crag', async () => (await text('#hint'))?.includes('Boulders on the talus'));
 await wait(400);
 await shot('crag');
@@ -584,19 +591,19 @@ await page.keyboard.up('ArrowLeft');
 taps++;
 await press('Enter');
 await expectText('#sheet', /Your van/, 'van');
-// Tonight says what bed will do, and bed does it: $41 in the morning.
-await expectText('#tonight', /The spot\$18.*Morning\$41/, 'tonight');
+// Tonight says what bed will do, and bed does it: $198 in the morning.
+await expectText('#tonight', /The spot\$18.*Morning\$198/, 'tonight');
 // Psyche by morning, and the fire you sat at is part of why.
 await expectText('#psyche', /^Psyche(Keen|Psyched)Up for .*the fire\./, 'psyche');
 await click('#sheet .opt', 'Sleep');
 await expectText('#h-time', /^Day 2 · 7:10 AM$/, 'morning');
-await expectText('#h-cash', /^\$41$/, 'cash');
+await expectText('#h-cash', /^\$198$/, 'cash');
 await shot('day-2');
 
 console.log('Reload');
 await page.reload({ waitUntil: 'load' });
 await expectText('#h-time', /^Day 2 · 7:10 AM$/, 'clock after reload');
-await expectText('#h-cash', /^\$41$/, 'cash after reload');
+await expectText('#h-cash', /^\$198$/, 'cash after reload');
 if (await page.locator('#create').count()) await fail('the climber screen came back after a reload');
 
 console.log('The journal');
@@ -657,7 +664,7 @@ await tapAt(170 * Z, screenY(540));
 await expectText('#sheet', /The desk/, 'desk');
 await click('#sheet .opt', 'Set problems for a shift');
 await expectText('#h-time', /11:22 AM$/, 'clock');
-await expectText('#h-cash', /^\$70$/, 'paid');
+await expectText('#h-cash', /^\$231$/, 'paid');
 await expectText('#toast', /Sage turns up/, 'Sage');
 await click('#sheet .x');
 await wait(300);
@@ -712,7 +719,9 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 31 ||
+  saved?.v !== 32 ||
+  st.origin !== 'quit' ||
+  st.talents?.ids?.length !== 2 ||
   !Array.isArray(st.book) ||
   st.record?.firstsend !== 1 ||
   st.encounter !== null ||
@@ -758,7 +767,7 @@ await until('the service worker to control the page', () =>
 await page.context().setOffline(true);
 await page.reload({ waitUntil: 'load' });
 await expectText('#h-time', /^Day 2 · 1[12]:\d\d AM$/, 'clock offline');
-await expectText('#h-cash', /^\$70$/, 'cash offline');
+await expectText('#h-cash', /^\$231$/, 'cash offline');
 await shot('offline');
 await page.context().setOffline(false);
 

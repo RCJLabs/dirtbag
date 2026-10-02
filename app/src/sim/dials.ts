@@ -919,3 +919,7 @@ export const FREESOLO = {
   windows: 0.82,
   head: 2,
 };
+
+// Phase 23.2 [proposed]: a talent shows once its skill has come on this far since you started
+// (v0.956 showed one after four reps; on this scale, about a fortnight's climbing).
+export const TALENT = { reveal: 6 };

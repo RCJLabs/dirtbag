@@ -500,11 +500,12 @@ export class Game {
   }
 
   // `carry`: a v0.956 climber's skills, to come across as they were (the sim caps them).
-  create(name: string, start: string, carry?: Skills, solo = false): void {
+  create(name: string, start: string, carry?: Skills, solo = false, origin?: string): void {
     const ev = this.dispatch({
       t: 'create',
       name,
       start,
+      ...(origin && !carry ? { origin } : {}),
       ...(carry ? { carry } : {}),
       ...(solo ? { solo: true as const } : {}),
     });
