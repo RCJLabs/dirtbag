@@ -2029,6 +2029,15 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Cerro Torre and Trango** keep the Lot and Roadside's wall until 24.7 and 24.8.
 - **Size:** 299.2 of 340 KB (El Cap: 2.4 KB).
 
+**Status (2 Oct 2026): 24.7 built: Cerro Torre's scene.** 0.991.0. No save change, no rule change.
+- **The scene,** from the moraine above Laguna Torre: the needle and its rime mushroom, the Southeast Ridge its left skyline from the Col of Patience beside El Mocho, Torre Egger and Standhardt to its right, the ice cap white behind them and the Fitz Roy group's teeth far off; under them the Torre glacier and its crevasses, the moraine, and the lake with its bergs (the lake shows in landscape).
+- **Day and night, clear and storm:** a fine day has lenticular clouds stacked over the summits; a night, stars and the moon; a storm tears a plume off the summit, buries the towers in cloud and snows on you; a storm at night, all of it dark.
+- **Snow, not rain,** wherever the water's snow: Cerro Torre's storms, on the scene and on the wall view, fall as wind-blown flakes. Trango's will too.
+- **Where you are:** your portaledge on the Southeast Ridge, as high as the pitches you've fixed, with the count beside it.
+- **The wall view:** its pitches climbed on the Torre's browner granite, rime plastered on the corner's edge and in the crack, ice in the corner's back, a snowy belay ledge, and the glacier far below.
+- **Trango** keeps the Lot and Roadside's wall until 24.8.
+- **Size:** 301.0 of 340 KB (Cerro Torre: 1.8 KB).
+
 ---
 
 ### Phase 23 — Who you are: origins, paths, stances, and the Record Book
@@ -2408,3 +2417,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-01 — Phase 24.4 built: six things that happen up on a wall (a dropped cam, a jammed haul bag, rockfall, a squall, another party in trouble, a dead stove), some mornings, never twice a trip, each two calls with their costs shown; the odds count them as days that might be lost. Save v29. 0.988.0.
 - 2026-10-01 — Phase 24.5 built: coming home. Every trip goes in the book (the Record Book's stub), with your high point on each objective; your partner closer or further for how it went; the trip's card on the way home; its story at the fire, once. The drawn keepsake card waits for 24.6–24.8's walls. Save v30. 0.989.0.
 - 2026-10-01 — Phase 24.6 built: El Capitan's scene, day and night, clear and storm, with your portaledge on the wall as high as you've got; its pitches climbed on its own granite, your partner belaying from the ledge. 0.990.0.
+- 2026-10-02 — Phase 24.7 built: Cerro Torre's scene from above Laguna Torre, day and night, clear and storm (lenticulars on a fine day, a plume and snow in a storm), your portaledge on the Southeast Ridge; its pitches on rimed granite over the glacier; storms snow where the water's snow. 0.991.0.
