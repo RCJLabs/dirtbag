@@ -353,3 +353,25 @@ export const ACT_PAID = [
   '{cash} from a brand that wants its logo in the next story anyone tells about you.',
   '{cash} for the photos. You would have done it for nothing, and everyone knows it.',
 ];
+
+// The Line (Phase 16.3): how the story's last act ends, in place of a card. The naming at the
+// fire, who was there (Act V's `with`, and the dog), the credits, then what now.
+export const LINE_SCENE = {
+  naming: {
+    title: 'The naming',
+    text: 'That night everyone you know is at the fire at the Lot. Somebody has written “{name}” on a scrap of cardboard and propped it against the cooler, as if it were an award. It is the closest thing climbing has to one. {grade}, at {place}, and nobody had done it until you.',
+  },
+  there: {
+    title: 'Who was there',
+    alone:
+      'The fire burns down. You sit with it longer than anyone, the way you sat under the line before it went.',
+    dog: '{name} slept through the whole thing, on your feet, which is exactly right.',
+  },
+  credits: { title: 'The Line', sub: 'A climbing life, so far.' },
+  choice: {
+    title: 'What now?',
+    text: 'The grades have nothing left to say to you. The rock has plenty.',
+    retire: { label: 'Hang it up', note: 'Now, on the best day there will ever be. A perfect ending.' },
+    keep: { label: 'Keep climbing', note: 'The Line is done. The rest of it isn’t. Your body waits on you.' },
+  },
+};

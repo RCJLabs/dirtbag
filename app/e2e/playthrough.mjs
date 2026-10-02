@@ -2319,6 +2319,79 @@ console.log('Hanging it up');
   await ctx.close();
 }
 
+console.log('The Line');
+// Phase 16.3: a climber on Act V's last stage who has just put up the myth above Threshold,
+// close to Hazel, with the dog. The next thing they do ends the story: the naming at the
+// fire, who was there, the credits, then what now; they keep climbing.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  saved.state = {
+    ...saved.state,
+    day: 420,
+    min: 10 * 60,
+    at: 'lot',
+    x: null,
+    encounter: null,
+    goals: 23,
+    people: { ...saved.state.people, hazel: { bond: 4, last: 419 } },
+    firsts: { ...saved.state.firsts, cmyth: { name: 'The Long Dark', call: 0, day: 419 } },
+    dog: { name: 'Scout', since: 100, fed: 80, bond: 60 },
+  };
+  saved.state.life = { held: 0, told: 45, retired: null };
+  saved.state.year = { ...saved.state.year, recapped: 7 };
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  await ctx.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+  }, JSON.stringify(saved));
+  const end = await ctx.newPage();
+  end.on('pageerror', (e) => problems.push(`line: uncaught: ${e.message}`));
+  end.on('console', (m) => m.type() === 'error' && problems.push(`line: console.error: ${m.text()}`));
+  await end.goto(server.url, { waitUntil: 'load' });
+  const sheet = () => end.evaluate(() => document.querySelector('#sheet')?.textContent ?? '');
+  const titled = (t) =>
+    end.waitForFunction((t) => document.querySelector('#sheet-title')?.textContent === t, t, {
+      timeout: 8000,
+    });
+  // A few steps across the Lot, by keyboard, are enough to set it off, once the game's up to
+  // hear them; again if the first steps came too soon.
+  await end.waitForSelector('#h-time');
+  for (let i = 0; i < 4; i++) {
+    await end.keyboard.down(i % 2 ? 'ArrowRight' : 'ArrowLeft');
+    await end.waitForTimeout(400);
+    await end.keyboard.up(i % 2 ? 'ArrowRight' : 'ArrowLeft');
+    const t = await end.evaluate(() => document.querySelector('#sheet-title')?.textContent ?? '');
+    if (t === 'The naming') break;
+    await end.waitForTimeout(600);
+  }
+  await titled('The naming');
+  const naming = await sheet();
+  if (!/“The Long Dark”/.test(naming) || !/V18, at The Crucible/.test(naming))
+    await fail(`line: the naming: ${naming}`);
+  log(`line: ${naming.slice(0, 120)}`);
+  await end.locator('#sheet .opt', { hasText: 'Go on' }).first().click();
+  await titled('Who was there');
+  const there = await sheet();
+  if (!/Hazel is at the bottom/.test(there) || !/Scout slept through the whole thing/.test(there))
+    await fail(`line: who was there: ${there}`);
+  await end.locator('#sheet .opt', { hasText: 'Go on' }).first().click();
+  await titled('The Line');
+  if (!/RCJ Labs/.test(await sheet())) await fail(`line: the credits: ${await sheet()}`);
+  await end.locator('#sheet .opt', { hasText: 'Go on' }).first().click();
+  await titled('What now?');
+  await end.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-line-choice.png`) });
+  await end.locator('#sheet .opt', { hasText: 'Keep climbing' }).first().click();
+  // Anything queued behind The Line (the book's cards for a first ascent) comes up after.
+  await end.waitForFunction(() => document.querySelector('#sheet-title')?.textContent !== 'What now?');
+  log(
+    `line: then ${await end.evaluate(() => document.querySelector('#sheet-title')?.textContent ?? 'nothing')}`,
+  );
+  const st = await end.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  if (st.goals !== 24 || st.life.retired !== null)
+    await fail(`line: the save: ${JSON.stringify({ goals: st.goals, life: st.life })}`);
+  log('line: the naming, who was there, the credits, kept climbing');
+  await ctx.close();
+}
+
 if (problems.length) await fail(`${problems.length} problem(s) during play`);
 await browser.close();
 await server.close();

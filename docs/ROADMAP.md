@@ -2283,6 +2283,12 @@ Players will ask "what am I working towards?" by hour 3.
 - **The people and the dog** moved out of the tally's numbers into the epilogue, so nobody's said twice.
 - **E2e:** the tally after hanging it up has the Sold It All climber's origin said back and the Record Book's page.
 
+**Status (2 Oct 2026): 16.3 built: The Line.** 0.999.7.
+- **A myth's first ascent ends the story in its own sequence,** in place of the last act's card: **the naming** at the fire (the name you gave it, on a scrap of cardboard against the cooler, its grade and crag, and the pay); **who was there** (Hazel, Sage and Dex, each by how close you got, and the dog; alone at the fire if nobody is); **the credits**, under the story's last title; then **what now**: hang it up, "a perfect ending", or keep climbing, with your body still waiting on you.
+- **After The Line, hanging it up is yours at any age** (a speed-run Late Bloomer could get there before 30 in principle).
+- **No harness run:** the Act V pay was already there; the rest is how it's shown.
+- **E2e:** a climber on Act V's last stage with the myth put up, close to Hazel and with the dog, walks a few steps; the naming, who was there, the credits and the choice play in order; they keep climbing, and the book's cards for the first ascent follow.
+
 ---
 
 ### Phase 17 — The people
@@ -2630,3 +2636,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-02 — Phase 16.2 built: Acts II to V as content on the crags, walls, expeditions and myths, each ending in a scene with whoever's close; Evan's call that Act V puts your body on hold, since forced retirement came before The Line; old saves move on quietly. Save v39. 0.999.5.
 - 2026-10-02 — After 16.2, Evan's calls: Act IV with one expedition; the Late Bloomer starts at 26, the speed-run origin, with time its only cost; the tally in plain text. The e2e's toast check now counts only what a sheet shows. 0.999.6.
 - 2026-10-02 — Phase 16.4 built: the epilogue, from the save (origin, first ascents, summits, paths, quirk, masteries, calling, calls made, crowds, people, the dog, the Homecoming, the book); criterion 2 passes, every career bot's ending naming five or more things it did. 0.999.6.
+- 2026-10-02 — Phase 16.3 built: The Line, a myth's first ascent ending the story in its own sequence (the naming at the fire, who was there, the credits, then hang it up or keep climbing); after it, retiring is yours at any age. 0.999.7.

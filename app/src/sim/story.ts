@@ -106,3 +106,15 @@ export function goalDesc(g: Goal): string {
   const grade = 'grade' in a ? (a.grade ?? 0) : 0;
   return fill(g.desc, { n, g: grade });
 }
+
+// The myth you put up, for The Line's naming: its name, grade and crag; the latest if more.
+export function theLine(s: GameState): { name: string; grade: number; place: string } | null {
+  const mine = Object.entries(s.firsts)
+    .filter(([, f]) => !f.by)
+    .map(([id, f]) => ({ f, r: routeById(s.seed, id) }))
+    .filter((x) => (x.r?.grade ?? 0) >= 18)
+    .sort((a, b) => b.f.day - a.f.day)[0];
+  return mine
+    ? { name: mine.f.name, grade: mine.r!.grade, place: PLACES[mine.r!.place]?.name ?? 'the crag' }
+    : null;
+}

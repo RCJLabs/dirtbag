@@ -3,6 +3,7 @@
 // class only decides what to show and when, and animates walking, driving and the wall.
 
 import {
+  STORY,
   act,
   ACTS,
   attemptInput,
@@ -117,6 +118,9 @@ export type SheetId =
     }
   | { k: 'dog' }
   | { k: 'act'; n: number }
+  // Phase 16.3: The Line, in place of the last act's card: the naming, who was there, the
+  // credits, what now.
+  | { k: 'line'; step: number }
   // Your journal: you as a climber, or the log of what's happened lately.
   | { k: 'journal'; page: JournalPage }
   // A line too long for a toast, on a card you put down yourself.
@@ -394,7 +398,8 @@ export class Game {
     for (const e of r.events) {
       if (e.k === 'line') this.toast(e.text);
       else if (e.k === 'refused') this.toast(e.why);
-      else if (e.k === 'act') this.cards.push({ k: 'act', n: e.n });
+      else if (e.k === 'act')
+        this.cards.push(e.n === STORY.length ? { k: 'line', step: 0 } : { k: 'act', n: e.n });
       else if (e.k === 'home') this.cards.push({ k: 'home' });
       else if (e.k === 'record') this.cards.push({ k: 'record', ids: e.ids });
       else if (e.k === 'calling') this.cards.push({ k: 'calling' });
@@ -623,7 +628,7 @@ export class Game {
     const u = this.ui.get();
     const next = this.cards[0];
     if (!next || u.sheet || u.talk || u.climbing || u.driving) return;
-    if (u.view !== 'scene' && (next.k === 'act' || u.view !== 'map')) return;
+    if (u.view !== 'scene' && (next.k === 'act' || next.k === 'line' || u.view !== 'map')) return;
     this.cards.shift();
     this.set({ sheet: next });
   }

@@ -10,6 +10,7 @@ import { PLACES } from './content/places';
 import { AGE, HOME } from './dials';
 import { originOf } from './identity';
 import { actOf } from './story';
+import { STORY } from './content/story';
 import { tierOf } from './presence';
 import type { GameState } from './types';
 
@@ -27,7 +28,9 @@ export const dayAtAge = (s: GameState, age: number): number =>
 export function retireBlocked(s: GameState): string | null {
   if (!s.climber.name) return 'Make a climber first.';
   if (s.life.retired) return 'You already have.';
-  if (ageOf(s) < AGE.from) return `Not before ${AGE.from}. There’s too much left in you.`;
+  // After The Line (Phase 16.3), hanging it up is yours whatever your age.
+  if (ageOf(s) < AGE.from && actOf(s) <= STORY.length)
+    return `Not before ${AGE.from}. There’s too much left in you.`;
   if (s.expedition || s.wall) return 'Get down first.';
   return null;
 }

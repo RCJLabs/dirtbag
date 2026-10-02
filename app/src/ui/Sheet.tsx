@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   actOf,
+  LINE_SCENE,
   ROMAN,
   stageOf,
   STORY,
@@ -232,6 +233,8 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
       <SettingsBody game={game} settings={ui.settings} />
     ) : id.k === 'credits' ? (
       <CreditsBody />
+    ) : id.k === 'line' && id.step === 2 ? (
+      <LineCredits game={game} />
     ) : id.k === 'card' ? (
       <CardBody game={game} id={id} s={state} />
     ) : id.k === 'plan' ? (
@@ -247,7 +250,7 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
         ref={ref}
         onClickCapture={ghost}
       >
-        {id.k !== 'fa' && id.k !== 'card' && <Close game={game} />}
+        {id.k !== 'fa' && id.k !== 'card' && id.k !== 'line' && <Close game={game} />}
         {body}
       </div>
     );
@@ -1818,11 +1821,30 @@ function SettingsBody({ game, settings }: { game: Game; settings: Settings }) {
   );
 }
 
-// Who made what, from ui/credits.ts; sound from the licence ledger.
-function CreditsBody() {
+// The Line's credits (Phase 16.3): the same roll, under the story's last title, then on.
+function LineCredits({ game }: { game: Game }) {
   return (
     <>
-      <h3 id="sheet-title">Credits</h3>
+      <h3 id="sheet-title">{LINE_SCENE.credits.title}</h3>
+      <p className="sub">{LINE_SCENE.credits.sub}</p>
+      <CreditsBody titled={false} />
+      <ul>
+        <li>
+          <button type="button" className="opt" onClick={() => game.openSheet({ k: 'line', step: 3 })}>
+            <span>Go on</span>
+            <span className="c" />
+          </button>
+        </li>
+      </ul>
+    </>
+  );
+}
+
+// Who made what, from ui/credits.ts; sound from the licence ledger.
+function CreditsBody({ titled = true }: { titled?: boolean }) {
+  return (
+    <>
+      {titled && <h3 id="sheet-title">Credits</h3>}
       {CREDITS.map((c) => (
         <Fragment key={c.head}>
           <p className="crux">{c.head}</p>
