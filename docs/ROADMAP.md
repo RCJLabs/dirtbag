@@ -2067,7 +2067,7 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 ---
 
-### Phase 23 — Who you are: origins, paths, stances, and the Record Book   **<<< CURRENT MILESTONE**
+### Phase 23 — Who you are: origins, paths, stances, and the Record Book
 
 *Added 29 Sep 2026 by Evan's call. Runs after Phases 22 and 24, before Phase 16, which keys its epilogues to all of it.*
 
@@ -2194,9 +2194,11 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The harness tells them apart** (a new target): a week's bots, described by what they did and went for first, are named by origin 87% of the time (chance 17%) and by start 48% (chance 25%). The boulderer and the all-rounder aren't told apart in week one: both go for the same lines. The target's bar (origins at twice chance, starts at half again) was set after the measurement, and says so.
 - **The bots' line choice moves the harness a little:** first-month injuries 8% for a careful climber and 15% cold and reckless (3% and 8% before; the target is 35%); the first V5 go on day 18. Every target passes.
 
+**Phase 23 closed by Evan's call (2 Oct 2026).** All three criteria pass. Carried: the boulderer and the all-rounder look the same in week one, and criterion 1's bar was set after the measurement. The CURRENT MILESTONE moves to Phase 16.
+
 ---
 
-### Phase 16 — The spine: story, acts and endings
+### Phase 16 — The spine: story, acts and endings   **<<< CURRENT MILESTONE**
 
 **Goal.** A written main story across five acts with a real ending. Epilogues are built from the player's actual history, and legacy makes the next generation feel like a continuation.
 
@@ -2565,3 +2567,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-02 — Phase 23.7 built: a recap card every 56-day year, from what the game keeps; the Homecoming once a life, once two people are close, paying v0.956's cash and psyche on your next send outside [proposed]. Save v37. 0.999.1.
 - 2026-10-02 — Phase 23.8: a harness target that every echo lands (it does, after calls also come after a go and echoes anywhere); a stuck game (a call on a broken-down van) and queued cards after an answer fixed; an e2e later life. Criterion 1 measured and failing: climbers made differently play week one almost the same; Evan's call how to fix. 0.999.2.
 - 2026-10-02 — Phase 23, criterion 1 by Evan's A and B: each origin starts its own first morning; bots play their origin and their start; a harness target tells week-one climbers apart (origins 87%, starts 48%). All three criteria pass; closing the phase is Evan's call. 0.999.3.
+- 2026-10-02 — Phase 23 closed by Evan's call; the boulderer and the all-rounder alike in week one carry. CURRENT MILESTONE moved to Phase 16, the spine; it gets planned on the rebuild next.
