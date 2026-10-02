@@ -647,6 +647,316 @@ function paintTorre(g: G, night: boolean, storm: boolean): void {
   g.fillRect(0, H - 60, SKY_W, 60);
 }
 
+// ---- Trango (Phase 24.8) ----
+
+// From base camp on the Trango glacier: the Nameless Tower, square-topped and golden,
+// standing on its snowy shoulder, Eternal Flame up its south face; Great Trango's bulk to
+// the left, the Monk and the Pulpit to the right; the glacier striped with moraine and
+// base camp's tents on it. The sky's a deeper blue up here.
+const TRANGO: Record<'day' | 'night' | 'storm' | 'stormNight', Look> = {
+  day: {
+    sky: [
+      [0, '#2F5F9E'],
+      [0.6, '#7FA6CC'],
+      [1, '#D4DEE6'],
+    ],
+    lit: '#D9A866',
+    shade: '#9C7148',
+    streak: 'rgba(60,40,24,.35)',
+    far: '#C9D4DE',
+    trees: '#6E665C',
+    trees2: '#5A534A',
+    meadow: ['#E8EEF2', '#C8D4DC'],
+    cloud: 'rgba(255,255,255,.9)',
+  },
+  night: {
+    sky: [
+      [0, '#0A1028'],
+      [0.6, '#1A2448'],
+      [1, '#2C3656'],
+    ],
+    lit: '#6A6276',
+    shade: '#463F54',
+    streak: 'rgba(10,8,20,.45)',
+    far: '#5C6684',
+    trees: '#2A2C38',
+    trees2: '#20222C',
+    meadow: ['#6A7694', '#4C5876'],
+    cloud: 'rgba(120,128,160,.5)',
+  },
+  storm: {
+    sky: [
+      [0, '#4A525E'],
+      [0.6, '#6C7480'],
+      [1, '#8C9298'],
+    ],
+    lit: '#9C8C78',
+    shade: '#6E6252',
+    streak: 'rgba(30,26,22,.45)',
+    far: '#A6AEB6',
+    trees: '#5E5952',
+    trees2: '#4C4842',
+    meadow: ['#B4BCC2', '#98A0A8'],
+    cloud: 'rgba(96,104,114,.96)',
+  },
+  stormNight: {
+    sky: [
+      [0, '#090D1A'],
+      [0.6, '#151A2C'],
+      [1, '#22283A'],
+    ],
+    lit: '#40404E',
+    shade: '#2E2E3C',
+    streak: 'rgba(6,6,14,.5)',
+    far: '#3E4658',
+    trees: '#1C1E28',
+    trees2: '#16182A',
+    meadow: ['#3A4256', '#2C3446'],
+    cloud: 'rgba(36,40,56,.96)',
+  },
+};
+
+const G_FOOT = 344;
+// The shoulder the tower stands on, its top a snow ledge.
+const SHOULDER: Pt[] = [
+  [CX - 170, G_FOOT],
+  [CX - 120, 300],
+  [CX - 60, 268],
+  [CX - 30, 252],
+  [CX + 60, 250],
+  [CX + 110, 270],
+  [CX + 170, 306],
+  [CX + 210, G_FOOT],
+];
+const NAMELESS: Pt[] = [
+  [CX - 28, 254],
+  [CX - 24, 200],
+  [CX - 20, 150],
+  [CX - 16, 120],
+  [CX - 8, 116],
+  [CX - 6, 106],
+  [CX + 14, 104],
+  [CX + 18, 114],
+  [CX + 30, 118],
+  [CX + 36, 160],
+  [CX + 42, 210],
+  [CX + 48, 254],
+];
+const GREAT: Pt[] = [
+  [CX - 420, G_FOOT],
+  [CX - 360, 250],
+  [CX - 300, 184],
+  [CX - 250, 150],
+  [CX - 214, 160],
+  [CX - 186, 142],
+  [CX - 150, 170],
+  [CX - 120, 214],
+  [CX - 96, 270],
+  [CX - 80, G_FOOT],
+];
+const MONK: Pt[] = [
+  [CX + 70, 262],
+  [CX + 80, 210],
+  [CX + 88, 186],
+  [CX + 96, 190],
+  [CX + 104, 230],
+  [CX + 112, 270],
+];
+const PULPIT: Pt[] = [
+  [CX + 130, 290],
+  [CX + 150, 236],
+  [CX + 172, 224],
+  [CX + 196, 236],
+  [CX + 214, 300],
+];
+// Eternal Flame: up the gully to the snow ledge, then the south face to the summit block.
+export const TRANGO_LINE: Pt[] = [
+  [CX - 60, 334],
+  [CX - 44, 296],
+  [CX - 22, 262],
+  [CX - 14, 226],
+  [CX - 8, 186],
+  [CX - 4, 148],
+  [CX + 2, 112],
+];
+
+function paintTrango(g: G, night: boolean, storm: boolean): void {
+  const L = TRANGO[storm ? (night ? 'stormNight' : 'storm') : night ? 'night' : 'day'];
+  const r = mulberry32(401);
+  g.fillStyle = lin(g, 0, 0, 0, G_FOOT, L.sky);
+  g.fillRect(0, 0, SKY_W, H);
+  if (night && !storm) {
+    for (let i = 0; i < 360; i++) {
+      g.fillStyle = `rgba(242,233,216,${(0.3 + r() * 0.6).toFixed(2)})`;
+      const d = r() < 0.1 ? 1.8 : 1.1;
+      g.fillRect(r() * SKY_W, r() * 300, d, d);
+    }
+    g.fillStyle = '#F2E9D8';
+    g.beginPath();
+    g.arc(CX + 230, 88, 12, 0, 6.2832);
+    g.fill();
+  } else if (!storm) {
+    g.fillStyle = rad(g, CX - 240, 90, 0, 110, [
+      [0, 'rgba(255,248,226,.6)'],
+      [1, 'rgba(255,248,226,0)'],
+    ]);
+    g.fillRect(0, 0, SKY_W, H);
+  }
+  // The Karakoram behind: snow peaks, far and pale.
+  const far: Pt[] = [[-10, G_FOOT]];
+  let fx = -10;
+  while (fx < SKY_W + 10) {
+    fx += 20 + r() * 40;
+    far.push([fx, (far.length % 2 ? 208 : 250) + r() * 30]);
+  }
+  far.push([SKY_W + 10, G_FOOT]);
+  fill(g, far, L.far);
+  // The towers, back to front: Great Trango, the Pulpit and the Monk, the shoulder, the Tower.
+  peak(g, GREAT, CX - 230, L, r, 10);
+  peak(g, PULPIT, CX + 168, L, r, 4);
+  peak(g, MONK, CX + 92, L, r, 4);
+  peak(g, SHOULDER, CX + 40, L, r, 6);
+  // Rock, not sand: ribs and gullies down the big masses.
+  for (const [pts, x0, x1, y0] of [
+    [GREAT, CX - 380, CX - 100, 160],
+    [SHOULDER, CX - 150, CX + 190, 262],
+  ] as const) {
+    g.save();
+    g.beginPath();
+    poly(g, pts, true);
+    g.clip();
+    g.strokeStyle = L.streak;
+    const mid = (x0 + x1) / 2;
+    for (let i = 0; i < 16; i++) {
+      const x = x0 + r() * (x1 - x0);
+      const top = y0 + r() * 30;
+      g.lineWidth = 0.8 + r() * 1.6;
+      g.beginPath();
+      g.moveTo(x, top);
+      g.lineTo(x + (x - mid) * 0.12, G_FOOT);
+      g.stroke();
+    }
+    // Darker toward the foot, out of the sun.
+    g.fillStyle = lin(g, 0, y0, 0, G_FOOT, [
+      [0, 'rgba(30,24,20,0)'],
+      [1, 'rgba(30,24,20,.22)'],
+    ]);
+    g.fillRect(x0 - 60, y0, x1 - x0 + 120, G_FOOT - y0);
+    g.restore();
+  }
+  // The snow ledge on the shoulder, and snow on Great Trango's top.
+  const snow = night ? '#B8C0D4' : storm ? '#D0D6DA' : '#F4F7FA';
+  fill(
+    g,
+    [
+      [CX - 66, 266],
+      [CX - 32, 250],
+      [CX + 62, 248],
+      [CX + 106, 266],
+      [CX + 60, 262],
+      [CX - 20, 264],
+    ],
+    snow,
+  );
+  fill(
+    g,
+    [
+      [CX - 300, 186],
+      [CX - 252, 150],
+      [CX - 214, 162],
+      [CX - 186, 144],
+      [CX - 154, 172],
+      [CX - 200, 176],
+      [CX - 250, 168],
+    ],
+    snow,
+  );
+  peak(g, NAMELESS, CX + 14, L, r, 10);
+  // Its summit block's flat top, catching snow; the cracks up its face.
+  fill(
+    g,
+    [
+      [CX - 6, 106],
+      [CX + 14, 104],
+      [CX + 16, 108],
+      [CX - 5, 110],
+    ],
+    snow,
+  );
+  g.strokeStyle = L.streak;
+  g.lineWidth = 1;
+  for (let i = 0; i < 6; i++) {
+    const x = CX - 16 + r() * 50;
+    g.beginPath();
+    g.moveTo(x, 130 + r() * 30);
+    g.lineTo(x + (r() - 0.5) * 6, 200 + r() * 50);
+    g.stroke();
+  }
+  if (storm) {
+    cloudBank(g, 150, 80, L.cloud, 409);
+    cloudBank(g, 230, 40, L.cloud, 411);
+  }
+  // The glacier, striped with moraine, and base camp's tents on it.
+  g.fillStyle = lin(g, 0, G_FOOT - 4, 0, H, [
+    [0, L.meadow[0]],
+    [1, L.meadow[1]],
+  ]);
+  g.fillRect(0, G_FOOT - 4, SKY_W, H);
+  // Medial moraines: dark rubble stripes, narrow under the peaks and wider as they come on.
+  g.fillStyle = L.trees;
+  for (let k = 0; k < 5; k++) {
+    const top = CX - 260 + k * 130;
+    const bot = CX - 900 + k * 450;
+    const w0 = 2;
+    const w1 = 10 + k * 3;
+    g.beginPath();
+    poly(
+      g,
+      [
+        [top - w0, G_FOOT],
+        [top + w0, G_FOOT],
+        [bot + w1, H],
+        [bot - w1, H],
+      ],
+      true,
+    );
+    g.fill();
+    for (let i = 0; i < 16; i++) {
+      const t = r();
+      const x = lerp(top, bot, t) + (r() - 0.5) * lerp(w0, w1, t) * 3;
+      g.beginPath();
+      g.ellipse(x, lerp(G_FOOT, H, t), 1 + t * 3, 0.6 + t * 1.6, 0, 0, 6.2832);
+      g.fill();
+    }
+  }
+  g.fillStyle = L.trees2;
+  g.fillRect(0, H - 90, SKY_W, 90);
+  const tents = night ? ['#7A5A3A', '#6A4E30'] : ['#E8A13A', '#D8693A'];
+  for (let i = 0; i < 7; i++) {
+    const x = CX - 220 + i * 70 + r() * 30;
+    const y = H - 96 + r() * 10;
+    g.fillStyle = tents[i % 2]!;
+    g.beginPath();
+    poly(
+      g,
+      [
+        [x - 12, y],
+        [x, y - 12],
+        [x + 12, y],
+      ],
+      true,
+    );
+    g.fill();
+    if (night && i === 3) {
+      g.fillStyle = rad(g, x, y - 5, 0, 16, [
+        [0, 'rgba(255,220,150,.75)'],
+        [1, 'rgba(255,220,150,0)'],
+      ]);
+      g.fillRect(x - 16, y - 21, 32, 32);
+    }
+  }
+}
+
 // Snow, not rain, where the water's snow: slower, wandering flakes.
 export function drawSnow(g: G, w: number, h: number, t: number, still: boolean): void {
   g.fillStyle = 'rgba(60,70,90,.38)';
@@ -672,8 +982,9 @@ export function drawSnow(g: G, w: number, h: number, t: number, still: boolean):
 // Which objectives' storms are snow.
 export const SNOWS = (id: string): boolean => id !== 'elcap';
 
-// The objectives with a scene painted so far; the rest are seen from the Lot.
-export const SCENED = ['elcap', 'cerrotorre'];
+// The objectives with a scene painted. All three have one; an objective added later without
+// one is seen from the Lot, and its pitches on Roadside's wall, until it's painted.
+export const SCENED = ['elcap', 'cerrotorre', 'trango'];
 
 // An objective's scene, by time of day and weather. Two are kept, as the scenes are.
 const cache = new Map<string, HTMLCanvasElement>();
@@ -683,6 +994,7 @@ export function expedScene(id: string, night: boolean, storm: boolean): HTMLCanv
   if (!c) {
     const [cv, g] = mk(SKY_W, H, 1);
     if (id === 'cerrotorre') paintTorre(g, night, storm);
+    else if (id === 'trango') paintTrango(g, night, storm);
     else paintElcap(g, night, storm);
     c = cv;
     cache.set(key, c);
@@ -693,7 +1005,7 @@ export function expedScene(id: string, night: boolean, storm: boolean): HTMLCanv
 
 // Where you are on the wall in the scene, in sky pixels: `k` of the way up its line.
 export function expedSpot(id: string, k: number): Pt {
-  const pts = id === 'cerrotorre' ? TORRE_LINE : ELCAP_LINE;
+  const pts = id === 'cerrotorre' ? TORRE_LINE : id === 'trango' ? TRANGO_LINE : ELCAP_LINE;
   const t = clamp(k) * (pts.length - 1);
   const i = Math.min(pts.length - 2, Math.floor(t));
   const a = pts[i]!;
@@ -739,19 +1051,31 @@ const ROCK: Record<
       [1, '#B8CCD8'],
     ],
   },
+  trango: {
+    face: ['#D8AC70', '#C49458'],
+    corner: '#9C7148',
+    ledge: '#EEF2F6',
+    air: [
+      [0, '#9DB8D4'],
+      [0.6, '#D6E0E8'],
+      [1, '#C8D2DA'],
+    ],
+  },
 };
 
 // A pitch on an objective, close up: its granite, a corner, the crack system; under the belay
 // ledge, the haul bag and the portaledge hanging, and a long way down, El Cap's meadow or
-// the Torre glacier. Cerro Torre's rock carries rime.
+// a glacier. Cerro Torre's rock carries rime.
 export function paintExpedWall(g: G, place: string): void {
   const R = ROCK[place] ?? ROCK.elcap!;
+  // A glacier below wherever the water's snow; rime on the rock only on the Torre.
+  const glacier = SNOWS(place);
   const ice = place === 'cerrotorre';
   const r = mulberry32(219);
   // The air first: haze down to what's below.
   g.fillStyle = lin(g, 0, LEDGE_Y, 0, H, R.air);
   g.fillRect(0, LEDGE_Y, W, H - LEDGE_Y);
-  if (ice) {
+  if (glacier) {
     g.strokeStyle = 'rgba(80,110,140,.4)';
     g.lineWidth = 1;
     for (let i = 0; i < 14; i++) {
