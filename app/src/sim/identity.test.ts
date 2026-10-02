@@ -76,8 +76,9 @@ describe('origins', () => {
     expect(gainMult(as('gymrat'), 'technique', 'out')).toBe(ORIGINS.gymrat!.fx.gainOut);
     expect(gainMult(as('gymnast'), 'head', 'train')).toBe(ORIGINS.gymnast!.fx.gainTrain);
     expect(gainMult(as('gymnast'), 'head', 'in')).toBe(1);
-    // Less spring: power and fingers only.
-    expect(gainMult(as('late'), 'fingers', 'out')).toBe(ORIGINS.late!.fx.spring);
+    // The Late Bloomer's cost is time now (Phase 16.1 follow-up), not spring: it learns at
+    // everyone's rate.
+    expect(gainMult(as('late'), 'fingers', 'out')).toBe(1);
     expect(gainMult(as('late'), 'head', 'out')).toBe(1);
     expect(gainMult(as(null), 'power', 'in')).toBe(1);
   });

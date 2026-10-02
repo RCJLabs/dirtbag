@@ -100,9 +100,20 @@ async function playPage(viewport, deviceScaleFactor, who = '') {
       for (const c of document.querySelectorAll(
         'button:not(:disabled):not(.hot), button.hot.pin, input, [role="radio"]',
       )) {
-        const b = c.getBoundingClientRect();
-        if (!b.width || a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top)
-          continue;
+        // A control scrolled out of a sheet's view is clipped by it: only the part you can
+        // see could take a tap.
+        const r = c.getBoundingClientRect();
+        const box = c.closest('.sheet')?.getBoundingClientRect();
+        const b = box
+          ? {
+              left: Math.max(r.left, box.left),
+              right: Math.min(r.right, box.right),
+              top: Math.max(r.top, box.top),
+              bottom: Math.min(r.bottom, box.bottom),
+            }
+          : r;
+        if (b.right <= b.left || b.bottom <= b.top) continue;
+        if (a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top) continue;
         const what = c.id ? `#${c.id}` : c.getAttribute('aria-label') || c.textContent?.trim().slice(0, 30);
         window.problem(`a toast over ${what}: ${t}`);
       }
@@ -2286,7 +2297,13 @@ console.log('Hanging it up');
   await old.locator('#sheet .opt', { hasText: 'Hang it up' }).first().click();
   await old.waitForFunction(() => document.querySelector('#sheet-title')?.textContent === 'A climbing life');
   const tally = await sheet();
-  if (!/43: 21 years on rock\. You called it yourself\./.test(tally) || !/in the Record Book/.test(tally))
+  // Phase 16.4: what became of you, from the save (a Sold It All climber), then the numbers.
+  if (
+    !/43: 21 years on rock\. You called it yourself\./.test(tally) ||
+    !/The storage unit with the rest of your old life/.test(tally) ||
+    !/The page in the Record Book you show people first/.test(tally) ||
+    !/in the Record Book\./.test(tally)
+  )
     await fail(`old: the tally: ${tally.slice(0, 400)}`);
   log(`old: ${tally.slice(0, 140)}`);
   await old.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-old-tally.png`) });

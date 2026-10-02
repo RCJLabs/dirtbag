@@ -105,10 +105,10 @@ export const ORIGINS: Record<string, Origin> = {
   },
   late: {
     name: 'Late Bloomer',
-    blurb: 'Started at thirty-two. Savings, patience, a cool head, less spring.',
-    open: 'You didn’t touch rock until thirty-two. Late to the party, but you showed up with savings, patience, and no illusions about being a prodigy.',
+    blurb: 'Started at twenty-six. Savings, patience, a cool head, and less time.',
+    open: 'You didn’t touch rock until twenty-six. Late to the party, but you showed up with savings, patience, and no illusions about being a prodigy.',
     skills: { head: 4, technique: 3, power: -3, fingers: -2 },
-    fx: { premium: 0.65, cash: 120, spring: 0.88, age: 10 },
+    fx: { premium: 0.65, cash: 120, age: 4 },
     begin: {
       insurance: 'full',
       line: 'You did the boring part first: a proper insurance plan, paid up. Somebody in this lot has to be the grown-up.',

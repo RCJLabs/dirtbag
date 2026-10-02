@@ -9,6 +9,7 @@ import { JOBS } from '../src/sim/content/jobs';
 import { ACTS } from '../src/sim/content/places';
 import { BUSK, PSYCHE } from '../src/sim/dials';
 import { buskRate, practiceOf } from '../src/sim/busk';
+import { namedDeeds } from '../src/sim/epilogue';
 
 const SEEDS = Number(process.env.CAREER_SEEDS ?? 4);
 const DAYS = Number(process.env.CAREER_DAYS ?? 224);
@@ -119,6 +120,15 @@ it('career', { timeout: 1_800_000 }, () => {
     bad === 0,
     'A career is never refused or stuck',
     `${bad} refusals and stuck nights across ${all.length} runs.`,
+  );
+  // Phase 16.4, criterion 2: the ending names at least five things the climber did. Read at
+  // the end of the run; the career bot takes no calling and claims no path, which a player
+  // would, so this is the floor.
+  const named = all.map((r) => namedDeeds(r.state));
+  say(
+    Math.min(...named) >= 5,
+    'The ending names at least five things each career did',
+    `fewest ${Math.min(...named)}, median ${median(named)}, most ${Math.max(...named)}, across ${all.length} runs at day ${DAYS}.`,
   );
   // Phase 22.4d: psyche moves with the life, and a career that sits at the fire when it's
   // flat never lives at the bottom.

@@ -23,7 +23,7 @@ const night = (s: GameState) => {
 const refused = (r: ReturnType<typeof act>) => r.events.some((e) => e.k === 'refused');
 
 describe('age', () => {
-  it('starts at 22 and comes a year every 18 days; the Late Bloomer starts at 32', () => {
+  it('starts at 22 and comes a year every 18 days; the Late Bloomer starts at 26', () => {
     const s = made();
     expect(ageOf(s)).toBe(AGE.start);
     expect(ageOf(s, AGE.days)).toBe(AGE.start);
@@ -31,13 +31,14 @@ describe('age', () => {
     expect(dayAtAge(s, AGE.from)).toBe(145);
     expect(dayAtAge(s, AGE.forced)).toBe(415);
     const late = made('late');
-    expect(ageOf(late)).toBe(32);
-    expect(dayAtAge(late, AGE.forced)).toBe(235);
+    expect(ageOf(late)).toBe(26);
+    expect(dayAtAge(late, AGE.from)).toBe(73);
+    expect(dayAtAge(late, AGE.forced)).toBe(343);
   });
 
   it('says the Late Bloomer’s cost from its numbers', () => {
     expect(originTerms(ORIGINS.late!).costs).toContain(
-      'You start at 32: 10 years fewer before your body calls it, at 45.',
+      'You start at 26: 4 years fewer before your body calls it, at 45.',
     );
   });
 
@@ -61,7 +62,7 @@ describe('retiring', () => {
     const young = made(undefined, { day: dayAtAge(made(), AGE.from) - 1 });
     expect(retireBlocked(young)).toBe('Not before 30. There’s too much left in you.');
     expect(refused(act(young, { t: 'retire' }))).toBe(true);
-    expect(retireBlocked(made('late'))).toBeNull();
+    expect(retireBlocked(made('late', { day: 73 }))).toBeNull();
   });
 
   it('ends the life: the line, the event, the book; nothing more after', () => {

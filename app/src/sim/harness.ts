@@ -29,6 +29,8 @@ export interface SeasonOpts {
   // Human-ish hands (seeded per go) or careful ones.
   human: boolean;
   reckless?: boolean;
+  // An origin to make the climber with (Phase 23.2); none by default, so the targets don't move.
+  origin?: string;
 }
 
 export function season(seed: string, o: SeasonOpts): BotRun {
@@ -38,6 +40,7 @@ export function season(seed: string, o: SeasonOpts): BotRun {
     strategy: o.strategy,
     days: o.days,
     reckless: o.reckless,
+    origin: o.origin,
     hands: o.human ? () => humanHands(Rng.fromStream(seed, 'session').derive(`bot-go-${n++}`)) : undefined,
   });
 }
