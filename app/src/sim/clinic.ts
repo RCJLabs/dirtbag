@@ -3,9 +3,12 @@
 
 import { CLINIC, INJURY, MONEY, PLANS } from './dials';
 import type { GameState, Injury } from './types';
+import { originBill, premiumOf } from './identity';
 
 // Registration and your plan's premium, due on the week's last night.
-export const weeklyBills = (s: GameState): number => MONEY.registration + PLANS[s.insurance].premium;
+// Phase 23.2: the premium on your origin's terms, and its own bill (a storage unit).
+export const weeklyBills = (s: GameState): number =>
+  MONEY.registration + premiumOf(s, s.insurance) + originBill(s);
 
 // The clinic's bill for an injury of this tier, on your plan. The first injury's is waived.
 export function clinicBill(s: GameState, tier: 1 | 2 | 3): number {

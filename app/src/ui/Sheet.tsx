@@ -108,6 +108,13 @@ import {
   SUPPLIES,
   WORDS,
   OPEN_RECORD,
+  originOf,
+  originTerms,
+  TALENTS,
+  CAME_ACROSS,
+  CAME_ACROSS_NAME,
+  premiumOf,
+  livingMult,
   WORD_GROUP,
   type WordGroup,
 } from '../sim';
@@ -986,6 +993,30 @@ function LatelyBody({ s }: { s: GameState }) {
   );
 }
 
+// Phase 23.2: where you came from, what it gives and costs, and the talents you've found.
+function OriginRow({ s }: { s: GameState }) {
+  const o = originOf(s);
+  const found = s.talents.known.map((id) => TALENTS[id]).filter((t) => !!t);
+  if (!o && s.origin !== CAME_ACROSS && !found.length) return null;
+  const t = o ? originTerms(o) : null;
+  return (
+    <>
+      <p className="crux">{o ? o.name : s.origin === CAME_ACROSS ? CAME_ACROSS_NAME : 'What’s in you'}</p>
+      {t && (
+        <p className="sub" id="origin">
+          {[...t.perks, ...t.costs].join(' ')}
+        </p>
+      )}
+      {s.origin === CAME_ACROSS && <p className="sub">From the old game, as you were.</p>}
+      {found.map((x) => (
+        <p className="sub" key={x!.name}>
+          {x!.name}: {x!.desc}
+        </p>
+      ))}
+    </>
+  );
+}
+
 function YouBody({ game, s }: { game: Game; s: GameState }) {
   const c = s.climber;
   const g = gradeOf(c.skills);
@@ -1008,6 +1039,7 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
         ))}
       </ul>
       <ActRow s={s} />
+      <OriginRow s={s} />
       <p className="crux">Body</p>
       <p className="sub">
         Energy {Math.round(s.energy)}, skin {Math.round(s.skin)}, food {Math.round(s.fed)}.
@@ -1386,7 +1418,7 @@ function PlanRows({ game, s }: { game: Game; s: GameState }) {
           >
             <span className="dot" />
             <span>
-              {PLAN_NAME[k]} · {PLANS[k].premium ? `${money(PLANS[k].premium)} a week` : 'free'}
+              {PLAN_NAME[k]} · {premiumOf(s, k) ? `${money(premiumOf(s, k))} a week` : 'free'}
             </span>
             <small>{planNote(k)}</small>
           </button>
@@ -1422,7 +1454,7 @@ function LivingRows({ game, s }: { game: Game; s: GameState }) {
             >
               <span className="dot" />
               <span>
-                {LIVING[k][0]} · {l.cost ? `${money(l.cost)} a night` : 'free'}
+                {LIVING[k][0]} · {l.cost ? `${money(Math.round(l.cost * livingMult(s)))} a night` : 'free'}
               </span>
               <small>
                 {LIVING[k][1]}

@@ -53,6 +53,7 @@ const V27 = readFileSync(new URL('./fixtures/save-v27.json', import.meta.url), '
 const V28 = readFileSync(new URL('./fixtures/save-v28.json', import.meta.url), 'utf8');
 const V29 = readFileSync(new URL('./fixtures/save-v29.json', import.meta.url), 'utf8');
 const V30 = readFileSync(new URL('./fixtures/save-v30.json', import.meta.url), 'utf8');
+const V31 = readFileSync(new URL('./fixtures/save-v31.json', import.meta.url), 'utf8');
 // What R2's migration adds to any older save.
 const R2_BODY = {
   load: { acute: 20, chronic: 20, today: 0 },
@@ -104,6 +105,8 @@ const P226A = {
   booked: null,
   book: [],
   record: expect.any(Object),
+  origin: null,
+  talents: expect.any(Object),
 };
 
 describe('saves', () => {
@@ -567,6 +570,8 @@ describe('saves', () => {
       booked: null,
       book: [],
       record: expect.any(Object),
+      origin: null,
+      talents: expect.any(Object),
     });
   });
 
@@ -587,6 +592,8 @@ describe('saves', () => {
       booked: null,
       book: [],
       record: expect.any(Object),
+      origin: null,
+      talents: expect.any(Object),
     });
     expect(r.state.deck.met).toEqual({ busker: 2 });
   });
@@ -606,6 +613,8 @@ describe('saves', () => {
       booked: null,
       book: [],
       record: expect.any(Object),
+      origin: null,
+      talents: expect.any(Object),
     });
     expect(r.state.dog).toEqual({ name: 'Scout', since: 12, fed: 70, bond: 55 });
   });
@@ -624,6 +633,8 @@ describe('saves', () => {
       booked: null,
       book: [],
       record: expect.any(Object),
+      origin: null,
+      talents: expect.any(Object),
     });
     expect(r.state.dogs).toEqual([{ name: 'Scout', years: 16, day: 301 }]);
   });
@@ -641,6 +652,8 @@ describe('saves', () => {
       booked: null,
       book: [],
       record: expect.any(Object),
+      origin: null,
+      talents: expect.any(Object),
     });
     expect(r.state.dream).toEqual({ pick: 'rig', pot: 300, owned: [] });
   });
@@ -657,6 +670,8 @@ describe('saves', () => {
       booked: null,
       book: [],
       record: expect.any(Object),
+      origin: null,
+      talents: expect.any(Object),
     });
     expect(r.state.table?.who).toBe('hazel');
   });
@@ -684,6 +699,8 @@ describe('saves', () => {
       booked: null,
       book: [],
       record: expect.any(Object),
+      origin: null,
+      talents: expect.any(Object),
     });
   });
 
@@ -699,6 +716,8 @@ describe('saves', () => {
       booked: null,
       book: [],
       record: expect.any(Object),
+      origin: null,
+      talents: expect.any(Object),
     });
   });
 
@@ -714,6 +733,8 @@ describe('saves', () => {
       expedition: { ...old.expedition, seen: [] },
       book: [],
       record: expect.any(Object),
+      origin: null,
+      talents: expect.any(Object),
     });
   });
 
@@ -723,7 +744,13 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(29);
     const old = JSON.parse(V29).state;
-    expect(r.state).toEqual({ ...old, book: [], record: expect.any(Object) });
+    expect(r.state).toEqual({
+      ...old,
+      book: [],
+      record: expect.any(Object),
+      origin: null,
+      talents: expect.any(Object),
+    });
     const home = act(r.state, { t: 'exped', id: 'elcap', do: 'bail' }).state;
     expect(home.expedition).toBeNull();
     expect(home.book).toEqual([
@@ -746,12 +773,25 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(30);
     const old = JSON.parse(V30).state;
-    const { record, ...rest } = r.state;
+    const { record, origin, talents, ...rest } = r.state;
     expect(rest).toEqual(old);
+    expect(origin).toBeNull();
+    expect(talents.ids).toEqual([]);
     // A pitch sent outside, $3,992 in hand, close to Hazel: in the book as of the day it loaded.
     expect(Object.keys(record)).toEqual(expect.arrayContaining(['firstsend', 'outside', 'grand', 'crew']));
     expect(record.loaded).toBeUndefined();
     expect(Object.values(record).every((d) => d === old.day)).toBe(true);
+  });
+
+  it('load a real 0.994.0 save from a new climber: nowhere in particular, nothing dealt', () => {
+    const r = fromSave(V31);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(31);
+    const { origin, talents, ...rest } = r.state;
+    expect(rest).toEqual(JSON.parse(V31).state);
+    expect(origin).toBeNull();
+    expect(talents).toEqual({ ids: [], known: [], from: rest.climber.skills });
   });
 
   // These pretend a longer history: a v1 file that stored `money` where the state now has
@@ -761,7 +801,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(31);
+    expect(SAVE_VERSION).toBe(32);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

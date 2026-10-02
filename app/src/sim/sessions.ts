@@ -10,6 +10,7 @@ import { CLIMB, LOAD, TRAIN } from './dials';
 import { taperDay } from './training';
 import { INDOOR, INDOOR_CLOSE } from './content/gym';
 import type { Delta, GameState, Skills } from './types';
+import { gainMult } from './identity';
 
 const round2 = (v: number) => Math.round(v * 100) / 100;
 
@@ -39,7 +40,7 @@ export function sessionGains(s: GameState, p: ProtocolDef): Partial<Skills> {
   const out: Partial<Skills> = {};
   for (const id of SKILLS) {
     const w = p.trains[id];
-    if (w) out[id] = round2(total * w * hi(k[id]));
+    if (w) out[id] = round2(total * w * hi(k[id]) * gainMult(s, id, 'train'));
   }
   return out;
 }

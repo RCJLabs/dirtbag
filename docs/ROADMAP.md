@@ -2134,6 +2134,15 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Fixed on the way:** a walk-in shift didn't count as a shift for the book's check, so "Clocked In" came days late; it counts today's work now.
 - **E2e:** takes each Record Book card as it comes (logged; one-offs, so not counted against Phase 11's tap budgets; by keyboard on the keyboard day), checks the first send is in the save, and opens the Record page.
 
+**Status (2 Oct 2026): 23.2 built: where you came from, and what's in you.** Save v32, 0.995.0.
+- **Six origins at creation,** v0.956's, chosen with a name and a start; Sold It All already picked. Each is a perk and its cost (Evan's call 2), and both are said on the button from the origin's own numbers: pay, gains indoors, outside or in sessions, power and fingers' spring, nights, insurance, what you buy, a weekly bill, start cash, and skills on top of the start's. All six sets of numbers are [proposed].
+- **Every price shown is the one charged:** a shift's pay on the café's card, the night's spot and how you live on Tonight, the plan's premium at the clinic, all go through the same multipliers the rules use.
+- **What's in you:** v0.956's 11 talents, one good and one bad dealt on the seed with an origin, hidden until the skill they touch has come on six points since you started (tendons show on a finger injury); then a note, and a line on the You page. Glass Tendons raise the odds of a tweak on crimps and cracks.
+- **The first goal:** three origins start past Act I's $60, as Sold It All's $300 did in v0.956; it's done at the start for them.
+- **A carried climber** says they came across, and nothing's re-dealt (Evan's call 11). Old saves load with no origin and nothing dealt.
+- **Criterion 1, measured, not yet tuned:** bots by origin over a week (12 seeds, the balanced and climber strategies) end with the same sends ±1 and skill totals within ~15 of each other; the extra cash goes on the same purchases, so it barely shows at day 7. A bot plays every origin the same way; making two climbers play differently is 23.8's harness work. The default bot has no origin, so the harness's numbers don't move.
+- **E2e:** picks Sold It All, checks its terms and the $191 start, and expects its pay through the run.
+
 ---
 
 ### Phase 16 — The spine: story, acts and endings
@@ -2497,3 +2506,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-02 — Phase 24 closed by Evan's call, confirming 24.9's rule that a summit pays once; the keepsake trip card and the odds above an objective's grade carry to a polish pass. CURRENT MILESTONE moved to Phase 23, who you are; it gets planned on the rebuild next.
 - 2026-10-02 — Phase 23 planned on the rebuild, with Evan's calls: creation is a name, a start and an origin (flaws folded into origins; build and personality cut); identity emerges in play (talents, callings, paths with grade gates, quirks); two factions now; no rep, so rewards are the book, small cash, psyche and the epilogue; a year is 56 days; eight slices from the Record Book to the harness.
 - 2026-10-02 — Phase 23.1 built: the Record Book. v0.956's 42 feats, milestones and story cards merged to 37 entries, each with its story; 27 earned from what the game keeps, 10 waiting on unbuilt systems; one moment gives one card; a Record page in the journal; old saves fill it quietly. Save v31. 0.994.0.
+- 2026-10-02 — Phase 23.2 built: six origins at creation, each a perk and a cost said from its own numbers [proposed]; 11 hidden talents dealt with one, shown once their skill has come on; a carried climber came across with nothing dealt. Bots by origin differ only modestly in week one; tuning that is 23.8's. Save v32. 0.995.0.

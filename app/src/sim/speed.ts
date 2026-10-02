@@ -5,6 +5,7 @@ import { daysOff, goLoad } from './body';
 import { INDOOR, INDOOR_CLOSE } from './content/gym';
 import { SPEED, TRAIN } from './dials';
 import type { GameState, Skills } from './types';
+import { gainMult } from './identity';
 
 const round2 = (v: number) => Math.round(v * 100) / 100;
 
@@ -29,8 +30,8 @@ export function speedGains(s: GameState): Partial<Skills> {
   const k = s.climber.skills;
   const total = TRAIN.base + TRAIN.perGrade * gradeOf(k);
   return {
-    power: round2(total * SPEED.trains.power * hi(k.power)),
-    technique: round2(total * SPEED.trains.technique * hi(k.technique)),
+    power: round2(total * SPEED.trains.power * hi(k.power) * gainMult(s, 'power', 'train')),
+    technique: round2(total * SPEED.trains.technique * hi(k.technique) * gainMult(s, 'technique', 'train')),
   };
 }
 

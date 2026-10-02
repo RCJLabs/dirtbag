@@ -7,7 +7,7 @@ import { BODY, FOOD, LIFESTYLE, MONEY, SUPPLIES, type Lifestyle } from './dials'
 import { isSick, SICK_NAME, sickOdds } from './sick';
 import { psycheBy, psycheDay, psycheWord, type PsycheWord } from './psyche';
 import { MEAL_NAME } from './content/food';
-import { livingTonight } from './jobs';
+import { livingTonight, skimps } from './jobs';
 import { weeklyBills } from './clinic';
 import { nightAt, type Night } from './spots';
 import { conditions, type Sky } from './weather';
@@ -83,7 +83,7 @@ export function tonight(s: GameState): Tonight {
       life.energy +
       night.energy,
     hungry,
-    living: { tier: s.lifestyle, ...life, skimped: !rough && life !== LIFESTYLE[s.lifestyle] },
+    living: { tier: s.lifestyle, ...life, skimped: !rough && s.lifestyle !== 'dirtbag' && skimps(s, spot) },
     skin: BODY.sleepSkin + life.skin,
     bills,
     billsIn,

@@ -75,7 +75,7 @@ import {
   trainBlocked,
 } from './sessions';
 import { JOBS } from './content/jobs';
-import { livingTonight, raiseAt, rankAt, rankName, shiftsAt, signupBlocked, tipsFor } from './jobs';
+import { livingTonight, raiseAt, rankAt, rankName, shiftsAt, signupBlocked, skimps, tipsFor } from './jobs';
 import { freshTraining, PHASE_NAME, phaseLock, taperDay, taperWait } from './training';
 import {
   ROUTES,
@@ -177,6 +177,9 @@ import { PARTNERS, tierOf, whereNow } from './presence';
 import { hashSeed, Rng } from './rng';
 import { aimMet, currentGoal } from './story';
 import { newlyEarned } from './record';
+import { dealTalents, gainMult, payMult, shopMult, talentsShowing } from './identity';
+import { CAME_ACROSS, ORIGINS } from './content/origins';
+import { TALENTS } from './content/talents';
 import type {
   PhaseId,
   Action,
@@ -258,6 +261,8 @@ export function newGame(seed: string): GameState {
     expedition: null,
     booked: null,
     book: [],
+    origin: null,
+    talents: { ids: [], known: [], from: { power: 0, fingers: 0, endurance: 0, technique: 0, head: 0 } },
     record: {},
     speed: { pb: null, runs: 0, day: 0 },
     mode: 'rope',
@@ -324,7 +329,15 @@ export const restCost = (r: RouteDef): number => CLIMB.restMin[r.disc];
 // every hour it takes.
 export function actCost(s: GameState, d: ActDef): Delta {
   // A shift pays its rank's raise on top.
-  if (d.job) return { ...d.cost, cash: (d.cost.cash ?? 0) + raiseAt(s, d.job.id) * d.job.shifts };
+  // Where you came from moves it (Phase 23.2).
+  if (d.job)
+    return {
+      ...d.cost,
+      cash: Math.round(((d.cost.cash ?? 0) + raiseAt(s, d.job.id) * d.job.shifts) * payMult(s)),
+    };
+  // What you buy, kit or food, at what your origin pays for it (Phase 23.2).
+  if ((d.gear || d.buys) && (d.cost.cash ?? 0) < 0)
+    return { ...d.cost, cash: Math.round((d.cost.cash ?? 0) * shopMult(s)) };
   // A repair costs its share of the part's price, by wear.
   if (d.van) return { ...d.cost, cash: -repairCost(s, d.van) };
   // The clinic's care, on your plan (Phase 22.4a), and a doctor's (22.4c).
@@ -611,7 +624,7 @@ export function act(s0: GameState, a: Action): Result {
     const rough = !!night?.rough;
     // How you live is paid at the van, after the spot, while the card still takes it.
     const life = night && !rough ? livingTonight(s, night.cost) : LIFESTYLE.dirtbag;
-    const skimped = !!night && !rough && life !== LIFESTYLE[s.lifestyle];
+    const skimped = !!night && !rough && s.lifestyle !== 'dirtbag' && skimps(s, night.cost);
     const ticket = !!night && night.spot === 'lot' && !rough && ticketRoll(s);
     if (night) {
       s.cash -= night.cost;
@@ -1531,11 +1544,28 @@ export function act(s0: GameState, a: Action): Result {
         const skills = carried(a.carry);
         if (!skills) return refuse("That climber didn't make it across.");
         s.climber = { name, start: CARRIED, skills };
+        // Phase 23.2: they say where they came from, and nothing's re-dealt.
+        s.origin = CAME_ACROSS;
+        s.talents = { ids: [], known: [], from: { ...skills } };
         break;
       }
       const start = STARTS[a.start];
       if (!start) return refuse('Pick how you climb.');
-      s.climber = { name, start: a.start, skills: { ...start.skills } };
+      const origin = a.origin ? ORIGINS[a.origin] : undefined;
+      if (a.origin && !origin) return refuse('Pick where you came from.');
+      const skills = { ...start.skills };
+      // Phase 23.2: where you came from, on top of how you climb; and what's in you, dealt.
+      if (origin) {
+        for (const [k, v] of Object.entries(origin.skills) as [keyof Skills, number][])
+          skills[k] = Math.max(1, skills[k] + v);
+        s.cash += origin.fx.cash ?? 0;
+        s.origin = a.origin!;
+      }
+      s.climber = { name, start: a.start, skills };
+      // Talents come with an origin: the climber the screen makes; a bare one (a test's, a
+      // bot's) gets neither.
+      s.talents = { ids: origin ? dealTalents(s.seed) : [], known: [], from: { ...skills } };
+      if (origin) line(origin.open);
       if (a.solo) s.mode = 'solo';
       break;
     }
@@ -2283,7 +2313,10 @@ export function act(s0: GameState, a: Action): Result {
       const spent = ratio(s.load) > LOAD.slow ? LOAD.slowGains : 1;
       for (const k of Object.keys(got) as (keyof Skills)[]) {
         const gym = INDOOR[r.place]?.specialty.includes(k) ? CLIMB.gymSpecialty : 1;
-        got[k] = round2(got[k]! * CLIMB.learn * (lap ? CLIMB.repeatLearn : 1) * gym * spent);
+        const where = indoor(r.place) ? 'in' : 'out';
+        got[k] = round2(
+          got[k]! * CLIMB.learn * (lap ? CLIMB.repeatLearn : 1) * gym * spent * gainMult(s, k, where),
+        );
       }
       // Leading on gear you placed yourself is a lesson for the head.
       if (r.disc === 'trad' && res.sent)
@@ -2419,6 +2452,15 @@ export function act(s0: GameState, a: Action): Result {
       line(`First season done. There's ${money(ACT_I_END.cash)} in the glovebox you'd forgotten about.`);
     }
   }
+  // Phase 23.2: a talent you didn't know you had, now you do.
+  if (s.climber.name)
+    for (const id of talentsShowing(s)) {
+      s.talents.known.push(id);
+      const t = TALENTS[id]!;
+      note(
+        `${t.good ? 'Something you didn’t know about yourself' : 'Something you’d rather not know'}: ${t.name}. ${t.desc}`,
+      );
+    }
   // Phase 23.1: anything that's just gone in the Record Book, each with its card.
   if (s.climber.name) {
     const got = newlyEarned(s);

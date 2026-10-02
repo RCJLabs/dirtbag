@@ -1,5 +1,16 @@
 import { useState } from 'react';
-import { CARRIED, carried, gradeOf, MONEY, NAME_MAX, SKILLS, STARTS, type Skills } from '../sim';
+import {
+  CARRIED,
+  carried,
+  gradeOf,
+  MONEY,
+  NAME_MAX,
+  ORIGINS,
+  originTerms,
+  SKILLS,
+  STARTS,
+  type Skills,
+} from '../sim';
 import type { Game } from '../game/game';
 import { findLegacy, saveLegacyFile } from '../game/legacy';
 import { SKILL_NAME } from './sheets';
@@ -15,6 +26,9 @@ export function Create({ game }: { game: Game }) {
   const [start, setStart] = useState(carry ? CARRIED : 'allrounder');
   const [kept, setKept] = useState(false);
   const [solo, setSolo] = useState(false);
+  // Phase 23.2: where you came from, a perk and its cost.
+  const [origin, setOrigin] = useState('quit');
+  const across = start === CARRIED;
   const ok = name.trim().length > 0;
   return (
     <form
@@ -23,7 +37,14 @@ export function Create({ game }: { game: Game }) {
       aria-labelledby="create-title"
       onSubmit={(e) => {
         e.preventDefault();
-        if (ok) game.create(name, start, start === CARRIED ? (old?.skills ?? undefined) : undefined, solo);
+        if (ok)
+          game.create(
+            name,
+            start,
+            across ? (old?.skills ?? undefined) : undefined,
+            solo,
+            across ? undefined : origin,
+          );
       }}
     >
       <h2 id="create-title">Who's in the van?</h2>
@@ -84,6 +105,33 @@ export function Create({ game }: { game: Game }) {
           </button>
         ))}
       </div>
+      {!across && (
+        <>
+          <p className="crux">Where you came from</p>
+          <div role="radiogroup" aria-label="Where you came from" className="starts origins">
+            {Object.entries(ORIGINS).map(([id, o]) => {
+              const t = originTerms(o);
+              return (
+                <button
+                  type="button"
+                  key={id}
+                  id={`o-${id}`}
+                  className="start"
+                  role="radio"
+                  aria-checked={origin === id}
+                  onClick={() => setOrigin(id)}
+                >
+                  <b>{o.name}</b>
+                  <small>{o.blurb}</small>
+                  <small>{skillShift(o.skills)}</small>
+                  <small className="perk">{t.perks.join(' ')}</small>
+                  <small className="cost">{t.costs.join(' ')}</small>
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
       <button
         type="button"
         className="opt"
@@ -102,12 +150,20 @@ export function Create({ game }: { game: Game }) {
       <button type="submit" className="go" id="c-go" disabled={!ok}>
         Start
         <small>
-          ${MONEY.start}, a van, and Hazel at the fire.{solo ? ' No rope.' : ''}
+          ${MONEY.start + (across ? 0 : (ORIGINS[origin]?.fx.cash ?? 0))}, a van, and Hazel at the fire.
+          {solo ? ' No rope.' : ''}
         </small>
       </button>
     </form>
   );
 }
+
+// An origin's skills on top of the start's, strongest first: "Power +5, Head −5".
+const skillShift = (d: Partial<Skills>): string =>
+  (Object.entries(d) as [keyof Skills, number][])
+    .sort((a, b) => b[1] - a[1])
+    .map(([k, v]) => `${SKILL_NAME[k]} ${v > 0 ? '+' : '−'}${Math.abs(v)}`)
+    .join(', ');
 
 // What coming across does to a v0.956 climber, in the grades it's worked out from.
 const carryLine = (was: number, now: number): string =>

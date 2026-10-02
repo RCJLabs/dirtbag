@@ -241,6 +241,8 @@ function bestBeta(s: GameState, r: RouteDef): { picks: [string, string][]; worst
 export interface WeekOpts {
   days?: number;
   start?: string;
+  // Where the bot came from (Phase 23.2); none, as a test's climber, by default.
+  origin?: string;
   strategy?: Strategy;
   // A moderate climber warms up, stops for the day when their body starts talking (the
   // load ratio over 1.3), and waits for a spotter on a highball; a reckless one does none
@@ -886,7 +888,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     bed();
   }
 
-  go({ t: 'create', name: 'Bot', start: opts.start ?? 'allrounder' });
+  go({ t: 'create', name: 'Bot', start: opts.start ?? 'allrounder', origin: opts.origin });
   const end = s.day + (opts.days ?? 7);
   for (let guard = 0; s.day < end; guard++) {
     if (guard > (opts.days ?? 7) * 2)

@@ -10,6 +10,7 @@ import { BODY, INJURY, LOAD, SCARS } from './dials';
 import { scarred } from './scars';
 import { Rng } from './rng';
 import { riskFactor } from './training';
+import { injuryMult } from './identity';
 import type { GameState, Injury, Load } from './types';
 
 const round2 = (v: number) => Math.round(v * 100) / 100;
@@ -63,6 +64,8 @@ export function injuryChance(s: GameState, r: { type: Style }, load: number, was
     hungry *
     (load / LOAD.perGo) *
     riskFactor(s) *
+    // Your tendons, where the line loads the fingers (Phase 23.2).
+    injuryMult(s, r.type) *
     // An old injury where this style loads you (Phase 22.4b).
     (scarred(s, r.type) ? SCARS.risk : 1)
   );
