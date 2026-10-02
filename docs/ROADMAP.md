@@ -2087,6 +2087,43 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 **Depends on:** Phases 21–22. **Effort:** ~5–8 weeks [INFERRED].
 
+**Plan on the rebuild (2 Oct 2026), with Evan's calls.**
+
+*Two problems first:*
+- **No reputation to hang it on.** v0.956 paid feats, callings, paths and stances in rep and followers, and faction standing came out of them. The rebuild has neither; they're Phase 18's (sponsors and media), not built. Everything here rewards in what exists (cash, psyche, bond, a line in Phase 16's epilogue) or is its own reward.
+- **Creation's weight.** The audit's sharpest first-hour finding: forty numeric trade-offs before the first climb. R1 cut creation to a name and a start for it; this phase mustn't put them back.
+
+*The principles:*
+- **Identity mostly emerges from play:** talents revealed by reps, quirks named from your habits, paths claimed once earned.
+- **Gates in grades across the whole career,** never v0.956's 0–100 scale that ran out by V5.
+- **One layer per job:** the Record Book (feats, milestones and story cards in one), the Board (one weekly board, auto-claimed), and Life Goals (the spine, Phase 16's). The audit's ~28 trackers become three.
+- **Content is data,** checked by tests; the harness tells two made climbers apart (criterion 1).
+
+*Evan's calls (2 Oct 2026), taking every recommendation:*
+1. **Creation:** a name, a start and an origin; the calling and the rest come later, in play.
+2. **Flaws fold into origins:** each origin a perk with a stated cost, as the Late Bloomer's was.
+3. **Build (body type) is cut:** its ±2–5% by route type never showed.
+4. **Personality's four axes are cut:** callings, factions and stances cover them.
+5. **Two factions now,** the old guard (trad and the locals) and the gym crowd; comp and media come with their phases.
+6. **Paths:** Power, Fingers, Head, Style and Dirtbag now; Comp and Scene wait for comps and media. Tier 3 gives a passive edge and a title, not v0.956's once-a-day active.
+7. **Rewards with no rep:** the book entry is its own; Board jobs pay small cash under the no-farm harness; callings and stances pay psyche now and feed Phase 16's epilogues.
+8. **Hidden talents** revealed by reps stay.
+9. **Homecoming** stays, once a life, paying cash and psyche for now.
+10. **A year is 56 days** (the audit's clock fix).
+11. **A climber carried across from v0.956** gets an origin that says so, and no talents re-rolled.
+
+*The slices:*
+- **23.1 The Record Book.** v0.956's 29 feats, 5 milestones and 8 story cards merged and de-duplicated, each feat with its story card; fed by what's already kept (sends, first ascents, the expedition book, the dogs). Stable ids for Phase 14's Steam achievements. Save change.
+- **23.2 Origins, and what's in you.** An origin chosen at creation, each a perk and its cost; hidden talents revealed after reps. Designed against criterion 1's harness check from the start: an origin has to show in a first week. Save change.
+- **23.3 Callings.** A temperament and its three-rung ambition, keyed to sends, taken up in play.
+- **23.4 Paths and Mastery.** Two of five paths, tiers near V4, V9 and V14; hybrids and style mastery merged into one Mastery track; a quirk named from your habits.
+- **23.5 The scene: factions and stances.** v0.956's five dilemmas and their echoes later; clubs folded in as faction perks.
+- **23.6 The Board.** One weekly board.
+- **23.7 The year.** A recap every 56 days, and Homecoming.
+- **23.8 The harness and the e2e.** Two climbers made differently play differently in their first week, and the harness tells them apart; every echo lands; every feat v0.956 celebrated is in the book.
+
+*The risk:* criterion 1 gets harder with every choice moved out of creation. With creation at a name, a start and an origin, the origin's perk and cost have to be big enough to show in week one; 23.2 tunes them against the harness, not by feel.
+
 ---
 
 ### Phase 16 — The spine: story, acts and endings
@@ -2448,3 +2485,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-02 — Phase 24.8 built: Trango's scene from base camp on the Trango glacier, day and night, clear and storm, your portaledge up Eternal Flame; its pitches on golden granite over the glacier. Every objective has its scene: criterion 1 passes. 0.992.0.
 - 2026-10-02 — Phase 24.9 built: the harness found summits paid every time and a climber past an objective could farm it, so a summit pays once, as a wall does [proposed]; a new target holds every repeat trip under a day of shifts at every grade; the e2e leads a pitch and plays a trip through, and found the expedition card covering the wall on every lead since 24.1 (fixed). All five Done-when criteria pass; closing Phase 24 is Evan's call. 0.993.0.
 - 2026-10-02 — Phase 24 closed by Evan's call, confirming 24.9's rule that a summit pays once; the keepsake trip card and the odds above an objective's grade carry to a polish pass. CURRENT MILESTONE moved to Phase 23, who you are; it gets planned on the rebuild next.
+- 2026-10-02 — Phase 23 planned on the rebuild, with Evan's calls: creation is a name, a start and an origin (flaws folded into origins; build and personality cut); identity emerges in play (talents, callings, paths with grade gates, quirks); two factions now; no rep, so rewards are the book, small cash, psyche and the epilogue; a year is 56 days; eight slices from the Record Book to the harness.
