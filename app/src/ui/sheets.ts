@@ -70,6 +70,10 @@ import {
   wallEventById,
   wallNote,
   recordById,
+  CALLINGS,
+  OPEN_CALLINGS,
+  callingTerms,
+  ambitionText,
   highPoint,
   lastTrip,
   storyBlocked,
@@ -900,6 +904,32 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         ],
         close: false,
         rows: [{ label: 'Right', run: () => game.closeSheet() }],
+      };
+    }
+
+    // Phase 23.3: what you're climbing for. Asked once, at the fire; put off, it waits on the
+    // You page.
+    case 'calling': {
+      if (s.calling.id) return null;
+      return {
+        title: 'What are you climbing for?',
+        sub: 'Hazel, at the fire: “You’ve sent enough to know what you like. So what is it you’re after?” Whatever you say, you’re saying it for good.',
+        close: false,
+        rows: [
+          ...OPEN_CALLINGS.map((cid) => {
+            const c = CALLINGS[cid]!;
+            const t = callingTerms(c);
+            return {
+              label: c.name,
+              note: `${c.blurb} ${[...t.perks, ...t.costs].join(' ')} Ambition: ${ambitionText(c)}.`,
+              run: () => {
+                game.dispatch({ t: 'calling', id: cid });
+                game.closeSheet();
+              },
+            };
+          }),
+          { label: 'Not yet', note: 'It’ll keep, on the You page.', run: () => game.closeSheet() },
+        ],
       };
     }
 

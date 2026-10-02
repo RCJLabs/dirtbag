@@ -923,3 +923,8 @@ export const FREESOLO = {
 // Phase 23.2 [proposed]: a talent shows once its skill has come on this far since you started
 // (v0.956 showed one after four reps; on this scale, about a fortnight's climbing).
 export const TALENT = { reveal: 6 };
+
+// Phase 23.3 [proposed]: a calling's offered once you've sent this many lines (enough to know
+// what you like); a grade's consolidated at this many lines sent at it (v0.956's five); and
+// what each rung of its ambition lifts psyche by (a new crag's 6, for scale).
+export const CALLING = { offerAt: 10, consolidate: 5, psyche: [8, 12, 16] };

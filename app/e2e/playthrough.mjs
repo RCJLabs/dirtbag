@@ -160,11 +160,20 @@ async function bookCards() {
   for (let i = 0; i < 4; i++) {
     const t = await page.evaluate(() => {
       const sh = document.querySelector('#sheet');
-      return sh && /In the Record Book/.test(sh.textContent ?? '')
-        ? (document.querySelector('#sheet-title')?.textContent ?? '?')
-        : null;
+      const title = document.querySelector('#sheet-title')?.textContent ?? '?';
+      if (title === 'What are you climbing for?') return 'calling';
+      return sh && /In the Record Book/.test(sh.textContent ?? '') ? title : null;
     });
     if (!t) return;
+    // Phase 23.3: asked what you're climbing for, after enough sends; the Purist, first on
+    // the list (and what Enter takes on the keyboard day).
+    if (t === 'calling') {
+      log('asked what you’re climbing for: The Purist');
+      if (holdKey) await page.keyboard.press('Enter');
+      else await page.locator('#sheet .opt', { hasText: 'The Purist' }).first().click();
+      await page.waitForTimeout(150);
+      continue;
+    }
     booked.push(t);
     log(`record book: ${t}`);
     // On the keyboard day, as a keyboard player would: the sheet focuses its button.
@@ -719,7 +728,8 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 32 ||
+  saved?.v !== 33 ||
+  typeof st.calling?.offered !== 'boolean' ||
   st.origin !== 'quit' ||
   st.talents?.ids?.length !== 2 ||
   !Array.isArray(st.book) ||

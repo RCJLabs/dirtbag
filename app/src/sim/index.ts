@@ -254,7 +254,10 @@ export {
   shopMult,
   originBill,
   gainMult,
+  callingOf,
 } from './identity';
+export { CALLINGS, OPEN_CALLINGS, type Calling } from './content/callings';
+export { ambitionText, callingTerms, rungText, rungMet } from './calling';
 export { ORIGINS, CAME_ACROSS, CAME_ACROSS_NAME, type Origin } from './content/origins';
 export { TALENTS, type Talent } from './content/talents';
 export { soloed } from './solo';

@@ -192,6 +192,10 @@ export interface GameState {
   // day you started, which they show against.
   origin: string | null;
   talents: { ids: string[]; known: string[]; from: Skills };
+  // Phase 23.3. What you're climbing for (content/callings.ts), or null; the day you took it
+  // up, which its ambition counts from; the day each rung was met; and whether it's been
+  // offered (it's offered once, then waits on the You page).
+  calling: { id: string | null; since: number; rungs: number[]; offered: boolean };
   // Phase 23.1. The Record Book: each entry you've earned (content/record.ts), and the day.
   record: Record<string, number>;
   // Phase 21.6. The speed wall at Send City: your best time in seconds, and today's runs.
@@ -317,6 +321,8 @@ export interface Delta {
 export type Action =
   // `carry`: a v0.956 climber's skills, when they come across rather than picking a start.
   | { t: 'create'; name: string; start: string; origin?: string; carry?: Skills; solo?: true }
+  // Phase 23.3: take up a calling.
+  | { t: 'calling'; id: string }
   | { t: 'act'; act: string }
   | { t: 'say'; talk: string; node: string; opt: number }
   | { t: 'travel'; to: string }
@@ -430,6 +436,8 @@ export type GameEvent =
   // Entries in the Record Book, just earned (Phase 23.1): one moment, one card, the first
   // entry's story and the rest named under it.
   | { k: 'record'; ids: string[] }
+  // Phase 23.3: a calling offered, or a rung of its ambition met.
+  | { k: 'calling' }
   // The action wasn't allowed; `why` says so in the game's voice.
   | { k: 'refused'; why: string };
 

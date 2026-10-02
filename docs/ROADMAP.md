@@ -2143,6 +2143,14 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Criterion 1, measured, not yet tuned:** bots by origin over a week (12 seeds, the balanced and climber strategies) end with the same sends ±1 and skill totals within ~15 of each other; the extra cash goes on the same purchases, so it barely shows at day 7. A bot plays every origin the same way; making two climbers play differently is 23.8's harness work. The default bot has no origin, so the harness's numbers don't move.
 - **E2e:** picks Sold It All, checks its terms and the $191 start, and expects its pay through the run.
 
+**Status (2 Oct 2026): 23.3 built: callings.** Save v33, 0.996.0.
+- **Asked, not picked at creation** (Evan's call 1): once you've sent ten lines, Hazel asks at the fire what you're climbing for. Take one up for good, or put it off; it waits on the You page.
+- **Three on offer,** v0.956's Purist, Send-or-Bust and Lifer, each a perk said from its own numbers: 15% more learned outside; cruxes 5% kinder on a line's first go, at 10% more chance of getting hurt; nights 20% cheaper and 25% less chance of getting hurt. The Influencer waits on followers and sponsors (Phase 18). All numbers [proposed], v0.956's where it had them.
+- **The ambition:** three rungs each, counted from the day you took it up: a V8, V11 and V14 sent outside; a V6, V9 and V12 flashed outside; five, nine and thirteen grades consolidated (five lines sent at each, v0.956's rule). Each rung pays psyche (8, 12, 16) and a note, once; the You page shows the ladder. Phase 16's epilogues will read it.
+- **Personality and faction seeds are cut** with personality (Evan's call 4).
+- **Measured, by bot** (10 seeds, the balanced strategy): a Purist ends week one with ~12% more skill; a Lifer ~$20 more in hand; every Send-or-Bust bot meets its first rung in week one, but bots climb with perfect hands, so flashes come easier to them than to a player. By day 28 every Purist has its first rung, and the ten Lifers have seven rungs between them. The default bot takes no calling, so the harness doesn't move.
+- **Not in the e2e:** its five days stop short of ten sends, so the offer is checked by the sim's tests and by eye (the card and the You page, previewed).
+
 ---
 
 ### Phase 16 — The spine: story, acts and endings
@@ -2507,3 +2515,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-02 — Phase 23 planned on the rebuild, with Evan's calls: creation is a name, a start and an origin (flaws folded into origins; build and personality cut); identity emerges in play (talents, callings, paths with grade gates, quirks); two factions now; no rep, so rewards are the book, small cash, psyche and the epilogue; a year is 56 days; eight slices from the Record Book to the harness.
 - 2026-10-02 — Phase 23.1 built: the Record Book. v0.956's 42 feats, milestones and story cards merged to 37 entries, each with its story; 27 earned from what the game keeps, 10 waiting on unbuilt systems; one moment gives one card; a Record page in the journal; old saves fill it quietly. Save v31. 0.994.0.
 - 2026-10-02 — Phase 23.2 built: six origins at creation, each a perk and a cost said from its own numbers [proposed]; 11 hidden talents dealt with one, shown once their skill has come on; a carried climber came across with nothing dealt. Bots by origin differ only modestly in week one; tuning that is 23.8's. Save v32. 0.995.0.
+- 2026-10-02 — Phase 23.3 built: callings, asked at the fire after ten sends rather than at creation; the Purist, Send-or-Bust and the Lifer, each a perk and a three-rung ambition counted from the day you take it up, paying psyche [proposed]; the Influencer waits on followers. Save v33. 0.996.0.

@@ -102,6 +102,7 @@ import {
   HIGHBALL,
   INJURY,
   LIFESTYLE,
+  CALLING,
   LOAD,
   MONEY,
   PLANS,
@@ -177,7 +178,9 @@ import { PARTNERS, tierOf, whereNow } from './presence';
 import { hashSeed, Rng } from './rng';
 import { aimMet, currentGoal } from './story';
 import { newlyEarned } from './record';
-import { dealTalents, gainMult, payMult, shopMult, talentsShowing } from './identity';
+import { callingOf, dealTalents, gainMult, payMult, shopMult, talentsShowing } from './identity';
+import { callingDue, newRungs, rungText } from './calling';
+import { CALLINGS, OPEN_CALLINGS } from './content/callings';
 import { CAME_ACROSS, ORIGINS } from './content/origins';
 import { TALENTS } from './content/talents';
 import type {
@@ -263,6 +266,7 @@ export function newGame(seed: string): GameState {
     book: [],
     origin: null,
     talents: { ids: [], known: [], from: { power: 0, fingers: 0, endurance: 0, technique: 0, head: 0 } },
+    calling: { id: null, since: 0, rungs: [], offered: false },
     record: {},
     speed: { pb: null, runs: 0, day: 0 },
     mode: 'rope',
@@ -1536,6 +1540,16 @@ export function act(s0: GameState, a: Action): Result {
       break;
     }
 
+    // Phase 23.3: what you're climbing for, for good.
+    case 'calling': {
+      if (!s.climber.name) return refuse('Make a climber first.');
+      if (s.calling.id) return refuse('You know what you’re climbing for.');
+      if (!OPEN_CALLINGS.includes(a.id)) return refuse('Not one you can take up.');
+      s.calling = { id: a.id, since: s.day, rungs: [], offered: true };
+      line(`${CALLINGS[a.id]!.name}. You say it out loud, once, to nobody.`);
+      break;
+    }
+
     case 'create': {
       if (s.climber.name) return refuse('You already are who you are.');
       const name = a.name.trim().slice(0, NAME_MAX).trim();
@@ -2466,6 +2480,20 @@ export function act(s0: GameState, a: Action): Result {
     const got = newlyEarned(s);
     for (const r of got) s.record[r.id] = s.day;
     if (got.length) events.push({ k: 'record', ids: got.map((r) => r.id) });
+  }
+  // Phase 23.3: asked what you're climbing for, once; and a rung of its ambition, met.
+  if (s.climber.name) {
+    if (callingDue(s)) {
+      s.calling = { ...s.calling, offered: true };
+      events.push({ k: 'calling' });
+    }
+    const c = callingOf(s);
+    for (const i of c ? newRungs(s) : []) {
+      s.calling = { ...s.calling, rungs: [...s.calling.rungs, s.day] };
+      const p = CALLING.psyche[i] ?? 0;
+      s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + p) };
+      note(`${c!.name}, ${i + 1} of ${c!.rungs.length}: ${rungText(c!.rungs[i]!)}. ${c!.said[i]}`);
+    }
   }
   return { state: s, events };
 }
