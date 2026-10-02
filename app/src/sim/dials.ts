@@ -960,5 +960,11 @@ export const BOARD = { jobs: 3, capDays: 2 };
 // closer (the audit's fix: v0.956 counted diary entries as "lives shaped"). Two, of the
 // game's three: Hazel and Sage, or one of them and the rival you've made a friend of.
 export const YEAR = { days: 56 };
+// Age (Phase 16.1, Evan's call 2): v0.956's clock, a year of age every `days` days (about
+// three to the 56-day year; called age, never a year). You start at `start`, an origin can
+// add to it; hanging it up is yours from `from`; your body calls it at `forced`, and from
+// `warn` the You page counts the days down. 22 to 45 is day 415, about V14 for the career
+// bot: inside Phase 16's 15–25 hours, where V18 (day ~900) isn't. No decline with age.
+export const AGE = { start: 22, days: 18, from: 30, warn: 43, forced: 45 };
 export const HOME = { people: 2, tier: 2, cash: 200, psyche: 20 };
 export const QUIRK = { after: 30, fresh: 70, tired: 35, evening: 17 * 60, dawn: 9 * 60, easy: 2 };

@@ -126,6 +126,7 @@ import {
   WALL,
   WINTER,
   WORK,
+  AGE,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
 import { WALL_EVENTS, wallEventById } from './content/wallevents';
@@ -198,6 +199,7 @@ import { CALLING_SCENE, ECHOES } from './content/scene';
 import { echoDue, echoOpts, permitFor, shift, stanceDue, stanceOpts } from './scene';
 import { boardWeek, jobProgress, postBoard } from './board';
 import { homeCrowd, homeReady, yearsDone } from './year';
+import { ageOf, birthdayLine, retireBlocked } from './age';
 import { BOARD_JOBS } from './content/board';
 import { CALLINGS, OPEN_CALLINGS } from './content/callings';
 import { CAME_ACROSS, ORIGINS } from './content/origins';
@@ -293,6 +295,7 @@ export function newGame(seed: string): GameState {
     scene: { old: FACTION.start, gym: FACTION.start, stances: [], echoes: [], last: 0, echoLast: 0 },
     board: { week: 0, jobs: [], shifts0: 0, sessions: 0 },
     year: { recapped: 0, home: 'none' },
+    life: { held: 0, told: 0, retired: null },
     record: {},
     speed: { pb: null, runs: 0, day: 0 },
     mode: 'rope',
@@ -826,6 +829,28 @@ export function act(s0: GameState, a: Action): Result {
       );
     }
     rivalNight(ended);
+    // Phase 16.1: the birthdays that change something, and the night in the van your body
+    // calls it. Never on a wall or away: it waits for you to get down.
+    if (s.climber.name && !s.life.retired) {
+      const age = ageOf(s);
+      if (age > s.life.told) {
+        s.life = { ...s.life, told: age };
+        const b = birthdayLine(s);
+        if (b) line(b);
+      }
+      if (where === 'van' && age >= AGE.forced) retire(true);
+    }
+  };
+  // Phase 16.1: hung up, by choice or by your body: nothing more happens to this climber.
+  const retire = (forced: boolean) => {
+    s.life = { ...s.life, retired: { day: s.day, forced } };
+    s.encounter = null;
+    line(
+      forced
+        ? `${AGE.forced}. You wake up and your body has made the call for you: no more projects, no more one-more-go. It was a good run.`
+        : 'You hang it up. The shoes go in a box, the chalk bag on a nail. It was a good run.',
+    );
+    events.push({ k: 'retired', forced });
   };
   // A pitch of a wall done: on to the next, or the summit. It pays once, the first time.
   const wallPitch = (id: string, lap: boolean) => {
@@ -1371,6 +1396,8 @@ export function act(s0: GameState, a: Action): Result {
 
   // A Free Solo run that ended: nothing more happens to this climber.
   if (s.dead) return refuse('That climber is gone.');
+  // Phase 16.1: hung up; the tally's all that's left.
+  if (s.life.retired) return refuse('You’ve hung it up.');
 
   // A hand of liar's dice (Phase 22.9a): finish it first.
   if (s.table && a.t !== 'dice' && a.t !== 'stand' && a.t !== 'pick') return refuse('Finish the hand first.');
@@ -1569,6 +1596,14 @@ export function act(s0: GameState, a: Action): Result {
     }
 
     // Phase 23.7: the Homecoming, armed for your next send outside, or put off.
+    // Phase 16.1: hanging it up, from 30.
+    case 'retire': {
+      const why = retireBlocked(s);
+      if (why) return refuse(why);
+      retire(false);
+      break;
+    }
+
     case 'home': {
       if (typeof s.year.home === 'number') return refuse('That’s been had.');
       if (a.arm && !homeReady(s)) return refuse('Not enough people out here yet.');

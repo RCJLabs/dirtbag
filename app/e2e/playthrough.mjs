@@ -742,7 +742,9 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 37 ||
+  saved?.v !== 38 ||
+  st.life?.retired !== null ||
+  st.life.told !== 22 ||
   st.year?.home !== 'none' ||
   !Array.isArray(st.board?.jobs) ||
   typeof st.scene?.old !== 'number' ||
@@ -2247,6 +2249,50 @@ console.log('A later life');
     await fail(`later: the save: ${JSON.stringify({ calling: st.calling, year: st.year, scene: st.scene })}`);
   log('later: the Purist taken up, the Homecoming armed, the call kept');
   await later.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-later-you.png`) });
+  await ctx.close();
+}
+
+console.log('Hanging it up');
+// Phase 16.1: the day-five climber at day 380, 43 by the clock: the countdown on the You page,
+// hanging it up, asked first, and the tally; then a new climber from it.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  saved.state = { ...saved.state, day: 380, min: 10 * 60, at: 'lot', x: null, encounter: null };
+  saved.state.life = { held: 0, told: 43, retired: null };
+  saved.state.year = { ...saved.state.year, recapped: 6 };
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  await ctx.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+  }, JSON.stringify(saved));
+  const old = await ctx.newPage();
+  old.on('pageerror', (e) => problems.push(`old: uncaught: ${e.message}`));
+  old.on('console', (m) => m.type() === 'error' && problems.push(`old: console.error: ${m.text()}`));
+  await old.goto(server.url, { waitUntil: 'load' });
+  const sheet = () => old.evaluate(() => document.querySelector('#sheet')?.textContent ?? '');
+  const title = () => old.evaluate(() => document.querySelector('#sheet-title')?.textContent ?? '');
+  await old.click('#h-you');
+  await old.waitForSelector('#age');
+  const age = await old.evaluate(() => document.querySelector('#age')?.textContent ?? '');
+  if (!/^43\. Your body calls it at 45: 35 days left\./.test(age)) await fail(`old: the age row: ${age}`);
+  log(`old: ${age}`);
+  await old.click('#hangup');
+  await old.waitForFunction(() => document.querySelector('#sheet-title')?.textContent === 'Hang it up?');
+  await old.locator('#sheet .opt', { hasText: 'Hang it up' }).first().click();
+  await old.waitForFunction(() => document.querySelector('#sheet-title')?.textContent === 'A climbing life');
+  const tally = await sheet();
+  if (!/43: 21 years on rock\. You called it yourself\./.test(tally) || !/in the Record Book/.test(tally))
+    await fail(`old: the tally: ${tally.slice(0, 400)}`);
+  log(`old: ${tally.slice(0, 140)}`);
+  await old.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-old-tally.png`) });
+  // It stays the tally: a reload comes back to it.
+  await old.reload({ waitUntil: 'load' });
+  await old.waitForFunction(() => document.querySelector('#sheet-title')?.textContent === 'A climbing life');
+  const st = await old.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  if (!st.life.retired || st.life.retired.forced || st.life.retired.day !== 380 || st.record.retired !== 380)
+    await fail(`old: the save: ${JSON.stringify({ life: st.life, record: st.record.retired })}`);
+  await old.locator('#sheet .opt', { hasText: 'Start a new climber' }).first().click();
+  await old.waitForFunction(() => document.querySelector('#sheet-title')?.textContent !== 'A climbing life');
+  log(`old: a new climber, from ${await title()}`);
   await ctx.close();
 }
 

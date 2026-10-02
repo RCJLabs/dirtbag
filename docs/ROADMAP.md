@@ -2249,6 +2249,16 @@ Players will ask "what am I working towards?" by hour 3.
 
 *The risk:* criterion 1's hours rest on a minutes-per-day guess until someone plays it. The ending inside the window is retirement, so the 15–25 hours mostly sets the age clock; if testers play faster or slower, the clock's days are the dial.
 
+**Status (2 Oct 2026): 16.1 built: age and retirement.** Save v38, 0.999.4.
+- **Age,** v0.956's clock: 22 at the start, a year every 18 days (about three to the 56-day year); the Late Bloomer starts at 32 again, and its button says what that costs ("10 years fewer before your body calls it"). The You page says how old you are and what's coming. No decline with age.
+- **Hanging it up** is yours from 30 (day 145; day 1 for a Late Bloomer), from the You page, asked first: it's for good.
+- **Your body calls it at 45** (day 415; day 235 for a Late Bloomer), the first night in the van: never on a wall or away, it waits for you to get down. A morning line at 30, 43 and 44, and from 43 the You page counts the days.
+- **The tally, "A climbing life":** your age and years on rock, who called it, an epitaph from what you did (v0.956's, less the rep and sponsors: a myth's first ascent, a summit, first ascents, V11 and up, or a life lived on rock), then only what happened: sends, inside and out, and the crags; the hardest; first ascents; summits; the calling's rungs; the roads you took and the ones you never walked; old injuries; the people close at the end; the dogs; the Record Book. A reload comes back to it; then a new climber. The heir is 16.5's.
+- **The Record Book's "The Long Game"** comes in: retiring earns it, so the book holds 28.
+- **An old save** past day 379 has its clock held back to 43 on loading, so nobody loads into their last night unwarned.
+- **No harness run:** no bot retires, and the season (56 days) and career (224) end before 45. The Late Bloomer at 32 is v0.956's cost and is now on top of its less spring (0.88): that may be one cost too many, [proposed], for Evan.
+- **E2e:** the day-five climber at day 380 sees the countdown, hangs it up, gets the tally, reloads to it, and starts again.
+
 ---
 
 ### Phase 17 — The people
@@ -2592,3 +2602,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-02 — Phase 23, criterion 1 by Evan's A and B: each origin starts its own first morning; bots play their origin and their start; a harness target tells week-one climbers apart (origins 87%, starts 48%). All three criteria pass; closing the phase is Evan's call. 0.999.3.
 - 2026-10-02 — Phase 23 closed by Evan's call; the boulderer and the all-rounder alike in week one carry. CURRENT MILESTONE moved to Phase 16, the spine; it gets planned on the rebuild next.
 - 2026-10-02 — Phase 16 planned on the rebuild, with Evan's calls: two endings (retirement inside the hours, The Line for whoever reaches V18, measured at ~day 900); v0.956's age clock with a countdown, retiring from 30, forced at 45; Acts II–V on the crags and trips that exist, comps later; the heir a kid you've coached. Six slices.
+- 2026-10-02 — Phase 16.1 built: age on v0.956's clock (22, a year every 18 days, the Late Bloomer 32); hanging it up from 30, asked first; your body calls it at 45, with a countdown from 43; the tally of a climbing life with an epitaph from what you did; The Long Game in the Record Book; old saves held back to 43. Save v38. 0.999.4.

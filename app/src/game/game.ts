@@ -145,6 +145,9 @@ export type SheetId =
   // Phase 21.6: the speed wall, and how a Free Solo run ended.
   | { k: 'speed' }
   | { k: 'dead' }
+  // Phase 16.1: hanging it up, asked first; and a climbing life, tallied.
+  | { k: 'hangup' }
+  | { k: 'retired' }
   // Broken down on the road (Phase 22.2a): the ways out.
   | { k: 'breakdown' }
   // Phase 22.6: an encounter waiting on your answer: a knock, a hitchhiker, a stop.
@@ -309,19 +312,21 @@ export class Game {
       state: this.state,
       view: home?.scene ? 'scene' : 'map',
       scene: home?.scene ?? 'lot',
-      sheet: this.state.dead
-        ? { k: 'dead' }
-        : this.state.breakdown
-          ? { k: 'breakdown' }
-          : this.state.encounter
-            ? { k: 'encounter' }
-            : this.state.table || this.state.cards
-              ? { k: 'fire' }
-              : this.state.expedition
-                ? { k: 'exped', id: this.state.expedition.id }
-                : home?.scene
-                  ? null
-                  : { k: 'place', id: this.state.at },
+      sheet: this.state.life.retired
+        ? { k: 'retired' }
+        : this.state.dead
+          ? { k: 'dead' }
+          : this.state.breakdown
+            ? { k: 'breakdown' }
+            : this.state.encounter
+              ? { k: 'encounter' }
+              : this.state.table || this.state.cards
+                ? { k: 'fire' }
+                : this.state.expedition
+                  ? { k: 'exped', id: this.state.expedition.id }
+                  : home?.scene
+                    ? null
+                    : { k: 'place', id: this.state.at },
       talk: null,
       toast: null,
       stamp: null,
@@ -404,6 +409,12 @@ export class Game {
       this.att = null;
       this.set({ sheet: { k: 'dead' }, climbing: false });
     }
+    // Hung up: the tally is all there is now.
+    if (this.state.life.retired && !before.life.retired) {
+      this.att = null;
+      this.cards = [];
+      this.set({ sheet: { k: 'retired' }, climbing: false });
+    }
     this.maybeCard();
     return r.events;
   }
@@ -443,6 +454,8 @@ export class Game {
       p = { ...p, sheet: { k: 'exped', id: x.id } };
     // A Free Solo climber who fell: that's all there is, until a new one.
     if (this.state.dead && 'sheet' in p && p.sheet?.k !== 'dead') p = { ...p, sheet: { k: 'dead' } };
+    if (this.state.life.retired && 'sheet' in p && p.sheet?.k !== 'retired')
+      p = { ...p, sheet: { k: 'retired' } };
     // An encounter (Phase 22.6): its card, until you've answered; on the road, once you're there.
     // A call at the crag after a go (Phase 23.5) waits for the go's own card to close.
     const goCard =

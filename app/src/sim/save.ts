@@ -8,7 +8,7 @@
 import { CARRIED, SKILLS, STARTS } from './climber';
 import { GEAR } from './content/gear';
 import { PLACES } from './content/places';
-import { FACTION, LIFESTYLE, PLANS, SPOTS, TRAIN, YEAR } from './dials';
+import { AGE, FACTION, LIFESTYLE, PLANS, SPOTS, TRAIN, YEAR } from './dials';
 import { JOBS } from './content/jobs';
 import { ROUTES, WALLS } from './content/routes';
 import { EXPEDITIONS } from './content/expeditions';
@@ -29,7 +29,7 @@ import { newMastery } from './paths';
 import { newlyEarned } from './record';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 37;
+export const SAVE_VERSION = 38;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -303,6 +303,18 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     const day = isInt(x.day) ? x.day : 1;
     return { ...x, year: { recapped: Math.floor((day - 1) / YEAR.days), home: 'none' } };
+  },
+  // v37 -> v38 (Phase 16.1): a clock for the life. A save already past the countdown's start
+  // has its clock held back to it, so nobody loads into their last night unwarned; the age
+  // you are on loading counts as said.
+  37: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const day = isInt(x.day) ? x.day : 1;
+    const start = AGE.start + (typeof x.origin === 'string' ? (ORIGINS[x.origin]?.fx.age ?? 0) : 0);
+    const warnDay = (AGE.warn - start) * AGE.days + 1;
+    const held = Math.max(0, day - warnDay);
+    const told = start + Math.floor(Math.max(0, day - 1 - held) / AGE.days);
+    return { ...x, life: { held, told, retired: null } };
   },
 };
 
@@ -728,6 +740,17 @@ export function validate(x: unknown): string[] {
       yr.recapped >= 0 &&
       (yr.home === 'none' || yr.home === 'armed' || (isInt(yr.home) && yr.home >= 0)),
     'year',
+  );
+  const lf = x.life;
+  need(
+    isObj(lf) &&
+      isInt(lf.held) &&
+      lf.held >= 0 &&
+      isInt(lf.told) &&
+      lf.told >= 0 &&
+      (lf.retired === null ||
+        (isObj(lf.retired) && isInt(lf.retired.day) && typeof lf.retired.forced === 'boolean')),
+    'life',
   );
   const hb = x.habits;
   need(

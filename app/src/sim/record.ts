@@ -45,6 +45,8 @@ export function aimEarned(s: GameState, aim: RecordAim, sent = sends(s)): boolea
   if ('dog' in aim) return !!s.dog || s.dogs.length > 0;
   if ('rival' in aim)
     return !!s.people.dex && gradeOf(s.climber.skills) > (gradeOfPerson(s.seed, 'dex', s.day) ?? 99);
+  // An old save filling the book on loading has no life yet.
+  if ('retired' in aim) return !!s.life?.retired;
   return false;
 }
 
