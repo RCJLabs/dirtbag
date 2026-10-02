@@ -8,6 +8,7 @@ import { ORIGINS, type Origin, type OriginFx } from './content/origins';
 import { INJURY_NAME } from './content/injuries';
 import { TALENTS } from './content/talents';
 import { PLANS, TALENT } from './dials';
+import { edgeGain, edgeInjury, edgeLiving } from './paths';
 import { Rng } from './rng';
 import type { GameState, Skills } from './types';
 
@@ -27,6 +28,8 @@ export function gainMult(s: GameState, k: keyof Skills, where: Where): number {
   let m = where === 'in' ? (f.gainIn ?? 1) : where === 'out' ? (f.gainOut ?? 1) : (f.gainTrain ?? 1);
   if ((k === 'power' || k === 'fingers') && f.spring) m *= f.spring;
   if (where === 'out') m *= cfx(s).gainOut ?? 1;
+  // Paths, mastery and your quirk (Phase 23.4).
+  m *= edgeGain(s, k);
   for (const id of s.talents.ids) {
     const t = TALENTS[id];
     if (t && t.skill === k) m *= t.gain;
@@ -38,7 +41,7 @@ export function gainMult(s: GameState, k: keyof Skills, where: Where): number {
 const FINGERY: Style[] = ['crimp', 'crack'];
 // Your tendons, where the line loads the fingers; and your calling's, on anything.
 export function injuryMult(s: GameState, style: Style): number {
-  const c = cfx(s).injury ?? 1;
+  const c = (cfx(s).injury ?? 1) * edgeInjury(s);
   if (!FINGERY.includes(style)) return c;
   return s.talents.ids.reduce((m, id) => m * (TALENTS[id]?.injury ?? 1), c);
 }
@@ -47,7 +50,8 @@ export function injuryMult(s: GameState, style: Style): number {
 export const firstGoMult = (s: GameState, first: boolean): number => (first ? (cfx(s).firstGo ?? 1) : 1);
 
 export const payMult = (s: GameState): number => fx(s).pay ?? 1;
-export const livingMult = (s: GameState): number => (fx(s).living ?? 1) * (cfx(s).living ?? 1);
+export const livingMult = (s: GameState): number =>
+  (fx(s).living ?? 1) * (cfx(s).living ?? 1) * edgeLiving(s);
 export const shopMult = (s: GameState): number => fx(s).shop ?? 1;
 export const originBill = (s: GameState): number => fx(s).bill ?? 0;
 export const premiumOf = (s: GameState, plan: keyof typeof PLANS): number =>

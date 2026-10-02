@@ -3,6 +3,7 @@
 
 import { UPGRADE, VAN, type VanPart } from './dials';
 import { PARTNERS, tierOf } from './presence';
+import { edgeGas } from './paths';
 import { Rng } from './rng';
 import type { GameState } from './types';
 
@@ -41,8 +42,9 @@ export const bodgeHolds = (s: GameState): boolean =>
   Rng.fromStream(s.seed, 'events').derive(`bodge-${s.day}-${s.min}`).next() < bodgeOdds(s);
 
 // What a drive's gas comes to, with the tune-up (Phase 22.2c).
+// And the Dirtbag path's (Phase 23.4).
 export const gasFor = (s: GameState, cash: number): number =>
-  (s.gear.tuneup ?? 0) > 0 ? Math.round(cash * UPGRADE.tuneup.gas) : cash;
+  Math.round(cash * ((s.gear.tuneup ?? 0) > 0 ? UPGRADE.tuneup.gas : 1) * edgeGas(s));
 
 // What the garage charges to put a part back to new.
 export function repairCost(s: GameState, part: VanPart): number {

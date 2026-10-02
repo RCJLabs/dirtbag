@@ -113,6 +113,16 @@ import {
   callingOf,
   callingTerms,
   rungText,
+  PATHS,
+  OPEN_PATHS,
+  masteryOf,
+  QUIRKS,
+  deedText,
+  edgeText,
+  pathBlocked,
+  pathsTaken,
+  tiersOn,
+  PATH,
   TALENTS,
   CAME_ACROSS,
   CAME_ACROSS_NAME,
@@ -1058,6 +1068,78 @@ function CallingRow({ game, s }: { game: Game; s: GameState }) {
   );
 }
 
+// Phase 23.4: your paths, a tier at a time, what you've mastered and the quirk you've got.
+function PathsRow({ game, s }: { game: Game; s: GameState }) {
+  const taken = pathsTaken(s);
+  const full = taken.length >= PATH.max;
+  return (
+    <>
+      <p className="crux">Paths</p>
+      <p className="sub">
+        {taken.length ? `On ${taken.map((id) => PATHS[id]!.name).join(' and ')}.` : 'None claimed yet.'}{' '}
+        {full ? `${PATH.max} is all you get.` : `You can be on ${PATH.max}.`}
+      </p>
+      {OPEN_PATHS.filter((id) => !full || taken.includes(id)).map((id) => {
+        const p = PATHS[id]!;
+        const n = tiersOn(s, id);
+        const why = pathBlocked(s, id);
+        const next = p.tiers[n];
+        return (
+          <div key={id} id={`path-${id}`}>
+            <p className="sub">
+              <b>{p.name}</b>. {p.blurb}
+              {n === p.tiers.length ? ` ${p.title}.` : ''}
+            </p>
+            {p.tiers.slice(0, n).map((t) => (
+              <p className="sub" key={t.name}>
+                ✓ {t.name}: {edgeText(t.edge)}
+              </p>
+            ))}
+            {next &&
+              (why ? (
+                <p className="sub">
+                  ○ {next.name}: V{PATH.gates[n]} and {deedText(next.deed)}. {edgeText(next.edge)}
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  className="opt"
+                  id={`claim-${id}`}
+                  onClick={() => game.dispatch({ t: 'path', id })}
+                >
+                  <span>Claim {next.name}</span>
+                  <small>{edgeText(next.edge)}</small>
+                </button>
+              ))}
+          </div>
+        );
+      })}
+      {s.mastery.length > 0 && (
+        <>
+          <p className="crux">Mastery</p>
+          {s.mastery.map((k) => {
+            const m = masteryOf(k);
+            if (!m) return null;
+            return (
+              <p className="sub" key={k}>
+                {m.name}: {edgeText(m.edge)}
+              </p>
+            );
+          })}
+        </>
+      )}
+      {s.quirk && (
+        <>
+          <p className="crux">{QUIRKS[s.quirk]!.name}</p>
+          <p className="sub" id="quirk">
+            {edgeText(QUIRKS[s.quirk]!.edge)}
+          </p>
+        </>
+      )}
+    </>
+  );
+}
+
 function YouBody({ game, s }: { game: Game; s: GameState }) {
   const c = s.climber;
   const g = gradeOf(c.skills);
@@ -1082,6 +1164,7 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
       <ActRow s={s} />
       <OriginRow s={s} />
       <CallingRow game={game} s={s} />
+      <PathsRow game={game} s={s} />
       <p className="crux">Body</p>
       <p className="sub">
         Energy {Math.round(s.energy)}, skin {Math.round(s.skin)}, food {Math.round(s.fed)}.

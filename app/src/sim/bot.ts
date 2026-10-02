@@ -13,6 +13,7 @@ import {
   stepAttempt,
   type Attempt,
 } from './climb';
+import { pathBlocked } from './paths';
 import { headroom, holds, isNight, unmet } from './cond';
 import { INDOOR, routesAt } from './content/gym';
 import { ACTS, PLACES, road } from './content/places';
@@ -245,6 +246,8 @@ export interface WeekOpts {
   origin?: string;
   // And what it's climbing for (Phase 23.3), taken up on day one; none by default.
   calling?: string;
+  // The paths it claims a tier of whenever it can (Phase 23.4); none by default.
+  paths?: string[];
   strategy?: Strategy;
   // A moderate climber warms up, stops for the day when their body starts talking (the
   // load ratio over 1.3), and waits for a spotter on a highball; a reckless one does none
@@ -325,6 +328,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
         if (line) go({ t: 'name', route: e.route, name: faSuggestions(s, line)[0]!, call: 0 });
       }
     }
+    // Its paths' next tiers, the moment it can claim them.
+    for (const id of opts.paths ?? []) if (a.t !== 'path' && !pathBlocked(s, id)) go({ t: 'path', id });
     return true;
   };
   // Only asks for an act when its needs hold, like a player reading a greyed-out button.

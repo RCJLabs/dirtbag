@@ -728,7 +728,8 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 33 ||
+  saved?.v !== 34 ||
+  typeof st.habits?.goes !== 'number' ||
   typeof st.calling?.offered !== 'boolean' ||
   st.origin !== 'quit' ||
   st.talents?.ids?.length !== 2 ||

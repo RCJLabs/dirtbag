@@ -928,3 +928,13 @@ export const TALENT = { reveal: 6 };
 // what you like); a grade's consolidated at this many lines sent at it (v0.956's five); and
 // what each rung of its ambition lifts psyche by (a new crag's 6, for scale).
 export const CALLING = { offerAt: 10, consolidate: 5, psyche: [8, 12, 16] };
+
+// Phase 23.4 [proposed]. Paths: two at most (v0.956's), each tier gated on your grade, near
+// V4, V9 and V14 (Evan's call), as well as its deed. Mastery: lines sent in a style
+// (v0.956's 40); a hybrid, two skills both at this grade's (v0.956's 60 of 100, which ran out
+// by V5; here, mid-career). A quirk's named once you've had this many goes (v0.956's 30 climbs), on
+// what they were: energy at or over `fresh`, under `tired`; from `evening`, before `dawn`;
+// `easy`, this many grades or more inside yours.
+export const PATH = { max: 2, gates: [4, 9, 14] };
+export const MASTERY_AT = { sends: 40, hybrid: 8 };
+export const QUIRK = { after: 30, fresh: 70, tired: 35, evening: 17 * 60, dawn: 9 * 60, easy: 2 };

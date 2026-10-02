@@ -15,6 +15,8 @@ import { gradeOf } from './climber';
 import { BODY, BOND, CLIMB, DAY, EXPED, WALL } from './dials';
 import { isNight } from './cond';
 import { atFire } from './fire';
+import { firstGoMult } from './identity';
+import { edgeWindows } from './paths';
 import { Rng } from './rng';
 import type { GameState, TripEnd, TripLog, TripPlan } from './types';
 import { expedCost } from './dreams';
@@ -112,7 +114,9 @@ export function partnerDay(s: GameState, e: ExpeditionDef, id: string, who: stri
 const sendMemo = new Map<string, number>();
 export function sendChance(s: GameState, r: RouteDef): number {
   const k = s.climber.skills;
-  const key = `${s.seed}|${r.id}|${s.day}|${Object.values(k).join(',')}|${dayFactor(s, r).windows.toFixed(3)}|${JSON.stringify(s.routes[r.id]?.pick ?? {})}`;
+  // Who you are moves it too (Phase 23.2–23.4): your edges on this line, first go or not.
+  const edge = `${edgeWindows(s, r, true).toFixed(4)},${edgeWindows(s, r, false).toFixed(4)},${firstGoMult(s, true)}`;
+  const key = `${s.seed}|${r.id}|${s.day}|${Object.values(k).join(',')}|${dayFactor(s, r).windows.toFixed(3)}|${JSON.stringify(s.routes[r.id]?.pick ?? {})}|${edge}`;
   const hit = sendMemo.get(key);
   if (hit !== undefined) return hit;
   let sent = 0;
