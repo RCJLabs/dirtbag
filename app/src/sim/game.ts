@@ -1635,7 +1635,18 @@ export function act(s0: GameState, a: Action): Result {
       // Talents come with an origin: the climber the screen makes; a bare one (a test's, a
       // bot's) gets neither.
       s.talents = { ids: origin ? dealTalents(s.seed) : [], known: [], from: { ...skills } };
-      if (origin) line(origin.open);
+      if (origin) {
+        line(origin.open);
+        // Phase 23.8: the first morning, where and as this origin starts it.
+        const b = origin.begin;
+        if (b.at) s.at = b.at;
+        if (b.min) s.min = b.min;
+        if (b.today) s.today.push(...b.today);
+        if (b.gear) s.gear = { ...s.gear, ...b.gear };
+        if (b.shift) s.shifts = [...s.shifts, { job: b.shift, day: s.day }];
+        if (b.insurance) s.insurance = b.insurance;
+        line(b.line);
+      }
       if (a.solo) s.mode = 'solo';
       break;
     }

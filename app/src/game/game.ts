@@ -521,6 +521,9 @@ export class Game {
       ...(solo ? { solo: true as const } : {}),
     });
     if (ev.some((e) => e.k === 'refused')) return;
+    // Phase 23.8: an origin can start you somewhere other than the Lot.
+    const scene = PLACES[this.state.at]?.scene;
+    if (scene && scene !== this.ui.get().scene) this.enter(scene);
     this.set({ hint: SCENES[this.ui.get().scene]?.hint ?? null });
   }
 

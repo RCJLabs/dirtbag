@@ -23,6 +23,20 @@ export interface OriginFx {
   cash?: number;
 }
 
+// The first morning (Phase 23.8, Evan's call: a climber made differently starts differently,
+// so it shows in week one): where you wake, what's already yours, and the line that says so.
+export interface Begin {
+  at?: string;
+  min?: number;
+  // Today's flags: a day pass already bought.
+  today?: string[];
+  gear?: Record<string, number>;
+  // A shift already signed up for, today.
+  shift?: string;
+  insurance?: 'catastrophic' | 'full';
+  line: string;
+}
+
 export interface Origin {
   name: string;
   // Who you were, said once at creation.
@@ -33,6 +47,7 @@ export interface Origin {
   billFor?: string;
   skills: Partial<Skills>;
   fx: OriginFx;
+  begin: Begin;
 }
 
 export const ORIGINS: Record<string, Origin> = {
@@ -43,6 +58,10 @@ export const ORIGINS: Record<string, Origin> = {
     billFor: 'the storage unit with the rest of your old life in it',
     skills: { endurance: 2, head: 2 },
     fx: { pay: 1.12, cash: 150, bill: 8 },
+    begin: {
+      shift: 'cafe',
+      line: 'Habit got you a job before it got you a climb: the café wants you on the morning shift, today.',
+    },
   },
   gymrat: {
     name: 'Gym Rat',
@@ -50,6 +69,12 @@ export const ORIGINS: Record<string, Origin> = {
     open: 'You came up in a city gym: plastic holds, padded floors, music thumping. Strong fingers, but real stone is a different animal.',
     skills: { power: 3, fingers: 3, head: -3, endurance: -1 },
     fx: { gainIn: 1.12, gainOut: 0.9 },
+    begin: {
+      at: 'gym',
+      min: 8 * 60 + 30,
+      today: ['pass'],
+      line: 'You woke up in the gym car park, because of course you did. The day pass is already on your wrist.',
+    },
   },
   desert: {
     name: 'Desert Local',
@@ -57,6 +82,11 @@ export const ORIGINS: Record<string, Origin> = {
     open: 'You grew up climbing desert sandstone: no gym, no scene, just you and the rock before the heat came up. Money was always thin.',
     skills: { head: 4, technique: 3, power: -3 },
     fx: { living: 0.85, cash: -25 },
+    begin: {
+      at: 'road',
+      min: 6 * 60 + 40,
+      line: 'First light at the crag, the rock still cold. Nobody else is up. It’s how you’ve always done it.',
+    },
   },
   gymnast: {
     name: 'Ex-Gymnast',
@@ -64,6 +94,12 @@ export const ORIGINS: Record<string, Origin> = {
     open: 'Fifteen years on the mat built a motor most climbers would kill for. Now you point it at the wall, if you can learn to trust a hold you might rip off.',
     skills: { power: 5, fingers: 2, head: -5, technique: -2 },
     fx: { gainTrain: 1.2 },
+    begin: {
+      at: 'gym',
+      min: 9 * 60,
+      today: ['pass'],
+      line: 'Old habits: a day pass, a warm-up you could do asleep, and the training wall before anything else.',
+    },
   },
   late: {
     name: 'Late Bloomer',
@@ -71,6 +107,10 @@ export const ORIGINS: Record<string, Origin> = {
     open: 'You didn’t touch rock until thirty-two. Late to the party, but you showed up with savings, patience, and no illusions about being a prodigy.',
     skills: { head: 4, technique: 3, power: -3, fingers: -2 },
     fx: { premium: 0.65, cash: 120, spring: 0.88 },
+    begin: {
+      insurance: 'full',
+      line: 'You did the boring part first: a proper insurance plan, paid up. Somebody in this lot has to be the grown-up.',
+    },
   },
   trustfund: {
     name: 'Trust-Fund Kid',
@@ -78,6 +118,10 @@ export const ORIGINS: Record<string, Origin> = {
     open: 'Mom and Dad covered the gear, the coach, the gap year. You own the latest of everything and have something to prove, and the scene can smell it on you.',
     skills: { technique: 2 },
     fx: { shop: 0.7, cash: 250, pay: 0.85 },
+    begin: {
+      gear: { shoes: 100, pad: 1, headlamp: 1 },
+      line: 'New shoes, a crash pad still in its wrapper, a headlamp with the tag on. The van smells like a gear shop.',
+    },
   },
 };
 

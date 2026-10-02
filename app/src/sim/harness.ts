@@ -7,11 +7,14 @@ import { bjTotal, boardAt, equity, handNeeds } from './cards';
 import { CLIMB, EXPED, GAMES } from './dials';
 import { EXPEDITIONS, expedPitches } from './content/expeditions';
 import { defaultPlan, planOdds, stormOn, summitOdds, tripPay, yourPitch } from './expeditions';
-import { needFor } from './climber';
+import { needFor, STARTS } from './climber';
 import { ECHOES } from './content/scene';
+import { ORIGINS } from './content/origins';
+import { indoor } from './content/gym';
+import type { RouteDef } from './content/routes';
 import { newMastery } from './paths';
 import { atFire } from './fire';
-import { act, newGame } from './game';
+import { act, newGame, routeOfId } from './game';
 import type { Action, GameState } from './types';
 import { Rng } from './rng';
 import { runway } from './tonight';
@@ -323,4 +326,80 @@ export function echoLanding(seeds: number, days: number) {
     }
     return { id, call: null, echo: null, seeds };
   });
+}
+
+// Phase 23's criterion 1: two climbers made differently play their first week differently,
+// and the harness can tell them apart. Bots made with each origin (or each start) play a
+// week; each run is described by what it did (goes indoors and out, hours worked, sessions,
+// drives, sends, the styles of its goes, and what it went for first); a nearest-centroid
+// classifier, leaving each run out of its own class, names where each came from.
+function weekProfile(r: BotRun): number[] {
+  let gin = 0;
+  let gout = 0;
+  let train = 0;
+  let drives = 0;
+  const ty: Record<string, number> = { crimp: 0, power: 0, endurance: 0, technical: 0, dyno: 0, crack: 0 };
+  const goes: RouteDef[] = [];
+  for (const a of r.actions) {
+    if (a.t === 'go') {
+      const x = routeOfId(r.state, a.route);
+      if (!x) continue;
+      goes.push(x);
+      ty[x.type] = (ty[x.type] ?? 0) + 1;
+      if (indoor(x.place)) gin++;
+      else gout++;
+    }
+    if (a.t === 'train') train++;
+    if (a.t === 'travel') drives++;
+  }
+  const n = Math.max(1, gin + gout);
+  const first = goes.slice(0, 10);
+  return [
+    gin,
+    gout,
+    r.days.reduce((m, d) => m + d.workMin, 0) / 60,
+    train,
+    drives,
+    r.sends.length,
+    first.filter((x) => x.disc === 'boulder').length,
+    first.filter((x) => x.type === 'technical').length,
+    ...Object.values(ty).map((v) => (10 * v) / n),
+  ];
+}
+
+function classify(rows: { y: string; x: number[] }[]) {
+  const k = rows[0]!.x.length;
+  const mean = Array<number>(k).fill(0);
+  const sd = Array<number>(k).fill(0);
+  for (const r of rows) r.x.forEach((v, i) => (mean[i]! += v / rows.length));
+  for (const r of rows) r.x.forEach((v, i) => (sd[i]! += (v - mean[i]!) ** 2 / rows.length));
+  const z = rows.map((r) => ({ y: r.y, x: r.x.map((v, i) => (v - mean[i]!) / (Math.sqrt(sd[i]!) || 1)) }));
+  const ys = [...new Set(z.map((q) => q.y))];
+  const wrong: Record<string, string[]> = {};
+  let ok = 0;
+  for (const [j, r] of z.entries()) {
+    let best = '';
+    let bd = Infinity;
+    for (const y of ys) {
+      const mem = z.filter((q, i) => q.y === y && i !== j);
+      const c = Array<number>(k).fill(0);
+      for (const q of mem) q.x.forEach((v, i) => (c[i]! += v / mem.length));
+      const d = c.reduce((s, v, i) => s + (v - r.x[i]!) ** 2, 0);
+      if (d < bd) {
+        bd = d;
+        best = y;
+      }
+    }
+    if (best === r.y) ok++;
+    else (wrong[r.y] ??= []).push(best);
+  }
+  return { acc: ok / rows.length, chance: 1 / ys.length, wrong };
+}
+
+export function weekOneTold(seeds: number) {
+  const run = (o: { origin?: string; start?: string }) =>
+    Array.from({ length: seeds }, (_, i) => weekProfile(playDays(`made-${i}`, { days: 7, ...o })));
+  const origins = classify(Object.keys(ORIGINS).flatMap((o) => run({ origin: o }).map((x) => ({ y: o, x }))));
+  const starts = classify(Object.keys(STARTS).flatMap((st) => run({ start: st }).map((x) => ({ y: st, x }))));
+  return { origins, starts };
 }
