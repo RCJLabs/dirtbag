@@ -4,6 +4,7 @@
 
 import {
   STORY,
+  storyOf,
   LINE_SCENE,
   theLine,
   tierOf,
@@ -1023,7 +1024,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
 
     // An act's end (Phase 16.2): its scene, and a line for each person close enough to be there.
     case 'act': {
-      const end = STORY[id.n - 1]?.end;
+      const end = storyOf(s)[id.n - 1]?.end;
       if (!end) return null;
       const there = Object.entries(end.with ?? {})
         .filter(([who]) => tierOf(s.people[who]?.bond ?? 0) >= HOME.tier)
@@ -1492,9 +1493,15 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         lines: [...epilogue(s).map((l) => l.text), ...tallyLines(t)],
         close: false,
         rows: [
+          // Phase 16.5: the kid you coached, with what carries.
+          {
+            label: 'Climb on as the kid you coached',
+            note: `${s.climber.name}’s van, their lines on the topos under their name, the family’s Record Book${s.dog ? `, ${s.dog.name}` : ''}. Your own name, and everything else to earn.`,
+            run: () => game.climbOn(),
+          },
           {
             label: 'Start a new climber',
-            note: 'A new first morning.',
+            note: 'Nothing carried. A new first morning in a new valley.',
             run: () => game.restart(),
           },
         ],

@@ -278,6 +278,8 @@ export {
   tallyOf,
   type Tally,
 } from './age';
+export { byName, familyFill, familyWords, kinLine } from './heir';
+export { COACH_EDGE, HEIR_ACT } from './content/heir';
 export { epilogue, namedDeeds, type EpilogueLine } from './epilogue';
 export {
   echoOpts,
@@ -319,6 +321,7 @@ export {
   progress,
   ROMAN,
   stageOf,
+  storyOf,
 } from './story';
 export type { TalkDef, TalkNode, TalkOpt, TalkFx, PersonDef, ThingDef } from './content/people';
 export { PROTOCOLS, PREHAB } from './content/training';

@@ -1,6 +1,11 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   actOf,
+  COACH_EDGE,
+  byName,
+  familyFill,
+  kinLine,
+  storyOf,
   LINE_SCENE,
   ROMAN,
   stageOf,
@@ -557,9 +562,7 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
         </p>
       )}
       {s.firsts[route]?.by && (
-        <p className="sub">
-          First ascent: {PEOPLE[s.firsts[route]!.by!]?.full ?? 'somebody else'}. The second’s still going.
-        </p>
+        <p className="sub">First ascent: {byName(s.firsts[route]!.by!)}. The second’s still going.</p>
       )}
       {unnamed && log.sent && (
         <button
@@ -1072,6 +1075,31 @@ function LatelyBody({ s }: { s: GameState }) {
 }
 
 // Phase 23.2: where you came from, what it gives and costs, and the talents you've found.
+// Phase 16.5: who you climb on after, their lines on the topos, and Dex's coaching.
+function FamilyRow({ s }: { s: GameState }) {
+  const f = s.family;
+  if (!f) return null;
+  const lines = f.lines
+    .map((id) => {
+      const r = routeOfId(s, id);
+      const fa = s.firsts[id];
+      return r && fa ? `${fa.name} (${lineGrade(s, r)}, ${PLACES[r.place]?.name ?? r.place})` : null;
+    })
+    .filter((x): x is string => !!x);
+  const l = kinLine(s);
+  return (
+    <>
+      <p className="crux">The family</p>
+      <p className="sub" id="family">
+        Generation {f.gen}, after {f.forebear}.{' '}
+        {lines.length ? `Their lines: ${lines.join(', ')}.` : 'They left no lines with their name on.'}
+        {l && s.routes[l.id]?.sent ? ` You’ve repeated ${l.name}.` : ''}
+        {f.coach ? ` Dex coaches you, for their sake: ${edgeText(COACH_EDGE)}` : ''}
+      </p>
+    </>
+  );
+}
+
 // Phase 16.1: how old you are, when hanging it up is yours, and the countdown at the end.
 function AgeRow({ game, s }: { game: Game; s: GameState }) {
   const age = ageOf(s);
@@ -1329,6 +1357,7 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
       <ActRow s={s} />
       <OriginRow s={s} />
       <AgeRow game={game} s={s} />
+      <FamilyRow s={s} />
       <CallingRow game={game} s={s} />
       <PathsRow game={game} s={s} />
       <SceneRow s={s} />
@@ -1458,10 +1487,10 @@ function ActRow({ s }: { s: GameState }) {
   return (
     <>
       <p className="crux" id="act">
-        Act {ROMAN[n - 1]}, {STORY[n - 1]!.title} · {st.n} of {st.of} · {g.title}
+        Act {ROMAN[n - 1]}, {storyOf(s)[n - 1]!.title} · {st.n} of {st.of} · {g.title}
       </p>
       <p className="sub">
-        {g.text} <b>{goalDesc(g)}</b>
+        {familyFill(s, g.text)} <b>{goalDesc(g, s)}</b>
         {p.need > 1 && counted(g.aim) ? ` (${Math.min(p.have, p.need)} of ${p.need})` : ''}.
       </p>
     </>

@@ -27,7 +27,7 @@ export function Goal({ game, ui }: { game: Game; ui: Ui }) {
       onClick={() => game.openSheet({ k: 'journal', page: 'you' })}
     >
       <b>Next</b>
-      {goalDesc(g)}
+      {goalDesc(g, ui.state)}
       {count && (
         <span>
           {Math.min(p.have, p.need)}/{p.need}

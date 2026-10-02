@@ -20,7 +20,10 @@ import { vars } from './vars';
 // v0.956, which R3 retired, is told so first: they can keep their old career as a file, and
 // carry on here as they were, as far as the new game allows.
 export function Create({ game }: { game: Game }) {
-  const [old] = useState(() => findLegacy());
+  // Phase 16.5: the kid someone coached, climbing on after them. No v0.956 to carry, and
+  // the rope or the lack of one is the family's.
+  const family = game.state.family;
+  const [old] = useState(() => (family ? null : findLegacy()));
   const carry = old?.skills ? carried(old.skills) : null;
   const [name, setName] = useState((old?.name ?? '').slice(0, NAME_MAX));
   const [start, setStart] = useState(carry ? CARRIED : 'allrounder');
@@ -47,7 +50,13 @@ export function Create({ game }: { game: Game }) {
           );
       }}
     >
-      <h2 id="create-title">Who's in the van?</h2>
+      <h2 id="create-title">{family ? `Who has ${family.forebear}’s keys?` : "Who's in the van?"}</h2>
+      {family && (
+        <p className="sub" id="c-family">
+          {family.forebear} hung it up. The kid they spent all those seasons coaching takes the van, and their
+          lines are on the topos under their name. The rest is yours to earn.
+        </p>
+      )}
       {old && (
         <section className="legacy" id="legacy" aria-labelledby="legacy-title">
           <h3 id="legacy-title">v0.956 has retired</h3>
@@ -132,26 +141,29 @@ export function Create({ game }: { game: Game }) {
           </div>
         </>
       )}
-      <button
-        type="button"
-        className="opt"
-        id="c-solo"
-        role="switch"
-        aria-checked={solo}
-        onClick={() => setSolo(!solo)}
-      >
-        <span>{solo ? 'Free Solo: on' : 'Free Solo: off'}</span>
-        <span className="c">{solo ? 'No rope' : 'Rope'}</span>
-        <small>
-          Every sport line and wall pitch outdoors, without a rope. Boulders keep their pads and trad its
-          rack. One fall, and there’s no next climber. You can’t change it later.
-        </small>
-      </button>
+      {!family && (
+        <button
+          type="button"
+          className="opt"
+          id="c-solo"
+          role="switch"
+          aria-checked={solo}
+          onClick={() => setSolo(!solo)}
+        >
+          <span>{solo ? 'Free Solo: on' : 'Free Solo: off'}</span>
+          <span className="c">{solo ? 'No rope' : 'Rope'}</span>
+          <small>
+            Every sport line and wall pitch outdoors, without a rope. Boulders keep their pads and trad its
+            rack. One fall, and there’s no next climber. You can’t change it later.
+          </small>
+        </button>
+      )}
       <button type="submit" className="go" id="c-go" disabled={!ok}>
         Start
         <small>
-          ${MONEY.start + (across ? 0 : (ORIGINS[origin]?.fx.cash ?? 0))}, a van, and Hazel at the fire.
-          {solo ? ' No rope.' : ''}
+          ${MONEY.start + (across ? 0 : (ORIGINS[origin]?.fx.cash ?? 0))},{' '}
+          {family ? `${family.forebear}’s van` : 'a van'}, and Hazel at the fire.
+          {(family ? game.state.mode === 'solo' : solo) ? ' No rope.' : ''}
         </small>
       </button>
     </form>

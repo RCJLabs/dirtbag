@@ -1,7 +1,7 @@
 // What the send card says, from the save: the line as it goes by, how and when you sent it,
 // and who got there first. Every word and number comes from where the game's own do.
 
-import { lineGrade, lineName, PEOPLE, PLACES, routeOfId, seasonOf, SEND_NAME, type GameState } from '../sim';
+import { byName, lineGrade, lineName, PLACES, routeOfId, seasonOf, SEND_NAME, type GameState } from '../sim';
 import type { Card } from '../view/paint/card';
 
 // The card for a line you've sent, from your first send of it; none for one you haven't.
@@ -18,7 +18,7 @@ export function cardOf(s: GameState, route: string): Card | null {
     where: PLACES[r.place]?.name ?? r.place,
     when: `Day ${sent.day}, ${seasonOf(sent.day)}`,
     who: s.climber.name,
-    fa: fa ? { mine: !fa.by, by: fa.by ? (PEOPLE[fa.by]?.full ?? fa.by) : s.climber.name } : null,
+    fa: fa ? { mine: !fa.by, by: fa.by ? byName(fa.by) : s.climber.name } : null,
   };
 }
 

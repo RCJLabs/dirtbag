@@ -13,6 +13,7 @@ import {
   MASTERY_END,
   ORIGIN_END,
   PATH_END,
+  FAMILY_END,
   PEOPLE_END,
   QUIRK_END,
   STANCE_END,
@@ -26,6 +27,7 @@ import { recordById } from './content/record';
 import { HOME } from './dials';
 import { fill } from './format';
 import { tierOf } from './presence';
+import { kinLine } from './heir';
 import { stanceAnswer, standingWord } from './scene';
 import type { GameState } from './types';
 
@@ -47,6 +49,14 @@ export function epilogue(s: GameState): EpilogueLine[] {
 
   // Who you were.
   if (s.origin) put(ORIGIN_END[s.origin], false);
+
+  // The family you climbed on after, and their line, if you sent it.
+  if (s.family) {
+    put(fill(FAMILY_END.after, { forebear: s.family.forebear }), false);
+    const l = kinLine(s);
+    if (l && s.routes[l.id]?.sent)
+      put(fill(FAMILY_END.repeat, { forebear: s.family.forebear, line: l.name }));
+  }
 
   // Your hardest first ascent, by its name, and where.
   const fa = Object.entries(s.firsts)

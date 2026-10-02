@@ -7,6 +7,7 @@ import { indoor, routeById } from './content/gym';
 import { HYBRIDS, MASTERY, OPEN_PATHS, PATHS, QUIRKS, type Deed, type Edge } from './content/paths';
 import { MASTERY_AT, PATH, QUIRK } from './dials';
 import { perksOf } from './scene';
+import { COACH_EDGE } from './content/heir';
 import type { RouteDef } from './content/routes';
 import type { GameState } from './types';
 
@@ -106,6 +107,8 @@ export function edges(s: GameState): Edge[] {
   if (q) out.push(q.edge);
   // Standing with a crowd (Phase 23.5).
   for (const p of perksOf(s)) out.push(p.edge);
+  // Dex's coaching, for your forebear's sake (Phase 16.5).
+  if (s.family?.coach) out.push(COACH_EDGE);
   return out;
 }
 
