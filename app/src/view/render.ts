@@ -74,7 +74,7 @@ import { BIG } from './paint/scale';
 import { drawSkyMarks, FIRE_X, LIGHTS, sceneArt, SKY_W, type SceneArt, type Tod } from './paint/scenes';
 import { belayAt, onRoute, rockPath, routeStretch, topoFor, traceSelected, wallOf } from './paint/wall';
 import { sceneSun, sunLight, wallSun, wetness } from './sun';
-import { EXPED_SKY_W, expedScene, expedSpot, SCENED } from './paint/expeds';
+import { drawSnow, EXPED_SKY_W, expedScene, expedSpot, SCENED, SNOWS } from './paint/expeds';
 
 export interface Frame {
   state: GameState;
@@ -163,7 +163,7 @@ function renderExped(g: G, f: Frame, id: string): void {
   g.lineTo(px + 30, sy - 14);
   g.stroke();
   label(g, 'comic', `${x.pitch} of ${e.pitches}`, px + 33, sy - 12, { size: 13, align: 'left' });
-  if (storm) drawRain(g, f.w, H, f.t, f.still);
+  if (storm) (SNOWS(id) ? drawSnow : drawRain)(g, f.w, H, f.t, f.still);
 }
 
 // The painted part of a scene: its sky, then its layers, each moved by the camera as far as
@@ -483,7 +483,8 @@ function wallWeather(g: G, f: Frame, r: RouteDef): void {
   if (r.exped) {
     // Up on an expedition (Phase 24.6): its storm, and its night.
     const e = EXPEDITIONS[r.exped];
-    if (e && stormOn(s.seed, r.exped, e, s.day)) drawRain(g, f.w, H, f.t, f.still);
+    if (e && stormOn(s.seed, r.exped, e, s.day))
+      (SNOWS(r.exped) ? drawSnow : drawRain)(g, f.w, H, f.t, f.still);
     if (isNight(s.min)) {
       g.fillStyle = 'rgba(16,22,48,.55)';
       g.fillRect(0, 0, f.w, H);

@@ -1456,6 +1456,7 @@ const FACE: Record<string, Pt[]> = {
   crucible: C_WALL,
   cove: P_WALL,
   elcap: EXPED_FACE,
+  cerrotorre: EXPED_FACE,
 };
 
 // A route's wall, painted into any context in wall units: what the wall view caches at 2x,
