@@ -2067,7 +2067,7 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 ---
 
-### Phase 23 — Who you are: origins, paths, stances, and the Record Book   **<<< CURRENT MILESTONE**
+### Phase 23 — Who you are: origins, paths, stances, and the Record Book
 
 *Added 29 Sep 2026 by Evan's call. Runs after Phases 22 and 24, before Phase 16, which keys its epilogues to all of it.*
 
@@ -2194,9 +2194,11 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The harness tells them apart** (a new target): a week's bots, described by what they did and went for first, are named by origin 87% of the time (chance 17%) and by start 48% (chance 25%). The boulderer and the all-rounder aren't told apart in week one: both go for the same lines. The target's bar (origins at twice chance, starts at half again) was set after the measurement, and says so.
 - **The bots' line choice moves the harness a little:** first-month injuries 8% for a careful climber and 15% cold and reckless (3% and 8% before; the target is 35%); the first V5 go on day 18. Every target passes.
 
+**Phase 23 closed by Evan's call (2 Oct 2026).** All three criteria pass. Carried: the boulderer and the all-rounder look the same in week one, and criterion 1's bar was set after the measurement. The CURRENT MILESTONE moves to Phase 16.
+
 ---
 
-### Phase 16 — The spine: story, acts and endings
+### Phase 16 — The spine: story, acts and endings   **<<< CURRENT MILESTONE**
 
 **Goal.** A written main story across five acts with a real ending. Epilogues are built from the player's actual history, and legacy makes the next generation feel like a continuation.
 
@@ -2223,6 +2225,29 @@ Players will ask "what am I working towards?" by hour 3.
 3. Generation 2 starts with a distinct first quest and inherits visible history.
 
 **Depends on:** Phases 5–6. The writing can start during Stage C. **Effort:** ~4–6 weeks. **Main risk:** scope. Write the acts at a fixed beat count.
+
+**Plan on the rebuild (2 Oct 2026), with Evan's calls.**
+
+*Three problems first:*
+- **The Line is out of reach of the hours.** Measured: the career bot reaches V14 around day 370 and V18 around day 900, and half the runs never get there in 900 days (8 runs, every start, human-ish hands). A day is 13 to 20 taps plus the climbing; at an unmeasured guess of 2 to 4 minutes a day, criterion 1's 15–25 hours is days 225 to 750. A V18 finale as the only ending would miss the window for almost everyone.
+- **Nothing to end on yet.** The rebuild has no age, no retirement, no tally and no heir; dying soloing is its only ending.
+- **Half the set-pieces aren't built.** Comps and the national team (v0.956's Act III), the documentary, the youth team, the mentee and an owned gym belong to Phases 17 and 18. The cast is Hazel, Sage, Dex and the dog.
+
+*Evan's calls (2 Oct 2026), taking every recommendation:*
+1. **Two endings.** Retirement is the ending everyone reaches inside the window, with a tally and an epilogue. The Line, a V18 myth's first ascent, is the best ending, for whoever gets there: the ceremony, then "retire now" or "keep climbing". No retune of the climbing curve.
+2. **v0.956's age, with warning.** You start at 22 (the Late Bloomer at 32, its cost again) and age three years per 56-day year (v0.956's 18 days, called "age", never "year"). Retiring is offered from 30 (day ~145) and forced at 45 (day ~414, about V14–15), with a countdown from 43. No decline with age.
+3. **The acts on what exists.** II The Local's Project (V4–V7: the Gorge, Moonstone, the Mesa, Dex's race), III The Road (V8–V10: the Big Stone, Wind River, El Cap, Cerro Torre), IV The Crucible (V11–V15: Obsidian Tower, Trango, Hazel's Pilgrimage), V The Line. Beats from v0.956's quests that run on what's built; comps get their slot with Phase 18.
+4. **The heir is a kid you've coached,** named at retirement. A short creation (a start and an origin); inherits the van, your named first ascents on the topos under your name, and the Record Book as the family's; mode and settings carry. A first quest of their own: the line you named. Dex coaches them if you were allied. The gym waits on Phase 18.
+
+*The slices:*
+- **16.1 Age and retirement.** Age from the day and the origin; the countdown; "Hang it up" from 30; forced at 45; the tally ("A climbing life"): hardest, sends, first ascents, crags, trips, scars, the calling's rungs, the roads taken and not, the people, an epitaph from what you did. Save change.
+- **16.2 Acts II–V.** The goal ladder generalised from Act I to five acts as content, each at a fixed beat count, each ending in a scene, not a toast. Save change.
+- **16.3 The Line.** A myth's first ascent gets its own sequence: the naming at the fire, Hazel, Sage, Dex and the dog by their bond, credits, then the choice.
+- **16.4 Epilogues,** keyed to the calling's rungs, paths, the crowds, stances, the dog, the people and the book; criterion 2's five things named from the save.
+- **16.5 The next generation.** The heir, what carries, the forebear on the topos and in the book, their own first quest. Save change.
+- **16.6 The harness and the e2e.** Criterion 1 measured (the bots' days to retirement, taps per day, and a stated minutes-per-day, carried to testers for the real hours); criterion 2 checked on bot careers; the e2e retires a climber and starts the heir.
+
+*The risk:* criterion 1's hours rest on a minutes-per-day guess until someone plays it. The ending inside the window is retirement, so the 15–25 hours mostly sets the age clock; if testers play faster or slower, the clock's days are the dial.
 
 ---
 
@@ -2565,3 +2590,5 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-02 — Phase 23.7 built: a recap card every 56-day year, from what the game keeps; the Homecoming once a life, once two people are close, paying v0.956's cash and psyche on your next send outside [proposed]. Save v37. 0.999.1.
 - 2026-10-02 — Phase 23.8: a harness target that every echo lands (it does, after calls also come after a go and echoes anywhere); a stuck game (a call on a broken-down van) and queued cards after an answer fixed; an e2e later life. Criterion 1 measured and failing: climbers made differently play week one almost the same; Evan's call how to fix. 0.999.2.
 - 2026-10-02 — Phase 23, criterion 1 by Evan's A and B: each origin starts its own first morning; bots play their origin and their start; a harness target tells week-one climbers apart (origins 87%, starts 48%). All three criteria pass; closing the phase is Evan's call. 0.999.3.
+- 2026-10-02 — Phase 23 closed by Evan's call; the boulderer and the all-rounder alike in week one carry. CURRENT MILESTONE moved to Phase 16, the spine; it gets planned on the rebuild next.
+- 2026-10-02 — Phase 16 planned on the rebuild, with Evan's calls: two endings (retirement inside the hours, The Line for whoever reaches V18, measured at ~day 900); v0.956's age clock with a countdown, retiring from 30, forced at 45; Acts II–V on the crags and trips that exist, comps later; the heir a kid you've coached. Six slices.
