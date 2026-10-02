@@ -261,6 +261,17 @@ export { CALLINGS, OPEN_CALLINGS, type Calling } from './content/callings';
 export { ambitionText, callingTerms, rungText, rungMet } from './calling';
 export { PATHS, OPEN_PATHS, MASTERY, HYBRIDS, QUIRKS, type Path, type Edge } from './content/paths';
 export { deedText, edgeText, masteryOf, pathBlocked, pathsTaken, tiersOn } from './paths';
+export { STANCES, ECHOES, FACTIONS, FACTION_PERKS, type Faction } from './content/scene';
+export {
+  echoOpts,
+  perksOf,
+  permitFor,
+  sceneNote,
+  stanceAnswer,
+  stanceOpts,
+  standingWord,
+  whereYouStand,
+} from './scene';
 export { ORIGINS, CAME_ACROSS, CAME_ACROSS_NAME, type Origin } from './content/origins';
 export { TALENTS, type Talent } from './content/talents';
 export { soloed } from './solo';

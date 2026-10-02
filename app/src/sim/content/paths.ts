@@ -5,6 +5,7 @@
 // An edge, all optional:
 //   style + windows: crux windows on lines of these styles ×   windows alone: on every line
 //   firstGo: crux windows on a line's first go ×   gym: crux windows indoors ×
+//   outside: crux windows outdoors ×   train: what a session teaches ×
 //   fresh / tired: crux windows with energy at or over QUIRK.fresh / under QUIRK.tired ×
 //   evening / dawn: crux windows from QUIRK.evening / before QUIRK.dawn ×
 //   injury: the odds of getting hurt ×   gain: one skill's learning ×   gainAll: every skill's ×
@@ -19,6 +20,8 @@ export interface Edge {
   windows?: number;
   firstGo?: number;
   gym?: number;
+  outside?: number;
+  train?: number;
   fresh?: number;
   tired?: number;
   evening?: number;

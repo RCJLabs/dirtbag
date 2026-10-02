@@ -8,7 +8,7 @@
 import { CARRIED, SKILLS, STARTS } from './climber';
 import { GEAR } from './content/gear';
 import { PLACES } from './content/places';
-import { LIFESTYLE, PLANS, SPOTS, TRAIN } from './dials';
+import { FACTION, LIFESTYLE, PLANS, SPOTS, TRAIN } from './dials';
 import { JOBS } from './content/jobs';
 import { ROUTES, WALLS } from './content/routes';
 import { EXPEDITIONS } from './content/expeditions';
@@ -23,11 +23,12 @@ import { CAME_ACROSS, ORIGINS } from './content/origins';
 import { TALENTS } from './content/talents';
 import { CALLINGS } from './content/callings';
 import { HYBRIDS, MASTERY, PATHS, QUIRKS } from './content/paths';
+import { ECHOES, STANCES } from './content/scene';
 import { newMastery } from './paths';
 import { newlyEarned } from './record';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 34;
+export const SAVE_VERSION = 35;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -282,6 +283,14 @@ export const MIGRATIONS: Record<number, Migration> = {
     };
     return { ...fresh, mastery: newMastery(fresh as unknown as GameState) };
   },
+  // v34 -> v35 (Phase 23.5): even with both crowds, no calls made yet.
+  34: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return {
+      ...x,
+      scene: { old: FACTION.start, gym: FACTION.start, stances: [], echoes: [], last: 0, echoLast: 0 },
+    };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -471,6 +480,8 @@ export function validate(x: unknown): string[] {
     stop: STOPS,
     epic: EPICS.map((e) => ({ id: e.kind })),
     wall: WALL_EVENTS,
+    stance: Object.keys(STANCES).map((id) => ({ id })),
+    echo: Object.keys(ECHOES).map((id) => ({ id })),
   } as Record<string, { id: string }[]>;
   const tb = x.table;
   const dice = (d: unknown) => Array.isArray(d) && d.every((v) => isInt(v) && v >= 1 && v <= 6);
@@ -646,6 +657,39 @@ export function validate(x: unknown): string[] {
   );
   need(isStrs(x.mastery) && x.mastery.every((k) => k in MASTERY || k in HYBRIDS), 'mastery');
   need(x.quirk === null || (typeof x.quirk === 'string' && x.quirk in QUIRKS), 'quirk');
+  const sc = x.scene;
+  need(
+    isObj(sc) &&
+      isNum(sc.old) &&
+      sc.old >= 0 &&
+      sc.old <= 100 &&
+      isNum(sc.gym) &&
+      sc.gym >= 0 &&
+      sc.gym <= 100 &&
+      Array.isArray(sc.stances) &&
+      sc.stances.every(
+        (y) =>
+          isObj(y) &&
+          typeof y.id === 'string' &&
+          y.id in STANCES &&
+          isInt(y.opt) &&
+          y.opt >= 0 &&
+          y.opt <= 3 &&
+          isInt(y.day),
+      ) &&
+      Array.isArray(sc.echoes) &&
+      sc.echoes.every(
+        (y) =>
+          isObj(y) &&
+          typeof y.id === 'string' &&
+          y.id in ECHOES &&
+          typeof y.turned === 'boolean' &&
+          isInt(y.day),
+      ) &&
+      isInt(sc.last) &&
+      isInt(sc.echoLast),
+    'scene',
+  );
   const hb = x.habits;
   need(
     isObj(hb) &&

@@ -72,6 +72,12 @@ import {
   recordById,
   CALLINGS,
   OPEN_CALLINGS,
+  STANCES,
+  ECHOES,
+  echoOpts,
+  stanceOpts,
+  sceneNote,
+  permitFor,
   callingTerms,
   ambitionText,
   highPoint,
@@ -283,7 +289,7 @@ function driveRow(game: Game, s: GameState, to: string, label: string): Row {
   const r0 = road(s.at, to)!;
   // Gas as the drive will charge it, tune-up and all.
   const r = { ...r0, cash: gasFor(s, r0.cash) };
-  const permit = PLACES[to]?.permit ?? 0;
+  const permit = permitFor(s, to);
   const declined = r.cash > 0 && headroom(s) < r.cash + permit;
   if (permit && headroom(s) < permit)
     return {
@@ -1086,6 +1092,19 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           sub: DOG_FAREWELL.sit,
           close: false,
           rows: DOG_FAREWELL.opts.map((o, i) => ({ label: o.label, run: () => game.answer(i) })),
+        };
+      }
+      // Phase 23.5: a call put to you at the crag, or one you made, coming back.
+      if (e?.kind === 'stance' || e?.kind === 'echo') {
+        const echo = e.kind === 'echo' ? ECHOES[e.id] : undefined;
+        const st = echo ? undefined : STANCES[e.id];
+        if (!echo && !st) return null;
+        const opts = echo ? echoOpts(echo) : stanceOpts(s, e.id);
+        return {
+          title: (echo ?? st)!.title,
+          sub: (echo ?? st)!.sit,
+          close: false,
+          rows: opts.map((o, i) => ({ label: o.label, note: sceneNote(o.fx), run: () => game.answer(i) })),
         };
       }
       // Phase 24.4: something happening up on the wall, and its calls.
