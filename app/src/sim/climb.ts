@@ -24,6 +24,7 @@ import { soloed } from './solo';
 import { kitFactor } from './kit';
 import { indoor } from './content/gym';
 import { EXPEDITIONS, expedWindows } from './content/expeditions';
+import { firstGoMult } from './identity';
 import { trainWindows } from './training';
 import type { GameState, GoResult } from './types';
 import { conditionsAt, sunOn } from './weather';
@@ -160,14 +161,19 @@ export function dayFactor(s: GameState, r: RouteDef): { windows: number; grease:
 }
 
 // A beta's scale for you, today: your skills in its style against the route's grade, and
-// the day. It's what the beta sheet shows as bars and what the go uses.
-export function betaScale(s: GameState, r: RouteDef, beta: string): number {
+// the day. It's what the beta sheet shows as bars and what the go uses. `started`: asked by
+// the go itself, which has already counted.
+export function betaScale(s: GameState, r: RouteDef, beta: string, started = false): number {
   const b = r.beta[beta];
   if (!b) return 1;
+  const L = s.routes[r.id];
+  const first = !L?.sent && (L?.goes ?? 0) === (started ? 1 : 0);
   return (
     windowFactor(margin(s.climber.skills, b.style, effGrade(r))) *
     dayFactor(s, r).windows *
-    kitFactor(s, b.style)
+    kitFactor(s, b.style) *
+    // A calling that commits on a first go (Phase 23.3).
+    firstGoMult(s, first)
   );
 }
 
@@ -181,7 +187,7 @@ export function paceFor(s: GameState, r: RouteDef): number {
 export function startAttempt(s: GameState, r: RouteDef): Attempt {
   const pick = picks(s, r);
   const crux: Record<string, number> = {};
-  for (const c of r.cruxes) crux[c.id] = betaScale(s, r, pick[c.id] ?? '');
+  for (const c of r.cruxes) crux[c.id] = betaScale(s, r, pick[c.id] ?? '', true);
   return {
     route: r.id,
     def: r,

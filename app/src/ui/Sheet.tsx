@@ -110,6 +110,9 @@ import {
   OPEN_RECORD,
   originOf,
   originTerms,
+  callingOf,
+  callingTerms,
+  rungText,
   TALENTS,
   CAME_ACROSS,
   CAME_ACROSS_NAME,
@@ -1017,6 +1020,44 @@ function OriginRow({ s }: { s: GameState }) {
   );
 }
 
+// Phase 23.3: what you're climbing for, its perk and how far up its ambition you are; or,
+// once asked and put off, the way back to the asking.
+function CallingRow({ game, s }: { game: Game; s: GameState }) {
+  const c = callingOf(s);
+  if (!c) {
+    if (!s.calling.offered) return null;
+    return (
+      <>
+        <p className="crux">Calling</p>
+        <button
+          type="button"
+          className="opt"
+          id="calling-open"
+          onClick={() => game.openSheet({ k: 'calling' })}
+        >
+          <span>What are you climbing for?</span>
+        </button>
+      </>
+    );
+  }
+  const t = callingTerms(c);
+  return (
+    <>
+      <p className="crux">{c.name}</p>
+      <p className="sub" id="calling">
+        {[...t.perks, ...t.costs].join(' ')}
+      </p>
+      {c.rungs.map((aim, i) => (
+        <p className="sub" key={i}>
+          {s.calling.rungs[i] !== undefined
+            ? `✓ ${rungText(aim)}, day ${s.calling.rungs[i]}.`
+            : `○ ${rungText(aim)}.`}
+        </p>
+      ))}
+    </>
+  );
+}
+
 function YouBody({ game, s }: { game: Game; s: GameState }) {
   const c = s.climber;
   const g = gradeOf(c.skills);
@@ -1040,6 +1081,7 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
       </ul>
       <ActRow s={s} />
       <OriginRow s={s} />
+      <CallingRow game={game} s={s} />
       <p className="crux">Body</p>
       <p className="sub">
         Energy {Math.round(s.energy)}, skin {Math.round(s.skin)}, food {Math.round(s.fed)}.

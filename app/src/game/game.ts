@@ -137,6 +137,8 @@ export type SheetId =
   | { k: 'home' }
   // Phase 23.1: an entry just gone in the Record Book.
   | { k: 'record'; ids: string[] }
+  // Phase 23.3: what you're climbing for, asked.
+  | { k: 'calling' }
   // Phase 21.6: the speed wall, and how a Free Solo run ended.
   | { k: 'speed' }
   | { k: 'dead' }
@@ -387,6 +389,7 @@ export class Game {
       else if (e.k === 'act') this.cards.push({ k: 'act' });
       else if (e.k === 'home') this.cards.push({ k: 'home' });
       else if (e.k === 'record') this.cards.push({ k: 'record', ids: e.ids });
+      else if (e.k === 'calling') this.cards.push({ k: 'calling' });
     }
     if (changed) this.noteComings(before);
     if (changed && !persist.save(this.state)) this.toast("Couldn't save. The browser's storage may be full.");

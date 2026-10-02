@@ -3,6 +3,7 @@
 // these, so a price or a gain shown on screen is the one charged.
 
 import type { Style } from './climber';
+import { CALLINGS, type Calling, type CallingFx } from './content/callings';
 import { ORIGINS, type Origin, type OriginFx } from './content/origins';
 import { INJURY_NAME } from './content/injuries';
 import { TALENTS } from './content/talents';
@@ -12,6 +13,10 @@ import type { GameState, Skills } from './types';
 
 export const originOf = (s: GameState): Origin | null => (s.origin ? (ORIGINS[s.origin] ?? null) : null);
 const fx = (s: GameState): OriginFx => originOf(s)?.fx ?? {};
+// Phase 23.3: what you're climbing for, and its perk.
+export const callingOf = (s: GameState): Calling | null =>
+  s.calling.id ? (CALLINGS[s.calling.id] ?? null) : null;
+const cfx = (s: GameState): CallingFx => callingOf(s)?.fx ?? {};
 
 // Where a skill's learned: on a go indoors or outside, or in a session (the speed wall's one).
 export type Where = 'in' | 'out' | 'train';
@@ -21,6 +26,7 @@ export function gainMult(s: GameState, k: keyof Skills, where: Where): number {
   const f = fx(s);
   let m = where === 'in' ? (f.gainIn ?? 1) : where === 'out' ? (f.gainOut ?? 1) : (f.gainTrain ?? 1);
   if ((k === 'power' || k === 'fingers') && f.spring) m *= f.spring;
+  if (where === 'out') m *= cfx(s).gainOut ?? 1;
   for (const id of s.talents.ids) {
     const t = TALENTS[id];
     if (t && t.skill === k) m *= t.gain;
@@ -30,13 +36,18 @@ export function gainMult(s: GameState, k: keyof Skills, where: Where): number {
 
 // The styles that load the fingers, where tendons tell.
 const FINGERY: Style[] = ['crimp', 'crack'];
+// Your tendons, where the line loads the fingers; and your calling's, on anything.
 export function injuryMult(s: GameState, style: Style): number {
-  if (!FINGERY.includes(style)) return 1;
-  return s.talents.ids.reduce((m, id) => m * (TALENTS[id]?.injury ?? 1), 1);
+  const c = cfx(s).injury ?? 1;
+  if (!FINGERY.includes(style)) return c;
+  return s.talents.ids.reduce((m, id) => m * (TALENTS[id]?.injury ?? 1), c);
 }
 
+// A line's first go, for a calling that commits on it: the crux windows' scale.
+export const firstGoMult = (s: GameState, first: boolean): number => (first ? (cfx(s).firstGo ?? 1) : 1);
+
 export const payMult = (s: GameState): number => fx(s).pay ?? 1;
-export const livingMult = (s: GameState): number => fx(s).living ?? 1;
+export const livingMult = (s: GameState): number => (fx(s).living ?? 1) * (cfx(s).living ?? 1);
 export const shopMult = (s: GameState): number => fx(s).shop ?? 1;
 export const originBill = (s: GameState): number => fx(s).bill ?? 0;
 export const premiumOf = (s: GameState, plan: keyof typeof PLANS): number =>

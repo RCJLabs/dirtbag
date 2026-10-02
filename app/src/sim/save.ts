@@ -21,10 +21,11 @@ import { EPICS } from './content/epics';
 import { recordById } from './content/record';
 import { CAME_ACROSS, ORIGINS } from './content/origins';
 import { TALENTS } from './content/talents';
+import { CALLINGS } from './content/callings';
 import { newlyEarned } from './record';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 32;
+export const SAVE_VERSION = 33;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -259,6 +260,12 @@ export const MIGRATIONS: Record<number, Migration> = {
     const c = x.climber;
     const skills = isObj(c) && isObj(c.skills) ? { ...c.skills } : {};
     return { ...x, origin: null, talents: { ids: [], known: [], from: skills } };
+  },
+  // v32 -> v33 (Phase 23.3): no calling yet, and not yet asked; a climber who's sent enough
+  // is asked on the first thing they do.
+  32: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, calling: { id: null, since: 0, rungs: [], offered: false } };
   },
 };
 
@@ -599,6 +606,18 @@ export function validate(x: unknown): string[] {
       isObj(tals.from) &&
       SKILLS.every((k) => typeof (tals.from as Record<string, unknown>)[k] === 'number'),
     'talents',
+  );
+  const cl = x.calling;
+  need(
+    isObj(cl) &&
+      (cl.id === null || (typeof cl.id === 'string' && cl.id in CALLINGS)) &&
+      isInt(cl.since) &&
+      cl.since >= 0 &&
+      Array.isArray(cl.rungs) &&
+      cl.rungs.every((d) => isInt(d) && d >= 0) &&
+      cl.rungs.length <= (cl.id ? CALLINGS[cl.id as string]!.rungs.length : 0) &&
+      typeof cl.offered === 'boolean',
+    'calling',
   );
   const rec = x.record;
   need(isObj(rec) && Object.entries(rec).every(([k, v]) => !!recordById(k) && isInt(v) && v >= 0), 'record');
