@@ -7,7 +7,8 @@ import { STARTS } from '../src/sim/climber';
 import { contentOut, firstTry, median, season } from '../src/sim/harness';
 import { JOBS } from '../src/sim/content/jobs';
 import { ACTS } from '../src/sim/content/places';
-import { BUSK, PSYCHE } from '../src/sim/dials';
+import { BUSK, PACE, PSYCHE } from '../src/sim/dials';
+import { ACT_PAID } from '../src/sim/content/story';
 import { buskRate, practiceOf } from '../src/sim/busk';
 import { namedDeeds } from '../src/sim/epilogue';
 
@@ -149,5 +150,98 @@ it('career', { timeout: 1_800_000 }, () => {
     buskOk,
     'Busking starts under every job an hour and passes every job after 100+ days of sets',
     `see the busking table; ${BUSK.notes} chords a set, one set a day.`,
+  );
+});
+
+// Phase 16.6: the ending (Phase 16's criterion 1). Career bots play until they've hung it up,
+// from every start, and a Late Bloomer each (the speed run). When each act ends, when the
+// career does, and what it took in a player's hours at the stated pace (PACE). The hours are
+// a dial's guess until testers time it; the days and taps are the bots'.
+const ENDING_SEEDS = Number(process.env.ENDING_SEEDS ?? 2);
+const ENDING_DAYS = 480;
+const ACT_LINES = ACT_PAID.map((p) =>
+  p
+    .split('{cash}')
+    .sort((a, b) => b.length - a.length)[0]!
+    .trim()
+    .slice(0, 24),
+);
+
+it('the ending', { timeout: 2_400_000 }, () => {
+  out(`\n# The ending: ${ENDING_SEEDS} seeds per start, the career bot, to the day it hangs it up\n`);
+  out('| start | origin | acts end (days) | ended | how | hours | taps a day | goes a day | refused |');
+  out('|---|---|---|---|---|---|---|---|---|');
+  type Row = {
+    origin: string;
+    acts: (number | null)[];
+    ended: number | null;
+    hours: number;
+    daily: boolean;
+    bad: number;
+  };
+  const rows: Row[] = [];
+  for (const origin of [undefined, 'late'])
+    for (const start of Object.keys(STARTS))
+      for (let k = 0; k < ENDING_SEEDS; k++) {
+        const r = season(`e-${start}-${k}`, {
+          start,
+          strategy: 'career',
+          days: ENDING_DAYS,
+          human: true,
+          origin,
+        });
+        const acts = ACT_LINES.map((key) => {
+          const l = r.lines.find((x) => x.includes(key));
+          return l ? Number(l.match(/^\D*(\d+)/)?.[1]) : null;
+        });
+        const ret = r.state.life.retired;
+        const days = r.days.filter((d) => !ret || d.day < ret.day);
+        const taps = days.reduce((n, d) => n + d.taps, 0);
+        const goes = days.reduce((n, d) => n + d.goes, 0);
+        const hours = (taps * PACE.tapSec + goes * PACE.goSec) / 3600;
+        const bad = r.refused.length + r.days.filter((d) => d.stuck).length;
+        rows.push({
+          origin: origin ?? 'none',
+          acts,
+          ended: ret?.day ?? null,
+          hours,
+          daily: r.days.every((d, i) => d.day === i + 1),
+          bad,
+        });
+        out(
+          `| ${start} | ${origin ?? '–'} | ${acts.map((d) => d ?? '–').join(' · ')} | ${ret ? `day ${ret.day}` : '–'} | ${ret ? (ret.forced ? 'body' : 'chose') : '–'} | ${hours.toFixed(1)} | ${(taps / days.length).toFixed(1)} | ${(goes / days.length).toFixed(1)} | ${r.refused.length} |`,
+        );
+      }
+  out('\n## Targets\n');
+  const say = (ok: boolean, what: string, how: string) => out(`- ${ok ? '✓' : '✗'} ${what}: ${how}`);
+  const plain = rows.filter((r) => r.origin === 'none');
+  // On The Line (Act V) your body waits on you: those careers go on, as they should.
+  const onLine = (r: Row) => r.acts[3] !== null;
+  const due = rows.filter((r) => !onLine(r));
+  const ended = due.filter((r) => r.ended !== null);
+  const timed = plain.filter((r) => r.ended !== null);
+  const h = median(timed.map((r) => r.hours));
+  say(
+    ended.length === due.length && h >= 15 && h <= 25,
+    'Creation to the ending takes 15 to 25 hours at the stated pace (criterion 1)',
+    `${ended.length}/${due.length} careers not on The Line ended by day ${ENDING_DAYS} (${rows.length - due.length} on it, going on); median ${h.toFixed(1)} h (${Math.min(...timed.map((r) => r.hours)).toFixed(1)} to ${Math.max(...timed.map((r) => r.hours)).toFixed(1)}) at ${PACE.tapSec} s a tap and ${PACE.goSec} s a go [proposed, until testers time it].`,
+  );
+  const bad = rows.reduce((n, r) => n + r.bad, 0);
+  say(
+    bad === 0 && rows.every((r) => r.daily),
+    'A career to its ending is never refused or stuck, expeditions and walls included',
+    `${bad} refusals and stuck nights across ${rows.length} runs; one line a day in every run: ${rows.every((r) => r.daily)}.`,
+  );
+  const third = plain.filter((r) => r.acts[2] !== null).length;
+  say(
+    third * 4 >= plain.length * 3,
+    'Most careers see the story to the end of Act III',
+    `${third}/${plain.length}; median day ${median(plain.filter((r) => r.acts[2] !== null).map((r) => r.acts[2]!))}.`,
+  );
+  // Reported, not held: the acts past the window, and the Late Bloomer's speed run.
+  const fourth = plain.filter((r) => r.acts[3] !== null).length;
+  const late = rows.filter((r) => r.origin === 'late');
+  out(
+    `- (reported) Act IV finished: ${fourth}/${plain.length} of no origin, ${plain.filter((r) => r.acts[4] !== null).length} of them The Line too; Act V reached by a Late Bloomer before its body calls it: ${late.filter((r) => r.acts[3] !== null).length}/${late.length}.`,
   );
 });

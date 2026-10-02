@@ -178,7 +178,7 @@ import { bodgeHolds, breakdownRoll, friendFor, gasFor, PART_NAME, repairCost, un
 import { BODGE_FAILED, BODGE_HELD, BREAKDOWN_LINE } from './content/van';
 import { speedBlocked, speedGains, speedLoad, speedTime, runsToday } from './speed';
 import { fill, money, skillsNote } from './format';
-import { PARTNERS, tierOf, whereNow } from './presence';
+import { PARTNERS, tierOf, whereIs, whereNow } from './presence';
 import { hashSeed, Rng } from './rng';
 import { actEndedBy, aimMet, currentGoal } from './story';
 import { newlyEarned } from './record';
@@ -1452,7 +1452,18 @@ export function act(s0: GameState, a: Action): Result {
         if (s.wall?.id !== a.wall) return refuse("You're not on it.");
         if (s.wall.next === 0) return refuse("You're still at the bottom. Go back to the van.");
         if (!isNight(s.min)) return refuse('Not yet. Climb while it’s light.');
+        // Phase 16.6: whoever's on the ledge with you is still there in the morning, to belay
+        // the next pitch (an invite lasts only its day, which stranded a two-day wall).
+        // (Their day at the crag ends before dark: whoever was there, the latest in the day.)
+        let mate: string | null = null;
+        for (let m = Math.min(s.min, CLIMB.darkFrom - 1); !mate && m >= DAY.wakeMin; m -= 30)
+          mate = PARTNERS.find((who) => whereIs(s.seed, who, s.day, m, s.people[who]) === w.place) ?? null;
         sleep('ledge');
+        if (mate)
+          s.people = {
+            ...s.people,
+            [mate]: { ...s.people[mate]!, invite: { day: s.day, place: w.place, from: s.min } },
+          };
       }
       break;
     }
