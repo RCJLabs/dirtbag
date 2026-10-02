@@ -2352,10 +2352,17 @@ console.log('The Line');
     end.waitForFunction((t) => document.querySelector('#sheet-title')?.textContent === t, t, {
       timeout: 8000,
     });
-  // A few steps across the Lot, by keyboard, are enough to set it off.
-  await end.keyboard.down('ArrowLeft');
-  await end.waitForTimeout(400);
-  await end.keyboard.up('ArrowLeft');
+  // A few steps across the Lot, by keyboard, are enough to set it off, once the game's up to
+  // hear them; again if the first steps came too soon.
+  await end.waitForSelector('#h-time');
+  for (let i = 0; i < 4; i++) {
+    await end.keyboard.down(i % 2 ? 'ArrowRight' : 'ArrowLeft');
+    await end.waitForTimeout(400);
+    await end.keyboard.up(i % 2 ? 'ArrowRight' : 'ArrowLeft');
+    const t = await end.evaluate(() => document.querySelector('#sheet-title')?.textContent ?? '');
+    if (t === 'The naming') break;
+    await end.waitForTimeout(600);
+  }
   await titled('The naming');
   const naming = await sheet();
   if (!/“The Long Dark”/.test(naming) || !/V18, at The Crucible/.test(naming))
