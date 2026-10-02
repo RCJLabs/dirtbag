@@ -155,7 +155,7 @@ export interface GameState {
   dogs: { name: string; years: number; day: number }[];
   // A walk-out (Phase 22.6c) has stages: the one you're on, and what the calls so far add up to.
   encounter: {
-    kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell' | 'wall';
+    kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell' | 'wall' | 'stance' | 'echo';
     id: string;
     stage?: number;
     tally?: { risk: number; energy: number; fed: number; skin: number; psyche: number; hours: number };
@@ -202,6 +202,17 @@ export interface GameState {
   paths: { tiers: Record<string, number>; told: string[] };
   mastery: string[];
   quirk: string | null;
+  // Phase 23.5. Where you stand with the old guard and the gym crowd (0..100), the calls
+  // you've made (which, the answer, the day), the echoes that have come back, and the days of
+  // the last call and the last echo.
+  scene: {
+    old: number;
+    gym: number;
+    stances: { id: string; opt: number; day: number }[];
+    echoes: { id: string; turned: boolean; day: number }[];
+    last: number;
+    echoLast: number;
+  };
   habits: {
     goes: number;
     outdoor: number;
@@ -448,7 +459,11 @@ export type GameEvent =
   // A conversation moves to another node, or ends (null).
   | { k: 'talk'; node: string | null }
   // An encounter begins (Phase 22.6): it waits for an answer.
-  | { k: 'encounter'; kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell' | 'wall'; id: string }
+  | {
+      k: 'encounter';
+      kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell' | 'wall' | 'stance' | 'echo';
+      id: string;
+    }
   // Back from an expedition (Phase 24.5): its card, from the newest entry in the book.
   | { k: 'home'; id: string }
   // Entries in the Record Book, just earned (Phase 23.1): one moment, one card, the first

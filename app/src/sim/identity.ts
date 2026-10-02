@@ -8,7 +8,7 @@ import { ORIGINS, type Origin, type OriginFx } from './content/origins';
 import { INJURY_NAME } from './content/injuries';
 import { TALENTS } from './content/talents';
 import { PLANS, TALENT } from './dials';
-import { edgeGain, edgeInjury, edgeLiving } from './paths';
+import { edgeGain, edgeInjury, edgeLiving, edgeTrain } from './paths';
 import { Rng } from './rng';
 import type { GameState, Skills } from './types';
 
@@ -30,6 +30,7 @@ export function gainMult(s: GameState, k: keyof Skills, where: Where): number {
   if (where === 'out') m *= cfx(s).gainOut ?? 1;
   // Paths, mastery and your quirk (Phase 23.4).
   m *= edgeGain(s, k);
+  if (where === 'train') m *= edgeTrain(s);
   for (const id of s.talents.ids) {
     const t = TALENTS[id];
     if (t && t.skill === k) m *= t.gain;

@@ -104,6 +104,7 @@ import {
   LIFESTYLE,
   CALLING,
   MASTERY_AT,
+  FACTION,
   LOAD,
   MONEY,
   PLANS,
@@ -192,6 +193,8 @@ import {
   tiersOn,
 } from './paths';
 import { MASTERY, PATHS, QUIRKS } from './content/paths';
+import { CALLING_SCENE, ECHOES } from './content/scene';
+import { echoDue, echoOpts, permitFor, shift, stanceDue, stanceOpts } from './scene';
 import { CALLINGS, OPEN_CALLINGS } from './content/callings';
 import { CAME_ACROSS, ORIGINS } from './content/origins';
 import { TALENTS } from './content/talents';
@@ -283,6 +286,7 @@ export function newGame(seed: string): GameState {
     mastery: [],
     quirk: null,
     habits: { goes: 0, outdoor: 0, fresh: 0, tired: 0, evening: 0, dawn: 0, easy: 0, power: 0 },
+    scene: { old: FACTION.start, gym: FACTION.start, stances: [], echoes: [], last: 0, echoLast: 0 },
     record: {},
     speed: { pb: null, runs: 0, day: 0 },
     mode: 'rope',
@@ -1579,6 +1583,8 @@ export function act(s0: GameState, a: Action): Result {
       if (s.calling.id) return refuse('You know what you’re climbing for.');
       if (!OPEN_CALLINGS.includes(a.id)) return refuse('Not one you can take up.');
       s.calling = { id: a.id, since: s.day, rungs: [], offered: true };
+      // The crowds hear about it (v0.956's shifts, Phase 23.5).
+      s.scene = shift(s.scene, CALLING_SCENE[a.id] ?? {});
       line(`${CALLINGS[a.id]!.name}. You say it out loud, once, to nobody.`);
       break;
     }
@@ -1677,7 +1683,8 @@ export function act(s0: GameState, a: Action): Result {
         return refuse(`${to.name} is a trip you haven't paid for yet: ${money(to.unlock)}, once.`);
       // A maxed-out card never strands you: you drive on what's in the tank. A permit isn't
       // gas: the ranger doesn't take fumes.
-      const permit = to.permit ?? 0;
+      // The old guard's say-so gets you in free (Phase 23.5).
+      const permit = permitFor(s, a.to);
       if (permit && headroom(s) < permit)
         return refuse(`${to.name} needs a ${money(permit)} permit, and the card won't cover it.`);
       // The van first: a flat battery gets a jump for a drive across town, and a part that's
@@ -1737,6 +1744,19 @@ export function act(s0: GameState, a: Action): Result {
         s.encounter = e;
         s.deck = { ...s.deck, last: s.day, [e.kind]: s.day };
         events.push({ k: 'encounter', kind: e.kind, id: e.id });
+        break;
+      }
+      // Phase 23.5: at the crag, a call you made coming back, or a new one put to you.
+      const echo = echoDue(s);
+      const call = echo ? null : stanceDue(s, a.to);
+      if (echo) {
+        s.encounter = { kind: 'echo', id: echo };
+        s.scene = { ...s.scene, echoLast: s.day };
+        events.push({ k: 'encounter', kind: 'echo', id: echo });
+      } else if (call) {
+        s.encounter = { kind: 'stance', id: call };
+        s.scene = { ...s.scene, last: s.day };
+        events.push({ k: 'encounter', kind: 'stance', id: call });
       }
       break;
     }
@@ -2199,6 +2219,21 @@ export function act(s0: GameState, a: Action): Result {
         if (fx.bond && x.partner) bond(x.partner, meet(x.partner).bond + fx.bond);
         if (fx.psyche) s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + fx.psyche) };
         if (fx.day) portaledge();
+        break;
+      }
+      // Phase 23.5: a call, or a call coming back, and where it leaves you.
+      if (e?.kind === 'stance' || e?.kind === 'echo') {
+        const echo = e.kind === 'echo' ? ECHOES[e.id] : undefined;
+        const opts = echo ? echoOpts(echo) : stanceOpts(s, e.id);
+        const o = opts[a.opt];
+        if (!o) return refuse('Nobody’s asking.');
+        s.encounter = null;
+        s.scene = shift(s.scene, o.fx);
+        if (echo) s.scene.echoes = [...s.scene.echoes, { id: e.id, turned: a.opt === 1, day: s.day }];
+        else s.scene.stances = [...s.scene.stances, { id: e.id, opt: a.opt, day: s.day }];
+        if (o.fx.energy) s.energy = clamp100(s.energy + o.fx.energy);
+        if (o.fx.psyche) s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + o.fx.psyche) };
+        note(o.out);
         break;
       }
       if (e?.kind === 'hitch' || e?.kind === 'stop') {

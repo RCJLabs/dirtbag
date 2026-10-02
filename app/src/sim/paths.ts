@@ -6,6 +6,7 @@ import { gradeOf, needFor, type Style } from './climber';
 import { indoor, routeById } from './content/gym';
 import { HYBRIDS, MASTERY, OPEN_PATHS, PATHS, QUIRKS, type Deed, type Edge } from './content/paths';
 import { MASTERY_AT, PATH, QUIRK } from './dials';
+import { perksOf } from './scene';
 import type { RouteDef } from './content/routes';
 import type { GameState } from './types';
 
@@ -103,6 +104,8 @@ export function edges(s: GameState): Edge[] {
   }
   const q = s.quirk ? QUIRKS[s.quirk] : undefined;
   if (q) out.push(q.edge);
+  // Standing with a crowd (Phase 23.5).
+  for (const p of perksOf(s)) out.push(p.edge);
   return out;
 }
 
@@ -116,6 +119,7 @@ export function edgeWindows(s: GameState, r: RouteDef, first: boolean): number {
       if (e.windows && (!e.style || e.style.includes(r.type))) m *= e.windows;
       if (first && e.firstGo) m *= e.firstGo;
       if (e.gym && indoor(r.place)) m *= e.gym;
+      if (e.outside && !indoor(r.place)) m *= e.outside;
       if (e.fresh && s.energy >= QUIRK.fresh) m *= e.fresh;
       if (e.tired && s.energy < QUIRK.tired) m *= e.tired;
       if (e.evening && s.min >= QUIRK.evening) m *= e.evening;
@@ -128,6 +132,7 @@ export function edgeWindows(s: GameState, r: RouteDef, first: boolean): number {
 export const edgeGain = (s: GameState, k: keyof GameState['climber']['skills']): number =>
   product(edges(s).map((e) => (e.gainAll ?? 1) * (e.gain && e.gain[0] === k ? e.gain[1] : 1)));
 export const edgeInjury = (s: GameState): number => product(edges(s).map((e) => e.injury ?? 1));
+export const edgeTrain = (s: GameState): number => product(edges(s).map((e) => e.train ?? 1));
 export const edgeGas = (s: GameState): number => product(edges(s).map((e) => e.gas ?? 1));
 export const edgeLiving = (s: GameState): number => product(edges(s).map((e) => e.living ?? 1));
 
@@ -142,6 +147,8 @@ export function edgeText(e: Edge): string {
     );
   if (e.firstGo) out.push(`Cruxes ${more(e.firstGo, 'kinder', 'meaner')} on a first go.`);
   if (e.gym) out.push(`Cruxes ${more(e.gym, 'kinder', 'meaner')} indoors.`);
+  if (e.outside) out.push(`Cruxes ${more(e.outside, 'kinder', 'meaner')} outside.`);
+  if (e.train) out.push(`Sessions teach ${more(e.train, 'more', 'less')}.`);
   if (e.fresh) out.push(`Cruxes ${more(e.fresh, 'kinder', 'meaner')} with energy at ${QUIRK.fresh} or more.`);
   if (e.tired) out.push(`Cruxes ${more(e.tired, 'kinder', 'meaner')} with energy under ${QUIRK.tired}.`);
   if (e.evening) out.push(`Cruxes ${more(e.evening, 'kinder', 'meaner')} in the evening.`);

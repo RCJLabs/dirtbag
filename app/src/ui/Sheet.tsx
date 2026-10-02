@@ -123,6 +123,13 @@ import {
   pathsTaken,
   tiersOn,
   PATH,
+  ECHOES,
+  FACTIONS,
+  perksOf,
+  stanceAnswer,
+  standingWord,
+  whereYouStand,
+  type Faction,
   TALENTS,
   CAME_ACROSS,
   CAME_ACROSS_NAME,
@@ -1140,6 +1147,44 @@ function PathsRow({ game, s }: { game: Game; s: GameState }) {
   );
 }
 
+const upFirst = (w: string) => w[0]!.toUpperCase() + w.slice(1);
+
+// Phase 23.5: where you stand with each crowd, what it's got you, and the calls you've made.
+function SceneRow({ s }: { s: GameState }) {
+  const perks = perksOf(s);
+  const made = [
+    ...s.scene.stances.map((x) => ({ day: x.day, line: stanceAnswer(x.id, x.opt)?.stance })),
+    ...s.scene.echoes.map((x) => {
+      const e = ECHOES[x.id];
+      return { day: x.day, line: e ? (x.turned ? e.turn : e.hold).stance : undefined };
+    }),
+  ]
+    .filter((x) => !!x.line)
+    .sort((a, b) => a.day - b.day);
+  return (
+    <>
+      <p className="crux">The scene</p>
+      <p className="sub" id="scene">
+        {whereYouStand(s)}{' '}
+        {(Object.keys(FACTIONS) as Faction[])
+          .map((f) => `${upFirst(FACTIONS[f].name)}: ${standingWord(s.scene[f])}.`)
+          .join(' ')}
+      </p>
+      {perks.map((p) => (
+        <p className="sub" key={p.name}>
+          {p.name}:{' '}
+          {[edgeText(p.edge), p.permits ? 'Permits cost you nothing.' : ''].filter(Boolean).join(' ')}
+        </p>
+      ))}
+      {made.map((x, i) => (
+        <p className="sub" key={i}>
+          Day {x.day}. {x.line}
+        </p>
+      ))}
+    </>
+  );
+}
+
 function YouBody({ game, s }: { game: Game; s: GameState }) {
   const c = s.climber;
   const g = gradeOf(c.skills);
@@ -1165,6 +1210,7 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
       <OriginRow s={s} />
       <CallingRow game={game} s={s} />
       <PathsRow game={game} s={s} />
+      <SceneRow s={s} />
       <p className="crux">Body</p>
       <p className="sub">
         Energy {Math.round(s.energy)}, skin {Math.round(s.skin)}, food {Math.round(s.fed)}.

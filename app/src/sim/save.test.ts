@@ -56,6 +56,7 @@ const V30 = readFileSync(new URL('./fixtures/save-v30.json', import.meta.url), '
 const V31 = readFileSync(new URL('./fixtures/save-v31.json', import.meta.url), 'utf8');
 const V32 = readFileSync(new URL('./fixtures/save-v32.json', import.meta.url), 'utf8');
 const V33 = readFileSync(new URL('./fixtures/save-v33.json', import.meta.url), 'utf8');
+const V34 = readFileSync(new URL('./fixtures/save-v34.json', import.meta.url), 'utf8');
 // What R2's migration adds to any older save.
 const R2_BODY = {
   load: { acute: 20, chronic: 20, today: 0 },
@@ -114,6 +115,7 @@ const P226A = {
   mastery: expect.any(Array),
   quirk: null,
   habits: expect.any(Object),
+  scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
 };
 
 describe('saves', () => {
@@ -584,6 +586,7 @@ describe('saves', () => {
       mastery: expect.any(Array),
       quirk: null,
       habits: expect.any(Object),
+      scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
     });
   });
 
@@ -611,6 +614,7 @@ describe('saves', () => {
       mastery: expect.any(Array),
       quirk: null,
       habits: expect.any(Object),
+      scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
     });
     expect(r.state.deck.met).toEqual({ busker: 2 });
   });
@@ -637,6 +641,7 @@ describe('saves', () => {
       mastery: expect.any(Array),
       quirk: null,
       habits: expect.any(Object),
+      scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
     });
     expect(r.state.dog).toEqual({ name: 'Scout', since: 12, fed: 70, bond: 55 });
   });
@@ -662,6 +667,7 @@ describe('saves', () => {
       mastery: expect.any(Array),
       quirk: null,
       habits: expect.any(Object),
+      scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
     });
     expect(r.state.dogs).toEqual([{ name: 'Scout', years: 16, day: 301 }]);
   });
@@ -686,6 +692,7 @@ describe('saves', () => {
       mastery: expect.any(Array),
       quirk: null,
       habits: expect.any(Object),
+      scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
     });
     expect(r.state.dream).toEqual({ pick: 'rig', pot: 300, owned: [] });
   });
@@ -709,6 +716,7 @@ describe('saves', () => {
       mastery: expect.any(Array),
       quirk: null,
       habits: expect.any(Object),
+      scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
     });
     expect(r.state.table?.who).toBe('hazel');
   });
@@ -743,6 +751,7 @@ describe('saves', () => {
       mastery: expect.any(Array),
       quirk: null,
       habits: expect.any(Object),
+      scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
     });
   });
 
@@ -765,6 +774,7 @@ describe('saves', () => {
       mastery: expect.any(Array),
       quirk: null,
       habits: expect.any(Object),
+      scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
     });
   });
 
@@ -787,6 +797,7 @@ describe('saves', () => {
       mastery: expect.any(Array),
       quirk: null,
       habits: expect.any(Object),
+      scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
     });
   });
 
@@ -807,6 +818,7 @@ describe('saves', () => {
       mastery: expect.any(Array),
       quirk: null,
       habits: expect.any(Object),
+      scene: { old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 },
     });
     const home = act(r.state, { t: 'exped', id: 'elcap', do: 'bail' }).state;
     expect(home.expedition).toBeNull();
@@ -830,7 +842,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(30);
     const old = JSON.parse(V30).state;
-    const { record, origin, talents, calling, paths, mastery, quirk, habits, ...rest } = r.state;
+    const { record, origin, talents, calling, paths, mastery, quirk, habits, scene, ...rest } = r.state;
     expect(rest).toEqual(old);
     expect(origin).toBeNull();
     expect(talents.ids).toEqual([]);
@@ -845,7 +857,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(31);
-    const { origin, talents, calling, paths, mastery, quirk, habits, ...rest } = r.state;
+    const { origin, talents, calling, paths, mastery, quirk, habits, scene, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V31).state);
     expect(calling.id).toBeNull();
     expect(origin).toBeNull();
@@ -857,7 +869,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(32);
-    const { calling, paths, mastery, quirk, habits, ...rest } = r.state;
+    const { calling, paths, mastery, quirk, habits, scene, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V32).state);
     expect(rest.origin).toBe('desert');
     expect(calling).toEqual({ id: null, since: 0, rungs: [], offered: false });
@@ -868,13 +880,24 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(33);
-    const { paths, mastery, quirk, habits, ...rest } = r.state;
+    const { paths, mastery, quirk, habits, scene, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V33).state);
     expect(rest.calling.id).toBe('sendorbust');
     expect(paths).toEqual({ tiers: {}, told: [] });
     expect(mastery).toEqual([]);
     expect(quirk).toBeNull();
     expect(habits.goes).toBe(0);
+  });
+
+  it('load a real 0.997.0 save from a Night Owl: its quirk kept, even with both crowds', () => {
+    const r = fromSave(V34);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(34);
+    const { scene, ...rest } = r.state;
+    expect(rest).toEqual(JSON.parse(V34).state);
+    expect(rest.quirk).toBe('nightowl');
+    expect(scene).toEqual({ old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 });
   });
 
   // These pretend a longer history: a v1 file that stored `money` where the state now has
@@ -884,7 +907,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(34);
+    expect(SAVE_VERSION).toBe(35);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

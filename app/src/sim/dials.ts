@@ -937,4 +937,18 @@ export const CALLING = { offerAt: 10, consolidate: 5, psyche: [8, 12, 16] };
 // `easy`, this many grades or more inside yours.
 export const PATH = { max: 2, gates: [4, 9, 14] };
 export const MASTERY_AT = { sends: 40, hybrid: 8 };
+// Phase 23.5 [proposed]. Standing with each crowd starts at `start` and stays in 0..100; the
+// words change at `bands` (v0.956's Distrusted, Skeptical, Neutral, Respected, Beloved). A
+// call comes at a crag at most once every `gap` days (v0.956's 14), on `chance` of an
+// arrival (its 0.22); an echo at least `echoAfter` days after the call (its 30) and `echoGap`
+// after the last echo (its 25). The elder's answer is there once the old guard's at `elder`.
+export const FACTION = {
+  start: 50,
+  bands: [25, 45, 56, 76],
+  gap: 14,
+  chance: 0.22,
+  echoAfter: 30,
+  echoGap: 25,
+  elder: 65,
+};
 export const QUIRK = { after: 30, fresh: 70, tired: 35, evening: 17 * 60, dawn: 9 * 60, easy: 2 };

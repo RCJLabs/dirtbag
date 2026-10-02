@@ -2160,6 +2160,15 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The harness moves,** because quirks and mastery come to every climber, bots too; every target still passes. The odds shown against the bots' trips: El Cap 54% / 60%, Cerro Torre 33% / 38%, Trango 24% / 24% (the harness now gives its made-up climbers the masteries they'd have).
 - **Measured** (8 bots, 56 days): a bot hears of its first claimable tier on day 10 to 12; claimed paths barely move a bot's numbers (perfect hands); 7 of 8 balanced bots are named Stone Purist, because they climb outside almost always, so it's likely common for players who do too.
 
+**Status (2 Oct 2026): 23.5 built: the scene, factions and stances.** Save v35, 0.998.0.
+- **Two crowds** (Evan's call 5): the old guard (v0.956's trad, and the locals) and the gym crowd (its gym and comp kids), each from even. The You page says where you stand ("In with the old guard, but on the outs with the gym crowd") and each crowd's word, Distrusted to Beloved.
+- **Five calls,** v0.956's dilemmas: a chipped project, a closure, a retrobolt, a stolen first ascent, a trashed crag. Put to you on arriving at a crag, now and then (none in the first fortnight; the bolting and the first ascent wait for you to be a local, and the first ascent for one of your own). Three answers; a fourth, the elder's, once the old guard listens to you. Each says what it does to whom.
+- **Six echoes,** weeks later, for some answers: hold to what you said, or turn. Every call and echo goes in the journal, in your own words.
+- **What standing gets you** (v0.956's clubs, folded in): the old guard's local knowledge, cruxes kinder outside, and at Beloved, permits on them; the gym crowd's coaching, sessions teach more. Taking up a calling moves the crowds, as it did in v0.956.
+- **No rep, no followers** (Evan's call 7): a call moves standing, psyche and your legs; v0.956's media, purism and access fund have nowhere to go. All numbers [proposed], v0.956's where it had them.
+- **Sends don't move the crowds,** unlike v0.956: its per-send drift would have both at Beloved within a season.
+- **The harness moves a little** (bots answer every call with its first answer); every target passes. The e2e's five days end before the first call; the sim's tests cover them, and the sheet and the You page were checked by eye.
+
 ---
 
 ### Phase 16 — The spine: story, acts and endings
@@ -2526,3 +2535,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-02 — Phase 23.2 built: six origins at creation, each a perk and a cost said from its own numbers [proposed]; 11 hidden talents dealt with one, shown once their skill has come on; a carried climber came across with nothing dealt. Bots by origin differ only modestly in week one; tuning that is 23.8's. Save v32. 0.995.0.
 - 2026-10-02 — Phase 23.3 built: callings, asked at the fire after ten sends rather than at creation; the Purist, Send-or-Bust and the Lifer, each a perk and a three-rung ambition counted from the day you take it up, paying psyche [proposed]; the Influencer waits on followers. Save v33. 0.996.0.
 - 2026-10-02 — Phase 23.4 built: five paths claimed a tier at a time on grade gates near V4, V9 and V14, two at most; one Mastery track of style mastery and v0.956's hybrids; a quirk named from your habits after 30 goes; all one kind of edge on the existing dials [proposed]. Expedition send chances now key on your edges. Save v34. 0.997.0.
+- 2026-10-02 — Phase 23.5 built: two crowds, the old guard and the gym crowd; v0.956's five calls put to you at the crag, with the elder's answer once the old guard listens, and six echoes weeks later; clubs folded in as perks of standing [proposed]. Save v35. 0.998.0.
