@@ -1918,7 +1918,7 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 ---
 
-### Phase 24 — Expeditions as trips   **<<< CURRENT MILESTONE**
+### Phase 24 — Expeditions as trips
 
 *Added 30 Sep 2026 by Evan's call, after 21.5 built expeditions as a sheet of daily calls over the Lot. Numbered 24 so older numbers don't move. It runs after Phase 22 and before Phase 23 (Evan's call, 1 Oct 2026): a trip is packed with Phase 22's food and fuel, and leaves Phase 22's van behind. It could run straight after Phase 21 instead, at the cost of building packing twice.*
 
@@ -2048,7 +2048,7 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Size:** 302.4 of 340 KB (Trango: 1.4 KB; the three scenes 5.6 KB together, against the 12–20 KB the plan feared).
 
 **Status (2 Oct 2026): 24.9 built: the harness and the e2e.** 0.993.0. No save change.
-- **The harness found a farm, and 24.9 closes it** [proposed]: a summit paid every time, so a climber a grade or two past an objective could fly back to it for money. Measured, 20 trips a grade: El Cap at V11 came to about +$1,175 a trip, Cerro Torre at V14 +$1,740, Trango at V16 +$1,510, several times a day of shifts. **A summit now pays once, the first time, as a wall does**; the amounts are Evan's ($2,400, $6,000, $12,000). The book (24.5) says whether you've stood on top, so no save change. Back up for it again and the top says nobody pays for the same photos twice; the expeditions list now says what the first summit pays, and that you've been paid.
+- **The harness found a farm, and 24.9 closes it** (Evan's call, 2 Oct 2026, confirming the proposal): a summit paid every time, so a climber a grade or two past an objective could fly back to it for money. Measured, 20 trips a grade: El Cap at V11 came to about +$1,175 a trip, Cerro Torre at V14 +$1,740, Trango at V16 +$1,510, several times a day of shifts. **A summit now pays once, the first time, as a wall does**; the amounts are Evan's ($2,400, $6,000, $12,000). The book (24.5) says whether you've stood on top, so no save change. Back up for it again and the top says nobody pays for the same photos twice; the expeditions list now says what the first summit pays, and that you've been paid.
 - **The harness's new target (criterion 5):** for every objective, at every grade it's offered from its lowest to two past its own, 30 bot trips each: once a summit has paid, no trip out-earns a day of the worst-paid shift ($28). Every repeat loses money ($94 to $154 a day away). A first summit is a one-off, shown beside it: El Cap $57 a day at V9 and $208 at V11; Cerro Torre $24 at V12, $130 at V14; Trango −$22 at V14, $36 at V16.
 - **The odds against the bots' trips** (criterion 4) hold: El Cap shows 52% and the bots get 56%, Cerro Torre 32% and 34%, Trango 22% and 22%.
 - **A bug the e2e found, there since 24.1:** leading a pitch up there, the expedition's card stayed over the wall for the whole go, under the climb panel. The rule that keeps the day's card up now lets it down while you climb and while the stamp shows.
@@ -2061,12 +2061,13 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 2. **Passes:** an expedition is planned, travelled, climbed and come home from, summit or not, and the e2e plays one through (24.9).
 3. **Passes, with Evan's 24.1 call noted:** your pitches are climbed through beta-then-send, and the dice decide the weather and what happens up there; your partner's leads also go on the seed against their grade, as Evan decided.
 4. **Passes:** the odds are shown while planning and every day after, and the harness holds them within ten points of the bots' trips at each objective's grade.
-5. **Passes** once a summit pays once (24.9, proposed): no trip that's already paid out-earns a day of shifts at any grade it's offered.
-Open for Evan: closing Phase 24 (the CURRENT MILESTONE moves to Phase 23), and the 24.9 pay-once rule. Still unbuilt from 24.5: the drawn keepsake card for a trip.
+5. **Passes:** a summit pays once (24.9, Evan's call): no trip that's already paid out-earns a day of shifts at any grade it's offered.
+
+**Phase 24 closed by Evan's call (2 Oct 2026),** with the pay-once rule confirmed. Carried: the drawn keepsake card for a trip (24.5), and the odds running low above an objective's grade (24.9), both for a polish pass. The CURRENT MILESTONE moves to Phase 23.
 
 ---
 
-### Phase 23 — Who you are: origins, paths, stances, and the Record Book
+### Phase 23 — Who you are: origins, paths, stances, and the Record Book   **<<< CURRENT MILESTONE**
 
 *Added 29 Sep 2026 by Evan's call. Runs after Phases 22 and 24, before Phase 16, which keys its epilogues to all of it.*
 
@@ -2085,6 +2086,43 @@ Open for Evan: closing Phase 24 (the CURRENT MILESTONE moves to Phase 23), and t
 3. The Record Book holds every feat v0.956 celebrated, merged, with its story.
 
 **Depends on:** Phases 21–22. **Effort:** ~5–8 weeks [INFERRED].
+
+**Plan on the rebuild (2 Oct 2026), with Evan's calls.**
+
+*Two problems first:*
+- **No reputation to hang it on.** v0.956 paid feats, callings, paths and stances in rep and followers, and faction standing came out of them. The rebuild has neither; they're Phase 18's (sponsors and media), not built. Everything here rewards in what exists (cash, psyche, bond, a line in Phase 16's epilogue) or is its own reward.
+- **Creation's weight.** The audit's sharpest first-hour finding: forty numeric trade-offs before the first climb. R1 cut creation to a name and a start for it; this phase mustn't put them back.
+
+*The principles:*
+- **Identity mostly emerges from play:** talents revealed by reps, quirks named from your habits, paths claimed once earned.
+- **Gates in grades across the whole career,** never v0.956's 0–100 scale that ran out by V5.
+- **One layer per job:** the Record Book (feats, milestones and story cards in one), the Board (one weekly board, auto-claimed), and Life Goals (the spine, Phase 16's). The audit's ~28 trackers become three.
+- **Content is data,** checked by tests; the harness tells two made climbers apart (criterion 1).
+
+*Evan's calls (2 Oct 2026), taking every recommendation:*
+1. **Creation:** a name, a start and an origin; the calling and the rest come later, in play.
+2. **Flaws fold into origins:** each origin a perk with a stated cost, as the Late Bloomer's was.
+3. **Build (body type) is cut:** its ±2–5% by route type never showed.
+4. **Personality's four axes are cut:** callings, factions and stances cover them.
+5. **Two factions now,** the old guard (trad and the locals) and the gym crowd; comp and media come with their phases.
+6. **Paths:** Power, Fingers, Head, Style and Dirtbag now; Comp and Scene wait for comps and media. Tier 3 gives a passive edge and a title, not v0.956's once-a-day active.
+7. **Rewards with no rep:** the book entry is its own; Board jobs pay small cash under the no-farm harness; callings and stances pay psyche now and feed Phase 16's epilogues.
+8. **Hidden talents** revealed by reps stay.
+9. **Homecoming** stays, once a life, paying cash and psyche for now.
+10. **A year is 56 days** (the audit's clock fix).
+11. **A climber carried across from v0.956** gets an origin that says so, and no talents re-rolled.
+
+*The slices:*
+- **23.1 The Record Book.** v0.956's 29 feats, 5 milestones and 8 story cards merged and de-duplicated, each feat with its story card; fed by what's already kept (sends, first ascents, the expedition book, the dogs). Stable ids for Phase 14's Steam achievements. Save change.
+- **23.2 Origins, and what's in you.** An origin chosen at creation, each a perk and its cost; hidden talents revealed after reps. Designed against criterion 1's harness check from the start: an origin has to show in a first week. Save change.
+- **23.3 Callings.** A temperament and its three-rung ambition, keyed to sends, taken up in play.
+- **23.4 Paths and Mastery.** Two of five paths, tiers near V4, V9 and V14; hybrids and style mastery merged into one Mastery track; a quirk named from your habits.
+- **23.5 The scene: factions and stances.** v0.956's five dilemmas and their echoes later; clubs folded in as faction perks.
+- **23.6 The Board.** One weekly board.
+- **23.7 The year.** A recap every 56 days, and Homecoming.
+- **23.8 The harness and the e2e.** Two climbers made differently play differently in their first week, and the harness tells them apart; every echo lands; every feat v0.956 celebrated is in the book.
+
+*The risk:* criterion 1 gets harder with every choice moved out of creation. With creation at a name, a start and an origin, the origin's perk and cost have to be big enough to show in week one; 23.2 tunes them against the harness, not by feel.
 
 ---
 
@@ -2446,3 +2484,5 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-02 — Phase 24.7 built: Cerro Torre's scene from above Laguna Torre, day and night, clear and storm (lenticulars on a fine day, a plume and snow in a storm), your portaledge on the Southeast Ridge; its pitches on rimed granite over the glacier; storms snow where the water's snow. 0.991.0.
 - 2026-10-02 — Phase 24.8 built: Trango's scene from base camp on the Trango glacier, day and night, clear and storm, your portaledge up Eternal Flame; its pitches on golden granite over the glacier. Every objective has its scene: criterion 1 passes. 0.992.0.
 - 2026-10-02 — Phase 24.9 built: the harness found summits paid every time and a climber past an objective could farm it, so a summit pays once, as a wall does [proposed]; a new target holds every repeat trip under a day of shifts at every grade; the e2e leads a pitch and plays a trip through, and found the expedition card covering the wall on every lead since 24.1 (fixed). All five Done-when criteria pass; closing Phase 24 is Evan's call. 0.993.0.
+- 2026-10-02 — Phase 24 closed by Evan's call, confirming 24.9's rule that a summit pays once; the keepsake trip card and the odds above an objective's grade carry to a polish pass. CURRENT MILESTONE moved to Phase 23, who you are; it gets planned on the rebuild next.
+- 2026-10-02 — Phase 23 planned on the rebuild, with Evan's calls: creation is a name, a start and an origin (flaws folded into origins; build and personality cut); identity emerges in play (talents, callings, paths with grade gates, quirks); two factions now; no rep, so rewards are the book, small cash, psyche and the epilogue; a year is 56 days; eight slices from the Record Book to the harness.

@@ -843,7 +843,7 @@ export function act(s0: GameState, a: Action): Result {
     });
     events.push({ k: 'home', id: x.id });
   };
-  // Phase 24. The summit: paid the first time (Phase 24.9 [proposed]: a summit pays once, as
+  // Phase 24. The summit: paid the first time (Phase 24.9, Evan's call: a summit pays once, as
   // a wall does, or one you're well past is a farm), a lesson for the head, and home.
   const summit = () => {
     const x = s.expedition!;
