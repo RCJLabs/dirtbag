@@ -21,6 +21,8 @@ export interface OriginFx {
   shop?: number;
   bill?: number;
   cash?: number;
+  // Years older than everyone else at the start (Phase 16.1): fewer before your body calls it.
+  age?: number;
 }
 
 // The first morning (Phase 23.8, Evan's call: a climber made differently starts differently,
@@ -106,7 +108,7 @@ export const ORIGINS: Record<string, Origin> = {
     blurb: 'Started at thirty-two. Savings, patience, a cool head, less spring.',
     open: 'You didn’t touch rock until thirty-two. Late to the party, but you showed up with savings, patience, and no illusions about being a prodigy.',
     skills: { head: 4, technique: 3, power: -3, fingers: -2 },
-    fx: { premium: 0.65, cash: 120, spring: 0.88 },
+    fx: { premium: 0.65, cash: 120, spring: 0.88, age: 10 },
     begin: {
       insurance: 'full',
       line: 'You did the boring part first: a proper insurance plan, paid up. Somebody in this lot has to be the grown-up.',

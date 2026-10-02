@@ -225,6 +225,10 @@ export interface GameState {
   // Phase 23.7. The last year recapped (0 before the first); and the Homecoming: not yet,
   // armed for your next send outside, or had (and the day).
   year: { recapped: number; home: 'none' | 'armed' | number };
+  // Phase 16.1: a life's clock. `held`: days an old save's clock was held back, so nobody
+  // loads into their last night unwarned; `told`: the last age a morning said; `retired`:
+  // the day you hung it up, and whether your body made the call.
+  life: { held: number; told: number; retired: { day: number; forced: boolean } | null };
   habits: {
     goes: number;
     outdoor: number;
@@ -366,6 +370,7 @@ export type Action =
   | { t: 'path'; id: string }
   // Phase 23.7: the Homecoming, armed for your next send outside (or not, yet).
   | { t: 'home'; arm: boolean }
+  | { t: 'retire' }
   | { t: 'act'; act: string }
   | { t: 'say'; talk: string; node: string; opt: number }
   | { t: 'travel'; to: string }
@@ -483,6 +488,7 @@ export type GameEvent =
   // Entries in the Record Book, just earned (Phase 23.1): one moment, one card, the first
   // entry's story and the rest named under it.
   | { k: 'record'; ids: string[] }
+  | { k: 'retired'; forced: boolean }
   // Phase 23.3: a calling offered, or a rung of its ambition met.
   | { k: 'calling' }
   // Phase 23.7: a year done, its recap; the Homecoming, had.

@@ -1,6 +1,10 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   ACT_I,
+  AGE,
+  ageOf,
+  daysLeft,
+  retireBlocked,
   guitarRank,
   RANK_NAME,
   ACT_I_END,
@@ -1057,6 +1061,32 @@ function LatelyBody({ s }: { s: GameState }) {
 }
 
 // Phase 23.2: where you came from, what it gives and costs, and the talents you've found.
+// Phase 16.1: how old you are, when hanging it up is yours, and the countdown at the end.
+function AgeRow({ game, s }: { game: Game; s: GameState }) {
+  const age = ageOf(s);
+  const left = daysLeft(s);
+  const can = !retireBlocked(s);
+  return (
+    <>
+      <p className="crux">Age</p>
+      <p className="sub" id="age">
+        {age}.{' '}
+        {left !== null
+          ? `Your body calls it at ${AGE.forced}: ${left} day${left === 1 ? '' : 's'} left.`
+          : age >= AGE.from
+            ? `Hanging it up is yours whenever you want it; your body calls it at ${AGE.forced}.`
+            : `Hanging it up is yours from ${AGE.from}; your body calls it at ${AGE.forced}.`}
+      </p>
+      {can && (
+        <button type="button" className="opt" id="hangup" onClick={() => game.openSheet({ k: 'hangup' })}>
+          <span>Hang it up</span>
+          <small>For good. The tally’s all that’s left.</small>
+        </button>
+      )}
+    </>
+  );
+}
+
 function OriginRow({ s }: { s: GameState }) {
   const o = originOf(s);
   const found = s.talents.known.map((id) => TALENTS[id]).filter((t) => !!t);
@@ -1287,6 +1317,7 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
       </ul>
       <ActRow s={s} />
       <OriginRow s={s} />
+      <AgeRow game={game} s={s} />
       <CallingRow game={game} s={s} />
       <PathsRow game={game} s={s} />
       <SceneRow s={s} />

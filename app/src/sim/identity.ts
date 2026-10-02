@@ -7,7 +7,7 @@ import { CALLINGS, type Calling, type CallingFx } from './content/callings';
 import { ORIGINS, type Origin, type OriginFx } from './content/origins';
 import { INJURY_NAME } from './content/injuries';
 import { TALENTS } from './content/talents';
-import { PLANS, TALENT } from './dials';
+import { AGE, PLANS, TALENT } from './dials';
 import { edgeGain, edgeInjury, edgeLiving, edgeTrain } from './paths';
 import { Rng } from './rng';
 import type { GameState, Skills } from './types';
@@ -101,6 +101,10 @@ export function originTerms(o: Origin): { perks: string[]; costs: string[] } {
   if (f.cash)
     (f.cash > 0 ? perks : costs).push(
       f.cash > 0 ? `$${f.cash} more to start.` : `$${-f.cash} less to start.`,
+    );
+  if (f.age)
+    costs.push(
+      `You start at ${AGE.start + f.age}: ${f.age} years fewer before your body calls it, at ${AGE.forced}.`,
     );
   return { perks, costs };
 }

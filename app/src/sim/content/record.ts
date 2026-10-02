@@ -24,7 +24,8 @@ export type RecordAim =
   | { day: number }
   | { summit: true }
   | { dog: true }
-  | { rival: true };
+  | { rival: true }
+  | { retired: true };
 
 export interface RecordEntry {
   id: string;
@@ -360,10 +361,11 @@ export const RECORD: RecordEntry[] = [
   {
     id: 'retired',
     title: 'The Long Game',
-    desc: 'Retire and tally your legacy.',
-    story: '',
+    desc: 'Hang it up, or have your body hang it up for you.',
+    story:
+      'You stopped. Not because you ran out of lines: there were always more. You stopped because a life is a length, and you used all of yours on rock.',
     from: ['f1:retired'],
-    waits: 'retirement',
+    aim: { retired: true },
   },
 ];
 

@@ -136,6 +136,7 @@ export {
   SICK,
   PATH,
   HOME,
+  AGE,
 } from './dials';
 export type { Plan } from './dials';
 export { weeklyBills, clinicBill, carePrice, jabbed } from './clinic';
@@ -266,6 +267,17 @@ export { STANCES, ECHOES, FACTIONS, FACTION_PERKS, type Faction } from './conten
 export { BOARD_JOBS } from './content/board';
 export { boardWeek, jobProgress, jobText } from './board';
 export { homeCrowd, homeReady, recapLines, recapOf, yearsDone } from './year';
+export {
+  ageOf,
+  dayAtAge,
+  daysLeft,
+  epitaph,
+  retireBlocked,
+  startAge,
+  tallyLines,
+  tallyOf,
+  type Tally,
+} from './age';
 export {
   echoOpts,
   perksOf,

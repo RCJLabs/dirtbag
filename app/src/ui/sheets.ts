@@ -4,6 +4,12 @@
 
 import {
   ACT_I_END,
+  AGE,
+  ageOf,
+  epitaph,
+  startAge,
+  tallyLines,
+  tallyOf,
   ACTS,
   blockOf,
   BOARD_WEEKS,
@@ -1394,6 +1400,45 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             cost: costLabel(tow, 'tow'),
             note: 'To the garage in Midtown, and the van with it. Not to the crag.',
             run: () => game.fix('tow'),
+          },
+        ],
+      };
+    }
+
+    // Phase 16.1: hanging it up is for good, so it's asked.
+    case 'hangup':
+      return {
+        title: 'Hang it up?',
+        sub: `${ageOf(s)}, and ${ageOf(s) - startAge(s)} years on rock. There’s no coming back from this one: the shoes go in a box, and the tally’s all that’s left.`,
+        close: true,
+        rows: [
+          {
+            label: 'Hang it up',
+            note: 'For good.',
+            run: () => game.dispatch({ t: 'retire' }),
+          },
+          {
+            label: 'One more season',
+            note: `Your body calls it at ${AGE.forced} either way.`,
+            run: () => game.closeSheet(),
+          },
+        ],
+      };
+
+    case 'retired': {
+      const r = s.life.retired;
+      if (!r) return null;
+      const t = tallyOf(s);
+      return {
+        title: 'A climbing life',
+        sub: `${s.climber.name}, ${t.age}: ${t.years} years on rock. ${r.forced ? 'Your body called it.' : 'You called it yourself.'} ${epitaph(t)}`,
+        notes: tallyLines(t),
+        close: false,
+        rows: [
+          {
+            label: 'Start a new climber',
+            note: 'A new first morning.',
+            run: () => game.restart(),
           },
         ],
       };
