@@ -34,6 +34,25 @@ describe('origins', () => {
     expect(r.events.some((e) => e.k === 'line' && e.text === o.open)).toBe(true);
   });
 
+  it('start each somewhere and with something of its own (Phase 23.8)', () => {
+    const begun = (o: string) => made(o);
+    expect(begun('gymrat').at).toBe('gym');
+    expect(begun('gymrat').today).toContain('pass');
+    expect(begun('desert').at).toBe('road');
+    expect(begun('desert').min).toBe(ORIGINS.desert!.begin.min);
+    expect(begun('quit').shifts).toEqual([{ job: 'cafe', day: 1 }]);
+    expect(begun('late').insurance).toBe('full');
+    expect(begun('trustfund').gear.pad).toBe(1);
+    expect(made().at).toBe('lot');
+    for (const [id, o] of Object.entries(ORIGINS)) {
+      const r = act(newGame('who'), { t: 'create', name: 'Ash', start: 'allrounder', origin: id });
+      expect(
+        r.events.some((e) => e.k === 'line' && e.text === o.begin.line),
+        id,
+      ).toBe(true);
+    }
+  });
+
   it('refuse one that isn’t there', () => {
     const r = act(newGame('who'), { t: 'create', name: 'Ash', start: 'allrounder', origin: 'astronaut' });
     expect(r.events[0]?.k).toBe('refused');

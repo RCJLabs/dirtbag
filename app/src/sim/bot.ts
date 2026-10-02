@@ -14,6 +14,8 @@ import {
   type Attempt,
 } from './climb';
 import { pathBlocked } from './paths';
+import { PROTOCOLS } from './content/training';
+import { sessionGains, trainBlocked } from './sessions';
 import { headroom, holds, isNight, unmet } from './cond';
 import { INDOOR, routesAt } from './content/gym';
 import { ACTS, PLACES, road } from './content/places';
@@ -289,6 +291,8 @@ const BOT_UPGRADES = ['heater', 'kitchen', 'insulation', 'bed', 'tuneup', 'curta
 // Meals a bot cooks, best first (Phase 22.3).
 const MEAL_ORDER = ['burritos', 'pasta', 'ricebeans', 'oatmeal'];
 const SPARE = 60;
+// A trust-fund bot (Phase 23.8) works only once it's down to this.
+const IDLE_CASH = 20;
 // Supplies under this, a bot buys water (Phase 22.4c).
 const BOT_SUPPLIES = 40;
 // Psyche under this, a bot sits at the fire before bed: short of keen (Phase 22.4d).
@@ -311,6 +315,30 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   let climbMin = 0;
   let climbGain = 0;
 
+  // Who it is, in how it plays (Phase 23.8): where it came from decides where it goes first,
+  // whether it trains, and how hard it works.
+  const who = {
+    indoor: opts.origin === 'gymrat' || opts.origin === 'gymnast',
+    trains: opts.origin === 'gymnast',
+    idle: opts.origin === 'trustfund',
+  };
+  // What its start plays to (Phase 23.8): a boulderer boulders, a rope gun ties in, a
+  // technician goes for the technical lines; an all-rounder takes what suits it.
+  const likes = (r: RouteDef): number => {
+    const st = s.climber.start;
+    if (st === 'boulderer') return r.disc === 'boulder' ? 1 : 0;
+    if (st === 'ropegun') return r.disc !== 'boulder' ? 1 : 0;
+    if (st === 'technician') return r.type === 'technical' ? 1 : 0;
+    return 0;
+  };
+  // The session that teaches it most, of those it can do here and now.
+  function trainOnce() {
+    const best = Object.keys(PROTOCOLS)
+      .filter((id) => id !== 'prehab' && !trainBlocked(s, id))
+      .map((id) => ({ id, g: Object.values(sessionGains(s, PROTOCOLS[id]!)).reduce((n, v) => n + v, 0) }))
+      .sort((a, b) => b.g - a.g)[0];
+    if (best) go({ t: 'train', protocol: best.id });
+  }
   // The answer it gives an encounter: the one it's told for a call, else the first.
   const answer = (): number => (s.encounter ? (opts.answers?.[s.encounter.id] ?? 0) : 0);
   const go = (a: Action): boolean => {
@@ -385,7 +413,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   };
 
   function work() {
-    const want = wantFor(s.day);
+    // Phase 23.8: a trust-fund kid works when the money's nearly gone, not to keep a cushion.
+    const want = who.idle ? Math.min(wantFor(s.day), IDLE_CASH) : wantFor(s.day);
     const b = booked();
     if (s.cash >= want && !b) return;
     travel('cafe');
@@ -572,9 +601,20 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     // Dex's dare comes first: a player racing him works the line he's after.
     const race = s.race && lines.find((l) => l.r.id === s.race!.route);
     if (race) return race.r;
-    const easy = lines.find((l) => l.w >= 0.045);
-    if (easy) return easy.r;
-    return lines.sort((a, b) => b.w - a.w)[0]?.r ?? null;
+    // Of the easiest it can send (the lowest grade with one, and the grade above), the line
+    // that suits it best, as a player picks what plays to their strengths (Phase 23.8).
+    const sendable = lines.filter((l) => l.w >= 0.045);
+    if (sendable.length) {
+      const low = sendable[0]!.r.grade;
+      const band = sendable.filter((l) => l.r.grade <= low + 1);
+      return band.sort((a, b) => likes(b.r) - likes(a.r) || b.w - a.w)[0]!.r;
+    }
+    // A project: of the easiest it hasn't sent (the lowest grade, and the one above), what
+    // it likes, then the widest window.
+    const low = lines[0]?.r.grade;
+    if (low === undefined) return null;
+    return lines.filter((l) => l.r.grade <= low + 1).sort((a, b) => likes(b.r) - likes(a.r) || b.w - a.w)[0]!
+      .r;
   }
 
   // Whether a place has an unsent line the day allows (weather, closures, the light, a
@@ -678,8 +718,11 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     const open = conditions(s.seed, s.day).open;
     const grade = gradeOf(s.climber.skills);
     const opens = (id: string) => grade >= (PLACES[id]?.minGrade ?? 0) && vanReaches(id);
+    // Phase 23.8: a climber who came up indoors goes to the gym first, crag or no crag.
+    const indoorFirst = who.indoor && grade < CAVE_FROM && choose('gym') ? 'gym' : null;
     const place =
-      open && vanReaches('road') && choose('road')
+      indoorFirst ??
+      (open && vanReaches('road') && choose('road')
         ? 'road'
         : open && opens('gorge') && choose('gorge')
           ? 'gorge'
@@ -691,13 +734,15 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
                 ? 'cave'
                 : choose('gym')
                   ? 'gym'
-                  : null;
+                  : null);
     // Nothing to climb isn't the same as nothing new to try: a hurt or spent climber still
     // has unsent lines out there, and only a day without any counts as the content running out.
     let where = place ? 'tired' : BOT_PLACES.some(fresh) ? 'resting' : 'nothing';
     if (place && s.min < 16 * 60 && s.energy >= 30 && s.skin >= 25) {
       travel(place);
       if (INDOOR[place]) tryAct(`${place}.pass`);
+      // Phase 23.8: an ex-gymnast does a session before they climb.
+      if (who.trains && INDOOR[place]) trainOnce();
       const t = s.min;
       session();
       climbMin += s.min - t;

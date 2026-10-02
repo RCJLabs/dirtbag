@@ -17,6 +17,7 @@ import {
   checkpoints,
   contentOut,
   echoLanding,
+  weekOneTold,
   expedCalibration,
   expedFarm,
   firstInjury,
@@ -255,6 +256,19 @@ function targets(all: Record<Seasonal, BotRun[]>, reckless: BotRun[]): void {
     echoes.every((e) => e.echo !== null),
     'Every stance’s echo lands later in the game',
     `${echoes.map((e) => (e.echo === null ? `${e.id} never` : `${e.id}: call day ${e.call}, echo day ${e.echo}`)).join('; ')}.`,
+  );
+  // 11. Phase 23's criterion 1: two climbers made differently play their first week
+  // differently, and the harness tells them apart from what they did: origins (Phase 23's
+  // own choice) at twice chance or better, starts above half again over it.
+  const told = weekOneTold(Number(process.env.MADE ?? 10));
+  const miss = (w: Record<string, string[]>) =>
+    Object.entries(w)
+      .map(([y, xs]) => `${y} taken for ${[...new Set(xs)].join('/')} ${xs.length}×`)
+      .join(', ') || 'none';
+  say(
+    told.origins.acc >= 2 * told.origins.chance && told.starts.acc >= 1.5 * told.starts.chance,
+    'Climbers made differently play week one differently, and the harness tells them apart',
+    `by origin ${Math.round(100 * told.origins.acc)}% (chance ${Math.round(100 * told.origins.chance)}%), by start ${Math.round(100 * told.starts.acc)}% (chance ${Math.round(100 * told.starts.chance)}%). Missed: origins ${miss(told.origins.wrong)}; starts ${miss(told.starts.wrong)}.`,
   );
   // Phase 22.8: how long a dream takes, at what the worker bots put by: their median cash at
   // the season's end, a day at a time. A guide, not a target.

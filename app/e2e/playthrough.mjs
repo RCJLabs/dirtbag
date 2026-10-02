@@ -64,7 +64,21 @@ async function playPage(viewport, deviceScaleFactor, who = '') {
   });
   // Phase 12: no toast runs past 30 words, and none lands on a control you could tap. Every
   // toast the run shows is watched, not just the ones the bot looks for, across reloads.
-  await p.exposeFunction('problem', (why) => problems.push(`${who}${why}`));
+  await p.exposeFunction('problem', async (why) => {
+    problems.push(`${who}${why}`);
+    const geo = await p.evaluate(() => {
+      const r = (q) => document.querySelector(q)?.getBoundingClientRect();
+      return {
+        toast: r('#toast'),
+        sheet: r('#sheet'),
+        vw: innerWidth,
+        vh: innerHeight,
+        large: document.querySelector('.screen')?.className,
+      };
+    });
+    console.log('PROBLEM-GEO', JSON.stringify(geo));
+    await p.screenshot({ path: join(OUT, `problem-${problems.length}.png`) });
+  });
   await p.exposeFunction('heard', (cue) => !who && heard.add(cue));
   await p.exposeFunction('bed', (key) => !who && beds.add(key.split(':')[0]));
   await p.addInitScript(() => {
