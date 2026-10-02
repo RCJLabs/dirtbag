@@ -4,6 +4,8 @@
 
 import {
   STORY,
+  LINE_SCENE,
+  theLine,
   tierOf,
   AGE,
   ageOf,
@@ -973,6 +975,48 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             };
           }),
           { label: 'Not yet', note: 'It’ll keep, on the You page.', run: () => game.closeSheet() },
+        ],
+      };
+    }
+
+    // The Line (Phase 16.3): the naming, who was there, then what now. The credits, the third
+    // step, are drawn by Sheet.tsx.
+    case 'line': {
+      const l = theLine(s);
+      const on = (step: number) => () => game.openSheet({ k: 'line', step });
+      if (id.step === 0)
+        return {
+          title: LINE_SCENE.naming.title,
+          sub: fill(LINE_SCENE.naming.text, {
+            name: l?.name ?? 'the line',
+            grade: `V${l?.grade ?? 18}`,
+            place: l?.place ?? 'the crag',
+          }),
+          notes: [`${money(STORY[STORY.length - 1]!.end.cash)}.`],
+          close: false,
+          rows: [{ label: 'Go on', run: on(1) }],
+        };
+      if (id.step === 1) {
+        const end = STORY[STORY.length - 1]!.end;
+        const there = Object.entries(end.with ?? {})
+          .filter(([who]) => tierOf(s.people[who]?.bond ?? 0) >= HOME.tier)
+          .map(([, t]) => t);
+        if (s.dog) there.push(fill(LINE_SCENE.there.dog, { name: s.dog.name }));
+        return {
+          title: LINE_SCENE.there.title,
+          sub: [end.text, ...(there.length ? there : [LINE_SCENE.there.alone])].join(' '),
+          close: false,
+          rows: [{ label: 'Go on', run: on(2) }],
+        };
+      }
+      const c = LINE_SCENE.choice;
+      return {
+        title: c.title,
+        sub: c.text,
+        close: false,
+        rows: [
+          { label: c.retire.label, note: c.retire.note, run: () => game.dispatch({ t: 'retire' }) },
+          { label: c.keep.label, note: c.keep.note, run: () => game.closeSheet() },
         ],
       };
     }

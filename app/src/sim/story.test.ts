@@ -7,9 +7,9 @@ import { EXPEDITIONS } from './content/expeditions';
 import { PLACES } from './content/places';
 import { ROUTES, WALLS } from './content/routes';
 import { AGE } from './dials';
-import { dayAtAge, daysLeft } from './age';
+import { dayAtAge, daysLeft, retireBlocked } from './age';
 import { act, emptyLog, newGame } from './game';
-import { actOf, currentGoal, goalDesc, LADDER, progress, stageOf } from './story';
+import { actOf, currentGoal, goalDesc, LADDER, progress, stageOf, theLine } from './story';
 import type { GameEvent, GameState, RouteLog } from './types';
 
 const lines = (ev: GameEvent[]) => ev.flatMap((e) => (e.k === 'line' ? [e.text] : []));
@@ -184,5 +184,25 @@ describe('Acts II to V', () => {
     );
     expect(r.state.day).toBe(line.day + 1);
     expect(r.state.life.retired).toBeNull();
+  });
+});
+
+describe('The Line', () => {
+  it('names the myth you put up, and after it hanging it up is yours at any age', () => {
+    expect(theLine(made())).toBeNull();
+    const s = made({ firsts: { cmyth: { name: 'The Long Dark', call: 0, day: 400 } } });
+    expect(theLine(s)).toEqual({ name: 'The Long Dark', grade: 18, place: 'The Crucible' });
+    // Young, mid-story: not yet. Young, with The Line done: yes.
+    expect(retireBlocked({ ...s, goals: LADDER.length - 1 })).toMatch(/^Not before 30/);
+    expect(retireBlocked({ ...s, goals: LADDER.length })).toBeNull();
+  });
+
+  it('ends the story with The Line’s own words, then nothing more to do', () => {
+    const last = LADDER.length - 1;
+    const s = made({ goals: last, cash: 0, firsts: { cmyth: { name: 'The Long Dark', call: 0, day: 400 } } });
+    const r = tick(s);
+    expect(r.events).toContainEqual({ k: 'act', n: STORY.length });
+    expect(currentGoal(r.state)).toBeNull();
+    expect(actOf(r.state)).toBe(STORY.length + 1);
   });
 });
