@@ -105,6 +105,7 @@ import {
   CALLING,
   MASTERY_AT,
   FACTION,
+  HOME,
   LOAD,
   MONEY,
   PLANS,
@@ -196,6 +197,7 @@ import { MASTERY, PATHS, QUIRKS } from './content/paths';
 import { CALLING_SCENE, ECHOES } from './content/scene';
 import { echoDue, echoOpts, permitFor, shift, stanceDue, stanceOpts } from './scene';
 import { boardWeek, jobProgress, postBoard } from './board';
+import { homeCrowd, homeReady, yearsDone } from './year';
 import { BOARD_JOBS } from './content/board';
 import { CALLINGS, OPEN_CALLINGS } from './content/callings';
 import { CAME_ACROSS, ORIGINS } from './content/origins';
@@ -290,6 +292,7 @@ export function newGame(seed: string): GameState {
     habits: { goes: 0, outdoor: 0, fresh: 0, tired: 0, evening: 0, dawn: 0, easy: 0, power: 0 },
     scene: { old: FACTION.start, gym: FACTION.start, stances: [], echoes: [], last: 0, echoLast: 0 },
     board: { week: 0, jobs: [], shifts0: 0, sessions: 0 },
+    year: { recapped: 0, home: 'none' },
     record: {},
     speed: { pb: null, runs: 0, day: 0 },
     mode: 'rope',
@@ -1563,6 +1566,15 @@ export function act(s0: GameState, a: Action): Result {
       break;
     }
 
+    // Phase 23.7: the Homecoming, armed for your next send outside, or put off.
+    case 'home': {
+      if (typeof s.year.home === 'number') return refuse('That’s been had.');
+      if (a.arm && !homeReady(s)) return refuse('Not enough people out here yet.');
+      s.year = { ...s.year, home: a.arm ? 'armed' : 'none' };
+      line(a.arm ? 'Word goes round. Your next send outside, they’ll be there.' : 'Not today. It’ll keep.');
+      break;
+    }
+
     // Phase 23.4: a path's next tier, claimed.
     case 'path': {
       if (!s.climber.name) return refuse('Make a climber first.');
@@ -2554,6 +2566,25 @@ export function act(s0: GameState, a: Action): Result {
     const got = newlyEarned(s);
     for (const r of got) s.record[r.id] = s.day;
     if (got.length) events.push({ k: 'record', ids: got.map((r) => r.id) });
+  }
+  // Phase 23.7: a year done, and its recap; the Homecoming, on a send outside once armed.
+  if (s.climber.name) {
+    const y = yearsDone(s.day);
+    if (y > s.year.recapped) {
+      s.year = { ...s.year, recapped: y };
+      events.push({ k: 'year', n: y });
+    }
+    if (s.year.home === 'armed') {
+      const sent = events.find((e) => e.k === 'sent' && e.style !== 'repeat');
+      const r = sent && sent.k === 'sent' ? routeOfId(s, sent.route) : undefined;
+      if (r && !r.exped && !indoor(r.place)) {
+        const who = homeCrowd(s);
+        s.year = { ...s.year, home: s.day };
+        s.cash += HOME.cash;
+        s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + HOME.psyche) };
+        events.push({ k: 'homecoming', route: r.id, who });
+      }
+    }
   }
   // Phase 23.6: a new week's board goes up; a job done pays, on its own.
   if (s.climber.name) {

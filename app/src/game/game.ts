@@ -139,6 +139,9 @@ export type SheetId =
   | { k: 'record'; ids: string[] }
   // Phase 23.3: what you're climbing for, asked.
   | { k: 'calling' }
+  // Phase 23.7: a year's recap; the Homecoming.
+  | { k: 'year'; n: number }
+  | { k: 'homecoming'; route: string; who: string[] }
   // Phase 21.6: the speed wall, and how a Free Solo run ended.
   | { k: 'speed' }
   | { k: 'dead' }
@@ -390,6 +393,8 @@ export class Game {
       else if (e.k === 'home') this.cards.push({ k: 'home' });
       else if (e.k === 'record') this.cards.push({ k: 'record', ids: e.ids });
       else if (e.k === 'calling') this.cards.push({ k: 'calling' });
+      else if (e.k === 'year') this.cards.push({ k: 'year', n: e.n });
+      else if (e.k === 'homecoming') this.cards.push({ k: 'homecoming', route: e.route, who: e.who });
     }
     if (changed) this.noteComings(before);
     if (changed && !persist.save(this.state)) this.toast("Couldn't save. The browser's storage may be full.");

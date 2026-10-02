@@ -74,6 +74,9 @@ import {
   OPEN_CALLINGS,
   STANCES,
   ECHOES,
+  recapLines,
+  recapOf,
+  HOME,
   echoOpts,
   stanceOpts,
   sceneNote,
@@ -908,6 +911,31 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         notes: [
           `In the Record Book, day ${s.record[r.id] ?? s.day}.${also.length ? ` Also in it: ${also.map((x) => x!.title).join(', ')}.` : ''}`,
         ],
+        close: false,
+        rows: [{ label: 'Right', run: () => game.closeSheet() }],
+      };
+    }
+
+    // Phase 23.7: a year done, in what it held.
+    case 'year':
+      return {
+        title: `Year ${id.n}`,
+        sub: recapLines(recapOf(s, id.n)).join(' '),
+        close: false,
+        rows: [{ label: 'On to the next', run: () => game.closeSheet() }],
+      };
+
+    // Phase 23.7: the Homecoming, had.
+    case 'homecoming': {
+      const r = routeOfId(s, id.route);
+      const names =
+        id.who.length > 1
+          ? `${id.who.slice(0, -1).join(', ')} and ${id.who.at(-1)}`
+          : (id.who[0] ?? 'everyone');
+      return {
+        title: 'The Homecoming',
+        sub: `Everyone came out for it. You sent ${r ? lineName(s, r) : 'it'} with ${names} at the bottom, and for once nobody was looking at their own project.`,
+        notes: [`${money(HOME.cash)} in a coffee can somebody passed round. Psyche +${HOME.psyche}.`],
         close: false,
         rows: [{ label: 'Right', run: () => game.closeSheet() }],
       };
