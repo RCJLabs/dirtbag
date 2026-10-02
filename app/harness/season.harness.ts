@@ -8,7 +8,8 @@ import { ACTS } from '../src/sim/content/places';
 import { PROTOCOLS } from '../src/sim/content/training';
 import { newGame } from '../src/sim/game';
 import { sessionGains } from '../src/sim/sessions';
-import { HUSTLE, SPEED, TRAIN } from '../src/sim/dials';
+import { BOARD, HUSTLE, SPEED, TRAIN } from '../src/sim/dials';
+import { bestWeek } from '../src/sim/board';
 import { DREAMS } from '../src/sim/content/dreams';
 import { JOBS } from '../src/sim/content/jobs';
 import { speedGains } from '../src/sim/speed';
@@ -231,6 +232,20 @@ function targets(all: Record<Seasonal, BotRun[]>, reckless: BotRun[]): void {
         (f) => `${f.id} V${f.grade} $${f.first.toFixed(0)} / $${f.again.toFixed(0)} (${f.days.toFixed(1)}d)`,
       )
       .join(', ')}.`,
+  );
+  // 9. Phase 23.6: the Board is a bonus, not a living. A week's best board (its three best-
+  // paying jobs) pays under BOARD.capDays days of the worst shift; what the bots took off it
+  // a week, beside it.
+  const boardPaid = (r: BotRun) =>
+    r.lines
+      .map((l) => l.match(/\$(\d+) off the board/))
+      .filter((m) => !!m)
+      .reduce((n, m) => n + Number(m![1]), 0) /
+    (DAYS / 7);
+  say(
+    bestWeek() < BOARD.capDays * shiftDay,
+    `The Board isn’t a living: a week’s best board pays under ${BOARD.capDays} days of the worst shift`,
+    `best week $${bestWeek()}, against $${BOARD.capDays * shiftDay}; the bots took, a week, median: ${STRATEGIES.map((k) => `${k} $${median(all[k].map(boardPaid)).toFixed(0)}`).join(', ')}.`,
   );
   // Phase 22.8: how long a dream takes, at what the worker bots put by: their median cash at
   // the season's end, a day at a time. A guide, not a target.

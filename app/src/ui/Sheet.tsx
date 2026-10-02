@@ -123,6 +123,11 @@ import {
   pathsTaken,
   tiersOn,
   PATH,
+  BOARD_JOBS,
+  WEEK_DAYS,
+  boardWeek,
+  jobProgress,
+  jobText,
   ECHOES,
   FACTIONS,
   perksOf,
@@ -925,6 +930,8 @@ function JournalBody({ game, page, s }: { game: Game; page: JournalPage; s: Game
         <WordsBody />
       ) : page === 'book' ? (
         <BookBody s={s} />
+      ) : page === 'board' ? (
+        <BoardBody s={s} />
       ) : (
         <LatelyBody s={s} />
       )}
@@ -935,9 +942,42 @@ function JournalBody({ game, page, s }: { game: Game; page: JournalPage; s: Game
 const JOURNAL_PAGES: [JournalPage, string][] = [
   ['you', 'You'],
   ['lately', 'Lately'],
+  ['board', 'Board'],
   ['book', 'Record'],
   ['words', 'Words'],
 ];
+
+// Phase 23.6: this week's board, each job's progress and pay. It pays itself.
+function BoardBody({ s }: { s: GameState }) {
+  const left = boardWeek(s.day) * WEEK_DAYS - s.day + 1;
+  const now = s.board.week === boardWeek(s.day);
+  return (
+    <div id="board">
+      <p className="sub">
+        {now
+          ? `This week’s, up at the café: ${left} day${left > 1 ? 's' : ''} left. Each pays the moment it’s done.`
+          : 'This week’s goes up the next thing you do.'}
+      </p>
+      {now &&
+        s.board.jobs.map((job) => {
+          const j = BOARD_JOBS[job.id];
+          if (!j) return null;
+          const n = Math.min(j.n, jobProgress(s, job));
+          return (
+            <Fragment key={job.id}>
+              <p className="crux">
+                {job.paid ? '✓ ' : ''}
+                {j.title} · {money(j.cash)}
+              </p>
+              <p className="sub">
+                {jobText(j, job.grade)} {job.paid ? 'Paid.' : `${n} of ${j.n}.`}
+              </p>
+            </Fragment>
+          );
+        })}
+    </div>
+  );
+}
 
 // Phase 23.1: the Record Book, newest first, each entry with its story.
 function BookBody({ s }: { s: GameState }) {

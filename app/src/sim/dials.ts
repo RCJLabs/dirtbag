@@ -951,4 +951,7 @@ export const FACTION = {
   echoGap: 25,
   elder: 65,
 };
+// Phase 23.6 [proposed]. The Board: jobs a week, and the most a week's best board may pay
+// against a day of the worst shift (the harness holds it there).
+export const BOARD = { jobs: 3, capDays: 2 };
 export const QUIRK = { after: 30, fresh: 70, tired: 35, evening: 17 * 60, dawn: 9 * 60, easy: 2 };

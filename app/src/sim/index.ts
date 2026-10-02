@@ -262,6 +262,8 @@ export { ambitionText, callingTerms, rungText, rungMet } from './calling';
 export { PATHS, OPEN_PATHS, MASTERY, HYBRIDS, QUIRKS, type Path, type Edge } from './content/paths';
 export { deedText, edgeText, masteryOf, pathBlocked, pathsTaken, tiersOn } from './paths';
 export { STANCES, ECHOES, FACTIONS, FACTION_PERKS, type Faction } from './content/scene';
+export { BOARD_JOBS } from './content/board';
+export { boardWeek, jobProgress, jobText } from './board';
 export {
   echoOpts,
   perksOf,
