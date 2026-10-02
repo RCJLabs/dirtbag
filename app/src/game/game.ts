@@ -1407,6 +1407,26 @@ export class Game {
     });
   }
 
+  // Phase 16.5: the kid you coached climbs on, in the same world, the morning after. They're
+  // made on the next screen, like anyone.
+  climbOn(): void {
+    const next = act(this.state, { t: 'heir' });
+    if (next.events.some((e) => e.k === 'refused')) return;
+    this.closeSheet();
+    this.fadeTo(() => {
+      wipePlans();
+      this.today = [];
+      this.run = null;
+      this.cards = [];
+      this.set({ plans: { plan: [], yesterday: [] }, plan: null });
+      this.state = next.state;
+      persist.save(this.state);
+      this.toasts = [];
+      this.sync();
+      this.enter('lot');
+    });
+  }
+
   // ---- the plan (Phase 11.4): a day's drives and errands, run in one go ----
 
   setPlan(plan: PlanStep[]): void {

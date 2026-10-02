@@ -229,6 +229,9 @@ export interface GameState {
   // loads into their last night unwarned; `told`: the last age a morning said; `retired`:
   // the day you hung it up, and whether your body made the call.
   life: { held: number; told: number; retired: { day: number; forced: boolean } | null };
+  // Phase 16.5: the family you climb on after. Your generation (2 for the kid of the first),
+  // who coached you, the lines they put up, and whether Dex coaches you for their sake.
+  family: { gen: number; forebear: string; lines: string[]; coach: boolean } | null;
   habits: {
     goes: number;
     outdoor: number;
@@ -371,6 +374,7 @@ export type Action =
   // Phase 23.7: the Homecoming, armed for your next send outside (or not, yet).
   | { t: 'home'; arm: boolean }
   | { t: 'retire' }
+  | { t: 'heir' }
   | { t: 'act'; act: string }
   | { t: 'say'; talk: string; node: string; opt: number }
   | { t: 'travel'; to: string }
@@ -489,6 +493,7 @@ export type GameEvent =
   // entry's story and the rest named under it.
   | { k: 'record'; ids: string[] }
   | { k: 'retired'; forced: boolean }
+  | { k: 'heir'; forebear: string }
   // Phase 23.3: a calling offered, or a rung of its ambition met.
   | { k: 'calling' }
   // Phase 23.7: a year done, its recap; the Homecoming, had.

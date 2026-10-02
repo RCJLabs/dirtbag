@@ -2289,6 +2289,15 @@ Players will ask "what am I working towards?" by hour 3.
 - **No harness run:** the Act V pay was already there; the rest is how it's shown.
 - **E2e:** a climber on Act V's last stage with the myth put up, close to Hazel and with the dog, walks a few steps; the naming, who was there, the credits and the choice play in order; they keep climbing, and the book's cards for the first ascent follow.
 
+**Status (2 Oct 2026): 16.5 built: the next generation.** Save v40, 0.999.8.
+- **The kid you coached climbs on** (Evan's call 4): from the tally, "Climb on as the kid you coached", or start a new climber with nothing carried. The kid is made on the next screen, a name, a start and an origin ("Who has Robin's keys?"), in the same world, the morning after you hung it up, at 22 on their own clock, with their own talents dealt.
+- **What carries:** the van as it is and whatever you owned (the Dream Rig and the rest); the trips you paid for; the dog; how you climbed, a rope or none (the kid isn't offered Free Solo, it's the family's); the Record Book, as the family's; and your first ascents, on the topos and the send card under your name ("First ascent: Robin"). Not the money, the people, the sends or the expedition book: those are theirs to earn.
+- **Dex coaches the kid** if he was a Regular or closer with you: sessions teach 15% more [proposed], said on the first morning and on the You page.
+- **Their own first act, Their Shadow,** in place of Act I and at its pace, five stages: a first send, two outside (your tick marks at Roadside), a regular who learns their name, V4, then **a go on the line you named** (the one of yours easiest to get to; done at once if you left none). Then Acts II to V as anyone's.
+- **Criterion 3 passes:** generation 2 starts with a first quest of its own and inherits what you can see: your lines on the topos, the book, the van, the dog, and a family row on the You page (generation, your lines, Dex's coaching). The kid's epilogue says who they climbed on after, and their line once they've sent it.
+- **No harness run:** no bot retires, so none climbs on.
+- **E2e:** the climber who hangs it up at 43 had put up "Second Wind"; their kid, Jo, a Desert Local, climbs on: the family row reads "Generation 2, after Robin. Their lines: Second Wind (V7, Roadside Crag)", the act "Act I, Their Shadow · 1 of 5 · The keys", and the save has the first ascent under Robin's name and the book kept.
+
 ---
 
 ### Phase 17 — The people
@@ -2637,3 +2646,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-02 — After 16.2, Evan's calls: Act IV with one expedition; the Late Bloomer starts at 26, the speed-run origin, with time its only cost; the tally in plain text. The e2e's toast check now counts only what a sheet shows. 0.999.6.
 - 2026-10-02 — Phase 16.4 built: the epilogue, from the save (origin, first ascents, summits, paths, quirk, masteries, calling, calls made, crowds, people, the dog, the Homecoming, the book); criterion 2 passes, every career bot's ending naming five or more things it did. 0.999.6.
 - 2026-10-02 — Phase 16.3 built: The Line, a myth's first ascent ending the story in its own sequence (the naming at the fire, who was there, the credits, then hang it up or keep climbing); after it, retiring is yours at any age. 0.999.7.
+- 2026-10-02 — Phase 16.5 built: the next generation; the kid you coached climbs on in the same world with the van, the trips, the dog, the mode, the family's Record Book and your lines on the topos, Dex coaching if he was close, and a first act of their own ending on a go on your line; criterion 3 passes. Save v40. 0.999.8.

@@ -9,12 +9,26 @@ import { STORY, type Act, type Aim, type Goal } from './content/story';
 import { BOND } from './dials';
 import { fill } from './format';
 import { PARTNERS } from './presence';
+import { familyWords, kinLine } from './heir';
+import { HEIR_ACT, HEIR_END } from './content/heir';
 import type { GameState } from './types';
 
+type Rung = { act: number; i: number; goal: Goal };
+const ladder = (acts: Act[]): Rung[] =>
+  acts.flatMap((a, n) => a.goals.map((goal, i) => ({ act: n + 1, i, goal })));
+
 // Every stage of every act, in order, with the act it's in (1 to 5) and its place there.
-export const LADDER: { act: number; i: number; goal: Goal }[] = STORY.flatMap((a, n) =>
-  a.goals.map((goal, i) => ({ act: n + 1, i, goal })),
-);
+export const LADDER: Rung[] = ladder(STORY);
+
+// A family's next climber (Phase 16.5) has their own first act, Their Shadow, then the rest.
+export const HEIR_STORY: Act[] = [
+  { title: 'Their Shadow', goals: HEIR_ACT, end: HEIR_END },
+  ...STORY.slice(1),
+];
+export const HEIR_LADDER: Rung[] = ladder(HEIR_STORY);
+
+export const storyOf = (s: GameState): Act[] => (s.family ? HEIR_STORY : STORY);
+const ladderOf = (s: GameState): Rung[] => (s.family ? HEIR_LADDER : LADDER);
 
 // The myths: lines you can't read until the one under them is sent.
 const MYTHS = Object.values(ROUTES).filter((r) => r.hiddenUntil);
@@ -39,6 +53,11 @@ export function progress(s: GameState, aim: Aim): { have: number; need: number }
   }
   if ('summit' in aim) return yes(s.book.some((t) => t.id === aim.summit && t.end === 'summit'));
   if ('reveal' in aim) return yes(MYTHS.some((r) => !!s.routes[r.hiddenUntil!]?.sent));
+  if ('kin' in aim) {
+    // Nothing of theirs on the topos: there's no line to get on, and it's done.
+    const l = kinLine(s);
+    return yes(!l || (s.routes[l.id]?.goes ?? 0) > 0);
+  }
   if ('myth' in aim)
     return yes(
       Object.entries(s.firsts).some(([id, f]) => !f.by && (routeById(s.seed, id)?.grade ?? 0) >= 18),
@@ -64,23 +83,23 @@ export const aimMet = (s: GameState, aim: Aim): boolean => {
 };
 
 // The stage you're on, or null once the story's done.
-export const currentGoal = (s: GameState): Goal | null => LADDER[s.goals]?.goal ?? null;
+export const currentGoal = (s: GameState): Goal | null => ladderOf(s)[s.goals]?.goal ?? null;
 
 // The act you're in, 1 to 5; one past the last once it's all done.
-export const actOf = (s: GameState): number => LADDER[s.goals]?.act ?? STORY.length + 1;
+export const actOf = (s: GameState): number => ladderOf(s)[s.goals]?.act ?? STORY.length + 1;
 
 // The act a stage finishes, if it's its act's last; else null.
-export function actEndedBy(goalIndex: number): { n: number; act: Act } | null {
-  const e = LADDER[goalIndex];
+export function actEndedBy(s: GameState, goalIndex: number): { n: number; act: Act } | null {
+  const e = ladderOf(s)[goalIndex];
   if (!e) return null;
-  const act = STORY[e.act - 1]!;
+  const act = storyOf(s)[e.act - 1]!;
   return e.i === act.goals.length - 1 ? { n: e.act, act } : null;
 }
 
 // Where you are in the act: the stage's number and how many it has.
 export function stageOf(s: GameState): { n: number; of: number } | null {
-  const e = LADDER[s.goals];
-  return e ? { n: e.i + 1, of: STORY[e.act - 1]!.goals.length } : null;
+  const e = ladderOf(s)[s.goals];
+  return e ? { n: e.i + 1, of: storyOf(s)[e.act - 1]!.goals.length } : null;
 }
 
 export const ROMAN = ['I', 'II', 'III', 'IV', 'V'];
@@ -89,7 +108,8 @@ export const ROMAN = ['I', 'II', 'III', 'IV', 'V'];
 export const counted = (aim: Aim): boolean => 'sends' in aim || 'sendsOutside' in aim || 'outside' in aim;
 
 // A stage's ask in words, from its own numbers.
-export function goalDesc(g: Goal): string {
+// With a state, a family's words are filled in too (Phase 16.5).
+export function goalDesc(g: Goal, s?: GameState): string {
   const a = g.aim;
   const n: number =
     'cash' in a
@@ -104,7 +124,7 @@ export function goalDesc(g: Goal): string {
               ? a.sendsOutside
               : 0;
   const grade = 'grade' in a ? (a.grade ?? 0) : 0;
-  return fill(g.desc, { n, g: grade });
+  return fill(g.desc, { n, g: grade, ...(s?.family ? familyWords(s) : {}) });
 }
 
 // The myth you put up, for The Line's naming: its name, grade and crag; the latest if more.

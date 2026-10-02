@@ -29,7 +29,9 @@ export type Aim =
   // A myth you can read: the line under it sent.
   | { reveal: true }
   // A myth's first ascent, yours.
-  | { myth: true };
+  | { myth: true }
+  // A go on the line your forebear named (Phase 16.5).
+  | { kin: true };
 
 export interface Goal {
   id: string;

@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 39;
+export const SAVE_VERSION = 40;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -327,6 +327,11 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isInt(s.goals) || s.goals < ACT_I.length) return s;
     for (let g = currentGoal(s); g && aimMet(s, g.aim); g = currentGoal(s)) s.goals += 1;
     return s;
+  },
+  // v39 -> v40 (Phase 16.5): no family yet; every climber so far is the first of theirs.
+  39: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, family: null };
   },
 };
 
@@ -763,6 +768,18 @@ export function validate(x: unknown): string[] {
       (lf.retired === null ||
         (isObj(lf.retired) && isInt(lf.retired.day) && typeof lf.retired.forced === 'boolean')),
     'life',
+  );
+  const fm = x.family;
+  need(
+    fm === null ||
+      (isObj(fm) &&
+        isInt(fm.gen) &&
+        fm.gen >= 2 &&
+        typeof fm.forebear === 'string' &&
+        Array.isArray(fm.lines) &&
+        fm.lines.every((l) => typeof l === 'string') &&
+        typeof fm.coach === 'boolean'),
+    'family',
   );
   const hb = x.habits;
   need(

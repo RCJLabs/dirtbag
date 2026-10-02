@@ -753,7 +753,8 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 39 ||
+  saved?.v !== 40 ||
+  st.family !== null ||
   st.life?.retired !== null ||
   st.life.told !== 22 ||
   st.year?.home !== 'none' ||
@@ -2275,6 +2276,8 @@ console.log('Hanging it up');
 {
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
   saved.state = { ...saved.state, day: 380, min: 10 * 60, at: 'lot', x: null, encounter: null };
+  // A first ascent of theirs, for the kid to inherit (Phase 16.5).
+  saved.state.firsts = { ...saved.state.firsts, rsopen: { name: 'Second Wind', call: 0, day: 300 } };
   saved.state.life = { held: 0, told: 43, retired: null };
   saved.state.year = { ...saved.state.year, recapped: 6 };
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
@@ -2313,9 +2316,42 @@ console.log('Hanging it up');
   const st = await old.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
   if (!st.life.retired || st.life.retired.forced || st.life.retired.day !== 380 || st.record.retired !== 380)
     await fail(`old: the save: ${JSON.stringify({ life: st.life, record: st.record.retired })}`);
-  await old.locator('#sheet .opt', { hasText: 'Start a new climber' }).first().click();
-  await old.waitForFunction(() => document.querySelector('#sheet-title')?.textContent !== 'A climbing life');
-  log(`old: a new climber, from ${await title()}`);
+  // Phase 16.5: the kid they coached climbs on, the next morning, in the same world.
+  await old.locator('#sheet .opt', { hasText: 'Climb on as the kid you coached' }).first().click();
+  await old.waitForSelector('#create');
+  const heading = await old.evaluate(() => document.querySelector('#create-title')?.textContent ?? '');
+  if (heading !== 'Who has Robin’s keys?') await fail(`old: the heir's creation: ${heading}`);
+  if (await old.locator('#c-solo').count())
+    await fail('old: the heir is offered Free Solo; the family’s mode carries');
+  await old.fill('#c-name', 'Jo');
+  await old.click('#c-boulderer');
+  await old.click('#o-desert');
+  await old.click('#c-go');
+  await old.waitForSelector('#create', { state: 'detached' });
+  const kid = await old.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  if (
+    kid.climber.name !== 'Jo' ||
+    kid.day !== 381 ||
+    kid.family?.forebear !== 'Robin' ||
+    kid.family.gen !== 2 ||
+    kid.firsts.rsopen?.by !== 'kin:Robin' ||
+    kid.record.retired !== 380 ||
+    kid.life.retired !== null
+  )
+    await fail(
+      `old: the kid's save: ${JSON.stringify({ name: kid.climber.name, day: kid.day, family: kid.family })}`,
+    );
+  // Desert Locals start at Roadside: wait for the scene, then the You page.
+  await old.waitForSelector('#h-you');
+  await old.click('#h-you');
+  await old.waitForSelector('#family');
+  const fam = await old.evaluate(() => document.querySelector('#family')?.textContent ?? '');
+  if (!/^Generation 2, after Robin\. Their lines: Second Wind \(V7, Roadside Crag\)\./.test(fam))
+    await fail(`old: the family row: ${fam}`);
+  const actRow = await old.evaluate(() => document.querySelector('#act')?.textContent ?? '');
+  if (!/^Act I, Their Shadow · 1 of 5 · The keys$/.test(actRow)) await fail(`old: the kid's act: ${actRow}`);
+  log(`old: Jo climbs on: ${fam.slice(0, 70)} · ${actRow}`);
+  await old.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-heir-you.png`) });
   await ctx.close();
 }
 

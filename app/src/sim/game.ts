@@ -200,6 +200,8 @@ import { echoDue, echoOpts, permitFor, shift, stanceDue, stanceOpts } from './sc
 import { boardWeek, jobProgress, postBoard } from './board';
 import { homeCrowd, homeReady, yearsDone } from './year';
 import { ageOf, birthdayLine, bodyWaits, retireBlocked } from './age';
+import { familyFill, heirOf } from './heir';
+import { COACH_LINE, HEIR_OPEN } from './content/heir';
 import { BOARD_JOBS } from './content/board';
 import { CALLINGS, OPEN_CALLINGS } from './content/callings';
 import { CAME_ACROSS, ORIGINS } from './content/origins';
@@ -296,6 +298,7 @@ export function newGame(seed: string): GameState {
     board: { week: 0, jobs: [], shifts0: 0, sessions: 0 },
     year: { recapped: 0, home: 'none' },
     life: { held: 0, told: 0, retired: null },
+    family: null,
     record: {},
     speed: { pb: null, runs: 0, day: 0 },
     mode: 'rope',
@@ -582,6 +585,8 @@ export function act(s0: GameState, a: Action): Result {
   const s = clone(s0);
   const events: GameEvent[] = [];
   const refuse = (why: string): Result => ({ state: s0, events: [{ k: 'refused', why }] });
+  // Phase 16.5: the kid you coached climbs on after you, a new state in the same world.
+  if (a.t === 'heir') return heirOf(s0, newGame) ?? refuse('Not while you’re still climbing.');
   const note = (text: string) => {
     s.log.push({ day: s.day, min: s.min, text });
     if (s.log.length > LOG_MAX) s.log.splice(0, s.log.length - LOG_MAX);
@@ -1669,7 +1674,13 @@ export function act(s0: GameState, a: Action): Result {
       s.climber = { name, start: a.start, skills };
       // Talents come with an origin: the climber the screen makes; a bare one (a test's, a
       // bot's) gets neither.
-      s.talents = { ids: origin ? dealTalents(s.seed) : [], known: [], from: { ...skills } };
+      // A family's next climber is dealt their own (Phase 16.5), not their forebear's again.
+      const deal = s.family ? `${s.seed}:${s.family.gen}` : s.seed;
+      s.talents = { ids: origin ? dealTalents(deal) : [], known: [], from: { ...skills } };
+      if (s.family) {
+        line(familyFill(s, HEIR_OPEN));
+        if (s.family.coach) line(familyFill(s, COACH_LINE));
+      }
       if (origin) {
         line(origin.open);
         // Phase 23.8: the first morning, where and as this origin starts it.
@@ -2578,11 +2589,12 @@ export function act(s0: GameState, a: Action): Result {
   // the act.
   // Phase 16.2: on through all five acts; each act's last stage ends it, with its scene.
   for (let g = currentGoal(s); s.climber.name && g && aimMet(s, g.aim); g = currentGoal(s)) {
-    const ended = actEndedBy(s.goals);
+    const ended = actEndedBy(s, s.goals);
     s.goals += 1;
     if (g.train) train(g.train);
     events.push({ k: 'goal', id: g.id });
-    line(g.train ? `${g.done} ${skillsNote(g.train)}.` : g.done);
+    const done = familyFill(s, g.done);
+    line(g.train ? `${done} ${skillsNote(g.train)}.` : done);
     if (ended) {
       const end = ended.act.end;
       s.cash += end.cash;

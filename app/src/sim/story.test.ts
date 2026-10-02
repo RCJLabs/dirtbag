@@ -28,7 +28,7 @@ const tick = (s: GameState) => act(s, { t: 'stand', x: 300 });
 
 describe('Act I', () => {
   it('asks in its own numbers', () => {
-    expect(ACT_I.map(goalDesc)).toEqual([
+    expect(ACT_I.map((g) => goalDesc(g))).toEqual([
       'Have $60 in hand',
       'Send 3 lines anywhere',
       'Send 2 lines outside',
@@ -116,7 +116,7 @@ describe('Acts II to V', () => {
   });
 
   it('asks in their own numbers', () => {
-    expect(STORY[1]!.goals.map(goalDesc)).toEqual([
+    expect(STORY[1]!.goals.map((g) => goalDesc(g))).toEqual([
       'Send 3 lines outside at V4 or harder',
       'Send a line at Granite Gorge',
       'Send 2 lines outside at V6 or harder',

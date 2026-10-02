@@ -83,3 +83,9 @@ export const MASTERY_END = 'You mastered {list}.';
 export const HOME_END = 'The day of the Homecoming, everyone came.';
 export const BOOK_END = 'The page in the Record Book you show people first is “{title}”.';
 export const STANCE_END = 'In your own words: “{stance}”';
+
+// A family's next climber (Phase 16.5): who you climbed on after, and their line, if you sent it.
+export const FAMILY_END = {
+  after: 'You climbed on after {forebear}, and in the end people stopped calling you their kid.',
+  repeat: 'You repeated {line}, the line {forebear} named. It took you longer than you said it would.',
+};
