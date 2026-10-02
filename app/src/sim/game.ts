@@ -103,6 +103,7 @@ import {
   INJURY,
   LIFESTYLE,
   CALLING,
+  MASTERY_AT,
   LOAD,
   MONEY,
   PLANS,
@@ -180,6 +181,17 @@ import { aimMet, currentGoal } from './story';
 import { newlyEarned } from './record';
 import { callingOf, dealTalents, gainMult, payMult, shopMult, talentsShowing } from './identity';
 import { callingDue, newRungs, rungText } from './calling';
+import {
+  countGo,
+  edgeText,
+  masteryOf,
+  newlyClaimable,
+  newMastery,
+  pathBlocked,
+  quirkFor,
+  tiersOn,
+} from './paths';
+import { MASTERY, PATHS, QUIRKS } from './content/paths';
 import { CALLINGS, OPEN_CALLINGS } from './content/callings';
 import { CAME_ACROSS, ORIGINS } from './content/origins';
 import { TALENTS } from './content/talents';
@@ -267,6 +279,10 @@ export function newGame(seed: string): GameState {
     origin: null,
     talents: { ids: [], known: [], from: { power: 0, fingers: 0, endurance: 0, technique: 0, head: 0 } },
     calling: { id: null, since: 0, rungs: [], offered: false },
+    paths: { tiers: {}, told: [] },
+    mastery: [],
+    quirk: null,
+    habits: { goes: 0, outdoor: 0, fresh: 0, tired: 0, evening: 0, dawn: 0, easy: 0, power: 0 },
     record: {},
     speed: { pb: null, runs: 0, day: 0 },
     mode: 'rope',
@@ -1540,6 +1556,23 @@ export function act(s0: GameState, a: Action): Result {
       break;
     }
 
+    // Phase 23.4: a path's next tier, claimed.
+    case 'path': {
+      if (!s.climber.name) return refuse('Make a climber first.');
+      const why = pathBlocked(s, a.id);
+      if (why) return refuse(why);
+      const p = PATHS[a.id]!;
+      const n = tiersOn(s, a.id) + 1;
+      s.paths = { ...s.paths, tiers: { ...s.paths.tiers, [a.id]: n } };
+      const t = p.tiers[n - 1]!;
+      line(
+        n === p.tiers.length
+          ? `${t.name}. ${p.title}: ${p.line}`
+          : `${p.name}: ${t.name}. ${edgeText(t.edge)}`,
+      );
+      break;
+    }
+
     // Phase 23.3: what you're climbing for, for good.
     case 'calling': {
       if (!s.climber.name) return refuse('Make a climber first.');
@@ -1788,6 +1821,8 @@ export function act(s0: GameState, a: Action): Result {
       const why = goBlocked(s, r);
       if (why) return refuse(`${why}.`);
       // Phase 24: up there there's no crowd, no queue and no sun on it; your partner belays.
+      // Phase 23.4: how you climb, counted before the go takes its toll.
+      s.habits = countGo(s, r);
       if (r.exped) {
         spend(goCost(r, s));
         const L = logOf(s, a.route);
@@ -2480,6 +2515,30 @@ export function act(s0: GameState, a: Action): Result {
     const got = newlyEarned(s);
     for (const r of got) s.record[r.id] = s.day;
     if (got.length) events.push({ k: 'record', ids: got.map((r) => r.id) });
+  }
+  // Phase 23.4: a path tier you could claim, said once; a style mastered; a quirk named.
+  if (s.climber.name) {
+    const can = newlyClaimable(s);
+    if (can.length) {
+      s.paths = { ...s.paths, told: [...s.paths.told, ...can] };
+      for (const k of can) {
+        const [id, n] = k.split(':');
+        const p = PATHS[id!]!;
+        line(`You could claim ${p.tiers[Number(n) - 1]!.name}, on the ${p.name} path. It’s on the You page.`);
+      }
+    }
+    for (const k of newMastery(s)) {
+      s.mastery = [...s.mastery, k];
+      const m = masteryOf(k)!;
+      const why = k in MASTERY ? `${MASTERY_AT.sends} ${k} lines sent. ` : '';
+      note(`${m.name}. ${why}${m.line} ${edgeText(m.edge)}`);
+    }
+    const q = quirkFor(s);
+    if (q) {
+      s.quirk = q;
+      const Q = QUIRKS[q]!;
+      note(`${Q.name}. ${Q.line} ${edgeText(Q.edge)}`);
+    }
   }
   // Phase 23.3: asked what you're climbing for, once; and a rung of its ambition, met.
   if (s.climber.name) {

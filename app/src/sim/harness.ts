@@ -8,6 +8,7 @@ import { CLIMB, EXPED, GAMES } from './dials';
 import { EXPEDITIONS, expedPitches } from './content/expeditions';
 import { defaultPlan, planOdds, stormOn, summitOdds, tripPay, yourPitch } from './expeditions';
 import { needFor } from './climber';
+import { newMastery } from './paths';
 import { atFire } from './fire';
 import { act, newGame } from './game';
 import type { Action, GameState } from './types';
@@ -260,6 +261,8 @@ export function expedCalibration(trips: number) {
         climber: { ...base.climber, skills: { power: v, fingers: v, endurance: v, technique: v, head: v } },
         people: { sage: { bond: 8, last: 0 } },
       };
+      // What a climber at that grade has mastered by then (Phase 23.4), so the odds shown see it.
+      s0.mastery = newMastery(s0);
       const plan = defaultPlan(s0, id);
       shown += plan ? planOdds(s0, id, plan) : 0;
       if (expedTrip(s0, id, `hands-${id}-${k}`)) got++;
@@ -294,6 +297,7 @@ export function expedFarm(trips: number) {
           climber: { ...base.climber, skills: { power: v, fingers: v, endurance: v, technique: v, head: v } },
           people: { sage: { bond: 8, last: 0 } },
         };
+        s0.mastery = newMastery(s0);
         const r = expedRun(s0, id, `farm-hands-${id}-${g}-${k}`);
         net += r.net;
         paid += r.top ? tripPay(s0, id) : 0;

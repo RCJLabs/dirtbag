@@ -196,6 +196,22 @@ export interface GameState {
   // up, which its ambition counts from; the day each rung was met; and whether it's been
   // offered (it's offered once, then waits on the You page).
   calling: { id: string | null; since: number; rungs: number[]; offered: boolean };
+  // Phase 23.4. Your paths (content/paths.ts), by id, and the tiers claimed on each; the tiers
+  // you've been told you could claim ("power:1"); the styles you've mastered; the quirk your
+  // habits named, or null; and the habits, counted a go at a time.
+  paths: { tiers: Record<string, number>; told: string[] };
+  mastery: string[];
+  quirk: string | null;
+  habits: {
+    goes: number;
+    outdoor: number;
+    fresh: number;
+    tired: number;
+    evening: number;
+    dawn: number;
+    easy: number;
+    power: number;
+  };
   // Phase 23.1. The Record Book: each entry you've earned (content/record.ts), and the day.
   record: Record<string, number>;
   // Phase 21.6. The speed wall at Send City: your best time in seconds, and today's runs.
@@ -323,6 +339,8 @@ export type Action =
   | { t: 'create'; name: string; start: string; origin?: string; carry?: Skills; solo?: true }
   // Phase 23.3: take up a calling.
   | { t: 'calling'; id: string }
+  // Phase 23.4: claim a path's next tier.
+  | { t: 'path'; id: string }
   | { t: 'act'; act: string }
   | { t: 'say'; talk: string; node: string; opt: number }
   | { t: 'travel'; to: string }

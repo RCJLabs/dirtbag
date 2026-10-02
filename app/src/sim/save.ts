@@ -22,10 +22,12 @@ import { recordById } from './content/record';
 import { CAME_ACROSS, ORIGINS } from './content/origins';
 import { TALENTS } from './content/talents';
 import { CALLINGS } from './content/callings';
+import { HYBRIDS, MASTERY, PATHS, QUIRKS } from './content/paths';
+import { newMastery } from './paths';
 import { newlyEarned } from './record';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 33;
+export const SAVE_VERSION = 34;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -266,6 +268,19 @@ export const MIGRATIONS: Record<number, Migration> = {
   32: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, calling: { id: null, since: 0, rungs: [], offered: false } };
+  },
+  // v33 -> v34 (Phase 23.4): no paths yet; the styles already sent deep enough are mastered,
+  // quietly; habits count from today, so a quirk's named on goes the game has seen.
+  33: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const fresh = {
+      ...x,
+      paths: { tiers: {}, told: [] },
+      mastery: [],
+      quirk: null,
+      habits: { goes: 0, outdoor: 0, fresh: 0, tired: 0, evening: 0, dawn: 0, easy: 0, power: 0 },
+    };
+    return { ...fresh, mastery: newMastery(fresh as unknown as GameState) };
   },
 };
 
@@ -618,6 +633,26 @@ export function validate(x: unknown): string[] {
       cl.rungs.length <= (cl.id ? CALLINGS[cl.id as string]!.rungs.length : 0) &&
       typeof cl.offered === 'boolean',
     'calling',
+  );
+  const pt = x.paths;
+  need(
+    isObj(pt) &&
+      isObj(pt.tiers) &&
+      Object.entries(pt.tiers).every(
+        ([id, n]) => id in PATHS && isInt(n) && n >= 0 && n <= PATHS[id]!.tiers.length,
+      ) &&
+      isStrs(pt.told),
+    'paths',
+  );
+  need(isStrs(x.mastery) && x.mastery.every((k) => k in MASTERY || k in HYBRIDS), 'mastery');
+  need(x.quirk === null || (typeof x.quirk === 'string' && x.quirk in QUIRKS), 'quirk');
+  const hb = x.habits;
+  need(
+    isObj(hb) &&
+      ['goes', 'outdoor', 'fresh', 'tired', 'evening', 'dawn', 'easy', 'power'].every(
+        (k) => isInt(hb[k]) && (hb[k] as number) >= 0,
+      ),
+    'habits',
   );
   const rec = x.record;
   need(isObj(rec) && Object.entries(rec).every(([k, v]) => !!recordById(k) && isInt(v) && v >= 0), 'record');

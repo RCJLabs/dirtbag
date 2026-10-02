@@ -25,6 +25,7 @@ import { kitFactor } from './kit';
 import { indoor } from './content/gym';
 import { EXPEDITIONS, expedWindows } from './content/expeditions';
 import { firstGoMult } from './identity';
+import { edgeWindows } from './paths';
 import { trainWindows } from './training';
 import type { GameState, GoResult } from './types';
 import { conditionsAt, sunOn } from './weather';
@@ -172,8 +173,9 @@ export function betaScale(s: GameState, r: RouteDef, beta: string, started = fal
     windowFactor(margin(s.climber.skills, b.style, effGrade(r))) *
     dayFactor(s, r).windows *
     kitFactor(s, b.style) *
-    // A calling that commits on a first go (Phase 23.3).
-    firstGoMult(s, first)
+    // A calling that commits on a first go (Phase 23.3); paths, mastery, a quirk (23.4).
+    firstGoMult(s, first) *
+    edgeWindows(s, r, first)
   );
 }
 

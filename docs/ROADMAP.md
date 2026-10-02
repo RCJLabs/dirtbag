@@ -2151,6 +2151,15 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Measured, by bot** (10 seeds, the balanced strategy): a Purist ends week one with ~12% more skill; a Lifer ~$20 more in hand; every Send-or-Bust bot meets its first rung in week one, but bots climb with perfect hands, so flashes come easier to them than to a player. By day 28 every Purist has its first rung, and the ten Lifers have seven rungs between them. The default bot takes no calling, so the harness doesn't move.
 - **Not in the e2e:** its five days stop short of ten sends, so the offer is checked by the sim's tests and by eye (the card and the You page, previewed).
 
+**Status (2 Oct 2026): 23.4 built: paths, mastery and a quirk.** Save v34, 0.997.0.
+- **Five paths,** claimed on the You page a tier at a time, two at most: Crusher, Tendon, Nerve, Dirtbag (v0.956's) and Mover (new, for technique); Scene waits on comps. Each tier is gated on your grade, V4, V9 and V14, and a deed of its own (sends in its styles, flashes, or trips out). A tier you could claim is said once. Tier 3 is a title and its line, with a passive edge, not v0.956's once-a-day ability.
+- **Mastery,** one track: a style mastered at 40 lines sent in it, and v0.956's ten hybrids, two skills both at V8's level. Comes on its own, with a note.
+- **A quirk,** named from how you climb once you've had 30 goes: v0.956's tests (outside share, fresh or tired legs, the hour, lines well inside your grade, power and getting hurt, a long career). Comp Beast waits on comps. One quirk, not v0.956's two.
+- **One kind of edge** for all of them, on the dials the rules already read: crux windows (by style, first go, indoors, the hour, your legs), gains, the odds of getting hurt, gas and nights. v0.956's "+n% odds" are windows ×(1+n). Every edge is said from its numbers. All numbers [proposed], v0.956's where it had them.
+- **Fixed on the way:** an expedition's send chances were cached by skills and the day, so claiming a path or a mastery coming on left the odds shown stale until tomorrow; the cache keys on your edges now.
+- **The harness moves,** because quirks and mastery come to every climber, bots too; every target still passes. The odds shown against the bots' trips: El Cap 54% / 60%, Cerro Torre 33% / 38%, Trango 24% / 24% (the harness now gives its made-up climbers the masteries they'd have).
+- **Measured** (8 bots, 56 days): a bot hears of its first claimable tier on day 10 to 12; claimed paths barely move a bot's numbers (perfect hands); 7 of 8 balanced bots are named Stone Purist, because they climb outside almost always, so it's likely common for players who do too.
+
 ---
 
 ### Phase 16 — The spine: story, acts and endings
@@ -2516,3 +2525,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-02 — Phase 23.1 built: the Record Book. v0.956's 42 feats, milestones and story cards merged to 37 entries, each with its story; 27 earned from what the game keeps, 10 waiting on unbuilt systems; one moment gives one card; a Record page in the journal; old saves fill it quietly. Save v31. 0.994.0.
 - 2026-10-02 — Phase 23.2 built: six origins at creation, each a perk and a cost said from its own numbers [proposed]; 11 hidden talents dealt with one, shown once their skill has come on; a carried climber came across with nothing dealt. Bots by origin differ only modestly in week one; tuning that is 23.8's. Save v32. 0.995.0.
 - 2026-10-02 — Phase 23.3 built: callings, asked at the fire after ten sends rather than at creation; the Purist, Send-or-Bust and the Lifer, each a perk and a three-rung ambition counted from the day you take it up, paying psyche [proposed]; the Influencer waits on followers. Save v33. 0.996.0.
+- 2026-10-02 — Phase 23.4 built: five paths claimed a tier at a time on grade gates near V4, V9 and V14, two at most; one Mastery track of style mastery and v0.956's hybrids; a quirk named from your habits after 30 goes; all one kind of edge on the existing dials [proposed]. Expedition send chances now key on your edges. Save v34. 0.997.0.
