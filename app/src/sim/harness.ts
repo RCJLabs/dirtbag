@@ -6,7 +6,7 @@ import { humanHands, playDays, playGo, type BotRun, type Strategy } from './bot'
 import { bjTotal, boardAt, equity, handNeeds } from './cards';
 import { CLIMB, EXPED, GAMES } from './dials';
 import { EXPEDITIONS, expedPitches } from './content/expeditions';
-import { defaultPlan, planOdds, stormOn, summitOdds, yourPitch } from './expeditions';
+import { defaultPlan, planOdds, stormOn, summitOdds, tripPay, yourPitch } from './expeditions';
 import { needFor } from './climber';
 import { atFire } from './fire';
 import { act, newGame } from './game';
@@ -180,7 +180,16 @@ export function gamesAtFire(seed: string, nights: number) {
 // Phase 24: an expedition played through by a climber's hands, choosing each day as the odds
 // assume: wait out a storm; on your block, lead it a go at a time while you can, or hand it to
 // your partner when their day is the better bet; on theirs, second it. Whether it summited.
-export function expedTrip(s0: GameState, id: string, hands: string): boolean {
+export const expedTrip = (s0: GameState, id: string, hands: string): boolean => expedRun(s0, id, hands).top;
+
+// The same trip, with what it came to (Phase 24.9): whether it summited, the calendar days
+// from leaving to the Lot again, and the cash it made or cost, pay against the trip and food.
+// The week's bills come either way, so they're left out of it.
+export function expedRun(
+  s0: GameState,
+  id: string,
+  hands: string,
+): { top: boolean; days: number; net: number } {
   const e = EXPEDITIONS[id]!;
   const rng = Rng.fromSeed(hands);
   let top = false;
@@ -190,9 +199,13 @@ export function expedTrip(s0: GameState, id: string, hands: string): boolean {
     return r.state;
   };
   const plan = defaultPlan(s0, id);
-  if (!plan) return false;
-  let s = run(run(s0, { t: 'exped', id, do: 'book', plan }), { t: 'exped', id, do: 'go' });
-  if (!s.expedition) return false;
+  const none = { top: false, days: 0, net: 0 };
+  if (!plan) return none;
+  const booked = run(s0, { t: 'exped', id, do: 'book', plan });
+  // What booking cost, so the bills on the way don't count against the trip.
+  let net = booked.cash - s0.cash;
+  let s = run(booked, { t: 'exped', id, do: 'go' });
+  if (!s.expedition) return none;
   for (let guard = 0; s.expedition && guard < 400; guard++) {
     // Something happened up there (Phase 24.4): the bots take the first call.
     if (s.encounter?.kind === 'wall') {
@@ -225,7 +238,8 @@ export function expedTrip(s0: GameState, id: string, hands: string): boolean {
     }
     s = run(s, { t: 'exped', id, do: 'camp' });
   }
-  return top;
+  if (top) net += tripPay(s0, id);
+  return { top, days: s.day - s0.day, net };
 }
 
 // Phase 24's criterion 4: for each objective, a climber at its grade roped to Sage, `trips`
@@ -251,5 +265,42 @@ export function expedCalibration(trips: number) {
       if (expedTrip(s0, id, `hands-${id}-${k}`)) got++;
     }
     return { id, grade: e.grade, shown: shown / trips, got: got / trips };
+  });
+}
+
+// Phase 24's criterion 5: what a trip comes to a day away, for a climber at every grade an
+// objective is offered at, from the lowest it takes to two past its own, roped to Sage.
+// `first`: its first summit, paid; `again`: once it has paid, a summit pays nothing. Each is
+// the mean net cash over the mean days away, `trips` trips a grade.
+export function expedFarm(trips: number) {
+  return Object.entries(EXPEDITIONS).flatMap(([id, e]) => {
+    const rows = [];
+    for (let g = e.gradeReq; g <= e.grade + 2; g++) {
+      let net = 0;
+      let paid = 0;
+      let days = 0;
+      for (let k = 0; k < trips; k++) {
+        const base = act(newGame(`farm-${id}-${g}-${k}`), {
+          t: 'create',
+          name: 'Bot',
+          start: 'allrounder',
+        }).state;
+        const v = needFor(g) + 0.3;
+        const s0: GameState = {
+          ...base,
+          cash: e.cost * 2 + 2000,
+          energy: 100,
+          fed: 90,
+          climber: { ...base.climber, skills: { power: v, fingers: v, endurance: v, technique: v, head: v } },
+          people: { sage: { bond: 8, last: 0 } },
+        };
+        const r = expedRun(s0, id, `farm-hands-${id}-${g}-${k}`);
+        net += r.net;
+        paid += r.top ? tripPay(s0, id) : 0;
+        days += r.days;
+      }
+      rows.push({ id, grade: g, days: days / trips, first: net / days, again: (net - paid) / days });
+    }
+    return rows;
   });
 }

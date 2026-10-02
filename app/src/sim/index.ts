@@ -237,6 +237,7 @@ export {
   lastTrip,
   storyBlocked,
   tripBond,
+  tripPay,
   tripWords,
   wallPay,
   yourPitch,

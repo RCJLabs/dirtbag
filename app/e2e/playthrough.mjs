@@ -1725,13 +1725,35 @@ console.log('An expedition');
   );
   await ex.waitForTimeout(500);
   await ex.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-exped-pitch.png`) });
-  await ex.click('#sheet .x');
-  await ex.waitForFunction(() => /El Capitan, day/.test(document.querySelector('#sheet')?.textContent ?? ''));
+  // Phase 24.9: lead it, through the beta and the go, with the hands that climb day three.
   const before = await trip();
-  await pick('Hand it to Hazel');
-  await ex.waitForFunction(() =>
-    JSON.parse(localStorage.getItem('dirtbag.save')).state.today.includes('exped'),
+  await ex.click('#sheet .go');
+  await ex.waitForFunction(() => !!document.getElementById('climb'));
+  // The wall's yours while you climb: no card over it.
+  await ex.waitForTimeout(300);
+  if (await ex.locator('#sheet').count()) await fail(`a card over the wall on a lead: ${await sheetText()}`);
+  const main = page;
+  page = ex;
+  down = false;
+  try {
+    await climb();
+  } finally {
+    page = main;
+    down = false;
+  }
+  const led = await ex.evaluate(
+    () => JSON.parse(localStorage.getItem('dirtbag.save')).state.routes['elcap-1'],
   );
+  if (!led || led.goes < 1) await fail(`a lead on El Cap's first pitch didn't count: ${JSON.stringify(led)}`);
+  log(`exped: led pitch 1, ${led.sent ? 'sent' : `off at move ${led.hi}`}`);
+  // Back to the day's card, past the go's own sheets.
+  await ex.waitForFunction(() => !document.getElementById('stamp') && !!document.querySelector('#sheet'));
+  if (!/El Capitan, day/.test(await sheetText()))
+    await ex
+      .locator('#sheet .opt', { hasText: /walk out|Walk off|walk down/i })
+      .first()
+      .click();
+  await ex.waitForFunction(() => /El Capitan, day/.test(document.querySelector('#sheet')?.textContent ?? ''));
   await pick('Make camp');
   await ex.waitForFunction(
     (d) => JSON.parse(localStorage.getItem('dirtbag.save')).state.expedition?.day === d + 1,

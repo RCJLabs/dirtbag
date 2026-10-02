@@ -73,6 +73,7 @@ import {
   lastTrip,
   storyBlocked,
   tripBond,
+  tripPay,
   tripWords,
   TRIP_BOND,
   TRIP_END,
@@ -540,7 +541,8 @@ function homeSheet(game: Game, s: GameState): ListSpec | null {
   const notes = [
     `${t.nights === 1 ? 'A night' : `${t.nights} nights`} on the wall.${happened.length ? ` Up there: ${happened.join('; ')}.` : ''}`,
   ];
-  if (t.end === 'summit') notes.push(`The sponsors paid ${money(e.pays)}.`);
+  if (t.end === 'summit')
+    notes.push(before?.summit ? 'You’d been paid for it before.' : `The sponsors paid ${money(e.pays)}.`);
   else if (!before) {
     if (t.high) notes.push('Your high point on it, for next time.');
   } else if (before.summit || t.high <= before.high)
@@ -1341,7 +1343,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           ...Object.entries(EXPEDITIONS).map(([eid, e]) => ({
             label: e.name,
             cost: costLabel({ cash: -expedCost(s, e.cost) }),
-            note: `${e.objective}, ${e.region}. ${oddsLine(s, eid)}`,
+            note: `${e.objective}, ${e.region}. ${payLine(s, eid)} ${oddsLine(s, eid)}`,
             run: () => game.openSheet({ k: 'exped', id: eid }),
           })),
           { label: 'Back', run: () => game.openSheet({ k: 'van' }) },
@@ -1382,6 +1384,14 @@ function oddsLine(s: GameState, id: string): string {
   const who = plan.partner ? `with ${PEOPLE[plan.partner]?.name ?? plan.partner}` : 'alone';
   return `${head} Summit odds for you, ${who}, leaving today: ${pct(planOdds(s, id, plan))}.`;
 }
+
+// Phase 24.9: what the summit pays, the first time only.
+const payLine = (s: GameState, id: string): string => {
+  const pay = tripPay(s, id);
+  return pay
+    ? `The first summit pays ${money(pay)}.`
+    : 'You’ve been paid for this one; the top pays nothing now.';
+};
 
 // A wall from its foot, or from wherever you are on it.
 function wallSheet(game: Game, s: GameState, id: string): ListSpec {

@@ -16,6 +16,7 @@ import {
   checkpoints,
   contentOut,
   expedCalibration,
+  expedFarm,
   firstInjury,
   firstTry,
   gamesAtFire,
@@ -34,7 +35,7 @@ const f1 = (x: number) => (Number.isNaN(x) ? '–' : x.toFixed(1));
 type Seasonal = Exclude<Strategy, 'career'>;
 const STRATEGIES: Seasonal[] = ['climber', 'balanced', 'worker'];
 
-it('season', { timeout: 600_000 }, () => {
+it('season', { timeout: 1_200_000 }, () => {
   out(`\n# Season harness: ${SEEDS} seeds × ${DAYS} days, human-ish hands\n`);
   const all: Record<Seasonal, BotRun[]> = { climber: [], balanced: [], worker: [] };
   const reckless: BotRun[] = [];
@@ -212,6 +213,24 @@ function targets(all: Record<Seasonal, BotRun[]>, reckless: BotRun[]): void {
     cal.every((c) => Math.abs(c.shown - c.got) <= 0.1),
     'The summit odds shown are the odds you get: within ten points of the bots’ trips',
     `${cal.map((c) => `${c.id} at V${c.grade}, shown ${Math.round(100 * c.shown)}%, the bots ${Math.round(100 * c.got)}%`).join('; ')}.`,
+  );
+  // 8. Phase 24's criterion 5: no expedition is a farm. A summit pays once (24.9), so a trip
+  // that's already paid can't out-earn a day of the worst-paid shift at any grade it's
+  // offered at; a first summit is a one-off, shown beside it.
+  const shiftDay = Math.min(
+    ...Object.values(ACTS)
+      .filter((a) => a.job && a.job.shifts === 1)
+      .map((a) => (a.cost.cash ?? 0) + (JOBS[a.job!.id]!.tips?.[0] ?? 0)),
+  );
+  const farm = expedFarm(Number(process.env.FARM ?? 30));
+  say(
+    farm.every((f) => f.again < shiftDay),
+    'No expedition is a farm: once a summit has paid, no trip out-earns a day of shifts',
+    `the worst shift $${shiftDay.toFixed(0)} a day; per day away, first summit / again: ${farm
+      .map(
+        (f) => `${f.id} V${f.grade} $${f.first.toFixed(0)} / $${f.again.toFixed(0)} (${f.days.toFixed(1)}d)`,
+      )
+      .join(', ')}.`,
   );
   // Phase 22.8: how long a dream takes, at what the worker bots put by: their median cash at
   // the season's end, a day at a time. A guide, not a target.

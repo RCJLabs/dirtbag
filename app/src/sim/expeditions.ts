@@ -341,6 +341,11 @@ export function tripBond(e: ExpeditionDef, end: TripEnd, high: number): number {
   return high * 2 >= e.pitches ? b.half : 0;
 }
 
+// Phase 24.9 [proposed]: what a summit of `id` pays you: the sponsors' money the first time,
+// nothing once you've stood on top, as a wall pays once.
+export const tripPay = (s: GameState, id: string): number =>
+  s.book.some((t) => t.id === id && t.end === 'summit') ? 0 : EXPEDITIONS[id]!.pays;
+
 // The newest trip in the book, if there's one.
 export const lastTrip = (s: GameState): TripLog | null => s.book[s.book.length - 1] ?? null;
 
