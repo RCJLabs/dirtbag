@@ -16,6 +16,7 @@ import { speedGains } from '../src/sim/speed';
 import {
   checkpoints,
   contentOut,
+  echoLanding,
   expedCalibration,
   expedFarm,
   firstInjury,
@@ -246,6 +247,14 @@ function targets(all: Record<Seasonal, BotRun[]>, reckless: BotRun[]): void {
     bestWeek() < BOARD.capDays * shiftDay,
     `The Board isn’t a living: a week’s best board pays under ${BOARD.capDays} days of the worst shift`,
     `best week $${bestWeek()}, against $${BOARD.capDays * shiftDay}; the bots took, a week, median: ${STRATEGIES.map((k) => `${k} $${median(all[k].map(boardPaid)).toFixed(0)}`).join(', ')}.`,
+  );
+  // 10. Phase 23's criterion 2: every echo lands later in the game, for a bot that answers
+  // its call the way it comes back for, within a four-year career.
+  const echoes = echoLanding(Number(process.env.ECHO_SEEDS ?? 8), 224);
+  say(
+    echoes.every((e) => e.echo !== null),
+    'Every stance’s echo lands later in the game',
+    `${echoes.map((e) => (e.echo === null ? `${e.id} never` : `${e.id}: call day ${e.call}, echo day ${e.echo}`)).join('; ')}.`,
   );
   // Phase 22.8: how long a dream takes, at what the worker bots put by: their median cash at
   // the season's end, a day at a time. A guide, not a target.

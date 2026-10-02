@@ -248,6 +248,9 @@ export interface WeekOpts {
   calling?: string;
   // The paths it claims a tier of whenever it can (Phase 23.4); none by default.
   paths?: string[];
+  // How it answers a call at the crag, or a call coming back, by id (Phase 23.5); the first
+  // answer for any it isn't told.
+  answers?: Record<string, number>;
   strategy?: Strategy;
   // A moderate climber warms up, stops for the day when their body starts talking (the
   // load ratio over 1.3), and waits for a spotter on a highball; a reckless one does none
@@ -308,6 +311,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   let climbMin = 0;
   let climbGain = 0;
 
+  // The answer it gives an encounter: the one it's told for a call, else the first.
+  const answer = (): number => (s.encounter ? (opts.answers?.[s.encounter.id] ?? 0) : 0);
   const go = (a: Action): boolean => {
     const r = act(s, a);
     const no = r.events.find((e) => e.k === 'refused');
@@ -328,6 +333,9 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
         if (line) go({ t: 'name', route: e.route, name: faSuggestions(s, line)[0]!, call: 0 });
       }
     }
+    // A call at the crag after a go (Phase 23.5), answered there and then.
+    if (a.t === 'done' && (s.encounter?.kind === 'stance' || s.encounter?.kind === 'echo'))
+      go({ t: 'answer', opt: answer() });
     // Its paths' next tiers, the moment it can claim them.
     for (const id of opts.paths ?? []) if (a.t !== 'path' && !pathBlocked(s, id)) go({ t: 'path', id });
     return true;
@@ -343,9 +351,9 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     if (!go({ t: 'travel', to })) return false;
     // Someone on the road (Phase 22.6b), or a walk-out's calls (22.6c): the first answer, as
     // a bot takes things. Out of a walk-out, the drive is still to do.
-    while (s.encounter) if (!go({ t: 'answer', opt: 0 })) break;
+    while (s.encounter) if (!go({ t: 'answer', opt: answer() })) break;
     if (s.at !== to && !s.breakdown && !s.encounter && !go({ t: 'travel', to })) return false;
-    while (s.encounter) if (!go({ t: 'answer', opt: 0 })) break;
+    while (s.encounter) if (!go({ t: 'answer', opt: answer() })) break;
     if (s.breakdown) {
       const ok =
         ((friendFor(s) || hitchFriend(s)) && go({ t: 'fix', how: 'friend' })) ||

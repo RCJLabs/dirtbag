@@ -444,7 +444,10 @@ export class Game {
     // A Free Solo climber who fell: that's all there is, until a new one.
     if (this.state.dead && 'sheet' in p && p.sheet?.k !== 'dead') p = { ...p, sheet: { k: 'dead' } };
     // An encounter (Phase 22.6): its card, until you've answered; on the road, once you're there.
-    if (this.state.encounter && !this.trip && 'sheet' in p && p.sheet?.k !== 'encounter')
+    // A call at the crag after a go (Phase 23.5) waits for the go's own card to close.
+    const goCard =
+      p.sheet?.k === 'fall' || p.sheet?.k === 'sent' || p.sheet?.k === 'fa' || p.sheet?.k === 'card';
+    if (this.state.encounter && !this.trip && 'sheet' in p && p.sheet?.k !== 'encounter' && !goCard)
       p = { ...p, sheet: { k: 'encounter' } };
     // A hand of dice on the go (Phase 22.9a): the fire's card, until it's played out.
     if ((this.state.table || this.state.cards) && 'sheet' in p && p.sheet?.k !== 'fire')
@@ -913,6 +916,8 @@ export class Game {
       if (ev.some((e) => e.k === 'refused')) return;
       const here = PLACES[this.state.at];
       this.set({ sheet: here?.scene ? null : { k: 'place', id: this.state.at } });
+      // What the answer left on cards (a call's outcome, a year's recap) comes up now.
+      this.maybeCard();
       if (this.run) this.later(() => this.planStep(), FADE_MS + PLAN_BEAT);
       return;
     }

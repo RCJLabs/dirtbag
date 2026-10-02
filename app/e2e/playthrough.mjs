@@ -2154,6 +2154,88 @@ console.log('A landscape window');
   page = portrait;
 }
 
+console.log('A later life');
+// Phase 23.8: Phase 23 later in a career, on the day-five climber's save moved on to day 57:
+// close to Hazel and Sage, trusted by the old guard, asked about a calling and put off, with
+// a call put to them at the crag waiting. The call (the elder's answer, there for them), its
+// line in the journal; the first year's recap; a calling taken up; the Homecoming armed.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  saved.state = {
+    ...saved.state,
+    day: 57,
+    min: 10 * 60,
+    at: 'lot',
+    x: null,
+    people: { ...saved.state.people, hazel: { bond: 4, last: 56 }, sage: { bond: 4, last: 55 } },
+    scene: { ...saved.state.scene, old: 70 },
+    calling: { id: null, since: 0, rungs: [], offered: true },
+    year: { recapped: 0, home: 'none' },
+    encounter: { kind: 'stance', id: 'chip' },
+  };
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  await ctx.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+  }, JSON.stringify(saved));
+  const later = await ctx.newPage();
+  later.on('pageerror', (e) => problems.push(`later: uncaught: ${e.message}`));
+  later.on('console', (m) => m.type() === 'error' && problems.push(`later: console.error: ${m.text()}`));
+  await later.goto(server.url, { waitUntil: 'load' });
+  const sheet = () => later.evaluate(() => document.querySelector('#sheet')?.textContent ?? '');
+  const title = () => later.evaluate(() => document.querySelector('#sheet-title')?.textContent ?? '');
+  await later.waitForFunction(() =>
+    /Somebody chipped your project/.test(document.querySelector('#sheet')?.textContent ?? ''),
+  );
+  const call = await sheet();
+  if (!/Have a quiet word/.test(call) || !/The old guard warms to you/.test(call))
+    await fail(`the call, with the elder's answer: ${call.slice(0, 300)}`);
+  log(`later: the call: ${call.slice(0, 90)}`);
+  await later.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-later-call.png`) });
+  await later.locator('#sheet .opt', { hasText: 'Have a quiet word' }).first().click();
+  // What it did, on a card; then the first year's recap.
+  const seen = [];
+  for (let i = 0; i < 20 && !seen.includes('Year 1'); i++) {
+    await later.waitForTimeout(500);
+    const t = await title();
+    if (!t) continue;
+    log(`later: a card: ${t}`);
+    seen.push(t);
+    if (t === 'Year 1') break;
+    await later.locator('#sheet .opt').first().click();
+  }
+  if (!seen.includes('Year 1')) await fail(`the year's recap never came: ${seen.join(', ')}`);
+  const year = await sheet();
+  if (!/lines? sent|Nothing sent/.test(year) || !/in hand/.test(year)) await fail(`the recap: ${year}`);
+  log(`later: ${year.slice(0, 100)}`);
+  await later.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-later-year.png`) });
+  await later.locator('#sheet .opt', { hasText: 'On to the next' }).first().click();
+  // The You page: where you stand, the call in your words, the Homecoming; a calling.
+  await later.click('#h-you');
+  await later.waitForSelector('#scene');
+  const you = await sheet();
+  if (!/In with the old guard/.test(you) || !/Ended the chipping quietly/.test(you))
+    await fail(`the scene on the You page: ${you.slice(0, 400)}`);
+  await later.click('#calling-open');
+  await later.waitForFunction(
+    () => document.querySelector('#sheet-title')?.textContent === 'What are you climbing for?',
+  );
+  await later.locator('#sheet .opt', { hasText: 'The Purist' }).first().click();
+  await later.click('#h-you');
+  await later.waitForSelector('#calling');
+  await later.locator('#home').click();
+  const st = await later.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  if (
+    st.calling.id !== 'purist' ||
+    st.year.home !== 'armed' ||
+    st.year.recapped !== 1 ||
+    st.scene.stances[0]?.opt !== 3
+  )
+    await fail(`later: the save: ${JSON.stringify({ calling: st.calling, year: st.year, scene: st.scene })}`);
+  log('later: the Purist taken up, the Homecoming armed, the call kept');
+  await later.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-later-you.png`) });
+  await ctx.close();
+}
+
 if (problems.length) await fail(`${problems.length} problem(s) during play`);
 await browser.close();
 await server.close();

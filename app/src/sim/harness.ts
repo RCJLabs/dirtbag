@@ -8,6 +8,7 @@ import { CLIMB, EXPED, GAMES } from './dials';
 import { EXPEDITIONS, expedPitches } from './content/expeditions';
 import { defaultPlan, planOdds, stormOn, summitOdds, tripPay, yourPitch } from './expeditions';
 import { needFor } from './climber';
+import { ECHOES } from './content/scene';
 import { newMastery } from './paths';
 import { atFire } from './fire';
 import { act, newGame } from './game';
@@ -306,5 +307,20 @@ export function expedFarm(trips: number) {
       rows.push({ id, grade: g, days: days / trips, first: net / days, again: (net - paid) / days });
     }
     return rows;
+  });
+}
+
+// Phase 23's criterion 2: every stance's echo lands later in the game. For each echo, bots
+// that answer its call the way it comes back for play on (a balanced season, up to `days`),
+// a seed at a time, until it lands; when the call came and when the echo did, or never.
+export function echoLanding(seeds: number, days: number) {
+  return Object.entries(ECHOES).map(([id, e]) => {
+    for (let k = 0; k < seeds; k++) {
+      const r = playDays(`echo-${id}-${k}`, { days, strategy: 'balanced', answers: { [e.stance]: e.opt } });
+      const call = r.state.scene.stances.find((x) => x.id === e.stance);
+      const echo = r.state.scene.echoes.find((x) => x.id === id);
+      if (call && echo) return { id, call: call.day, echo: echo.day, seeds: k + 1 };
+    }
+    return { id, call: null, echo: null, seeds };
   });
 }
