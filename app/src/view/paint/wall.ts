@@ -431,8 +431,8 @@ function pitchPts(r: RouteDef): Pt[] {
 }
 
 for (const r of Object.values(ROUTES)) if (r.wall) TOPO_PTS[r.id] = pitchPts(r);
-// An expedition's pitches (Phase 24) climb the same way: on their own wall where 24.6–24.8
-// have painted one, on Roadside's until then.
+// An expedition's pitches (Phase 24) climb the same way, on their objective's own rock
+// (Phase 24.6–24.8).
 for (const r of Object.values(EXPED_ROUTES)) TOPO_PTS[r.id] = pitchPts(r);
 
 const TOPO: Record<string, Topo> = Object.fromEntries(
@@ -1457,6 +1457,7 @@ const FACE: Record<string, Pt[]> = {
   cove: P_WALL,
   elcap: EXPED_FACE,
   cerrotorre: EXPED_FACE,
+  trango: EXPED_FACE,
 };
 
 // A route's wall, painted into any context in wall units: what the wall view caches at 2x,

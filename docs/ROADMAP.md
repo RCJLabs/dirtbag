@@ -2038,6 +2038,15 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Trango** keeps the Lot and Roadside's wall until 24.8.
 - **Size:** 301.0 of 340 KB (Cerro Torre: 1.8 KB).
 
+**Status (2 Oct 2026): 24.8 built: Trango's scene.** 0.992.0. No save change, no rule change.
+- **The scene,** from base camp on the Trango glacier: the Nameless Tower, square-topped and golden, standing on its snowy shoulder with Eternal Flame up its south face; Great Trango's bulk to the left with snow on its top, the Monk and the Pulpit to the right; the Karakoram's snow peaks far and pale behind; the glacier striped with medial moraines converging on the tower, and base camp's tents on it (the glacier and camp show in landscape).
+- **Day and night, clear and storm:** a deep altitude blue by day; stars thick at night and one tent lit; a storm buries the towers in cloud and snows; a storm at night, dark.
+- **Where you are:** your portaledge up the approach gully, across the snow ledge and up the south face, as high as the pitches you've fixed.
+- **The wall view:** golden granite, the splitter, a snowy belay ledge, and the glacier far below.
+- **Every objective now has its own scene and wall view, clear and storm, day and night: Done-when criterion 1 passes.** A test holds every objective to a scene, and its storms to snow exactly where its water's snow.
+- **Still open from 24.5:** the drawn keepsake card for a trip. It waited on these walls, which now exist; it's a candidate for 24.9 or a polish pass.
+- **Size:** 302.4 of 340 KB (Trango: 1.4 KB; the three scenes 5.6 KB together, against the 12–20 KB the plan feared).
+
 ---
 
 ### Phase 23 — Who you are: origins, paths, stances, and the Record Book
@@ -2418,3 +2427,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-01 — Phase 24.5 built: coming home. Every trip goes in the book (the Record Book's stub), with your high point on each objective; your partner closer or further for how it went; the trip's card on the way home; its story at the fire, once. The drawn keepsake card waits for 24.6–24.8's walls. Save v30. 0.989.0.
 - 2026-10-01 — Phase 24.6 built: El Capitan's scene, day and night, clear and storm, with your portaledge on the wall as high as you've got; its pitches climbed on its own granite, your partner belaying from the ledge. 0.990.0.
 - 2026-10-02 — Phase 24.7 built: Cerro Torre's scene from above Laguna Torre, day and night, clear and storm (lenticulars on a fine day, a plume and snow in a storm), your portaledge on the Southeast Ridge; its pitches on rimed granite over the glacier; storms snow where the water's snow. 0.991.0.
+- 2026-10-02 — Phase 24.8 built: Trango's scene from base camp on the Trango glacier, day and night, clear and storm, your portaledge up Eternal Flame; its pitches on golden granite over the glacier. Every objective has its scene: criterion 1 passes. 0.992.0.
