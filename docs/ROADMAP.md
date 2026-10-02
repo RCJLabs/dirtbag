@@ -2169,6 +2169,13 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Sends don't move the crowds,** unlike v0.956: its per-send drift would have both at Beloved within a season.
 - **The harness moves a little** (bots answer every call with its first answer); every target passes. The e2e's five days end before the first call; the sim's tests cover them, and the sheet and the You page were checked by eye.
 
+**Status (2 Oct 2026): 23.6 built: the Board.** Save v36, 0.999.0.
+- **One weekly board** in place of v0.956's four (the café board, the daily and weekly challenges, the club jobs): 14 jobs, de-duplicated, three drawn on the seed each week. Sends anywhere, at your grade or a grade under it, outside, outside at a grade, of a style; training sessions; shifts.
+- **Pitched at you:** a grade job asks for the grade you climb when the board goes up, so it means the same at V2 as at V12.
+- **It pays itself** (the audit's auto-claim): the moment a job's done, its cash and a line; what isn't done lapses with the week, no penalty. The Board page in the journal shows the week's jobs, how far along each is, and the days left.
+- **A bonus, not a living** (Evan's call 7): $8 to $18 a job [proposed]; a new harness target holds the best possible week ($54) under two days of the worst shift ($56). The bots took $14 to $15 a week off it.
+- **The e2e** opens the Board page, and pays a job on day two: at V0, a grade job asks for V0, which is easy; it gets harder as you do.
+
 ---
 
 ### Phase 16 — The spine: story, acts and endings
@@ -2536,3 +2543,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-02 — Phase 23.3 built: callings, asked at the fire after ten sends rather than at creation; the Purist, Send-or-Bust and the Lifer, each a perk and a three-rung ambition counted from the day you take it up, paying psyche [proposed]; the Influencer waits on followers. Save v33. 0.996.0.
 - 2026-10-02 — Phase 23.4 built: five paths claimed a tier at a time on grade gates near V4, V9 and V14, two at most; one Mastery track of style mastery and v0.956's hybrids; a quirk named from your habits after 30 goes; all one kind of edge on the existing dials [proposed]. Expedition send chances now key on your edges. Save v34. 0.997.0.
 - 2026-10-02 — Phase 23.5 built: two crowds, the old guard and the gym crowd; v0.956's five calls put to you at the crag, with the elder's answer once the old guard listens, and six echoes weeks later; clubs folded in as perks of standing [proposed]. Save v35. 0.998.0.
+- 2026-10-02 — Phase 23.6 built: one weekly board of three jobs from v0.956's four boards, de-duplicated, pitched at your grade, paying itself small cash the moment a job's done [proposed]; a harness target keeps the best week under two days of the worst shift. Save v36. 0.999.0.

@@ -213,6 +213,15 @@ export interface GameState {
     last: number;
     echoLast: number;
   };
+  // Phase 23.6. The week's board: which week, its jobs (each pitched at a grade when it went
+  // up, and whether it's paid), the shifts you'd worked when it went up, and the sessions
+  // since.
+  board: {
+    week: number;
+    jobs: { id: string; grade: number; paid: boolean }[];
+    shifts0: number;
+    sessions: number;
+  };
   habits: {
     goes: number;
     outdoor: number;

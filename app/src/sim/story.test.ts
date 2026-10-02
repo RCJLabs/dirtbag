@@ -45,7 +45,12 @@ describe('Act I', () => {
       'climb',
       'outside',
     ]);
-    expect(lines(r.events)).toEqual([ACT_I[0]!.done, `${ACT_I[1]!.done} +1 technique.`, ACT_I[2]!.done]);
+    // The week's board (Phase 23.6) may pay for the same sends; it isn't Act I's to say.
+    expect(lines(r.events).filter((l) => !l.includes('off the board'))).toEqual([
+      ACT_I[0]!.done,
+      `${ACT_I[1]!.done} +1 technique.`,
+      ACT_I[2]!.done,
+    ]);
     expect(r.state.climber.skills.technique).toBe(11);
     expect(currentGoal(r.state)?.id).toBe('face');
   });

@@ -195,6 +195,8 @@ import {
 import { MASTERY, PATHS, QUIRKS } from './content/paths';
 import { CALLING_SCENE, ECHOES } from './content/scene';
 import { echoDue, echoOpts, permitFor, shift, stanceDue, stanceOpts } from './scene';
+import { boardWeek, jobProgress, postBoard } from './board';
+import { BOARD_JOBS } from './content/board';
 import { CALLINGS, OPEN_CALLINGS } from './content/callings';
 import { CAME_ACROSS, ORIGINS } from './content/origins';
 import { TALENTS } from './content/talents';
@@ -287,6 +289,7 @@ export function newGame(seed: string): GameState {
     quirk: null,
     habits: { goes: 0, outdoor: 0, fresh: 0, tired: 0, evening: 0, dawn: 0, easy: 0, power: 0 },
     scene: { old: FACTION.start, gym: FACTION.start, stances: [], echoes: [], last: 0, echoLast: 0 },
+    board: { week: 0, jobs: [], shifts0: 0, sessions: 0 },
     record: {},
     speed: { pb: null, runs: 0, day: 0 },
     mode: 'rope',
@@ -2455,6 +2458,7 @@ export function act(s0: GameState, a: Action): Result {
       const hurt = rollInjury(s, { type: p.style }, load, false, TRAIN_ROLL);
       spend(sessionCost(p));
       s.today.push('trained');
+      s.board = { ...s.board, sessions: s.board.sessions + 1 };
       const before = gradeOf(s.climber.skills);
       train(got);
       const after = gradeOf(s.climber.skills);
@@ -2550,6 +2554,18 @@ export function act(s0: GameState, a: Action): Result {
     const got = newlyEarned(s);
     for (const r of got) s.record[r.id] = s.day;
     if (got.length) events.push({ k: 'record', ids: got.map((r) => r.id) });
+  }
+  // Phase 23.6: a new week's board goes up; a job done pays, on its own.
+  if (s.climber.name) {
+    const wk = boardWeek(s.day);
+    if (s.board.week !== wk) s.board = postBoard(s, wk);
+    for (const [i, job] of s.board.jobs.entries()) {
+      const j = BOARD_JOBS[job.id];
+      if (!j || job.paid || jobProgress(s, job) < j.n) continue;
+      s.board.jobs[i] = { ...job, paid: true };
+      s.cash += j.cash;
+      line(`${j.title}, done. ${money(j.cash)} off the board.`);
+    }
   }
   // Phase 23.4: a path tier you could claim, said once; a style mastered; a quirk named.
   if (s.climber.name) {

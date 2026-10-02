@@ -728,7 +728,8 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 35 ||
+  saved?.v !== 36 ||
+  !Array.isArray(st.board?.jobs) ||
   typeof st.scene?.old !== 'number' ||
   typeof st.habits?.goes !== 'number' ||
   typeof st.calling?.offered !== 'boolean' ||
@@ -770,6 +771,13 @@ if (
   await fail(`the save doesn't show the two days: ${JSON.stringify(st).slice(0, 400)}`);
 log(`save: ${st.climber.name}, skills ${JSON.stringify(st.climber.skills)}`);
 
+// Phase 23.6: the week's board, in the journal, with what's been done on it.
+await click('#h-you');
+await click('#j-board');
+await expectText('#board', /This week’s, up at the café.*of \d|Paid/, 'the board');
+log(`board: ${st.board.jobs.map((j) => `${j.id}${j.paid ? ' (paid)' : ''}`).join(', ')}`);
+await click('#sheet .x');
+
 console.log('Offline');
 // The service worker has had two days to install; with the network gone, a reload still
 // starts the game where you left it, and nothing fails to load.
@@ -779,7 +787,8 @@ await until('the service worker to control the page', () =>
 await page.context().setOffline(true);
 await page.reload({ waitUntil: 'load' });
 await expectText('#h-time', /^Day 2 · 1[12]:\d\d AM$/, 'clock offline');
-await expectText('#h-cash', /^\$231$/, 'cash offline');
+// What the save had: the setting shift's pay, and anything the week's board paid since.
+await expectText('#h-cash', new RegExp(`^\\$${st.cash}$`), 'cash offline');
 await shot('offline');
 await page.context().setOffline(false);
 

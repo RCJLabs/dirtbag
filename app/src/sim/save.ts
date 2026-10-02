@@ -24,11 +24,12 @@ import { TALENTS } from './content/talents';
 import { CALLINGS } from './content/callings';
 import { HYBRIDS, MASTERY, PATHS, QUIRKS } from './content/paths';
 import { ECHOES, STANCES } from './content/scene';
+import { BOARD_JOBS } from './content/board';
 import { newMastery } from './paths';
 import { newlyEarned } from './record';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 35;
+export const SAVE_VERSION = 36;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -290,6 +291,11 @@ export const MIGRATIONS: Record<number, Migration> = {
       ...x,
       scene: { old: FACTION.start, gym: FACTION.start, stances: [], echoes: [], last: 0, echoLast: 0 },
     };
+  },
+  // v35 -> v36 (Phase 23.6): no board yet; this week's goes up on the first thing you do.
+  35: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, board: { week: 0, jobs: [], shifts0: 0, sessions: 0 } };
   },
 };
 
@@ -689,6 +695,24 @@ export function validate(x: unknown): string[] {
       isInt(sc.last) &&
       isInt(sc.echoLast),
     'scene',
+  );
+  const brd = x.board;
+  need(
+    isObj(brd) &&
+      isInt(brd.week) &&
+      brd.week >= 0 &&
+      Array.isArray(brd.jobs) &&
+      brd.jobs.every(
+        (j) =>
+          isObj(j) &&
+          typeof j.id === 'string' &&
+          j.id in BOARD_JOBS &&
+          isInt(j.grade) &&
+          typeof j.paid === 'boolean',
+      ) &&
+      isInt(brd.shifts0) &&
+      isInt(brd.sessions),
+    'board',
   );
   const hb = x.habits;
   need(
