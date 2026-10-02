@@ -56,6 +56,35 @@ describe('the scene', () => {
     expect(stanceDue(done, crag)).toBeNull();
   });
 
+  it('comes after a go at a crag too, on the crag-day’s roll, but never on a broken-down van', () => {
+    const r = ROUTES.warm!;
+    const fell = { sent: false, hi: 2, fellAt: null, tried: [], skin: 0 };
+    let seen = 0;
+    let due = 0;
+    for (let k = 0; k < 40; k++) {
+      const s0 = {
+        ...act(newGame(`call-${k}`), { t: 'create', name: 'Jo', start: 'allrounder' }).state,
+        day: 20,
+        at: r.place,
+        min: 10 * 60,
+        energy: 100,
+      };
+      if (stanceDue(s0, r.place)) due++;
+      const went = act(s0, { t: 'go', route: r.id });
+      if (went.events.some((e) => e.k === 'refused')) continue;
+      const done = act(went.state, { t: 'done', route: r.id, result: fell });
+      if (done.state.encounter?.kind === 'stance') seen++;
+      const broke = act(
+        { ...went.state, breakdown: { part: 'tires', to: 'lot', rest: 30, bodged: false } },
+        { t: 'done', route: r.id, result: fell },
+      );
+      expect(broke.state.encounter).toBeNull();
+    }
+    expect(due).toBeGreaterThan(0);
+    expect(seen).toBeGreaterThan(0);
+    expect(seen).toBeLessThanOrEqual(due);
+  });
+
   it('gives the elder’s answer only once the old guard listens', () => {
     const s = made();
     expect(stanceOpts(s, 'chip')).toHaveLength(3);

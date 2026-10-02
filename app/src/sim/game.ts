@@ -1379,7 +1379,9 @@ export function act(s0: GameState, a: Action): Result {
     return refuse('You’re sat at cards.');
 
   // Someone at the door (Phase 22.6): nothing happens until you've answered.
-  if (s.encounter && a.t !== 'answer' && a.t !== 'stand' && a.t !== 'pick')
+  // Naming a first ascent finishes the go it came from, so a call at the crag (Phase 23.5)
+  // waits for it.
+  if (s.encounter && a.t !== 'answer' && a.t !== 'stand' && a.t !== 'pick' && a.t !== 'name')
     return refuse(s.encounter.kind === 'knock' ? 'Someone’s at the door.' : 'First things first: an answer.');
 
   // Broken down on the road: nothing happens until you've found a way out.
@@ -1760,18 +1762,6 @@ export function act(s0: GameState, a: Action): Result {
         s.deck = { ...s.deck, last: s.day, [e.kind]: s.day };
         events.push({ k: 'encounter', kind: e.kind, id: e.id });
         break;
-      }
-      // Phase 23.5: at the crag, a call you made coming back, or a new one put to you.
-      const echo = echoDue(s);
-      const call = echo ? null : stanceDue(s, a.to);
-      if (echo) {
-        s.encounter = { kind: 'echo', id: echo };
-        s.scene = { ...s.scene, echoLast: s.day };
-        events.push({ k: 'encounter', kind: 'echo', id: echo });
-      } else if (call) {
-        s.encounter = { kind: 'stance', id: call };
-        s.scene = { ...s.scene, last: s.day };
-        events.push({ k: 'encounter', kind: 'stance', id: call });
       }
       break;
     }
@@ -2566,6 +2556,31 @@ export function act(s0: GameState, a: Action): Result {
     const got = newlyEarned(s);
     for (const r of got) s.record[r.id] = s.day;
     if (got.length) events.push({ k: 'record', ids: got.map((r) => r.id) });
+  }
+  // Phase 23.5: on arriving or after a go, a call you made coming back, or, at a crag, a new
+  // one put to you. The roll is the day's and the crag's, so asking again changes nothing:
+  // it's a crag-day's chance, however many goes.
+  if (
+    s.climber.name &&
+    !s.encounter &&
+    !s.breakdown &&
+    !s.expedition &&
+    !s.dead &&
+    (a.t === 'travel' || a.t === 'done')
+  ) {
+    // An echo finds you wherever you are (the gym car park, the access meeting); a new call
+    // is put to you at a crag.
+    const echo = echoDue(s);
+    const call = echo || !PLACES[s.at]?.crag ? null : stanceDue(s, s.at);
+    if (echo) {
+      s.encounter = { kind: 'echo', id: echo };
+      s.scene = { ...s.scene, echoLast: s.day };
+      events.push({ k: 'encounter', kind: 'echo', id: echo });
+    } else if (call) {
+      s.encounter = { kind: 'stance', id: call };
+      s.scene = { ...s.scene, last: s.day };
+      events.push({ k: 'encounter', kind: 'stance', id: call });
+    }
   }
   // Phase 23.7: a year done, and its recap; the Homecoming, on a send outside once armed.
   if (s.climber.name) {

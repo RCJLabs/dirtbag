@@ -2181,6 +2181,13 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **The Homecoming,** once a life (Evan's call 9): once two people are close (Regular or better), the You page offers it; tell them, and your next send outside, they're all at the bottom of it. v0.956's $200 and +20 psyche [proposed]. The audit's B6 is fixed: it counts people now, not diary entries.
 - **No harness run:** bots never call a Homecoming, and a recap changes nothing.
 
+**Status (2 Oct 2026): 23.8 built: criteria 2 and 3 pass; criterion 1 doesn't, and it's Evan's call how to make it.** 0.999.2.
+- **Criterion 2 passes:** a new harness target has bots answer each call the way its echo comes back for and play on; every echo lands within a four-year career (most on the first seed; the latest on day 155).
+- **On the way, three fixes:** calls only ever came on arriving by road, so a climber camped at a crag almost never saw one; they now come after a go too (the crag-day's roll, so no more often per day), and an echo can find you anywhere (two are set off the rock). A call could come while the van was broken down, and neither would let you answer the other (a stuck game); not any more. And answering any encounter left its outcome card, and anything queued behind it, waiting for the next thing you did; they come up now.
+- **Criterion 3 passes,** as 23.1 left it: the Record Book holds all 42 of v0.956's feats, milestones and story cards, merged to 37 with their stories (10 waiting on unbuilt systems).
+- **The e2e** plays a later life: day 57, a call answered with the elder's answer and in the journal, the first year's recap, a calling taken up, the Homecoming armed.
+- **Criterion 1 fails, measured:** bots made with different origins, or different starts, play their first week almost identically. Classified by what they did (goes indoors and out, hours worked, sessions, drives, sends, cash), origins come out at 28% against 17% chance and starts at chance; with what the week taught them added, 32% and 30%. Why: week one is one crag of sixteen lines that everyone sends in much the same order, starts converge by day seven (a boulderer's power 12 against a technician's 5 on day one; 67 against 65 on day seven), and a bot plays every climber the same way. Making it pass is a design call, not a tuning one (see the 23.8 PR for the options).
+
 ---
 
 ### Phase 16 — The spine: story, acts and endings
@@ -2550,3 +2557,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-02 — Phase 23.5 built: two crowds, the old guard and the gym crowd; v0.956's five calls put to you at the crag, with the elder's answer once the old guard listens, and six echoes weeks later; clubs folded in as perks of standing [proposed]. Save v35. 0.998.0.
 - 2026-10-02 — Phase 23.6 built: one weekly board of three jobs from v0.956's four boards, de-duplicated, pitched at your grade, paying itself small cash the moment a job's done [proposed]; a harness target keeps the best week under two days of the worst shift. Save v36. 0.999.0.
 - 2026-10-02 — Phase 23.7 built: a recap card every 56-day year, from what the game keeps; the Homecoming once a life, once two people are close, paying v0.956's cash and psyche on your next send outside [proposed]. Save v37. 0.999.1.
+- 2026-10-02 — Phase 23.8: a harness target that every echo lands (it does, after calls also come after a go and echoes anywhere); a stuck game (a call on a broken-down van) and queued cards after an answer fixed; an e2e later life. Criterion 1 measured and failing: climbers made differently play week one almost the same; Evan's call how to fix. 0.999.2.
