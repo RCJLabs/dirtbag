@@ -137,6 +137,7 @@ import {
   stormOn,
   storyBlocked,
   tripBond,
+  tripPay,
   tripWords,
   wallPay,
   yourPitch,
@@ -842,14 +843,19 @@ export function act(s0: GameState, a: Action): Result {
     });
     events.push({ k: 'home', id: x.id });
   };
-  // Phase 24. The summit: paid, a lesson for the head, and home.
+  // Phase 24. The summit: paid the first time (Phase 24.9 [proposed]: a summit pays once, as
+  // a wall does, or one you're well past is a farm), a lesson for the head, and home.
   const summit = () => {
     const x = s.expedition!;
     const e = EXPEDITIONS[x.id]!;
-    spend({ cash: e.pays });
+    const pay = tripPay(s, x.id);
+    if (pay) spend({ cash: pay });
     train({ head: EXPED.head });
+    const who = x.partner ? `, with ${PEOPLE[x.partner]?.name ?? x.partner}` : ', alone';
     line(
-      `${e.name}: the summit of ${e.objective}, on day ${x.day}${x.partner ? `, with ${PEOPLE[x.partner]?.name ?? x.partner}` : ', alone'}. The sponsors pay ${money(e.pays)}, and you'll be telling this one for years. ${skillsNote({ head: EXPED.head })}.`,
+      pay
+        ? `${e.name}: the summit of ${e.objective}, on day ${x.day}${who}. The sponsors pay ${money(pay)}, and you'll be telling this one for years. ${skillsNote({ head: EXPED.head })}.`
+        : `${e.name}: the summit of ${e.objective} again, on day ${x.day}${who}. Nobody pays for the same photos twice. ${skillsNote({ head: EXPED.head })}.`,
     );
     cameHome('summit');
   };

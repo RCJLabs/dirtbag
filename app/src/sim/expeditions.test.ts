@@ -22,6 +22,7 @@ import {
   summitOdds,
   storyBlocked,
   tripBond,
+  tripPay,
   tripWords,
   yourPitch,
 } from './expeditions';
@@ -457,6 +458,27 @@ describe('coming home', () => {
     ]);
     expect(r.events).toContainEqual({ k: 'home', id: 'elcap' });
     expect(highPoint(s, 'elcap')).toEqual({ high: E.pitches, summit: true });
+  });
+
+  it('pays once: a second summit of the same objective pays nothing', () => {
+    const top = (s: GameState) => {
+      const last = E.pitches - 1;
+      const at_ = at(s, last);
+      const go = act(at_, { t: 'go', route: `elcap-${E.pitches}` }).state;
+      return act(go, { t: 'done', route: `elcap-${E.pitches}`, result: sent });
+    };
+    const first = top(away('pay-1')).state;
+    expect(tripPay(away('pay-1'), 'elcap')).toBe(E.pays);
+    expect(tripPay(first, 'elcap')).toBe(0);
+    expect(tripPay(first, 'cerrotorre')).toBe(EXPEDITIONS.cerrotorre!.pays);
+    // Back for it again: up there with the book from the first, the top pays nothing.
+    let again = { ...away('pay-2'), book: first.book };
+    const cash0 = again.cash;
+    const r = top(again);
+    again = r.state;
+    expect(again.book.filter((t) => t.end === 'summit')).toHaveLength(2);
+    expect(again.cash).toBeLessThan(cash0 + 1);
+    expect(r.events.some((e) => e.k === 'line' && /same photos twice/.test(e.text))).toBe(true);
   });
 
   it('a trip that fails keeps its high point, and Hazel moves with how far you got', () => {

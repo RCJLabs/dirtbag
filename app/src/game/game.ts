@@ -425,7 +425,10 @@ export class Game {
       'route' in p.sheet &&
       ['beta', 'fall', 'sent', 'fa', 'card'].includes(p.sheet.k) &&
       EXPED_ROUTES[p.sheet.route]?.exped === x?.id;
-    if (x && 'sheet' in p && p.sheet?.k !== 'exped' && !pitchSheet)
+    // A go on one of your pitches clears the sheet for the wall; it stays down while you
+    // climb and while the stamp shows.
+    const onTheGo = !p.sheet && (p.climbing ?? this.ui.get().climbing);
+    if (x && 'sheet' in p && p.sheet?.k !== 'exped' && !pitchSheet && !onTheGo)
       p = { ...p, sheet: { k: 'exped', id: x.id } };
     // A Free Solo climber who fell: that's all there is, until a new one.
     if (this.state.dead && 'sheet' in p && p.sheet?.k !== 'dead') p = { ...p, sheet: { k: 'dead' } };

@@ -2047,6 +2047,23 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 - **Still open from 24.5:** the drawn keepsake card for a trip. It waited on these walls, which now exist; it's a candidate for 24.9 or a polish pass.
 - **Size:** 302.4 of 340 KB (Trango: 1.4 KB; the three scenes 5.6 KB together, against the 12–20 KB the plan feared).
 
+**Status (2 Oct 2026): 24.9 built: the harness and the e2e.** 0.993.0. No save change.
+- **The harness found a farm, and 24.9 closes it** [proposed]: a summit paid every time, so a climber a grade or two past an objective could fly back to it for money. Measured, 20 trips a grade: El Cap at V11 came to about +$1,175 a trip, Cerro Torre at V14 +$1,740, Trango at V16 +$1,510, several times a day of shifts. **A summit now pays once, the first time, as a wall does**; the amounts are Evan's ($2,400, $6,000, $12,000). The book (24.5) says whether you've stood on top, so no save change. Back up for it again and the top says nobody pays for the same photos twice; the expeditions list now says what the first summit pays, and that you've been paid.
+- **The harness's new target (criterion 5):** for every objective, at every grade it's offered from its lowest to two past its own, 30 bot trips each: once a summit has paid, no trip out-earns a day of the worst-paid shift ($28). Every repeat loses money ($94 to $154 a day away). A first summit is a one-off, shown beside it: El Cap $57 a day at V9 and $208 at V11; Cerro Torre $24 at V12, $130 at V14; Trango −$22 at V14, $36 at V16.
+- **The odds against the bots' trips** (criterion 4) hold: El Cap shows 52% and the bots get 56%, Cerro Torre 32% and 34%, Trango 22% and 22%.
+- **A bug the e2e found, there since 24.1:** leading a pitch up there, the expedition's card stayed over the wall for the whole go, under the climb panel. The rule that keeps the day's card up now lets it down while you climb and while the stamp shows.
+- **The e2e plays a trip through** (criterion 2): planned and booked, the day out, storms sat out, pitch 1 led through its beta and the go with the same hands that climb day three (it checks no card covers the wall), a night, something happening up there, rapped off, the road home, the trip's card, and its story at the fire.
+- **Known, not fixed:** above an objective's grade, the bots beat the odds shown by 15 to 25 points (El Cap at V10: 75% shown, 90% got, from 20 trips). The odds undersell an easy trip, which isn't a farm and isn't what criterion 4 measures (it holds at each objective's grade); a candidate for a tuning pass.
+- **The harness takes about 15 minutes now** (the season file's limit raised to 20).
+
+**Phase 24 against its Done-when (2 Oct 2026):**
+1. **Passes:** each objective has its own scene and wall view, clear and storm, day and night (24.6–24.8).
+2. **Passes:** an expedition is planned, travelled, climbed and come home from, summit or not, and the e2e plays one through (24.9).
+3. **Passes, with Evan's 24.1 call noted:** your pitches are climbed through beta-then-send, and the dice decide the weather and what happens up there; your partner's leads also go on the seed against their grade, as Evan decided.
+4. **Passes:** the odds are shown while planning and every day after, and the harness holds them within ten points of the bots' trips at each objective's grade.
+5. **Passes** once a summit pays once (24.9, proposed): no trip that's already paid out-earns a day of shifts at any grade it's offered.
+Open for Evan: closing Phase 24 (the CURRENT MILESTONE moves to Phase 23), and the 24.9 pay-once rule. Still unbuilt from 24.5: the drawn keepsake card for a trip.
+
 ---
 
 ### Phase 23 — Who you are: origins, paths, stances, and the Record Book
@@ -2428,3 +2445,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-01 — Phase 24.6 built: El Capitan's scene, day and night, clear and storm, with your portaledge on the wall as high as you've got; its pitches climbed on its own granite, your partner belaying from the ledge. 0.990.0.
 - 2026-10-02 — Phase 24.7 built: Cerro Torre's scene from above Laguna Torre, day and night, clear and storm (lenticulars on a fine day, a plume and snow in a storm), your portaledge on the Southeast Ridge; its pitches on rimed granite over the glacier; storms snow where the water's snow. 0.991.0.
 - 2026-10-02 — Phase 24.8 built: Trango's scene from base camp on the Trango glacier, day and night, clear and storm, your portaledge up Eternal Flame; its pitches on golden granite over the glacier. Every objective has its scene: criterion 1 passes. 0.992.0.
+- 2026-10-02 — Phase 24.9 built: the harness found summits paid every time and a climber past an objective could farm it, so a summit pays once, as a wall does [proposed]; a new target holds every repeat trip under a day of shifts at every grade; the e2e leads a pitch and plays a trip through, and found the expedition card covering the wall on every lead since 24.1 (fixed). All five Done-when criteria pass; closing Phase 24 is Evan's call. 0.993.0.
