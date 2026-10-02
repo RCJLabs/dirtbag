@@ -107,6 +107,7 @@ import {
   type Style,
   SUPPLIES,
   WORDS,
+  OPEN_RECORD,
   WORD_GROUP,
   type WordGroup,
 } from '../sim';
@@ -895,6 +896,8 @@ function JournalBody({ game, page, s }: { game: Game; page: JournalPage; s: Game
         <YouBody game={game} s={s} />
       ) : page === 'words' ? (
         <WordsBody />
+      ) : page === 'book' ? (
+        <BookBody s={s} />
       ) : (
         <LatelyBody s={s} />
       )}
@@ -905,8 +908,34 @@ function JournalBody({ game, page, s }: { game: Game; page: JournalPage; s: Game
 const JOURNAL_PAGES: [JournalPage, string][] = [
   ['you', 'You'],
   ['lately', 'Lately'],
+  ['book', 'Record'],
   ['words', 'Words'],
 ];
+
+// Phase 23.1: the Record Book, newest first, each entry with its story.
+function BookBody({ s }: { s: GameState }) {
+  const got = OPEN_RECORD.filter((r) => s.record[r.id] !== undefined).sort(
+    (a, b) => s.record[b.id]! - s.record[a.id]!,
+  );
+  const left = OPEN_RECORD.length - got.length;
+  return (
+    <div id="book">
+      <p className="sub">
+        {got.length
+          ? `${got.length} of ${OPEN_RECORD.length} in the book.${left ? ` ${left} still to come.` : ''}`
+          : 'Nothing in it yet. It fills up.'}
+      </p>
+      {got.map((r) => (
+        <Fragment key={r.id}>
+          <p className="crux">
+            {r.title} · day {s.record[r.id]}
+          </p>
+          <p className="sub">{r.story}</p>
+        </Fragment>
+      ))}
+    </div>
+  );
+}
 
 // Phase 22.9c: the glossary, by group.
 function WordsBody() {

@@ -176,6 +176,7 @@ import { fill, money, skillsNote } from './format';
 import { PARTNERS, tierOf, whereNow } from './presence';
 import { hashSeed, Rng } from './rng';
 import { aimMet, currentGoal } from './story';
+import { newlyEarned } from './record';
 import type {
   PhaseId,
   Action,
@@ -257,6 +258,7 @@ export function newGame(seed: string): GameState {
     expedition: null,
     booked: null,
     book: [],
+    record: {},
     speed: { pb: null, runs: 0, day: 0 },
     mode: 'rope',
     soloing: null,
@@ -2416,6 +2418,12 @@ export function act(s0: GameState, a: Action): Result {
       note(ACT_I_END.text);
       line(`First season done. There's ${money(ACT_I_END.cash)} in the glovebox you'd forgotten about.`);
     }
+  }
+  // Phase 23.1: anything that's just gone in the Record Book, each with its card.
+  if (s.climber.name) {
+    const got = newlyEarned(s);
+    for (const r of got) s.record[r.id] = s.day;
+    if (got.length) events.push({ k: 'record', ids: got.map((r) => r.id) });
   }
   return { state: s, events };
 }

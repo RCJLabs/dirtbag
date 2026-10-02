@@ -187,6 +187,8 @@ export interface GameState {
   // Phase 24.5. Every expedition you've come home from, oldest first: the stub of Phase 23's
   // Record Book, and where a high point is kept.
   book: TripLog[];
+  // Phase 23.1. The Record Book: each entry you've earned (content/record.ts), and the day.
+  record: Record<string, number>;
   // Phase 21.6. The speed wall at Send City: your best time in seconds, and today's runs.
   speed: { pb: number | null; runs: number; day: number };
   // How this climber climbs, chosen at the start and for good: with a rope, or Free Solo
@@ -420,6 +422,9 @@ export type GameEvent =
   | { k: 'encounter'; kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell' | 'wall'; id: string }
   // Back from an expedition (Phase 24.5): its card, from the newest entry in the book.
   | { k: 'home'; id: string }
+  // Entries in the Record Book, just earned (Phase 23.1): one moment, one card, the first
+  // entry's story and the rest named under it.
+  | { k: 'record'; ids: string[] }
   // The action wasn't allowed; `why` says so in the game's voice.
   | { k: 'refused'; why: string };
 

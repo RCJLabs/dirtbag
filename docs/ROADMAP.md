@@ -2124,6 +2124,16 @@ Also short of the scope: "large" text is about 1.15×, by a size step inside the
 
 *The risk:* criterion 1 gets harder with every choice moved out of creation. With creation at a name, a start and an origin, the origin's perk and cost have to be big enough to show in week one; 23.2 tunes them against the harness, not by feel.
 
+**Status (2 Oct 2026): 23.1 built: the Record Book.** Save v31, 0.994.0.
+- **One book:** v0.956's 29 feats, 5 milestones and 8 story cards (42 entries, in three books that fired together) are 37 entries, each moment once: First Send took in "Send It" and the "First Send" card; World Class was a feat and a milestone; A Year on the Road took in "The Dirtbag Year". Each entry says which of v0.956's it took in, and a test holds the book to all 42.
+- **27 entries the book holds now,** earned from what the game keeps: sends, grades, flashes and onsights, sending outside, first ascents, every open crag, passing Dex, getting hurt, a year (56 days), a shift (walk-ins count), a raise, being let go, $1,000 and $5,000, five kinds of kit, the Dream Rig, breaking down, a close partner, an expedition summit and a dog (the last two new). Each has its story card, v0.956's eight kept and the rest written for it.
+- **10 wait** for systems not built (comps, media, sponsors, guidebooks, giving, retirement, and traits until 23.4), out of the book until they are.
+- **One moment, one card:** the first boulder of the game can be an outdoor onsight, which is four entries at once; it's one card, the first entry's story, the rest named under it. The book is its own reward (Evan's call 7). Stable ids for Phase 14's Steam achievements.
+- **The Record page** in the journal, newest first, "n of 27 in the book".
+- **An old save** goes in the book with what it had already done, quietly, dated the day it loads.
+- **Fixed on the way:** a walk-in shift didn't count as a shift for the book's check, so "Clocked In" came days late; it counts today's work now.
+- **E2e:** takes each Record Book card as it comes (logged; one-offs, so not counted against Phase 11's tap budgets; by keyboard on the keyboard day), checks the first send is in the save, and opens the Record page.
+
 ---
 
 ### Phase 16 — The spine: story, acts and endings
@@ -2486,3 +2496,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-02 — Phase 24.9 built: the harness found summits paid every time and a climber past an objective could farm it, so a summit pays once, as a wall does [proposed]; a new target holds every repeat trip under a day of shifts at every grade; the e2e leads a pitch and plays a trip through, and found the expedition card covering the wall on every lead since 24.1 (fixed). All five Done-when criteria pass; closing Phase 24 is Evan's call. 0.993.0.
 - 2026-10-02 — Phase 24 closed by Evan's call, confirming 24.9's rule that a summit pays once; the keepsake trip card and the odds above an objective's grade carry to a polish pass. CURRENT MILESTONE moved to Phase 23, who you are; it gets planned on the rebuild next.
 - 2026-10-02 — Phase 23 planned on the rebuild, with Evan's calls: creation is a name, a start and an origin (flaws folded into origins; build and personality cut); identity emerges in play (talents, callings, paths with grade gates, quirks); two factions now; no rep, so rewards are the book, small cash, psyche and the epilogue; a year is 56 days; eight slices from the Record Book to the harness.
+- 2026-10-02 — Phase 23.1 built: the Record Book. v0.956's 42 feats, milestones and story cards merged to 37 entries, each with its story; 27 earned from what the game keeps, 10 waiting on unbuilt systems; one moment gives one card; a Record page in the journal; old saves fill it quietly. Save v31. 0.994.0.

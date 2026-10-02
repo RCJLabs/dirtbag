@@ -69,6 +69,7 @@ import {
   tripDays,
   wallEventById,
   wallNote,
+  recordById,
   highPoint,
   lastTrip,
   storyBlocked,
@@ -886,6 +887,21 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
 
     case 'home':
       return homeSheet(game, s);
+
+    // Phase 23.1: in the Record Book, with its story.
+    case 'record': {
+      const [r, ...also] = id.ids.map(recordById).filter((x) => !!x);
+      if (!r) return null;
+      return {
+        title: r.title,
+        sub: r.story,
+        notes: [
+          `In the Record Book, day ${s.record[r.id] ?? s.day}.${also.length ? ` Also in it: ${also.map((x) => x!.title).join(', ')}.` : ''}`,
+        ],
+        close: false,
+        rows: [{ label: 'Right', run: () => game.closeSheet() }],
+      };
+    }
 
     case 'act':
       return {

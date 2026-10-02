@@ -243,6 +243,8 @@ export {
   yourPitch,
 } from './expeditions';
 export { TRIP_BOND, TRIP_END, TRIP_STORY } from './content/tripstories';
+export { RECORD, recordById, type RecordEntry } from './content/record';
+export { OPEN_RECORD, aimEarned } from './record';
 export { soloed } from './solo';
 export { speedBlocked, speedFactor, speedGains, speedTime, runsToday, SPEED_WALL } from './speed';
 export { crowdAt, crowdNow, crowdLevel, queueMin, sprayable, canAsk, type Crowd } from './crowds';

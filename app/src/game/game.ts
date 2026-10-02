@@ -78,7 +78,7 @@ import { createStore, type Store } from './store';
 export type View = 'scene' | 'map' | 'wall';
 
 // Phase 22.9c: the words, a glossary.
-export type JournalPage = 'you' | 'lately' | 'words';
+export type JournalPage = 'you' | 'lately' | 'book' | 'words';
 
 // Past this many words a line goes on a card, not a toast: nobody reads 40 words in the
 // few seconds a toast stays up.
@@ -135,6 +135,8 @@ export type SheetId =
   | { k: 'exped'; id: string }
   // Phase 24.5: home from one, its card.
   | { k: 'home' }
+  // Phase 23.1: an entry just gone in the Record Book.
+  | { k: 'record'; ids: string[] }
   // Phase 21.6: the speed wall, and how a Free Solo run ended.
   | { k: 'speed' }
   | { k: 'dead' }
@@ -384,6 +386,7 @@ export class Game {
       else if (e.k === 'refused') this.toast(e.why);
       else if (e.k === 'act') this.cards.push({ k: 'act' });
       else if (e.k === 'home') this.cards.push({ k: 'home' });
+      else if (e.k === 'record') this.cards.push({ k: 'record', ids: e.ids });
     }
     if (changed) this.noteComings(before);
     if (changed && !persist.save(this.state)) this.toast("Couldn't save. The browser's storage may be full.");
