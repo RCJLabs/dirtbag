@@ -13,8 +13,8 @@ import type { GameState, MediaTask } from './types';
 
 type Style = 'straight' | 'story' | 'bait' | 'ad';
 
-// What today gave you to post: each line first sent today, by its grade, outside, first go
-// or a first ascent; and a podium.
+// What today gave you to post: the best line first sent today, by its grade, outside, first
+// go or a first ascent; and a podium. One post tells one send (Phase 18.7).
 export function todaysWorth(s: GameState): number {
   let v = 0;
   for (const [id, l] of Object.entries(s.routes)) {
@@ -25,7 +25,7 @@ export function todaysWorth(s: GameState): number {
     if (!indoor(r.place)) w *= MEDIA.outside;
     if (l.sent.style !== 'redpoint') w *= MEDIA.first;
     if (s.firsts[id] && !s.firsts[id]!.by) w *= MEDIA.fa;
-    v += w;
+    v = Math.max(v, w);
   }
   const podium = s.comps.results.some((x) => x.day === s.day && x.place <= 3);
   return v + (podium ? MEDIA.podium / MEDIA.k : 0);
@@ -39,10 +39,16 @@ export function todaysBest(s: GameState): number {
   return g;
 }
 
+// New followers, as many as are left of the audience under the ceiling allow (Phase 18.7):
+// a post's, an answered thread's and the film's alike.
+export const fromAudience = (s: GameState, n: number): number =>
+  Math.round(n * Math.max(0, 1 - s.media.followers / MEDIA.ceiling));
+
 // Followers a post in this style would bring now. The Influencer brings more (`reach`).
 export function postGain(s: GameState, style: Style, reach = 1): number {
   const base = style === 'story' ? 5 : 0;
-  return Math.round(
+  return fromAudience(
+    s,
     (base + MEDIA.k * todaysWorth(s) * (0.5 + s.media.engagement / 100) * MEDIA.style[style]) * reach,
   );
 }
@@ -94,11 +100,11 @@ export function heatTonight(s: GameState): boolean {
   return Rng.fromStream(s.seed, 'events').derive(`heat-${s.day}`).next() < p;
 }
 
-// The rungs you've climbed on the media ladder (18.7 shows them): known locally, each
-// sponsor, the film.
+// How many rungs of the media ladder you've climbed (Phase 18.7 shows them): known
+// locally, each sponsor, the film. Dropped by a sponsor, you're back to your followers.
 export const mediaRung = (s: GameState): number => {
   const m = s.media;
   if (m.doc && 'aired' in m.doc) return 5;
   if (m.sponsor) return 2 + m.sponsor.tier;
-  return m.followers >= 1000 ? 1 : 0;
+  return m.followers >= MEDIA.known ? 1 : 0;
 };

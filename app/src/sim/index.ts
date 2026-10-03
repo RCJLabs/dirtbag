@@ -67,6 +67,7 @@ export {
 export { COMP_TIERS } from './content/comps';
 export { bolted, boltBlocked, businessRung, gymBuyBlocked, gymDay, gymTarget, wallWord } from './business';
 export { GYM_UPGRADE_NAME } from './content/business';
+export { capstone, ladderById, LADDERS, type Ladder, type LadderId } from './ladders';
 export { mediaRung, postBlocked, postGain, rivalFollowers, tierEarned } from './media';
 export { DOC, MEDIA_RIVAL, POSTS, SPONSORS, TERMS } from './content/media';
 export {

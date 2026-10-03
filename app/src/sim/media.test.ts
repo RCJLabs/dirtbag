@@ -162,4 +162,33 @@ describe('a thread, and the film', () => {
     expect(mediaRung(withMedia(yes.state, { doc: { aired: 31 } }))).toBe(5);
     expect(mediaRung(base())).toBe(0);
   });
+
+  it('asks again a season after it’s shelved (Phase 18.7)', () => {
+    const top = SPONSORS.length - 1;
+    const at = (day: number, shelved: number) =>
+      withMedia(base({ day }), {
+        followers: MEDIA.doc.followers,
+        posted: day,
+        sponsor: { tier: top, terms: 'real', due: day + 10, tasks: [], strikes: 0 },
+        doc: { shelved },
+      });
+    expect(sleep(at(60, 30)).state.media.offer).toBeNull();
+    expect(sleep(at(30 + MEDIA.doc.again, 30)).state.media.offer).toEqual({ kind: 'doc' });
+  });
+});
+
+describe('the audience (Phase 18.7)', () => {
+  it('counts the day’s best send, not every send', () => {
+    const one = sentToday(base());
+    const two = sentToday(one, 'rsopen');
+    expect(todaysWorth(two)).toBe(Math.max(todaysWorth(one), todaysWorth(sentToday(base(), 'rsopen'))));
+  });
+
+  it('thins toward the ceiling, and stops at it', () => {
+    const s = sentToday(base());
+    const half = withMedia(s, { followers: MEDIA.ceiling / 2 });
+    expect(postGain(half, 'straight')).toBe(Math.round(postGain(s, 'straight') / 2));
+    expect(postGain(withMedia(s, { followers: MEDIA.ceiling }), 'straight')).toBe(0);
+    expect(MEDIA.ceiling).toBeGreaterThan(MEDIA.rival.top);
+  });
 });

@@ -18,7 +18,7 @@ import { pathBlocked } from './paths';
 import { PROTOCOLS } from './content/training';
 import { sessionGains, trainBlocked } from './sessions';
 import { headroom, holds, isNight, unmet } from './cond';
-import { INDOOR, routesAt } from './content/gym';
+import { INDOOR, routesAt, wallAt } from './content/gym';
 import { ACTS, PLACES, road } from './content/places';
 import { JOBS } from './content/jobs';
 import { INGREDIENTS } from './content/food';
@@ -55,7 +55,7 @@ import {
   talkStart,
 } from './game';
 import { whereNow } from './presence';
-import { signupBlocked } from './jobs';
+import { rankAt, signupBlocked } from './jobs';
 import { friendFor, PARTS, repairCost, unsafePart } from './van';
 import { hitchFriend } from './events';
 import { carePrice, weeklyBills } from './clinic';
@@ -68,6 +68,13 @@ import { currentGoal } from './story';
 import { EXPEDITIONS, expedPitches } from './content/expeditions';
 import { defaultPlan, planBlocked, planCost, stormOn, summitOdds, yourPitch } from './expeditions';
 import { WALLS } from './content/routes';
+import { COMP_TIERS } from './content/comps';
+import { compBlocked, compOn } from './comps';
+import { postBlocked } from './media';
+import { gymBuyBlocked, UPGRADES, type Upgrade } from './business';
+import { scoreSet, setBrief } from './work';
+import { LADDERS } from './ladders';
+import { OWN_GYM, SETTING } from './dials';
 
 export interface BotRun {
   state: GameState;
@@ -113,6 +120,8 @@ export interface DaySummary {
   skills: Skills;
   // A night the rules count as failure: going to bed hungry, or with the card nearly maxed.
   stuck: boolean;
+  // Phase 18.7: the rungs climbed on each ladder that night (LADDERS' order).
+  ladders: number[];
 }
 
 // Where the bots climb: the crags they drive to without paying for a haul, and the gym.
@@ -280,6 +289,10 @@ export interface WeekOpts {
   // Phase 17.7: a player who reads everything: sits at the fire every night, and with Ray
   // and Frank when they're about. Every bot plays the people's moments when they're due.
   social?: boolean;
+  // Phase 18.7: a career bot that climbs one ladder besides the story: it enters every comp
+  // it can, posts every day and does its sponsors' asks, or works the setting job up to a
+  // gym of its own and runs it. None by default, so the other targets don't move.
+  focus?: 'comp' | 'media' | 'business';
 }
 
 // The cash each strategy tries to keep before it'll spend a day climbing.
@@ -509,7 +522,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     if (tonight(s).cash >= wantFor(day) + extra) return;
     const rate = (id: string) => {
       const c = actCost(s, ACTS[id]!);
-      return shiftPay(id) / ((c.min ?? 60) + 2 * (road('lot', id.split('.')[0]!)?.min ?? 0));
+      return (shiftPay(id) * prefer(id)) / ((c.min ?? 60) + 2 * (road('lot', id.split('.')[0]!)?.min ?? 0));
     };
     const best = jobs
       .filter((id) => !signupBlocked(s, ACTS[id]!.job!.id, day))
@@ -659,7 +672,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
         ? { ...s.people, [partner]: { ...s.people[partner]!, invite: { day: s.day, place, from: s.min } } }
         : s.people,
     };
-    const lines = routesAt(s.seed, place, s.day)
+    const lines = wallAt(there, place)
       .filter((r) => !goBlocked(there, r) && !s.routes[r.id]?.sent && (s.routes[r.id]?.goesToday ?? 0) < 3)
       .filter((r) => opts.reckless || cruxLanding(there, r) <= HIGHBALL_ODDS)
       .map((r) => ({ r, w: bestBeta(there, r).worst }))
@@ -667,6 +680,14 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     // Dex's dare comes first: a player racing him works the line he's after.
     const race = s.race && lines.find((l) => l.r.id === s.race!.route);
     if (race) return race.r;
+    // Phase 18.7: with a film on, the media bot projects a line outside at the film's grade.
+    const doc = opts.focus === 'media' ? s.media.doc : null;
+    if (doc && 'due' in doc && !INDOOR[place]) {
+      const film = lines
+        .filter((l) => l.r.grade >= doc.grade)
+        .sort((a, b) => a.r.grade - b.r.grade || b.w - a.w)[0];
+      if (film) return film.r;
+    }
     // Of the easiest it can send (the lowest grade with one, and the grade above), the line
     // that suits it best, as a player picks what plays to their strengths (Phase 23.8).
     const sendable = lines.filter((l) => l.w >= 0.045);
@@ -716,7 +737,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   // The easiest thing here to warm up on, sent or not.
   function warmUp(): RouteDef | null {
     return (
-      routesAt(s.seed, s.at, s.day)
+      wallAt(s, s.at)
         .filter((r) => !goBlocked(s, r))
         .sort((a, b) => a.grade - b.grade)[0] ?? null
     );
@@ -785,6 +806,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       climbGain: Math.round(climbGain * 100) / 100,
       skills: morning,
       stuck: away === undefined && (s.fed < BODY.hungryBelow || headroom(s) < MONEY.vanSpot),
+      ladders: LADDERS.map((l) => l.at(s)),
       taps,
     });
     taps = 0;
@@ -904,7 +926,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       const gas = (place === s.at ? 0 : (road(s.at, place)?.cash ?? 0)) + (PLACES[place]!.permit ?? 0);
       const broke = s.cash < CUSHION.career + saving();
       // Phase 16.6: the crag the story's asking for, if it has a line there to try.
-      const story = storyPlace() === place ? STORY_PULL : 0;
+      const story =
+        storyPlace() === place || (opts.focus === 'media' && shootPlace() === place) ? STORY_PULL : 0;
       const score = r.grade - drive / 120 - (broke ? gas / 8 : 0) + story;
       if (!best || score > best.score) best = { place, partner, score };
     }
@@ -968,6 +991,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     planCost(s, id, plan) + weeklyBills(s) * Math.ceil(EXPEDITIONS[id]!.days / 7);
 
   function saving(): number {
+    if (opts.focus === 'business' && !s.gym && !gymBuyBlocked({ ...s, cash: Infinity })) return OWN_GYM.price;
     if (strategy === 'career' && storyTripCost()) return storyTripCost();
     const grade = gradeOf(s.climber.skills);
     const next = CAREER_PLACES.map((id) => PLACES[id]!)
@@ -994,11 +1018,11 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       const a = ACTS[id]!;
       const c = actCost(s, a);
       const trip = road(s.at, id.split('.')[0]!)?.min ?? 0;
-      return shiftPay(id) / ((c.min ?? 60) + 2 * trip);
+      return (shiftPay(id) * prefer(id)) / ((c.min ?? 60) + 2 * trip);
     };
-    const jobs = JOB_ACTS.filter((id) => !unmet({ ...s, at: id.split('.')[0]! }, ACTS[id]!.needs)).sort(
-      (a, b) => rate(b) - rate(a),
-    );
+    const jobs = jobActs()
+      .filter((id) => !unmet({ ...s, at: id.split('.')[0]! }, ACTS[id]!.needs))
+      .sort((a, b) => rate(b) - rate(a));
     // A shift signed up for comes first, whatever pays better today.
     const id = booked() ?? jobs[0];
     if (!id) return;
@@ -1094,6 +1118,107 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     return true;
   }
 
+  // ---- Phase 18.7: a ladder besides the story ----
+
+  // The jobs it works: the business bot sets until it owns the gym (its owner can't), and
+  // takes whatever pays after.
+  const jobActs = (): string[] => (s.gym ? JOB_ACTS.filter((id) => id !== 'gym.set') : JOB_ACTS);
+  // The business bot climbs the setting ranks first: a setting shift counts for three of
+  // anything else's pay until it's head setter.
+  const prefer = (id: string): number =>
+    opts.focus === 'business' && id === 'gym.set' && !s.gym && rankAt(s, 'set') < JOBS.set!.ranks.length - 1
+      ? 3
+      : 1;
+
+  // The comp it would enter on a day: the highest rung on that it's let into, can pay for,
+  // and climbs the bottom grade of. The comp bot enters every one; the media bot when a
+  // sponsor asks for a comp.
+  function compFor(day: number, money = true): string | null {
+    const asked = s.media.sponsor?.tasks.some((x) => x.kind === 'comp' && !x.done);
+    if (opts.focus !== 'comp' && !(opts.focus === 'media' && asked)) return null;
+    const grade = gradeOf(s.climber.skills);
+    for (let i = COMP_TIERS.length - 1; i >= 0; i--) {
+      const t = COMP_TIERS[i]!;
+      if (compOn(day, t.venue) !== i || grade < t.grades[0]) continue;
+      const at = { ...s, day, at: t.venue, min: 9 * 60, cash: money ? s.cash : Infinity };
+      if (compBlocked({ ...at, comps: { ...s.comps, on: null } })) continue;
+      // A comp's worth a thin day for it: the fee and a night's food over.
+      if (money && s.cash < t.fee + CUSHION.climber) continue;
+      return t.venue;
+    }
+    return null;
+  }
+
+  // A comp day: there before sign-up closes, in, the problems climbed easiest first as the
+  // body allows, and the scorecard handed in.
+  function compDay(venue: string): boolean {
+    if (booked() || s.injury || !travel(venue) || !go({ t: 'comp', do: 'enter' })) return false;
+    const t = s.min;
+    session();
+    climbMin += s.min - t;
+    if (s.comps.on) go({ t: 'comp', do: 'finish' });
+    return true;
+  }
+
+  // The media bot's morning: an offer answered (its own terms; the film, yes).
+  function answerOffer() {
+    const o = s.media.offer;
+    if (o) go({ t: 'offer', take: o.kind === 'sponsor' ? 'real' : 'yes' });
+  }
+  // A shoot its sponsor wants, at the crag it's climbing at today.
+  const shootHere = (): boolean =>
+    !!s.media.sponsor?.tasks.some((x) => x.kind === 'shoot' && !x.done && x.place === s.at) &&
+    go({ t: 'shoot' });
+  // Where the shoot is, if one's still to do: the day's crag leans that way.
+  const shootPlace = (): string | null => {
+    const x = s.media.sponsor?.tasks.find((k) => k.kind === 'shoot' && !k.done);
+    return x && x.kind === 'shoot' ? x.place : null;
+  };
+  // The night's post: the sponsor's ad while it's owed, else as it was.
+  function post() {
+    const ad = s.media.sponsor?.tasks.some((x) => x.kind === 'ad' && !x.done);
+    const style = ad && !postBlocked(s, 'ad') ? 'ad' : 'straight';
+    if (!postBlocked(s, style)) go({ t: 'post', style });
+  }
+
+  // The best set today's brief allows, worked out the long way, as a setter who's good at it.
+  function bestSet(): string[] {
+    const b = setBrief(s);
+    let top = { score: -1, set: [] as string[] };
+    const pick = (pre: string[]) => {
+      if (pre.length === SETTING.pick) {
+        const sc = scoreSet(b, pre).score;
+        if (sc > top.score) top = { score: sc, set: [...pre] };
+        return;
+      }
+      for (const m of b.hand) if (!pre.includes(m)) pick([...pre, m]);
+    };
+    pick([]);
+    return top.set;
+  }
+
+  // The business bot's gym: bought once it can, the setter hired, the till drawn or covered,
+  // the upgrades as the money comes, and the wall set to the brief when it's gone tired.
+  function runGym() {
+    if (opts.focus !== 'business') return;
+    if (!s.gym) {
+      if (gymBuyBlocked(s) || s.cash < OWN_GYM.price + CUSHION.career) return;
+      travel('gym');
+      if (!go({ t: 'gym', do: 'buy' })) return;
+      go({ t: 'gym', do: 'hire' });
+    }
+    const g = s.gym;
+    if (!g) return;
+    travel('gym');
+    if (g.till > 0) go({ t: 'gym', do: 'draw' });
+    else if (g.till < 0 && s.cash > CUSHION.career) go({ t: 'gym', do: 'pay' });
+    for (const u of ['board', 'wall', 'cafe'] as Upgrade[])
+      if (!s.gym!.upgrades.includes(u) && s.cash >= UPGRADES[u].price + CUSHION.career + 100)
+        go({ t: 'gym', do: 'upgrade', what: u });
+    if (s.gym!.quality < 0.7 && s.gym!.set !== s.day && s.energy >= 60)
+      go({ t: 'gym', do: 'set', set: bestSet() });
+  }
+
   function careerDay() {
     const morning = { ...s.climber.skills };
     workMin = 0;
@@ -1104,12 +1229,20 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     // Anything that turned up overnight or on the way home, answered before the day starts.
     while (s.encounter) if (!go({ t: 'answer', opt: answer() })) break;
     if (storyTrip(morning)) return;
+    if (opts.focus === 'media') answerOffer();
     if (s.fed < 70) eat();
     buyTrips();
     kit();
     groceries();
     physio();
     garage();
+    runGym();
+    // A comp it's entering takes the day (Phase 18.7).
+    const venue = compFor(s.day);
+    if (venue && compDay(venue)) {
+      evening(venue, morning);
+      return;
+    }
     // Money first: the cushion, the week's bills, and the next trip if there's one to save
     // for. A working morning, then a crag near enough to reach after it.
     // A trip's saved for with a night's costs over, so it's still there in the morning.
@@ -1132,12 +1265,19 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       // No pass to be had (the money's gone on a trip being saved for): no session.
       const inside = INDOOR[then.place];
       if (!inside || s.today.includes(inside.pass)) {
+        if (opts.focus === 'media') shootHere();
         const t = s.min;
         session();
         climbMin += s.min - t;
         where = then.place;
       }
     }
+    evening(where, morning);
+  }
+
+  // The evening at the Lot, whatever the day was: food, the dog, the fire, the night's post,
+  // tomorrow's shift, and bed.
+  function evening(where: string, morning: Skills) {
     travel('lot');
     if (s.fed < 60) eat();
     if (s.fed < 40) eat();
@@ -1151,9 +1291,11 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     // for one who reads everything (Phase 17.7). And whoever's at the Lot with something due.
     maybePeople();
     if (s.psyche.level < BOT_FIRE || opts.social) tryAct('lot.sit');
+    if (opts.focus === 'media') post();
     const next = saving();
     park();
-    signUp(JOB_ACTS, next ? next + 50 : 0);
+    // Tomorrow's comp is kept free (Phase 18.7): no shift signed up over it.
+    if (!compFor(s.day + 1, false)) signUp(jobActs(), next ? next + 50 : 0);
     record(where, morning);
     bed();
   }

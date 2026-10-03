@@ -2625,6 +2625,30 @@ Players will ask "what am I working towards?" by hour 3.
 - **Harness:** every target passes, unchanged (V10 on a median day 180.5, Act III in every career, median day 296.5).
 - **The download:** 378.5 KB of 400.
 
+**Status (3 Oct 2026): 18.7 built, criterion 2 not met.** No save change, 0.999.25. Rules in `ladders.ts`; the bots in `bot.ts` (`focus`); the measure in `harness/ladders.harness.ts`.
+- **One screen for the four ladders (criterion 1):** "Your ladders" at the van. Each ladder shows the rung you're on, the count, and what the next rung asks, all formatted from the rules' numbers.
+  - **Outdoors:** the story's five acts, The Line on top.
+  - **Comps:** League night, the Circuit, Nationals, the World Series, and the Games.
+  - **Media:** 1,000 followers, Chalkbag Co., Apex Climbing, Meridian, and the film.
+  - **Work and business:** four setting ranks, your own gym, and 200 members at Send City.
+- **A career bot per ladder:** the career bot as it was for outdoors, plus three that climb a ladder besides the story.
+  - **Comps:** enters every comp it's let into and keeps the day free.
+  - **Media:** posts every night, takes its own terms and the film, does the shoots, chases the film's line.
+  - **Business:** sets until head setter, saves for Send City, then hires a setter, builds the upgrades and sets to the brief, working the puzzle out the long way.
+- **Criterion 2, one seed per start, to retirement (about day 415):**
+  - **Outdoors 0/4:** Act III at best. The Line needs V18, and careers end around V13. This is Phase 16's carried gap, and it needs a call.
+  - **Comps 3/4,** the Games around day 330. No run finishes on a Games podium (6th at best), so the podium stays a Record Book entry and the Games, by invitation, is the top rung [proposed].
+  - **Media 3/4,** the film around day 169. The miss signed Meridian but never sent the film's line.
+  - **Business 2/4,** around day 383. The gym comes late (about day 300) after saving $6,000, and the misses stall at about 180 members.
+  - Focusing costs the story a little: business careers end a median 2.5 acts, against 3.
+- **Fixed in 18.5's numbers, found by the media bot:**
+  - Followers ran to 1.6 million by day 415: a post counted every first send, and an answered thread's +25% and the film's +50% compounded uncapped.
+  - Now a post tells the day's best send, and every gain thins toward an audience ceiling of 150,000, well over the rival's 60,000 [proposed]. The bots settle near 145,000.
+  - A shelved film is offered again 56 days on, where before it was gone for good [proposed].
+- **Seen:** the ladders sheet from a loaded save in Chromium. Its first draft claimed "nobody tops all four", which nothing measured; now it says what the bots show.
+- **Harness:** every other target passes, unchanged.
+- **The download:** 379.3 KB of 400.
+
 ---
 
 ## Stage D — Get it in front of people
@@ -2918,3 +2942,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Phase 18.4 built: the comp ladder, League night to the Games, opt-in, a fixed field, points that fade; the Scene path, Comp Beast and three Record Book entries opened. Save v48. 0.999.22.
 - 2026-10-03 — Phase 18.5 built: media; a post a day from what you did, sponsors with asks and stipends (followers alone pay nothing), a rival for the headline deal, threads answered by sending, and the film; the Influencer and four Record Book entries opened. Save v49. 0.999.23.
 - 2026-10-03 — Phase 18.6 built: Send City bought by its head setter, its till drawn, covered or sold (criterion 4), the morning's line, upgrades and your own wall; Miller's Bluff bought, its nine lines bolted or cleaned and open for first ascents; two Record Book entries. Save v50. 0.999.24.
+- 2026-10-03 — Phase 18.7 built: the ladders screen, a career bot per ladder and their harness; followers saturate toward a ceiling and a shelved film comes back. Criterion 2 not met: outdoors 0/4, comps 3/4, media 3/4, business 2/4. 0.999.25.

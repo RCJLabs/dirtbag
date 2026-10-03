@@ -49,7 +49,7 @@ describe('your own gym', () => {
     expect(r.state.cash).toBe(20000 - OWN_GYM.price);
     expect(r.state.shifts).toEqual([]);
     expect(r.state.today).toContain('pass');
-    expect(businessRung(r.state)).toBe(JOBS.set!.ranks.length);
+    expect(businessRung(r.state)).toBe(JOBS.set!.ranks.length + 1);
   });
 
   it('runs a night: the wall goes stale, members drift toward it, the takings go in the till', () => {

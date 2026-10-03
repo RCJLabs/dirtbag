@@ -19,6 +19,7 @@ import { bolted, boltBlocked, gymBuyBlocked, gymNight, UPGRADES, wallWord, type 
 import { DOC, HEAT_SAYS, MEDIA_RIVAL, POSTS, SPONSORS, TERMS } from './content/media';
 import {
   cycleTasks,
+  fromAudience,
   heatTonight,
   postBlocked,
   postGain,
@@ -1507,7 +1508,7 @@ export function act(s0: GameState, a: Action): Result {
         }
       } else if (
         s.media.sponsor?.tier === SPONSORS.length - 1 &&
-        !s.media.doc &&
+        (!s.media.doc || ('shelved' in s.media.doc && s.day - s.media.doc.shelved >= MEDIA.doc.again)) &&
         s.media.followers >= MEDIA.doc.followers
       ) {
         s.media = { ...s.media, offer: { kind: 'doc' } };
@@ -3130,7 +3131,7 @@ export function act(s0: GameState, a: Action): Result {
       if (res.sent && !lap) {
         const h = s.media.heat;
         if (h && r.grade >= h.grade) {
-          addFollowers(s.media.followers * MEDIA.heat.win);
+          addFollowers(fromAudience(s, s.media.followers * MEDIA.heat.win));
           s.media = {
             ...s.media,
             heat: null,
@@ -3140,7 +3141,7 @@ export function act(s0: GameState, a: Action): Result {
         }
         const d = s.media.doc;
         if (d && 'due' in d && r.grade >= d.grade && !indoor(r.place)) {
-          addFollowers(s.media.followers * MEDIA.doc.boost);
+          addFollowers(fromAudience(s, s.media.followers * MEDIA.doc.boost));
           s.media = { ...s.media, doc: { aired: s.day } };
           line(DOC.aired);
         }
