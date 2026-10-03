@@ -74,7 +74,19 @@ export const PEOPLE: Record<string, PersonDef> = {
   sage: { name: 'Sage', shows: ['road', 'gym'], grade: 1 },
   // v0.956's default rival.
   dex: { name: 'Dex', full: 'Dex Calloway', rival: 'A power monster, a bitter nemesis.' },
+  // Phase 17.1: v0.956's people, back as one cast with no two names alike. Ray was its
+  // Roadside local and Frank one of its caravan; Mara and Rico its partners (crimps and
+  // power), and Tam its elder.
+  ray: { name: 'Ray' },
+  frank: { name: 'Frank' },
+  mara: { name: 'Mara', grade: 2 },
+  rico: { name: 'Rico', grade: -1 },
+  tam: { name: 'Tam', full: 'Tam Okonkwo', grade: -1 },
 };
+
+// The named people at work in town, who aren't climbers you'll get to know: here so no
+// one in the cast shares their names.
+export const TOWN: Record<string, string> = { wren: 'Wren', otis: 'Otis' };
 
 // The race Dex sets you at the end of Act I, and what he calls the line if he wins it:
 // v0.956's rival names, picked by the seed.
@@ -127,6 +139,16 @@ const askOut = (who: string): TalkOpt => ({
   label: 'Come climbing?',
   when: { bond: `${who}/${BOND.tiers[1]}`, before: BOND.inviteBefore, notToday: 'invite' },
   next: 'invite',
+});
+
+// Phase 17.1: the cast's first words. Each has a meeting, then the ordinary day; a local's
+// is a sit once a day, worth a bond, and a partner's the ask out. Their arcs are 17.2's.
+const sitWith = (who: string, label: string, min: number, next: string): TalkOpt => ({
+  label,
+  primary: true,
+  when: { notToday: who },
+  fx: { cost: { min }, today: who, bond: 1 },
+  next,
 });
 
 export const TALK: Record<string, TalkDef> = {
@@ -342,6 +364,141 @@ export const TALK: Record<string, TalkDef> = {
       even: {
         text: 'Dex gives you a nod and goes back to brushing holds. "May the best climber send."',
         opts: [{ label: 'Nod back' }],
+      },
+    },
+  },
+  // Phase 17.1's cast.
+  ray: {
+    who: 'ray',
+    start: [
+      { when: { notMet: 'ray' }, node: 'meet' },
+      { when: { today: 'ray' }, node: 'done' },
+      { node: 'again' },
+    ],
+    nodes: {
+      meet: {
+        text: 'An old man on the guardrail with a thermos, watching the wall like it owes him money. "Ray. I bolted half of what’s on that wall and fell off the other half." He looks you over. "You’re the one who keeps coming back."',
+        opts: [
+          { label: '"What would you get on?"', primary: true, next: 'pick' },
+          { label: 'Just saying hi', next: 'hi' },
+        ],
+      },
+      pick: {
+        text: '"The one you’re scared of. Then the one next to it, so it doesn’t feel left out."',
+        opts: [{ label: 'Fair' }],
+      },
+      hi: {
+        text: '"Hi yourself. I’m here weekends. The wall’s here all week."',
+        opts: [{ label: 'See you' }],
+      },
+      again: {
+        text: 'Ray pours you half a lid of something from the thermos. "Sit. The rock’s not going anywhere."',
+        opts: [sitWith('ray', 'Sit a while', 20, 'sat'), { label: 'Not now' }],
+      },
+      sat: {
+        text: 'He tells you who bolted what, who fell off it, and who lied about it after. Most of them were him.',
+        opts: [{ label: 'Thanks, Ray' }],
+      },
+      done: { text: '"Two stories a day and you’ll start believing them."', opts: [{ label: 'Fair' }] },
+    },
+  },
+  frank: {
+    who: 'frank',
+    start: [
+      { when: { notMet: 'frank' }, node: 'meet' },
+      { when: { today: 'frank' }, node: 'done' },
+      { node: 'again' },
+    ],
+    nodes: {
+      meet: {
+        text: 'A box truck you haven’t seen is nosed in past Hazel’s van, a stovepipe through its roof. Its owner is splitting kindling. "Frank. Passing through." He thinks about it. "Nine years now, passing through." He nods at your van. "Yours leaks on the left. I can hear it from here."',
+        opts: [
+          { label: '"Can you fix it?"', primary: true, next: 'fix' },
+          { label: 'Good night, Frank', next: 'night' },
+        ],
+      },
+      fix: { text: '"Everything leaks. You just pick which side."', opts: [{ label: 'Right' }] },
+      night: {
+        text: 'He lifts the axe an inch, which you take to mean good night.',
+        opts: [{ label: 'OK' }],
+      },
+      again: {
+        text: 'Frank’s stove is going. There’s an upturned bucket by it that seems to be yours.',
+        opts: [sitWith('frank', 'Sit with him', 30, 'sat'), { label: 'Not tonight' }],
+      },
+      sat: {
+        text: 'You sit. He talks about engines like they’re people and people like they’re weather. Neither of you mentions the leak.',
+        opts: [{ label: 'Night, Frank' }],
+      },
+      done: { text: '"Bucket’s still yours. Tomorrow."', opts: [{ label: 'Fair' }] },
+    },
+  },
+  mara: {
+    who: 'mara',
+    start: [{ when: { notMet: 'mara' }, node: 'meet' }, { node: 'again' }],
+    nodes: {
+      meet: {
+        text: 'A woman on the next line lowers off, looks at your chalk bag, then at you. "Mara. You’re on my warm-up." She doesn’t move you off it. "Go on, then. Don’t celebrate if you get it."',
+        opts: [
+          { label: 'Get on it', primary: true },
+          { label: '"Nice to meet you too"', next: 'nice' },
+        ],
+      },
+      nice: { text: '"It might be. Ask me after you’ve fallen off something."', opts: [{ label: 'OK' }] },
+      again: {
+        text: '"You again. Good. What are you trying?"',
+        opts: [{ label: 'Climbing', primary: true }, askOut('mara')],
+      },
+      invite: {
+        text: '"Where? Somewhere with edges."',
+        opts: inviteOpts('mara', 'Mara: "{place}. Be there early or I start without you."'),
+      },
+    },
+  },
+  rico: {
+    who: 'rico',
+    start: [{ when: { notMet: 'rico' }, node: 'meet' }, { node: 'again' }],
+    nodes: {
+      meet: {
+        text: 'Someone in a sleeveless tee is hanging off the steepest thing here by one heel, arguing with it. He drops, sees you watching, and grins. "Rico. You want next go? It’s horrible. You’ll love it."',
+        opts: [
+          { label: 'Take the next go', primary: true },
+          { label: '"Maybe after you send it"', next: 'after' },
+        ],
+      },
+      after: { text: '"Then you’ll be here a while. Pull up a pad."', opts: [{ label: 'OK' }] },
+      again: {
+        text: '"{name}! I found a new way to fall off it. Come and see."',
+        opts: [{ label: 'In a minute', primary: true }, askOut('rico')],
+      },
+      invite: {
+        text: '"Out? Somewhere steep. Somewhere I can yell."',
+        opts: inviteOpts('rico', 'Rico: "{place}! I’ll bring the pads and the noise."'),
+      },
+    },
+  },
+  tam: {
+    who: 'tam',
+    start: [{ when: { notMet: 'tam' }, node: 'meet' }, { node: 'again' }],
+    nodes: {
+      meet: {
+        text: 'An older climber is coiling a rope in the shade of the wall, slow and exact, the way you’d fold a flag. "Tam Okonkwo. I climb long, and I climb early, before the rock gets hot." He looks at your hands. "You’ll want tape for this sandstone."',
+        opts: [
+          { label: 'Nod', primary: true },
+          { label: '"How long have you been at it?"', next: 'long' },
+        ],
+      },
+      long: {
+        text: '"Long enough to count what’s left. Five good seasons, maybe." He says it like a weather report.',
+        opts: [{ label: 'OK' }],
+      },
+      again: {
+        text: '"Early start, {name}. The shade won’t wait for us."',
+        opts: [{ label: 'Coming', primary: true }, askOut('tam')],
+      },
+      invite: {
+        text: '"Somewhere long. I don’t drive far for short."',
+        opts: inviteOpts('tam', 'Tam: "{place}. I’ll be there before the sun is."'),
       },
     },
   },

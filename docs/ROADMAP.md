@@ -2386,6 +2386,21 @@ Players will ask "what am I working towards?" by hour 3.
 
 *The risk:* writing volume, as the phase said. Lines players see most come first, at a fixed beat count a character.
 
+**Evan's call on 3 (3 Oct 2026):** the life timers run on the age clock.
+
+**Status (3 Oct 2026): 17.1 built: the cast.** 0.999.11. No save change.
+- **Five more people,** v0.956's, each where and when they climb [proposed, `CAST`]:
+  - **Ray,** Roadside's old hand, on the guardrail with a thermos on dry weekend mornings: he bolted half the wall and fell off the other half.
+  - **Frank,** passing through for nine years, his box truck in the Lot on two evenings in five (one in five in winter), from the third night: the first two at the fire are Hazel's.
+  - **Mara,** at the Gorge on dry days, the least around and the hardest climber: "Don't celebrate if you get it."
+  - **Rico,** in the Cave most days and out at Moonstone on some dry ones, loud about all of it.
+  - **Tam Okonkwo,** at the Mesa on dry mornings, done before the sandstone heats up, with five good seasons left, maybe (the timer is 17.3's).
+- **Mara, Rico and Tam are partners,** as Hazel and Sage are: they belay, a day climbing near them counts, they turn up more as you get closer, and you can ask them out. Ray and Frank are locals: a sit once a day is worth a bond.
+- **Each has a meeting and an ordinary day;** their milestones and resolutions are 17.2's.
+- **Criterion 1 holds:** a test that no two people, in the cast or in town (Wren, Otis), share a name, and that no two looks, or shirts, match each other's or a stranger's.
+- **Harness:** every target passes; the career bots, who don't talk to the new people but climb near them, reach V10 on a median day 176.5 (was 178), and Act III ends in every career (median day 298, was 281.5).
+- **The download** is 338.3 KB of its 340 KB budget. The rest of Phase 17 is mostly writing; the budget needs Evan's call.
+
 ---
 
 ### Phase 18 — Careers and jobs
@@ -2700,3 +2715,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-02 — Phase 16.6 built: the career bot plays the story's expeditions and walls; a wall partner stays the night (a fix); criterion 1 measured at a stated pace (median 19.3 h to the ending); all three criteria pass. Found: the Crucible's hardest boulders go far below their grade, so The Line is doable at V12. 0.999.9.
 - 2026-10-03 — Climbing above your grade, Evan's call: one style counts only a grade and a half past your grade; windows close faster past a grade over and shut at three; a line three grades over refuses the go; from a grade and a half over, a go has one or two more cruxes. The Crucible's V16 to V18 no longer go for a V11. The Cave sets V5 to V11 with two at V7 (Evan's call), so a V6 has work on a wet day. 0.999.10.
 - 2026-10-03 — Phase 16 closed by Evan's call; the Late Bloomer's speed run and Act IV inside the clock carry; the Cave sets V5 to V11 with two at V7 (Evan's call), closing a wet-day gap at V6. CURRENT MILESTONE moved to Phase 17, the people, planned on the rebuild with Evan's calls: a cast of about eight, romance with Sage and one more, and the family back home as a third ending.
+- 2026-10-03 — Phase 17.1 built: Ray, Frank, Mara, Rico and Tam, each where and when they climb, with a look and a first meeting; Mara, Rico and Tam partners; Evan's call that the life timers run on the age clock. 0.999.11.

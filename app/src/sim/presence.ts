@@ -4,11 +4,12 @@
 // seed and your bond, you just don't know it yet.
 
 import { PEOPLE } from './content/people';
+import { isWeekend } from './cond';
 import { dexHurt } from './curves';
-import { BOND, RIVAL } from './dials';
+import { BOND, CAST, RIVAL } from './dials';
 import { Rng } from './rng';
 import type { GameState, PersonLog } from './types';
-import { conditions } from './weather';
+import { conditions, conditionsAt, seasonOf } from './weather';
 
 // A bond's tier: 0 Stranger, 1 Acquaintance, 2 Regular, 3 Partner, 4 Ride-or-Die.
 export const tierOf = (bond: number): number => BOND.tiers.filter((t) => bond >= t).length - 1;
@@ -49,10 +50,71 @@ function dex(seed: string, day: number, min: number, p?: PersonLog): string | nu
   return r.chance(RIVAL.crag) ? 'road' : 'gym';
 }
 
+// Phase 17.1's cast (CAST says when and how often). A partner who's asked you out is where
+// they said from when they said, as Sage is; otherwise they're at their own crag, on the
+// day the seed and your bond give them, and only when it's dry, the Cave aside.
+const asked = (day: number, min: number, p?: PersonLog): string | null =>
+  p?.invite?.day === day && min >= p.invite.from ? p.invite.place : null;
+const away = (day: number, p?: PersonLog): boolean => p?.away !== undefined && day < p.away;
+const turnsUp = (seed: string, who: string, day: number, base: number, p?: PersonLog): boolean =>
+  Rng.fromStream(seed, 'events')
+    .derive(`${who}-${day}`)
+    .chance(base + BOND.perTier * tierOf(p?.bond ?? 0));
+
+// Ray has climbed at Roadside for thirty-odd years, and still comes out at the weekend.
+function ray(seed: string, day: number, min: number): string | null {
+  if (!isWeekend(day) || min < CAST.ray.from || min >= CAST.ray.till) return null;
+  return conditionsAt(seed, day, 'road').open ? 'road' : null;
+}
+
+// Frank's rig is in the Lot some nights, fewer in winter; he's passing through, still.
+function frank(seed: string, day: number, min: number): string | null {
+  const F = CAST.frank;
+  if (day < F.fromDay || min < F.from || min >= F.till) return null;
+  const odds = seasonOf(day) === 'winter' ? F.winter : F.nights;
+  return Rng.fromStream(seed, 'events').derive(`frank-${day}`).chance(odds) ? 'lot' : null;
+}
+
+// Mara climbs at the Gorge, on dry days.
+function mara(seed: string, day: number, min: number, p?: PersonLog): string | null {
+  const M = CAST.mara;
+  if (min < M.from || min >= M.till || away(day, p)) return null;
+  const inv = asked(day, min, p);
+  if (inv) return inv;
+  if (!turnsUp(seed, 'mara', day, M.base, p)) return null;
+  return conditionsAt(seed, day, 'gorge').open ? 'gorge' : null;
+}
+
+// Rico is in the Cave most days, and out at Moonstone on some dry ones.
+function rico(seed: string, day: number, min: number, p?: PersonLog): string | null {
+  const R = CAST.rico;
+  if (min < R.from || min >= R.till || away(day, p)) return null;
+  const inv = asked(day, min, p);
+  if (inv) return inv;
+  if (!turnsUp(seed, 'rico', day, R.base, p)) return null;
+  const dry = conditionsAt(seed, day, 'moon').open;
+  return dry && Rng.fromStream(seed, 'events').derive(`rico-moon-${day}`).chance(R.moon) ? 'moon' : 'cave';
+}
+
+// Tam climbs the Mesa early, before the sandstone heats up.
+function tam(seed: string, day: number, min: number, p?: PersonLog): string | null {
+  const T = CAST.tam;
+  if (min < T.from || min >= T.till || away(day, p)) return null;
+  const inv = asked(day, min, p);
+  if (inv) return inv;
+  if (!turnsUp(seed, 'tam', day, T.base, p)) return null;
+  return conditionsAt(seed, day, 'mesa').open ? 'mesa' : null;
+}
+
 export function whereIs(seed: string, who: string, day: number, min: number, p?: PersonLog): string | null {
   if (who === 'hazel') return hazel(seed, day, min, p);
   if (who === 'sage') return sage(seed, day, min, p);
   if (who === 'dex') return dex(seed, day, min, p);
+  if (who === 'ray') return ray(seed, day, min);
+  if (who === 'frank') return frank(seed, day, min);
+  if (who === 'mara') return mara(seed, day, min, p);
+  if (who === 'rico') return rico(seed, day, min, p);
+  if (who === 'tam') return tam(seed, day, min, p);
   return null;
 }
 
@@ -60,8 +122,8 @@ export function whereIs(seed: string, who: string, day: number, min: number, p?:
 export const whereNow = (s: GameState, who: string): string | null =>
   whereIs(s.seed, who, s.day, s.min, s.people[who]);
 
-// The people you can climb with.
-export const PARTNERS = ['hazel', 'sage'];
+// The people you can climb with: they belay, and a day climbing near them is a day together.
+export const PARTNERS = ['hazel', 'sage', 'mara', 'rico', 'tam'];
 
 // Who's at a place right now.
 export const around = (

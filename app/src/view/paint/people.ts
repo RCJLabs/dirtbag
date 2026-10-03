@@ -134,6 +134,59 @@ export const LOOK: Record<string, Look> = {
     hat: null,
     sleeve: 'long',
   },
+  // Phase 17.1's cast, each told apart at a glance from everyone else's.
+  // Ray: thirty years at Roadside. A faded mustard shirt, white hair, a red cap.
+  ray: {
+    skin: '#C48A62',
+    shirt: '#A88A3E',
+    pants: '#4E4A42',
+    shoe: '#2B2A33',
+    hair: '#DAD4C8',
+    hat: '#8E3B2E',
+    sleeve: 'long',
+  },
+  // Frank: nine years passing through. An olive work shirt, ginger hair.
+  frank: {
+    skin: '#E8B894',
+    shirt: '#5C6B3A',
+    pants: '#3B3A36',
+    shoe: '#3A2E26',
+    hair: '#A0602E',
+    hat: null,
+    sleeve: 'long',
+  },
+  // Mara: crimps, and no celebrating. A red tank, black hair tied back.
+  mara: {
+    skin: '#F2CDB0',
+    shirt: '#C2403A',
+    pants: '#2E3A4A',
+    shoe: '#2B2A33',
+    hair: '#151112',
+    hat: null,
+    sleeve: 'none',
+    pony: true,
+    tie: '#E6DFD0',
+  },
+  // Rico: power, and loud about it. A yellow tank and an orange beanie.
+  rico: {
+    skin: '#9A6444',
+    shirt: '#E7C340',
+    pants: '#2F2F3A',
+    shoe: '#2B2A33',
+    hair: '#140F0D',
+    hat: '#E46A2E',
+    sleeve: 'none',
+  },
+  // Tam: long routes, early starts. A pale sun shirt, khaki, grey hair, a sand-coloured cap.
+  tam: {
+    skin: '#5A3624',
+    shirt: '#D9D2BE',
+    pants: '#7A6A4E',
+    shoe: '#3A3440',
+    hair: '#9C9890',
+    hat: '#C8B48A',
+    sleeve: 'long',
+  },
   // Sage: technical, patient, reads everything first. Green tee, plum pants, copper hair.
   sage: {
     skin: '#C98E6B',
