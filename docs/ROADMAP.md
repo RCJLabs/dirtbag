@@ -2625,7 +2625,7 @@ Players will ask "what am I working towards?" by hour 3.
 - **Harness:** every target passes, unchanged (V10 on a median day 180.5, Act III in every career, median day 296.5).
 - **The download:** 378.5 KB of 400.
 
-**Status (3 Oct 2026): 18.7 built; criterion 2 at 30 of 32 runs.** No save change, 0.999.25. Rules in `ladders.ts`; the bots in `bot.ts` (`focus`); the measure in `harness/ladders.harness.ts`. Evan's calls (3 Oct): compress the late curve, and tune the other three to 4/4.
+**Status (3 Oct 2026): 18.7 built; criterion 2 at 29 of 32 runs.** No save change, 0.999.25. Rules in `ladders.ts`; the bots in `bot.ts` (`focus`); the measure in `harness/ladders.harness.ts`. Evan's calls (3 Oct): compress the late curve, and tune the other three to 4/4.
 - **One screen for the four ladders (criterion 1):** "Your ladders" at the van. Each ladder shows the rung you're on, the count, and what the next rung asks, all formatted from the rules' numbers.
   - **Outdoors:** the story's five acts, The Line on top.
   - **Comps:** League night, the Circuit, Nationals, the World Series, and the Games.
@@ -2633,13 +2633,17 @@ Players will ask "what am I working towards?" by hour 3.
   - **Work and business:** four setting ranks, your own gym, and 200 members at Send City.
 - **Criterion 2, two seeds per start, to retirement:**
   - **Comps 8/8,** the Games on a median day 218.
-  - **Media 8/8,** the film on a median day 223.
-  - **Business 8/8,** 200 members on a median day 338.
-  - **Outdoors 6/8,** The Line on a median day 379.5. Both misses are V18 by then, so grade isn't the limit. They're short of money for the late chain of paid trips (the Wind's $800, Cerro Torre's $2,590, saved at about $45 a day). That needs a call.
+  - **Media 8/8,** the film on a median day 199.5.
+  - **Business 8/8,** 200 members on a median day 342.
+  - **Outdoors 5/8,** The Line on a median day 347.
+    - At 6/8 the two misses were V18 and short of money for the late paid trips.
+    - So, Evan's call: with a trip or a locked crag next in the story, the career bot now saves for it, before van upgrades.
+    - That brought the finishes earlier (median day 379.5 before), but not more of them.
+    - The misses stall in Act III for reasons that differ by seed. About two careers in three reach The Line.
 - **The late curve (`CURVE`) [proposed]:**
   - It's unchanged to V10, so V10 still comes on day 178 (180.5 before).
   - Past V10, each grade costs a flat 26 skill. Before, V18 needed three careers' growth.
-  - Plain careers now finish The Line in 5 of 8 runs, from none. Act III ends a median day 277.5, from 296.5. The ending still takes 18.4 hours.
+  - Plain careers now finish The Line in 4 or 5 of 8 runs, from none. Act III ends a median day 271, from 296.5. The ending still takes 18.5 hours.
 - **Three bots, one per ladder,** besides the story:
   - **Comps:** enters every comp it's let into, and keeps those days free.
   - **Media:** posts nightly, does the shoots (driving out for them), and keeps the film's season, with no trips away and the film's crag first.
@@ -2956,4 +2960,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Phase 18.4 built: the comp ladder, League night to the Games, opt-in, a fixed field, points that fade; the Scene path, Comp Beast and three Record Book entries opened. Save v48. 0.999.22.
 - 2026-10-03 — Phase 18.5 built: media; a post a day from what you did, sponsors with asks and stipends (followers alone pay nothing), a rival for the headline deal, threads answered by sending, and the film; the Influencer and four Record Book entries opened. Save v49. 0.999.23.
 - 2026-10-03 — Phase 18.6 built: Send City bought by its head setter, its till drawn, covered or sold (criterion 4), the morning's line, upgrades and your own wall; Miller's Bluff bought, its nine lines bolted or cleaned and open for first ascents; two Record Book entries. Save v50. 0.999.24.
-- 2026-10-03 — Phase 18.7 built: the ladders screen, a career bot per ladder and their harness; the grade curve compressed past V10 (Evan's call); followers saturate; the gym, the Games and the film tuned. Criterion 2: comps, media and business 8/8, outdoors 6/8. 0.999.25.
+- 2026-10-03 — Phase 18.7 built: the ladders screen, a career bot per ladder and their harness; the grade curve compressed past V10 (Evan's call); followers saturate; the gym, the Games and the film tuned. Criterion 2: comps, media and business 8/8, outdoors 5/8. 0.999.25.
