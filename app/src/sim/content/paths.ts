@@ -31,11 +31,19 @@ export interface Edge {
   gainAll?: number;
   gas?: number;
   living?: number;
+  // On a comp's problems (Phase 18.4).
+  comp?: number;
 }
 
 // What a tier asks besides your grade: sends of lines in some styles, lines flashed or
 // onsighted, or trips out to a crag.
-export type Deed = { sends: Style[]; n: number } | { first: number } | { trips: number };
+export type Deed =
+  | { sends: Style[]; n: number }
+  | { first: number }
+  | { trips: number }
+  // Comps entered, and podiums (Phase 18.4).
+  | { comps: number }
+  | { podiums: number };
 
 export interface Tier {
   name: string;
@@ -136,10 +144,15 @@ export const PATHS: Record<string, Path> = {
   scene: {
     name: 'Scene',
     blurb: 'The competitor: comps, a crowd.',
-    tiers: [],
+    // Phase 18.4 [proposed]: comps entered, then podiums; each tier kinder on a comp's
+    // problems, where the crowd is.
+    tiers: [
+      { name: 'Competitor', deed: { comps: 3 }, edge: { comp: 1.04 } },
+      { name: 'Finalist', deed: { podiums: 2 }, edge: { comp: 1.08 } },
+      { name: 'Headliner', deed: { podiums: 6 }, edge: { comp: 1.12, gym: 1.03 } },
+    ],
     title: 'A name people know',
     line: 'You walk into any gym in the region and somebody already knows what you climb.',
-    wait: 'comps (Phase 15)',
   },
 };
 
@@ -229,7 +242,7 @@ export interface Quirk {
   // Said when it's named.
   line: string;
   // Whether your habits name it; the first that does, in order, is yours.
-  test: (h: Habits, s: { hurt: number; day: number }) => boolean;
+  test: (h: Habits, s: { hurt: number; day: number; comps: { results: { place: number }[] } }) => boolean;
   wait?: string;
 }
 
@@ -239,10 +252,9 @@ const share = (n: number, h: Habits) => n / Math.max(1, h.goes);
 export const QUIRKS: Record<string, Quirk> = {
   compbeast: {
     name: 'Comp Beast',
-    edge: {},
+    edge: { comp: 1.1 },
     line: 'You climb better with a crowd watching than without one.',
-    test: () => false,
-    wait: 'comps (Phase 15)',
+    test: (_h, s) => s.comps.results.filter((r) => r.place <= 3).length >= 2,
   },
   glasscannon: {
     name: 'Glass Cannon',

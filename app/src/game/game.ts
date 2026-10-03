@@ -19,6 +19,7 @@ import {
   routeOfId,
   indoor,
   routesAt,
+  wallAt,
   startAttempt,
   STEP,
   stepAttempt,
@@ -709,7 +710,7 @@ export class Game {
     } else if ('route' in u) this.lookUp(u.route);
     else if ('wall' in u) this.openSheet({ k: 'wall', id: u.wall });
     else {
-      const r = routesAt(this.state.seed, this.state.at, this.state.day)[u.problem];
+      const r = wallAt(this.state, this.state.at)[u.problem];
       if (r) this.lookUp(r.id);
     }
   }
@@ -839,6 +840,12 @@ export class Game {
     return null;
   }
 
+  // A comp (Phase 18.4): signed up for, or the scorecard in; back to the desk.
+  comp(what: 'enter' | 'finish'): void {
+    this.dispatch({ t: 'comp', do: what });
+    this.openSheet({ k: 'desk' });
+  }
+
   // The warehouse's picks (Phase 18.3): the shift worked and the board opened, a pick, or
   // stop; back to the card once the picks are done.
   haulStart(id: string): string | null {
@@ -857,7 +864,7 @@ export class Game {
   // Back from a shift's sheet to the card it was opened from: the gym's desk, or the place.
   shiftBack(): void {
     this.openSheet(
-      ['gym', 'cave'].includes(this.state.at) ? { k: 'desk' } : { k: 'place', id: this.state.at },
+      ['gym', 'cave', 'center'].includes(this.state.at) ? { k: 'desk' } : { k: 'place', id: this.state.at },
     );
   }
 
@@ -1322,10 +1329,7 @@ export class Game {
     const r = routeOfId(this.state, route);
     if (r?.exped) return this.backToWall();
     const scene = (r && PLACES[r.place]?.scene) ?? 'crag';
-    const slot =
-      r && indoor(r.place)
-        ? routesAt(this.state.seed, r.place, this.state.day).findIndex((p) => p.id === route)
-        : -1;
+    const slot = r && indoor(r.place) ? wallAt(this.state, r.place).findIndex((p) => p.id === route) : -1;
     // The board's problems all start under the board.
     const hot = SCENES[scene]!.hots.find((h) =>
       r?.wall

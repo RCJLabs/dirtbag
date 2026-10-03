@@ -54,6 +54,18 @@ export type { Attempt, AttemptEvent, CruxRun, FallRun, Phase, Step } from './cli
 export { beyond, extraCruxes, overhead, reachMargin, reachOf } from './reach';
 export { together } from './romance';
 export {
+  compBlocked,
+  compField,
+  compOn,
+  compSet,
+  ladderPoints,
+  nextComp,
+  podiums,
+  rungOpen,
+  yourScore,
+} from './comps';
+export { COMP_TIERS } from './content/comps';
+export {
   coached,
   dropChance,
   dropCost,
@@ -131,7 +143,7 @@ export type { Stay } from './presence';
 export { gradeOfPerson, dexHurt } from './curves';
 export { ratio, zone, daysOff, cold, goLoad, projected } from './body';
 export { tonight, runway } from './tonight';
-export { COACH, FLOOR, HAUL, PLAY, RUSH, SETTING } from './dials';
+export { COACH, COMP, FLOOR, HAUL, PLAY, RUSH, SETTING } from './dials';
 export { GEAR, START_KIT } from './content/gear';
 export { has, kitFactor } from './kit';
 export type { Tonight } from './tonight';
@@ -351,6 +363,7 @@ export {
   boardSet,
   routeById,
   routesAt,
+  wallAt,
 } from './content/gym';
 export { TALK, PEOPLE, THINGS, RACE_ROUTE } from './content/people';
 export { DOG_OFFER, DOG_TIER_NAME } from './content/dog';

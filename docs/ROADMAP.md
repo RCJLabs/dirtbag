@@ -2565,6 +2565,19 @@ Players will ask "what am I working towards?" by hour 3.
 - **No harness run:** the bots work shifts plain.
 - **The download:** 365.6 KB of 400.
 
+**Status (3 Oct 2026): 18.4 built: the comp ladder.** Save v48, 0.999.22. Numbers [proposed] in `COMP` and `content/comps.ts`; rules in `comps.ts`.
+- **Five rungs, each on its own days at its own wall:** League night at Send City every week (V0 to V5, a field of 10); the Circuit at the Cave every two weeks (V4 to V10, 12); Nationals (V7 to V13, 16) and the World Series (V10 to V15, 20) at the Training Center every four weeks; and the Games there once a year (V12 to V17, 20), the capstone. Fees from $10 to $60, the Games by invitation; purses from $40 to $3,000 for a win.
+- **Opt-in:** sign up at the desk on the day, before 1 PM; the entry's the wall for the day. Signed up, the wall's set is the comp's problems, as many as the wall has room for, easiest to hardest, climbed with the climbing as anything is. Anyone else, the bots included, finds the week's set: the comp doesn't steer a career that didn't enter it. The desk says when the next one is.
+- **Scored as comps are:** a top counts in its first five goes; tops first, then fewest goes, against a fixed field drawn from the seed, each climber's tops from the grade they climb. The field doesn't move to meet you (v0.956's rubber-banded). Hand in your scorecard at the desk, or it's handed in at bed.
+- **The ladder:** a place earns points, a win's worth down to a tenth of it in last; they fade by half every 56 days; each rung lets you in at its points. Stop competing and you slide back down.
+- **Opened, as Phase 23 left waiting:** the Scene path (Competitor, three comps; Finalist, two podiums; Headliner, six, each kinder on a comp's problems); the Comp Beast quirk (two podiums); the Record Book's Game On, Top Step and a podium at the Games.
+- **Not yet:** comps outside the ladder (the dyno comp, a bouldering league as a season-long table), and the ladders screen (18.7). The bots don't enter (18.7's ladder bots will).
+- **Tried first:** the comp's problems on the wall for everyone that day. The bots climbed them unentered, and V10 came 17 days sooner and one career missed Act III's end; now they're on the wall only for an entrant.
+- **Harness:** every target passes, unchanged from 18.1 (V10 on a median day 180.5, Act III in every career, median day 296.5).
+- **Also:** a row's note no longer doubles a full stop ("on the house.. Apprentice").
+- **Seen:** the desk on a league night, from a loaded save in Chromium; the e2e passes unchanged (its day four doesn't sign up).
+- **The download:** 368.5 KB of 400.
+
 ---
 
 ## Stage D — Get it in front of people
@@ -2855,3 +2868,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Phase 18.1 built: the setter's puzzle (a brief a shift, five holds hung in order, scored on the grade, flow, wall and crowd; never solved, never worse than working it) and leave by rank. Save v46. 0.999.19.
 - 2026-10-03 — Phase 18.2 built: the café's rush (a queue made in the order you choose) and the diner's floor (tables taken on a wave at a time); a play row beside each plain shift. 0.999.20.
 - 2026-10-03 — Phase 18.3 built: the coach's roster (clients who stay, each an hour a session, a send's thanks) and the warehouse's picks (push-your-luck where a drop costs what you'd picked, the day moving the stop). Save v47. 0.999.21.
+- 2026-10-03 — Phase 18.4 built: the comp ladder, League night to the Games, opt-in, a fixed field, points that fade; the Scene path, Comp Beast and three Record Book entries opened. Save v48. 0.999.22.

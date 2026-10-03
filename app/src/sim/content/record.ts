@@ -25,7 +25,9 @@ export type RecordAim =
   | { summit: true }
   | { dog: true }
   | { rival: true }
-  | { retired: true };
+  | { retired: true }
+  // Phase 18.4: a comp finished, won, or a podium at the Games.
+  | { comp: 'entered' | 'won' | 'games' };
 
 export interface RecordEntry {
   id: string;
@@ -298,25 +300,27 @@ export const RECORD: RecordEntry[] = [
     id: 'comp',
     title: 'Game On',
     desc: 'Compete in a comp.',
-    story: '',
+    story:
+      'A number pinned to your shirt, a scorecard, a crowd that wasn’t there for you and watched anyway. You came out of isolation shaking and went back in for more.',
     from: ['f1:comp1'],
-    waits: 'comps',
+    aim: { comp: 'entered' },
   },
   {
     id: 'compwin',
     title: 'Top Step',
     desc: 'Win a comp.',
-    story: '',
+    story:
+      'Top of the scorecard, top of the podium. Somebody hands you an envelope and a medal on a lanyard, and you don’t know which hand to hold them in.',
     from: ['f1:compwin'],
-    waits: 'comps',
+    aim: { comp: 'won' },
   },
   {
     id: 'olympics',
     title: 'Olympic Medalist',
     desc: 'Podium at the Games.',
-    story: '',
+    story: 'A podium at the Games. Every gym you ever paid a day pass at would claim you, if they knew.',
     from: ['k8:olymedal'],
-    waits: 'comps',
+    aim: { comp: 'games' },
   },
   {
     id: 'trait',

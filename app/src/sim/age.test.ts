@@ -96,7 +96,7 @@ describe('the tally', () => {
     expect(t.sends).toBe(0);
     expect(tallyLines(t)[0]).toBe('Nothing sent. You were there for the life, not the ticks.');
     expect(tallyLines(t)).toContain(
-      'You never walked Crusher, Tendon, Nerve, Mover and Dirtbag. Somebody else did.',
+      'You never walked Crusher, Tendon, Nerve, Mover, Dirtbag and Scene. Somebody else did.',
     );
     expect(epitaph(t)).toBe('A life lived on rock. No regrets.');
     expect(epitaph({ ...t, firsts: 2 })).toBe('You left first ascents with your name on them.');

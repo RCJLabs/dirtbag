@@ -13,6 +13,8 @@ import {
   SET_SAYS,
   SET_WALLS,
 } from './content/setting';
+import { COMP_SAYS, COMP_TIERS } from './content/comps';
+import { compBlocked, compField, compOn, compSet, placing, pointsFor, yourScore } from './comps';
 import {
   coachRefused,
   coachSession,
@@ -176,6 +178,7 @@ import {
   FLOOR,
   COACH,
   HAUL,
+  COMP,
   AGE,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
@@ -310,6 +313,7 @@ export function newGame(seed: string): GameState {
     leave: {},
     coach: null,
     haul: null,
+    comps: { on: null, points: [], results: [] },
     lifestyle: 'dirtbag',
     spot: 'lot',
     lotNights: 0,
@@ -702,6 +706,8 @@ export function act(s0: GameState, a: Action): Result {
     const away = where === 'away' || where === 'exped';
     // Picks left on the go at the warehouse are paid at the day's end (Phase 18.3).
     if (s.haul) bankHaul('You never clocked off; they paid you anyway.');
+    // So is a comp's scorecard (Phase 18.4).
+    if (s.comps.on) finishComp();
 
     // Going to bed hungry with food in the pantry: you eat some of it cold first (Phase 22.3).
     if (!away && s.fed < BODY.hungryBelow) {
@@ -1359,6 +1365,37 @@ export function act(s0: GameState, a: Action): Result {
     return null;
   };
   // The van's miles: tires and engine wear by the minute.
+  const ordinal = (n: number) =>
+    `${n}${n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th'}`;
+  // A comp's scorecard handed in (Phase 18.4): where you came against the field, the points
+  // and the purse, and the result kept.
+  const finishComp = () => {
+    const on = s.comps.on;
+    if (!on) return;
+    const t = COMP_TIERS[on.tier]!;
+    const you = yourScore(s);
+    const field = compField(s.seed, on.tier, on.day);
+    const place = placing(you, field);
+    const pts = pointsFor(on.tier, place, t.field);
+    const prize = t.purse[place - 1] ?? 0;
+    s.comps = {
+      on: null,
+      points: [...s.comps.points, { day: on.day, pts }],
+      results: [...s.comps.results, { tier: on.tier, day: on.day, place, of: t.field }],
+    };
+    if (prize) spend({ cash: prize });
+    const says =
+      place === 1
+        ? COMP_SAYS.win
+        : place <= 3
+          ? COMP_SAYS.podium
+          : place <= t.field / 2
+            ? COMP_SAYS.final
+            : COMP_SAYS.low;
+    line(
+      `${t.name}: ${you.tops} ${you.tops === 1 ? 'top' : 'tops'} in ${you.goes} ${you.goes === 1 ? 'go' : 'goes'}, ${ordinal(place)} of ${t.field}. ${says} +${pts} ${pts === 1 ? 'point' : 'points'}${prize ? `, and ${money(prize)}` : ''}.`,
+    );
+  };
   // The warehouse's picks banked (Phase 18.3): what's on the board for them, paid.
   const bankHaul = (said: string | null) => {
     const h = s.haul;
@@ -1790,6 +1827,28 @@ export function act(s0: GameState, a: Action): Result {
         fixed
           ? `${name} leads ${fixed === 1 ? 'a pitch' : `${fixed} pitches`}. You jug and haul behind. ${e.pitches - x.pitch} to go.`
           : `${name} spends the day on pitch ${x.pitch + 1} and comes back down it. Tomorrow.`,
+      );
+      break;
+    }
+
+    // A comp (Phase 18.4): signed up for at the desk on the day, or the scorecard in.
+    case 'comp': {
+      if (a.do === 'finish') {
+        if (!s.comps.on) return refuse('You’re not in a comp.');
+        finishComp();
+        break;
+      }
+      const why = compBlocked(s);
+      if (why) return refuse(`${why}.`);
+      const tier = compOn(s.day, s.at)!;
+      const t = COMP_TIERS[tier]!;
+      if (t.fee) spend({ cash: -t.fee });
+      s.comps = { ...s.comps, on: { tier, day: s.day, tops: {} } };
+      // The entry's the wall for the day: no pass to buy on top.
+      const pass = INDOOR[s.at]?.pass;
+      if (pass && !s.today.includes(pass)) s.today.push(pass);
+      line(
+        `${t.name}: you're in, number ${t.field}. ${compSet(s.seed, tier, s.day).length} problems, V${t.grades[0]} to V${t.grades[1]}; a top counts in its first ${COMP.goes} goes.`,
       );
       break;
     }
@@ -2695,6 +2754,10 @@ export function act(s0: GameState, a: Action): Result {
       s.skin = clamp100(s.skin - Math.max(0, tapedSkin(s, r, res.skin)));
       for (const l of wearKit(s, r)) line(l);
       L.hi = Math.max(L.hi, Math.min(r.moves, Math.max(0, Math.floor(res.hi))));
+      // A comp problem topped in its first few goes counts on your scorecard (Phase 18.4).
+      const on = s.comps.on;
+      if (on && res.sent && !lap && r.id.startsWith(`cp-${on.tier}-${on.day}-`) && L.goes <= COMP.goes)
+        s.comps = { ...s.comps, on: { ...on, tops: { ...on.tops, [r.id]: L.goes } } };
       if (res.sent) {
         // The log keeps how the first send went; any send after it is a repeat.
         const firstStyle: SendStyle = L.goes === 1 ? (L.told.length ? 'flash' : 'onsight') : 'redpoint';

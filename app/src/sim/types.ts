@@ -73,6 +73,13 @@ export interface GameState {
   // warehouse's picks on top of today's shift, while you're making them.
   coach: { clients: Client[]; next: number; last: number } | null;
   haul: { day: number; picks: number; fatigue: number; pay: number } | null;
+  // Phase 18.4 (save v48): the comp you're in today (its rung, its day, and the goes each
+  // top took), the points you've placed for, and every result.
+  comps: {
+    on: { tier: number; day: number; tops: Record<string, number> } | null;
+    points: { day: number; pts: number }[];
+    results: { tier: number; day: number; place: number; of: number }[];
+  };
   // How you live (dials.ts LIFESTYLE): paid at the van every night.
   lifestyle: 'dirtbag' | 'comfortable' | 'plush';
   // Phase 22.2b. Where you park for the night (dials.ts SPOTS), nights in a row at the Lot
@@ -417,6 +424,8 @@ export type Play =
 export type Action =
   // The warehouse's picks (Phase 18.3): one more from what's on offer, or stop and bank it.
   | { t: 'haul'; pick?: number }
+  // A comp (Phase 18.4): sign up at the desk on the day, or hand in your scorecard.
+  | { t: 'comp'; do: 'enter' | 'finish' }
   // `carry`: a v0.956 climber's skills, when they come across rather than picking a start.
   | { t: 'create'; name: string; start: string; origin?: string; carry?: Skills; solo?: true }
   // Phase 23.3: take up a calling.
