@@ -11,9 +11,10 @@ const DIST = new URL('../dist/', import.meta.url).pathname;
 // R0's budget was 250 KB (docs/ROADMAP.md, rebuild track). Evan raised it to 300 KB on
 // 30 Sep 2026, when Phase 22's van reached 248.5 KB, and to 340 KB on 1 Oct 2026 for Phase
 // 24's three expedition scenes (287.4 KB before them), and to 360 KB on 3 Oct 2026 for Phase
-// 17's writing (338.3 KB after its cast). The art is code, so the game is mostly React, the
+// 17's writing (338.3 KB after its cast), and to 400 KB the same day for Phase 18's
+// minigames and ladders (357.3 KB before them). The art is code, so the game is mostly React, the
 // fonts and the painters; this catches an accidental asset or dependency.
-const BUDGET = 360 * 1024;
+const BUDGET = 400 * 1024;
 
 const PART = { '.js': 'script', '.css': 'styles', '.html': 'page', '.svg': 'icon', '.woff2': 'fonts' };
 const TEXT = new Set(['.js', '.css', '.html', '.svg']);
