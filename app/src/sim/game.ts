@@ -3,6 +3,8 @@
 // stand still. The UI stages the events; it never edits the state itself.
 
 import { fireLine, ledgeLine, sendCheer } from './ambient';
+import { CROWDS, SET_SAYS, SET_WALLS } from './content/setting';
+import { leaveLeft, playBonus, scoreSet, setBrief, setRefused } from './work';
 import { crew, folksDue, holidayOn } from './folks';
 import { FOLKS_CALLS } from './content/folks';
 import { NAMED_FOR } from './content/gifts';
@@ -225,6 +227,7 @@ import type {
   GameEvent,
   GameState,
   Injury,
+  Play,
   Result,
   RouteLog,
   GoStyle,
@@ -267,6 +270,7 @@ export function newGame(seed: string): GameState {
     shifts: [],
     strikes: {},
     benched: {},
+    leave: {},
     lifestyle: 'dirtbag',
     spot: 'lot',
     lotNights: 0,
@@ -777,6 +781,15 @@ export function act(s0: GameState, a: Action): Result {
     s.shifts = s.shifts.filter((x) => x.day > ended);
     for (const m of missed) {
       const j = JOBS[m.job]!;
+      // Leave (Phase 18.1): a rank's days off, taken for a shift you'd have missed anyway.
+      if (leaveLeft(s, m.job, m.day) > 0) {
+        s.leave[m.job] = [...(s.leave[m.job] ?? []), m.day];
+        const left = leaveLeft(s, m.job, m.day);
+        line(
+          `You called in at ${PLACES[j.place]!.name}: a day's leave, ${left ? `${left} left` : 'the last'} this year.`,
+        );
+        continue;
+      }
       const n = (s.strikes[m.job] ?? 0) + 1;
       if (n < WORK.strikes) {
         s.strikes[m.job] = n;
@@ -1098,7 +1111,7 @@ export function act(s0: GameState, a: Action): Result {
         );
     }
   };
-  const runAct = (id: string): string | null => {
+  const runAct = (id: string, play?: Play): string | null => {
     const d = ACTS[id];
     if (!d) return 'Nothing to do there.';
     if (id.split('.')[0] !== s.at) return "You're not there.";
@@ -1116,6 +1129,20 @@ export function act(s0: GameState, a: Action): Result {
       }
       sleep();
       return null;
+    }
+    // A shift played (Phase 18.1): scored against the day's brief, refused before it costs.
+    let played: { score: number; line: string } | null = null;
+    if (play) {
+      if (d.job?.id !== 'set') return 'There’s nothing to play at that.';
+      const b = setBrief(s);
+      const no = setRefused(b, play.set);
+      if (no) return no;
+      const sc = scoreSet(b, play.set);
+      const says = [...SET_SAYS].reverse().find(([at]) => sc.score >= at)![1];
+      played = {
+        score: sc.score,
+        line: `Your set: V${sc.grade} on ${SET_WALLS[b.wall].name}, for ${CROWDS[b.crowd].name.toLowerCase()}. ${says}`,
+      };
     }
     const cost = actCost(s, d);
     // The lake's catch is rolled when you cast, at the hour you cast (Phase 22.3b).
@@ -1215,6 +1242,11 @@ export function act(s0: GameState, a: Action): Result {
           : said,
       );
     if (d.saysOneOf) line(ofDay(s, id, d.saysOneOf));
+    if (played) {
+      const bonus = playBonus(cost.cash ?? 0, played.score);
+      if (bonus) spend({ cash: bonus });
+      line(bonus ? `${played.line} +${money(bonus)} on top.` : played.line);
+    }
     if (d.job) {
       // Only a shift you signed up for counts toward promotion; a walk-in just pays.
       const job = d.job.id;
@@ -1798,7 +1830,7 @@ export function act(s0: GameState, a: Action): Result {
     }
 
     case 'act': {
-      const why = runAct(a.act);
+      const why = runAct(a.act, a.play);
       if (why) return refuse(why);
       break;
     }

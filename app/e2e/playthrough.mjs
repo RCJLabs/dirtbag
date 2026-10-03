@@ -703,8 +703,19 @@ console.log('A setting shift, and Sage turns up');
 await tapAt(170 * Z, screenY(540));
 await expectText('#sheet', /The desk/, 'desk');
 await click('#sheet .opt', 'Set problems for a shift');
+// The setter's puzzle (Phase 18.1): five holds from the bucket, hung in order, the set's
+// grade and checks live as they go up; the shift's pay, and the set's bonus on top.
+await expectText('#sheet-title', /Set problems for a shift/, 'the setter’s brief');
+for (let i = 0; i < 5; i++) {
+  await page.locator('#moves .beta').nth(i).click();
+  taps++;
+}
+await expectText('#set-checks', /V\d+, for V\d+/, 'the set’s grade, live');
+await shot('setter');
+const bonus = Number(/\+\$(\d+) on top/.exec((await text('#set-says')) ?? '')?.[1] ?? 0);
+await click('#set-hang', 'Hang it');
 await expectText('#h-time', /11:22 AM$/, 'clock');
-await expectText('#h-cash', /^\$231$/, 'paid');
+await expectText('#h-cash', new RegExp(`^\\$${231 + bonus}$`), 'paid');
 await expectText('#toast', /Sage turns up/, 'Sage');
 await click('#sheet .x');
 await wait(300);
@@ -759,7 +770,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 45 ||
+  saved?.v !== 46 ||
   st.romance !== null ||
   st.family !== null ||
   // You spoke to Hazel about the roof (Phase 17.3).

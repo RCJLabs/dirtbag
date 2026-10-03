@@ -106,7 +106,7 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 2. The bot plays it through with no errors and no cross-origin requests: Hazel's tip, the drive, a fall at crux 1 that reveals the rock-over, the send, a diner shift, the evening at the fire, sleep, and a reload that comes back to the same morning.
 3. Unit tests cover the RNG golden vectors (matching the Unreal harness), the clock and money, beta unlocks, attempt replay, and save round-trip, migration and quarantine.
 4. Nothing in `src/sim` can touch the DOM, `Math.random` or the wall clock, and CI enforces it.
-5. A player downloads under 250 KB, fonts included. *(The budget went to 300 KB by Evan's call on 30 Sep 2026, in Phase 22, to 340 KB on 1 Oct 2026, for Phase 24's scenes, and to 360 KB on 3 Oct 2026, for Phase 17's writing.)*
+5. A player downloads under 250 KB, fonts included. *(The budget went to 300 KB by Evan's call on 30 Sep 2026, in Phase 22, to 340 KB on 1 Oct 2026, for Phase 24's scenes, to 360 KB on 3 Oct 2026, for Phase 17's writing, and to 400 KB on 3 Oct 2026, for Phase 18's minigames and ladders.)*
 
 ### R1 — The first week
 
@@ -2505,6 +2505,45 @@ Players will ask "what am I working towards?" by hour 3.
 
 **Depends on:** Phases 5–6, 9 and 12. **Effort:** ~4–6 weeks. **Main risk:** re-sprawl. Every addition must replace something on the cut list.
 
+**Plan on the rebuild (3 Oct 2026), with Evan's calls.**
+
+*What's there (a survey of the rebuild against the scope):*
+- **Five jobs, no minigames.** Café (and its double), diner (with tips), coach, setter and warehouse (`content/jobs.ts`): a shift is one tap for its pay, ranks by shifts signed up for and worked (some gated by grade), warnings and the sack. The scope's "keep the setter puzzle, fix the warehouse and courier" is v0.956's; here every minigame is new. No clerk or courier, and no "regulars graduate" arc to drop. No leave.
+- **Nothing yet** for comps, media, sponsors, followers, an owned gym, guiding, or buying a crag. Phase 23 left hooks waiting on them: the scene path and the comp-beast quirk (comps), the Influencer calling (followers and sponsors), and the Record Book's comp, Games, famous, sponsored and pro entries.
+- **Done already:** path tiers gate at V4 / V9 / V14 (23.4), and Mastery comes from sends.
+- **Busking** is the one piece of work with skill in it (a chord-timing set), and the model for how a minigame pays: worse than a job at first, better with practice.
+
+*Three problems first:*
+- **Taps.** Five minigames make a shift take longer. Phase 16's 15–25 hours and the e2e's day-three tap count both feel it. Every minigame gets a "just work it" tap that pays a plain shift; playing it well pays more.
+- **Followers come back** (Evan's call, against Phase 23's): a media stat of its own. The two crowds' standing stays what it is.
+- **Criterion 2 needs four bots:** a career bot for each ladder, played to its capstone inside the clock.
+
+*Evan's calls (3 Oct 2026):*
+1. **The download budget goes to 400 KB.**
+2. **All five jobs get a minigame,** the setter's puzzle first as the template. No new jobs.
+3. **The full media ladder, followers included:** followers, heat and discourse, real sponsors against brand ones, obligations that cost days and clash with climbing windows, a rival athlete for the headline deal, and the documentary.
+4. **Business:** setter, then head setter, then your own gym, with an owner's draw and a line in the morning report. Late money buys and bolts a crag. The guiding outfit, sponsoring a youth athlete and funding an expedition team carry.
+
+*The slices:*
+- **18.1 The setter's puzzle:** the minigame framework (a shift's panel, "just work it", pay by how it went) and the first minigame; rank perks and leave.
+- **18.2 Café and diner:** the café's queue and timing; the diner's tables and tips.
+- **18.3 Coach and warehouse:** the coach's roster, tied to each client's project; the warehouse's push-your-luck, with the incentives fixed.
+- **18.4 The comp ladder:** league nights, then the Circuit, Nationals, the World Series and the Games. Opt-in, fixed fields, points that decay, rounds on the real climbing; the Games as capstone. Opens the scene path, the comp-beast quirk and the comp records.
+- **18.5 Media:** followers, heat and discourse, sponsors and obligations, the rival athlete, the documentary as capstone. Opens the Influencer and the fame records.
+- **18.6 Your own gym, and a crag:** head setter to owner, the draw, the morning line; buy and bolt a crag.
+- **18.7 The ladders:** one screen for all four (outdoor: projects, first ascents, the crew project, expeditions, a guidebook of your own lines, The Line); a career bot per ladder for criterion 2.
+
+**Status (3 Oct 2026): 18.1 built: the setter's puzzle, and leave.** Save v46, 0.999.19. Numbers [proposed] in `PLAY`, `SETTING` and each job's `leave`; content in `content/setting.ts`; rules in `work.ts`.
+- **A shift with a minigame opens it.** "Set problems for a shift" shows the day's brief and the bucket. "Just work the shift" is one tap inside and pays the shift. Played, it pays the shift and up to 40% more for a good set; a weak set pays the shift and no more.
+- **The brief:** a wall (the slab, the vertical, the overhang, the roof, each suiting some kinds of move), the grade the desk wants (rising with your rank), and the week's crowd (beginners, the regulars, the comp team, kids' club), each wanting something different. A hand of thirteen moves' worth: seven for an apprentice, ten for the head setter, always with a rest.
+- **Hang five in order,** with the set's grade and its checks live: the grade, one crux, a rest before it, no dyno straight after a dyno, three kinds of move, what suits the wall, what the crowd wants. The gym says how it went.
+- **Not solved (criterion 3):** brute force over sixty days' briefs, more than half have a different best set, and none is best on more than a tenth. Best play scores about 0.6 for an apprentice and 0.8 for a setter, against 0.4 to 0.5 for holds picked at random. v0.956's flaw (at full craft, most random sets came out classic) has nothing to stand on: there's no craft stat, and the brief moves.
+- **Leave, a rank's perk:** days a year at each job, more as you rise, none for the first rank. A signed-up shift you miss with leave left is called in, not a warning; trips booked at short notice use it too.
+- **The bots don't play** the puzzle: they work the shift, so their pay is as it was. Leave changes their warnings only.
+- **Harness:** every target passes, the rest unchanged; the climber bot (not a target) had one stuck night, against none before.
+- **E2e:** day two's setting shift hangs five holds and checks the set's grade, live, and the pay with its bonus.
+- **The download:** 359.9 KB of 400.
+
 ---
 
 ## Stage D — Get it in front of people
@@ -2791,3 +2830,5 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Phase 17.6 built: four holidays a year as nights at the fire with your people in them; the family back home in five calls returned from the van; home for good, a third ending. Save v44. 0.999.16.
 - 2026-10-03 — Phase 17.7 built: the fire said by whoever's there, a line opening each week you've known them; sends said back; nights on a wall's portaledge; a social bot for criteria 3 (334 of 336 bot-weeks see something new) and 4 (2.2 shows a line by day 100, against v0.956's 7). Save v45. 0.999.17.
 - 2026-10-03 — Twenty portaledge lines each for the usual wall partners; criterion 3 passes in 16 of 16 runs. Phase 17 closed by Evan's call; crew drama, walker chats, busy-texts and shopkeepers' fillers carry. CURRENT MILESTONE moved to Phase 18. 0.999.18.
+- 2026-10-03 — Phase 18 planned on the rebuild with Evan's calls: the budget to 400 KB; a minigame for all five jobs; the full media ladder, followers back; your own gym and buying a crag, with guiding carried.
+- 2026-10-03 — Phase 18.1 built: the setter's puzzle (a brief a shift, five holds hung in order, scored on the grade, flow, wall and crowd; never solved, never worse than working it) and leave by rank. Save v46. 0.999.19.

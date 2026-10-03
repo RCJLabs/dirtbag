@@ -263,9 +263,14 @@ function actRow(game: Game, s: GameState, id: string): Row {
     cost: costLabel(cost, a.sleep ? 'van spot' : ''),
     note: why ?? note,
     off: !!why,
-    run: () => game.doAct(id),
+    // A shift with a minigame (Phase 18.1) opens it; working it plain is a tap inside.
+    run: () =>
+      a.job && PLAYED.has(a.job.id) && !why ? game.openSheet({ k: 'shift', act: id }) : game.doAct(id),
   };
 }
+
+// The jobs with a shift to play.
+const PLAYED = new Set(['set']);
 
 // Into the train sheet: the block you're in, or why there's nothing to do there yet.
 function trainRow(game: Game, s: GameState): Row {

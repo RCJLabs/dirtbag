@@ -65,6 +65,16 @@ import {
   MIX,
   MONEY,
   money,
+  actCost,
+  ACTS,
+  CROWDS,
+  playBonus,
+  scoreSet,
+  setBrief,
+  SET_MOVES,
+  SET_SAYS,
+  SET_WALLS,
+  SETTING,
   needFor,
   PEOPLE,
   picks,
@@ -248,6 +258,8 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
       <CardBody game={game} id={id} s={state} />
     ) : id.k === 'plan' ? (
       <PlanBody game={game} ui={ui} />
+    ) : id.k === 'shift' ? (
+      <ShiftBody game={game} act={id.act} s={state} />
     ) : null;
   if (body)
     return (
@@ -303,6 +315,110 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
         ))}
       </ul>
     </div>
+  );
+}
+
+// The setter's puzzle (Phase 18.1): today's brief, the bucket of holds, the set as you hang
+// it with its grade and what it gets right, and the shift worked plain if you'd rather.
+function ShiftBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
+  const [set, setSet] = useState<string[]>([]);
+  const a = ACTS[act];
+  if (!a) return null;
+  const b = setBrief(s);
+  const sc = scoreSet(b, set);
+  const full = set.length === SETTING.pick;
+  const pay = actCost(s, a).cash ?? 0;
+  const says = [...SET_SAYS].reverse().find(([at]) => sc.score >= at)![1];
+  const climbing = set.filter((m) => SET_MOVES[m]!.kind !== 'rest').length;
+  const fits = Math.round(sc.fit * climbing);
+  const checks: [boolean, string][] = [
+    [sc.grade === b.want, `V${sc.grade}, for V${b.want}`],
+    [sc.crux, 'One crux, harder than the rest'],
+    [sc.rest, 'A rest before the crux'],
+    [sc.linked, 'No dyno straight after a dyno'],
+    [sc.varied, 'Three kinds of move or more'],
+    [climbing > 0 && fits === climbing, `Suits ${SET_WALLS[b.wall].name}: ${fits} of ${climbing}`],
+    [sc.crowd, `${CROWDS[b.crowd].name}: ${CROWDS[b.crowd].wants}`],
+  ];
+  const tap = (m: string) =>
+    setSet((x) => (x.includes(m) ? x.filter((y) => y !== m) : x.length < SETTING.pick ? [...x, m] : x));
+  return (
+    <>
+      <h3 id="sheet-title">Set problems for a shift</h3>
+      <p className="sub">
+        Today it’s {SET_WALLS[b.wall].name}, and the desk wants a V{b.want}. This week:{' '}
+        {CROWDS[b.crowd].name.toLowerCase()}, who want {CROWDS[b.crowd].wants}. Hang {SETTING.pick} holds in
+        the order they’re climbed.
+      </p>
+      <div className="moves" id="moves">
+        {b.hand.map((m) => {
+          const mv = SET_MOVES[m]!;
+          const at = set.indexOf(m);
+          return (
+            <button
+              key={m}
+              type="button"
+              className="beta"
+              aria-checked={at >= 0}
+              role="checkbox"
+              onClick={() => tap(m)}
+            >
+              <span className="dot" />
+              <span>{mv.name}</span>
+              <span className="c">{at >= 0 ? at + 1 : ''}</span>
+              <small>
+                {mv.kind === 'rest'
+                  ? 'a rest'
+                  : `${mv.kind}, ${['easy', 'steady', 'hard', 'a crux'][mv.hard]}`}
+              </small>
+            </button>
+          );
+        })}
+      </div>
+      <ul className="checks" id="set-checks">
+        {checks.map(([ok, what]) => (
+          <li key={what} className={ok ? 'ok' : ''}>
+            {ok ? '✓' : '·'} {what}
+          </li>
+        ))}
+      </ul>
+      {full && (
+        <p className="note" id="set-says">
+          {says}
+          {playBonus(pay, sc.score) ? ` +${money(playBonus(pay, sc.score))} on top.` : ''}
+        </p>
+      )}
+      <button
+        type="button"
+        className="opt"
+        id="set-hang"
+        disabled={!full}
+        onClick={() => {
+          const why = game.playShift(act, { set });
+          if (why) game.toast(`${why}.`);
+        }}
+      >
+        <span>Hang it</span>
+        <span className="c">{costLabel(actCost(s, a))}</span>
+        <small>
+          {full ? 'The shift’s pay, and more for a good set.' : `${set.length} of ${SETTING.pick} holds up.`}
+        </small>
+      </button>
+      <button
+        type="button"
+        className="opt"
+        id="set-plain"
+        onClick={() => {
+          const why = game.doAct(act);
+          if (why) game.toast(`${why}.`);
+          else game.openSheet({ k: 'place', id: s.at });
+        }}
+      >
+        <span>Just work the shift</span>
+        <span className="c">{costLabel(actCost(s, a))}</span>
+        <small>Hang what the head setter tells you to. The shift’s pay.</small>
+      </button>
+    </>
   );
 }
 

@@ -84,6 +84,21 @@ export const WORK = {
   benchDays: 7,
 };
 
+// Phase 18.1: a shift played, not just worked [proposed]. Played well, it pays up to `top`
+// more than the shift (a score of 1); a score under `from` pays the shift and no more, so
+// playing is never worse than working it. Busking's lesson: skill earns, nothing punishes.
+export const PLAY = { from: 0.4, top: 0.4 };
+
+// The setter's puzzle [proposed]: five moves hung from a hand that grows with your rank (the
+// head setter has the pick of the holds), for a grade the gym wants that rises with it.
+// The weights say what a good set is: the grade, then flow, then the wall, then the crowd.
+export const SETTING = {
+  pick: 5,
+  hand: [7, 8, 9, 10],
+  want: { step: 2, spread: 2 },
+  weight: { grade: 0.35, flow: 0.3, fit: 0.2, crowd: 0.15 },
+};
+
 // Phase 22.1: how you live, chosen in the week and paid at the van every night, on top of
 // the spot. v0.956 raised your costs with your grade behind your back; here you pick. More
 // a night buys more back by morning: a better pad, a shower, salve for your tips [proposed].
