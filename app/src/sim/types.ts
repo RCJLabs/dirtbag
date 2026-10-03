@@ -321,6 +321,8 @@ export interface FirstAscent {
   // Soft, true or stout: your grade call against the listed grade (v0.956's FA call).
   call: -1 | 0 | 1;
   day: number;
+  // Who you named it for (Phase 17.5, save v43).
+  for?: string;
 }
 
 export interface PersonLog {
@@ -347,6 +349,8 @@ export interface PersonLog {
   life?: number;
   // The spark's been offered (Phase 17.4), and answered either way.
   sparked?: boolean;
+  // The day you last gave them something (Phase 17.5, save v43).
+  gave?: number;
 }
 
 // How a line's first send went, kept in its log.
@@ -395,7 +399,7 @@ export type Action =
   | { t: 'go'; route: string }
   | { t: 'rest'; route: string }
   | { t: 'done'; route: string; result: GoResult }
-  | { t: 'name'; route: string; name: string; call: -1 | 0 | 1 }
+  | { t: 'name'; route: string; name: string; call: -1 | 0 | 1; for?: string }
   // Phase 21.3: a session (a protocol's id, or 'prehab'), a phase, a taper.
   | { t: 'train'; protocol: string }
   | { t: 'phase'; phase: PhaseId }

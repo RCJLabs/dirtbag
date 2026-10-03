@@ -2437,6 +2437,14 @@ Players will ask "what am I working towards?" by hour 3.
 - **No harness run:** the bots don't talk, so no bot is ever in one; nothing they do changes.
 - **The download:** 345.9 KB of 360.
 
+**Status (3 Oct 2026): 17.5 built: giving.** Save v43, 0.999.15. Numbers [proposed] in `GIVE` and `content/gifts.ts`.
+- **A gift a week for each of them,** from their ordinary talk, at its price on the button: good coffee for Hazel, a secondhand guidebook for Sage, the good chalk for Dex, finger tape for Mara, a burrito for Rico, a thermos for Tam, new bolts for Ray, a fan belt for Frank. A bond each, and their word for it; never more than a day climbing together is worth, and it costs money where a day out doesn't.
+- **A line named for someone:** naming a first ascent, "For someone" lists everyone you're Regulars with or closer, each with a name of their own to start from (Hazel's "Coffee's On", Mara's "Don't Celebrate", Tam's "Five Good Seasons"). They hear about it, two bonds' worth, and the epilogue remembers it.
+- **Frank to the fire:** on an evening his rig's in, ask him over; he sits with you and Hazel for the night, and the games count him in (he doesn't play cards for money).
+- **Dex asked out,** as a partner is, at the same crags and the same bonds.
+- **No harness run:** the bots don’t give, name lines for anyone or ask anyone to the fire, so nothing they do changes.
+- **The download:** 347.3 KB of 360.
+
 ---
 
 ### Phase 18 — Careers and jobs
@@ -2755,3 +2763,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Phase 17.2 built: an arc of four beats, ending in a resolution, for Hazel, Dex, Mara, Rico, Tam, Ray and Frank, forks that send people away for a while, Dex known by days at the same crag, and an epilogue line for each newcomer; the download budget to 360 KB (Evan's call). 0.999.12.
 - 2026-10-03 — Phase 17.3 built: on the age clock, Ray's last season and retirement (his topo yours), Tam slowing then done, Frank's rig dead and parked by yours, partners off the rock for stretches with news overnight; a first meeting waits for your first word. Save v41. 0.999.13.
 - 2026-10-03 — Phase 17.4 built: romance with Sage or Mara (Evan's call), one a life: the spark, the first fight, one van or two, their chance against yours, together; a year counted overnight; an end in a scene after three weeks apart; the epilogue and the You page say so. Save v42. 0.999.14.
+- 2026-10-03 — Phase 17.5 built: giving; a gift a week for each of the cast, a first ascent named for someone close (the epilogue remembers), Frank to the fire, Dex asked out. Save v43. 0.999.15.

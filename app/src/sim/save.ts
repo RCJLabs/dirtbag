@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 42;
+export const SAVE_VERSION = 43;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -350,6 +350,12 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, romance: null };
   },
+  // v42 -> v43 (Phase 17.5): two new optional fields, a gift's day and a line's honoree;
+  // nobody's been given anything yet, and no line's named for anyone.
+  42: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -445,7 +451,8 @@ export function validate(x: unknown): string[] {
           typeof f.name === 'string' &&
           (f.call === -1 || f.call === 0 || f.call === 1) &&
           isInt(f.day) &&
-          (f.by === undefined || typeof f.by === 'string'),
+          (f.by === undefined || typeof f.by === 'string') &&
+          (f.for === undefined || (typeof f.for === 'string' && f.for in PEOPLE)),
       ),
     'firsts',
   );
@@ -893,6 +900,7 @@ const isPerson = (x: unknown): x is PersonLog =>
   (x.talked === undefined || typeof x.talked === 'boolean') &&
   optInt(x.life) &&
   (x.sparked === undefined || typeof x.sparked === 'boolean') &&
+  optInt(x.gave) &&
   (x.invite === undefined ||
     (isObj(x.invite) &&
       isInt(x.invite.day) &&

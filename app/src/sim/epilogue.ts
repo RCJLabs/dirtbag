@@ -16,6 +16,7 @@ import {
   PATH_END,
   FAMILY_END,
   PEOPLE_END,
+  NAMED_END,
   ROMANCE_END,
   QUIRK_END,
   STANCE_END,
@@ -121,6 +122,10 @@ export function epilogue(s: GameState): EpilogueLine[] {
     if (tierOf(p.bond) >= HOME.tier) put(l.close);
     else put(l.far, false);
   }
+
+  // The lines you named for someone (Phase 17.5).
+  for (const f of Object.values(s.firsts))
+    if (f.for && !f.by) put(fill(NAMED_END, { line: f.name, who: PEOPLE[f.for]?.name ?? f.for }));
 
   // Who you were with (Phase 17.4).
   if (s.romance) {

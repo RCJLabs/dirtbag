@@ -2,6 +2,7 @@
 // money and body only move here, and only because of an action. Nothing ticks while you
 // stand still. The UI stages the events; it never edits the state itself.
 
+import { NAMED_FOR } from './content/gifts';
 import { together } from './romance';
 import { frankParks, RAY_GONE, stintOn, tamStops } from './lives';
 import { beyond } from './reach';
@@ -109,6 +110,7 @@ import {
   MASTERY_AT,
   FACTION,
   HOME,
+  GIVE,
   LIFE,
   ROMANCE,
   LOAD,
@@ -1794,6 +1796,7 @@ export function act(s0: GameState, a: Action): Result {
         p.beatDay = s.day;
       }
       if (fx.life) p.life = (p.life ?? 0) + 1;
+      if (fx.gift) p.gave = s.day;
       if (fx.romance === 'start') s.romance = { who: talk.who, stage: 1, since: s.day, beatDay: s.day };
       if (fx.romance === 'start' || fx.romance === 'friends') p.sparked = true;
       if (fx.romance === 'next' && s.romance)
@@ -2644,7 +2647,9 @@ export function act(s0: GameState, a: Action): Result {
       if (s.firsts[a.route]) return refuse("You've named it already.");
       const name = a.name.trim().slice(0, FA_NAME_MAX).trim();
       if (name.length < 2) return refuse('Give it a name.');
-      s.firsts[a.route] = { name, call: a.call, day: s.day };
+      // Named for someone (Phase 17.5): someone you know, who hears about it.
+      const honoree = a.for && PEOPLE[a.for] && s.people[a.for] ? a.for : undefined;
+      s.firsts[a.route] = { name, call: a.call, day: s.day, ...(honoree ? { for: honoree } : {}) };
       const called = gradeName(r.disc, r.grade + a.call);
       line(
         a.call > 0
@@ -2653,6 +2658,10 @@ export function act(s0: GameState, a: Action): Result {
             ? `First ascent: ${name}, called soft at ${called}. Nobody argues with a humble call.`
             : `First ascent: ${name}, ${called}. That's on the map now.`,
       );
+      if (honoree) {
+        bond(honoree, s.people[honoree]!.bond + GIVE.named);
+        line(NAMED_FOR[honoree]?.line ?? `${PEOPLE[honoree]!.name} hears about it.`);
+      }
       break;
     }
   }
@@ -2830,6 +2839,10 @@ const NOUN: Record<RouteDef['type'], string> = {
 
 // Names to offer for a first ascent, from your record: yours, how long it took, the
 // season, and what the week's been like.
+// Who a line could be named for (Phase 17.5): the people you're Regulars with or closer.
+export const honorees = (s: GameState): string[] =>
+  Object.keys(NAMED_FOR).filter((w) => s.people[w] && tierOf(s.people[w]!.bond) >= HOME.tier);
+
 export function faSuggestions(s: GameState, r: RouteDef): string[] {
   const first = s.climber.name.split(/\s+/)[0] || 'Nobody';
   const goes = s.routes[r.id]?.goes ?? 1;

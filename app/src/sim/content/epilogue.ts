@@ -87,6 +87,9 @@ export const PEOPLE_END: Record<string, { close: string; far?: string }> = {
   },
 };
 
+// A line named for someone (Phase 17.5).
+export const NAMED_END = 'You named {line} for {who}. They never once let you forget it.';
+
 // A romance (Phase 17.4): still together at the end, or over.
 export const ROMANCE_END = {
   together: '{name} is still the first person you tell when a line goes.',

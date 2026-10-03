@@ -7,6 +7,8 @@
 import type { Cond } from '../cond';
 import { ARC, BOND } from '../dials';
 import { arcNodes, arcStarts } from './arcs';
+import { FIRE_ASK, GIFTS } from './gifts';
+import { money } from '../format';
 import { romanceNodes, romanceStarts } from './romance';
 import { PLACES } from './places';
 import type { Delta, Skills } from '../types';
@@ -27,6 +29,8 @@ export interface TalkFx {
   life?: true;
   // A romance (Phase 17.4): it starts, it's friends instead, a beat plays, or it ends.
   romance?: 'start' | 'friends' | 'next' | 'end';
+  // A gift (Phase 17.5): the day goes on their log.
+  gift?: true;
   // Skills you come away with.
   train?: Partial<Skills>;
   // Bond: more of it, or at least this much.
@@ -157,6 +161,22 @@ const sitWith = (who: string, label: string, min: number, next: string): TalkOpt
   next,
 });
 
+// Phase 17.5: something for them, once a week, said back in their voice.
+const giftOpt = (who: string): TalkOpt => {
+  const g = GIFTS[who]!;
+  return {
+    label: `Give ${PEOPLE[who]?.name ?? who} ${g.what} (${money(g.cost)})`,
+    when: { giftDue: who, pay: g.cost },
+    fx: { gift: true, cost: { cash: -g.cost }, bond: 1, line: g.line },
+  };
+};
+// Frank, brought to the fire for the night.
+const fireAsk: TalkOpt = {
+  label: FIRE_ASK.label,
+  when: { night: true, notToday: 'fire-frank' },
+  fx: { today: 'fire-frank', line: FIRE_ASK.line },
+};
+
 export const TALK: Record<string, TalkDef> = {
   'hazel-lot': {
     who: 'hazel',
@@ -189,6 +209,7 @@ export const TALK: Record<string, TalkDef> = {
           },
           { label: 'Just coffee', when: { today: 'coffee' }, next: 'no-coffee' },
           askOut('hazel'),
+          giftOpt('hazel'),
         ],
       },
       invite: {
@@ -257,6 +278,7 @@ export const TALK: Record<string, TalkDef> = {
           { label: 'Show me the beta', primary: true, fx: { watch: true } },
           askOut('sage'),
           { label: 'Not now' },
+          giftOpt('sage'),
         ],
       },
       invite: {
@@ -369,15 +391,20 @@ export const TALK: Record<string, TalkDef> = {
       },
       behind: {
         text: 'Dex watches you pull on, jaw tight. "...You\'ve been climbing well. Don\'t get comfortable."',
-        opts: [{ label: 'Fair' }],
+        opts: [{ label: 'Fair' }, giftOpt('dex'), askOut('dex')],
       },
       ahead: {
         text: 'Dex smirks from the boulders. "Still working that V{grade}? I sent it last season, kid."',
-        opts: [{ label: 'Let your climbing answer' }],
+        opts: [{ label: 'Let your climbing answer' }, giftOpt('dex'), askOut('dex')],
+      },
+      // Phase 17.5: Dex can be asked out, as a partner can, once he knows you.
+      invite: {
+        text: '"Climbing? With you?" Dex thinks about it longer than he needs to. "Where?"',
+        opts: inviteOpts('dex', 'Dex: "{place}. Fine. Try to keep up."'),
       },
       even: {
         text: 'Dex gives you a nod and goes back to brushing holds. "May the best climber send."',
-        opts: [{ label: 'Nod back' }],
+        opts: [{ label: 'Nod back' }, giftOpt('dex'), askOut('dex')],
       },
     },
   },
@@ -426,7 +453,7 @@ export const TALK: Record<string, TalkDef> = {
       },
       again: {
         text: 'Ray pours you half a lid of something from the thermos. "Sit. The rock’s not going anywhere."',
-        opts: [sitWith('ray', 'Sit a while', 20, 'sat'), { label: 'Not now' }],
+        opts: [sitWith('ray', 'Sit a while', 20, 'sat'), { label: 'Not now' }, giftOpt('ray')],
       },
       sat: {
         text: 'He tells you who bolted what, who fell off it, and who lied about it after. Most of them were him.',
@@ -475,7 +502,12 @@ export const TALK: Record<string, TalkDef> = {
       },
       again: {
         text: 'Frank’s stove is going. There’s an upturned bucket by it that seems to be yours.',
-        opts: [sitWith('frank', 'Sit with him', 30, 'sat'), { label: 'Not tonight' }],
+        opts: [
+          sitWith('frank', 'Sit with him', 30, 'sat'),
+          { label: 'Not tonight' },
+          giftOpt('frank'),
+          fireAsk,
+        ],
       },
       sat: {
         text: 'You sit. He talks about engines like they’re people and people like they’re weather. Neither of you mentions the leak.',
@@ -506,7 +538,7 @@ export const TALK: Record<string, TalkDef> = {
       nice: { text: '"It might be. Ask me after you’ve fallen off something."', opts: [{ label: 'OK' }] },
       again: {
         text: '"You again. Good. What are you trying?"',
-        opts: [{ label: 'Climbing', primary: true }, askOut('mara')],
+        opts: [{ label: 'Climbing', primary: true }, askOut('mara'), giftOpt('mara')],
       },
       invite: {
         text: '"Where? Somewhere with edges."',
@@ -529,7 +561,7 @@ export const TALK: Record<string, TalkDef> = {
       after: { text: '"Then you’ll be here a while. Pull up a pad."', opts: [{ label: 'OK' }] },
       again: {
         text: '"{name}! I found a new way to fall off it. Come and see."',
-        opts: [{ label: 'In a minute', primary: true }, askOut('rico')],
+        opts: [{ label: 'In a minute', primary: true }, askOut('rico'), giftOpt('rico')],
       },
       invite: {
         text: '"Out? Somewhere steep. Somewhere I can yell."',
@@ -571,7 +603,7 @@ export const TALK: Record<string, TalkDef> = {
       },
       again: {
         text: '"Early start, {name}. The shade won’t wait for us."',
-        opts: [{ label: 'Coming', primary: true }, askOut('tam')],
+        opts: [{ label: 'Coming', primary: true }, askOut('tam'), giftOpt('tam')],
       },
       invite: {
         text: '"Somewhere long. I don’t drive far for short."',
