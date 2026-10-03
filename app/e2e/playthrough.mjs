@@ -576,6 +576,12 @@ await wait(600);
 await walk(360);
 await tapAt(screenX(700, 670), screenY(400));
 await expectText('#sheet', /The Pump · 5\.12a/, 'beta sheet');
+// Well under it on day one: it climbs with more cruxes for you than the topo shows.
+await expectText(
+  '#sheet',
+  /Over your grade, it climbs with (one more crux|\d more cruxes) than the topo shows/,
+  'over your grade',
+);
 await click('#sheet .beta', 'Heel-hook');
 await until('the heel hook picked', () =>
   page.locator('#sheet .beta[aria-checked="true"]', { hasText: 'Heel-hook' }).count(),

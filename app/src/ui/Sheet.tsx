@@ -66,6 +66,7 @@ import {
   needFor,
   PEOPLE,
   picks,
+  overhead,
   PLACES,
   routeOfId,
   seasonOf,
@@ -492,6 +493,7 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
   const pick = picks(s, r);
   const goes = s.routes[route]?.goesToday ?? 0;
   const why = goBlocked(s, r);
+  const extra = overhead(s, r).cruxes.length - r.cruxes.length;
   const c = goCost(r, s);
   const cost = `${costLabel({ min: c.min })} · ${bodyNote({ energy: c.energy, skin: c.skin })}${rockNote(s, r)}`;
   const log = s.routes[route];
@@ -583,6 +585,12 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
           <span>Name your first ascent</span>
           <span className="c" />
         </button>
+      )}
+      {extra > 0 && (
+        <p className="note" id="over">
+          Over your grade, it climbs with {extra === 1 ? 'one more crux' : `${extra} more cruxes`} than the
+          topo shows: moves that are only moves for someone who climbs it.
+        </p>
       )}
       {r.cruxes.map((cx, n) => (
         <Fragment key={cx.id}>

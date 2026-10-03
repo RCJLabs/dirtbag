@@ -1,3 +1,4 @@
+import { needFor } from './climber';
 // Phase 21.1: your kit. What a go does to it, what it does to a go, and the shop.
 import { describe, expect, it } from 'vitest';
 import { betaScale } from './climb';
@@ -9,7 +10,13 @@ import type { GameState } from './types';
 
 const made = (): GameState => {
   const s = act(newGame('kit'), { t: 'create', name: 'Kit', start: 'allrounder' }).state;
-  return { ...s, cash: 500 };
+  // Two grades in every style, so Roadside's V4s are inside what they can try (OVER).
+  const k = needFor(2);
+  return {
+    ...s,
+    cash: 500,
+    climber: { ...s.climber, skills: { power: k, fingers: k, endurance: k, technique: k, head: k } },
+  };
 };
 const at = (s: GameState, place: string): GameState => ({ ...s, at: place, min: 10 * 60 });
 const refused = (r: ReturnType<typeof act>) => r.events.find((e) => e.k === 'refused');

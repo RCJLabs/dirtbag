@@ -806,7 +806,11 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     case 'fall': {
       const r = routeOfId(s, id.route)!;
       const crux = r.cruxes.find((c) => c.id === id.fall.crux);
-      const where = crux ? crux.name.replace(/^The /, 'the ') : 'the wall';
+      const where = id.fall.extra
+        ? 'a move that’s a crux for you'
+        : crux
+          ? crux.name.replace(/^The /, 'the ')
+          : 'the wall';
       const hi = s.routes[id.route]?.hi ?? 0;
       const how = r.dws
         ? `${aFoot(id.fall.ft)} drop into the sea from move ${id.fall.move} of ${r.moves}. You swim back to the shelf.`

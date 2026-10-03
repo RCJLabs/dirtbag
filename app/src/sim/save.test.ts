@@ -13,8 +13,8 @@ const played = () => {
     { t: 'create', name: 'Sam', start: 'ropegun' },
     { t: 'say', talk: 'hazel-lot', node: 'morning', opt: 0 },
     { t: 'travel', to: 'road' },
-    { t: 'go', route: 'pump' },
-    { t: 'done', route: 'pump', result: { sent: false, hi: 5, fellAt: 'A', tried: ['A1'], skin: 4 } },
+    { t: 'go', route: 'warm' },
+    { t: 'done', route: 'warm', result: { sent: false, hi: 4, fellAt: 'A', tried: ['A1'], skin: 4 } },
   ];
   for (const a of acts) {
     const r = act(s, a);
