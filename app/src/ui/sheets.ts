@@ -177,6 +177,11 @@ import {
   buskRate,
   guitarRank,
   RANK_NAME,
+  folksDue,
+  FOLKS_CALLS,
+  HOLIDAYS,
+  HOLIDAY_WITH,
+  type Season,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import type { Game, SheetId } from '../game/game';
@@ -600,6 +605,10 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         tonight: isNight(s.min) ? tonight(s) : undefined,
         close: true,
         rows: [
+          // Phase 17.6: a call from home, waiting on the phone.
+          ...(folksDue(s) !== null
+            ? [{ label: 'Call home back', note: 'A missed call from home.', run: () => game.callHome() }]
+            : []),
           actRow(game, s, 'lot.cook'),
           // Phase 22.3: with a camp kitchen, the recipes, and what's in the pantry for them.
           ...(s.gear.kitchen ? Object.keys(RECIPES).map((id) => actRow(game, s, `lot.${id}`)) : []),
@@ -1027,6 +1036,18 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     }
 
     // An act's end (Phase 16.2): its scene, and a line for each person close enough to be there.
+    // Phase 17.6: a holiday's night at the fire, and who was there.
+    case 'holiday': {
+      const h = HOLIDAYS[id.id as Season];
+      if (!h) return null;
+      const here = id.who.flatMap((w) => (HOLIDAY_WITH[w] ? [HOLIDAY_WITH[w]!] : []));
+      return {
+        title: h.name,
+        sub: here.length ? `${h.text} ${here.join(' ')} You stay up till the fire’s gray.` : h.alone,
+        close: false,
+        rows: [{ label: 'Morning', run: () => game.closeSheet() }],
+      };
+    }
     case 'act': {
       const end = storyOf(s)[id.n - 1]?.end;
       if (!end) return null;
@@ -1176,6 +1197,21 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             : `${h.sign === 'no sign' ? 'No sign.' : `“${h.sign}”, the sign says.`} ${h.look} ${h.pitch}`,
           close: false,
           rows: hitchOpts(s, h).map((o, i) => ({ label: o.label, run: () => game.answer(i) })),
+        };
+      }
+      // A call from home, returned.
+      if (e?.kind === 'folks') {
+        const c = FOLKS_CALLS[Number(e.id)];
+        if (!c) return null;
+        return {
+          title: c.title,
+          sub: c.sit,
+          close: false,
+          rows: c.opts.map((o, i) => ({
+            label: o.label,
+            ...(o.cash ? { note: money(-o.cash) } : o.home ? { note: 'For good: this ends it.' } : {}),
+            run: () => game.answer(i),
+          })),
         };
       }
       // Phase 22.7: your dog's last day. No close: there's only how you spend it.
@@ -1492,7 +1528,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       const t = tallyOf(s);
       return {
         title: 'A climbing life',
-        sub: `${s.climber.name}, ${t.age}: ${t.years} years on rock. ${r.forced ? 'Your body called it.' : 'You called it yourself.'} ${epitaph(t)}`,
+        sub: `${s.climber.name}, ${t.age}: ${t.years} years on rock. ${r.forced ? 'Your body called it.' : r.home ? 'You went home for good.' : 'You called it yourself.'} ${epitaph(t)}`,
         // What became of you (Phase 16.4), then the numbers.
         lines: [...epilogue(s).map((l) => l.text), ...tallyLines(t)],
         close: false,

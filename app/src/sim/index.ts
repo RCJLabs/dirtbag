@@ -54,6 +54,8 @@ export type { Attempt, AttemptEvent, CruxRun, FallRun, Phase, Step } from './cli
 export { beyond, extraCruxes, overhead, reachMargin, reachOf } from './reach';
 export { together } from './romance';
 export { GIFTS, NAMED_FOR } from './content/gifts';
+export { crew, folksDue, holidayOn } from './folks';
+export { FOLKS_CALLS, HOLIDAYS, HOLIDAY_WITH } from './content/folks';
 export {
   SKILLS,
   MIX,

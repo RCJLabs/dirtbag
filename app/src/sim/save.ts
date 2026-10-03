@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 43;
+export const SAVE_VERSION = 45;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -353,6 +353,17 @@ export const MIGRATIONS: Record<number, Migration> = {
   // v42 -> v43 (Phase 17.5): two new optional fields, a gift's day and a line's honoree;
   // nobody's been given anything yet, and no line's named for anyone.
   42: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x };
+  },
+  // v43 -> v44 (Phase 17.6): nobody's called from home yet.
+  43: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, folks: { calls: 0 } };
+  },
+  // v44 -> v45 (Phase 17.7): two new optional fields; nobody's fire or portaledge lines have
+  // been heard in order yet, so everyone's start from their first.
+  44: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x };
   },
@@ -790,9 +801,13 @@ export function validate(x: unknown): string[] {
       isInt(lf.told) &&
       lf.told >= 0 &&
       (lf.retired === null ||
-        (isObj(lf.retired) && isInt(lf.retired.day) && typeof lf.retired.forced === 'boolean')),
+        (isObj(lf.retired) &&
+          isInt(lf.retired.day) &&
+          typeof lf.retired.forced === 'boolean' &&
+          (lf.retired.home === undefined || typeof lf.retired.home === 'boolean'))),
     'life',
   );
+  need(isObj(x.folks) && isInt(x.folks.calls) && x.folks.calls >= 0, 'folks');
   const fm = x.family;
   need(
     fm === null ||
@@ -901,6 +916,8 @@ const isPerson = (x: unknown): x is PersonLog =>
   optInt(x.life) &&
   (x.sparked === undefined || typeof x.sparked === 'boolean') &&
   optInt(x.gave) &&
+  optInt(x.heard) &&
+  optInt(x.ledge) &&
   (x.invite === undefined ||
     (isObj(x.invite) &&
       isInt(x.invite.day) &&

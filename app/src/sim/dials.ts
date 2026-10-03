@@ -1023,10 +1023,24 @@ export const AGE = { start: 22, days: 18, from: 30, warn: 43, forced: 45 };
 // measured: stated, so the hours the harness reports can be checked against testers' and
 // the numbers moved [proposed].
 export const PACE = { tapSec: 4, goSec: 15 };
+// Holidays and the family (Phase 17.6) [proposed]. A holiday each season, on its middle day
+// of the 56-day year, a night at the fire: staying up is `psyche` and a day together with
+// everyone close who's there. Calls from home come every `every` years on the age clock from
+// the `from`th; the last asks you home for good.
+export const HOLIDAY = { on: [7, 21, 35, 49], psyche: 10 };
+export const FOLKS = { from: 1, every: 2 };
+
 // Giving (Phase 17.5) [proposed]: a gift to someone once a week, a bond for it (no more than
 // a day climbing together, and it costs money where a day out doesn't); a line named for
 // someone is worth `named`, once a line.
 export const GIVE = { every: 7, named: 2 };
+
+// The fire's lines (Phase 17.7) [proposed]: `open` of someone's are there from the night you
+// meet, and one more opens each `every` days you've known them, heard first. Criterion 3
+// wants something new every week to day 300; a pool that's all open at once is heard through
+// by the third month and then only repeats. Ten to start keeps the first weeks from
+// repeating a line a night.
+export const FIRE_TALK = { open: 10, every: 7 };
 
 // Romance (Phase 17.4, Evan's call: Sage and Mara), all [proposed]. The spark is offered once
 // each, at `from` bond (a Partner); the beats after it come a week apart (`spacing`). Forks

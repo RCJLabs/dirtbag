@@ -3,6 +3,7 @@
 // the same door a tap does, so a bot's week is a real week. With careful hands it reads the
 // meter exactly, so what it reaches is an upper bound; human hands scatter.
 
+import { folksDue } from './folks';
 import {
   attemptInput,
   betaScale,
@@ -276,6 +277,9 @@ export interface WeekOpts {
   reckless?: boolean;
   // Hands for each go; perfect ones by default.
   hands?: () => (a: Attempt, i: number) => boolean;
+  // Phase 17.7: a player who reads everything: sits at the fire every night, and with Ray
+  // and Frank when they're about. Every bot plays the people's moments when they're due.
+  social?: boolean;
 }
 
 // The cash each strategy tries to keep before it'll spend a day climbing.
@@ -718,11 +722,34 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     );
   }
 
+  // Phase 17.7, the social bot only: whoever's here with something due (a meeting, a beat of
+  // their arc, a moment of their life, a romance's), answered the first way, and a sit with a
+  // local. The others leave the people be, so their targets measure what they always have.
+  const MOMENT = /^(meet|beat-|love-|last-season|slowing|parked)/;
+  function maybePeople() {
+    if (!opts.social) return;
+    for (const [talk, t] of Object.entries(TALK)) {
+      if (t.who === 'sage' || talk === 'hazel-lot' || whereNow(s, t.who) !== s.at) continue;
+      for (let n = 0; n < 4; n++) {
+        if (whereNow(s, t.who) !== s.at) break;
+        const node = talkStart(s, talk);
+        const sit = node === 'again' && (t.who === 'ray' || t.who === 'frank');
+        if (!node || !(MOMENT.test(node) || sit)) break;
+        const opt = t.nodes[node]!.opts.findIndex((o) => !o.when || holds(s, o.when));
+        if (opt < 0 || !go({ t: 'say', talk, node, opt })) break;
+        if (sit || node === 'meet') break;
+      }
+    }
+    // A call from home, returned, answered the first way (never home).
+    if (folksDue(s) !== null && go({ t: 'call' })) go({ t: 'answer', opt: 0 });
+  }
+
   function session() {
     for (let n = 0; n < 30; n++) {
       if (s.energy < 25 || s.skin < 22 || s.min >= 17 * 60) return;
       if (!opts.reckless && ratio(s.load) > LOAD.risk) return;
       maybeSage();
+      maybePeople();
       const next = choose();
       if (!next) return;
       const r = !opts.reckless && !s.today.includes('warm') && cold(s, next) ? (warmUp() ?? next) : next;
@@ -824,8 +851,10 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     if (s.cash < HUSTLE.teach.cash) tryAct('lot.cans');
     if (!isNight(s.min)) tryAct('lot.rest');
     if (s.fed < HUSTLE.teach.fed && s.cash < -(ACTS['lot.cook']!.cost.cash ?? 0)) binRun();
-    // The fire when the days have gone flat (Phase 22.4d), as a player would.
-    if (s.psyche.level < BOT_FIRE) tryAct('lot.sit');
+    // The fire when the days have gone flat (Phase 22.4d), as a player would; every night,
+    // for one who reads everything (Phase 17.7). And whoever's at the Lot with something due.
+    maybePeople();
+    if (s.psyche.level < BOT_FIRE || opts.social) tryAct('lot.sit');
     park();
     signUp(['cafe.shift']);
     record(where, morning);
@@ -1118,8 +1147,10 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     if (s.cash < HUSTLE.teach.cash) tryAct('lot.cans');
     if (!isNight(s.min)) tryAct('lot.rest');
     if (s.fed < HUSTLE.teach.fed && s.cash < -(ACTS['lot.cook']!.cost.cash ?? 0)) binRun();
-    // The fire when the days have gone flat (Phase 22.4d), as a player would.
-    if (s.psyche.level < BOT_FIRE) tryAct('lot.sit');
+    // The fire when the days have gone flat (Phase 22.4d), as a player would; every night,
+    // for one who reads everything (Phase 17.7). And whoever's at the Lot with something due.
+    maybePeople();
+    if (s.psyche.level < BOT_FIRE || opts.social) tryAct('lot.sit');
     const next = saving();
     park();
     signUp(JOB_ACTS, next ? next + 50 : 0);

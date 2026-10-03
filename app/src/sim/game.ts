@@ -2,6 +2,9 @@
 // money and body only move here, and only because of an action. Nothing ticks while you
 // stand still. The UI stages the events; it never edits the state itself.
 
+import { fireLine, ledgeLine, sendCheer } from './ambient';
+import { crew, folksDue, holidayOn } from './folks';
+import { FOLKS_CALLS } from './content/folks';
 import { NAMED_FOR } from './content/gifts';
 import { together } from './romance';
 import { frankParks, RAY_GONE, stintOn, tamStops } from './lives';
@@ -111,6 +114,7 @@ import {
   FACTION,
   HOME,
   GIVE,
+  HOLIDAY,
   LIFE,
   ROMANCE,
   LOAD,
@@ -307,6 +311,7 @@ export function newGame(seed: string): GameState {
     life: { held: 0, told: 0, retired: null },
     family: null,
     romance: null,
+    folks: { calls: 0 },
     record: {},
     speed: { pb: null, runs: 0, day: 0 },
     mode: 'rope',
@@ -858,13 +863,15 @@ export function act(s0: GameState, a: Action): Result {
     }
   };
   // Phase 16.1: hung up, by choice or by your body: nothing more happens to this climber.
-  const retire = (forced: boolean) => {
-    s.life = { ...s.life, retired: { day: s.day, forced } };
+  const retire = (forced: boolean, home = false) => {
+    s.life = { ...s.life, retired: { day: s.day, forced, ...(home ? { home: true } : {}) } };
     s.encounter = null;
     line(
       forced
         ? `${AGE.forced}. You wake up and your body has made the call for you: no more projects, no more one-more-go. It was a good run.`
-        : 'You hang it up. The shoes go in a box, the chalk bag on a nail. It was a good run.',
+        : home
+          ? 'You go home for good. The shoes come too, for the crag an hour away. It was a good run.'
+          : 'You hang it up. The shoes go in a box, the chalk bag on a nail. It was a good run.',
     );
     events.push({ k: 'retired', forced });
   };
@@ -1069,6 +1076,18 @@ export function act(s0: GameState, a: Action): Result {
       );
     if (s.people.frank && crossed(frankParks(s.people.frank)))
       line('Frank’s truck didn’t start this morning, and the garage says it won’t again.');
+    // A call from home that's come due (Phase 17.6): it waits on the phone in the van.
+    if (folksDue(s) !== null && folksDue({ ...s, day: ended }) === null)
+      line('A missed call from home. It’ll keep till you call back.');
+    // A holiday (Phase 17.6): the night at the fire, if you were at the Lot for it, with
+    // whoever's close and around. It's a day together with each, and a lift.
+    const hol = holidayOn(ended);
+    if (hol && s.at === 'lot') {
+      const here = crew({ ...s, day: ended });
+      for (const w of here) climbedWith(w);
+      s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + HOLIDAY.psyche) };
+      events.push({ k: 'holiday', id: seasonOf(ended), who: here });
+    }
     // A year together, on the age clock (Phase 17.4).
     const r = s.romance;
     if (r && together(s)) {
@@ -1185,11 +1204,15 @@ export function act(s0: GameState, a: Action): Result {
     // Tips, where a job has them, on top of the shift's pay.
     const tips = d.job ? tipsFor(s, d.job.id) : 0;
     if (tips) spend({ cash: tips });
-    if (d.says)
+    // A night at the fire (Phase 17.7) is said by whoever's there.
+    const fire = id === 'lot.sit' ? fireLine(s) : null;
+    const said = fire?.text ?? d.says;
+    if (fire?.fresh) s.people[fire.who]!.heard = (s.people[fire.who]!.heard ?? 0) + 1;
+    if (said)
       line(
         d.job
-          ? `${d.says} +${money((cost.cash ?? 0) + tips)}${tips ? `, ${money(tips)} of it tips` : ''}.`
-          : d.says,
+          ? `${said} +${money((cost.cash ?? 0) + tips)}${tips ? `, ${money(tips)} of it tips` : ''}.`
+          : said,
       );
     if (d.saysOneOf) line(ofDay(s, id, d.saysOneOf));
     if (d.job) {
@@ -1609,6 +1632,9 @@ export function act(s0: GameState, a: Action): Result {
             ? 'The storm on the wall all day. You sit it out on the portaledge.'
             : 'You clip in for the night. The ledge creaks; the haul bag swings.',
         );
+        const ledge = ledgeLine(s, x.partner);
+        if (ledge) line(ledge.text);
+        if (ledge?.fresh) s.people[x.partner!]!.ledge = (s.people[x.partner!]!.ledge ?? 0) + 1;
         portaledge();
         break;
       }
@@ -1666,6 +1692,16 @@ export function act(s0: GameState, a: Action): Result {
 
     // Phase 23.7: the Homecoming, armed for your next send outside, or put off.
     // Phase 16.1: hanging it up, from 30.
+    // Phase 17.6: calling home back, when a call's come.
+    case 'call': {
+      const n = folksDue(s);
+      if (n === null) return refuse('Nobody’s called.');
+      if (s.encounter) return refuse('First things first: an answer.');
+      s.encounter = { kind: 'folks', id: String(n) };
+      events.push({ k: 'encounter', kind: 'folks', id: String(n) });
+      break;
+    }
+
     case 'retire': {
       const why = retireBlocked(s);
       if (why) return refuse(why);
@@ -2381,6 +2417,18 @@ export function act(s0: GameState, a: Action): Result {
         if (!road_(e, a.opt)) return refuse('Nobody’s asking.');
         break;
       }
+      // A call from home: what you say, and whether you go.
+      if (e?.kind === 'folks') {
+        const o = FOLKS_CALLS[Number(e.id)]?.opts[a.opt];
+        if (!o) return refuse('Nobody’s asking.');
+        s.encounter = null;
+        s.folks = { calls: s.folks.calls + 1 };
+        if (o.cash) spend({ cash: o.cash });
+        if (o.psyche) s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + o.psyche) };
+        line(o.out);
+        if (o.home) retire(false, true);
+        break;
+      }
       const k = e ? knockById(e.id) : undefined;
       const o = k?.opts[a.opt];
       if (!e || !k || !o) return refuse('Nobody’s asking.');
@@ -2508,6 +2556,21 @@ export function act(s0: GameState, a: Action): Result {
           line('Somebody was watching that.');
         }
         note(`${SEND_NAME[style]}: ${r.name}, ${gradeLabel(r)}, on go ${L.goes}.`);
+        // Whoever was with you says so (Phase 17.7), on a first send: the belayer, or anyone
+        // you know climbing here.
+        if (!lap) {
+          const mate =
+            (roped(r) ? belayer(s) : null) ??
+            [...PARTNERS, 'dex'].find((w) => s.people[w] && whereNow(s, w) === s.at) ??
+            null;
+          // Once a day each: a fifth send of the session isn't news to them.
+          const cheer =
+            mate && s.people[mate] && !s.today.includes(`cheer-${mate}`) ? sendCheer(s, mate) : null;
+          if (cheer) {
+            line(cheer);
+            s.today.push(`cheer-${mate}`);
+          }
+        }
         // A send of the style you were afraid of ends the fear (Phase 22.4b).
         if (s.fear.includes(r.type)) {
           s.fear = s.fear.filter((f) => f !== r.type);

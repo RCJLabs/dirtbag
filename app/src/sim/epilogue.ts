@@ -16,6 +16,7 @@ import {
   PATH_END,
   FAMILY_END,
   PEOPLE_END,
+  HOME_FOR_GOOD,
   NAMED_END,
   ROMANCE_END,
   QUIRK_END,
@@ -122,6 +123,9 @@ export function epilogue(s: GameState): EpilogueLine[] {
     if (tierOf(p.bond) >= HOME.tier) put(l.close);
     else put(l.far, false);
   }
+
+  // Home for good (Phase 17.6).
+  if (s.life.retired?.home) put(HOME_FOR_GOOD);
 
   // The lines you named for someone (Phase 17.5).
   for (const f of Object.values(s.firsts))

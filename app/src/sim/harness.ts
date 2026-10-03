@@ -2,6 +2,10 @@
 // 6's targets are written against. Pure like the rest of the sim; `npm run harness` prints
 // the tables (harness/season.harness.ts).
 
+import { FIRE_LINES, LEDGE_LINES, SEND_CHEERS } from './content/ambient';
+import { FOLKS_CALLS } from './content/folks';
+import { GIFTS, NAMED_FOR } from './content/gifts';
+import { TALK } from './content/people';
 import { expedLoop, humanHands, playDays, type BotRun, type Strategy } from './bot';
 import { bjTotal, boardAt, equity, handNeeds } from './cards';
 import { CLIMB, EXPED, GAMES } from './dials';
@@ -31,6 +35,8 @@ export interface SeasonOpts {
   reckless?: boolean;
   // An origin to make the climber with (Phase 23.2); none by default, so the targets don't move.
   origin?: string;
+  // A player who reads everything (Phase 17.7): the fire every night, the locals' sits.
+  social?: boolean;
 }
 
 export function season(seed: string, o: SeasonOpts): BotRun {
@@ -41,9 +47,33 @@ export function season(seed: string, o: SeasonOpts): BotRun {
     days: o.days,
     reckless: o.reckless,
     origin: o.origin,
+    social: o.social,
     hands: o.human ? () => humanHands(Rng.fromStream(seed, 'session').derive(`bot-go-${n++}`)) : undefined,
   });
 }
+
+// Phase 17.7: the authored social lines a run can show, as said (lines with a {blank} in
+// them aside), and the ambient ones among them (the fire, and what's said at a send).
+export function socialLines(): { social: Set<string>; ambient: Set<string> } {
+  const ambient = new Set(
+    [FIRE_LINES, SEND_CHEERS, LEDGE_LINES].flatMap((pools) => Object.values(pools).flat()),
+  );
+  const social = new Set(ambient);
+  for (const t of Object.values(TALK))
+    for (const n of Object.values(t.nodes))
+      for (const o of n.opts) if (o.fx?.line && !o.fx.line.includes('{')) social.add(o.fx.line);
+  for (const g of Object.values(GIFTS)) social.add(g.line);
+  for (const g of Object.values(NAMED_FOR)) social.add(g.line);
+  for (const c of FOLKS_CALLS) for (const o of c.opts) social.add(o.out);
+  return { social, ambient };
+}
+
+// A run's lines as day and text.
+export const linesOf = (run: BotRun): { day: number; text: string }[] =>
+  run.lines.map((l) => {
+    const m = /^day (\d+): (.*)$/s.exec(l);
+    return { day: Number(m?.[1] ?? 0), text: m?.[2] ?? l };
+  });
 
 export interface Checkpoint {
   day: number;

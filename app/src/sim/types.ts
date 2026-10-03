@@ -155,7 +155,7 @@ export interface GameState {
   dogs: { name: string; years: number; day: number }[];
   // A walk-out (Phase 22.6c) has stages: the one you're on, and what the calls so far add up to.
   encounter: {
-    kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell' | 'wall' | 'stance' | 'echo';
+    kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell' | 'wall' | 'stance' | 'echo' | 'folks';
     id: string;
     stage?: number;
     tally?: { risk: number; energy: number; fed: number; skin: number; psyche: number; hours: number };
@@ -228,7 +228,10 @@ export interface GameState {
   // Phase 16.1: a life's clock. `held`: days an old save's clock was held back, so nobody
   // loads into their last night unwarned; `told`: the last age a morning said; `retired`:
   // the day you hung it up, and whether your body made the call.
-  life: { held: number; told: number; retired: { day: number; forced: boolean } | null };
+  // Phase 17.6: `home`, when it was a call from home that ended it.
+  life: { held: number; told: number; retired: { day: number; forced: boolean; home?: boolean } | null };
+  // Phase 17.6 (save v44): the calls from home you've had.
+  folks: { calls: number };
   // Phase 16.5: the family you climb on after. Your generation (2 for the kid of the first),
   // who coached you, the lines they put up, and whether Dex coaches you for their sake.
   family: { gen: number; forebear: string; lines: string[]; coach: boolean } | null;
@@ -351,6 +354,10 @@ export interface PersonLog {
   sparked?: boolean;
   // The day you last gave them something (Phase 17.5, save v43).
   gave?: number;
+  // How many of their fire lines you've heard, in the order they open (Phase 17.7, save v45).
+  heard?: number;
+  // And of their nights on a wall's portaledge (save v45).
+  ledge?: number;
 }
 
 // How a line's first send went, kept in its log.
@@ -400,6 +407,8 @@ export type Action =
   | { t: 'rest'; route: string }
   | { t: 'done'; route: string; result: GoResult }
   | { t: 'name'; route: string; name: string; call: -1 | 0 | 1; for?: string }
+  // Phase 17.6: calling home back.
+  | { t: 'call' }
   // Phase 21.3: a session (a protocol's id, or 'prehab'), a phase, a taper.
   | { t: 'train'; protocol: string }
   | { t: 'phase'; phase: PhaseId }
@@ -494,12 +503,14 @@ export type GameEvent =
   | { k: 'act'; n: number }
   // A go that hurt you, with the line that says so (logged, and shown on the go's sheet).
   | { k: 'injured'; kind: string; tier: 1 | 2 | 3; days: number; text: string }
+  // A holiday's night at the fire, and who was there (Phase 17.6).
+  | { k: 'holiday'; id: string; who: string[] }
   // A conversation moves to another node, or ends (null).
   | { k: 'talk'; node: string | null }
   // An encounter begins (Phase 22.6): it waits for an answer.
   | {
       k: 'encounter';
-      kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell' | 'wall' | 'stance' | 'echo';
+      kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell' | 'wall' | 'stance' | 'echo' | 'folks';
       id: string;
     }
   // Back from an expedition (Phase 24.5): its card, from the newest entry in the book.
