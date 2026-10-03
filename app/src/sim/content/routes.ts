@@ -56,6 +56,8 @@ export interface CruxDef {
   // Said when you're through it.
   win: string;
   beta: string[];
+  // A crux only you meet, climbing over your grade (reach.ts): the one it borrows its beta from.
+  of?: string;
 }
 
 export interface RouteDef {

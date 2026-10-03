@@ -141,10 +141,13 @@ export function boardSet(seed: string, block: number): RouteDef[] {
 // ---- The Cave: v0.956's "steep bouldering cave, no ropes, just hard plastic" ----
 // Eight problems a week, mostly power and crimps as v0.956's were, set on the steep walls of
 // a cave by the trailhead. v0.956 set V3 to V10; raised to V5 to V12 (Evan's call, 30 Sep
-// 2026), so a V8 climber on a wet day still has a week's work there.
+// 2026), so a V8 climber on a wet day still has a week's work there. Then V5 to V11 with
+// two at V7 (Evan's call, 3 Oct 2026): with no going on lines three grades over you, a V6
+// who'd sent the week's V5 to V9 had nothing left there on a wet day. The Training Center
+// sets V7 to V14 for the grades above.
 
 export const CAVE = 'cave';
-const CAVE_GRADES = [5, 6, 7, 8, 9, 10, 11, 12];
+const CAVE_GRADES = [5, 6, 7, 7, 8, 9, 10, 11];
 // v0.956's Cave: power three times in six, crimps twice, a dyno once.
 const CAVE_TYPES: Style[] = ['power', 'crimp', 'dyno', 'power', 'crimp', 'power'];
 const CAVE_NAMES: Record<Style, string[]> = {

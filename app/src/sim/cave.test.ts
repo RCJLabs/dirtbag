@@ -34,9 +34,9 @@ const refused = (r: ReturnType<typeof act>) => {
 };
 
 describe('The Cave', () => {
-  it('sets eight problems a week, V5 to V12, the same for the same seed', () => {
+  it('sets eight problems a week, V5 to V11 with two at V7, the same for the same seed', () => {
     const w1 = caveSet('a', 1);
-    expect(w1.map((r) => r.grade)).toEqual([5, 6, 7, 8, 9, 10, 11, 12]);
+    expect(w1.map((r) => r.grade)).toEqual([5, 6, 7, 7, 8, 9, 10, 11]);
     expect(w1.every((r) => r.place === 'cave' && r.disc === 'boulder')).toBe(true);
     expect(caveSet('a', 1)).toBe(w1);
     expect(caveSet('a', 2).map((r) => r.name)).not.toEqual(w1.map((r) => r.name));

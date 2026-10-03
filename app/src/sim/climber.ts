@@ -3,7 +3,7 @@
 // There is no odds roll: your skills set how wide each crux's window is.
 
 import type { Skills, SkillId } from './types';
-import { LEGACY, WINDOW } from './dials';
+import { LEGACY, OVER, WINDOW } from './dials';
 
 // The six styles a route or a sequence can ask for.
 export type Style = 'crimp' | 'power' | 'endurance' | 'technical' | 'dyno' | 'crack';
@@ -106,12 +106,14 @@ export const mix = (s: Skills, style: Style): number => {
 // How far above (+) or below (−) a grade you climb in a style, in grades.
 export const margin = (s: Skills, style: Style, grade: number): number => levelOf(mix(s, style)) - grade;
 
-// A window's width against your margin: open below your level, closing fast above it
-// (WINDOW says why).
-export const windowFactor = (m: number): number =>
-  m >= 0
-    ? Math.min(WINDOW.widest, 1 + WINDOW.easier * m)
-    : Math.max(WINDOW.narrowest, Math.exp(WINDOW.harder * m));
+// A window's width against your margin: open below your level, closing fast above it,
+// faster past a grade over, and shut at the limit (WINDOW and OVER say why).
+export const windowFactor = (m: number): number => {
+  if (m >= 0) return Math.min(WINDOW.widest, 1 + WINDOW.easier * m);
+  if (m <= -OVER.limit) return 0;
+  const past = Math.min(0, m + OVER.from);
+  return Math.max(WINDOW.narrowest, Math.exp(WINDOW.harder * m + OVER.steeper * past));
+};
 
 // Endurance (with technique, as the endurance style) sets how fast you pump against the
 // route's grade: a fit climber on an easy route barely pumps, and a stamina-poor climber

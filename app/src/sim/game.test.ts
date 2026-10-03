@@ -28,7 +28,13 @@ function play(s: GameState, ...actions: Action[]): { state: GameState; events: G
 
 // Puts you somewhere at a time without the drive, for rules that don't care how you got there.
 const at = (s: GameState, place: string, min: number = s.min): GameState => ({ ...s, at: place, min });
-const crag = (min = 9 * 60) => at(newGame('t'), 'road', min);
+// Two grades in every style: inside the limit of what Roadside's V4s let you try (OVER).
+const two = needFor(2);
+const able = (s: GameState): GameState => ({
+  ...s,
+  climber: { ...s.climber, skills: { power: two, fingers: two, endurance: two, technique: two, head: two } },
+});
+const crag = (min = 9 * 60) => at(able(newGame('t')), 'road', min);
 const fell = (hi: number, fellAt: string, tried: string[], skin = 0): GoResult => ({
   sent: false,
   hi,
@@ -338,7 +344,7 @@ describe('goes and sends', () => {
     const onsight = play(crag(), { t: 'go', route: 'pump' }, { t: 'done', route: 'pump', result: top });
     expect(onsight.events).toContainEqual({ k: 'sent', route: 'pump', style: 'onsight', go: 1 });
     const flash = play(
-      newGame('t'),
+      able(newGame('t')),
       { t: 'say', talk: 'hazel-lot', node: 'morning', opt: 0 },
       { t: 'travel', to: 'road' },
       { t: 'go', route: 'pump' },

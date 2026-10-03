@@ -12,7 +12,7 @@ import {
   windowFactor,
   type GoSummary,
 } from './climber';
-import { WINDOW } from './dials';
+import { OVER, WINDOW } from './dials';
 
 const all = (n: number) => ({ power: n, fingers: n, endurance: n, technique: n, head: n });
 const go = (o: Partial<GoSummary>): GoSummary => ({
@@ -55,11 +55,13 @@ describe('the climber', () => {
     expect(windowFactor(0)).toBe(1);
     expect(windowFactor(1)).toBeCloseTo(1.24);
     expect(windowFactor(10)).toBe(WINDOW.widest);
-    // Over your level, each grade takes the window to about 40% of the one before.
+    // Over your level, the first grade takes the window to about 40%; past it each grade
+    // closes it faster again; and at the limit it's shut.
     expect(windowFactor(-1)).toBeCloseTo(Math.exp(-WINDOW.harder));
-    expect(windowFactor(-2) / windowFactor(-1)).toBeCloseTo(windowFactor(-1));
-    expect(windowFactor(-4)).toBeLessThan(0.03);
-    expect(windowFactor(-10)).toBe(WINDOW.narrowest);
+    expect(windowFactor(-2) / windowFactor(-1)).toBeCloseTo(Math.exp(-WINDOW.harder - OVER.steeper));
+    expect(windowFactor(-OVER.limit + 0.01)).toBeGreaterThan(0);
+    expect(windowFactor(-OVER.limit)).toBe(0);
+    expect(windowFactor(-10)).toBe(0);
     expect(pumpFactor(all(needFor(4)), 4)).toBeCloseTo(1);
     expect(pumpFactor(all(0), 18)).toBe(1.5);
   });

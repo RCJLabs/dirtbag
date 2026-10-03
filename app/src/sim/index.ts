@@ -50,6 +50,7 @@ export {
   STEP,
 } from './climb';
 export type { Attempt, AttemptEvent, CruxRun, FallRun, Phase, Step } from './climb';
+export { beyond, extraCruxes, overhead, reachMargin, reachOf } from './reach';
 export {
   SKILLS,
   MIX,

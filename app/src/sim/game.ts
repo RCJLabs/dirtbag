@@ -2,6 +2,7 @@
 // money and body only move here, and only because of an action. Nothing ticks while you
 // stand still. The UI stages the events; it never edits the state itself.
 
+import { beyond } from './reach';
 import { cold, daysOff, freshLoad, goLoad, projected, ratio, rollInjury } from './body';
 import { CARRIED, carried, gains, gradeOf, STARTS, type GoSummary } from './climber';
 import { headroom, holds, isNight, leadOver, unmet } from './cond';
@@ -508,6 +509,8 @@ export function goBlocked(s: GameState, r: RouteDef): string | null {
   if (r.exped) return expedBlocked(s, r);
   if (!revealed(s, r))
     return `You can't read this line yet. Send ${routeOfId(s, r.hiddenUntil!)?.name ?? 'the hardest line here'} first`;
+  // Too far over your grade to try (Phase 16, OVER): nothing on it would hold for you.
+  if (beyond(s, r)) return 'Beyond you, for now. Come back a better climber';
   const inside = INDOOR[r.place];
   if (inside) {
     if (s.min >= INDOOR_CLOSE) return `${inside.name} is closed`;

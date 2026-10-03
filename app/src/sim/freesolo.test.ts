@@ -1,3 +1,4 @@
+import { needFor } from './climber';
 // Phase 21.6: Free Solo and the speed wall.
 import { describe, expect, it } from 'vitest';
 import { betaScale } from './climb';
@@ -35,8 +36,14 @@ const made = (solo: boolean): GameState =>
       ? { t: 'create', name: 'Alex', start: 'allrounder', solo: true }
       : { t: 'create', name: 'Alex', start: 'allrounder' },
   ).state;
-// At Roadside at 5:30 on day 1, after Hazel has gone: nobody to belay.
-const road = (solo: boolean): GameState => ({ ...made(solo), at: 'road', min: 17 * 60 + 30 });
+// At Roadside at 5:30 on day 1, after Hazel has gone: nobody to belay. Two grades in every
+// style, so The Pump is inside what they can try (OVER).
+const k = needFor(2);
+const road = (solo: boolean): GameState => {
+  const s = made(solo);
+  const skills = { power: k, fingers: k, endurance: k, technique: k, head: k };
+  return { ...s, at: 'road', min: 17 * 60 + 30, climber: { ...s.climber, skills } };
+};
 
 describe('Free Solo', () => {
   it('is chosen at the start, and solos outdoor sport lines and wall pitches only', () => {

@@ -17,8 +17,31 @@ export const WINDOW = {
   easier: 0.24,
   widest: 1.4,
   harder: 0.9,
-  // A floor only so a window is never zero; nothing holds one this narrow.
+  // A floor only so a window inside the limit is never zero; nothing holds one this narrow.
   narrowest: 0.002,
+};
+
+// Climbing above your grade (Phase 16, Evan's call), all [proposed]. A V12 who'd trained
+// one style to V15 sent the Crucible's V15 boulder 95% of goes, its V16 half the time and
+// its V18 myth one go in eleven: the meter steps at 60 a second, so a window narrower than
+// a frame still passes whenever a frame lands in it. So:
+//   specialist  one style carries you at most this far past your grade (the average of
+//               all five), so the V18 myth asks for a V18 climber, near enough;
+//   from        past one grade over, windows close faster too: steeper more a grade on top
+//               of WINDOW.harder, so two grades over is a ninth of at-grade, not a sixth;
+//   limit       three grades over, a crux is shut: there's no window to hit at all;
+//   cruxFrom    and from a grade and a half over, a move that's a move for someone at the
+//               grade is a crux for you, one more each grade on, up to `most` on a line.
+//               From one grade over, half the career bots hadn't finished Act III by day
+//               415 (a grade over is where everyone projects); from a grade and a half,
+//               all of them had, a median of day 261.
+export const OVER = {
+  specialist: 1.5,
+  from: 1,
+  steeper: 0.6,
+  limit: 3,
+  cruxFrom: 1.5,
+  most: 2,
 };
 
 export const DAY = {

@@ -41,6 +41,9 @@ function atCrag(min = 9 * 60): GameState {
 }
 // The day's scale on every window: prime rock, before the sun.
 const DAY1 = 1.1;
+// A climber well under The Pump, but inside the limit of what they can try (OVER).
+const under = needFor(pump.grade - 2.5);
+const weakSkills = { power: under, fingers: under, endurance: under, technique: under, head: under };
 
 // A careful climber: rests on the ledge until the pump is nearly gone, and plays each verb
 // by reading the meter the way the e2e bot reads it off the screen.
@@ -201,7 +204,7 @@ describe('a go on The Pump', () => {
   it('works to your skills: a weaker climber gets narrower windows and pumps faster', () => {
     const weak = tiedIn({
       ...atCrag(),
-      climber: { ...atCrag().climber, skills: newGame('t').climber.skills },
+      climber: { ...atCrag().climber, skills: weakSkills },
     });
     expect(weak.mods.crux.A!).toBeLessThan(DAY1);
     expect(weak.mods.pump).toBeGreaterThan(1);
@@ -217,7 +220,7 @@ describe('a go on The Pump', () => {
     });
     const weak = tiedIn({
       ...atCrag(),
-      climber: { ...atCrag().climber, skills: newGame('t').climber.skills },
+      climber: { ...atCrag().climber, skills: weakSkills },
     });
     expect(strong.mods.speed).toBe(CLIMB.pace.max);
     expect(weak.mods.speed).toBeLessThan(1);

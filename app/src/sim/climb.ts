@@ -14,6 +14,7 @@
 // the last piece you placed, and with nothing low enough to hold it, you hit the ground.
 
 import { margin, pumpFactor, windowFactor } from './climber';
+import { overhead, reachMargin } from './reach';
 import { effGrade, PUMPED, type BetaDef, type CruxDef, type RouteDef, type Verb } from './content/routes';
 import { cold } from './body';
 import { BODY, CLIMB, FOOD, FREESOLO, LOAD, TRAD } from './dials';
@@ -59,6 +60,8 @@ export interface FallRun {
   t: number;
   // Trad: the feet you hit the ground from, when nothing held.
   deck?: number;
+  // A crux the line gained for you (reach.ts): `crux` is the one it borrowed from.
+  extra?: string;
 }
 
 export interface Attempt {
@@ -170,7 +173,7 @@ export function betaScale(s: GameState, r: RouteDef, beta: string, started = fal
   const L = s.routes[r.id];
   const first = !L?.sent && (L?.goes ?? 0) === (started ? 1 : 0);
   return (
-    windowFactor(margin(s.climber.skills, b.style, effGrade(r))) *
+    windowFactor(reachMargin(s, b.style, effGrade(r))) *
     dayFactor(s, r).windows *
     kitFactor(s, b.style) *
     // A calling that commits on a first go (Phase 23.3); paths, mastery, a quirk (23.4).
@@ -186,10 +189,15 @@ export function paceFor(s: GameState, r: RouteDef): number {
 }
 
 // Called after the 'go' action has charged the go's costs.
-export function startAttempt(s: GameState, r: RouteDef): Attempt {
-  const pick = picks(s, r);
+// Over your grade, the go is on the line as you meet it, with its added cruxes (reach.ts).
+export function startAttempt(s: GameState, line: RouteDef): Attempt {
+  const r = overhead(s, line);
+  const pick = picks(s, line);
   const crux: Record<string, number> = {};
-  for (const c of r.cruxes) crux[c.id] = betaScale(s, r, pick[c.id] ?? '', true);
+  for (const c of r.cruxes) {
+    if (c.of) pick[c.id] = pick[c.of] ?? c.beta[0] ?? '';
+    crux[c.id] = betaScale(s, line, pick[c.id] ?? '', true);
+  }
   return {
     route: r.id,
     def: r,
@@ -326,8 +334,10 @@ function fall(a: Attempt, r: RouteDef, text: string | undefined, ev: AttemptEven
       deck = ft;
     }
   }
+  const at = a.crux ? r.cruxes.find((c) => c.id === a.crux!.id) : undefined;
   a.fall = {
-    crux: a.crux?.id ?? null,
+    crux: at?.of ?? a.crux?.id ?? null,
+    ...(at?.of ? { extra: at.name } : {}),
     move,
     text: line,
     ft,
@@ -368,10 +378,10 @@ export function attemptInput(att: Attempt, on: boolean): Step {
   const b = betaOf(r, v.beta);
   if (v.verb === 'load' && was && !on) {
     const target = CLIMB.load.target;
-    if (Math.abs(v.m - target) <= v.w) clear(a, r, ev);
+    if (v.w > 0 && Math.abs(v.m - target) <= v.w) clear(a, r, ev);
     else fall(a, r, v.m < target ? b.lines.short : b.lines.long, ev);
   } else if (v.verb === 'timing' && on && !was) {
-    if (Math.abs(v.m - CLIMB.timing.center) <= v.w) {
+    if (v.w > 0 && Math.abs(v.m - CLIMB.timing.center) <= v.w) {
       v.hits++;
       say(a, b.lines.hit ?? 'Good.', 0.8);
     } else {
@@ -458,7 +468,7 @@ export function stepAttempt(att: Attempt, dt: number = STEP): Step {
       const T = CLIMB.tension;
       v.m = clamp(v.m + (a.hold ? T.speed : -T.speed) * dt, 0, 1);
       v.c = T.center + T.swing * Math.sin(v.t * (b.rate ?? 1.6));
-      if (Math.abs(v.m - v.c) <= v.w) v.inT += dt;
+      if (v.w > 0 && Math.abs(v.m - v.c) <= v.w) v.inT += dt;
       if (v.inT >= (b.need ?? 1.6)) clear(a, r, ev);
       else if (v.t > T.timeout) fall(a, r, b.lines.fall, ev);
     } else {
