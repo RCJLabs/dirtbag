@@ -1,1 +1,68 @@
-{"format":"dirtbag","v":12,"app":"0.967.1","state":{"seed":"fixture-v12","day":1,"min":686,"cash":61,"energy":88,"skin":64,"fed":95,"at":"lot","x":null,"today":["worked"],"climber":{"name":"Robin","start":"allrounder","skills":{"power":8,"fingers":8,"endurance":8,"technique":8,"head":8}},"load":{"acute":20,"chronic":20,"today":0},"injury":null,"hurt":0,"routes":{},"firsts":{},"people":{},"race":null,"trips":0,"dog":null,"goals":1,"unlocked":[],"gear":{"shoes":60,"chalk":30},"training":{"phase":"base","since":1,"taper":null,"prehab":0},"jobs":{},"shifts":[],"strikes":{},"benched":{},"lifestyle":"dirtbag","spot":"trailhead","lotNights":0,"driveway":0,"van":{"tires":84.76,"engine":84.84,"battery":85},"breakdown":null,"wall":null,"expedition":null,"speed":{"pb":null,"runs":0,"day":0},"mode":"rope","soloing":null,"dead":null,"log":[{"day":1,"min":460,"text":"Gas, $1."},{"day":1,"min":648,"text":"Three hours of oat milk. +$28."},{"day":1,"min":648,"text":"A walk-in: paid, and that’s all. Signed-up shifts are the ones that count toward a raise."},{"day":1,"min":648,"text":"That is the floor sorted. Everything from here is a choice rather than a scramble."},{"day":1,"min":658,"text":"Wren makes it strong."},{"day":1,"min":658,"text":"Gas, $1."},{"day":1,"min":686,"text":"Ramen again. It works."}]}}
+{
+  "format": "dirtbag",
+  "v": 12,
+  "app": "0.967.1",
+  "state": {
+    "seed": "fixture-v12",
+    "day": 1,
+    "min": 686,
+    "cash": 61,
+    "energy": 88,
+    "skin": 64,
+    "fed": 95,
+    "at": "lot",
+    "x": null,
+    "today": ["worked"],
+    "climber": {
+      "name": "Robin",
+      "start": "allrounder",
+      "skills": { "power": 8, "fingers": 8, "endurance": 8, "technique": 8, "head": 8 }
+    },
+    "load": { "acute": 20, "chronic": 20, "today": 0 },
+    "injury": null,
+    "hurt": 0,
+    "routes": {},
+    "firsts": {},
+    "people": {},
+    "race": null,
+    "trips": 0,
+    "dog": null,
+    "goals": 1,
+    "unlocked": [],
+    "gear": { "shoes": 60, "chalk": 30 },
+    "training": { "phase": "base", "since": 1, "taper": null, "prehab": 0 },
+    "jobs": {},
+    "shifts": [],
+    "strikes": {},
+    "benched": {},
+    "lifestyle": "dirtbag",
+    "spot": "trailhead",
+    "lotNights": 0,
+    "driveway": 0,
+    "van": { "tires": 84.76, "engine": 84.84, "battery": 85 },
+    "breakdown": null,
+    "wall": null,
+    "expedition": null,
+    "speed": { "pb": null, "runs": 0, "day": 0 },
+    "mode": "rope",
+    "soloing": null,
+    "dead": null,
+    "log": [
+      { "day": 1, "min": 460, "text": "Gas, $1." },
+      { "day": 1, "min": 648, "text": "Three hours of oat milk. +$28." },
+      {
+        "day": 1,
+        "min": 648,
+        "text": "A walk-in: paid, and that’s all. Signed-up shifts are the ones that count toward a raise."
+      },
+      {
+        "day": 1,
+        "min": 648,
+        "text": "That is the floor sorted. Everything from here is a choice rather than a scramble."
+      },
+      { "day": 1, "min": 658, "text": "Wren makes it strong." },
+      { "day": 1, "min": 658, "text": "Gas, $1." },
+      { "day": 1, "min": 686, "text": "Ramen again. It works." }
+    ]
+  }
+}

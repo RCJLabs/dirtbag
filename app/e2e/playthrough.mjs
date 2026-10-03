@@ -759,8 +759,10 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 40 ||
+  saved?.v !== 41 ||
   st.family !== null ||
+  // You spoke to Hazel about the roof (Phase 17.3).
+  st.people?.hazel?.talked !== true ||
   st.life?.retired !== null ||
   st.life.told !== 22 ||
   st.year?.home !== 'none' ||

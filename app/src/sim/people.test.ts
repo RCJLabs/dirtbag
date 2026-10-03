@@ -8,6 +8,7 @@ import { routesAt } from './content/gym';
 import { ROUTES } from './content/routes';
 import { ARC, BOND } from './dials';
 import { act, goBlocked, newGame, talkStart } from './game';
+import { stintOn } from './lives';
 import { tierOf, whereIs, whereNow } from './presence';
 import type { Action, GameEvent, GameState, PersonLog } from './types';
 import { conditionsAt, skyOn } from './weather';
@@ -24,7 +25,7 @@ const grade = (g: number) => {
 const withSage = (p: Partial<PersonLog>, over: Partial<GameState> = {}): GameState => ({
   ...newGame('people'),
   climber: grade(4),
-  people: { sage: { bond: 0, last: 0, since: 2, ...p } },
+  people: { sage: { bond: 0, last: 0, since: 2, talked: true, ...p } },
   ...over,
 });
 function play(s: GameState, ...actions: Action[]) {
@@ -56,11 +57,10 @@ describe('bonds', () => {
   });
 
   it('bring a partner round more often as they grow', () => {
-    const seen = (bond: number) => {
-      let n = 0;
-      for (let d = 3; d < 403; d++) if (whereIs('people', 'sage', d, 10 * 60, { bond, last: 0 })) n++;
-      return n / 400;
-    };
+    // Days she's off on a stint of her own (Phase 17.3) aren't the bond's to count.
+    const days = Array.from({ length: 400 }, (_, i) => i + 3).filter((d) => !stintOn('people', 'sage', d));
+    const seen = (bond: number) =>
+      days.filter((d) => whereIs('people', 'sage', d, 10 * 60, { bond, last: 0 })).length / days.length;
     expect(seen(0)).toBeCloseTo(0.55, 1);
     expect(seen(7)).toBeCloseTo(0.55 + 4 * BOND.perTier, 1);
     // The same day's roll: a closer partner turns up on every day a stranger would.

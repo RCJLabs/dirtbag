@@ -2,6 +2,7 @@
 // money and body only move here, and only because of an action. Nothing ticks while you
 // stand still. The UI stages the events; it never edits the state itself.
 
+import { frankParks, RAY_GONE, stintOn, tamStops } from './lives';
 import { beyond } from './reach';
 import { cold, daysOff, freshLoad, goLoad, projected, ratio, rollInjury } from './body';
 import { CARRIED, carried, gains, gradeOf, STARTS, type GoSummary } from './climber';
@@ -107,6 +108,7 @@ import {
   MASTERY_AT,
   FACTION,
   HOME,
+  LIFE,
   LOAD,
   MONEY,
   PLANS,
@@ -837,6 +839,7 @@ export function act(s0: GameState, a: Action): Result {
       );
     }
     rivalNight(ended);
+    livesNight(ended);
     // Phase 16.1: the birthdays that change something, and the night in the van your body
     // calls it. Never on a wall or away: it waits for you to get down.
     if (s.climber.name && !s.life.retired) {
@@ -1028,6 +1031,39 @@ export function act(s0: GameState, a: Action): Result {
         );
       p.ahead = ahead;
     }
+  };
+  // Overnight news of the cast's lives (Phase 17.3): partners off the rock and back, and
+  // the days Ray stops coming out, Tam stops climbing and Frank's rig dies. Only for people
+  // you know; crossing a day counts, so a trip away doesn't skip one.
+  const livesNight = (ended: number) => {
+    const crossed = (d: number | null) => d !== null && ended < d && d <= s.day;
+    for (const who of LIFE.stint.who) {
+      if (!s.people[who]) continue;
+      const name = PEOPLE[who]!.name;
+      const now = stintOn(s.seed, who, s.day);
+      const was = stintOn(s.seed, who, ended);
+      if (now && now.from > ended)
+        line(
+          now.kind === 'hurt'
+            ? `${name} tweaked a finger and is off the rock for ${now.to - now.from} days.`
+            : `${name}’s off on a road trip. Back in ${now.to - now.from} days.`,
+        );
+      else if (was && !now) line(`${name}’s back on the rock.`);
+    }
+    if (s.people.ray && crossed(RAY_GONE)) {
+      line(
+        'Ray didn’t come out this weekend. His thermos is on the guardrail with a note under it: “It’s your wall now. Look after the bolts.” Inside the lid, folded small, is his topo.',
+      );
+      // His topo: every way up Roadside he knew, which was all of them.
+      for (const r of routesAt(s.seed, 'road', s.day))
+        for (const c of r.cruxes) for (const b of c.beta.slice(1)) learn(r.id, b, 'told', '');
+    }
+    if (s.people.tam && crossed(tamStops(s.people.tam)))
+      line(
+        'Tam didn’t come out to the Mesa this morning. There’s a note on your windscreen in his careful hand: “Five good seasons. Thank you for the last of them.”',
+      );
+    if (s.people.frank && crossed(frankParks(s.people.frank)))
+      line('Frank’s truck didn’t start this morning, and the garage says it won’t again.');
   };
   const runAct = (id: string): string | null => {
     const d = ACTS[id];
@@ -1727,8 +1763,9 @@ export function act(s0: GameState, a: Action): Result {
       // You can finish a sentence with someone who's just left, but they won't do anything
       // for you: a conversation can straddle the hour they head off.
       if (Object.keys(fx).length && whereNow(s, talk.who) !== s.at) return refuse("They're not here.");
-      // Talking to someone is meeting them.
+      // Talking to someone is meeting them, and the first word said (Phase 17.3).
       const p = meet(talk.who);
+      p.talked = true;
       if (fx.act) {
         const why = runAct(fx.act);
         if (why) return refuse(why);
@@ -1744,6 +1781,7 @@ export function act(s0: GameState, a: Action): Result {
         p.arc = (p.arc ?? 0) + 1;
         p.beatDay = s.day;
       }
+      if (fx.life) p.life = (p.life ?? 0) + 1;
       if (fx.train) train(fx.train);
       if (fx.away) {
         p.away = s.day + fx.away;

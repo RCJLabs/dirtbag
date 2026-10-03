@@ -2417,6 +2417,17 @@ Players will ask "what am I working towards?" by hour 3.
 - **Carried:** a partner who belays you before you've spoken to them meets you silently, so their first meeting never plays (Sage's always could; Mara and Tam belay). The bots don't play the new arcs; criterion 3's measurement is 17.7's.
 - **The download:** 342.5 KB of 360.
 
+**Status (3 Oct 2026): 17.3 built: lives that change.** Save v41, 0.999.13. On the age clock, 18 days to a year (Evan's call), all [proposed] in `LIFE`.
+- **Ray's last season:** from the sixth year (day 91) he tells you, once, if you know him; from the seventh (day 109) he doesn't come out. That night his thermos is on the guardrail with a note, "It's your wall now", and his topo: every way up Roadside you hadn't found is yours (told, so a line you hadn't tried flashes, not onsights).
+- **Tam's five good seasons,** as years of knowing him: from the third he comes out half as often and tells you why; from the fifth he's done, with a note on your windscreen.
+- **Frank's rig** dies four years after you meet him, and he parks it next to yours: from then he's at the Lot every evening.
+- **Partners off the rock for a stretch:** from the second year, each of Sage, Mara, Rico and Tam has a 35% chance a year of four to twelve days hurt or away, from the seed; you hear overnight when someone you know goes and comes back. Hazel's the constant.
+- **A first meeting waits for your first word** (save v41: `talked`): a partner who belays you before you've spoken has met you, but their meeting plays when you first talk. An old save counts everyone it knew as spoken to, since it can't tell.
+- **The moments you've heard** (`life`) are kept, so Ray's last season and Frank's truck play once.
+- **Tests:** each timer, the stints (never Hazel, never the first year), the overnight news, Ray's topo, the meeting kept for the first word, and a real v40 save loading.
+- **Harness:** every target passes, but partners away for stretches cost the career bots belays: Act III's median end moves from day 298 to 336 (8 of 8 still end it), V10 from day 176.5 to 179, and criterion 1's median from 19.4 to 20.1 hours. Worth watching as 17.4 to 17.7 add to it.
+- **The download:** 343.8 KB of 360.
+
 ---
 
 ### Phase 18 — Careers and jobs
@@ -2733,3 +2744,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Phase 16 closed by Evan's call; the Late Bloomer's speed run and Act IV inside the clock carry; the Cave sets V5 to V11 with two at V7 (Evan's call), closing a wet-day gap at V6. CURRENT MILESTONE moved to Phase 17, the people, planned on the rebuild with Evan's calls: a cast of about eight, romance with Sage and one more, and the family back home as a third ending.
 - 2026-10-03 — Phase 17.1 built: Ray, Frank, Mara, Rico and Tam, each where and when they climb, with a look and a first meeting; Mara, Rico and Tam partners; Evan's call that the life timers run on the age clock. 0.999.11.
 - 2026-10-03 — Phase 17.2 built: an arc of four beats, ending in a resolution, for Hazel, Dex, Mara, Rico, Tam, Ray and Frank, forks that send people away for a while, Dex known by days at the same crag, and an epilogue line for each newcomer; the download budget to 360 KB (Evan's call). 0.999.12.
+- 2026-10-03 — Phase 17.3 built: on the age clock, Ray's last season and retirement (his topo yours), Tam slowing then done, Frank's rig dead and parked by yours, partners off the rock for stretches with news overnight; a first meeting waits for your first word. Save v41. 0.999.13.

@@ -1,1 +1,65 @@
-{"format":"dirtbag","v":11,"app":"0.965.0+jobs","state":{"seed":"fixture-v11","day":2,"min":430,"cash":26,"energy":100,"skin":86,"fed":57,"at":"lot","x":null,"today":[],"climber":{"name":"Robin","start":"ropegun","skills":{"power":5,"fingers":5,"endurance":13,"technique":5,"head":11}},"load":{"acute":15,"chronic":18.57,"today":0},"injury":null,"hurt":0,"routes":{},"firsts":{},"people":{},"race":null,"trips":1,"dog":null,"goals":1,"unlocked":[],"gear":{"shoes":60,"chalk":30},"training":{"phase":"base","since":1,"taper":null,"prehab":0},"jobs":{},"shifts":[],"strikes":{},"benched":{},"lifestyle":"dirtbag","van":{"tires":83.01,"engine":83.67,"battery":84},"breakdown":null,"wall":null,"expedition":null,"speed":{"pb":null,"runs":0,"day":0},"mode":"rope","soloing":null,"dead":null,"log":[{"day":1,"min":460,"text":"Gas, $1."},{"day":1,"min":648,"text":"Three hours of oat milk. +$28."},{"day":1,"min":648,"text":"A walk-in: paid, and that’s all. Signed-up shifts are the ones that count toward a raise."},{"day":1,"min":648,"text":"That is the floor sorted. Everything from here is a choice rather than a scramble."},{"day":1,"min":648,"text":"Gas, $12. The van starts on the second try."},{"day":1,"min":713,"text":"Gas, $12. The van starts on the second try."},{"day":2,"min":430,"text":"Van spot, $18. Morning comes anyway."}]}}
+{
+  "format": "dirtbag",
+  "v": 11,
+  "app": "0.965.0+jobs",
+  "state": {
+    "seed": "fixture-v11",
+    "day": 2,
+    "min": 430,
+    "cash": 26,
+    "energy": 100,
+    "skin": 86,
+    "fed": 57,
+    "at": "lot",
+    "x": null,
+    "today": [],
+    "climber": {
+      "name": "Robin",
+      "start": "ropegun",
+      "skills": { "power": 5, "fingers": 5, "endurance": 13, "technique": 5, "head": 11 }
+    },
+    "load": { "acute": 15, "chronic": 18.57, "today": 0 },
+    "injury": null,
+    "hurt": 0,
+    "routes": {},
+    "firsts": {},
+    "people": {},
+    "race": null,
+    "trips": 1,
+    "dog": null,
+    "goals": 1,
+    "unlocked": [],
+    "gear": { "shoes": 60, "chalk": 30 },
+    "training": { "phase": "base", "since": 1, "taper": null, "prehab": 0 },
+    "jobs": {},
+    "shifts": [],
+    "strikes": {},
+    "benched": {},
+    "lifestyle": "dirtbag",
+    "van": { "tires": 83.01, "engine": 83.67, "battery": 84 },
+    "breakdown": null,
+    "wall": null,
+    "expedition": null,
+    "speed": { "pb": null, "runs": 0, "day": 0 },
+    "mode": "rope",
+    "soloing": null,
+    "dead": null,
+    "log": [
+      { "day": 1, "min": 460, "text": "Gas, $1." },
+      { "day": 1, "min": 648, "text": "Three hours of oat milk. +$28." },
+      {
+        "day": 1,
+        "min": 648,
+        "text": "A walk-in: paid, and that’s all. Signed-up shifts are the ones that count toward a raise."
+      },
+      {
+        "day": 1,
+        "min": 648,
+        "text": "That is the floor sorted. Everything from here is a choice rather than a scramble."
+      },
+      { "day": 1, "min": 648, "text": "Gas, $12. The van starts on the second try." },
+      { "day": 1, "min": 713, "text": "Gas, $12. The van starts on the second try." },
+      { "day": 2, "min": 430, "text": "Van spot, $18. Morning comes anyway." }
+    ]
+  }
+}

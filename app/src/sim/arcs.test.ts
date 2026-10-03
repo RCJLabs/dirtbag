@@ -60,7 +60,10 @@ describe('the cast’s milestones (Phase 17.2)', () => {
       whereIs('arcs', 'mara', d, 12 * 60),
     )!;
     const at = (bond: number, p: Partial<PersonLog>, d = day) =>
-      made({ mara: { bond, last: 0, since: 1, ...p } }, { day: d, min: 12 * 60, at: 'gorge', energy: 100 });
+      made(
+        { mara: { bond, last: 0, since: 1, talked: true, ...p } },
+        { day: d, min: 12 * 60, at: 'gorge', energy: 100 },
+      );
     expect(talkStart(at(0, {}), 'mara')).toBe('again');
     expect(talkStart(at(1, {}), 'mara')).toBe('beat-1');
     const one = act(at(1, {}), { t: 'say', talk: 'mara', node: 'beat-1', opt: 1 }).state;

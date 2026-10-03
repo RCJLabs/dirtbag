@@ -5,6 +5,7 @@ import { isWeekend } from './cond';
 import { PEOPLE, TALK, TOWN } from './content/people';
 import { CAST } from './dials';
 import { act, belayer, newGame } from './game';
+import { RAY_GONE } from './lives';
 import { PARTNERS, whereIs } from './presence';
 import type { GameState } from './types';
 import { conditionsAt, seasonOf } from './weather';
@@ -37,7 +38,11 @@ describe('the cast (Phase 17.1)', () => {
       for (const m of [7 * 60, 10 * 60, 15 * 60]) {
         const w = at('ray', d, m);
         const want =
-          isWeekend(d) && m >= CAST.ray.from && m < CAST.ray.till && conditionsAt(SEED, d, 'road').open;
+          d < RAY_GONE &&
+          isWeekend(d) &&
+          m >= CAST.ray.from &&
+          m < CAST.ray.till &&
+          conditionsAt(SEED, d, 'road').open;
         expect(w).toBe(want ? 'road' : null);
         if (w) seen++;
       }
