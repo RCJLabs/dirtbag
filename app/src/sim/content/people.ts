@@ -6,6 +6,7 @@
 
 import type { Cond } from '../cond';
 import { ARC, BOND } from '../dials';
+import { arcNodes, arcStarts } from './arcs';
 import { PLACES } from './places';
 import type { Delta, Skills } from '../types';
 
@@ -199,12 +200,15 @@ export const TALK: Record<string, TalkDef> = {
   },
   'hazel-crag': {
     who: 'hazel',
+    // Her arc plays here, at the crag (Phase 17.2): the Lot's mornings are the tip and the coffee.
     start: [
+      ...arcStarts('hazel'),
       { when: { sentToday: 'pump' }, node: 'sent' },
       { when: { wentToday: 'pump' }, node: 'goes' },
       { node: 'start' },
     ],
     nodes: {
+      ...arcNodes('hazel'),
       sent: { text: "That's the one. Lower off, I'm hungry.", opts: [{ label: 'OK' }] },
       goes: { text: 'Clean catch. Rest up, go again.', opts: [{ label: 'OK' }] },
       start: {
@@ -331,11 +335,13 @@ export const TALK: Record<string, TalkDef> = {
     start: [
       { when: { metToday: 'dex' }, node: 'meet' },
       { when: { racing: true }, node: 'race' },
+      ...arcStarts('dex'),
       { when: { lead: 'dex/1' }, node: 'behind' },
       { when: { trail: 'dex/2' }, node: 'ahead' },
       { node: 'even' },
     ],
     nodes: {
+      ...arcNodes('dex'),
       meet: {
         calls: true,
         text: 'Dex Calloway eyes you from the boulders. "Heard you sent your first V{grade}." A beat. "...Nice." Looks like it cost him something to say.',
@@ -372,10 +378,12 @@ export const TALK: Record<string, TalkDef> = {
     who: 'ray',
     start: [
       { when: { notMet: 'ray' }, node: 'meet' },
+      ...arcStarts('ray'),
       { when: { today: 'ray' }, node: 'done' },
       { node: 'again' },
     ],
     nodes: {
+      ...arcNodes('ray'),
       meet: {
         text: 'An old man on the guardrail with a thermos, watching the wall like it owes him money. "Ray. I bolted half of what’s on that wall and fell off the other half." He looks you over. "You’re the one who keeps coming back."',
         opts: [
@@ -406,10 +414,12 @@ export const TALK: Record<string, TalkDef> = {
     who: 'frank',
     start: [
       { when: { notMet: 'frank' }, node: 'meet' },
+      ...arcStarts('frank'),
       { when: { today: 'frank' }, node: 'done' },
       { node: 'again' },
     ],
     nodes: {
+      ...arcNodes('frank'),
       meet: {
         text: 'A box truck you haven’t seen is nosed in past Hazel’s van, a stovepipe through its roof. Its owner is splitting kindling. "Frank. Passing through." He thinks about it. "Nine years now, passing through." He nods at your van. "Yours leaks on the left. I can hear it from here."',
         opts: [
@@ -435,8 +445,9 @@ export const TALK: Record<string, TalkDef> = {
   },
   mara: {
     who: 'mara',
-    start: [{ when: { notMet: 'mara' }, node: 'meet' }, { node: 'again' }],
+    start: [{ when: { notMet: 'mara' }, node: 'meet' }, ...arcStarts('mara'), { node: 'again' }],
     nodes: {
+      ...arcNodes('mara'),
       meet: {
         text: 'A woman on the next line lowers off, looks at your chalk bag, then at you. "Mara. You’re on my warm-up." She doesn’t move you off it. "Go on, then. Don’t celebrate if you get it."',
         opts: [
@@ -457,8 +468,9 @@ export const TALK: Record<string, TalkDef> = {
   },
   rico: {
     who: 'rico',
-    start: [{ when: { notMet: 'rico' }, node: 'meet' }, { node: 'again' }],
+    start: [{ when: { notMet: 'rico' }, node: 'meet' }, ...arcStarts('rico'), { node: 'again' }],
     nodes: {
+      ...arcNodes('rico'),
       meet: {
         text: 'Someone in a sleeveless tee is hanging off the steepest thing here by one heel, arguing with it. He drops, sees you watching, and grins. "Rico. You want next go? It’s horrible. You’ll love it."',
         opts: [
@@ -479,8 +491,9 @@ export const TALK: Record<string, TalkDef> = {
   },
   tam: {
     who: 'tam',
-    start: [{ when: { notMet: 'tam' }, node: 'meet' }, { node: 'again' }],
+    start: [{ when: { notMet: 'tam' }, node: 'meet' }, ...arcStarts('tam'), { node: 'again' }],
     nodes: {
+      ...arcNodes('tam'),
       meet: {
         text: 'An older climber is coiling a rope in the shade of the wall, slow and exact, the way you’d fold a flag. "Tam Okonkwo. I climb long, and I climb early, before the rock gets hot." He looks at your hands. "You’ll want tape for this sandstone."',
         opts: [

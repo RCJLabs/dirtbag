@@ -106,7 +106,7 @@ What R0 still fakes is listed in `app/README.md`. The biggest item: climber stat
 2. The bot plays it through with no errors and no cross-origin requests: Hazel's tip, the drive, a fall at crux 1 that reveals the rock-over, the send, a diner shift, the evening at the fire, sleep, and a reload that comes back to the same morning.
 3. Unit tests cover the RNG golden vectors (matching the Unreal harness), the clock and money, beta unlocks, attempt replay, and save round-trip, migration and quarantine.
 4. Nothing in `src/sim` can touch the DOM, `Math.random` or the wall clock, and CI enforces it.
-5. A player downloads under 250 KB, fonts included. *(The budget went to 300 KB by Evan's call on 30 Sep 2026, in Phase 22, and to 340 KB on 1 Oct 2026, for Phase 24's scenes.)*
+5. A player downloads under 250 KB, fonts included. *(The budget went to 300 KB by Evan's call on 30 Sep 2026, in Phase 22, to 340 KB on 1 Oct 2026, for Phase 24's scenes, and to 360 KB on 3 Oct 2026, for Phase 17's writing.)*
 
 ### R1 — The first week
 
@@ -2399,7 +2399,23 @@ Players will ask "what am I working towards?" by hour 3.
 - **Each has a meeting and an ordinary day;** their milestones and resolutions are 17.2's.
 - **Criterion 1 holds:** a test that no two people, in the cast or in town (Wren, Otis), share a name, and that no two looks, or shirts, match each other's or a stranger's.
 - **Harness:** every target passes; the career bots, who don't talk to the new people but climb near them, reach V10 on a median day 176.5 (was 178), and Act III ends in every career (median day 298, was 281.5).
-- **The download** is 338.3 KB of its 340 KB budget. The rest of Phase 17 is mostly writing; the budget needs Evan's call.
+- **The download** is 338.3 KB of its 340 KB budget. The rest of Phase 17 is mostly writing: *Evan's call (3 Oct 2026), the budget goes to 360 KB.*
+
+**Status (3 Oct 2026): 17.2 built: milestones.** 0.999.12. No save change.
+- **An arc for everyone,** as Sage's always was: four beats each for Hazel, Dex, Mara, Rico, Tam, Ray and Frank, due at bonds 1, 3, 5 and 7 and five days apart, a speech mark over them when one's waiting. The fourth is the resolution, and makes them ride-or-die:
+  - **Hazel:** her van's starter; her sister on the phone; her old project with one rusted bolt; the coffee pot, and "I'm not going anywhere." It plays at the crag, so the Lot's mornings stay the tip and the coffee.
+  - **Dex:** "Spot me. If you're not busy"; his sponsor drops him; a day of trading goes on his project; two coffees, and why he trains now.
+  - **Mara:** your lazy feet; a day on belay, saying nothing; her pulley; her send, and the hug she'd like you to forget.
+  - **Rico:** the video of your fall, set to music; a tire or a week's food; the city gym; his send, and half the crag learning your name.
+  - **Tam:** stand on the ledge till your hands stop; Ruth's rope; "You lead. I'll follow. That's the order now"; the top of the long route.
+  - **Ray:** his first bolt; a rusted one replaced; the line he never sent; his hand-drawn topo of the wall.
+  - **Frank:** the leak, gone; a card to a daughter who's nineteen now; a tow down the hill; the map he stops reading.
+- **Every arc forks, and most forks change who's around** [proposed, `ARC`]: Hazel goes home to her sister's for five days, Dex off training for five, Mara keeps her distance for three after a no and is out twelve with her finger, Rico works four days for the money or goes fourteen to the city gym, Tam rests his knees four, Frank's truck is at the garage seven. Ray's comes with his last season (17.3). Presence now honours a stint away for Hazel and Dex too.
+- **Dex can be known now:** a day at the same crag counts toward him, as it does for partners. Before, his bond never moved, so his close epilogue line and his coaching of your heir were out of reach.
+- **Each new person has an epilogue line,** close or far, from your bond alone (the arcs needn't have finished).
+- **Criterion 2:** a test that every core character has four beats, the last a resolution with an epilogue line, and that the forks change availability; Mara's and Hazel's arcs are played through.
+- **Carried:** a partner who belays you before you've spoken to them meets you silently, so their first meeting never plays (Sage's always could; Mara and Tam belay). The bots don't play the new arcs; criterion 3's measurement is 17.7's.
+- **The download:** 342.5 KB of 360.
 
 ---
 
@@ -2716,3 +2732,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Climbing above your grade, Evan's call: one style counts only a grade and a half past your grade; windows close faster past a grade over and shut at three; a line three grades over refuses the go; from a grade and a half over, a go has one or two more cruxes. The Crucible's V16 to V18 no longer go for a V11. The Cave sets V5 to V11 with two at V7 (Evan's call), so a V6 has work on a wet day. 0.999.10.
 - 2026-10-03 — Phase 16 closed by Evan's call; the Late Bloomer's speed run and Act IV inside the clock carry; the Cave sets V5 to V11 with two at V7 (Evan's call), closing a wet-day gap at V6. CURRENT MILESTONE moved to Phase 17, the people, planned on the rebuild with Evan's calls: a cast of about eight, romance with Sage and one more, and the family back home as a third ending.
 - 2026-10-03 — Phase 17.1 built: Ray, Frank, Mara, Rico and Tam, each where and when they climb, with a look and a first meeting; Mara, Rico and Tam partners; Evan's call that the life timers run on the age clock. 0.999.11.
+- 2026-10-03 — Phase 17.2 built: an arc of four beats, ending in a resolution, for Hazel, Dex, Mara, Rico, Tam, Ray and Frank, forks that send people away for a while, Dex known by days at the same crag, and an epilogue line for each newcomer; the download budget to 360 KB (Evan's call). 0.999.12.

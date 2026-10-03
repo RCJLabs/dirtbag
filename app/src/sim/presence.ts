@@ -16,7 +16,9 @@ export const tierOf = (bond: number): number => BOND.tiers.filter((t) => bond >=
 
 // Hazel lives at the Lot and spends open days at the crag, where she'll belay you, unless
 // you've asked her somewhere else for the day.
-function hazel(seed: string, day: number, min: number, p?: PersonLog): string {
+function hazel(seed: string, day: number, min: number, p?: PersonLog): string | null {
+  // Gone to her sister's (Phase 17.2): her van's at the Lot, she isn't.
+  if (p?.away !== undefined && day < p.away) return null;
   if (p?.invite?.day === day && min >= p.invite.from && min < 17 * 60) return p.invite.place;
   const open = conditions(seed, day).open;
   return open && min >= 8 * 60 && min < 17 * 60 ? 'road' : 'lot';
@@ -43,6 +45,7 @@ function sage(seed: string, day: number, min: number, p?: PersonLog): string | n
 function dex(seed: string, day: number, min: number, p?: PersonLog): string | null {
   if (!p || min < 10 * 60 || min >= 17 * 60) return null;
   if (p.invite?.day === day) return min >= p.invite.from ? p.invite.place : null;
+  if (p.away !== undefined && day < p.away) return null;
   if (dexHurt(seed, day)) return null;
   const r = Rng.fromStream(seed, 'events').derive(`dex-${day}`);
   if (!r.chance(RIVAL.out)) return null;

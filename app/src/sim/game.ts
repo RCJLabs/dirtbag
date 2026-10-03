@@ -1947,10 +1947,12 @@ export function act(s0: GameState, a: Action): Result {
           `"${r.beta[b]!.name}," someone on the next rope calls, before you've chalked up. So much for the onsight.`,
         );
       }
-      // Whoever's on belay, and anyone you know climbing here, makes it a day together.
+      // Whoever's on belay, and anyone you know climbing here, makes it a day together. Dex
+      // too, once you've met (Phase 17.2): a rival you see every day becomes something else.
       const who = roped(r) ? belayer(s) : null;
       if (who) climbedWith(who);
-      for (const w of PARTNERS) if (w !== who && s.people[w] && whereNow(s, w) === s.at) climbedWith(w);
+      for (const w of [...PARTNERS, 'dex'])
+        if (w !== who && s.people[w] && whereNow(s, w) === s.at) climbedWith(w);
       // A sandbag shows itself on your first go; on the board, everyone saw it coming.
       if (L.goes === 1 && r.trueGrade !== undefined && r.trueGrade !== r.grade)
         line(

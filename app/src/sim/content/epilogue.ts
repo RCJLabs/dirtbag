@@ -64,6 +64,27 @@ export const PEOPLE_END: Record<string, { close: string; far?: string }> = {
     close: 'Dex and you ended up friends, which neither of you would have bet on.',
     far: 'Dex is still out there, a grade ahead or a grade behind, depending on who’s telling it.',
   },
+  // Phase 17.2: the rest of the cast.
+  mara: {
+    close: 'Mara still won’t let you celebrate. She came to the party anyway.',
+    far: 'Mara climbed harder than anyone you knew, and you never quite kept up.',
+  },
+  rico: {
+    close: 'Rico still yells at the boulders. Some of it is for you.',
+    far: 'Rico was loud at the boulders for a season, then somewhere else.',
+  },
+  tam: {
+    close: 'Tam Okonkwo still climbs early. Some mornings you still go with him.',
+    far: 'Tam climbed early and long, and you were usually still asleep.',
+  },
+  ray: {
+    close: 'Ray’s stories about the wall are yours now. Some of them are even true.',
+    far: 'Ray was on the guardrail at Roadside every weekend. You meant to sit with him more.',
+  },
+  frank: {
+    close: 'Frank stopped passing through, which surprised him more than anyone.',
+    far: 'Frank’s rig was in the Lot some nights, and then it wasn’t.',
+  },
 };
 
 export const DOG_END = {
