@@ -232,6 +232,9 @@ export interface GameState {
   // Phase 16.5: the family you climb on after. Your generation (2 for the kid of the first),
   // who coached you, the lines they put up, and whether Dex coaches you for their sake.
   family: { gen: number; forebear: string; lines: string[]; coach: boolean } | null;
+  // Phase 17.4 (save v42): who you're with, how far along, since when, the day of the last
+  // beat, and the day it ended if it did. One a life.
+  romance: { who: string; stage: number; since: number; beatDay: number; over?: number } | null;
   habits: {
     goes: number;
     outdoor: number;
@@ -342,6 +345,8 @@ export interface PersonLog {
   // The moments of their life you've heard about (lives.ts): Ray's last season, Tam
   // slowing, Frank's rig.
   life?: number;
+  // The spark's been offered (Phase 17.4), and answered either way.
+  sparked?: boolean;
 }
 
 // How a line's first send went, kept in its log.

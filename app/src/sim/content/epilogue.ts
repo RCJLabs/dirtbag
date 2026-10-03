@@ -87,6 +87,12 @@ export const PEOPLE_END: Record<string, { close: string; far?: string }> = {
   },
 };
 
+// A romance (Phase 17.4): still together at the end, or over.
+export const ROMANCE_END = {
+  together: '{name} is still the first person you tell when a line goes.',
+  over: 'You were with {name} for a while. You still think about it on long drives.',
+};
+
 export const DOG_END = {
   with: '{name} went everywhere you went, and never once cared what grade it was.',
   lost: 'You still have {name}’s collar in the glovebox.',

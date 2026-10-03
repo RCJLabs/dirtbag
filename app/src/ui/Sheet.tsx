@@ -76,6 +76,7 @@ import {
   startName,
   sunOn,
   tierOf,
+  together,
   TIER_NAME,
   type Conditions,
   type GameState,
@@ -1516,7 +1517,9 @@ function PeopleRows({ s }: { s: GameState }) {
         {met.map(([id, p]) => (
           <li key={id}>
             <b>{PEOPLE[id]!.name}</b>
-            <span className="sky">{PEOPLE[id]!.rival ? 'Rival' : TIER_NAME[tierOf(p.bond)]}</span>
+            <span className="sky">
+              {together(s, id) ? 'Together' : PEOPLE[id]!.rival ? 'Rival' : TIER_NAME[tierOf(p.bond)]}
+            </span>
             <small>{personNote(s, id, p)}</small>
           </li>
         ))}

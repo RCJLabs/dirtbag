@@ -2,6 +2,7 @@
 // money and body only move here, and only because of an action. Nothing ticks while you
 // stand still. The UI stages the events; it never edits the state itself.
 
+import { together } from './romance';
 import { frankParks, RAY_GONE, stintOn, tamStops } from './lives';
 import { beyond } from './reach';
 import { cold, daysOff, freshLoad, goLoad, projected, ratio, rollInjury } from './body';
@@ -109,6 +110,7 @@ import {
   FACTION,
   HOME,
   LIFE,
+  ROMANCE,
   LOAD,
   MONEY,
   PLANS,
@@ -302,6 +304,7 @@ export function newGame(seed: string): GameState {
     year: { recapped: 0, home: 'none' },
     life: { held: 0, told: 0, retired: null },
     family: null,
+    romance: null,
     record: {},
     speed: { pb: null, runs: 0, day: 0 },
     mode: 'rope',
@@ -1064,6 +1067,15 @@ export function act(s0: GameState, a: Action): Result {
       );
     if (s.people.frank && crossed(frankParks(s.people.frank)))
       line('Frank’s truck didn’t start this morning, and the garage says it won’t again.');
+    // A year together, on the age clock (Phase 17.4).
+    const r = s.romance;
+    if (r && together(s)) {
+      const years = (d: number) => Math.floor((d - r.since) / AGE.days);
+      if (years(s.day) > years(ended) && years(s.day) >= 1)
+        line(
+          `${years(s.day) === 1 ? 'A year' : `${years(s.day)} years`} with ${PEOPLE[r.who]!.name}, near enough. You celebrate by climbing, which is the only way either of you knows.`,
+        );
+    }
   };
   const runAct = (id: string): string | null => {
     const d = ACTS[id];
@@ -1782,6 +1794,16 @@ export function act(s0: GameState, a: Action): Result {
         p.beatDay = s.day;
       }
       if (fx.life) p.life = (p.life ?? 0) + 1;
+      if (fx.romance === 'start') s.romance = { who: talk.who, stage: 1, since: s.day, beatDay: s.day };
+      if (fx.romance === 'start' || fx.romance === 'friends') p.sparked = true;
+      if (fx.romance === 'next' && s.romance)
+        s.romance = { ...s.romance, stage: s.romance.stage + 1, beatDay: s.day };
+      if (fx.romance === 'end' && s.romance) {
+        s.romance = { ...s.romance, over: s.day };
+        p.bond = Math.min(p.bond, ROMANCE.after);
+        p.away = s.day + ROMANCE.distance;
+        delete p.invite;
+      }
       if (fx.train) train(fx.train);
       if (fx.away) {
         p.away = s.day + fx.away;

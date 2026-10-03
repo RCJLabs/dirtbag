@@ -2428,6 +2428,15 @@ Players will ask "what am I working towards?" by hour 3.
 - **Harness:** every target passes, but partners away for stretches cost the career bots belays: Act III's median end moves from day 298 to 336 (8 of 8 still end it), V10 from day 176.5 to 179, and criterion 1's median from 19.4 to 20.1 hours. Worth watching as 17.4 to 17.7 add to it.
 - **The download:** 343.8 KB of 360.
 
+**Status (3 Oct 2026): 17.4 built: romance.** Save v42, 0.999.14. Evan's call: Sage and Mara. Numbers [proposed] in `ROMANCE`.
+- **One a life.** The spark comes once each, to Sage or Mara, at a Partner's bond, after any of their own arc's beats that are due: lean in, or stay friends (and it isn't asked again). While you're with one, the other's spark doesn't come.
+- **Five beats, a week apart, each forking:** the spark; the first fight (apologise, or dig in and they climb elsewhere for three days); one van or two (hers, yours, or both, parked close); their chance against yours (Sage's guiding season, Mara's expedition: go, and they're away three weeks, or ask them to stay); and together.
+- **The end, with real words:** three weeks without a day climbing together, their time away not counted, and the next time you see them it's over, in a scene of its own. Then they keep their distance ten days and you're Regulars again; no romance after it, with anyone.
+- **A year together** is noticed overnight, every year, on the age clock.
+- **The epilogue** says whether you're still together or were for a while; the You page says "Together".
+- **No harness run:** the bots don't talk, so no bot is ever in one; nothing they do changes.
+- **The download:** 345.9 KB of 360.
+
 ---
 
 ### Phase 18 — Careers and jobs
@@ -2745,3 +2754,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Phase 17.1 built: Ray, Frank, Mara, Rico and Tam, each where and when they climb, with a look and a first meeting; Mara, Rico and Tam partners; Evan's call that the life timers run on the age clock. 0.999.11.
 - 2026-10-03 — Phase 17.2 built: an arc of four beats, ending in a resolution, for Hazel, Dex, Mara, Rico, Tam, Ray and Frank, forks that send people away for a while, Dex known by days at the same crag, and an epilogue line for each newcomer; the download budget to 360 KB (Evan's call). 0.999.12.
 - 2026-10-03 — Phase 17.3 built: on the age clock, Ray's last season and retirement (his topo yours), Tam slowing then done, Frank's rig dead and parked by yours, partners off the rock for stretches with news overnight; a first meeting waits for your first word. Save v41. 0.999.13.
+- 2026-10-03 — Phase 17.4 built: romance with Sage or Mara (Evan's call), one a life: the spark, the first fight, one van or two, their chance against yours, together; a year counted overnight; an end in a scene after three weeks apart; the epilogue and the You page say so. Save v42. 0.999.14.
