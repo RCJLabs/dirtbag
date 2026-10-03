@@ -963,7 +963,10 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       // Phase 16.6: the crag the story's asking for, if it has a line there to try.
       const story =
         storyPlace() === place || (opts.focus === 'media' && shootPlace() === place) ? STORY_PULL : 0;
-      const score = r.grade - drive / 120 - (broke ? gas / 8 : 0) + story;
+      // A film on: the crag with its line outside comes first (Phase 18.7).
+      const f = filmOn();
+      const film = f !== null && !INDOOR[place] && r.grade >= f ? 2 * STORY_PULL : 0;
+      const score = r.grade - drive / 120 - (broke ? gas / 8 : 0) + story + film;
       if (!best || score > best.score) best = { place, partner, score };
     }
     return best;
@@ -1076,7 +1079,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   let nextTrip = 0;
   function storyTrip(morning: Skills): boolean {
     const aim = currentGoal(s)?.aim;
-    if (!aim || s.injury || s.booked || s.expedition || s.day < nextTrip) return false;
+    // The film's season comes first for the media bot: no trips away while it's on.
+    if (!aim || s.injury || s.booked || s.expedition || s.day < nextTrip || filmOn() !== null) return false;
     const from = s.day;
     const did = 'summit' in aim ? expedition(aim.summit) : 'wall' in aim ? wall(aim.wall) : false;
     if (!did) return false;
@@ -1263,6 +1267,12 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     const style = ad && !postBlocked(s, 'ad') ? 'ad' : 'straight';
     if (!postBlocked(s, style)) go({ t: 'post', style });
   }
+
+  // The film's grade while one's on, for the media bot; else null.
+  const filmOn = (): number | null => {
+    const d = opts.focus === 'media' ? s.media.doc : null;
+    return d && 'due' in d ? d.grade : null;
+  };
 
   // The best set today's brief allows, worked out the long way, as a setter who's good at it.
   function bestSet(): string[] {
