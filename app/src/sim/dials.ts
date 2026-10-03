@@ -98,6 +98,38 @@ export const PLAY = { from: 0.4, top: 0.4 };
 export const RUSH = { queue: [5, 5, 6, 6, 7], patience: { lo: 2, hi: 9 }, regular: 2, from: 0.8 };
 export const FLOOR = { waves: 3, wave: [3, 3, 4, 4], from: 0.65 };
 
+// Phase 18.3 [proposed]. The coach's roster: clients who stay, each with a project a grade
+// or three over them, and how a session's hour moves them toward it. Burns are the fastest
+// way up and wear a client out; a scared client gets nowhere on them till the fear's
+// worked on; a tired one needs sending home. Tiredness wears off a point a day, and some
+// days a client turns up scared. A send pays `send` a grade of the gap, and a new client
+// takes the slot. The roster grows with rank.
+export const COACH = {
+  roster: [2, 3, 4],
+  burns: { gain: 26, tired: 8, scared: 4, wear: 2 },
+  drill: { gain: 12, wear: 1 },
+  head: { gain: 5 },
+  rest: { ease: 2 },
+  scare: 0.25,
+  send: 6,
+};
+
+// The warehouse's picks: after the shift's quota, picks on top, three on offer at a time,
+// each paying something and weighing something. Every pick's a chance to drop it, rising
+// with how worn out you are, and a drop costs some of what you'd picked so far and ends the
+// run: so there's a time to stop, and the day (the heat, the supervisor) moves it. The
+// forklift driver (rank 2 and up) carries `easier`.
+export const HAUL = {
+  picks: 6,
+  offer: 3,
+  risk: 2.2,
+  easier: 0.75,
+  // The day: how hot the floor is (what a pick takes out of you) and who's supervising (how
+  // much of the picks a drop costs).
+  heat: [0.8, 1, 1.3],
+  dock: [0.4, 0.7, 1],
+};
+
 // The setter's puzzle [proposed]: five moves hung from a hand that grows with your rank (the
 // head setter has the pick of the holds), for a grade the gym wants that rises with it.
 // The weights say what a good set is: the grade, then flow, then the wall, then the crowd.

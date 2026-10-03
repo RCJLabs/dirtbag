@@ -3,8 +3,25 @@
 // stand still. The UI stages the events; it never edits the state itself.
 
 import { fireLine, ledgeLine, sendCheer } from './ambient';
-import { CROWDS, FLOOR_SAYS, RUSH_SAYS, SET_SAYS, SET_WALLS } from './content/setting';
 import {
+  CROWDS,
+  FLOOR_SAYS,
+  FOCUS,
+  PICKS,
+  PROJECT_STYLE,
+  RUSH_SAYS,
+  SET_SAYS,
+  SET_WALLS,
+} from './content/setting';
+import {
+  coachRefused,
+  coachSession,
+  dropChance,
+  dropCost,
+  dropped,
+  haulOffer,
+  pickWeight,
+  rosterToday,
   dinerFloor,
   floorBest,
   floorRefused,
@@ -157,6 +174,8 @@ import {
   PLAY,
   RUSH,
   FLOOR,
+  COACH,
+  HAUL,
   AGE,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
@@ -289,6 +308,8 @@ export function newGame(seed: string): GameState {
     strikes: {},
     benched: {},
     leave: {},
+    coach: null,
+    haul: null,
     lifestyle: 'dirtbag',
     spot: 'lot',
     lotNights: 0,
@@ -679,6 +700,8 @@ export function act(s0: GameState, a: Action): Result {
   const sleep = (where: 'van' | 'ledge' | 'away' | 'exped' = 'van', back = 0) => {
     const ended = s.day;
     const away = where === 'away' || where === 'exped';
+    // Picks left on the go at the warehouse are paid at the day's end (Phase 18.3).
+    if (s.haul) bankHaul('You never clocked off; they paid you anyway.');
 
     // Going to bed hungry with food in the pantry: you eat some of it cold first (Phase 22.3).
     if (!away && s.fed < BODY.hungryBelow) {
@@ -1150,6 +1173,8 @@ export function act(s0: GameState, a: Action): Result {
     }
     // A shift played (Phase 18.1): scored against the day's brief, refused before it costs.
     let played: { score: number; from: number; line: string } | null = null;
+    let coaching: ReturnType<typeof coachSession> | null = null;
+    let hauling = false;
     if (play) {
       const job = d.job?.id;
       const say = (says: [number, string][], score: number) =>
@@ -1186,6 +1211,16 @@ export function act(s0: GameState, a: Action): Result {
           from: FLOOR.from,
           line: `${n} ${n === 1 ? 'table' : 'tables'} on your section. ${say(FLOOR_SAYS, score)}`,
         };
+      } else if ('coach' in play && job === 'coach') {
+        const roster = rosterToday(s);
+        const no = coachRefused(roster, play.coach);
+        if (no) return no;
+        coaching = coachSession(s, play.coach);
+        played = { score: 0, from: 1, line: '' };
+      } else if ('haul' in play && job === 'warehouse') {
+        if (s.haul) return 'You’re picking already.';
+        hauling = true;
+        played = { score: 0, from: 1, line: '' };
       } else return 'There’s nothing to play at that.';
     }
     const cost = actCost(s, d);
@@ -1286,7 +1321,20 @@ export function act(s0: GameState, a: Action): Result {
           : said,
       );
     if (d.saysOneOf) line(ofDay(s, id, d.saysOneOf));
-    if (played) {
+    if (coaching) {
+      // The coach's session (Phase 18.3): each client's hour, and a send's thanks.
+      const was = rosterToday(s);
+      s.coach = coaching.coach;
+      line(`Your session: ${was.map((c, i) => `${c.name} ${FOCUS[coaching!.foci[i]!].says}`).join(', ')}.`);
+      for (const c of coaching.sent)
+        line(
+          `${c.name} sends ${PROJECT_STYLE[c.style]}, ${c.gap} ${c.gap === 1 ? 'grade' : 'grades'} over where they started. They book another month. +${money(COACH.send * c.gap)}.`,
+        );
+      if (coaching.bonus) spend({ cash: coaching.bonus });
+    } else if (hauling) {
+      s.haul = { day: s.day, picks: 0, fatigue: 0, pay: 0 };
+      line('The quota’s done by noon. There’s more on the board, paid by the pick, for anyone who wants it.');
+    } else if (played) {
       const bonus = playBonus(cost.cash ?? 0, played.score, played.from);
       if (bonus) spend({ cash: bonus });
       line(bonus ? `${played.line} +${money(bonus)} on top.` : played.line);
@@ -1311,6 +1359,16 @@ export function act(s0: GameState, a: Action): Result {
     return null;
   };
   // The van's miles: tires and engine wear by the minute.
+  // The warehouse's picks banked (Phase 18.3): what's on the board for them, paid.
+  const bankHaul = (said: string | null) => {
+    const h = s.haul;
+    if (!h) return;
+    s.haul = null;
+    if (h.pay) spend({ cash: h.pay });
+    if (said)
+      line(`${said} ${h.picks} ${h.picks === 1 ? 'pick' : 'picks'} on top of the quota: +${money(h.pay)}.`);
+    else if (h.pay) line(`What's left of the picks: +${money(h.pay)}.`);
+  };
   const wear = (min: number) => {
     s.van.tires = round2(Math.max(0, s.van.tires - VAN.wear.tires * min));
     s.van.engine = round2(Math.max(0, s.van.engine - VAN.wear.engine * min));
@@ -1733,6 +1791,32 @@ export function act(s0: GameState, a: Action): Result {
           ? `${name} leads ${fixed === 1 ? 'a pitch' : `${fixed} pitches`}. You jug and haul behind. ${e.pitches - x.pitch} to go.`
           : `${name} spends the day on pitch ${x.pitch + 1} and comes back down it. Tomorrow.`,
       );
+      break;
+    }
+
+    // The warehouse's picks (Phase 18.3): one more from the offer, or stop and bank it.
+    case 'haul': {
+      const h = s.haul;
+      if (!h || h.day !== s.day) return refuse('No picks on the go.');
+      if (a.pick === undefined) {
+        bankHaul('You clock off.');
+        break;
+      }
+      const id = haulOffer(s, h.picks)[a.pick];
+      if (!id) return refuse('That’s not on the board.');
+      const fatigue = h.fatigue + pickWeight(s, id);
+      if (dropped(s, h.picks, dropChance(fatigue))) {
+        const lost = Math.round(h.pay * dropCost(s));
+        s.haul = { ...h, pay: h.pay - lost };
+        line(
+          `${PICKS[id]!.name}: your grip goes and it hits the floor. The supervisor docks you ${money(lost)}, and that's you done picking.`,
+        );
+        bankHaul(null);
+        break;
+      }
+      s.haul = { ...h, picks: h.picks + 1, fatigue, pay: h.pay + PICKS[id]!.pay };
+      line(`${PICKS[id]!.name}, on the truck. +${money(PICKS[id]!.pay)}.`);
+      if (s.haul.picks >= HAUL.picks) bankHaul('The board’s empty.');
       break;
     }
 

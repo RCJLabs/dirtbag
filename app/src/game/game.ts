@@ -839,9 +839,26 @@ export class Game {
     return null;
   }
 
+  // The warehouse's picks (Phase 18.3): the shift worked and the board opened, a pick, or
+  // stop; back to the card once the picks are done.
+  haulStart(id: string): string | null {
+    const ev = this.dispatch({ t: 'act', act: id, play: { haul: true } });
+    const no = ev.find((e) => e.k === 'refused');
+    if (no?.k === 'refused') return no.why;
+    this.today = noted(this.today, { place: this.state.at, act: id });
+    return null;
+  }
+
+  haul(pick?: number): void {
+    this.dispatch({ t: 'haul', pick });
+    if (!this.state.haul) this.shiftBack();
+  }
+
   // Back from a shift's sheet to the card it was opened from: the gym's desk, or the place.
   shiftBack(): void {
-    this.openSheet(this.state.at === 'gym' ? { k: 'desk' } : { k: 'place', id: this.state.at });
+    this.openSheet(
+      ['gym', 'cave'].includes(this.state.at) ? { k: 'desk' } : { k: 'place', id: this.state.at },
+    );
   }
 
   // A training session, a phase, a taper. Each returns why the rules refused it, if they did.

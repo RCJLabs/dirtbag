@@ -84,6 +84,22 @@ import {
   rushQueue,
   rushTips,
   type Play,
+  type Client,
+  coached,
+  dropChance,
+  dropCost,
+  FOCI,
+  FOCUS,
+  HAUL,
+  HEAT,
+  DOCK,
+  haulDay,
+  haulOffer,
+  PICKS,
+  pickWeight,
+  PROJECT_STYLE,
+  rosterToday,
+  type Focus,
   needFor,
   PEOPLE,
   picks,
@@ -332,6 +348,10 @@ function ShiftBody({ game, act, s }: { game: Game; act: string; s: GameState }) 
   const job = ACTS[act]?.job?.id;
   return job === 'cafe' ? (
     <RushBody game={game} act={act} s={s} />
+  ) : job === 'coach' ? (
+    <CoachBody game={game} act={act} s={s} />
+  ) : job === 'warehouse' ? (
+    <HaulBody game={game} act={act} s={s} />
   ) : job === 'diner' ? (
     <FloorBody game={game} act={act} s={s} />
   ) : (
@@ -501,6 +521,126 @@ function FloorBody({ game, act, s }: { game: Game; act: string; s: GameState }) 
           </small>
         </button>
       )}
+    </>
+  );
+}
+
+// The coach's roster (Phase 18.3): each client, their project and how they've turned up
+// today, and a focus for their hour.
+function CoachBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
+  const roster = rosterToday(s);
+  const [foci, setFoci] = useState<(Focus | null)[]>(() => roster.map(() => null));
+  const ready = foci.every((f) => f !== null);
+  return (
+    <>
+      <h3 id="sheet-title">Your clients</h3>
+      <p className="sub">
+        An hour each. Burns get a client up their project fastest, and wear them out; nobody gets far on a
+        project they’re scared of; a tired client needs sending home. A send pays their thanks.
+      </p>
+      {roster.map((c, i) => (
+        <div key={c.name} className="client" id={`client-${i}`}>
+          <p className="note">
+            {c.name}: {PROJECT_STYLE[c.style]}, {c.gap} {c.gap === 1 ? 'grade' : 'grades'} over them.{' '}
+            {c.progress}% of the way there
+            {c.tired ? `, tired (${c.tired})` : ', fresh'}
+            {c.scared ? ', and scared of it today.' : '.'}
+          </p>
+          <div className="moves">
+            {FOCI.map((f) => (
+              <button
+                key={f}
+                type="button"
+                className="beta"
+                role="radio"
+                aria-checked={foci[i] === f}
+                onClick={() => setFoci((x) => x.map((y, j) => (j === i ? f : y)))}
+              >
+                <span className="dot" />
+                <span>{FOCUS[f].name}</span>
+                <span className="c" />
+                <small>{focusNote(c, f)}</small>
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+      <PlayButton
+        game={game}
+        act={act}
+        s={s}
+        play={{ coach: foci as Focus[] }}
+        ready={ready}
+        note={ready ? 'The shift’s pay, and thanks from anyone who sends.' : 'A focus for everyone first.'}
+      />
+    </>
+  );
+}
+
+// What an hour would do for a client, said from the rules.
+function focusNote(c: Client, f: Focus): string {
+  const after = coached(c, f);
+  const gain = after.progress - c.progress;
+  if (f === 'rest') return c.tired ? `rested to ${after.tired}` : 'nothing to rest';
+  if (f === 'head' && c.scared) return `the fear gone, +${gain}%`;
+  return `+${gain}%${after.progress >= 100 ? ', and the send' : ''}`;
+}
+
+// The warehouse's picks (Phase 18.3): the day on the floor, then three on the board at a
+// time, each with what it pays and the chance of dropping it, worn out as you are.
+function HaulBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
+  const h = s.haul;
+  const day = haulDay(s);
+  const head = (
+    <>
+      <h3 id="sheet-title">Pick on the clock</h3>
+      <p className="sub">
+        {HEAT[day.heat]}. {DOCK[day.dock]}. Picks pay on top of the quota, one at a time; every one’s a chance
+        to drop it, more as you tire. Stop when you like.
+      </p>
+    </>
+  );
+  if (!h)
+    return (
+      <>
+        {head}
+        <button
+          type="button"
+          className="opt"
+          id="haul-start"
+          onClick={() => {
+            const why = game.haulStart(act);
+            if (why) game.toast(`${why}.`);
+          }}
+        >
+          <span>Work the shift, then pick</span>
+          <span className="c">{costLabel(actCost(s, ACTS[act]!))}</span>
+          <small>The shift’s pay, and the picks on top.</small>
+        </button>
+      </>
+    );
+  return (
+    <>
+      {head}
+      <p className="note" id="haul-so-far">
+        {h.picks} of {HAUL.picks} picks, {money(h.pay)} so far. A drop costs {Math.round(dropCost(s) * 100)}%
+        of it.
+      </p>
+      <div className="moves" id="haul">
+        {haulOffer(s, h.picks).map((id, i) => (
+          <button key={id} type="button" className="beta" onClick={() => game.haul(i)}>
+            <span className="dot" />
+            <span>{PICKS[id]!.name}</span>
+            <span className="c">+{money(PICKS[id]!.pay)}</span>
+            <small>{Math.round(dropChance(h.fatigue + pickWeight(s, id)) * 100)}% you drop it</small>
+          </button>
+        ))}
+      </div>
+      <button type="button" className="opt" id="haul-stop" onClick={() => game.haul()}>
+        <span>Clock off</span>
+        <span className="c">+{money(h.pay)}</span>
+        <small>Bank what you’ve picked.</small>
+      </button>
     </>
   );
 }

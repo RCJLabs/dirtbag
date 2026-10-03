@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 46;
+export const SAVE_VERSION = 47;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -372,6 +372,11 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, leave: {} };
   },
+  // v46 -> v47 (Phase 18.3): nobody coached yet, and no picks on the go.
+  46: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, coach: null, haul: null };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -514,6 +519,32 @@ export function validate(x: unknown): string[] {
         ([id, d]) => id in JOBS && Array.isArray(d) && d.every((n) => isInt(n) && n >= 1),
       ),
     'leave',
+  );
+  const isClient = (c: unknown) =>
+    isObj(c) &&
+    typeof c.name === 'string' &&
+    ['crimp', 'power', 'technical', 'dyno'].includes(c.style as string) &&
+    isInt(c.gap) &&
+    isInt(c.progress) &&
+    isInt(c.tired) &&
+    typeof c.scared === 'boolean';
+  need(
+    x.coach === null ||
+      (isObj(x.coach) &&
+        Array.isArray(x.coach.clients) &&
+        x.coach.clients.every(isClient) &&
+        isInt(x.coach.next) &&
+        isInt(x.coach.last)),
+    'coach',
+  );
+  need(
+    x.haul === null ||
+      (isObj(x.haul) &&
+        isInt(x.haul.day) &&
+        isInt(x.haul.picks) &&
+        isInt(x.haul.fatigue) &&
+        isInt(x.haul.pay)),
+    'haul',
   );
   need(typeof x.lifestyle === 'string' && x.lifestyle in LIFESTYLE, 'lifestyle');
   need(typeof x.spot === 'string' && x.spot in SPOTS, 'spot');

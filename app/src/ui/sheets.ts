@@ -274,6 +274,14 @@ const PLAYED: Record<string, string> = {
   set: 'Set to the brief',
   cafe: 'Work the rush',
   diner: 'Work the floor',
+  coach: 'Coach your clients',
+  warehouse: 'Pick on the clock',
+};
+
+// What playing pays, where it isn't a share of the shift.
+const PLAY_NOTE: Record<string, string> = {
+  coach: 'A focus for each client’s hour; a send pays their thanks.',
+  warehouse: 'Picks on top of the quota, paid by the pick, till you stop or drop one.',
 };
 
 // An act's row, and its play row after it if its job has a minigame (not on a double).
@@ -281,13 +289,26 @@ function actRows(game: Game, s: GameState, id: string): Row[] {
   const a = ACTS[id]!;
   const label = a.job && a.job.shifts === 1 ? PLAYED[a.job.id] : undefined;
   if (!label) return [actRow(game, s, id)];
+  // Picks on the go at the warehouse (Phase 18.3): the row goes back to them.
+  if (a.job!.id === 'warehouse' && s.haul?.day === s.day)
+    return [
+      actRow(game, s, id),
+      {
+        label: 'Back to the picks',
+        note: `${s.haul.picks} picked, ${money(s.haul.pay)} so far.`,
+        run: () => game.openSheet({ k: 'shift', act: id }),
+      },
+    ];
   const why = unmet(s, a.needs);
   return [
     actRow(game, s, id),
     {
       label,
       cost: costLabel(actCost(s, a)),
-      note: why ?? `The shift, played: its pay, and up to ${Math.round(PLAY.top * 100)}% more played well.`,
+      note:
+        why ??
+        PLAY_NOTE[a.job!.id] ??
+        `The shift, played: its pay, and up to ${Math.round(PLAY.top * 100)}% more played well.`,
       off: !!why,
       run: () => game.openSheet({ k: 'shift', act: id }),
     },
@@ -732,7 +753,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           close: true,
           rows: [
             actRow(game, s, 'cave.pass'),
-            actRow(game, s, 'cave.coach'),
+            ...actRows(game, s, 'cave.coach'),
             trainRow(game, s),
             mapRow(game),
           ],

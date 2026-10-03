@@ -110,3 +110,64 @@ export const FLOOR_SAYS: [number, string][] = [
   [0.65, 'Refills on time, checks when they want them. A decent floor.'],
   [0.85, 'Every table thinks they were your only table. The fussy one leaves a note on the napkin.'],
 ];
+
+// ---- Phase 18.3: the coach's roster ----
+
+// What a client's project asks of them: the style the session drills.
+export type ProjectStyle = 'crimp' | 'power' | 'technical' | 'dyno';
+export const PROJECT_STYLE: Record<ProjectStyle, string> = {
+  crimp: 'a crimpy line',
+  power: 'a steep power problem',
+  technical: 'a balancy slab',
+  dyno: 'a big dyno',
+};
+
+// What you can do with a client's hour.
+export type Focus = 'burns' | 'drill' | 'head' | 'rest';
+export const FOCUS: Record<Focus, { name: string; says: string }> = {
+  burns: { name: 'Burns on the project', says: 'goes at it' },
+  drill: { name: 'Drill the style', says: 'drills the moves' },
+  head: { name: 'Work on the fear', says: 'practices falling' },
+  rest: { name: 'Send them home', says: 'rests' },
+};
+
+// Who you coach: named, so a send is somebody's.
+export const CLIENTS = [
+  'Priya',
+  'Tomás',
+  'Kai',
+  'Ruth',
+  'Ines',
+  'Marcus',
+  'Bea',
+  'Sol',
+  'Noor',
+  'Ade',
+  'Lev',
+  'Ama',
+];
+
+// ---- Phase 18.3: the warehouse's picks ----
+
+// What a pick is: what it pays on top, and how much it takes out of you.
+export const PICKS: Record<string, { name: string; pay: number; weight: number }> = {
+  envelopes: { name: 'A tote of envelopes', pay: 2, weight: 4 },
+  books: { name: 'A crate of books', pay: 4, weight: 12 },
+  tiles: { name: 'A pallet of tiles', pay: 7, weight: 22 },
+  bikes: { name: 'Two boxed bikes', pay: 5, weight: 14 },
+  glass: { name: 'A box of glassware', pay: 6, weight: 9 },
+  feed: { name: 'Sacks of feed', pay: 3, weight: 10 },
+  fridge: { name: 'A fridge', pay: 9, weight: 30 },
+};
+
+// The day on the floor: how hot it is, and who's supervising.
+export const HEAT = [
+  'A cool morning on the floor',
+  'An ordinary day on the floor',
+  'The floor’s an oven today',
+];
+export const DOCK = [
+  'Marta’s supervising: she shrugs off a drop',
+  'Gus is supervising: he docks a drop',
+  'The area manager’s in: a drop costs you everything you’ve picked',
+];

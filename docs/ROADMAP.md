@@ -2554,6 +2554,17 @@ Players will ask "what am I working towards?" by hour 3.
 - **No harness run:** nothing a bot does changes (they work shifts plain).
 - **The download:** 362.4 KB of 400.
 
+**Status (3 Oct 2026): 18.3 built: the coach's roster and the warehouse's picks.** Save v47, 0.999.21. Numbers [proposed] in `COACH` and `HAUL`; content in `content/setting.ts`; rules in `work.ts`.
+- **The coach's roster:** clients who stay, two to four as you rise, each named, with a project (a crimpy line, a steep power problem, a balancy slab, a big dyno) one to three grades over them, how near they are, how tired, and whether they're scared of it today. A session gives each an hour: burns (fastest, and wearing; worth little tired, next to nothing scared), drilling the style (steady), working on the fear (clears it), or sending them home (rests them). Tiredness wears off a point a day; some days a client turns up scared. A send pays their thanks, six dollars a grade of the project, and a new client takes the slot, never with a name already on the roster.
+- **Not solved (criterion 3), tested:** over forty sessions, reading each client (fear first, rest when tired, burns when fresh) sends 25; burns every time sends 5, drilling 16, and no one focus gets within three quarters of reading them. v0.956's roster was "pick the weakness"; here the right hour moves with the client's day.
+- **The warehouse's picks, push-your-luck with the incentive fixed:** after the quota, picks on top, three on the board at a time, each paying something and weighing something. Each pick is its own action, so the sim rolls the drop and nothing's undone: the chance shows on each pick, rising with how worn out you are. A drop ends the run and costs some of what you'd picked: v0.956's cost only the crate in hand, so never stopping was always right. The day moves the stop: the heat (what a pick takes out of you) and the supervisor (how much a drop costs, from Marta's shrug to the area manager's everything). The forklift driver carries a quarter less. Picks left on the go are paid at the day's end.
+- **Not solved, tested:** the best stop ranges from two picks to six by the day, and no fixed rule (the best pick for its weight, stopping at two, three, four or six) gets within nine tenths of the best play's expected take. The best play takes about $12 a shift on top of the $52.
+- **The play rows:** "Coach your clients" and "Pick on the clock", beside the plain shifts; "Back to the picks" while they're on the go.
+- **Seen, not in the e2e:** the e2e never coaches (it wants V5) or works the warehouse, so both sheets were checked by loading a save in headless Chromium and looking; the unit tests cover the rules. A first look found the warehouse's row shut once the shift was worked, with picks still on the go; it now goes back to them.
+- **Save v47:** `coach` (the roster) and `haul` (picks on the go); a real v46 save loads.
+- **No harness run:** the bots work shifts plain.
+- **The download:** 365.6 KB of 400.
+
 ---
 
 ## Stage D — Get it in front of people
@@ -2843,3 +2854,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Phase 18 planned on the rebuild with Evan's calls: the budget to 400 KB; a minigame for all five jobs; the full media ladder, followers back; your own gym and buying a crag, with guiding carried.
 - 2026-10-03 — Phase 18.1 built: the setter's puzzle (a brief a shift, five holds hung in order, scored on the grade, flow, wall and crowd; never solved, never worse than working it) and leave by rank. Save v46. 0.999.19.
 - 2026-10-03 — Phase 18.2 built: the café's rush (a queue made in the order you choose) and the diner's floor (tables taken on a wave at a time); a play row beside each plain shift. 0.999.20.
+- 2026-10-03 — Phase 18.3 built: the coach's roster (clients who stay, each an hour a session, a send's thanks) and the warehouse's picks (push-your-luck where a drop costs what you'd picked, the day moving the stop). Save v47. 0.999.21.
