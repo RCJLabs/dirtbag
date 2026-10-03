@@ -354,6 +354,10 @@ export interface PersonLog {
   sparked?: boolean;
   // The day you last gave them something (Phase 17.5, save v43).
   gave?: number;
+  // How many of their fire lines you've heard, in the order they open (Phase 17.7, save v45).
+  heard?: number;
+  // And of their nights on a wall's portaledge (save v45).
+  ledge?: number;
 }
 
 // How a line's first send went, kept in its log.

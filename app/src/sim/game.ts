@@ -2,6 +2,7 @@
 // money and body only move here, and only because of an action. Nothing ticks while you
 // stand still. The UI stages the events; it never edits the state itself.
 
+import { fireLine, ledgeLine, sendCheer } from './ambient';
 import { crew, folksDue, holidayOn } from './folks';
 import { FOLKS_CALLS } from './content/folks';
 import { NAMED_FOR } from './content/gifts';
@@ -1203,11 +1204,15 @@ export function act(s0: GameState, a: Action): Result {
     // Tips, where a job has them, on top of the shift's pay.
     const tips = d.job ? tipsFor(s, d.job.id) : 0;
     if (tips) spend({ cash: tips });
-    if (d.says)
+    // A night at the fire (Phase 17.7) is said by whoever's there.
+    const fire = id === 'lot.sit' ? fireLine(s) : null;
+    const said = fire?.text ?? d.says;
+    if (fire?.fresh) s.people[fire.who]!.heard = (s.people[fire.who]!.heard ?? 0) + 1;
+    if (said)
       line(
         d.job
-          ? `${d.says} +${money((cost.cash ?? 0) + tips)}${tips ? `, ${money(tips)} of it tips` : ''}.`
-          : d.says,
+          ? `${said} +${money((cost.cash ?? 0) + tips)}${tips ? `, ${money(tips)} of it tips` : ''}.`
+          : said,
       );
     if (d.saysOneOf) line(ofDay(s, id, d.saysOneOf));
     if (d.job) {
@@ -1627,6 +1632,9 @@ export function act(s0: GameState, a: Action): Result {
             ? 'The storm on the wall all day. You sit it out on the portaledge.'
             : 'You clip in for the night. The ledge creaks; the haul bag swings.',
         );
+        const ledge = ledgeLine(s, x.partner);
+        if (ledge) line(ledge.text);
+        if (ledge?.fresh) s.people[x.partner!]!.ledge = (s.people[x.partner!]!.ledge ?? 0) + 1;
         portaledge();
         break;
       }
@@ -2548,6 +2556,21 @@ export function act(s0: GameState, a: Action): Result {
           line('Somebody was watching that.');
         }
         note(`${SEND_NAME[style]}: ${r.name}, ${gradeLabel(r)}, on go ${L.goes}.`);
+        // Whoever was with you says so (Phase 17.7), on a first send: the belayer, or anyone
+        // you know climbing here.
+        if (!lap) {
+          const mate =
+            (roped(r) ? belayer(s) : null) ??
+            [...PARTNERS, 'dex'].find((w) => s.people[w] && whereNow(s, w) === s.at) ??
+            null;
+          // Once a day each: a fifth send of the session isn't news to them.
+          const cheer =
+            mate && s.people[mate] && !s.today.includes(`cheer-${mate}`) ? sendCheer(s, mate) : null;
+          if (cheer) {
+            line(cheer);
+            s.today.push(`cheer-${mate}`);
+          }
+        }
         // A send of the style you were afraid of ends the fear (Phase 22.4b).
         if (s.fear.includes(r.type)) {
           s.fear = s.fear.filter((f) => f !== r.type);

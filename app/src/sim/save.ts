@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 44;
+export const SAVE_VERSION = 45;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -360,6 +360,12 @@ export const MIGRATIONS: Record<number, Migration> = {
   43: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, folks: { calls: 0 } };
+  },
+  // v44 -> v45 (Phase 17.7): two new optional fields; nobody's fire or portaledge lines have
+  // been heard in order yet, so everyone's start from their first.
+  44: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x };
   },
 };
 
@@ -910,6 +916,8 @@ const isPerson = (x: unknown): x is PersonLog =>
   optInt(x.life) &&
   (x.sparked === undefined || typeof x.sparked === 'boolean') &&
   optInt(x.gave) &&
+  optInt(x.heard) &&
+  optInt(x.ledge) &&
   (x.invite === undefined ||
     (isObj(x.invite) &&
       isInt(x.invite.day) &&

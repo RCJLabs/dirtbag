@@ -76,5 +76,5 @@ export const NAMED_FOR: Record<string, { name: string; line: string }> = {
 // Frank, asked to the fire.
 export const FIRE_ASK = {
   label: 'Come and sit at the fire',
-  line: 'Frank brings his own chair and a bag of something he won’t name. He stays till the coals go grey.',
+  line: 'Frank brings his own chair and a bag of something he won’t name. He stays till the coals go gray.',
 };

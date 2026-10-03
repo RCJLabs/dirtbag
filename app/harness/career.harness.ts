@@ -4,7 +4,7 @@
 import { it } from 'vitest';
 import type { BotRun } from '../src/sim/bot';
 import { STARTS } from '../src/sim/climber';
-import { contentOut, firstTry, median, season } from '../src/sim/harness';
+import { contentOut, firstTry, linesOf, median, season, socialLines } from '../src/sim/harness';
 import { JOBS } from '../src/sim/content/jobs';
 import { ACTS } from '../src/sim/content/places';
 import { BUSK, PACE, PSYCHE } from '../src/sim/dials';
@@ -243,5 +243,72 @@ it('the ending', { timeout: 2_400_000 }, () => {
   const late = rows.filter((r) => r.origin === 'late');
   out(
     `- (reported) Act IV finished: ${fourth}/${plain.length} of no origin, ${plain.filter((r) => r.acts[4] !== null).length} of them The Line too; Act V reached by a Late Bloomer before its body calls it: ${late.filter((r) => r.acts[3] !== null).length}/${late.length}.`,
+  );
+});
+
+// Phase 17.7: the people (Phase 17's criteria 3 and 4), read off a player who reads
+// everything: the career bot, sitting at the fire every night and with the locals, playing
+// everyone's moments as they come due. Criterion 3: something authored and social it hasn't
+// seen before, every week to day 300. Criterion 4: by day 100, the ambient lines (the fire,
+// what's said at a send) come round less than half as often as v0.956's campfire outcomes,
+// about seven times each by then (docs/audit/social.md §5.2, a Monte Carlo, inferred).
+const PEOPLE_SEEDS = Number(process.env.PEOPLE_SEEDS ?? 2);
+const PEOPLE_DAYS = 300;
+const V0956_CAMPFIRE = 7;
+
+it('the people', { timeout: 2_400_000 }, () => {
+  const say = (ok: boolean, what: string, how: string) => out(`- ${ok ? '✓' : '✗'} ${what}: ${how}`);
+  out(
+    `\n# The people: ${PEOPLE_SEEDS} seeds per start, the career bot reading everything, ${PEOPLE_DAYS} days\n`,
+  );
+  const { social, ambient } = socialLines();
+  const weeks = Math.floor(PEOPLE_DAYS / 7);
+  const missed: number[] = [];
+  const shows: number[] = [];
+  const distinct: number[] = [];
+  out('| start | weeks with something new | weeks without | ambient by day 100: shown · distinct |');
+  out('|---|---|---|---|');
+  for (const start of Object.keys(STARTS))
+    for (let k = 0; k < PEOPLE_SEEDS; k++) {
+      const run = season(`p-${start}-${k}`, {
+        start,
+        strategy: 'career',
+        days: PEOPLE_DAYS,
+        human: true,
+        social: true,
+      });
+      const ls = linesOf(run);
+      const seen = new Set<string>();
+      const fresh = new Set<number>();
+      for (const l of ls)
+        if (social.has(l.text) && !seen.has(l.text)) {
+          seen.add(l.text);
+          fresh.add(Math.floor((l.day - 1) / 7));
+        }
+      const without = Array.from({ length: weeks }, (_, w) => w).filter((w) => !fresh.has(w));
+      missed.push(without.length);
+      const amb = ls.filter((l) => l.day <= 100 && ambient.has(l.text)).map((l) => l.text);
+      shows.push(amb.length);
+      distinct.push(new Set(amb).size);
+      out(
+        `| ${start} | ${weeks - without.length}/${weeks} | ${without.length ? without.map((w) => w + 1).join(', ') : '–'} | ${amb.length} · ${new Set(amb).size} |`,
+      );
+    }
+  out('\n## Targets\n');
+  say(
+    missed.every((m) => m === 0),
+    'Bots see new authored social content every week through day 300 (criterion 3)',
+    `weeks without something new, per run: ${missed.join(', ')}.`,
+  );
+  const per =
+    shows.reduce((a, b) => a + b, 0) /
+    Math.max(
+      1,
+      distinct.reduce((a, b) => a + b, 0),
+    );
+  say(
+    per < V0956_CAMPFIRE / 2,
+    'Ambient lines repeat less than half as often as v0.956’s by day 100 (criterion 4)',
+    `each ambient line shown ${f1(per)} times on average by day 100 (v0.956’s campfire outcomes: about ${V0956_CAMPFIRE}).`,
   );
 });

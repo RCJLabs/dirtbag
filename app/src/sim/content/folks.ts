@@ -58,15 +58,15 @@ export interface FolksCall {
 
 export const FOLKS_CALLS: FolksCall[] = [
   {
-    title: 'Your mum',
-    sit: 'Your phone goes as you’re turning in. Your mum, asking if you’re eating. You say you are. She asks what.',
+    title: 'Your mom',
+    sit: 'Your phone goes as you’re turning in. Your mom, asking if you’re eating. You say you are. She asks what.',
     opts: [
       {
         label: 'Tell her about the climbing',
         out: 'You tell her about the climbing. She doesn’t follow any of it and listens to all of it.',
         psyche: 6,
       },
-      { label: '"I’m fine, Mum"', out: '"You always say that," she says, and lets it go.' },
+      { label: '"I’m fine, Mom"', out: '"You always say that," she says, and lets it go.' },
     ],
   },
   {
@@ -103,7 +103,7 @@ export const FOLKS_CALLS: FolksCall[] = [
   },
   {
     title: 'Your dad',
-    sit: 'Your mum, careful: your dad’s had a scare. He’s fine, mostly. He’s home. He asked if you’d called.',
+    sit: 'Your mom, careful: your dad’s had a scare. He’s fine, mostly. He’s home. He asked if you’d called.',
     opts: [
       {
         label: 'Call him now',
@@ -120,7 +120,7 @@ export const FOLKS_CALLS: FolksCall[] = [
   },
   {
     title: 'Home',
-    sit: 'Your mum again. "Your dad and I were talking. Your room’s still your room. There’s a crag an hour from here, your sister says." A pause. "Come home for good?"',
+    sit: 'Your mom again. "Your dad and I were talking. Your room’s still your room. There’s a crag an hour from here, your sister says." A pause. "Come home for good?"',
     opts: [
       {
         label: '"Not yet"',

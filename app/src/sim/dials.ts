@@ -1035,6 +1035,13 @@ export const FOLKS = { from: 1, every: 2 };
 // someone is worth `named`, once a line.
 export const GIVE = { every: 7, named: 2 };
 
+// The fire's lines (Phase 17.7) [proposed]: `open` of someone's are there from the night you
+// meet, and one more opens each `every` days you've known them, heard first. Criterion 3
+// wants something new every week to day 300; a pool that's all open at once is heard through
+// by the third month and then only repeats. Ten to start keeps the first weeks from
+// repeating a line a night.
+export const FIRE_TALK = { open: 10, every: 7 };
+
 // Romance (Phase 17.4, Evan's call: Sage and Mara), all [proposed]. The spark is offered once
 // each, at `from` bond (a Partner); the beats after it come a week apart (`spacing`). Forks
 // keep them away a while: `cool` after a fight you dig in on, `apart` for their chance taken.

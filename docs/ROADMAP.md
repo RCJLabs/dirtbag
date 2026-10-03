@@ -2453,6 +2453,18 @@ Players will ask "what am I working towards?" by hour 3.
 - **Harness:** every target passes; the bots sleep at the Lot on holidays like anyone, and get the lift: V10 on a median day 180.5, Act III ends in every career (median day 296.5, from 336, the holidays' days together making up for 17.3's stints).
 - **The download:** 349.4 KB of 360.
 
+**Status (3 Oct 2026): 17.7 built: the lines players read most, and the harness for criteria 3 and 4.** Save v45, 0.999.17. Numbers [proposed] in `FIRE_TALK`; text in `content/ambient.ts`.
+- **A night at the fire is said by whoever's there:** Hazel (55 lines), Sage (30) and Frank (26), where it was one line. Ten of each are open from the night you meet, and one more each week you've known them, heard before any you've heard already, so the later ones belong to people who've known you a while. When all the open ones are heard, they come round in a seeded order, none twice till the rest have.
+- **A send is said back** by whoever was with you (your belayer, or a partner or Dex at the crag): eight lines each for Hazel, Sage, Mara, Rico, Tam and Dex, once a day each.
+- **A night on a big wall's portaledge** is said by whoever's up there with you: twelve lines each for Hazel, Sage, Mara, Rico, Tam and Dex, in order, then round again. A wall was the longest stretch the game went quiet.
+- **Words (Phase 5's guide):** US English in Phase 17's text (mom, gray, neighbor).
+- **Save v45:** `PersonLog.heard` and `ledge`, how many of their fire and portaledge lines you've heard; a real v44 save loads.
+- **The harness reads everything:** a social bot (`social`) sits at the fire every night, plays everyone's moments as they come due (meetings, arcs, lives, romance; the first answer, never home) and calls home back. The other bots leave the people be, so their targets measure what they did. "The people" runs it to day 300, two seeds a start.
+- **Criterion 4 passes:** by day 100 each ambient line has been shown 2.2 times on average, against about 7 for v0.956's campfire outcomes (the audit's Monte Carlo, inferred).
+- **Criterion 3 nearly does:** 334 of 336 bot-weeks see something new. The two that don't (weeks 40 and 42, one run each) are a third big wall with the same partner, whose twelve portaledge lines the first two used up. More lines for the usual wall partners would close it, at about 1.5 KB.
+- **Harness:** every other target passes, unchanged from 17.6 (V10 on a median day 180.5, Act III ends in every career, median day 296.5). Letting every bot play the people's moments cost a working climber three stuck nights and one career Act III, so only the social bot does.
+- **The download:** 356.2 KB of 360.
+
 ---
 
 ### Phase 18 — Careers and jobs
@@ -2773,3 +2785,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Phase 17.4 built: romance with Sage or Mara (Evan's call), one a life: the spark, the first fight, one van or two, their chance against yours, together; a year counted overnight; an end in a scene after three weeks apart; the epilogue and the You page say so. Save v42. 0.999.14.
 - 2026-10-03 — Phase 17.5 built: giving; a gift a week for each of the cast, a first ascent named for someone close (the epilogue remembers), Frank to the fire, Dex asked out. Save v43. 0.999.15.
 - 2026-10-03 — Phase 17.6 built: four holidays a year as nights at the fire with your people in them; the family back home in five calls returned from the van; home for good, a third ending. Save v44. 0.999.16.
+- 2026-10-03 — Phase 17.7 built: the fire said by whoever's there, a line opening each week you've known them; sends said back; nights on a wall's portaledge; a social bot for criteria 3 (334 of 336 bot-weeks see something new) and 4 (2.2 shows a line by day 100, against v0.956's 7). Save v45. 0.999.17.

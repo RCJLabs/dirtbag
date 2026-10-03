@@ -1043,7 +1043,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       const here = id.who.flatMap((w) => (HOLIDAY_WITH[w] ? [HOLIDAY_WITH[w]!] : []));
       return {
         title: h.name,
-        sub: here.length ? `${h.text} ${here.join(' ')} You stay up till the fire’s grey.` : h.alone,
+        sub: here.length ? `${h.text} ${here.join(' ')} You stay up till the fire’s gray.` : h.alone,
         close: false,
         rows: [{ label: 'Morning', run: () => game.closeSheet() }],
       };
