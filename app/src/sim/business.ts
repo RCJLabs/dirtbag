@@ -50,11 +50,13 @@ export function gymNight(g: OwnGym): OwnGym {
 export const wallWord = (q: number): string =>
   q >= 0.75 ? 'the best set in the valley' : q >= 0.55 ? 'a good set' : q >= 0.35 ? 'getting tired' : 'stale';
 
-// The rungs you've climbed on the work-and-business ladder (18.7 shows them): setting's
-// ranks, then your own gym, then the busiest gym in the valley.
+// How many rungs of the work-and-business ladder you've climbed (Phase 18.7 shows them):
+// each of setting's ranks once you're on the job, then your own gym, then the busiest gym in
+// the valley. An owner keeps the ranks that got them there; selling up drops you back to them.
 export function businessRung(s: GameState): number {
-  if (s.gym) return s.gym.peak >= OWN_GYM.members.top ? JOBS.set!.ranks.length + 1 : JOBS.set!.ranks.length;
-  return rankAt(s, 'set');
+  const ranks = JOBS.set!.ranks.length;
+  if (s.gym) return ranks + 1 + (s.gym.peak >= OWN_GYM.members.top ? 1 : 0);
+  return s.jobs.set === undefined ? 0 : rankAt(s, 'set') + 1;
 }
 
 // ---- the bluff ----

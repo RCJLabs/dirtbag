@@ -2471,7 +2471,7 @@ Players will ask "what am I working towards?" by hour 3.
 
 ---
 
-### Phase 18 — Careers and jobs   **<<< CURRENT MILESTONE**
+### Phase 18 — Careers and jobs
 
 **Goal.** Each career path — outdoor, competition, media, work — has a readable ladder, gameplay of its own and a capstone. Jobs are short, varied minigames with Stick-RPG-style goals.
 
@@ -2625,13 +2625,68 @@ Players will ask "what am I working towards?" by hour 3.
 - **Harness:** every target passes, unchanged (V10 on a median day 180.5, Act III in every career, median day 296.5).
 - **The download:** 378.5 KB of 400.
 
+**Status (3 Oct 2026): 18.7 built; criterion 2 at 29 of 32 runs.** No save change, 0.999.25. Rules in `ladders.ts`; the bots in `bot.ts` (`focus`); the measure in `harness/ladders.harness.ts`. Evan's calls (3 Oct): compress the late curve, and tune the other three to 4/4.
+- **One screen for the four ladders (criterion 1):** "Your ladders" at the van. Each ladder shows the rung you're on, the count, and what the next rung asks, all formatted from the rules' numbers.
+  - **Outdoors:** the story's five acts, The Line on top.
+  - **Comps:** League night, the Circuit, Nationals, the World Series, and the Games.
+  - **Media:** 1,000 followers, Chalkbag Co., Apex Climbing, Meridian, and the film.
+  - **Work and business:** four setting ranks, your own gym, and 200 members at Send City.
+- **Criterion 2, two seeds per start, to retirement:**
+  - **Comps 8/8,** the Games on a median day 218.
+  - **Media 8/8,** the film on a median day 199.5.
+  - **Business 8/8,** 200 members on a median day 342.
+  - **Outdoors 5/8,** The Line on a median day 347.
+    - At 6/8 the two misses were V18 and short of money for the late paid trips.
+    - So, Evan's call: with a trip or a locked crag next in the story, the career bot now saves for it, before van upgrades.
+    - That brought the finishes earlier (median day 379.5 before), but not more of them.
+    - The misses stall in Act III for reasons that differ by seed. About two careers in three reach The Line.
+- **The late curve (`CURVE`) [proposed]:**
+  - It's unchanged to V10, so V10 still comes on day 178 (180.5 before).
+  - Past V10, each grade costs a flat 26 skill. Before, V18 needed three careers' growth.
+  - Plain careers now finish The Line in 4 or 5 of 8 runs, from none. Act III ends a median day 271, from 296.5. The ending still takes 18.5 hours.
+- **Three bots, one per ladder,** besides the story:
+  - **Comps:** enters every comp it's let into, and keeps those days free.
+  - **Media:** posts nightly, does the shoots (driving out for them), and keeps the film's season, with no trips away and the film's crag first.
+  - **Business:** sets until head setter, buys the gym, hires a setter, builds the upgrades, and sets to the brief by working the puzzle out the long way.
+- **The career bot reads its story** (it played only the easiest unsent lines, and never reached the V14s):
+  - It projects the lines the current goal names.
+  - It trains the skill its next wall finds short, in a build phase, two to three goals out. Endurance stalled near a tenth of power in every career, because few lines are endurance.
+  - It peaks for walls and goes up them fresh.
+  - When the partner's day ends, it waits on the ledge rather than rapping off.
+- **Rules fixed along the way:**
+  - **Followers saturate.** They ran to 1.6 million by day 415, because a post summed every send and boosts compounded uncapped. Now a post tells the day's best send, and every gain thins toward a 150,000 ceiling, over the rival's 60,000.
+  - **The film comes back** 56 days after it's shelved.
+  - **A dropped sponsor waits 28 days** before calling again. It called back the same night.
+- **Tuned toward 4/4, all [proposed]:**
+  - Send City costs $4,500.
+  - The Games invitation needs 200 points.
+  - The film's line is at your grade. One over, the bots shelved it as often as not.
+  - The comp ladder's top rung is the Games, entered. No bot places on its podium, which stays a Record Book entry.
+- **Twelve more of Hazel's portaledge lines.** Longer wall careers ran through her twenty, and Phase 17's weekly target missed a week.
+- **Seen:** the ladders sheet from a loaded save in Chromium.
+- **Harness:** every other target passes.
+- **The download:** 379.7 KB of 400.
+
+**Phase 18 closed by Evan's call (3 Oct 2026).**
+- **Criterion 1 passes:** four ladders, five rungs or more each, a capstone each, on one screen.
+- **Criterion 2:** comps, media and business pass 8/8. Outdoors reaches The Line in 5 of 8, about two careers in three, accepted. The misses stall in Act III for reasons that differ by seed.
+- **Criterion 3 passes:** no job's minigame is solved in a shift (18.1 to 18.3).
+- **Criterion 4 passes:** the gym's till is drawn (18.6).
+- **Carried:**
+  - outdoors to playtesting, where a person reads the goals better than the bot
+  - the guiding outfit, a youth athlete and an expedition team
+  - comps outside the ladder (the dyno comp, a season-long league)
+  - the bluff's own rock shape
+  - the gym's top-end pay, and every [proposed] number in `OWN_GYM`, `LAND`, `MEDIA`, `COMP` and `CURVE`
+- **Next:** the CURRENT MILESTONE moves to Phase 14, the desktop and Steam build. The download is 379.7 KB of 400.
+
 ---
 
 ## Stage D — Get it in front of people
 
 *Moved here by Evan's call (29 Sep 2026): the whole game gets built first, and the Steam build, the demo and the store page come after it. The phase numbers stay as they were, so older references still find them.*
 
-### Phase 14 — Desktop and Steam build
+### Phase 14 — Desktop and Steam build   **<<< CURRENT MILESTONE**
 
 **Goal.** A Steam build that plays well with mouse, keyboard or gamepad on Windows, macOS, Linux and Steam Deck.
 
@@ -2918,3 +2973,5 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Phase 18.4 built: the comp ladder, League night to the Games, opt-in, a fixed field, points that fade; the Scene path, Comp Beast and three Record Book entries opened. Save v48. 0.999.22.
 - 2026-10-03 — Phase 18.5 built: media; a post a day from what you did, sponsors with asks and stipends (followers alone pay nothing), a rival for the headline deal, threads answered by sending, and the film; the Influencer and four Record Book entries opened. Save v49. 0.999.23.
 - 2026-10-03 — Phase 18.6 built: Send City bought by its head setter, its till drawn, covered or sold (criterion 4), the morning's line, upgrades and your own wall; Miller's Bluff bought, its nine lines bolted or cleaned and open for first ascents; two Record Book entries. Save v50. 0.999.24.
+- 2026-10-03 — Phase 18.7 built: the ladders screen, a career bot per ladder and their harness; the grade curve compressed past V10 (Evan's call); followers saturate; the gym, the Games and the film tuned. Criterion 2: comps, media and business 8/8, outdoors 5/8. 0.999.25.
+- 2026-10-03 — Phase 18 closed by Evan's call: criteria 1, 3 and 4 pass; criterion 2 passes for comps, media and business, and outdoors at 5 of 8 is accepted. CURRENT MILESTONE moved to Phase 14, the desktop and Steam build.

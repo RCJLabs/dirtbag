@@ -70,7 +70,7 @@ export const HEAT_SAYS = [
 export const DOC = {
   who: 'A filmmaker called Ines Ruhl',
   offer:
-    'wants to make a film about you: a season, the van, the people, and a line harder than anything you’ve done, climbed on camera.',
+    'wants to make a film about you: a season, the van, the people, and a line at the top of your grade, outside, climbed on camera.',
   aired: 'The film goes out. People you’ve never met know what your van smells like. You don’t mind.',
   shelved:
     'The season runs out before the line goes. Ines shelves the film, kindly. The footage is beautiful.',

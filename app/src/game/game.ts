@@ -123,6 +123,8 @@ export type SheetId =
   | { k: 'media' }
   // Send City, yours (Phase 18.6).
   | { k: 'owngym' }
+  // The four ladders (Phase 18.7).
+  | { k: 'ladders' }
   // A shift with a minigame to play (Phase 18.1), or just to work.
   | { k: 'shift'; act: string }
   | { k: 'act'; n: number }

@@ -37,6 +37,8 @@ export interface SeasonOpts {
   origin?: string;
   // A player who reads everything (Phase 17.7): the fire every night, the locals' sits.
   social?: boolean;
+  // A ladder the career bot climbs besides the story (Phase 18.7).
+  focus?: 'comp' | 'media' | 'business';
 }
 
 export function season(seed: string, o: SeasonOpts): BotRun {
@@ -48,6 +50,7 @@ export function season(seed: string, o: SeasonOpts): BotRun {
     reckless: o.reckless,
     origin: o.origin,
     social: o.social,
+    focus: o.focus,
     hands: o.human ? () => humanHands(Rng.fromStream(seed, 'session').derive(`bot-go-${n++}`)) : undefined,
   });
 }

@@ -206,6 +206,12 @@ import {
   ladderPoints,
   yourScore,
   type Season,
+  capstone,
+  currentGoal,
+  goalDesc,
+  LADDERS,
+  shiftsAt,
+  type LadderId,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import type { Game, SheetId } from '../game/game';
@@ -341,6 +347,48 @@ function ownWallRows(game: Game, s: GameState): Row[] {
       run: () => game.openSheet({ k: 'shift', act: 'gym.set' }),
     },
   ];
+}
+
+// The four ladders (Phase 18.7): where you stand on one, and what its next rung asks.
+function ladderLine(s: GameState, id: LadderId): string {
+  const l = LADDERS.find((x) => x.id === id)!;
+  const rungs = l.rungs(s);
+  const at = l.at(s);
+  const where = at ? `${rungs[at - 1]} (${at} of ${rungs.length})` : `not started (0 of ${rungs.length})`;
+  if (capstone(s, id)) return `${l.name}: ${rungs.at(-1)}, the top.`;
+  return `${l.name}: ${where}. Next: ${ladderNext(s, id, at)}`;
+}
+
+function ladderNext(s: GameState, id: LadderId, at: number): string {
+  if (id === 'outdoor') {
+    const g = currentGoal(s);
+    if (!g) return 'The Line.';
+    const d = goalDesc(g, s).replace(/\.$/, '');
+    return `${g.title}: ${d}.`;
+  }
+  if (id === 'comp') {
+    const t = COMP_TIERS[at];
+    if (!t) return 'The Games.';
+    return t.need
+      ? `${t.name}, at ${t.need} points on the ladder; you’ve ${ladderPoints(s)}.`
+      : `${t.name}, open to anyone with the fee.`;
+  }
+  if (id === 'media') {
+    const f = s.media.followers.toLocaleString('en-US');
+    if (at === 0) return `${MEDIA.known.toLocaleString('en-US')} followers; you’ve ${f}.`;
+    const sp = SPONSORS[at - 1];
+    if (sp)
+      return `${sp.name}, who look at climbers with ${sp.followers.toLocaleString('en-US')} followers; you’ve ${f}.`;
+    return `the film, offered with ${MEDIA.doc.followers.toLocaleString('en-US')} followers; you’ve ${f}.`;
+  }
+  const j = JOBS.set!;
+  if (at === 0) return 'a setting shift at Send City.';
+  if (at < j.ranks.length) {
+    const grade = j.grade?.[at] ?? 0;
+    return `${j.ranks[at]}, at ${j.at[at]} shifts${grade ? ` and V${grade}` : ''}; you’ve ${shiftsAt(s, 'set')}.`;
+  }
+  if (at === j.ranks.length) return `Send City, when Marg sells: ${money(OWN_GYM.price)}.`;
+  return `${OWN_GYM.members.top} members; you’ve ${s.gym?.members ?? 0}.`;
 }
 
 // Your feed's row at the van (Phase 18.5): an offer waiting, or how many follow you.
@@ -850,6 +898,11 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             note: weekNote(s),
             run: () => game.openSheet({ k: 'week' }),
           },
+          {
+            label: 'Your ladders',
+            note: LADDERS.map((l) => `${l.name} ${l.at(s)}/${l.rungs(s).length}`).join(' · '),
+            run: () => game.openSheet({ k: 'ladders' }),
+          },
           // Phase 22.8: the jar, and what it's for.
           {
             label: 'Dreams',
@@ -897,6 +950,16 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         ],
       };
     }
+
+    // The four ladders (Phase 18.7): outdoors, comps, media, work and business.
+    case 'ladders':
+      return {
+        title: 'Your ladders',
+        sub: 'Four ways up. A career has time for one of them, and the story besides.',
+        lines: LADDERS.map((l) => ladderLine(s, l.id)),
+        close: true,
+        rows: [],
+      };
 
     // Send City, yours (Phase 18.6): yesterday's money, the till to draw, a setter, upgrades,
     // and selling up.
