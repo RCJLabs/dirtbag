@@ -2320,7 +2320,7 @@ Players will ask "what am I working towards?" by hour 3.
 
 ---
 
-### Phase 17 — The people   **<<< CURRENT MILESTONE**
+### Phase 17 — The people   ✅ Closed
 
 **Goal.** A cast players can tell apart, relationships that are earned and have milestones, and a town whose people change over time.
 
@@ -2465,9 +2465,13 @@ Players will ask "what am I working towards?" by hour 3.
 - **Harness:** every other target passes, unchanged from 17.6 (V10 on a median day 180.5, Act III ends in every career, median day 296.5). Letting every bot play the people's moments cost a working climber three stuck nights and one career Act III, so only the social bot does.
 - **The download:** 356.2 KB of 360.
 
+**Then, by Evan's call: twenty portaledge lines each for Hazel, Sage, Mara, Rico and Tam** (Dex keeps twelve), the usual wall partners. Criterion 3 passes: every week to day 300 has something new in all 8 runs, and in 16 with eight seeds the lines weren't written against. 0.999.18. **The download:** 357.3 KB of 360.
+
+**Phase 17 closed by Evan's call (3 Oct 2026).** All four criteria pass. 1: no two of the cast share a name or a look (17.1's test). 2: Hazel, Sage, Dex, Mara, Rico, Tam, Ray and Frank each have an arc of at least three beats and a resolution (17.2). 3: the social bot sees something new every week to day 300, 16 of 16 runs. 4: ambient lines come round 2.2 times each by day 100, against about 7 for v0.956 (the audit's figure, inferred). Carried: crew drama where two partners fall out because of you; walker chats, busy-texts and shopkeepers' fillers (17.7 wrote the fire, sends and the portaledge, the lines the bots read most); only the social bot plays the people's moments, so the other targets don't measure a player who does. The CURRENT MILESTONE moves to Phase 18. The download is 357.3 KB of 360, and Phase 18 adds text: the budget will need a call.
+
 ---
 
-### Phase 18 — Careers and jobs
+### Phase 18 — Careers and jobs   **<<< CURRENT MILESTONE**
 
 **Goal.** Each career path — outdoor, competition, media, work — has a readable ladder, gameplay of its own and a capstone. Jobs are short, varied minigames with Stick-RPG-style goals.
 
@@ -2786,3 +2790,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Phase 17.5 built: giving; a gift a week for each of the cast, a first ascent named for someone close (the epilogue remembers), Frank to the fire, Dex asked out. Save v43. 0.999.15.
 - 2026-10-03 — Phase 17.6 built: four holidays a year as nights at the fire with your people in them; the family back home in five calls returned from the van; home for good, a third ending. Save v44. 0.999.16.
 - 2026-10-03 — Phase 17.7 built: the fire said by whoever's there, a line opening each week you've known them; sends said back; nights on a wall's portaledge; a social bot for criteria 3 (334 of 336 bot-weeks see something new) and 4 (2.2 shows a line by day 100, against v0.956's 7). Save v45. 0.999.17.
+- 2026-10-03 — Twenty portaledge lines each for the usual wall partners; criterion 3 passes in 16 of 16 runs. Phase 17 closed by Evan's call; crew drama, walker chats, busy-texts and shopkeepers' fillers carry. CURRENT MILESTONE moved to Phase 18. 0.999.18.
