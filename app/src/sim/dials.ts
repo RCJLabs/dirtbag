@@ -325,6 +325,18 @@ export const ARC = {
   // Sage's guiding stint. v0.956 sent her off for 16 days, most of Act I here; a week keeps
   // her arc inside the act.
   sageAway: 7,
+  // Phase 17.2's forks, where an answer changes who's around [proposed]: Hazel home to her
+  // sister's; Dex off training; Mara keeping her distance after a no, and her finger; Rico at work, and at the
+  // city gym; Tam resting his knees; Frank's truck at the garage. Rico's loan, in dollars.
+  hazelHome: 5,
+  dexTrains: 5,
+  maraCool: 3,
+  maraHurt: 12,
+  ricoWork: 4,
+  ricoCity: 14,
+  tamRest: 4,
+  frankGone: 7,
+  ricoLoan: 40,
 };
 
 // People's grades, on curves of their own from the seed. v0.956 pinned partners to your
