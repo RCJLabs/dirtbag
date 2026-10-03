@@ -2533,6 +2533,17 @@ Players will ask "what am I working towards?" by hour 3.
 - **18.6 Your own gym, and a crag:** head setter to owner, the draw, the morning line; buy and bolt a crag.
 - **18.7 The ladders:** one screen for all four (outdoor: projects, first ascents, the crew project, expeditions, a guidebook of your own lines, The Line); a career bot per ladder for criterion 2.
 
+**Status (3 Oct 2026): 18.1 built: the setter's puzzle, and leave.** Save v46, 0.999.19. Numbers [proposed] in `PLAY`, `SETTING` and each job's `leave`; content in `content/setting.ts`; rules in `work.ts`.
+- **A shift with a minigame opens it.** "Set problems for a shift" shows the day's brief and the bucket. "Just work the shift" is one tap inside and pays the shift. Played, it pays the shift and up to 40% more for a good set; a weak set pays the shift and no more.
+- **The brief:** a wall (the slab, the vertical, the overhang, the roof, each suiting some kinds of move), the grade the desk wants (rising with your rank), and the week's crowd (beginners, the regulars, the comp team, kids' club), each wanting something different. A hand of thirteen moves' worth: seven for an apprentice, ten for the head setter, always with a rest.
+- **Hang five in order,** with the set's grade and its checks live: the grade, one crux, a rest before it, no dyno straight after a dyno, three kinds of move, what suits the wall, what the crowd wants. The gym says how it went.
+- **Not solved (criterion 3):** brute force over sixty days' briefs, more than half have a different best set, and none is best on more than a tenth. Best play scores about 0.6 for an apprentice and 0.8 for a setter, against 0.4 to 0.5 for holds picked at random. v0.956's flaw (at full craft, most random sets came out classic) has nothing to stand on: there's no craft stat, and the brief moves.
+- **Leave, a rank's perk:** days a year at each job, more as you rise, none for the first rank. A signed-up shift you miss with leave left is called in, not a warning; trips booked at short notice use it too.
+- **The bots don't play** the puzzle: they work the shift, so their pay is as it was. Leave changes their warnings only.
+- **Harness:** every target passes, the rest unchanged; the climber bot (not a target) had one stuck night, against none before.
+- **E2e:** day two's setting shift hangs five holds and checks the set's grade, live, and the pay with its bonus.
+- **The download:** 359.9 KB of 400.
+
 ---
 
 ## Stage D — Get it in front of people
@@ -2820,3 +2831,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Phase 17.7 built: the fire said by whoever's there, a line opening each week you've known them; sends said back; nights on a wall's portaledge; a social bot for criteria 3 (334 of 336 bot-weeks see something new) and 4 (2.2 shows a line by day 100, against v0.956's 7). Save v45. 0.999.17.
 - 2026-10-03 — Twenty portaledge lines each for the usual wall partners; criterion 3 passes in 16 of 16 runs. Phase 17 closed by Evan's call; crew drama, walker chats, busy-texts and shopkeepers' fillers carry. CURRENT MILESTONE moved to Phase 18. 0.999.18.
 - 2026-10-03 — Phase 18 planned on the rebuild with Evan's calls: the budget to 400 KB; a minigame for all five jobs; the full media ladder, followers back; your own gym and buying a crag, with guiding carried.
+- 2026-10-03 — Phase 18.1 built: the setter's puzzle (a brief a shift, five holds hung in order, scored on the grade, flow, wall and crowd; never solved, never worse than working it) and leave by rank. Save v46. 0.999.19.

@@ -53,6 +53,8 @@ export {
 export type { Attempt, AttemptEvent, CruxRun, FallRun, Phase, Step } from './climb';
 export { beyond, extraCruxes, overhead, reachMargin, reachOf } from './reach';
 export { together } from './romance';
+export { leaveLeft, playBonus, scoreSet, setBrief, type SetBrief, type SetScore } from './work';
+export { CROWDS, SET_MOVES, SET_SAYS, SET_WALLS } from './content/setting';
 export { GIFTS, NAMED_FOR } from './content/gifts';
 export { crew, folksDue, holidayOn } from './folks';
 export { FOLKS_CALLS, HOLIDAYS, HOLIDAY_WITH } from './content/folks';
@@ -93,6 +95,7 @@ export type { Stay } from './presence';
 export { gradeOfPerson, dexHurt } from './curves';
 export { ratio, zone, daysOff, cold, goLoad, projected } from './body';
 export { tonight, runway } from './tonight';
+export { PLAY, SETTING } from './dials';
 export { GEAR, START_KIT } from './content/gear';
 export { has, kitFactor } from './kit';
 export type { Tonight } from './tonight';

@@ -8,6 +8,9 @@
 // pays less an hour pays in something else: coaching your head, setting your technique, the
 // warehouse your endurance. The harness
 // prints every job's pay an hour at every rank (career.harness.ts); there's no pace target.
+//
+// Phase 18.1 [proposed]: a rank also buys leave, days a year (YEAR) you can miss a shift
+// you'd signed up for without a warning. More as you rise; none for the new hire.
 
 export interface JobDef {
   // What the job is called on the week's schedule, and the place you work it.
@@ -27,6 +30,9 @@ export interface JobDef {
   tips?: [number, number];
   // Shifts it posts a week, on days seeded by the week (jobs.ts). None: every day.
   posts?: number;
+  // Days of leave a year at each rank (Phase 18.1): a signed-up shift missed on leave is
+  // called in, not a warning. The first rank gets none.
+  leave?: number[];
 }
 
 export const JOBS: Record<string, JobDef> = {
@@ -40,6 +46,7 @@ export const JOBS: Record<string, JobDef> = {
     ranks: ['New hire', 'Regular', 'Senior barista', 'Shift lead', 'Veteran'],
     at: [0, 12, 30, 54, 84],
     raise: 5,
+    leave: [0, 1, 1, 2, 3],
   },
   // Evan's call: the diner pays a little more than the café, in tips, for a longer shift:
   // four hours at $30 and $4 to $10 in tips, more at the weekend [proposed numbers].
@@ -51,6 +58,7 @@ export const JOBS: Record<string, JobDef> = {
     raise: 6,
     tips: [4, 10],
     posts: 5,
+    leave: [0, 1, 2, 3],
   },
   // Coaching at The Cave [proposed]: you start at V5, and head coach wants you climbing V8.
   // Four hours at $34, and the fastest ladder to the best pay an hour, if you climb. Evan's
@@ -63,6 +71,7 @@ export const JOBS: Record<string, JobDef> = {
     grade: [5, 6, 8],
     raise: 17,
     posts: 4,
+    leave: [0, 2, 3],
   },
   // v0.956 gated setting at V8; here you start on the tape and climb the ranks as you climb.
   // The worst pay an hour, and the only job that trains you.
@@ -74,6 +83,7 @@ export const JOBS: Record<string, JobDef> = {
     grade: [0, 3, 5, 7],
     raise: 10,
     posts: 4,
+    leave: [0, 1, 2, 3],
   },
   // Phase 22.1 [proposed]: the warehouse out by the river. Eight hours from dawn, the most a
   // shift and the least an hour, and a day with nothing left in it. Evan's call: eight hours
@@ -85,5 +95,6 @@ export const JOBS: Record<string, JobDef> = {
     at: [0, 10, 25, 45],
     raise: 17,
     posts: 3,
+    leave: [0, 1, 2, 3],
   },
 };

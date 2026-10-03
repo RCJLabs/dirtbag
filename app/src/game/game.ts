@@ -27,6 +27,7 @@ import {
   whereIs,
   whereNow,
   type Action,
+  type Play,
   type Attempt,
   type AttemptEvent,
   type FallRun,
@@ -117,6 +118,8 @@ export type SheetId =
       from: 'send' | 'wall';
     }
   | { k: 'dog' }
+  // A shift with a minigame to play (Phase 18.1), or just to work.
+  | { k: 'shift'; act: string }
   | { k: 'act'; n: number }
   // Phase 17.6: a holiday's night, and who was there.
   | { k: 'holiday'; id: string; who: string[] }
@@ -823,6 +826,16 @@ export class Game {
     const no = ev.find((e) => e.k === 'refused');
     if (no?.k === 'refused') return no.why;
     this.today = noted(this.today, { place: this.state.at, act: id });
+    return null;
+  }
+
+  // A shift played (Phase 18.1): the day's brief answered, then back to the place's card.
+  playShift(id: string, play: Play): string | null {
+    const ev = this.dispatch({ t: 'act', act: id, play });
+    const no = ev.find((e) => e.k === 'refused');
+    if (no?.k === 'refused') return no.why;
+    this.today = noted(this.today, { place: this.state.at, act: id });
+    this.openSheet({ k: 'place', id: this.state.at });
     return null;
   }
 

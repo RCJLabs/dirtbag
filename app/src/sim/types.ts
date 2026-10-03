@@ -67,6 +67,8 @@ export interface GameState {
   shifts: { job: string; day: number }[];
   strikes: Record<string, number>;
   benched: Record<string, number>;
+  // Phase 18.1 (save v46): the days you took as leave, by job.
+  leave: Record<string, number[]>;
   // How you live (dials.ts LIFESTYLE): paid at the van every night.
   lifestyle: 'dirtbag' | 'comfortable' | 'plush';
   // Phase 22.2b. Where you park for the night (dials.ts SPOTS), nights in a row at the Lot
@@ -386,6 +388,9 @@ export interface Delta {
   fed?: number;
 }
 
+// A shift played (Phase 18.1): what you did with the day's brief (work.ts).
+export type Play = { set: string[] };
+
 export type Action =
   // `carry`: a v0.956 climber's skills, when they come across rather than picking a start.
   | { t: 'create'; name: string; start: string; origin?: string; carry?: Skills; solo?: true }
@@ -397,7 +402,7 @@ export type Action =
   | { t: 'home'; arm: boolean }
   | { t: 'retire' }
   | { t: 'heir' }
-  | { t: 'act'; act: string }
+  | { t: 'act'; act: string; play?: Play }
   | { t: 'say'; talk: string; node: string; opt: number }
   | { t: 'travel'; to: string }
   | { t: 'unlock'; place: string }

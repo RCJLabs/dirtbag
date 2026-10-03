@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 45;
+export const SAVE_VERSION = 46;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -367,6 +367,11 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x };
   },
+  // v45 -> v46 (Phase 18.1): nobody's taken leave yet.
+  45: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, leave: {} };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -503,6 +508,13 @@ export function validate(x: unknown): string[] {
     isObj(o) && Object.entries(o).every(([id, n]) => id in JOBS && isInt(n) && n >= 0);
   need(perJob(x.strikes), 'strikes');
   need(perJob(x.benched), 'benched');
+  need(
+    isObj(x.leave) &&
+      Object.entries(x.leave).every(
+        ([id, d]) => id in JOBS && Array.isArray(d) && d.every((n) => isInt(n) && n >= 1),
+      ),
+    'leave',
+  );
   need(typeof x.lifestyle === 'string' && x.lifestyle in LIFESTYLE, 'lifestyle');
   need(typeof x.spot === 'string' && x.spot in SPOTS, 'spot');
   need(

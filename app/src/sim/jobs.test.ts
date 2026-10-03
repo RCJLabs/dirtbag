@@ -104,7 +104,8 @@ describe('the week', () => {
   });
 
   it('warns you for a no-show, and the third costs the job and a week off its schedule', () => {
-    let s = at({ jobs: { cafe: JOBS.cafe!.at[2]! } });
+    // The year's leave already taken (Phase 18.1), so a no-show is a warning.
+    let s = at({ jobs: { cafe: JOBS.cafe!.at[2]! }, leave: { cafe: [1] } });
     expect(rankAt(s, 'cafe')).toBe(2);
     for (let n = 1; n < WORK.strikes; n++) {
       const r = sleepAt({ ...s, shifts: [{ job: 'cafe', day: s.day }] });
