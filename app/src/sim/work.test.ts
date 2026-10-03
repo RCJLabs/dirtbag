@@ -5,9 +5,25 @@ import { describe, expect, it } from 'vitest';
 import { ACTS } from './content/places';
 import { JOBS } from './content/jobs';
 import { SET_MOVES } from './content/setting';
-import { PLAY, SETTING } from './dials';
+import { FLOOR, PLAY, RUSH, SETTING } from './dials';
 import { act, actCost, newGame } from './game';
-import { leaveLeft, playBonus, scoreSet, setBrief, setRefused, type SetBrief } from './work';
+import { isPosted } from './jobs';
+import {
+  dinerFloor,
+  floorBest,
+  floorRefused,
+  floorTips,
+  leaveLeft,
+  playBonus,
+  rushBest,
+  rushQueue,
+  rushRefused,
+  rushTips,
+  scoreSet,
+  setBrief,
+  setRefused,
+  type SetBrief,
+} from './work';
 import type { GameState } from './types';
 
 const strong = { power: 400, fingers: 400, endurance: 400, technique: 400, head: 400 };
@@ -102,6 +118,102 @@ describe('the setter’s puzzle', () => {
     expect(r.events[0]?.k).toBe('refused');
     const cafe = act(base({ at: 'cafe', shifts: [] }), { t: 'act', act: 'cafe.shift', play: { set: [] } });
     expect(cafe.events[0]).toMatchObject({ k: 'refused' });
+  });
+});
+
+// Phase 18.2. The rule a player might settle on, played every day, falls short of what
+// thinking about the day's queue or floor gets: the best order, or wave by wave, moves.
+const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+const DAYS = Array.from({ length: 60 }, (_, d) => d + 1);
+
+describe('the café’s rush', () => {
+  it('queues the same on a reload, longer as you rise, with regulars waiting longer', () => {
+    expect(rushQueue(base())).toEqual(rushQueue(base()));
+    expect(rushQueue(base())).toHaveLength(RUSH.queue[0]!);
+    expect(rushQueue(base({ jobs: { cafe: JOBS.cafe!.at[4]! } }))).toHaveLength(RUSH.queue[4]!);
+  });
+
+  it('tips a drink only if it’s made before they give up', () => {
+    const q = [
+      { who: 'A', drink: 'pourover', waits: 4, tip: 6, regular: false },
+      { who: 'B', drink: 'espresso', waits: 1, tip: 1, regular: false },
+    ];
+    expect(rushTips(q, [0, 1])).toBe(6);
+    expect(rushTips(q, [1, 0])).toBe(1);
+    expect(rushBest(q)).toBe(6);
+  });
+
+  it('isn’t solved by a rule: tips first, or who’ll give up first (criterion 3)', () => {
+    const rule = (key: (o: ReturnType<typeof rushQueue>[number]) => number) =>
+      mean(
+        DAYS.map((d) => {
+          const q = rushQueue(base({ day: d }));
+          const o = q.map((_, i) => i).sort((a, b) => key(q[a]!) - key(q[b]!));
+          return rushTips(q, o) / rushBest(q);
+        }),
+      );
+    expect(rule((o) => -o.tip)).toBeLessThan(RUSH.from);
+    expect(rule((o) => o.waits)).toBeLessThan(RUSH.from);
+  });
+
+  it('pays the shift and the rush’s bonus, and refuses a queue not made whole', () => {
+    const s = base({ at: 'cafe', shifts: [{ job: 'cafe', day: 1 }] });
+    const q = rushQueue(s);
+    expect(rushRefused(q, [0])).toMatch(/Every order/);
+    let best: number[] = [];
+    const perm = (pre: number[]) => {
+      if (pre.length === q.length) {
+        if (!best.length || rushTips(q, pre) > rushTips(q, best)) best = pre;
+        return;
+      }
+      for (let i = 0; i < q.length; i++) if (!pre.includes(i)) perm([...pre, i]);
+    };
+    perm([]);
+    const worked = act(s, { t: 'act', act: 'cafe.shift' });
+    const played = act(s, { t: 'act', act: 'cafe.shift', play: { queue: best } });
+    expect(played.state.cash - worked.state.cash).toBe(
+      playBonus(actCost(s, ACTS['cafe.shift']!).cash!, 1, RUSH.from),
+    );
+    expect(lines(played).some((l) => l.startsWith('The rush:'))).toBe(true);
+  });
+});
+
+describe('the diner’s floor', () => {
+  it('seats the same waves on a reload, more tables a wave as you rise', () => {
+    const f = dinerFloor(base());
+    expect(f).toEqual(dinerFloor(base()));
+    expect(f.waves).toHaveLength(FLOOR.waves);
+    expect(f.waves[0]).toHaveLength(FLOOR.wave[0]!);
+    expect(dinerFloor(base({ jobs: { diner: JOBS.diner!.at[3]! } })).waves[0]).toHaveLength(FLOOR.wave[3]!);
+  });
+
+  it('isn’t solved by a rule: every table, or none of the fussy ones (criterion 3)', () => {
+    const rule = (keep: (t: { mood: string }) => boolean) =>
+      mean(
+        DAYS.slice(0, 30).map((d) => {
+          const f = dinerFloor(base({ day: d }));
+          return (
+            floorTips(
+              f,
+              f.waves.map((w) => w.map((_, i) => i).filter((i) => keep(w[i]!))),
+            ) / floorBest(f)
+          );
+        }),
+      );
+    expect(rule(() => true)).toBeLessThan(FLOOR.from);
+    expect(rule((t) => t.mood !== 'fussy')).toBeLessThan(FLOOR.from + 0.05);
+  });
+
+  it('refuses tables that aren’t there or none at all, and pays a floor played', () => {
+    const day = DAYS.find((d) => isPosted(base().seed, 'diner', d))!;
+    const s = base({ day, at: 'diner', shifts: [{ job: 'diner', day }] });
+    const f = dinerFloor(s);
+    expect(floorRefused(f, [[], [], []])).toMatch(/at least/);
+    expect(floorRefused(f, [[9], [], []])).toMatch(/once/);
+    const take = f.waves.map((w) => w.map((_, i) => i));
+    const r = act(s, { t: 'act', act: 'diner.shift', play: { tables: take } });
+    expect(r.events.some((e) => e.k === 'refused')).toBe(false);
+    expect(lines(r).some((l) => /tables on your section/.test(l))).toBe(true);
   });
 });
 

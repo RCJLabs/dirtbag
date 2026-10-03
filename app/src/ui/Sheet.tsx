@@ -75,6 +75,15 @@ import {
   SET_SAYS,
   SET_WALLS,
   SETTING,
+  DRINKS,
+  KITCHENS,
+  MOODS,
+  RUSH,
+  dinerFloor,
+  rushBest,
+  rushQueue,
+  rushTips,
+  type Play,
   needFor,
   PEOPLE,
   picks,
@@ -271,7 +280,7 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
         ref={ref}
         onClickCapture={ghost}
       >
-        {id.k !== 'fa' && id.k !== 'card' && id.k !== 'line' && <Close game={game} />}
+        {id.k !== 'fa' && id.k !== 'card' && id.k !== 'line' && <Close game={game} back={id.k === 'shift'} />}
         {body}
       </div>
     );
@@ -318,9 +327,187 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
   );
 }
 
-// The setter's puzzle (Phase 18.1): today's brief, the bucket of holds, the set as you hang
-// it with its grade and what it gets right, and the shift worked plain if you'd rather.
+// A shift played (Phase 18): the setter's brief, the café's rush or the diner's floor.
 function ShiftBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
+  const job = ACTS[act]?.job?.id;
+  return job === 'cafe' ? (
+    <RushBody game={game} act={act} s={s} />
+  ) : job === 'diner' ? (
+    <FloorBody game={game} act={act} s={s} />
+  ) : (
+    <SetBody game={game} act={act} s={s} />
+  );
+}
+
+// The button that plays it: the shift's pay, and the bonus for how it went.
+function PlayButton({
+  game,
+  act,
+  s,
+  play,
+  ready,
+  note,
+}: {
+  game: Game;
+  act: string;
+  s: GameState;
+  play: Play;
+  ready: boolean;
+  note: string;
+}) {
+  return (
+    <button
+      type="button"
+      className="opt"
+      id="play-go"
+      disabled={!ready}
+      onClick={() => {
+        const why = game.playShift(act, play);
+        if (why) game.toast(`${why}.`);
+      }}
+    >
+      <span>{ACTS[act]!.job!.id === 'set' ? 'Hang it' : 'That’s the shift'}</span>
+      <span className="c">{costLabel(actCost(s, ACTS[act]!))}</span>
+      <small>{note}</small>
+    </button>
+  );
+}
+
+// The café's rush (Phase 18.2): the queue, made in the order you tap it, each drink done
+// in time or not, and how near the best this queue allowed.
+function RushBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
+  const [order, setOrder] = useState<number[]>([]);
+  const q = rushQueue(s);
+  const pay = actCost(s, ACTS[act]!).cash ?? 0;
+  const done = order.length === q.length;
+  const score = done ? rushTips(q, order) / Math.max(1, rushBest(q)) : 0;
+  let t = 0;
+  const at = new Map(order.map((i) => [i, (t += DRINKS[q[i]!.drink]!.make)]));
+  const tap = (i: number) => setOrder((o) => (o.includes(i) ? o.filter((x) => x !== i) : [...o, i]));
+  return (
+    <>
+      <h3 id="sheet-title">The morning rush</h3>
+      <p className="sub">
+        {q.length} in the queue and one machine. Tap the orders in the order you’ll make them. A drink’s done
+        when the ones before it are; anyone who’s given up by then has gone next door.
+      </p>
+      <div className="moves" id="rush">
+        {q.map((o, i) => {
+          const n = order.indexOf(i);
+          const when = at.get(i);
+          return (
+            <button
+              key={i}
+              type="button"
+              className="beta"
+              aria-checked={n >= 0}
+              role="checkbox"
+              onClick={() => tap(i)}
+            >
+              <span className="dot" />
+              <span>
+                {o.who}: {DRINKS[o.drink]!.name}
+              </span>
+              <span className="c">{n >= 0 ? n + 1 : ''}</span>
+              <small>
+                {DRINKS[o.drink]!.make} to make · waits {o.waits} · tips {o.tip}
+                {when !== undefined
+                  ? when <= o.waits
+                    ? ` · done at ${when} ✓`
+                    : ` · done at ${when}, gone`
+                  : ''}
+              </small>
+            </button>
+          );
+        })}
+      </div>
+      {done && (
+        <p className="note" id="play-says">
+          {Math.round(score * 100)}% of the tips this queue had in it.
+          {playBonus(pay, score, RUSH.from) ? ` +${money(playBonus(pay, score, RUSH.from))} on top.` : ''}
+        </p>
+      )}
+      <PlayButton
+        game={game}
+        act={act}
+        s={s}
+        play={{ queue: order }}
+        ready={done}
+        note={
+          done
+            ? 'The shift’s pay, and more for a good rush.'
+            : `${order.length} of ${q.length} orders lined up.`
+        }
+      />
+    </>
+  );
+}
+
+// The diner's floor (Phase 18.2): the tables a wave at a time, taken on or left for
+// someone else, without knowing what the next wave brings.
+function FloorBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
+  const [take, setTake] = useState<number[][]>([[]]);
+  const f = dinerFloor(s);
+  const w = take.length - 1;
+  const last = w === f.waves.length - 1;
+  const pick = take[w]!;
+  const on = pick.length + (w > 0 ? take[w - 1]!.length : 0);
+  const tap = (i: number) =>
+    setTake((t) => [...t.slice(0, w), pick.includes(i) ? pick.filter((x) => x !== i) : [...pick, i]]);
+  return (
+    <>
+      <h3 id="sheet-title">Wait tables</h3>
+      <p className="sub">
+        {KITCHENS[f.kitchen].name}. Tables come in {f.waves.length} waves, and each stays through the next.
+        Every table on your section makes the others wait: the fussy tip best and mind it most.
+      </p>
+      <p className="note" id="floor-wave">
+        Wave {w + 1} of {f.waves.length}. On your section: {on} {on === 1 ? 'table' : 'tables'}.
+      </p>
+      <div className="moves" id="floor">
+        {f.waves[w]!.map((t, i) => (
+          <button
+            key={`${w}-${i}`}
+            type="button"
+            className="beta"
+            aria-checked={pick.includes(i)}
+            role="checkbox"
+            onClick={() => tap(i)}
+          >
+            <span className="dot" />
+            <span>{t.party === 1 ? 'One' : `A party of ${t.party}`}</span>
+            <span className="c" />
+            <small>{MOODS[t.mood].name}</small>
+          </button>
+        ))}
+      </div>
+      {last ? (
+        <PlayButton
+          game={game}
+          act={act}
+          s={s}
+          play={{ tables: take }}
+          ready={take.some((t) => t.length > 0)}
+          note="The shift’s pay, and the tips that say how you ran the floor."
+        />
+      ) : (
+        <button type="button" className="opt" id="floor-next" onClick={() => setTake((t) => [...t, []])}>
+          <span>Seat them</span>
+          <span className="c" />
+          <small>
+            {pick.length
+              ? `${pick.length} taken on. The next wave’s at the door.`
+              : 'Let someone else have this wave.'}
+          </small>
+        </button>
+      )}
+    </>
+  );
+}
+
+// The setter's puzzle (Phase 18.1): today's brief, the bucket of holds, the set as you hang
+// it with its grade and what it gets right.
+function SetBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
   const [set, setSet] = useState<string[]>([]);
   const a = ACTS[act];
   if (!a) return null;
@@ -383,41 +570,21 @@ function ShiftBody({ game, act, s }: { game: Game; act: string; s: GameState }) 
         ))}
       </ul>
       {full && (
-        <p className="note" id="set-says">
+        <p className="note" id="play-says">
           {says}
           {playBonus(pay, sc.score) ? ` +${money(playBonus(pay, sc.score))} on top.` : ''}
         </p>
       )}
-      <button
-        type="button"
-        className="opt"
-        id="set-hang"
-        disabled={!full}
-        onClick={() => {
-          const why = game.playShift(act, { set });
-          if (why) game.toast(`${why}.`);
-        }}
-      >
-        <span>Hang it</span>
-        <span className="c">{costLabel(actCost(s, a))}</span>
-        <small>
-          {full ? 'The shift’s pay, and more for a good set.' : `${set.length} of ${SETTING.pick} holds up.`}
-        </small>
-      </button>
-      <button
-        type="button"
-        className="opt"
-        id="set-plain"
-        onClick={() => {
-          const why = game.doAct(act);
-          if (why) game.toast(`${why}.`);
-          else game.openSheet({ k: 'place', id: s.at });
-        }}
-      >
-        <span>Just work the shift</span>
-        <span className="c">{costLabel(actCost(s, a))}</span>
-        <small>Hang what the head setter tells you to. The shift’s pay.</small>
-      </button>
+      <PlayButton
+        game={game}
+        act={act}
+        s={s}
+        play={{ set }}
+        ready={full}
+        note={
+          full ? 'The shift’s pay, and more for a good set.' : `${set.length} of ${SETTING.pick} holds up.`
+        }
+      />
     </>
   );
 }
@@ -565,9 +732,14 @@ function Reach({ moves, cruxes, go, best }: NonNullable<ListSpec['reach']>) {
   );
 }
 
-function Close({ game }: { game: Game }) {
+function Close({ game, back }: { game: Game; back?: boolean }) {
   return (
-    <button type="button" className="x" aria-label="Close" onClick={() => game.closeSheet()}>
+    <button
+      type="button"
+      className="x"
+      aria-label="Close"
+      onClick={() => (back ? game.shiftBack() : game.closeSheet())}
+    >
       ✕
     </button>
   );

@@ -388,8 +388,9 @@ export interface Delta {
   fed?: number;
 }
 
-// A shift played (Phase 18.1): what you did with the day's brief (work.ts).
-export type Play = { set: string[] };
+// A shift played (Phase 18.1): what you did with the day's brief (work.ts): // The setter's five holds, the café's queue in the order you made it (Phase 18.2), or the
+// diner's tables taken on from each wave.
+export type Play = { set: string[] } | { queue: number[] } | { tables: number[][] };
 
 export type Action =
   // `carry`: a v0.956 climber's skills, when they come across rather than picking a start.

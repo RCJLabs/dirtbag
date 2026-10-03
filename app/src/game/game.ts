@@ -835,8 +835,13 @@ export class Game {
     const no = ev.find((e) => e.k === 'refused');
     if (no?.k === 'refused') return no.why;
     this.today = noted(this.today, { place: this.state.at, act: id });
-    this.openSheet({ k: 'place', id: this.state.at });
+    this.shiftBack();
     return null;
+  }
+
+  // Back from a shift's sheet to the card it was opened from: the gym's desk, or the place.
+  shiftBack(): void {
+    this.openSheet(this.state.at === 'gym' ? { k: 'desk' } : { k: 'place', id: this.state.at });
   }
 
   // A training session, a phase, a taper. Each returns why the rules refused it, if they did.

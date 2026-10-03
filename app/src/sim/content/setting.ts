@@ -55,3 +55,58 @@ export const SET_SAYS: [number, string][] = [
   [0.6, 'People queue for it. Somebody asks who set it.'],
   [0.8, 'The best thing on the wall this week. The desk kid has stopped pretending not to try it.'],
 ];
+
+// ---- Phase 18.2: the café's rush ----
+
+// What's ordered: how long it takes to make, in turns of the machine, and what it tips.
+// Not in proportion: a pour-over takes the longest and tips best for it, a cortado is quick
+// money, a mocha is the trap.
+export const DRINKS: Record<string, { name: string; make: number; tip: number }> = {
+  espresso: { name: 'Espresso', make: 1, tip: 1 },
+  cortado: { name: 'Cortado', make: 1, tip: 2 },
+  flatwhite: { name: 'Flat white', make: 2, tip: 3 },
+  latte: { name: 'Oat latte', make: 2, tip: 2 },
+  mocha: { name: 'Mocha', make: 3, tip: 2 },
+  pourover: { name: 'Pour-over', make: 4, tip: 6 },
+};
+
+// Who's in the queue: a regular waits longer and tips double.
+export const RUSH_WHO = [
+  'A climber',
+  'A nurse off nights',
+  'Two students',
+  'A man on the phone',
+  'A tourist',
+];
+export const RUSH_REGULARS = ['Wren', 'Otis', 'Dale', 'June'];
+
+// ---- Phase 18.2: the diner's floor ----
+
+export type Mood = 'easy' | 'fussy' | 'grumpy';
+// A table's mood: what it tips a head, looked after, and how much of that it loses for each
+// other table you're juggling.
+export const MOODS: Record<Mood, { name: string; tip: number; juggle: number }> = {
+  easy: { name: 'easy', tip: 2, juggle: 0.08 },
+  fussy: { name: 'fussy', tip: 4, juggle: 0.3 },
+  grumpy: { name: 'grumpy', tip: 1, juggle: 0.04 },
+};
+
+// How the kitchen's running today: a slow one makes every table wait on you longer.
+export type Kitchen = 'quick' | 'steady' | 'slow';
+export const KITCHENS: Record<Kitchen, { name: string; wait: number }> = {
+  quick: { name: 'The kitchen’s quick today', wait: 0.6 },
+  steady: { name: 'The kitchen’s steady', wait: 1 },
+  slow: { name: 'The kitchen’s slow today: one cook’s off', wait: 1.6 },
+};
+
+// What the café and the diner say of a shift played, by how near the best it came.
+export const RUSH_SAYS: [number, string][] = [
+  [0, 'Half the queue gives up and goes next door. Wren doesn’t say anything, loudly.'],
+  [0.75, 'The queue keeps moving. Somebody says “thanks, you’re a lifesaver,” and means the coffee.'],
+  [0.9, 'Not one cup goes cold. Wren slides the tip jar your way without looking up.'],
+];
+export const FLOOR_SAYS: [number, string][] = [
+  [0, 'Somebody waves a menu at you for ten minutes. The tips say so.'],
+  [0.65, 'Refills on time, checks when they want them. A decent floor.'],
+  [0.85, 'Every table thinks they were your only table. The fussy one leaves a note on the napkin.'],
+];

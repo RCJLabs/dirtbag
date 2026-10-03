@@ -3,8 +3,23 @@
 // stand still. The UI stages the events; it never edits the state itself.
 
 import { fireLine, ledgeLine, sendCheer } from './ambient';
-import { CROWDS, SET_SAYS, SET_WALLS } from './content/setting';
-import { leaveLeft, playBonus, scoreSet, setBrief, setRefused } from './work';
+import { CROWDS, FLOOR_SAYS, RUSH_SAYS, SET_SAYS, SET_WALLS } from './content/setting';
+import {
+  dinerFloor,
+  floorBest,
+  floorRefused,
+  floorTips,
+  leaveLeft,
+  playBonus,
+  rushBest,
+  rushQueue,
+  rushRefused,
+  rushServed,
+  rushTips,
+  scoreSet,
+  setBrief,
+  setRefused,
+} from './work';
 import { crew, folksDue, holidayOn } from './folks';
 import { FOLKS_CALLS } from './content/folks';
 import { NAMED_FOR } from './content/gifts';
@@ -139,6 +154,9 @@ import {
   WALL,
   WINTER,
   WORK,
+  PLAY,
+  RUSH,
+  FLOOR,
   AGE,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
@@ -1131,18 +1149,44 @@ export function act(s0: GameState, a: Action): Result {
       return null;
     }
     // A shift played (Phase 18.1): scored against the day's brief, refused before it costs.
-    let played: { score: number; line: string } | null = null;
+    let played: { score: number; from: number; line: string } | null = null;
     if (play) {
-      if (d.job?.id !== 'set') return 'There’s nothing to play at that.';
-      const b = setBrief(s);
-      const no = setRefused(b, play.set);
-      if (no) return no;
-      const sc = scoreSet(b, play.set);
-      const says = [...SET_SAYS].reverse().find(([at]) => sc.score >= at)![1];
-      played = {
-        score: sc.score,
-        line: `Your set: V${sc.grade} on ${SET_WALLS[b.wall].name}, for ${CROWDS[b.crowd].name.toLowerCase()}. ${says}`,
-      };
+      const job = d.job?.id;
+      const say = (says: [number, string][], score: number) =>
+        [...says].reverse().find(([at]) => score >= at)![1];
+      if ('set' in play && job === 'set') {
+        const b = setBrief(s);
+        const no = setRefused(b, play.set);
+        if (no) return no;
+        const sc = scoreSet(b, play.set);
+        played = {
+          score: sc.score,
+          from: PLAY.from,
+          line: `Your set: V${sc.grade} on ${SET_WALLS[b.wall].name}, for ${CROWDS[b.crowd].name.toLowerCase()}. ${say(SET_SAYS, sc.score)}`,
+        };
+      } else if ('queue' in play && job === 'cafe') {
+        const q = rushQueue(s);
+        const no = rushRefused(q, play.queue);
+        if (no) return no;
+        const score = rushTips(q, play.queue) / Math.max(1, rushBest(q));
+        const served = rushServed(q, play.queue);
+        played = {
+          score,
+          from: RUSH.from,
+          line: `The rush: ${served} of ${q.length} served before they gave up. ${say(RUSH_SAYS, score)}`,
+        };
+      } else if ('tables' in play && job === 'diner') {
+        const f = dinerFloor(s);
+        const no = floorRefused(f, play.tables);
+        if (no) return no;
+        const score = floorTips(f, play.tables) / Math.max(1, floorBest(f));
+        const n = play.tables.reduce((a, t) => a + t.length, 0);
+        played = {
+          score,
+          from: FLOOR.from,
+          line: `${n} ${n === 1 ? 'table' : 'tables'} on your section. ${say(FLOOR_SAYS, score)}`,
+        };
+      } else return 'There’s nothing to play at that.';
     }
     const cost = actCost(s, d);
     // The lake's catch is rolled when you cast, at the hour you cast (Phase 22.3b).
@@ -1243,7 +1287,7 @@ export function act(s0: GameState, a: Action): Result {
       );
     if (d.saysOneOf) line(ofDay(s, id, d.saysOneOf));
     if (played) {
-      const bonus = playBonus(cost.cash ?? 0, played.score);
+      const bonus = playBonus(cost.cash ?? 0, played.score, played.from);
       if (bonus) spend({ cash: bonus });
       line(bonus ? `${played.line} +${money(bonus)} on top.` : played.line);
     }

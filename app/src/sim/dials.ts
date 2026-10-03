@@ -89,6 +89,15 @@ export const WORK = {
 // playing is never worse than working it. Busking's lesson: skill earns, nothing punishes.
 export const PLAY = { from: 0.4, top: 0.4 };
 
+// Phase 18.2 [proposed]. The café's rush: a queue that grows with your rank, each order a
+// drink and how many turns of the machine the customer will wait; serve them in the order
+// that keeps the most tips. The diner's floor: a section of tables that grows with rank,
+// each a party and a mood, and the kitchen's pace; every table you take on makes the others
+// wait, the fussy most, so take the ones that tip best together. Each is scored against the
+// best that day's queue or floor allowed, so `from` is set above what playing at random gets.
+export const RUSH = { queue: [5, 5, 6, 6, 7], patience: { lo: 2, hi: 9 }, regular: 2, from: 0.8 };
+export const FLOOR = { waves: 3, wave: [3, 3, 4, 4], from: 0.65 };
+
 // The setter's puzzle [proposed]: five moves hung from a hand that grows with your rank (the
 // head setter has the pick of the holds), for a grade the gym wants that rises with it.
 // The weights say what a good set is: the grade, then flow, then the wall, then the crowd.
