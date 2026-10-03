@@ -1,1 +1,50 @@
-{"format":"dirtbag","v":5,"app":"0.961.0+21.2","state":{"seed":"fixture-v5","day":1,"min":530,"cash":29,"energy":69,"skin":56,"fed":76,"at":"road","x":null,"today":["warm"],"climber":{"name":"Robin","start":"ropegun","skills":{"power":5,"fingers":5,"endurance":14.87,"technique":6.1,"head":11}},"load":{"acute":20,"chronic":20,"today":6.08},"injury":null,"hurt":0,"routes":{"warm":{"known":["A2"],"told":[],"pick":{},"falls":{"A":1},"goes":1,"goesToday":1,"hi":4,"sent":null,"sentToday":false}},"firsts":{},"people":{},"race":null,"trips":1,"dog":null,"goals":0,"unlocked":[],"gear":{"shoes":59.73,"chalk":29,"rack":1,"tape":3},"log":[{"day":1,"min":520,"text":"Gas, $12. The van starts on the second try."},{"day":1,"min":530,"text":"You come off right next to a big jug. New beta: shake out there."}]}}
+{
+  "format": "dirtbag",
+  "v": 5,
+  "app": "0.961.0+21.2",
+  "state": {
+    "seed": "fixture-v5",
+    "day": 1,
+    "min": 530,
+    "cash": 29,
+    "energy": 69,
+    "skin": 56,
+    "fed": 76,
+    "at": "road",
+    "x": null,
+    "today": ["warm"],
+    "climber": {
+      "name": "Robin",
+      "start": "ropegun",
+      "skills": { "power": 5, "fingers": 5, "endurance": 14.87, "technique": 6.1, "head": 11 }
+    },
+    "load": { "acute": 20, "chronic": 20, "today": 6.08 },
+    "injury": null,
+    "hurt": 0,
+    "routes": {
+      "warm": {
+        "known": ["A2"],
+        "told": [],
+        "pick": {},
+        "falls": { "A": 1 },
+        "goes": 1,
+        "goesToday": 1,
+        "hi": 4,
+        "sent": null,
+        "sentToday": false
+      }
+    },
+    "firsts": {},
+    "people": {},
+    "race": null,
+    "trips": 1,
+    "dog": null,
+    "goals": 0,
+    "unlocked": [],
+    "gear": { "shoes": 59.73, "chalk": 29, "rack": 1, "tape": 3 },
+    "log": [
+      { "day": 1, "min": 520, "text": "Gas, $12. The van starts on the second try." },
+      { "day": 1, "min": 530, "text": "You come off right next to a big jug. New beta: shake out there." }
+    ]
+  }
+}

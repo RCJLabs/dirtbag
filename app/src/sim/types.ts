@@ -336,6 +336,12 @@ export interface PersonLog {
   invite?: { day: number; place: string; from: number };
   // Whether you climbed harder than them at the last night's reckoning.
   ahead?: boolean;
+  // You've spoken (Phase 17.3, save v41): a partner can belay you before you have, and
+  // their first meeting waits for the first word.
+  talked?: boolean;
+  // The moments of their life you've heard about (lives.ts): Ray's last season, Tam
+  // slowing, Frank's rig.
+  life?: number;
 }
 
 // How a line's first send went, kept in its log.

@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 40;
+export const SAVE_VERSION = 41;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -332,6 +332,18 @@ export const MIGRATIONS: Record<number, Migration> = {
   39: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, family: null };
+  },
+  // v40 -> v41 (Phase 17.3): everyone you'd met, you'd spoken to as far as the game knew
+  // (their first meeting played or was skipped for good); nobody's life has moved on yet.
+  40: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const people = isObj(x.people) ? x.people : {};
+    return {
+      ...x,
+      people: Object.fromEntries(
+        Object.entries(people).map(([id, p]) => [id, isObj(p) ? { ...p, talked: true } : p]),
+      ),
+    };
   },
 };
 
@@ -860,6 +872,8 @@ const isPerson = (x: unknown): x is PersonLog =>
   optInt(x.beatDay) &&
   optInt(x.away) &&
   (x.ahead === undefined || typeof x.ahead === 'boolean') &&
+  (x.talked === undefined || typeof x.talked === 'boolean') &&
+  optInt(x.life) &&
   (x.invite === undefined ||
     (isObj(x.invite) &&
       isInt(x.invite.day) &&

@@ -1,1 +1,74 @@
-{"format":"dirtbag","v":4,"app":"0.961.0","state":{"seed":"fixture-v4","day":1,"min":540,"cash":29,"energy":63,"skin":36,"fed":72,"at":"road","x":null,"today":["warm"],"climber":{"name":"Robin","start":"technician","skills":{"power":5,"fingers":10.21,"endurance":17.67,"technique":20.41,"head":7}},"load":{"acute":20,"chronic":20,"today":14.26},"injury":null,"hurt":0,"routes":{"pump":{"known":["B2"],"told":["B2"],"pick":{},"falls":{},"goes":0,"goesToday":0,"hi":0,"sent":null,"sentToday":false},"warm":{"known":[],"told":[],"pick":{},"falls":{},"goes":1,"goesToday":1,"hi":7,"sent":{"day":1,"go":1,"style":"onsight"},"sentToday":true},"fingercrack":{"known":["A2"],"told":[],"pick":{},"falls":{"A":1},"goes":1,"goesToday":1,"hi":3,"sent":null,"sentToday":false}},"firsts":{},"people":{"hazel":{"bond":1,"last":1,"since":1}},"race":null,"trips":1,"dog":null,"goals":0,"unlocked":[],"log":[{"day":1,"min":520,"text":"Gas, $12. The van starts on the second try."},{"day":1,"min":530,"text":"Hazel knows your name now."},{"day":1,"min":530,"text":"Onsight: Warm Boulder, V2, on go 1."},{"day":1,"min":530,"text":"Something clicks. You're climbing V1 now."},{"day":1,"min":540,"text":"Off again. The crack has a clean edge to layback. New beta: layback."}]}}
+{
+  "format": "dirtbag",
+  "v": 4,
+  "app": "0.961.0",
+  "state": {
+    "seed": "fixture-v4",
+    "day": 1,
+    "min": 540,
+    "cash": 29,
+    "energy": 63,
+    "skin": 36,
+    "fed": 72,
+    "at": "road",
+    "x": null,
+    "today": ["warm"],
+    "climber": {
+      "name": "Robin",
+      "start": "technician",
+      "skills": { "power": 5, "fingers": 10.21, "endurance": 17.67, "technique": 20.41, "head": 7 }
+    },
+    "load": { "acute": 20, "chronic": 20, "today": 14.26 },
+    "injury": null,
+    "hurt": 0,
+    "routes": {
+      "pump": {
+        "known": ["B2"],
+        "told": ["B2"],
+        "pick": {},
+        "falls": {},
+        "goes": 0,
+        "goesToday": 0,
+        "hi": 0,
+        "sent": null,
+        "sentToday": false
+      },
+      "warm": {
+        "known": [],
+        "told": [],
+        "pick": {},
+        "falls": {},
+        "goes": 1,
+        "goesToday": 1,
+        "hi": 7,
+        "sent": { "day": 1, "go": 1, "style": "onsight" },
+        "sentToday": true
+      },
+      "fingercrack": {
+        "known": ["A2"],
+        "told": [],
+        "pick": {},
+        "falls": { "A": 1 },
+        "goes": 1,
+        "goesToday": 1,
+        "hi": 3,
+        "sent": null,
+        "sentToday": false
+      }
+    },
+    "firsts": {},
+    "people": { "hazel": { "bond": 1, "last": 1, "since": 1 } },
+    "race": null,
+    "trips": 1,
+    "dog": null,
+    "goals": 0,
+    "unlocked": [],
+    "log": [
+      { "day": 1, "min": 520, "text": "Gas, $12. The van starts on the second try." },
+      { "day": 1, "min": 530, "text": "Hazel knows your name now." },
+      { "day": 1, "min": 530, "text": "Onsight: Warm Boulder, V2, on go 1." },
+      { "day": 1, "min": 530, "text": "Something clicks. You're climbing V1 now." },
+      { "day": 1, "min": 540, "text": "Off again. The crack has a clean edge to layback. New beta: layback." }
+    ]
+  }
+}

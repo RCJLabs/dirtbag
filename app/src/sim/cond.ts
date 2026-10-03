@@ -7,6 +7,7 @@ import { gradeOfPerson } from './curves';
 import { ARC, DAY, DOG, MONEY, type VanPart } from './dials';
 import { repairCost } from './van';
 import { isSick } from './sick';
+import { lifeDue } from './lives';
 import { strayDue } from './scout';
 import { clockShort, fill } from './format';
 import { benchedUntil, isPosted } from './jobs';
@@ -28,7 +29,8 @@ export interface Cond {
   sentToday?: string; // route id sent today
   wentToday?: string; // route id tried today
   met?: string; // you've met this person
-  notMet?: string;
+  notMet?: string; // you haven't spoken to them yet, though they may have belayed you
+  life?: string; // "who/n": the nth moment of their life is due for you to hear (lives.ts)
   sky?: Sky; // today's weather
   arc?: string; // "who/n": beat n of their arc is due (bond reached, days since the last)
   bond?: string; // "who/n": your bond with them is at least n
@@ -103,7 +105,8 @@ export function holds(s: GameState, c: Cond): boolean {
   if (c.sentToday !== undefined && !s.routes[c.sentToday]?.sentToday) return false;
   if (c.wentToday !== undefined && !s.routes[c.wentToday]?.goesToday) return false;
   if (c.met !== undefined && !s.people[c.met]) return false;
-  if (c.notMet !== undefined && s.people[c.notMet]) return false;
+  if (c.notMet !== undefined && s.people[c.notMet]?.talked) return false;
+  if (c.life !== undefined && !lifeDue(s, c.life)) return false;
   if (c.sky !== undefined && skyOn(s.seed, s.day) !== c.sky) return false;
   if (c.arc !== undefined && !beatDue(s, c.arc)) return false;
   if (c.bond !== undefined) {

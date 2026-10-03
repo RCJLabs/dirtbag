@@ -26,6 +26,11 @@ const played = () => {
 
 // Saves written by earlier builds, kept byte for byte: R0's (v1), R1's (v2) and 0.960.0's
 // (v3).
+// v41 (Phase 17.3): everyone an older save had met, it had spoken to.
+const spoken = <T extends { people?: Record<string, object> }>(st: T): T => ({
+  ...st,
+  people: Object.fromEntries(Object.entries(st.people ?? {}).map(([k, p]) => [k, { ...p, talked: true }])),
+});
 const V1 = readFileSync(new URL('./fixtures/save-v1.json', import.meta.url), 'utf8');
 const V2 = readFileSync(new URL('./fixtures/save-v2.json', import.meta.url), 'utf8');
 const V3 = readFileSync(new URL('./fixtures/save-v3.json', import.meta.url), 'utf8');
@@ -65,6 +70,7 @@ const V36 = readFileSync(new URL('./fixtures/save-v36.json', import.meta.url), '
 const V37 = readFileSync(new URL('./fixtures/save-v37.json', import.meta.url), 'utf8');
 const V38 = readFileSync(new URL('./fixtures/save-v38.json', import.meta.url), 'utf8');
 const V39 = readFileSync(new URL('./fixtures/save-v39.json', import.meta.url), 'utf8');
+const V40 = readFileSync(new URL('./fixtures/save-v40.json', import.meta.url), 'utf8');
 // What R2's migration adds to any older save.
 const R2_BODY = {
   load: { acute: 20, chronic: 20, today: 0 },
@@ -171,7 +177,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(1);
-    const old = JSON.parse(V1).state;
+    const old = spoken(JSON.parse(V1).state);
     expect(r.state).toEqual({
       ...old,
       fed: 80,
@@ -212,7 +218,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(2);
     expect(r.state).toEqual({
-      ...JSON.parse(V2).state,
+      ...spoken(JSON.parse(V2).state),
       ...R2_BODY,
       ...P10,
       ...P21,
@@ -241,7 +247,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(3);
     expect(r.state).toEqual({
-      ...JSON.parse(V3).state,
+      ...spoken(JSON.parse(V3).state),
       ...P10,
       ...P21,
       ...P213(JSON.parse(V3).state.day),
@@ -269,7 +275,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(4);
     expect(r.state).toEqual({
-      ...JSON.parse(V4).state,
+      ...spoken(JSON.parse(V4).state),
       ...P21,
       ...P213(JSON.parse(V4).state.day),
       ...JOBS0,
@@ -295,7 +301,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(5);
-    const old = JSON.parse(V5).state;
+    const old = spoken(JSON.parse(V5).state);
     expect(r.state).toEqual({
       ...old,
       ...P213(old.day),
@@ -323,7 +329,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(6);
-    const old = JSON.parse(V6).state;
+    const old = spoken(JSON.parse(V6).state);
     expect(r.state).toEqual({
       ...old,
       ...JOBS0,
@@ -351,7 +357,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(7);
     expect(r.state).toEqual({
-      ...JSON.parse(V7).state,
+      ...spoken(JSON.parse(V7).state),
       ...P215,
       ...P216,
       ...P221,
@@ -375,7 +381,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(8);
     expect(r.state).toEqual({
-      ...JSON.parse(V8).state,
+      ...spoken(JSON.parse(V8).state),
       ...P216,
       ...P221,
       ...P222,
@@ -398,7 +404,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(9);
     expect(r.state).toEqual({
-      ...JSON.parse(V9).state,
+      ...spoken(JSON.parse(V9).state),
       ...P221,
       ...P222,
       ...P222B,
@@ -420,7 +426,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(10);
     expect(r.state).toEqual({
-      ...JSON.parse(V10).state,
+      ...spoken(JSON.parse(V10).state),
       ...P222,
       ...P222B,
       ...P223,
@@ -442,7 +448,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(11);
     expect(r.state).toEqual({
-      ...JSON.parse(V11).state,
+      ...spoken(JSON.parse(V11).state),
       ...P222B,
       ...P223,
       ...P224,
@@ -462,7 +468,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(12);
     expect(r.state).toEqual({
-      ...JSON.parse(V12).state,
+      ...spoken(JSON.parse(V12).state),
       ...P223,
       ...P224,
       ...P224B,
@@ -481,7 +487,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(13);
     expect(r.state).toEqual({
-      ...JSON.parse(V13).state,
+      ...spoken(JSON.parse(V13).state),
       ...P224,
       ...P224B,
       ...P224C,
@@ -499,7 +505,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(14);
     expect(r.state).toEqual({
-      ...JSON.parse(V14).state,
+      ...spoken(JSON.parse(V14).state),
       ...P224B,
       ...P224C,
       ...P224D,
@@ -515,7 +521,14 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(15);
-    expect(r.state).toEqual({ ...JSON.parse(V15).state, ...P224C, ...P224D, ...P225A, ...P225B, ...P226A });
+    expect(r.state).toEqual({
+      ...spoken(JSON.parse(V15).state),
+      ...P224C,
+      ...P224D,
+      ...P225A,
+      ...P225B,
+      ...P226A,
+    });
     expect(r.state.scars).toEqual(['fingers']);
   });
 
@@ -524,7 +537,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(16);
-    expect(r.state).toEqual({ ...JSON.parse(V16).state, ...P224D, ...P225A, ...P225B, ...P226A });
+    expect(r.state).toEqual({ ...spoken(JSON.parse(V16).state), ...P224D, ...P225A, ...P225B, ...P226A });
     expect(r.state.sick).toEqual({ kind: 'cold', until: 4 });
     // It had been to the Road: going back isn't somewhere new.
     const back = act(r.state, { t: 'travel', to: 'road' }).state;
@@ -537,7 +550,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(17);
-    expect(r.state).toEqual({ ...JSON.parse(V17).state, ...P225A, ...P225B, ...P226A });
+    expect(r.state).toEqual({ ...spoken(JSON.parse(V17).state), ...P225A, ...P225B, ...P226A });
     expect(r.state.psyche).toEqual({ level: 41, stale: 2 });
     expect(r.state.crags).toEqual(['road']);
     // It's hungry and broke: the next thing it does, it's told where the net is, once.
@@ -550,7 +563,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(18);
-    expect(r.state).toEqual({ ...JSON.parse(V18).state, ...P225B, ...P226A });
+    expect(r.state).toEqual({ ...spoken(JSON.parse(V18).state), ...P225B, ...P226A });
     expect(r.state.seen).toEqual(['hustle']);
     expect(r.state.today).toContain('cans');
   });
@@ -560,7 +573,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(19);
-    expect(r.state).toEqual({ ...JSON.parse(V19).state, ...P226A });
+    expect(r.state).toEqual({ ...spoken(JSON.parse(V19).state), ...P226A });
     expect(r.state.guitar).toBe(12.5);
     expect(r.state.spot).toBe('driveway');
   });
@@ -581,7 +594,7 @@ describe('saves', () => {
       epic: 0,
     });
     expect(r.state).toEqual({
-      ...JSON.parse(V20).state,
+      ...spoken(JSON.parse(V20).state),
       deck: r.state.deck,
       dogs: [],
       dream: { pick: null, pot: 0, owned: [] },
@@ -611,7 +624,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(21);
-    const old = JSON.parse(V21).state;
+    const old = spoken(JSON.parse(V21).state);
     expect(r.state).toEqual({
       ...old,
       deck: { ...old.deck, epic: 0 },
@@ -645,7 +658,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(22);
     expect(r.state).toEqual({
-      ...JSON.parse(V22).state,
+      ...spoken(JSON.parse(V22).state),
       dogs: [],
       dream: { pick: null, pot: 0, owned: [] },
       table: null,
@@ -676,7 +689,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(23);
     expect(r.state).toEqual({
-      ...JSON.parse(V23).state,
+      ...spoken(JSON.parse(V23).state),
       dream: { pick: null, pot: 0, owned: [] },
       table: null,
       cards: null,
@@ -706,7 +719,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(24);
     expect(r.state).toEqual({
-      ...JSON.parse(V24).state,
+      ...spoken(JSON.parse(V24).state),
       table: null,
       cards: null,
       reads: {},
@@ -735,7 +748,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(25);
     expect(r.state).toEqual({
-      ...JSON.parse(V25).state,
+      ...spoken(JSON.parse(V25).state),
       cards: null,
       reads: {},
       booked: null,
@@ -762,7 +775,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(26);
-    const old = JSON.parse(V26).state;
+    const old = spoken(JSON.parse(V26).state);
     expect(old.expedition).toEqual({ id: 'elcap', day: 3, pitch: 0, energy: 100 });
     expect(r.state).toEqual({
       ...old,
@@ -800,7 +813,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(27);
-    const old = JSON.parse(V27).state;
+    const old = spoken(JSON.parse(V27).state);
     expect(r.state).toEqual({
       ...old,
       expedition: { ...old.expedition, food: 14, ledge: true, stove: true, seen: [] },
@@ -827,7 +840,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(28);
-    const old = JSON.parse(V28).state;
+    const old = spoken(JSON.parse(V28).state);
     expect(old.expedition).toMatchObject({ id: 'elcap', day: 2, pitch: 1, nights: 1 });
     expect(r.state).toEqual({
       ...old,
@@ -854,7 +867,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(29);
-    const old = JSON.parse(V29).state;
+    const old = spoken(JSON.parse(V29).state);
     expect(r.state).toEqual({
       ...old,
       book: [],
@@ -893,7 +906,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(30);
-    const old = JSON.parse(V30).state;
+    const old = spoken(JSON.parse(V30).state);
     const {
       record,
       origin,
@@ -1044,6 +1057,23 @@ describe('saves', () => {
     expect(family).toBeNull();
   });
 
+  it('load a real 0.999.12 save: everyone met counts as spoken to, and nobody’s life has moved on', () => {
+    const r = fromSave(V40);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(40);
+    const old = JSON.parse(V40).state;
+    const { people, ...rest } = r.state;
+    const { people: was, ...before } = old;
+    expect(rest).toEqual(before);
+    // Mara had belayed you without a word; the save can't tell, so her meeting doesn't replay.
+    expect(Object.keys(people).sort()).toEqual(Object.keys(was).sort());
+    for (const [id, p] of Object.entries(people)) {
+      expect(p).toEqual({ ...was[id], talked: true });
+      expect(p.life).toBeUndefined();
+    }
+  });
+
   // These pretend a longer history: a v1 file that stored `money` where the state now has
   // `cash`, loaded by a build two versions on, with test migrations in place of the real ones.
   it('run the migration chain in order, and stop at a gap or a throw', () => {
@@ -1051,7 +1081,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(40);
+    expect(SAVE_VERSION).toBe(41);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

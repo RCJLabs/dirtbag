@@ -279,7 +279,7 @@ describe('beta', () => {
       expect.objectContaining({ k: 'learned', route: first.id, beta: 'A2', how: 'watched' }),
     );
     expect(r.state.min).toBe(day2.min + 20);
-    expect(r.state.people.sage).toEqual({ bond: 1, last: 2, since: 2 });
+    expect(r.state.people.sage).toEqual({ bond: 1, last: 2, since: 2, talked: true });
     expect(talkStart(r.state, 'sage')).toBe('done');
     // Nobody to show you when they're not here; a goodbye still works.
     const gone = at({ ...newGame('t'), day: 3 }, 'gym', 10 * 60);

@@ -1023,5 +1023,21 @@ export const AGE = { start: 22, days: 18, from: 30, warn: 43, forced: 45 };
 // measured: stated, so the hours the harness reports can be checked against testers' and
 // the numbers moved [proposed].
 export const PACE = { tapSec: 4, goSec: 15 };
+// Lives that change (Phase 17.3), on the age clock (AGE.days to a year, Evan's call), all
+// [proposed]:
+//   ray     his last season from the sixth year (day 91), and he stops coming out in the
+//           seventh (day 109), around Act II's end, so most players knew him;
+//   tam     v0.956's "five good seasons" as years of knowing him: slower from the third, his
+//           odds of coming out at `slowBy`, and none at all from the fifth;
+//   frank   his rig dies four years after you meet, and he parks next to yours for good;
+//   stint   each year from the second, a partner may be off the rock for a while, hurt or
+//           away: `chance` a year each, `min` to `max` days. Hazel's the constant: she isn't
+//           on the list.
+export const LIFE = {
+  ray: { last: 5, retire: 6 },
+  tam: { slow: 3, stop: 5, slowBy: 0.5 },
+  frank: { rig: 4 },
+  stint: { chance: 0.35, min: 4, max: 12, who: ['sage', 'mara', 'rico', 'tam'] },
+};
 export const HOME = { people: 2, tier: 2, cash: 200, psyche: 20 };
 export const QUIRK = { after: 30, fresh: 70, tired: 35, evening: 17 * 60, dawn: 9 * 60, easy: 2 };

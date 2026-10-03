@@ -22,6 +22,8 @@ export interface TalkFx {
   watch?: true;
   // This plays the next beat of their arc.
   arc?: true;
+  // They've told you the next moment of their life (lives.ts).
+  life?: true;
   // Skills you come away with.
   train?: Partial<Skills>;
   // Bond: more of it, or at least this much.
@@ -378,12 +380,29 @@ export const TALK: Record<string, TalkDef> = {
     who: 'ray',
     start: [
       { when: { notMet: 'ray' }, node: 'meet' },
+      { when: { life: 'ray/1' }, node: 'last-season' },
       ...arcStarts('ray'),
       { when: { today: 'ray' }, node: 'done' },
       { node: 'again' },
     ],
     nodes: {
       ...arcNodes('ray'),
+      'last-season': {
+        calls: true,
+        text: '"Last season," Ray says, to the wall more than to you. "Knees, mostly. The wall won’t notice." He pours you a lid of coffee. "You will. That’s enough."',
+        opts: [
+          {
+            label: 'Sit with him',
+            primary: true,
+            fx: {
+              life: true,
+              cost: { min: 20 },
+              bond: 1,
+              line: 'Ray’s last season at Roadside. He’ll be on the rail at the weekends till it’s done.',
+            },
+          },
+        ],
+      },
       meet: {
         text: 'An old man on the guardrail with a thermos, watching the wall like it owes him money. "Ray. I bolted half of what’s on that wall and fell off the other half." He looks you over. "You’re the one who keeps coming back."',
         opts: [
@@ -414,12 +433,28 @@ export const TALK: Record<string, TalkDef> = {
     who: 'frank',
     start: [
       { when: { notMet: 'frank' }, node: 'meet' },
+      { when: { life: 'frank/1' }, node: 'parked' },
       ...arcStarts('frank'),
       { when: { today: 'frank' }, node: 'done' },
       { node: 'again' },
     ],
     nodes: {
       ...arcNodes('frank'),
+      parked: {
+        calls: true,
+        text: 'Frank’s truck is up on blocks next to your van, its wheels in a neat stack. "Nine years passing through," he says, "and it was the truck that decided." He seems fine about it. Better than fine.',
+        opts: [
+          {
+            label: 'Welcome him',
+            primary: true,
+            fx: {
+              life: true,
+              bond: 1,
+              line: 'Frank’s parked next to you for good. His stove’s going most nights.',
+            },
+          },
+        ],
+      },
       meet: {
         text: 'A box truck you haven’t seen is nosed in past Hazel’s van, a stovepipe through its roof. Its owner is splitting kindling. "Frank. Passing through." He thinks about it. "Nine years now, passing through." He nods at your van. "Yours leaks on the left. I can hear it from here."',
         opts: [
@@ -491,9 +526,25 @@ export const TALK: Record<string, TalkDef> = {
   },
   tam: {
     who: 'tam',
-    start: [{ when: { notMet: 'tam' }, node: 'meet' }, ...arcStarts('tam'), { node: 'again' }],
+    start: [
+      { when: { notMet: 'tam' }, node: 'meet' },
+      { when: { life: 'tam/1' }, node: 'slowing' },
+      ...arcStarts('tam'),
+      { node: 'again' },
+    ],
     nodes: {
       ...arcNodes('tam'),
+      slowing: {
+        calls: true,
+        text: 'Tam takes the first pitch slower than you’ve seen him take anything, and doesn’t pretend otherwise. At the ledge he says, "The good seasons are getting shorter. Or I am."',
+        opts: [
+          {
+            label: 'Wait with him',
+            primary: true,
+            fx: { life: true, bond: 1, line: 'Tam’s slowing down. He comes out less, and starts earlier.' },
+          },
+        ],
+      },
       meet: {
         text: 'An older climber is coiling a rope in the shade of the wall, slow and exact, the way you’d fold a flag. "Tam Okonkwo. I climb long, and I climb early, before the rock gets hot." He looks at your hands. "You’ll want tape for this sandstone."',
         opts: [
