@@ -65,6 +65,8 @@ export {
   yourScore,
 } from './comps';
 export { COMP_TIERS } from './content/comps';
+export { bolted, boltBlocked, businessRung, gymBuyBlocked, gymDay, gymTarget, wallWord } from './business';
+export { GYM_UPGRADE_NAME } from './content/business';
 export { mediaRung, postBlocked, postGain, rivalFollowers, tierEarned } from './media';
 export { DOC, MEDIA_RIVAL, POSTS, SPONSORS, TERMS } from './content/media';
 export {
@@ -145,7 +147,7 @@ export type { Stay } from './presence';
 export { gradeOfPerson, dexHurt } from './curves';
 export { ratio, zone, daysOff, cold, goLoad, projected } from './body';
 export { tonight, runway } from './tonight';
-export { COACH, COMP, FLOOR, HAUL, MEDIA, PLAY, RUSH, SETTING } from './dials';
+export { COACH, COMP, FLOOR, GYM_SET, HAUL, LAND, MEDIA, OWN_GYM, PLAY, RUSH, SETTING } from './dials';
 export { GEAR, START_KIT } from './content/gear';
 export { has, kitFactor } from './kit';
 export type { Tonight } from './tonight';

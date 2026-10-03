@@ -183,6 +183,13 @@ import {
   HOLIDAY_WITH,
   PLAY,
   COMP,
+  OWN_GYM,
+  GYM_SET,
+  GYM_UPGRADE_NAME,
+  gymBuyBlocked,
+  gymDay,
+  wallWord,
+  rankAt,
   MEDIA,
   MEDIA_RIVAL,
   SPONSORS,
@@ -283,6 +290,57 @@ function actRow(game: Game, s: GameState, id: string): Row {
     off: !!why,
     run: () => game.doAct(id),
   };
+}
+
+// Send City for sale to its head setter (Phase 18.6), shown once you're near.
+function buyGymRows(game: Game, s: GameState): Row[] {
+  if (rankAt(s, 'set') < JOBS.set!.ranks.length - 2) return [];
+  const why = gymBuyBlocked(s);
+  return [
+    {
+      label: 'Buy Send City',
+      cost: costLabel({ cash: -OWN_GYM.price }),
+      note: why
+        ? `Marg is retiring. ${why}.`
+        : 'Marg is retiring, and she’d rather it went to you. The walls, the members and the leaky toilet.',
+      off: !!why,
+      run: () => game.gymDo({ t: 'gym', do: 'buy' }),
+    },
+  ];
+}
+
+// Your gym's row at its desk.
+function ownGymRow(game: Game, s: GameState): Row {
+  const g = s.gym!;
+  return {
+    label: 'Your gym',
+    note: `${g.members} members, the wall ${wallWord(g.quality)}. ${money(Math.max(0, g.till))} in the till.`,
+    run: () => game.openSheet({ k: 'owngym' }),
+  };
+}
+
+// Setting your own wall: plainly, or to the brief.
+function ownWallRows(game: Game, s: GameState): Row[] {
+  const g = s.gym!;
+  const why =
+    g.set === s.day ? 'You’ve set today' : s.energy < GYM_SET.energy ? 'Too tired to haul holds' : null;
+  const cost = costLabel({ min: GYM_SET.min, energy: -GYM_SET.energy });
+  return [
+    {
+      label: 'Set your wall',
+      cost,
+      note: why ? `${why}.` : 'A plain set: fresh, and nobody’s favorite.',
+      off: !!why,
+      run: () => game.gymDo({ t: 'gym', do: 'set' }),
+    },
+    {
+      label: 'Set your wall to the brief',
+      cost,
+      note: why ? `${why}.` : 'The setter’s puzzle: a good set draws members for weeks.',
+      off: !!why,
+      run: () => game.openSheet({ k: 'shift', act: 'gym.set' }),
+    },
+  ];
 }
 
 // Your feed's row at the van (Phase 18.5): an offer waiting, or how many follow you.
@@ -485,6 +543,17 @@ function driveRow(game: Game, s: GameState, to: string, label: string): Row {
 function unlockRow(game: Game, s: GameState, id: string): Row {
   const cost = PLACES[id]!.unlock!;
   const short = s.cash < cost;
+  // Land (Phase 18.6): bought off its owner, not a trip.
+  if (PLACES[id]!.land)
+    return {
+      label: 'Buy it off Ed Miller',
+      cost: costLabel({ cash: -cost }),
+      note: short
+        ? `The land, and every line on it to bolt. ${money(cost)} in hand, not on the card.`
+        : 'The land, and every line on it to bolt and name.',
+      off: short,
+      run: () => game.unlock(id),
+    };
   return {
     label: 'Buy the haul for the trip',
     cost: costLabel({ cash: -cost }),
@@ -829,6 +898,80 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       };
     }
 
+    // Send City, yours (Phase 18.6): yesterday's money, the till to draw, a setter, upgrades,
+    // and selling up.
+    case 'owngym': {
+      const g = s.gym;
+      if (!g) return null;
+      const d = gymDay(g);
+      return {
+        title: 'Send City, yours',
+        sub: `${g.members} members, the wall ${wallWord(g.quality)}. ${money(Math.max(0, g.till))} in the till${g.till < 0 ? `, ${money(-g.till)} short` : ''}.`,
+        lines: [
+          `A day: ${money(d.takings)} in from dues and walk-ins, ${money(d.costs)} out on ${g.setter ? 'rent, the desk and the setter' : 'rent and the desk'}. Yesterday: ${g.last >= 0 ? '+' : '−'}${money(Math.abs(g.last))}.`,
+          ...(g.upgrades.length
+            ? [
+                `Built: ${g.upgrades.map((u) => GYM_UPGRADE_NAME[u as keyof typeof GYM_UPGRADE_NAME].toLowerCase()).join(', ')}.`,
+              ]
+            : []),
+        ],
+        close: true,
+        rows: [
+          g.till < 0
+            ? {
+                label: 'Cover the till',
+                cost: costLabel({ cash: -Math.min(-g.till, Math.max(0, s.cash)) }),
+                note:
+                  s.cash > 0
+                    ? `From your pocket, before the bank sells at ${money(-OWN_GYM.floor)} short.`
+                    : 'Nothing in hand to put in.',
+                off: s.cash <= 0,
+                run: () => game.gymDo({ t: 'gym', do: 'pay' }),
+              }
+            : {
+                label: 'Draw the till',
+                cost: g.till > 0 ? `+${money(g.till)}` : '',
+                note:
+                  g.till > 0 ? 'It’s yours: the business’s profit, to your pocket.' : 'Nothing in it yet.',
+                off: g.till <= 0,
+                run: () => game.gymDo({ t: 'gym', do: 'draw' }),
+              },
+          g.setter
+            ? {
+                label: 'Let the setter go',
+                note: 'The wall’s yours to keep fresh again.',
+                run: () => game.gymDo({ t: 'gym', do: 'fire' }),
+              }
+            : {
+                label: 'Hire a setter',
+                cost: `${money(OWN_GYM.setter)} a day`,
+                note: 'A good-enough set, kept up while you’re away climbing.',
+                run: () => game.gymDo({ t: 'gym', do: 'hire' }),
+              },
+          ...(Object.keys(OWN_GYM.upgrades) as (keyof typeof OWN_GYM.upgrades)[])
+            .filter((u) => !g.upgrades.includes(u))
+            .map((u) => {
+              const up = OWN_GYM.upgrades[u] as { price: number; members?: number; dues?: number };
+              return {
+                label: GYM_UPGRADE_NAME[u],
+                cost: costLabel({ cash: -up.price }),
+                note: up.members
+                  ? `Draws about ${up.members} more members, in time.`
+                  : `Each member spends ${Math.round((up.dues ?? 0) * 100)}¢ more a day.`,
+                off: s.cash < up.price,
+                run: () => game.gymDo({ t: 'gym', do: 'upgrade', what: u }),
+              };
+            }),
+          {
+            label: 'Sell up',
+            cost: `+${money(Math.max(0, Math.round(OWN_GYM.price * OWN_GYM.resale + g.till)))}`,
+            note: 'To a couple from the city with big plans. The till goes with you.',
+            run: () => game.gymDo({ t: 'gym', do: 'sell' }),
+          },
+        ],
+      };
+    }
+
     // Your feed (Phase 18.5): posting what you did, sponsors and their asks, an offer, a
     // thread, the film, and the rival's numbers once she matters.
     case 'media': {
@@ -943,13 +1086,17 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         };
       return {
         title: 'The desk',
-        sub: s.today.includes('pass')
-          ? "Your hand's stamped. Climb till ten."
-          : "The kid at the desk doesn't look up. The set changes every seven days.",
+        sub: s.gym
+          ? 'The kid at the desk works for you now, and still doesn’t look up.'
+          : s.today.includes('pass')
+            ? "Your hand's stamped. Climb till ten."
+            : "The kid at the desk doesn't look up. The set changes every seven days.",
         close: true,
         rows: [
-          actRow(game, s, 'gym.pass'),
-          ...actRows(game, s, 'gym.set'),
+          // Phase 18.6: yours, or for sale to its head setter.
+          ...(s.gym
+            ? [ownGymRow(game, s), ...ownWallRows(game, s)]
+            : [actRow(game, s, 'gym.pass'), ...actRows(game, s, 'gym.set'), ...buyGymRows(game, s)]),
           compRow(game, s),
           actRow(game, s, 'gym.shower'),
           trainRow(game, s),

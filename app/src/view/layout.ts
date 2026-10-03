@@ -179,6 +179,28 @@ export const CRAGS: Record<string, CragSpec> = {
     hint: 'Pick a line and pull on. The sea catches you.',
     frame: 900,
   },
+  // Miller's Bluff (Phase 18.6): a grey limestone wall on the back of a farm, six lines up it
+  // and three boulders in the field, none of them ever climbed till you bolt them.
+  bluff: {
+    width: 1500,
+    wall: [480, 1240],
+    lines: [
+      { n: 1, x: 580, route: 'bbarn' },
+      { n: 2, x: 700, route: 'btufa' },
+      { n: 3, x: 820, route: 'bcow' },
+      { n: 4, x: 940, route: 'bpillar' },
+      { n: 5, x: 1060, route: 'broof' },
+      { n: 6, x: 1180, route: 'blong' },
+    ],
+    boulders: [
+      { x: 360, w: 70, h: 52, route: 'bhay' },
+      { x: 1320, w: 76, h: 58, route: 'btrough' },
+      { x: 1430, w: 72, h: 84, route: 'bsilo' },
+    ],
+    sign: 272,
+    hint: 'Nobody’s ever climbed here. Pick a line and bolt it.',
+    frame: 880,
+  },
   // The Crucible: a black gneiss wall with four roped lines, the myth the last of them, and
   // boulders on the frozen ground either side; the boulder myth out past Event Horizon.
   crucible: {
@@ -366,6 +388,7 @@ export const SCENES: Record<string, SceneLayout> = {
   wind: cragScene('wind', CRAGS.wind!),
   crucible: cragScene('crucible', CRAGS.crucible!),
   cove: cragScene('cove', CRAGS.cove!),
+  bluff: cragScene('bluff', CRAGS.bluff!),
   cave: {
     place: 'cave',
     width: CAVE_W,
@@ -494,6 +517,8 @@ export const SPOTS: Record<string, Spot[]> = {
   wind: [{ who: 'dex', x: 1350, face: -1, pose: 'stand', talk: 'dex' }],
   crucible: [{ who: 'dex', x: 1340, face: -1, pose: 'stand', talk: 'dex' }],
   cove: [{ who: 'dex', x: 420, face: 1, pose: 'stand', talk: 'dex' }],
+  // Nobody's day brings them to private land (Phase 18.6).
+  bluff: [],
   cave: [
     { who: 'dex', x: 1020, face: -1, pose: 'stand', talk: 'dex' },
     // Rico, under the steepest of the week's problems.
@@ -570,6 +595,8 @@ export const MAP_PINS: Record<string, Pin> = {
   crucible: { x: 338, y: 372, side: -1, kind: 'crag', dy: 16 },
   // West past Old Town, down to the coast.
   cove: { x: 24, y: 506, side: 1, kind: 'crag', dy: 14 },
+  // Miller's Bluff (Phase 18.6): east of the Lot, down a farm track.
+  bluff: { x: 352, y: 590, side: -1, kind: 'crag', dy: -10 },
   // The Cave: at the trailhead hamlet on the highway, below Roadside.
   cave: { x: 266, y: 334, side: 1, kind: 'town' },
   // The Training Center: Midtown, west of the highway, down a side street between blocks.

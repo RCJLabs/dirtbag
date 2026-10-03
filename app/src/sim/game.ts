@@ -14,6 +14,8 @@ import {
   SET_WALLS,
 } from './content/setting';
 import { COMP_SAYS, COMP_TIERS } from './content/comps';
+import { GYM_UPGRADE_SAYS } from './content/business';
+import { bolted, boltBlocked, gymBuyBlocked, gymNight, UPGRADES, wallWord, type Upgrade } from './business';
 import { DOC, HEAT_SAYS, MEDIA_RIVAL, POSTS, SPONSORS, TERMS } from './content/media';
 import {
   cycleTasks,
@@ -190,6 +192,9 @@ import {
   HAUL,
   COMP,
   MEDIA,
+  OWN_GYM,
+  GYM_SET,
+  LAND,
   AGE,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
@@ -337,6 +342,8 @@ export function newGame(seed: string): GameState {
       doc: null,
       lost: null,
     },
+    gym: null,
+    bolted: [],
     lifestyle: 'dirtbag',
     spot: 'lot',
     lotNights: 0,
@@ -566,7 +573,7 @@ const TIER_LINE = [
 
 // Whether you can read a line yet: a myth stays unreadable until you've sent the one under it.
 export const revealed = (s: GameState, r: RouteDef): boolean =>
-  !r.hiddenUntil || !!s.routes[r.hiddenUntil]?.sent;
+  (!r.hiddenUntil || !!s.routes[r.hiddenUntil]?.sent) && bolted(s, r);
 
 // Phase 24: a pitch up there goes only in its turn, in your block, on a clear day, in the light.
 function expedBlocked(s: GameState, r: RouteDef): string | null {
@@ -589,6 +596,9 @@ function expedBlocked(s: GameState, r: RouteDef): string | null {
 
 export function goBlocked(s: GameState, r: RouteDef): string | null {
   if (r.exped) return expedBlocked(s, r);
+  // The bluff's lines (Phase 18.6): nobody's been up them, so there's nothing to clip.
+  if (!bolted(s, r))
+    return r.disc === 'boulder' ? 'Nobody’s cleaned it. Clean it first' : 'Nobody’s bolted it. Bolt it first';
   if (!revealed(s, r))
     return `You can't read this line yet. Send ${routeOfId(s, r.hiddenUntil!)?.name ?? 'the hardest line here'} first`;
   // Too far over your grade to try (Phase 16, OVER): nothing on it would hold for you.
@@ -732,6 +742,25 @@ export function act(s0: GameState, a: Action): Result {
     // So is a comp's scorecard (Phase 18.4).
     if (s.comps.on) finishComp();
     mediaNight(ended);
+    // Your own gym's night (Phase 18.6): the takings in the till, told in the morning.
+    if (s.gym) {
+      s.gym = gymNight(s.gym);
+      const g = s.gym;
+      line(
+        `Send City yesterday: ${g.last >= 0 ? '+' : '−'}${money(Math.abs(g.last))}, ${g.members} members, the wall ${wallWord(g.quality)}. ${money(Math.max(0, g.till))} in the till.`,
+      );
+      if (g.till < OWN_GYM.floor) {
+        const back = Math.max(0, Math.round(OWN_GYM.price * OWN_GYM.forced + g.till));
+        spend({ cash: back });
+        s.gym = null;
+        line(
+          `The bank's run out of patience with the till. They sell Send City from under you; ${money(back)} comes back to you.`,
+        );
+      } else if (g.till < 0)
+        line(
+          `The till's ${money(-g.till)} short. Cover it at the desk, or the bank sells at ${money(-OWN_GYM.floor)} short.`,
+        );
+    }
 
     // Going to bed hungry with food in the pantry: you eat some of it cold first (Phase 22.3).
     if (!away && s.fed < BODY.hungryBelow) {
@@ -801,7 +830,8 @@ export function act(s0: GameState, a: Action): Result {
       s.training.since = s.day;
       line(`${TRAIN.peakDays} days at peak is all you get. Your body calls a deload, and it isn’t asking.`);
     }
-    s.today = [];
+    // An owner's pass is the keys (Phase 18.6): the wall and the shower, every day.
+    s.today = s.gym ? ['pass'] : [];
     // A flight you didn't take (Phase 24.2): the booking's gone, and the money with it.
     if (s.booked && s.booked.day < s.day && !s.expedition) {
       line(`The flight to ${EXPEDITIONS[s.booked.id]!.name} left without you. The money went with it.`);
@@ -1185,6 +1215,7 @@ export function act(s0: GameState, a: Action): Result {
   const runAct = (id: string, play?: Play): string | null => {
     const d = ACTS[id];
     if (!d) return 'Nothing to do there.';
+    if (d.job?.id === 'set' && s.gym) return 'It’s your gym now. Set your own wall.';
     if (id.split('.')[0] !== s.at) return "You're not there.";
     const why = unmet(s, d.needs);
     if (why) return why;
@@ -2046,6 +2077,124 @@ export function act(s0: GameState, a: Action): Result {
       break;
     }
 
+    // Your own gym (Phase 18.6).
+    case 'gym': {
+      const g = s.gym;
+      if (a.do === 'buy') {
+        const why = gymBuyBlocked(s);
+        if (why) return refuse(`${why}.`);
+        spend({ cash: -OWN_GYM.price });
+        s.gym = {
+          since: s.day,
+          members: OWN_GYM.members.start,
+          quality: OWN_GYM.plain,
+          till: 0,
+          last: 0,
+          setter: false,
+          upgrades: [],
+          peak: OWN_GYM.members.start,
+          set: 0,
+        };
+        // You're the boss: nobody's posting you setting shifts now, and nobody sells you a pass.
+        s.shifts = s.shifts.filter((x) => x.job !== 'set');
+        if (!s.today.includes('pass')) s.today = [...s.today, 'pass'];
+        line(
+          `Marg hands you the keys and the alarm code and tells you which toilet runs. Send City is yours: ${money(OWN_GYM.price)}.`,
+        );
+        break;
+      }
+      if (!g) return refuse('You don’t own a gym.');
+      if (a.do === 'draw') {
+        if (g.till <= 0) return refuse('Nothing in the till to draw.');
+        spend({ cash: g.till });
+        line(
+          `You draw ${money(g.till)} from the till. It's yours; you earned it on someone else's sore fingers.`,
+        );
+        s.gym = { ...g, till: 0 };
+        break;
+      }
+      // A short till covered from your pocket, as far as your pocket goes.
+      if (a.do === 'pay') {
+        if (g.till >= 0) return refuse('The till isn’t short.');
+        const put = Math.min(s.cash, -g.till);
+        if (put <= 0) return refuse('Nothing in hand to put in.');
+        spend({ cash: -put });
+        s.gym = { ...g, till: g.till + put };
+        line(
+          g.till + put < 0
+            ? `You put ${money(put)} of your own in the till. It's still ${money(-(g.till + put))} short.`
+            : `You put ${money(put)} of your own in the till. The bank can stop calling.`,
+        );
+        break;
+      }
+      if (a.do === 'sell') {
+        const back = Math.round(OWN_GYM.price * OWN_GYM.resale + g.till);
+        spend({ cash: Math.max(0, back) });
+        s.gym = null;
+        line(
+          `You sell Send City to a couple from the city with big plans. ${money(Math.max(0, back))}, the till and all.`,
+        );
+        break;
+      }
+      if (a.do === 'hire' || a.do === 'fire') {
+        s.gym = { ...g, setter: a.do === 'hire' };
+        line(
+          a.do === 'hire'
+            ? `You hire a setter at ${money(OWN_GYM.setter)} a day. The wall won't go stale on your days off.`
+            : 'You let the setter go. The wall is yours to keep fresh again.',
+        );
+        break;
+      }
+      if (a.do === 'upgrade') {
+        const u = UPGRADES[a.what as Upgrade];
+        if (!u) return refuse('Not an upgrade.');
+        if (g.upgrades.includes(a.what!)) return refuse('You’ve built that already.');
+        if (s.cash < u.price) return refuse(`That's ${money(u.price)}, in hand.`);
+        spend({ cash: -u.price });
+        s.gym = { ...g, upgrades: [...g.upgrades, a.what!] };
+        line(`${GYM_UPGRADE_SAYS[a.what as Upgrade]} ${money(u.price)}.`);
+        break;
+      }
+      // The wall, set yourself: to the brief, or plainly.
+      if (s.at !== 'gym') return refuse('You set the wall at Send City.');
+      if (g.set === s.day) return refuse('You’ve set today.');
+      if (s.energy < GYM_SET.energy) return refuse('Too tired to haul holds.');
+      let q = OWN_GYM.plain;
+      if (a.set) {
+        const b = setBrief(s);
+        const no = setRefused(b, a.set);
+        if (no) return refuse(no);
+        q = scoreSet(b, a.set).score;
+      }
+      spend({ min: GYM_SET.min, energy: -GYM_SET.energy });
+      s.gym = { ...g, quality: Math.max(g.quality, q), set: s.day };
+      line(
+        a.set
+          ? `You set your own wall. ${[...SET_SAYS].reverse().find(([at]) => q >= at)![1]}`
+          : 'You put up a set nobody will remember. It’s fresh, which is what they pay for.',
+      );
+      break;
+    }
+
+    // A line on the bluff made climbable: bolted, or a boulder cleaned (Phase 18.6).
+    case 'bolt': {
+      const r = routeOfId(s, a.route);
+      if (!r) return refuse('Not a line.');
+      const why = boltBlocked(s, r);
+      if (why) return refuse(`${why}.`);
+      const c = r.disc === 'boulder' ? LAND.clean : LAND.bolt;
+      if (s.cash < c.cash) return refuse(`The hardware's ${money(c.cash)}.`);
+      if (s.energy < c.energy) return refuse('Too tired to hang on a rope with a drill all day.');
+      spend({ cash: -c.cash, min: c.min, energy: -c.energy });
+      s.bolted = [...s.bolted, r.id];
+      line(
+        r.disc === 'boulder'
+          ? `You brush ${r.name} clean, pull the moss off the top and kick the stones out of the landing. Nobody's ever been up it.`
+          : `A day on a rope with a drill, ${money(c.cash)} of glue-ins and chains, and ${r.name} is a line. Nobody's ever been up it.`,
+      );
+      break;
+    }
+
     // A comp (Phase 18.4): signed up for at the desk on the day, or the scorecard in.
     case 'comp': {
       if (a.do === 'finish') {
@@ -2301,7 +2450,11 @@ export function act(s0: GameState, a: Action): Result {
       if (to.minGrade !== undefined && gradeOf(s.climber.skills) < to.minGrade)
         return refuse(`${to.name}: ${to.locked ?? 'not yet.'}`);
       if (to.unlock && !s.unlocked.includes(a.to))
-        return refuse(`${to.name} is a trip you haven't paid for yet: ${money(to.unlock)}, once.`);
+        return refuse(
+          to.land
+            ? `${to.name} is private land. Ed Miller will sell it for ${money(to.unlock)}.`
+            : `${to.name} is a trip you haven't paid for yet: ${money(to.unlock)}, once.`,
+        );
       // A maxed-out card never strands you: you drive on what's in the tank. A permit isn't
       // gas: the ranger doesn't take fumes.
       // The old guard's say-so gets you in free (Phase 23.5).
@@ -2429,7 +2582,11 @@ export function act(s0: GameState, a: Action): Result {
       if (s.cash < p.unlock) return refuse(`${p.name} runs ${money(p.unlock)}, in hand. Keep saving.`);
       spend({ cash: -p.unlock });
       s.unlocked.push(a.place);
-      line(`Pads, water jugs and a guidebook, ${money(p.unlock)}. ${p.name} is on your map for good.`);
+      line(
+        p.land
+          ? `Ed Miller shakes your hand at the kitchen table and signs ${p.name} over to you, ${money(p.unlock)}. The cows come with it, he says. They don't.`
+          : `Pads, water jugs and a guidebook, ${money(p.unlock)}. ${p.name} is on your map for good.`,
+      );
       break;
     }
 

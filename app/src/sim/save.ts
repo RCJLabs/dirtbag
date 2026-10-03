@@ -8,7 +8,7 @@
 import { CARRIED, SKILLS, STARTS } from './climber';
 import { GEAR } from './content/gear';
 import { PLACES } from './content/places';
-import { AGE, FACTION, LIFESTYLE, PLANS, SPOTS, TRAIN, YEAR } from './dials';
+import { AGE, FACTION, OWN_GYM, LIFESTYLE, PLANS, SPOTS, TRAIN, YEAR } from './dials';
 import { JOBS } from './content/jobs';
 import { ROUTES, WALLS } from './content/routes';
 import { EXPEDITIONS } from './content/expeditions';
@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 49;
+export const SAVE_VERSION = 50;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -400,6 +400,11 @@ export const MIGRATIONS: Record<number, Migration> = {
       },
     };
   },
+  // v49 -> v50 (Phase 18.6): no gym of your own, nothing bolted.
+  49: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, gym: null, bolted: [] };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -616,6 +621,22 @@ export function validate(x: unknown): string[] {
           ((isInt(md.doc.grade) && isInt(md.doc.due)) || isInt(md.doc.aired) || isInt(md.doc.shelved)))) &&
       (md.lost === null || isInt(md.lost)),
     'media',
+  );
+  const gy = x.gym;
+  need(
+    gy === null ||
+      (isObj(gy) &&
+        [gy.since, gy.members, gy.till, gy.last, gy.peak, gy.set].every(isInt) &&
+        isNum(gy.quality) &&
+        typeof gy.setter === 'boolean' &&
+        Array.isArray(gy.upgrades) &&
+        gy.upgrades.every((u) => typeof u === 'string' && u in OWN_GYM.upgrades)),
+    'gym',
+  );
+  need(
+    Array.isArray(x.bolted) &&
+      x.bolted.every((id) => typeof id === 'string' && !!PLACES[ROUTES[id]?.place ?? '']?.land),
+    'bolted',
   );
   need(typeof x.lifestyle === 'string' && x.lifestyle in LIFESTYLE, 'lifestyle');
   need(typeof x.spot === 'string' && x.spot in SPOTS, 'spot');

@@ -83,6 +83,8 @@ export function signupBlocked(s: GameState, job: string, day: number, on = true)
   if (!on)
     return signedUp(s, job, day) ? (day > s.day ? null : "It's today. Go, or don't.") : 'Not signed up.';
   if (day <= s.day) return "Today's shifts are walk-ins.";
+  // Your own gym (Phase 18.6): nobody posts the owner setting shifts.
+  if (job === 'set' && s.gym) return 'You own the place.';
   if (day > s.day + WORK.ahead) return 'Not posted yet.';
   if ((j.grade?.[0] ?? 0) > gradeOf(s.climber.skills)) return `They want V${j.grade![0]}.`;
   if (!isPosted(s.seed, job, day)) return 'No shift posted.';

@@ -31,7 +31,10 @@ export type RecordAim =
   // Phase 18.5: followers, a sponsor at a tier or better, the film.
   | { followers: number }
   | { sponsor: number }
-  | { film: true };
+  | { film: true }
+  // Phase 18.6: a gym of your own, and land.
+  | { gym: true }
+  | { land: true };
 
 export interface RecordEntry {
   id: string;
@@ -368,6 +371,24 @@ export const RECORD: RecordEntry[] = [
       'The film goes out, and strangers write to you about their own projects. You answer every one, slowly, from the van.',
     from: [],
     aim: { film: true },
+  },
+  {
+    id: 'gymowner',
+    title: 'Your Own Four Walls',
+    desc: 'Own a gym.',
+    story:
+      'The keys to Send City are on your van keyring now, heavier than the rest. You still check the toilet runs before you lock up.',
+    from: [],
+    aim: { gym: true },
+  },
+  {
+    id: 'landowner',
+    title: 'The Back Forty',
+    desc: 'Buy a crag.',
+    story:
+      'A deed with your name on it, for a wall nobody has climbed. You stand in the field a long time before you touch the rock.',
+    from: [],
+    aim: { land: true },
   },
   {
     id: 'giving',

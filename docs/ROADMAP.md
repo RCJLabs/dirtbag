@@ -2593,6 +2593,38 @@ Players will ask "what am I working towards?" by hour 3.
 - **Harness:** every target passes, unchanged.
 - **The download:** 373.5 KB of 400.
 
+**Status (3 Oct 2026): 18.6 built: your own gym, and a crag.** Save v50, 0.999.24. Numbers [proposed] in `OWN_GYM`, `GYM_SET` and `LAND`; rules in `business.ts`; the bluff in `content/places.ts` and `content/routes.ts`.
+- **Send City, bought:** the desk offers it from senior setter; Marg sells to her head setter, for $6,000 in hand. Owning it ends setting shifts (you set your own wall now), and the owner's pass is the keys: the wall and the shower, every day.
+- **A simple business with no traps:** members (60 to start) drift a tenth of the way each night toward what the wall and the upgrades draw. Each pays dues and brings walk-ins. Rent and the desk come out ($190 a day), plus a setter's $55 if you hire one. The wall goes stale a little every night. Set it yourself (4 hours; plainly, or to the brief with 18.1's puzzle, its score the wall's freshness), or hire a setter, who keeps it good enough.
+- **What it pays,** settled after a month (measured on the night's rule, not by a bot):
+  - The first night, about $17.
+  - A plain set every day, about $80.
+  - With a hired setter and nothing asked of you, about $95.
+  - With all three upgrades and a wall set to the brief every day, about $570, at 200 members. That's probably too generous: a tuning call for when 18.7's bots can measure it.
+  - Left alone with no setter, it loses about $75 a day once the wall's stale, and the bank sells within weeks.
+- **The draw (criterion 4):** "Draw the till" moves the whole till to your cash. A short till is a line every morning, and you can cover it from your pocket at the desk. Past $600 short, the bank sells it for half the price less the shortfall. Selling up any time gets you 70% of the price plus the till.
+- **The morning line:** "Send City yesterday: +$214, 128 members, the wall a good set. $1840 in the till."
+- **Upgrades, once each, from your pocket:**
+  - a training board ($1,500, about 25 more members)
+  - a coffee corner ($1,200, 50¢ a member a day)
+  - a new steep wall ($2,500, about 45 more members)
+- **Miller's Bluff, a crag to buy:** limestone on a farm east of the Lot, never climbed, $9,000 to Ed Miller. It has nine lines, V6 to V15: six sport lines to bolt ($140 of hardware and 5 hours on a rope) and three boulders to clean (2 hours). Each is an open project once done: the first ascent, and its name, are yours. The land and its bolts pass to an heir; the gym doesn't (it's theirs to earn) [proposed].
+- **Opened:** the Record Book's Your Own Four Walls (the gym) and The Back Forty (the bluff).
+- **The ladder, for 18.7:** setting's four ranks, then owner, then 200 members at once.
+- **Fixed after a look** (screens from loaded saves):
+  - An owner had to buy a pass to shower.
+  - The short-till line said "put money in" with no way to.
+  - A coffee corner read "$0.5".
+  - The unit test meant to show an owner climbs free never ran: it looked for the gym's problems in the wrong list. It runs now.
+- **Not measured:** the bots don't buy a gym or land. When a career can afford either, and what the till pays over one, waits on 18.7's ladder bots.
+- **Not done:**
+  - The guiding outfit, a youth athlete and an expedition team carry (Evan's call).
+  - The bluff's close-up is Roadside's wall shape in limestone, without chalk; its own shape is for an art pass.
+- **Save v50:** `gym` and `bolted`; a real v49 save loads.
+- **Seen:** the bluff from the road, the owner's desk, and the gym's sheet with a full till and a short one, all from loaded saves in Chromium. The e2e passes unchanged.
+- **Harness:** every target passes, unchanged (V10 on a median day 180.5, Act III in every career, median day 296.5).
+- **The download:** 378.5 KB of 400.
+
 ---
 
 ## Stage D — Get it in front of people
@@ -2885,3 +2917,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Phase 18.3 built: the coach's roster (clients who stay, each an hour a session, a send's thanks) and the warehouse's picks (push-your-luck where a drop costs what you'd picked, the day moving the stop). Save v47. 0.999.21.
 - 2026-10-03 — Phase 18.4 built: the comp ladder, League night to the Games, opt-in, a fixed field, points that fade; the Scene path, Comp Beast and three Record Book entries opened. Save v48. 0.999.22.
 - 2026-10-03 — Phase 18.5 built: media; a post a day from what you did, sponsors with asks and stipends (followers alone pay nothing), a rival for the headline deal, threads answered by sending, and the film; the Influencer and four Record Book entries opened. Save v49. 0.999.23.
+- 2026-10-03 — Phase 18.6 built: Send City bought by its head setter, its till drawn, covered or sold (criterion 4), the morning's line, upgrades and your own wall; Miller's Bluff bought, its nine lines bolted or cleaned and open for first ascents; two Record Book entries. Save v50. 0.999.24.

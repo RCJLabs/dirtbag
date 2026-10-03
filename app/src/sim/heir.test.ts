@@ -29,7 +29,19 @@ const retired = (over: Partial<GameState> = {}): GameState =>
       cmyth: { name: 'Dex Was Here', call: 0, day: 200, by: 'dex' },
     },
     dog: { name: 'Scout', since: 100, fed: 80, bond: 60 },
-    unlocked: ['moon'],
+    unlocked: ['moon', 'bluff'],
+    bolted: ['bbarn'],
+    gym: {
+      since: 200,
+      members: 120,
+      quality: 0.6,
+      till: 300,
+      last: 40,
+      setter: true,
+      upgrades: [],
+      peak: 130,
+      set: 0,
+    },
     van: { tires: 0.4, engine: 0.3, battery: 0.9 },
     record: { firstsend: 3, fa: 120 },
     people: { dex: close, hazel: close },
@@ -59,7 +71,10 @@ describe('the next generation', () => {
     expect(byName('dex')).toBe('Dex Calloway');
     // The van, the trips, the dog, the book, how you climbed.
     expect(h.van).toEqual(s.van);
-    expect(h.unlocked).toEqual(['moon']);
+    expect(h.unlocked).toEqual(['moon', 'bluff']);
+    // The bluff's bolts stay in the rock; the gym doesn't pass down.
+    expect(h.bolted).toEqual(['bbarn']);
+    expect(h.gym).toBeNull();
     expect(h.dog?.name).toBe('Scout');
     expect(h.record).toEqual(s.record);
     // Not the money, the people or the sends: those are theirs to earn.

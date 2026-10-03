@@ -100,6 +100,10 @@ export interface GameState {
     doc: { grade: number; due: number } | { aired: number } | { shelved: number } | null;
     lost: number | null;
   };
+  // Phase 18.6 (save v50): your own gym, once you've bought it, and the bluff's lines you've
+  // bolted (or cleaned) so far.
+  gym: OwnGym | null;
+  bolted: string[];
   // How you live (dials.ts LIFESTYLE): paid at the van every night.
   lifestyle: 'dirtbag' | 'comfortable' | 'plush';
   // Phase 22.2b. Where you park for the night (dials.ts SPOTS), nights in a row at the Lot
@@ -419,6 +423,21 @@ export interface Delta {
   fed?: number;
 }
 
+// Send City, yours (Phase 18.6): when you bought it, its members, how fresh the wall is (0
+// to 1), the till, yesterday's takings, a hired setter, its upgrades, the most members it's
+// had, and the last day you set the wall yourself.
+export interface OwnGym {
+  since: number;
+  members: number;
+  quality: number;
+  till: number;
+  last: number;
+  setter: boolean;
+  upgrades: string[];
+  peak: number;
+  set: number;
+}
+
 // What a sponsor's cycle asks (Phase 18.5): a send posted at a grade, a shoot day at a crag,
 // a comp, an ad.
 export type MediaTask =
@@ -458,6 +477,16 @@ export type Action =
   | { t: 'post'; style: 'straight' | 'story' | 'bait' | 'ad' }
   | { t: 'offer'; take: 'real' | 'brand' | 'yes' | 'no' }
   | { t: 'shoot' }
+  // Your own gym (Phase 18.6): bought, its till drawn or a short one covered, sold; a setter
+  // hired or let go; an upgrade; the wall set yourself (a set from the brief, or plainly).
+  // A line bolted.
+  | {
+      t: 'gym';
+      do: 'buy' | 'draw' | 'pay' | 'sell' | 'hire' | 'fire' | 'upgrade' | 'set';
+      what?: string;
+      set?: string[];
+    }
+  | { t: 'bolt'; route: string }
   // `carry`: a v0.956 climber's skills, when they come across rather than picking a start.
   | { t: 'create'; name: string; start: string; origin?: string; carry?: Skills; solo?: true }
   // Phase 23.3: take up a calling.

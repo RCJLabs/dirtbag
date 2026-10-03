@@ -19,6 +19,7 @@ import {
   HUSTLE,
   KIT,
   LAKE,
+  LAND,
   MONEY,
   SICK,
   SUPPLIES,
@@ -53,6 +54,9 @@ export interface PlaceDef {
   permit?: number;
   // The haul you paid for includes crash pads: every highball lands softer (HIGHBALL.pads).
   pads?: true;
+  // Land you buy (Phase 18.6), not a trip you pay for: `unlock` is its price, and its lines
+  // are there to climb once you've bolted them (land.ts). The bots don't buy land.
+  land?: true;
   // A sunny crag's lines in the order the afternoon sun reaches them, from one end of the
   // crag to the other, talus boulders and wall lines alike. The scene's layout must agree
   // (view/sun.test.ts), so the shade line you see crosses each line as it starts to grease.
@@ -327,6 +331,24 @@ export const PLACES: Record<string, PlaceDef> = {
     ownSky: true,
     // The sun comes up the coast from the south end: the tall lines out at the point first.
     sun: ['pdeep', 'parete', 'poverhang', 'pleap', 'pbarnacle', 'pslab', 'pplunge', 'ptide'],
+  },
+  // Phase 18.6 [proposed]: Miller's Bluff, east of the Lot on a farm track. Ed Miller's
+  // back forty: limestone nobody's climbed, for sale. Buy it and bolt it, line by line.
+  bluff: {
+    crowd: 0.05,
+    name: 'Miller’s Bluff',
+    crag: true,
+    land: true,
+    unlock: LAND.price,
+    // Nobody's day brings them here: ask a Regular along, for the roped lines.
+    invite: 3,
+    scene: 'bluff',
+    ambience: { wind: 0.4, birds: 0.7, creek: 0.2 },
+    away: 'Limestone on the back of a farm east of the Lot. Never climbed: Ed Miller wants {bluff} for it.',
+    here: 'Cows over the fence, and a wall nobody has ever chalked.',
+    acts: [],
+    // The sun comes over the farm from the east end: the boulders in the field first.
+    sun: ['bsilo', 'btrough', 'blong', 'broof', 'bpillar', 'bcow', 'btufa', 'bbarn', 'bhay'],
   },
   // v0.956's second gym: "a steep bouldering cave, no ropes, just hard plastic", V5 to V12
   // here (v0.956's V3 to V10, raised), at the trailhead below Roadside. A day pass, and coaching for work once you can climb.
@@ -1042,6 +1064,8 @@ export const ROADS: RoadDef[] = [
   { a: 'cove', b: 'diner', min: 110, cash: 14 },
   // The Cave: at the trailhead on the highway, twenty minutes short of Roadside.
   { a: 'cave', b: 'road', min: 20, cash: 3 },
+  // Miller's Bluff (Phase 18.6): half an hour east of the Lot on a farm track.
+  { a: 'bluff', b: 'lot', min: 35, cash: 5 },
   { a: 'cave', b: 'gym', min: 45, cash: 8 },
   { a: 'center', b: 'gym', min: 10, cash: 1 },
 ];
@@ -1095,4 +1119,5 @@ export const TEXT_VALUES = {
   pass: `$${MONEY.dayPass}`,
   centerPass: `$${MONEY.centerPass}`,
   wake: clockShort(DAY.wakeMin),
+  bluff: `$${LAND.price.toLocaleString('en-US')}`,
 };
