@@ -7,6 +7,7 @@
 import type { Cond } from '../cond';
 import { ARC, BOND } from '../dials';
 import { arcNodes, arcStarts } from './arcs';
+import { romanceNodes, romanceStarts } from './romance';
 import { PLACES } from './places';
 import type { Delta, Skills } from '../types';
 
@@ -24,6 +25,8 @@ export interface TalkFx {
   arc?: true;
   // They've told you the next moment of their life (lives.ts).
   life?: true;
+  // A romance (Phase 17.4): it starts, it's friends instead, a beat plays, or it ends.
+  romance?: 'start' | 'friends' | 'next' | 'end';
   // Skills you come away with.
   train?: Partial<Skills>;
   // Bond: more of it, or at least this much.
@@ -233,10 +236,13 @@ export const TALK: Record<string, TalkDef> = {
       { when: { arc: 'sage/2' }, node: 'beat-2' },
       { when: { arc: 'sage/3' }, node: 'beat-3' },
       { when: { arc: 'sage/4', outside: true }, node: 'beat-4' },
+      // A romance after the arc's due beats (Phase 17.4): a friend's moment comes first.
+      ...romanceStarts('sage'),
       { when: { today: 'sage' }, node: 'done' },
       { node: 'again' },
     ],
     nodes: {
+      ...romanceNodes('sage'),
       meet: {
         text: "You're the one Hazel says keeps staring at The Pump. I'm Sage. I climb slow and I read everything first.",
         opts: [
@@ -480,8 +486,15 @@ export const TALK: Record<string, TalkDef> = {
   },
   mara: {
     who: 'mara',
-    start: [{ when: { notMet: 'mara' }, node: 'meet' }, ...arcStarts('mara'), { node: 'again' }],
+    start: [
+      { when: { notMet: 'mara' }, node: 'meet' },
+
+      ...arcStarts('mara'),
+      ...romanceStarts('mara'),
+      { node: 'again' },
+    ],
     nodes: {
+      ...romanceNodes('mara'),
       ...arcNodes('mara'),
       meet: {
         text: 'A woman on the next line lowers off, looks at your chalk bag, then at you. "Mara. You’re on my warm-up." She doesn’t move you off it. "Go on, then. Don’t celebrate if you get it."',

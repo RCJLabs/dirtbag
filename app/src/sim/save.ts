@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 41;
+export const SAVE_VERSION = 42;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -344,6 +344,11 @@ export const MIGRATIONS: Record<number, Migration> = {
         Object.entries(people).map(([id, p]) => [id, isObj(p) ? { ...p, talked: true } : p]),
       ),
     };
+  },
+  // v41 -> v42 (Phase 17.4): nobody's with anyone yet, and no spark's been offered.
+  41: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, romance: null };
   },
 };
 
@@ -793,6 +798,19 @@ export function validate(x: unknown): string[] {
         typeof fm.coach === 'boolean'),
     'family',
   );
+  const ro = x.romance;
+  need(
+    ro === null ||
+      (isObj(ro) &&
+        typeof ro.who === 'string' &&
+        ro.who in PEOPLE &&
+        isInt(ro.stage) &&
+        ro.stage >= 1 &&
+        isInt(ro.since) &&
+        isInt(ro.beatDay) &&
+        optInt(ro.over)),
+    'romance',
+  );
   const hb = x.habits;
   need(
     isObj(hb) &&
@@ -874,6 +892,7 @@ const isPerson = (x: unknown): x is PersonLog =>
   (x.ahead === undefined || typeof x.ahead === 'boolean') &&
   (x.talked === undefined || typeof x.talked === 'boolean') &&
   optInt(x.life) &&
+  (x.sparked === undefined || typeof x.sparked === 'boolean') &&
   (x.invite === undefined ||
     (isObj(x.invite) &&
       isInt(x.invite.day) &&

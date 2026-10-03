@@ -2,6 +2,7 @@
 // says whether it names something this climber did (criterion 2 wants five of those), as
 // against who they were.
 
+import { PEOPLE } from './content/people';
 import { routeById } from './content/gym';
 import {
   BOOK_END,
@@ -15,6 +16,7 @@ import {
   PATH_END,
   FAMILY_END,
   PEOPLE_END,
+  ROMANCE_END,
   QUIRK_END,
   STANCE_END,
   SUMMIT_END,
@@ -118,6 +120,12 @@ export function epilogue(s: GameState): EpilogueLine[] {
     if (!p) continue;
     if (tierOf(p.bond) >= HOME.tier) put(l.close);
     else put(l.far, false);
+  }
+
+  // Who you were with (Phase 17.4).
+  if (s.romance) {
+    const name = PEOPLE[s.romance.who]?.name ?? s.romance.who;
+    put(fill(s.romance.over === undefined ? ROMANCE_END.together : ROMANCE_END.over, { name }));
   }
 
   // The dog: still with you, or the last one you had.

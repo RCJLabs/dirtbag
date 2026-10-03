@@ -8,6 +8,7 @@ import { ARC, DAY, DOG, MONEY, type VanPart } from './dials';
 import { repairCost } from './van';
 import { isSick } from './sick';
 import { lifeDue } from './lives';
+import { romanceDue, strained } from './romance';
 import { strayDue } from './scout';
 import { clockShort, fill } from './format';
 import { benchedUntil, isPosted } from './jobs';
@@ -31,6 +32,8 @@ export interface Cond {
   met?: string; // you've met this person
   notMet?: string; // you haven't spoken to them yet, though they may have belayed you
   life?: string; // "who/n": the nth moment of their life is due for you to hear (lives.ts)
+  romance?: string; // "who/n": beat n of a romance with them is due (romance.ts)
+  strained?: string; // you're together, and it's gone too long without a day together
   sky?: Sky; // today's weather
   arc?: string; // "who/n": beat n of their arc is due (bond reached, days since the last)
   bond?: string; // "who/n": your bond with them is at least n
@@ -107,6 +110,8 @@ export function holds(s: GameState, c: Cond): boolean {
   if (c.met !== undefined && !s.people[c.met]) return false;
   if (c.notMet !== undefined && s.people[c.notMet]?.talked) return false;
   if (c.life !== undefined && !lifeDue(s, c.life)) return false;
+  if (c.romance !== undefined && !romanceDue(s, c.romance)) return false;
+  if (c.strained !== undefined && !strained(s, c.strained)) return false;
   if (c.sky !== undefined && skyOn(s.seed, s.day) !== c.sky) return false;
   if (c.arc !== undefined && !beatDue(s, c.arc)) return false;
   if (c.bond !== undefined) {

@@ -1023,6 +1023,22 @@ export const AGE = { start: 22, days: 18, from: 30, warn: 43, forced: 45 };
 // measured: stated, so the hours the harness reports can be checked against testers' and
 // the numbers moved [proposed].
 export const PACE = { tapSec: 4, goSec: 15 };
+// Romance (Phase 17.4, Evan's call: Sage and Mara), all [proposed]. The spark is offered once
+// each, at `from` bond (a Partner); the beats after it come a week apart (`spacing`). Forks
+// keep them away a while: `cool` after a fight you dig in on, `apart` for their chance taken.
+// Three weeks without a day climbing together (`neglect`, their days away not counted) ends
+// it, in a scene; then they keep their `distance`, and the bond falls to `after`, a Regular's.
+export const ROMANCE = {
+  who: ['sage', 'mara'],
+  from: 5,
+  spacing: 7,
+  cool: 3,
+  apart: 21,
+  neglect: 21,
+  distance: 10,
+  after: 3,
+};
+
 // Lives that change (Phase 17.3), on the age clock (AGE.days to a year, Evan's call), all
 // [proposed]:
 //   ray     his last season from the sixth year (day 91), and he stops coming out in the

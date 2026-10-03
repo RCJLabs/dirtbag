@@ -1,10 +1,10 @@
 {
   "format": "dirtbag",
-  "v": 40,
-  "app": "0.999.12",
+  "v": 41,
+  "app": "0.999.13",
   "state": {
-    "seed": "fixture-40",
-    "day": 40,
+    "seed": "fixture-41",
+    "day": 120,
     "min": 460,
     "cash": 41,
     "energy": 78,
@@ -14,9 +14,9 @@
     "x": null,
     "today": [],
     "climber": {
-      "name": "Kit",
-      "start": "allrounder",
-      "skills": { "power": 8, "fingers": 8, "endurance": 8, "technique": 8, "head": 8 }
+      "name": "Lee",
+      "start": "technician",
+      "skills": { "power": 5, "fingers": 9, "endurance": 5, "technique": 13, "head": 7 }
     },
     "load": { "acute": 20, "chronic": 20, "today": 0 },
     "injury": null,
@@ -36,9 +36,9 @@
     },
     "firsts": {},
     "people": {
-      "hazel": { "bond": 0, "last": 0, "since": 1 },
-      "mara": { "bond": 2, "last": 39, "since": 30 },
-      "sage": { "bond": 4, "last": 38, "since": 2, "arc": 1, "beatDay": 20 }
+      "hazel": { "bond": 0, "last": 0, "since": 1, "talked": true },
+      "sage": { "bond": 7, "last": 118, "since": 2, "arc": 4, "beatDay": 60, "talked": true },
+      "mara": { "bond": 5, "last": 119, "since": 70, "arc": 2, "beatDay": 100, "talked": true }
     },
     "race": null,
     "trips": 0,
@@ -86,7 +86,7 @@
     "talents": {
       "ids": [],
       "known": [],
-      "from": { "power": 8, "fingers": 8, "endurance": 8, "technique": 8, "head": 8 }
+      "from": { "power": 5, "fingers": 9, "endurance": 5, "technique": 13, "head": 7 }
     },
     "calling": { "id": null, "since": 0, "rungs": [], "offered": false },
     "paths": { "tiers": {}, "told": [] },
@@ -106,9 +106,9 @@
     "board": {
       "week": 1,
       "jobs": [
-        { "id": "step", "grade": 0, "paid": false },
-        { "id": "crimp", "grade": 0, "paid": false },
-        { "id": "slab", "grade": 0, "paid": false }
+        { "id": "work", "grade": 0, "paid": false },
+        { "id": "real", "grade": 0, "paid": false },
+        { "id": "crack", "grade": 0, "paid": false }
       ],
       "shifts0": 0,
       "sessions": 0
