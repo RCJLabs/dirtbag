@@ -2313,10 +2313,10 @@ Players will ask "what am I working towards?" by hour 3.
 - **The limit:** a line three or more grades over you, by the grade it's given (a sandbag keeps its secret), won't let you tie in: "Beyond you, for now. Come back a better climber." A new climber (about V0.8) is turned away from the gym's and Roadside's V4 and V5 until about V1.1; those windows were already about a twentieth of at-grade.
 - **From a grade and a half over, a line climbs with more cruxes for you than the topo shows:** one, then two from two and a half. They go where the line has room, above the first bolt or piece, on the beta of the line's own crux nearest them, and a fall at one counts there. The beta sheet says so ("Over your grade, it climbs with 2 more cruxes than the topo shows"); the fall sheet says "Off at a move that’s a crux for you". From one grade over, where everyone projects, half the career bots hadn't finished Act III by day 415; from a grade and a half, all did.
 - **Measured:** the career bot that's V11 with power at V15 sends Apparition (V15, truly V14) 42% of goes, and The Anvil, Event Horizon and both myths never, careful hands included (before: 95%, 53%, 17%, 9%, and every time with careful hands).
-- **Harness:** criterion 1 passes (median 19.0 h, 18.6 to 19.9); Act III ends in every career (median day 261, where it was 288); the career bots reach V10 later (median day 188, was 162). **One target fails:** two of sixteen careers had a wet day with nothing to try at about V6 (day 63; days 75 and 76): the crags soaked, the Cove out of season, the Mesa not yet open, the gym sent, and the Cave's week down to its V10 to V12, now beyond them. Before, those counted as something to try at odds near nothing. A content call for Evan.
+- **Harness:** every target passes. Criterion 1: median 19.4 h (19.2 to 20.4). Act III ends in every career (median day 281.5, where it was 288). The career bots reach V10 later (median day 178, was 162). On the way, one target failed: two of sixteen careers had a wet day with nothing to try at about V6, the crags soaked, the Cove out of season, the Mesa not yet open, the gym sent, and the Cave's week down to its V10 to V12, now beyond them (before, those counted as something to try at odds near nothing). Evan's call: the Cave sets V5 to V11 with two at V7, and none do now.
 - **E2e:** the day-one climber sees The Pump climb with one more crux for them, and falls at the crimp rail as before.
 
-**Phase 16 closed by Evan's call (3 Oct 2026).** All three criteria pass. Carried: the Late Bloomer's speed run (still not reached at bot pace), Act IV finished by no bot inside the clock (0 of 8), and the wet-day gap at V6 above. The CURRENT MILESTONE moves to Phase 17.
+**Phase 16 closed by Evan's call (3 Oct 2026).** All three criteria pass. Carried: the Late Bloomer's speed run (still not reached at bot pace) and Act IV finished by no bot inside the clock (0 of 8). The wet-day gap at V6, by Evan's call: the Cave sets V5 to V11 with two at V7, where it set V5 to V12, so a V6 has work there on a wet day. The CURRENT MILESTONE moves to Phase 17.
 
 ---
 
@@ -2356,7 +2356,7 @@ Players will ask "what am I working towards?" by hour 3.
 
 **Depends on:** Phases 5–6. **Effort:** ~3–5 weeks, mostly writing. **Main risk:** writing volume. Prioritize the lines players see most.
 
-**Plan on the rebuild (3 Oct 2026), proposed; Evan's calls open.**
+**Plan on the rebuild (3 Oct 2026), with Evan's calls.**
 
 *What's there (a survey of the rebuild against `docs/audit/social.md`):*
 - **Three people and a dog.** Hazel (your neighbour at the Lot, there from day one), Sage (a partner, the only arc: four beats ending "partners for good") and Dex (the rival: his own grade curve, the first-ascent race, overnight news), and Scout. The knocks and the hitchhikers (v0.956's text) have no names. Bond runs on five tiers, a point a day climbing together. Four talk trees, 29 nodes.
@@ -2369,17 +2369,17 @@ Players will ask "what am I working towards?" by hour 3.
 - **Criterion 4 has no baseline.** v0.956's repeat rates are the audit's Monte Carlo (inferred), and the rebuild has none of those pools. The harness can measure the rebuild's own: every line the game says is in `BotRun.lines` with its day.
 - **The harness stops short.** Career runs are 224 days; criterion 3 needs 300, which the ending section (to day 480) already plays.
 
-*Calls for Evan [all proposed]:*
+*Evan's calls (3 Oct 2026), taking the recommendations on 1, 2 and 4; 3 is open:*
 1. **Who comes back.** A cast of about eight, with no shared names: Hazel, Sage, Dex, plus v0.956's Ray (a local elder who retires and hands you his crag), Frank (a van-lifer whose rig dies and who parks next to yours), Mara and Rico (partners, rifts and romance), and Tam (an elder with his own rules, slowing down).
 2. **Romance:** in, with Sage and one of Mara or Rico, past v0.956's four beats: an anniversary, the first fight, a shared van decision, their chance against yours, a break-up with real text. Forks change who's around.
-3. **Life timers on the age clock** (an age year is 18 days), so Ray's last season and Tam's slowing land inside a career, not after it.
+3. **Life timers on the age clock** [proposed, open] (an age year is 18 days), so Ray's last season and Tam's slowing land inside a career, not after it.
 4. **The family back home** as a short arc across a year, with "come home for good" as a way to hang it up: a third ending beside retirement and The Line.
 
 *The slices:*
 - **17.1 The cast:** the new people, a look each, where and when they turn up; a test that no two share a name or a look.
 - **17.2 Milestones:** three or more and a resolution for each core character, Hazel and Dex included; the arcs' forks change availability.
 - **17.3 Lives that change:** the timers, injuries and moves away and back.
-- **17.4 Romance,** if it's in.
+- **17.4 Romance:** Sage and one of Mara or Rico.
 - **17.5 Giving:** gifts, invitations ("bring Frank to the fire") and naming a line after someone.
 - **17.6 Holidays and the family arc,** as scenes with your people in them.
 - **17.7 Where players read most, and the harness:** walker chats, fire outcomes, busy-texts and send reactions; targets for criterion 3 (new authored lines every week to day 300) and criterion 4 (repeat rate at day 100 against the audit's figures).
@@ -2698,5 +2698,5 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-02 — Phase 16.3 built: The Line, a myth's first ascent ending the story in its own sequence (the naming at the fire, who was there, the credits, then hang it up or keep climbing); after it, retiring is yours at any age. 0.999.7.
 - 2026-10-02 — Phase 16.5 built: the next generation; the kid you coached climbs on in the same world with the van, the trips, the dog, the mode, the family's Record Book and your lines on the topos, Dex coaching if he was close, and a first act of their own ending on a go on your line; criterion 3 passes. Save v40. 0.999.8.
 - 2026-10-02 — Phase 16.6 built: the career bot plays the story's expeditions and walls; a wall partner stays the night (a fix); criterion 1 measured at a stated pace (median 19.3 h to the ending); all three criteria pass. Found: the Crucible's hardest boulders go far below their grade, so The Line is doable at V12. 0.999.9.
-- 2026-10-03 — Climbing above your grade, Evan's call: one style counts only a grade and a half past your grade; windows close faster past a grade over and shut at three; a line three grades over refuses the go; from a grade and a half over, a go has one or two more cruxes. The Crucible's V16 to V18 no longer go for a V11. 0.999.10.
-- 2026-10-03 — Phase 16 closed by Evan's call; the Late Bloomer's speed run, Act IV inside the clock and a wet-day gap at V6 carry. CURRENT MILESTONE moved to Phase 17, the people, planned on the rebuild with four calls open for Evan.
+- 2026-10-03 — Climbing above your grade, Evan's call: one style counts only a grade and a half past your grade; windows close faster past a grade over and shut at three; a line three grades over refuses the go; from a grade and a half over, a go has one or two more cruxes. The Crucible's V16 to V18 no longer go for a V11. The Cave sets V5 to V11 with two at V7 (Evan's call), so a V6 has work on a wet day. 0.999.10.
+- 2026-10-03 — Phase 16 closed by Evan's call; the Late Bloomer's speed run and Act IV inside the clock carry; the Cave sets V5 to V11 with two at V7 (Evan's call), closing a wet-day gap at V6. CURRENT MILESTONE moved to Phase 17, the people, planned on the rebuild with Evan's calls: a cast of about eight, romance with Sage and one more, and the family back home as a third ending.
