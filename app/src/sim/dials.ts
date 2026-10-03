@@ -1023,6 +1023,13 @@ export const AGE = { start: 22, days: 18, from: 30, warn: 43, forced: 45 };
 // measured: stated, so the hours the harness reports can be checked against testers' and
 // the numbers moved [proposed].
 export const PACE = { tapSec: 4, goSec: 15 };
+// Holidays and the family (Phase 17.6) [proposed]. A holiday each season, on its middle day
+// of the 56-day year, a night at the fire: staying up is `psyche` and a day together with
+// everyone close who's there. Calls from home come every `every` years on the age clock from
+// the `from`th; the last asks you home for good.
+export const HOLIDAY = { on: [7, 21, 35, 49], psyche: 10 };
+export const FOLKS = { from: 1, every: 2 };
+
 // Giving (Phase 17.5) [proposed]: a gift to someone once a week, a bond for it (no more than
 // a day climbing together, and it costs money where a day out doesn't); a line named for
 // someone is worth `named`, once a line.

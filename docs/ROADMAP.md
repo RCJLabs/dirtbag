@@ -2445,6 +2445,14 @@ Players will ask "what am I working towards?" by hour 3.
 - **No harness run:** the bots don’t give, name lines for anyone or ask anyone to the fire, so nothing they do changes.
 - **The download:** 347.3 KB of 360.
 
+**Status (3 Oct 2026): 17.6 built: holidays and the family.** Save v44, 0.999.16. Numbers [proposed] in `HOLIDAY` and `FOLKS`; text in `content/folks.ts`.
+- **Four holidays a year,** one each season on its middle day: Harvest, Longest Night, First Dry Rock, Midsummer. Slept at the Lot, it's a night at the fire in a card of its own, with a line for each of the people you're Regulars with or closer who are around (not away, not on a stint, not retired or stopped): a lift to psyche, and a day together with each. Nobody close, and it's a quieter card.
+- **The family back home:** a call every two years on the age clock from the first, five in all. It's a missed call overnight, and waits on the phone in the van till you call back: your mum asking what you're eating, your dad's birthday, your sister's baby, your dad's scare, then the room that's still yours.
+- **Home for good, a third ending:** the last call asks you home. Say yes and it's over, as hanging it up is, with its own words on the tally ("You went home for good") and first in the epilogue. "Not yet" keeps you climbing, and nobody asks again. Going home is never a call's first answer.
+- **Tried first and changed:** the holidays and the calls came at bed, like a knock, and stopped the night for an answer; eighteen of the sim's tests and the e2e sleep on those nights, and a player would too. Now neither stops a night.
+- **Harness:** every target passes; the bots sleep at the Lot on holidays like anyone, and get the lift: V10 on a median day 180.5, Act III ends in every career (median day 296.5, from 336, the holidays' days together making up for 17.3's stints).
+- **The download:** 349.4 KB of 360.
+
 ---
 
 ### Phase 18 — Careers and jobs
@@ -2764,3 +2772,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Phase 17.3 built: on the age clock, Ray's last season and retirement (his topo yours), Tam slowing then done, Frank's rig dead and parked by yours, partners off the rock for stretches with news overnight; a first meeting waits for your first word. Save v41. 0.999.13.
 - 2026-10-03 — Phase 17.4 built: romance with Sage or Mara (Evan's call), one a life: the spark, the first fight, one van or two, their chance against yours, together; a year counted overnight; an end in a scene after three weeks apart; the epilogue and the You page say so. Save v42. 0.999.14.
 - 2026-10-03 — Phase 17.5 built: giving; a gift a week for each of the cast, a first ascent named for someone close (the epilogue remembers), Frank to the fire, Dex asked out. Save v43. 0.999.15.
+- 2026-10-03 — Phase 17.6 built: four holidays a year as nights at the fire with your people in them; the family back home in five calls returned from the van; home for good, a third ending. Save v44. 0.999.16.

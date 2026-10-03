@@ -2,6 +2,8 @@
 // money and body only move here, and only because of an action. Nothing ticks while you
 // stand still. The UI stages the events; it never edits the state itself.
 
+import { crew, folksDue, holidayOn } from './folks';
+import { FOLKS_CALLS } from './content/folks';
 import { NAMED_FOR } from './content/gifts';
 import { together } from './romance';
 import { frankParks, RAY_GONE, stintOn, tamStops } from './lives';
@@ -111,6 +113,7 @@ import {
   FACTION,
   HOME,
   GIVE,
+  HOLIDAY,
   LIFE,
   ROMANCE,
   LOAD,
@@ -307,6 +310,7 @@ export function newGame(seed: string): GameState {
     life: { held: 0, told: 0, retired: null },
     family: null,
     romance: null,
+    folks: { calls: 0 },
     record: {},
     speed: { pb: null, runs: 0, day: 0 },
     mode: 'rope',
@@ -858,13 +862,15 @@ export function act(s0: GameState, a: Action): Result {
     }
   };
   // Phase 16.1: hung up, by choice or by your body: nothing more happens to this climber.
-  const retire = (forced: boolean) => {
-    s.life = { ...s.life, retired: { day: s.day, forced } };
+  const retire = (forced: boolean, home = false) => {
+    s.life = { ...s.life, retired: { day: s.day, forced, ...(home ? { home: true } : {}) } };
     s.encounter = null;
     line(
       forced
         ? `${AGE.forced}. You wake up and your body has made the call for you: no more projects, no more one-more-go. It was a good run.`
-        : 'You hang it up. The shoes go in a box, the chalk bag on a nail. It was a good run.',
+        : home
+          ? 'You go home for good. The shoes come too, for the crag an hour away. It was a good run.'
+          : 'You hang it up. The shoes go in a box, the chalk bag on a nail. It was a good run.',
     );
     events.push({ k: 'retired', forced });
   };
@@ -1069,6 +1075,18 @@ export function act(s0: GameState, a: Action): Result {
       );
     if (s.people.frank && crossed(frankParks(s.people.frank)))
       line('Frank’s truck didn’t start this morning, and the garage says it won’t again.');
+    // A call from home that's come due (Phase 17.6): it waits on the phone in the van.
+    if (folksDue(s) !== null && folksDue({ ...s, day: ended }) === null)
+      line('A missed call from home. It’ll keep till you call back.');
+    // A holiday (Phase 17.6): the night at the fire, if you were at the Lot for it, with
+    // whoever's close and around. It's a day together with each, and a lift.
+    const hol = holidayOn(ended);
+    if (hol && s.at === 'lot') {
+      const here = crew({ ...s, day: ended });
+      for (const w of here) climbedWith(w);
+      s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + HOLIDAY.psyche) };
+      events.push({ k: 'holiday', id: seasonOf(ended), who: here });
+    }
     // A year together, on the age clock (Phase 17.4).
     const r = s.romance;
     if (r && together(s)) {
@@ -1666,6 +1684,16 @@ export function act(s0: GameState, a: Action): Result {
 
     // Phase 23.7: the Homecoming, armed for your next send outside, or put off.
     // Phase 16.1: hanging it up, from 30.
+    // Phase 17.6: calling home back, when a call's come.
+    case 'call': {
+      const n = folksDue(s);
+      if (n === null) return refuse('Nobody’s called.');
+      if (s.encounter) return refuse('First things first: an answer.');
+      s.encounter = { kind: 'folks', id: String(n) };
+      events.push({ k: 'encounter', kind: 'folks', id: String(n) });
+      break;
+    }
+
     case 'retire': {
       const why = retireBlocked(s);
       if (why) return refuse(why);
@@ -2379,6 +2407,18 @@ export function act(s0: GameState, a: Action): Result {
       }
       if (e?.kind === 'hitch' || e?.kind === 'stop') {
         if (!road_(e, a.opt)) return refuse('Nobody’s asking.');
+        break;
+      }
+      // A call from home: what you say, and whether you go.
+      if (e?.kind === 'folks') {
+        const o = FOLKS_CALLS[Number(e.id)]?.opts[a.opt];
+        if (!o) return refuse('Nobody’s asking.');
+        s.encounter = null;
+        s.folks = { calls: s.folks.calls + 1 };
+        if (o.cash) spend({ cash: o.cash });
+        if (o.psyche) s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + o.psyche) };
+        line(o.out);
+        if (o.home) retire(false, true);
         break;
       }
       const k = e ? knockById(e.id) : undefined;

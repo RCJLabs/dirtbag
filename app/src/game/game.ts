@@ -118,6 +118,8 @@ export type SheetId =
     }
   | { k: 'dog' }
   | { k: 'act'; n: number }
+  // Phase 17.6: a holiday's night, and who was there.
+  | { k: 'holiday'; id: string; who: string[] }
   // Phase 16.3: The Line, in place of the last act's card: the naming, who was there, the
   // credits, what now.
   | { k: 'line'; step: number }
@@ -401,6 +403,7 @@ export class Game {
       else if (e.k === 'act')
         this.cards.push(e.n === STORY.length ? { k: 'line', step: 0 } : { k: 'act', n: e.n });
       else if (e.k === 'home') this.cards.push({ k: 'home' });
+      else if (e.k === 'holiday') this.cards.push({ k: 'holiday', id: e.id, who: e.who });
       else if (e.k === 'record') this.cards.push({ k: 'record', ids: e.ids });
       else if (e.k === 'calling') this.cards.push({ k: 'calling' });
       else if (e.k === 'year') this.cards.push({ k: 'year', n: e.n });
@@ -968,6 +971,13 @@ export class Game {
     if (scene) this.fadeTo(() => this.enter(scene));
     else this.openSheet({ k: 'place', id: place });
     return null;
+  }
+
+  // Phase 17.6: call home back, and the call comes up.
+  callHome(): void {
+    const ev = this.dispatch({ t: 'call' });
+    if (ev.some((e) => e.k === 'refused')) return;
+    this.set({ sheet: { k: 'encounter' } });
   }
 
   unlock(place: string): void {

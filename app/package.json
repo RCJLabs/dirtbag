@@ -1,6 +1,6 @@
 {
   "name": "dirtbag",
-  "version": "0.999.15",
+  "version": "0.999.16",
   "private": true,
   "description": "Dirtbag, rebuilt: the sim, the Mix renderer and the UI. See docs/ROADMAP.md, the rebuild track.",
   "type": "module",

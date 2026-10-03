@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 43;
+export const SAVE_VERSION = 44;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -355,6 +355,11 @@ export const MIGRATIONS: Record<number, Migration> = {
   42: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x };
+  },
+  // v43 -> v44 (Phase 17.6): nobody's called from home yet.
+  43: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, folks: { calls: 0 } };
   },
 };
 
@@ -790,9 +795,13 @@ export function validate(x: unknown): string[] {
       isInt(lf.told) &&
       lf.told >= 0 &&
       (lf.retired === null ||
-        (isObj(lf.retired) && isInt(lf.retired.day) && typeof lf.retired.forced === 'boolean')),
+        (isObj(lf.retired) &&
+          isInt(lf.retired.day) &&
+          typeof lf.retired.forced === 'boolean' &&
+          (lf.retired.home === undefined || typeof lf.retired.home === 'boolean'))),
     'life',
   );
+  need(isObj(x.folks) && isInt(x.folks.calls) && x.folks.calls >= 0, 'folks');
   const fm = x.family;
   need(
     fm === null ||

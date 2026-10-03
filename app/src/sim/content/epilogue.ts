@@ -87,6 +87,10 @@ export const PEOPLE_END: Record<string, { close: string; far?: string }> = {
   },
 };
 
+// Home for good (Phase 17.6): how it ended, said first.
+export const HOME_FOR_GOOD =
+  'You went home for good. There’s a crag an hour from your folks’ place, and you know every line on it.';
+
 // A line named for someone (Phase 17.5).
 export const NAMED_END = 'You named {line} for {who}. They never once let you forget it.';
 
