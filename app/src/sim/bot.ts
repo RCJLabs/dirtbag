@@ -631,9 +631,12 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       repairs() === 0 &&
       !s.gear.heater &&
       s.cash >= UPGRADE.heater.price + WINTER.propane.price + WARM_OVER + (billsSoon() ? weeklyBills(s) : 0);
+    // A career saving for the story's next trip or crag leaves the van as it is (Phase 18.7).
     const fit = warm
       ? 'heater'
-      : BOT_UPGRADES.find((id) => !s.gear[id] && s.cash >= UPGRADE[id].price + CUSHION[strategy] + SPARE);
+      : strategy === 'career' && (storyTripCost() > 0 || storyUnlock() > 0)
+        ? undefined
+        : BOT_UPGRADES.find((id) => !s.gear[id] && s.cash >= UPGRADE[id].price + CUSHION[strategy] + SPARE);
     if (due.length || fit) {
       travel('garage');
       for (const p of PARTS) if (needs(p)) tryAct(`garage.${p}`);
@@ -1024,6 +1027,16 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     return plan && !planBlocked(s, aim.summit, plan) ? tripNeed(aim.summit, plan) : 0;
   }
 
+  // Phase 18.7: the price of the crag the story names, while it's still to buy and the grade
+  // is there for it; else nothing.
+  function storyUnlock(): number {
+    const aim = currentGoal(s)?.aim;
+    if (!aim || !('at' in aim)) return 0;
+    const p = PLACES[aim.at];
+    if (!p?.unlock || s.unlocked.includes(aim.at) || gradeOf(s.climber.skills) < (p.minGrade ?? 0)) return 0;
+    return p.unlock;
+  }
+
   // A trip's price, and the week's bills that come while you're away: what to have before it.
   const tripNeed = (id: string, plan: TripPlan): number =>
     planCost(s, id, plan) + weeklyBills(s) * Math.ceil(EXPEDITIONS[id]!.days / 7);
@@ -1031,6 +1044,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   function saving(): number {
     if (opts.focus === 'business' && !s.gym && !gymBuyBlocked({ ...s, cash: Infinity })) return OWN_GYM.price;
     if (strategy === 'career' && storyTripCost()) return storyTripCost();
+    if (strategy === 'career' && storyUnlock()) return storyUnlock();
     const grade = gradeOf(s.climber.skills);
     const next = CAREER_PLACES.map((id) => PLACES[id]!)
       .filter((p) => p.unlock && (p.minGrade ?? 0) <= grade)
