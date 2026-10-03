@@ -5,16 +5,17 @@
 import { PEOPLE } from './content/people';
 import { isNight } from './cond';
 import { GAMES } from './dials';
-import { tierOf } from './presence';
+import { tierOf, whereNow } from './presence';
 import { Rng } from './rng';
 import type { GameState } from './types';
 
-// Who's at the fire tonight: Hazel, who lives at the Lot, and Sage some nights, once you're
-// regulars.
+// Who's at the fire tonight: Hazel, who lives at the Lot, Sage some nights, once you're
+// regulars, and Frank if you've asked him over (Phase 17.5) and his rig's here.
 export function atFire(s: GameState): string[] {
   if (s.at !== 'lot' || !isNight(s.min)) return [];
   const out: string[] = [];
   if (s.people.hazel || PEOPLE.hazel?.known) out.push('hazel');
+  if (s.today.includes('fire-frank') && whereNow(s, 'frank') === 'lot') out.push('frank');
   const sage = s.people.sage;
   if (sage && tierOf(sage.bond) >= 2 && !(sage.away !== undefined && s.day < sage.away)) {
     if (Rng.fromStream(s.seed, 'events').derive(`sage-fire-${s.day}`).next() < GAMES.sage) out.push('sage');

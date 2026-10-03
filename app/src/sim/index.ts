@@ -27,6 +27,7 @@ export {
   dogLine,
   TIER_NAME,
   faSuggestions,
+  honorees,
   FA_NAME_MAX,
   LOG_MAX,
   NAME_MAX,
@@ -52,6 +53,7 @@ export {
 export type { Attempt, AttemptEvent, CruxRun, FallRun, Phase, Step } from './climb';
 export { beyond, extraCruxes, overhead, reachMargin, reachOf } from './reach';
 export { together } from './romance';
+export { GIFTS, NAMED_FOR } from './content/gifts';
 export {
   SKILLS,
   MIX,

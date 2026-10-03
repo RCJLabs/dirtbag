@@ -1375,10 +1375,10 @@ export class Game {
 
   // Name a first ascent and call its grade. Named straight after the send, the send card
   // follows; named later, you're back at the wall.
-  nameLine(name: string, call: -1 | 0 | 1): void {
+  nameLine(name: string, call: -1 | 0 | 1, forWho?: string): void {
     const sh = this.ui.get().sheet;
     if (sh?.k !== 'fa') return;
-    const ev = this.dispatch({ t: 'name', route: sh.route, name, call });
+    const ev = this.dispatch({ t: 'name', route: sh.route, name, call, ...(forWho ? { for: forWho } : {}) });
     if (ev.some((e) => e.k === 'refused')) return;
     const { route, style, go, gains, notes } = sh;
     this.set({

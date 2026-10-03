@@ -51,6 +51,8 @@ import {
   GEAR,
   KIT,
   faSuggestions,
+  honorees,
+  NAMED_FOR,
   goBlocked,
   goCost,
   gradeName,
@@ -758,6 +760,9 @@ function FaBody({ game, route, s }: { game: Game; route: string; s: GameState })
   const [names] = useState(() => (r ? faSuggestions(s, r) : []));
   const [name, setName] = useState(names[0] ?? '');
   const [call, setCall] = useState<-1 | 0 | 1>(0);
+  // Phase 17.5: named for someone you're close to, who'll hear about it.
+  const [close] = useState(() => honorees(s));
+  const [forWho, setFor] = useState<string | null>(null);
   if (!r) return null;
   const ok = name.trim().length >= 2;
   const grade = gradeName(r.disc, r.grade + call);
@@ -766,7 +771,7 @@ function FaBody({ game, route, s }: { game: Game; route: string; s: GameState })
       className="fa"
       onSubmit={(e) => {
         e.preventDefault();
-        if (ok) game.nameLine(name, call);
+        if (ok) game.nameLine(name, call, forWho ?? undefined);
       }}
     >
       <h3 id="sheet-title">First ascent</h3>
@@ -808,6 +813,37 @@ function FaBody({ game, route, s }: { game: Game; route: string; s: GameState })
           </button>
         ))}
       </div>
+      {close.length > 0 && (
+        <>
+          <p className="crux">For someone</p>
+          <div className="chips" role="radiogroup" aria-label="For someone">
+            <button
+              type="button"
+              className="chip"
+              role="radio"
+              aria-checked={forWho === null}
+              onClick={() => setFor(null)}
+            >
+              Nobody
+            </button>
+            {close.map((w) => (
+              <button
+                type="button"
+                key={w}
+                className="chip"
+                role="radio"
+                aria-checked={forWho === w}
+                onClick={() => {
+                  setFor(w);
+                  setName(NAMED_FOR[w]!.name);
+                }}
+              >
+                {PEOPLE[w]!.name}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
       <button type="submit" className="go" disabled={!ok}>
         Put it on the map
         <small>

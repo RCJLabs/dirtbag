@@ -4,7 +4,7 @@
 import { gradeOf } from './climber';
 import { PLACES } from './content/places';
 import { gradeOfPerson } from './curves';
-import { ARC, DAY, DOG, MONEY, type VanPart } from './dials';
+import { ARC, DAY, DOG, GIVE, MONEY, type VanPart } from './dials';
 import { repairCost } from './van';
 import { isSick } from './sick';
 import { lifeDue } from './lives';
@@ -34,6 +34,7 @@ export interface Cond {
   life?: string; // "who/n": the nth moment of their life is due for you to hear (lives.ts)
   romance?: string; // "who/n": beat n of a romance with them is due (romance.ts)
   strained?: string; // you're together, and it's gone too long without a day together
+  giftDue?: string; // you can give them something: a week since the last (Phase 17.5)
   sky?: Sky; // today's weather
   arc?: string; // "who/n": beat n of their arc is due (bond reached, days since the last)
   bond?: string; // "who/n": your bond with them is at least n
@@ -112,6 +113,10 @@ export function holds(s: GameState, c: Cond): boolean {
   if (c.life !== undefined && !lifeDue(s, c.life)) return false;
   if (c.romance !== undefined && !romanceDue(s, c.romance)) return false;
   if (c.strained !== undefined && !strained(s, c.strained)) return false;
+  if (c.giftDue !== undefined) {
+    const gave = s.people[c.giftDue]?.gave;
+    if (gave !== undefined && s.day - gave < GIVE.every) return false;
+  }
   if (c.sky !== undefined && skyOn(s.seed, s.day) !== c.sky) return false;
   if (c.arc !== undefined && !beatDue(s, c.arc)) return false;
   if (c.bond !== undefined) {

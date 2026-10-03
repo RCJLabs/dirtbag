@@ -1023,6 +1023,11 @@ export const AGE = { start: 22, days: 18, from: 30, warn: 43, forced: 45 };
 // measured: stated, so the hours the harness reports can be checked against testers' and
 // the numbers moved [proposed].
 export const PACE = { tapSec: 4, goSec: 15 };
+// Giving (Phase 17.5) [proposed]: a gift to someone once a week, a bond for it (no more than
+// a day climbing together, and it costs money where a day out doesn't); a line named for
+// someone is worth `named`, once a line.
+export const GIVE = { every: 7, named: 2 };
+
 // Romance (Phase 17.4, Evan's call: Sage and Mara), all [proposed]. The spark is offered once
 // each, at `from` bond (a Partner); the beats after it come a week apart (`spacing`). Forks
 // keep them away a while: `cool` after a fight you dig in on, `apart` for their chance taken.
