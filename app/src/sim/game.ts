@@ -1454,7 +1454,8 @@ export function act(s0: GameState, a: Action): Result {
         };
         line(`${S.name} pays the cycle: ${money(pay)}. A new list of asks lands the same hour.`);
       } else if (sp.strikes + 1 >= MEDIA.strikes) {
-        s.media = { ...s.media, sponsor: null };
+        // Dropped, nobody calls for a while (Phase 18.7: they called back the same night).
+        s.media = { ...s.media, sponsor: null, lost: ended };
         line(`${S.name} lets you go. Two cycles of asks not done; they're polite about it in writing.`);
       } else {
         s.media = {
@@ -1502,7 +1503,7 @@ export function act(s0: GameState, a: Action): Result {
               `${SPONSORS[t]!.name} signs ${MEDIA_RIVAL.name}, ${MEDIA_RIVAL.who}. Her numbers were better. They'll look again.`,
             );
           }
-        } else if (!head || cooled) {
+        } else if (cooled) {
           s.media = { ...s.media, offer: { kind: 'sponsor', tier: t } };
           line(`An email from ${SPONSORS[t]!.name}: they'd like to talk about a sponsorship.`);
         }

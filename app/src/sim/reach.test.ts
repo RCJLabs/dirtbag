@@ -22,8 +22,9 @@ const climber = (skills: GameState['climber']['skills'], over: Partial<GameState
 
 describe('climbing above your grade', () => {
   it('counts one style only so far past your grade', () => {
-    // A V12 who's trained power far past the rest.
-    const skills = { ...even(11), power: needFor(17) };
+    // A V12 who's trained power far past the rest (V18 power: past the knee, Phase 18.7's
+    // curve is straight, so V17 power alone mixes to just under 15).
+    const skills = { ...even(11), power: needFor(18) };
     const s = climber(skills);
     expect(levelOf(mix(skills, 'power'))).toBeGreaterThan(15);
     expect(reachOf(s, 'power')).toBeLessThan(levelOf(mix(skills, 'power')));

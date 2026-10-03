@@ -86,7 +86,7 @@ export const COMP_TIERS: CompTier[] = [
     fee: 0,
     purse: [3000, 1800, 1000],
     pts: 200,
-    need: 260,
+    need: 200,
     problem: 'Games',
   },
 ];

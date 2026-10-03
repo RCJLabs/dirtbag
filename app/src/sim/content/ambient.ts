@@ -212,6 +212,20 @@ export const LEDGE_LINES: Record<string, string[]> = {
     'Hazel counts the pitches left on her fingers, then stops counting and looks at the moon.',
     'Hazel says if she falls asleep first, wake her for the sunrise. She’s awake before you.',
     'Hazel says she’s glad it was you who asked. She says it to the wall, which is easier.',
+    // Phase 18.7: stronger careers spend more nights on walls with Hazel, and ran through the
+    // twenty above by their second trip.
+    'Hazel tapes her fingers by headlamp and tells you which split is from which year.',
+    'Hazel says the trick on a wall is the same as at the Lot: eat when there’s food, sleep when it’s dark.',
+    'Hazel watches a swift work the face below you and says it’s showing off. It is.',
+    'Hazel says her mother still thinks she works at the gear shop. She’s not going to correct her tonight.',
+    'Hazel says the second night is the one that tells you if you’re a wall climber. She doesn’t say what tonight told her.',
+    'Hazel racks tomorrow’s gear in the dark by feel, then checks it with the light anyway.',
+    'Hazel says she never learned the names of the stars. She’s made up her own, and they’re better.',
+    'Hazel says the haul bag weighs more every day though there’s less in it. Walls do that.',
+    'Hazel asks what you’ll climb when you’re done with this. You don’t know. She says that’s the right answer.',
+    'Hazel says she’s stopped being scared of the drop and started being scared of the descent. Progress.',
+    'Hazel says the coffee tastes like rock up here. She has a second cup to be sure.',
+    'Hazel says you climb like you’ve stopped asking permission. She means it kindly.',
   ],
   sage: [
     'Sage reads tomorrow’s pitches off the topo by headlamp, twice, then puts it away and looks at the real thing.',

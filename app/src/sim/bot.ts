@@ -18,12 +18,13 @@ import { pathBlocked } from './paths';
 import { PROTOCOLS } from './content/training';
 import { sessionGains, trainBlocked } from './sessions';
 import { headroom, holds, isNight, unmet } from './cond';
+import { phaseLock } from './training';
 import { INDOOR, routesAt, wallAt } from './content/gym';
 import { ACTS, PLACES, road } from './content/places';
 import { JOBS } from './content/jobs';
 import { INGREDIENTS } from './content/food';
 import { TALK } from './content/people';
-import { roped, type RouteDef } from './content/routes';
+import { ROUTES, roped, type RouteDef } from './content/routes';
 import {
   BODY,
   BOND,
@@ -42,7 +43,7 @@ import {
   type VanPart,
 } from './dials';
 import { cold, freshLoad, ratio } from './body';
-import { gradeOf, average } from './climber';
+import { gradeOf, average, margin, MIX, type Style } from './climber';
 import {
   act,
   actCost,
@@ -64,7 +65,7 @@ import { tonight } from './tonight';
 import type { Action, GameState, GoResult, Skills, TripPlan } from './types';
 import type { Rng } from './rng';
 import { conditions, conditionsAt, seasonOf } from './weather';
-import { currentGoal } from './story';
+import { currentGoal, HEIR_LADDER, LADDER } from './story';
 import { EXPEDITIONS, expedPitches } from './content/expeditions';
 import { defaultPlan, planBlocked, planCost, stormOn, summitOdds, yourPitch } from './expeditions';
 import { WALLS } from './content/routes';
@@ -74,7 +75,7 @@ import { postBlocked } from './media';
 import { gymBuyBlocked, UPGRADES, type Upgrade } from './business';
 import { scoreSet, setBrief } from './work';
 import { LADDERS } from './ladders';
-import { OWN_GYM, SETTING } from './dials';
+import { MEDIA, OWN_GYM, SETTING } from './dials';
 
 export interface BotRun {
   state: GameState;
@@ -335,6 +336,16 @@ const BOT_FIRE = PSYCHE.bands[2]!;
 const WARM_OVER = 25;
 // Phase 16.6: how much a crag the story names counts for, in grades, when the career bot picks.
 const STORY_PULL = 3;
+// The lines a myth sits under (Phase 18.7): sent, the myth can be read.
+const MYTH_KEYS = new Set(
+  Object.values(ROUTES)
+    .map((r) => r.hiddenUntil)
+    .filter((id): id is string => !!id),
+);
+// Skin and energy a bot wants before it starts up a wall, and how many goals ahead it looks
+// for one to train for (Phase 18.7).
+const WALL_FRESH = 85;
+const WALL_AHEAD = 8;
 // A crag day starts by here, or it's not worth the drive.
 const LAST_START = 14 * 60;
 
@@ -655,6 +666,22 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     }
   }
 
+  // The lines the story's current goal asks for at a place, as a test, or null when it asks
+  // for none here or the climber isn't up to its grade yet.
+  function storyLine(place: string): ((l: { r: RouteDef }) => boolean) | null {
+    const aim = currentGoal(s)?.aim;
+    if (!aim || INDOOR[place]) return null;
+    const grade = gradeOf(s.climber.skills);
+    if ('outside' in aim || ('at' in aim && aim.grade !== undefined)) {
+      const g = aim.grade ?? 0;
+      if (grade < g || ('at' in aim && aim.at !== place)) return null;
+      return (l) => l.r.grade >= g && !l.r.exped;
+    }
+    if ('reveal' in aim) return (l) => MYTH_KEYS.has(l.r.id);
+    if ('myth' in aim) return (l) => !!l.r.open && l.r.grade >= 18 && !s.firsts[l.r.id];
+    return null;
+  }
+
   // The next line to try at a place: the easiest one not yet sent with a window the hands
   // can hold; failing that, a project (the unsent line with the widest window, three goes a
   // day at most, as a player would work a line above them); with everything sent, there's
@@ -687,6 +714,14 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
         .filter((l) => l.r.grade >= doc.grade)
         .sort((a, b) => a.r.grade - b.r.grade || b.w - a.w)[0];
       if (film) return film.r;
+    }
+    // Phase 18.7: what the story's goal names, once the grade's there: a line outside at its
+    // grade (at its crag, if it names one), the line under a myth, the myth itself. A player
+    // reads the goal; the bot did nothing but the easiest unsent line and never got to V14s.
+    const goal = storyLine(place);
+    if (goal) {
+      const g = lines.filter(goal).sort((a, b) => a.r.grade - b.r.grade || b.w - a.w)[0];
+      if (g) return g.r;
     }
     // Of the easiest it can send (the lowest grade with one, and the grade above), the line
     // that suits it best, as a player picks what plays to their strengths (Phase 23.8).
@@ -1067,11 +1102,54 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     return true;
   }
 
+  // The skill the story's next wall finds short (Phase 18.7): a pitch less than a grade
+  // inside the climber's level in its style. Bots climb what's there, and with few
+  // endurance lines anywhere, every career's endurance stalled near a tenth of its power.
+  function wallWeakness(): keyof Skills | null {
+    // The next few goals, so the training starts before the wall's the goal.
+    const next = (s.family ? HEIR_LADDER : LADDER).slice(s.goals, s.goals + WALL_AHEAD);
+    const aim = next.map((r) => r.goal.aim).find((a) => 'wall' in a);
+    if (!aim || !('wall' in aim)) return null;
+    const w = WALLS[aim.wall]!;
+    if (gradeOf(s.climber.skills) < w.grade - 3) return null;
+    let worst: { m: number; style: Style } | null = null;
+    for (const id of w.pitches) {
+      const p = ROUTES[id]!;
+      const m = margin(s.climber.skills, p.type, p.grade);
+      if (!worst || m < worst.m) worst = { m, style: p.type };
+    }
+    return worst && worst.m < 1 ? MIX[worst.style][0] : null;
+  }
+
+  // A session at the gym for the skill a wall wants, the one that teaches it most.
+  function trainFor(skill: keyof Skills) {
+    const best = Object.keys(PROTOCOLS)
+      .filter((id) => id !== 'prehab' && PROTOCOLS[id]!.where !== 'van')
+      .map((id) => ({ id, g: sessionGains(s, PROTOCOLS[id]!)[skill] ?? 0 }))
+      .filter((x) => x.g > 0)
+      .sort((a, b) => b.g - a.g)[0];
+    if (!best) return;
+    travel('gym');
+    tryAct('gym.pass');
+    if (!trainBlocked(s, best.id)) go({ t: 'train', protocol: best.id });
+  }
+
+  // A training phase, when the lock on the last one's over.
+  function phase(p: 'build' | 'peak') {
+    if (s.training.phase !== p && !phaseLock(s)) go({ t: 'phase', phase: p });
+  }
+
+  // Fresh enough for a wall: the load down and the skin and legs back.
+  const freshFor = (): boolean => ratio(s.load) <= 1 && s.skin >= WALL_FRESH && s.energy >= WALL_FRESH;
+
   // A wall at its hardest pitch's grade: rack up, climb the pitches in their turn,
   // a bivy when the light goes, and off it if a day goes by with nothing gained.
   function wall(id: string): boolean {
     const w = WALLS[id]!;
     if (gradeOf(s.climber.skills) < w.grade || !reachable(w.place)) return false;
+    // Up it fresh (Phase 18.7): seven pitches on a body loaded from the week, or on the week's
+    // skin, end at pitch five with nothing left, and a rap off.
+    if (!freshFor()) return false;
     // A wall day earns nothing: not with the cushion gone.
     if (s.cash < CUSHION.career) return false;
     if (!s.gear.rope && s.mode !== 'solo') {
@@ -1083,6 +1161,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     // Somebody to belay: Hazel, asked along at the Lot in the morning.
     const mate = s.mode === 'solo' ? null : askable(w.place);
     if (s.mode !== 'solo' && (!mate || !invite(mate, w.place))) return false;
+    // Sharp for it: a peak, when the phase lock allows (Phase 18.7).
+    phase('peak');
     if (!travel(w.place) || !go({ t: 'wall', wall: id, do: 'start' })) return false;
     // The pitch it was on at the last bivy: a day that ends where the last one did is a
     // wall that's beaten it, this time.
@@ -1091,7 +1171,10 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       const at = s.wall.next;
       const r = routeOfId(s, w.pitches[at]!)!;
       const why = goBlocked(s, r);
-      const spent = s.energy < 30 || s.skin < 20 || isNight(s.min) || /empty|skin|dark/i.test(why ?? '');
+      // A partner whose day at the crag is over is a reason to wait for dark and bivy (they're
+      // on the ledge in the morning), not to rap off (Phase 18.7).
+      const spent =
+        s.energy < 30 || s.skin < 20 || isNight(s.min) || /empty|skin|dark|belay/i.test(why ?? '');
       if (!why && !spent) {
         go({ t: 'go', route: r.id });
         go({ t: 'done', route: r.id, result: playGo(s, r, hands()) });
@@ -1215,7 +1298,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     for (const u of ['board', 'wall', 'cafe'] as Upgrade[])
       if (!s.gym!.upgrades.includes(u) && s.cash >= UPGRADES[u].price + CUSHION.career + 100)
         go({ t: 'gym', do: 'upgrade', what: u });
-    if (s.gym!.quality < 0.7 && s.gym!.set !== s.day && s.energy >= 60)
+    if (s.gym!.quality < 0.75 && s.gym!.set !== s.day && s.energy >= 60)
       go({ t: 'gym', do: 'set', set: bestSet() });
   }
 
@@ -1237,6 +1320,18 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     physio();
     garage();
     runGym();
+    // The story's wall finds a skill short: a session for it first (Phase 18.7).
+    const weak = wallWeakness();
+    if (weak) {
+      // Training for it in a build phase, as a player reading the phases would.
+      phase('build');
+      trainFor(weak);
+    }
+    // A shoot its sponsor wants, driven to for itself: the crag may have nothing left to climb.
+    if (opts.focus === 'media') {
+      const at = shootPlace();
+      if (at && reachable(at) && s.energy >= MEDIA.shoot.energy + 20 && travel(at)) shootHere();
+    }
     // A comp it's entering takes the day (Phase 18.7).
     const venue = compFor(s.day);
     if (venue && compDay(venue)) {
@@ -1256,8 +1351,12 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       if (after?.partner) invite(after.partner, after.place);
       shift(want - s.cash);
     }
-    const then = pickPlace();
-    let where = then ? 'tired' : CAREER_PLACES.some(fresh) ? 'resting' : 'nothing';
+    // Resting up for the wall the story wants (Phase 18.7): no climbing till the body's fresh.
+    const aim = currentGoal(s)?.aim;
+    const taper =
+      !!aim && 'wall' in aim && gradeOf(s.climber.skills) >= WALLS[aim.wall]!.grade && !freshFor();
+    const then = taper ? null : pickPlace();
+    let where = taper ? 'resting' : then ? 'tired' : CAREER_PLACES.some(fresh) ? 'resting' : 'nothing';
     if (then && s.energy >= 30 && s.skin >= 25) {
       if (then.partner) invite(then.partner, then.place);
       travel(then.place);

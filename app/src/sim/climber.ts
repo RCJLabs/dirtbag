@@ -3,7 +3,7 @@
 // There is no odds roll: your skills set how wide each crux's window is.
 
 import type { Skills, SkillId } from './types';
-import { LEGACY, OVER, WINDOW } from './dials';
+import { CURVE, LEGACY, OVER, WINDOW } from './dials';
 
 // The six styles a route or a sequence can ask for.
 export type Style = 'crimp' | 'power' | 'endurance' | 'technical' | 'dyno' | 'crack';
@@ -60,11 +60,18 @@ export const CARRIED_NAME = 'An old hand';
 export const startName = (id: string): string =>
   STARTS[id]?.name ?? (id === CARRIED ? CARRIED_NAME : 'A climber');
 
-// The grade curve: a skill average of 8g + 2.4g² climbs grade g. V1 is 10, V3 46, V5 100.
-export const needFor = (g: number): number => 8 * g + 2.4 * g * g;
+// The grade curve: a skill average of 8g + 2.4g² climbs grade g (V1 is 10, V3 46, V5 100),
+// and past CURVE.knee each grade costs CURVE.top more (Phase 18.7).
+const low = (g: number): number => 8 * g + 2.4 * g * g;
+const KNEE = low(CURVE.knee);
+export const needFor = (g: number): number =>
+  g <= CURVE.knee ? low(g) : KNEE + CURVE.top * (g - CURVE.knee);
 
 // The continuous grade a skill level climbs at: the curve's inverse.
-export const levelOf = (skill: number): number => (-8 + Math.sqrt(64 + 9.6 * Math.max(0, skill))) / 4.8;
+export const levelOf = (skill: number): number =>
+  skill <= KNEE
+    ? (-8 + Math.sqrt(64 + 9.6 * Math.max(0, skill))) / 4.8
+    : CURVE.knee + (skill - KNEE) / CURVE.top;
 
 export const average = (s: Skills): number => (s.power + s.fingers + s.endurance + s.technique + s.head) / 5;
 
