@@ -517,6 +517,16 @@ await driveFrom('the Lot to the café', PIN.cafe, /Coffee Shop/, {
   onCard: async () => log(`the café's front: ${await header("the café's front")}`),
 });
 await expectText('#sheet', /Wren is on the bar/, 'at the café');
+// The rush (Phase 18.2), looked at and left: the queue made in the order tapped, each
+// drink in time or not, and back to the café's card without working it.
+await click('#sheet .opt', 'Work the rush');
+await expectText('#sheet-title', /The morning rush/, 'the rush');
+const orders = await page.locator('#rush .beta').count();
+for (let i = 0; i < orders; i++) await page.locator('#rush .beta').nth(i).click();
+await expectText('#play-says', /% of the tips this queue had in it/, 'the rush, scored');
+await shot('rush');
+await click('#sheet .x');
+await expectText('#sheet', /Wren is on the bar/, 'back at the café');
 await click('#sheet .opt', 'Pick up a double');
 // The double's $56, 12% more for Sold It All.
 await expectText('#h-cash', /^\$253$/, 'paid');
@@ -702,7 +712,7 @@ console.log('A setting shift, and Sage turns up');
 // Spawn 70, camera at 0: the desk is at 170.
 await tapAt(170 * Z, screenY(540));
 await expectText('#sheet', /The desk/, 'desk');
-await click('#sheet .opt', 'Set problems for a shift');
+await click('#sheet .opt', 'Set to the brief');
 // The setter's puzzle (Phase 18.1): five holds from the bucket, hung in order, the set's
 // grade and checks live as they go up; the shift's pay, and the set's bonus on top.
 await expectText('#sheet-title', /Set problems for a shift/, 'the setter’s brief');
@@ -712,8 +722,8 @@ for (let i = 0; i < 5; i++) {
 }
 await expectText('#set-checks', /V\d+, for V\d+/, 'the set’s grade, live');
 await shot('setter');
-const bonus = Number(/\+\$(\d+) on top/.exec((await text('#set-says')) ?? '')?.[1] ?? 0);
-await click('#set-hang', 'Hang it');
+const bonus = Number(/\+\$(\d+) on top/.exec((await text('#play-says')) ?? '')?.[1] ?? 0);
+await click('#play-go', 'Hang it');
 await expectText('#h-time', /11:22 AM$/, 'clock');
 await expectText('#h-cash', new RegExp(`^\\$${231 + bonus}$`), 'paid');
 await expectText('#toast', /Sage turns up/, 'Sage');
@@ -770,7 +780,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 46 ||
+  saved?.v !== 47 ||
   st.romance !== null ||
   st.family !== null ||
   // You spoke to Hazel about the roof (Phase 17.3).

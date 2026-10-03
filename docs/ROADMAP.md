@@ -2544,6 +2544,27 @@ Players will ask "what am I working towards?" by hour 3.
 - **E2e:** day two's setting shift hangs five holds and checks the set's grade, live, and the pay with its bonus.
 - **The download:** 359.9 KB of 400.
 
+**Status (3 Oct 2026): 18.2 built: the café's rush and the diner's floor.** 0.999.20. No save change. Numbers [proposed] in `RUSH` and `FLOOR`; content in `content/setting.ts`; rules in `work.ts`.
+- **A shift with a minigame keeps its plain row,** one tap as ever, and gets a row to play it beside it ("Set to the brief", "Work the rush", "Work the floor"). 18.1 put "just work it" inside the setter's sheet; day three's e2e, a café shift on Phase 11's 20-tap budget, had no tap to spare, so every job's plain shift stays a tap. The double has no play row.
+- **The café's rush:** a queue of five to seven (more as you rise), each a drink (how long it takes to make, what it tips: not in proportion, so a pour-over's slow and pays and a mocha's the trap) and how long they'll wait; regulars wait longer and tip double. Tap the orders in the order you'll make them; each says when it's done, and whether they waited. Scored against the best order that queue allowed.
+- **The diner's floor:** three waves of three or four tables (more as you rise), a party and a mood each, and the kitchen's pace for the day. Take on tables from each wave without seeing the next; a table stays through the next wave, and every table on your section makes the others wait, the fussy (who tip best) most, and more when the kitchen's slow. Scored against the best the floor allowed in hindsight. Tried first as tables packed into the shift's minutes, it was a knapsack the obvious rule (best tip a minute) solved at 98%; then as one pick of tables, which "add the table that helps most" solved at 99%. The waves are what make it a read.
+- **Not solved (criterion 3), tested:** at the café, tips-first and who-gives-up-first score under the bonus's start (0.8 of the best); random play about 0.6. At the diner, every table and no fussy tables score about 0.5 to 0.67, under its start (0.65); choosing the best each wave with what you can see scores about 0.94.
+- **Pay:** as 18.1, the shift and up to 40% more, from each game's start.
+- **E2e:** day one looks at the rush before its double, plays a queue through, sees it scored, and leaves without working it. The diner's floor has unit tests but no e2e step: the e2e never waits tables.
+- **No harness run:** nothing a bot does changes (they work shifts plain).
+- **The download:** 362.4 KB of 400.
+
+**Status (3 Oct 2026): 18.3 built: the coach's roster and the warehouse's picks.** Save v47, 0.999.21. Numbers [proposed] in `COACH` and `HAUL`; content in `content/setting.ts`; rules in `work.ts`.
+- **The coach's roster:** clients who stay, two to four as you rise, each named, with a project (a crimpy line, a steep power problem, a balancy slab, a big dyno) one to three grades over them, how near they are, how tired, and whether they're scared of it today. A session gives each an hour: burns (fastest, and wearing; worth little tired, next to nothing scared), drilling the style (steady), working on the fear (clears it), or sending them home (rests them). Tiredness wears off a point a day; some days a client turns up scared. A send pays their thanks, six dollars a grade of the project, and a new client takes the slot, never with a name already on the roster.
+- **Not solved (criterion 3), tested:** over forty sessions, reading each client (fear first, rest when tired, burns when fresh) sends 25; burns every time sends 5, drilling 16, and no one focus gets within three quarters of reading them. v0.956's roster was "pick the weakness"; here the right hour moves with the client's day.
+- **The warehouse's picks, push-your-luck with the incentive fixed:** after the quota, picks on top, three on the board at a time, each paying something and weighing something. Each pick is its own action, so the sim rolls the drop and nothing's undone: the chance shows on each pick, rising with how worn out you are. A drop ends the run and costs some of what you'd picked: v0.956's cost only the crate in hand, so never stopping was always right. The day moves the stop: the heat (what a pick takes out of you) and the supervisor (how much a drop costs, from Marta's shrug to the area manager's everything). The forklift driver carries a quarter less. Picks left on the go are paid at the day's end.
+- **Not solved, tested:** the best stop ranges from two picks to six by the day, and no fixed rule (the best pick for its weight, stopping at two, three, four or six) gets within nine tenths of the best play's expected take. The best play takes about $12 a shift on top of the $52.
+- **The play rows:** "Coach your clients" and "Pick on the clock", beside the plain shifts; "Back to the picks" while they're on the go.
+- **Seen, not in the e2e:** the e2e never coaches (it wants V5) or works the warehouse, so both sheets were checked by loading a save in headless Chromium and looking; the unit tests cover the rules. A first look found the warehouse's row shut once the shift was worked, with picks still on the go; it now goes back to them.
+- **Save v47:** `coach` (the roster) and `haul` (picks on the go); a real v46 save loads.
+- **No harness run:** the bots work shifts plain.
+- **The download:** 365.6 KB of 400.
+
 ---
 
 ## Stage D — Get it in front of people
@@ -2832,3 +2853,5 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Twenty portaledge lines each for the usual wall partners; criterion 3 passes in 16 of 16 runs. Phase 17 closed by Evan's call; crew drama, walker chats, busy-texts and shopkeepers' fillers carry. CURRENT MILESTONE moved to Phase 18. 0.999.18.
 - 2026-10-03 — Phase 18 planned on the rebuild with Evan's calls: the budget to 400 KB; a minigame for all five jobs; the full media ladder, followers back; your own gym and buying a crag, with guiding carried.
 - 2026-10-03 — Phase 18.1 built: the setter's puzzle (a brief a shift, five holds hung in order, scored on the grade, flow, wall and crowd; never solved, never worse than working it) and leave by rank. Save v46. 0.999.19.
+- 2026-10-03 — Phase 18.2 built: the café's rush (a queue made in the order you choose) and the diner's floor (tables taken on a wave at a time); a play row beside each plain shift. 0.999.20.
+- 2026-10-03 — Phase 18.3 built: the coach's roster (clients who stay, each an hour a session, a send's thanks) and the warehouse's picks (push-your-luck where a drop costs what you'd picked, the day moving the stop). Save v47. 0.999.21.

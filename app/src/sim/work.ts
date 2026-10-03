@@ -4,12 +4,28 @@
 // Leave (a rank's perk) is here too: a missed shift you had leave for isn't a warning.
 
 import { JOBS } from './content/jobs';
-import { CROWDS, SET_MOVES, SET_WALLS, type Crowd, type SetMove, type Wall } from './content/setting';
+import {
+  CLIENTS,
+  PICKS,
+  CROWDS,
+  DRINKS,
+  KITCHENS,
+  MOODS,
+  RUSH_REGULARS,
+  RUSH_WHO,
+  SET_MOVES,
+  SET_WALLS,
+  type Crowd,
+  type Kitchen,
+  type Mood,
+  type SetMove,
+  type Wall,
+} from './content/setting';
 import { weekOf } from './content/gym';
-import { PLAY, SETTING, YEAR } from './dials';
+import { COACH, FLOOR, HAUL, PLAY, RUSH, SETTING, YEAR } from './dials';
 import { rankAt } from './jobs';
 import { Rng } from './rng';
-import type { GameState } from './types';
+import type { Client, GameState } from './types';
 
 // ---- the setter's puzzle ----
 
@@ -114,9 +130,293 @@ export function setRefused(b: SetBrief, ids: readonly string[]): string | null {
   return null;
 }
 
-// What a play's score adds to a shift that pays `base`.
-export const playBonus = (base: number, score: number): number =>
-  Math.round(base * PLAY.top * Math.max(0, Math.min(1, (score - PLAY.from) / (1 - PLAY.from))));
+// What a play's score adds to a shift that pays `base`, from a score of `from` (the
+// game's: above what playing at random gets) to a perfect one.
+export const playBonus = (base: number, score: number, from: number = PLAY.from): number =>
+  Math.round(base * PLAY.top * Math.max(0, Math.min(1, (score - from) / (1 - from))));
+
+// Every order of `n` things, for scoring a play against the best one there was.
+function* orders(n: number, pre: number[] = []): Generator<number[]> {
+  if (pre.length === n) {
+    yield pre;
+    return;
+  }
+  for (let i = 0; i < n; i++) if (!pre.includes(i)) yield* orders(n, [...pre, i]);
+}
+
+const shuffled = <T>(r: Rng, xs: readonly T[]): T[] => {
+  const a = [...xs];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = r.int(0, i);
+    [a[i], a[j]] = [a[j]!, a[i]!];
+  }
+  return a;
+};
+
+// ---- the café's rush (Phase 18.2) ----
+
+export interface Order {
+  who: string;
+  drink: string;
+  // Turns of the machine they'll wait, from the start of the rush, for it to be done.
+  waits: number;
+  tip: number;
+  regular: boolean;
+}
+
+// Today's queue, by the day: as long as your rank's, a regular or two in it.
+export function rushQueue(s: GameState): Order[] {
+  const r = Rng.fromStream(s.seed, 'events').derive(`rush-${s.day}`);
+  const n = RUSH.queue[Math.min(rankAt(s, 'cafe'), RUSH.queue.length - 1)]!;
+  const drinks = Object.keys(DRINKS);
+  const regs = shuffled(r, RUSH_REGULARS);
+  const strangers = shuffled(r, RUSH_WHO);
+  return Array.from({ length: n }, (_, i) => {
+    const regular = i < regs.length && r.next() < 0.3;
+    const drink = drinks[r.int(0, drinks.length - 1)]!;
+    const waits = r.int(RUSH.patience.lo, RUSH.patience.hi) + (regular ? RUSH.regular : 0);
+    const tip = DRINKS[drink]!.tip * (regular ? 2 : 1);
+    return { who: regular ? regs[i]! : strangers[i % strangers.length]!, drink, waits, tip, regular };
+  });
+}
+
+// What a queue served in this order tips: each drink made in turn, tipped if it's done
+// before they give up. Those left out aren't served.
+export function rushTips(q: readonly Order[], order: readonly number[]): number {
+  let t = 0;
+  let tips = 0;
+  for (const i of order) {
+    t += DRINKS[q[i]!.drink]!.make;
+    if (t <= q[i]!.waits) tips += q[i]!.tip;
+  }
+  return tips;
+}
+
+// How many were served before they gave up.
+export function rushServed(q: readonly Order[], order: readonly number[]): number {
+  let t = 0;
+  let n = 0;
+  for (const i of order) {
+    t += DRINKS[q[i]!.drink]!.make;
+    if (t <= q[i]!.waits) n++;
+  }
+  return n;
+}
+
+export const rushBest = (q: readonly Order[]): number => {
+  let best = 0;
+  for (const o of orders(q.length)) best = Math.max(best, rushTips(q, o));
+  return best;
+};
+
+export const rushRefused = (q: readonly Order[], order: readonly number[]): string | null =>
+  order.length !== q.length ||
+  new Set(order).size !== q.length ||
+  order.some((i) => !(i >= 0 && i < q.length))
+    ? 'Every order gets made, one at a time.'
+    : null;
+
+// ---- the diner's floor (Phase 18.2) ----
+
+export interface Table {
+  party: number;
+  mood: Mood;
+}
+
+// The shift's floor: tables seated in waves, and the kitchen's pace. You take on tables
+// from each wave as it comes, not knowing the next; a table stays through its wave and the
+// one after, and every table on your section makes the others wait.
+export interface Floor {
+  waves: Table[][];
+  kitchen: Kitchen;
+}
+
+export function dinerFloor(s: GameState): Floor {
+  const r = Rng.fromStream(s.seed, 'events').derive(`floor-${s.day}`);
+  const n = FLOOR.wave[Math.min(rankAt(s, 'diner'), FLOOR.wave.length - 1)]!;
+  const moods = Object.keys(MOODS) as Mood[];
+  const kitchens = Object.keys(KITCHENS) as Kitchen[];
+  const waves = Array.from({ length: FLOOR.waves }, () =>
+    Array.from({ length: n }, () => ({ party: r.int(1, 6), mood: moods[r.int(0, moods.length - 1)]! })),
+  );
+  return { waves, kitchen: kitchens[r.int(0, kitchens.length - 1)]! };
+}
+
+// What the tables you took on tip, wave by wave (`take[w]` the tables taken from wave w):
+// each tips its party at its mood's rate, less what it loses to the busiest wave it sat
+// through, at the kitchen's pace.
+export function floorTips(f: Floor, take: readonly (readonly number[])[]): number {
+  const on = f.waves.map((_, w) => (take[w]?.length ?? 0) + (w > 0 ? (take[w - 1]?.length ?? 0) : 0));
+  let tips = 0;
+  f.waves.forEach((wave, w) => {
+    const busy = Math.max(on[w]!, on[w + 1] ?? 0);
+    for (const i of take[w] ?? []) {
+      const t = wave[i]!;
+      tips +=
+        t.party *
+        MOODS[t.mood].tip *
+        Math.max(0, 1 - MOODS[t.mood].juggle * KITCHENS[f.kitchen].wait * (busy - 1));
+    }
+  });
+  return Math.round(tips * 10) / 10;
+}
+
+// The best the floor allowed, in hindsight.
+export function floorBest(f: Floor): number {
+  const subsets = (n: number) =>
+    Array.from({ length: 1 << n }, (_, m) =>
+      Array.from({ length: n }, (_, i) => i).filter((i) => m & (1 << i)),
+    );
+  let best = 0;
+  const go = (w: number, take: number[][]) => {
+    if (w === f.waves.length) {
+      best = Math.max(best, floorTips(f, take));
+      return;
+    }
+    for (const t of subsets(f.waves[w]!.length)) go(w + 1, [...take, t]);
+  };
+  go(0, []);
+  return best;
+}
+
+export const floorRefused = (f: Floor, take: readonly (readonly number[])[]): string | null =>
+  take.length !== f.waves.length ||
+  take.some((t, w) => new Set(t).size !== t.length || t.some((i) => !(i >= 0 && i < f.waves[w]!.length)))
+    ? 'Each wave’s tables, each once.'
+    : !take.some((t) => t.length)
+      ? 'Take on a table at least.'
+      : null;
+
+// ---- the coach's roster (Phase 18.3) ----
+
+export type Focus = 'burns' | 'drill' | 'head' | 'rest';
+const STYLES: Client['style'][] = ['crimp', 'power', 'technical', 'dyno'];
+
+// A new client, the nth you've had: named, a project in a style, one to three grades over.
+function newClient(seed: string, n: number): Client {
+  const r = Rng.fromStream(seed, 'events').derive(`client-${n}`);
+  return {
+    name: CLIENTS[n % CLIENTS.length]!,
+    style: STYLES[r.int(0, STYLES.length - 1)]!,
+    gap: r.int(1, 3),
+    progress: 0,
+    tired: 0,
+    scared: r.next() < COACH.scare,
+  };
+}
+
+// The next client's number once today's roster is filled to your rank's size.
+function rosterNext(s: GameState): number {
+  const size = COACH.roster[Math.min(rankAt(s, 'coach'), COACH.roster.length - 1)]!;
+  const names = (s.coach?.clients ?? []).map((c) => c.name);
+  let next = s.coach?.next ?? 0;
+  for (let n = names.length; n < size; n++) {
+    while (names.includes(CLIENTS[next % CLIENTS.length]!)) next++;
+    names.push(CLIENTS[next % CLIENTS.length]!);
+    next++;
+  }
+  return next;
+}
+
+// The roster as it turns up today: as big as your rank's, rested a point a day since the
+// last session, and some of them scared, by the day.
+export function rosterToday(s: GameState): Client[] {
+  const size = COACH.roster[Math.min(rankAt(s, 'coach'), COACH.roster.length - 1)]!;
+  const c = s.coach ?? { clients: [], next: 0, last: s.day };
+  const clients = [...c.clients];
+  let next = c.next;
+  while (clients.length < size) {
+    while (clients.some((c) => c.name === CLIENTS[next % CLIENTS.length])) next++;
+    clients.push(newClient(s.seed, next++));
+  }
+  const rested = s.day - c.last;
+  return clients.map((x) => ({
+    ...x,
+    tired: Math.max(0, x.tired - rested),
+    scared:
+      x.scared || Rng.fromStream(s.seed, 'events').derive(`scare-${x.name}-${s.day}`).next() < COACH.scare,
+  }));
+}
+
+// What an hour of each focus does to a client.
+export function coached(c: Client, f: Focus): Client {
+  const B = COACH.burns;
+  if (f === 'burns')
+    return {
+      ...c,
+      progress: c.progress + (c.scared ? B.scared : Math.max(0, B.gain - B.tired * c.tired)),
+      tired: c.tired + B.wear,
+    };
+  if (f === 'drill')
+    return { ...c, progress: c.progress + COACH.drill.gain, tired: c.tired + COACH.drill.wear };
+  if (f === 'head') return { ...c, progress: c.progress + COACH.head.gain, scared: false };
+  return { ...c, tired: Math.max(0, c.tired - COACH.rest.ease) };
+}
+
+export const FOCI: Focus[] = ['burns', 'drill', 'head', 'rest'];
+
+export const coachRefused = (roster: readonly Client[], foci: readonly string[]): string | null =>
+  foci.length !== roster.length || foci.some((f) => !FOCI.includes(f as Focus))
+    ? 'A focus for everyone on the roster.'
+    : null;
+
+// A session: each client's hour, who sent, what it pays, and the roster after (a client
+// who sent makes room for a new one).
+export function coachSession(
+  s: GameState,
+  foci: readonly Focus[],
+): { coach: NonNullable<GameState['coach']>; sent: Client[]; bonus: number; foci: readonly Focus[] } {
+  const today = rosterToday(s);
+  let next = rosterNext(s);
+  const sent: Client[] = [];
+  const names = new Set(today.map((c) => c.name));
+  const clients = today.map((c, i) => {
+    const after = coached(c, foci[i]!);
+    if (after.progress < 100) return after;
+    sent.push(after);
+    // A new face: never someone's name already on the roster.
+    while (names.has(CLIENTS[next % CLIENTS.length]!)) next++;
+    const fresh = newClient(s.seed, next++);
+    names.add(fresh.name);
+    return fresh;
+  });
+  return {
+    coach: { clients, next, last: s.day },
+    sent,
+    bonus: sent.reduce((a, c) => a + COACH.send * c.gap, 0),
+    foci,
+  };
+}
+
+// ---- the warehouse's picks (Phase 18.3) ----
+
+// What's on offer for the nth pick today.
+export function haulOffer(s: GameState, n: number): string[] {
+  const r = Rng.fromStream(s.seed, 'events').derive(`haul-${s.day}-${n}`);
+  return shuffled(r, Object.keys(PICKS)).slice(0, HAUL.offer);
+}
+
+// The day on the floor: the heat (0 to 2) and the supervisor (0 to 2).
+export function haulDay(s: GameState): { heat: number; dock: number } {
+  const r = Rng.fromStream(s.seed, 'events').derive(`haulday-${s.day}`);
+  return { heat: r.int(0, HAUL.heat.length - 1), dock: r.int(0, HAUL.dock.length - 1) };
+}
+
+// How much a pick takes out of you, at your rank, in today's heat.
+export const pickWeight = (s: GameState, id: string): number =>
+  Math.round(
+    PICKS[id]!.weight * (rankAt(s, 'warehouse') >= 2 ? HAUL.easier : 1) * HAUL.heat[haulDay(s).heat]!,
+  );
+
+// What a drop costs of the picks so far, today.
+export const dropCost = (s: GameState): number => HAUL.dock[haulDay(s).dock]!;
+
+// The chance of dropping a pick, worn out as you'd be after it.
+export const dropChance = (fatigue: number): number => Math.min(0.95, HAUL.risk * (fatigue / 100) ** 2);
+
+// Whether the nth pick today drops, at that chance: by the day, so it's the same on a reload.
+export const dropped = (s: GameState, n: number, chance: number): boolean =>
+  Rng.fromStream(s.seed, 'events').derive(`drop-${s.day}-${n}`).next() < chance;
 
 // ---- leave ----
 

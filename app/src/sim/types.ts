@@ -69,6 +69,10 @@ export interface GameState {
   benched: Record<string, number>;
   // Phase 18.1 (save v46): the days you took as leave, by job.
   leave: Record<string, number[]>;
+  // Phase 18.3 (save v47): the coach's roster, from the first session played, and the
+  // warehouse's picks on top of today's shift, while you're making them.
+  coach: { clients: Client[]; next: number; last: number } | null;
+  haul: { day: number; picks: number; fatigue: number; pay: number } | null;
   // How you live (dials.ts LIFESTYLE): paid at the van every night.
   lifestyle: 'dirtbag' | 'comfortable' | 'plush';
   // Phase 22.2b. Where you park for the night (dials.ts SPOTS), nights in a row at the Lot
@@ -388,10 +392,31 @@ export interface Delta {
   fed?: number;
 }
 
-// A shift played (Phase 18.1): what you did with the day's brief (work.ts).
-export type Play = { set: string[] };
+// Someone you coach (Phase 18.3): their project (a style, how many grades over them), how
+// near it they are (0 to 100), how worn out, and whether they're scared of it.
+export interface Client {
+  name: string;
+  style: 'crimp' | 'power' | 'technical' | 'dyno';
+  gap: number;
+  progress: number;
+  tired: number;
+  scared: boolean;
+}
+
+// A shift played (Phase 18.1): what you did with the day's brief (work.ts). The setter's
+// five holds; the café's queue in the order you made it, or the diner's tables taken on
+// from each wave (18.2); a focus for each client on the roster, or the warehouse's picks
+// begun (18.3).
+export type Play =
+  | { set: string[] }
+  | { queue: number[] }
+  | { tables: number[][] }
+  | { coach: ('burns' | 'drill' | 'head' | 'rest')[] }
+  | { haul: true };
 
 export type Action =
+  // The warehouse's picks (Phase 18.3): one more from what's on offer, or stop and bank it.
+  | { t: 'haul'; pick?: number }
   // `carry`: a v0.956 climber's skills, when they come across rather than picking a start.
   | { t: 'create'; name: string; start: string; origin?: string; carry?: Skills; solo?: true }
   // Phase 23.3: take up a calling.
