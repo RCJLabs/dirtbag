@@ -46,8 +46,8 @@ const crimps = (n: number) =>
     .map((r) => r.id);
 
 describe('paths', () => {
-  it('are five, with Scene waiting on comps; each tier a deed and an edge said from its numbers', () => {
-    expect(OPEN_PATHS).toEqual(['power', 'fingers', 'head', 'style', 'dirtbag']);
+  it('are six, Scene open with the comps (Phase 18.4); each tier a deed and an edge said from its numbers', () => {
+    expect(OPEN_PATHS).toEqual(['power', 'fingers', 'head', 'style', 'dirtbag', 'scene']);
     for (const id of OPEN_PATHS) {
       expect(PATHS[id]!.tiers).toHaveLength(PATH.gates.length);
       for (const t of PATHS[id]!.tiers) expect(edgeText(t.edge), `${id} ${t.name}`).not.toBe('');
@@ -61,7 +61,8 @@ describe('paths', () => {
     expect(pathBlocked(s, 'fingers')).toBe(`Climbing V${PATH.gates[0]} first.`);
     expect(pathBlocked(sent(made(4), crimps(3)), 'fingers')).toMatch(/4 crimp lines sent first/);
     expect(pathBlocked(sent(made(4), crimps(4)), 'fingers')).toBeNull();
-    expect(pathBlocked(made(9), 'scene')).toBe('Not a path you can take.');
+    expect(pathBlocked(made(9), 'scene')).toBe('3 comps entered first.');
+    expect(pathBlocked(made(9), 'nope')).toBe('Not a path you can take.');
   });
 
   it('are claimed a tier at a time, told about once, and two at most', () => {
@@ -181,7 +182,11 @@ describe('quirks', () => {
     expect(quirkFor({ ...s, habits: habits({ evening: 14, dawn: 2 }) })).toBe('nightowl');
     expect(quirkFor({ ...s, habits: habits({}) })).toBeNull();
     expect(quirkFor({ ...s, day: 150, habits: habits({}) })).toBe('slowburn');
-    expect(QUIRKS.compbeast!.wait).toBeTruthy();
+    // Two podiums, and the crowd's yours (Phase 18.4).
+    const podium = { tier: 0, day: 4, place: 2, of: 10 };
+    expect(
+      quirkFor({ ...s, habits: habits({}), comps: { on: null, points: [], results: [podium, podium] } }),
+    ).toBe('compbeast');
     const r = act(
       { ...s, at: 'lot', min: 9 * 60, habits: habits({ outdoor: 28 }) },
       { t: 'act', act: 'lot.rest' },

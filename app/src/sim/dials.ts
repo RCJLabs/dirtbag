@@ -119,6 +119,11 @@ export const COACH = {
 // with how worn out you are, and a drop costs some of what you'd picked so far and ends the
 // run: so there's a time to stop, and the day (the heat, the supervisor) moves it. The
 // forklift driver (rank 2 and up) carries `easier`.
+// Phase 18.4 [proposed]. A comp: a top counts if it's in the first `goes` goes; sign-up
+// closes at `close`; the field's chance of a top rises with grade over the problem's,
+// `steep` per grade; ladder points fade by half every `half` days.
+export const COMP = { goes: 5, close: 13 * 60, steep: 1.4, half: 56 };
+
 export const HAUL = {
   picks: 6,
   offer: 3,

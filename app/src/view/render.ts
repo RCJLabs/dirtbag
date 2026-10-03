@@ -17,7 +17,7 @@ import {
   PLACES,
   ROUTES,
   routeOfId,
-  routesAt,
+  wallAt,
   talkStart,
   TALK,
   WALLS,
@@ -280,15 +280,15 @@ export function sceneLive(g: G, s: GameState, scene: string, cam: number, eye: E
       );
   }
   if (scene === 'center')
-    routesAt(s.seed, 'center', s.day).forEach((r, n) =>
+    wallAt(s, 'center').forEach((r, n) =>
       tapeTag(g, CENTER_X[n]! - cam, GND - 26, CENTER_TAPE[n]!, gradeLabel(r), !!s.routes[r.id]?.sent),
     );
   if (scene === 'cave')
-    routesAt(s.seed, 'cave', s.day).forEach((r, n) =>
+    wallAt(s, 'cave').forEach((r, n) =>
       tapeTag(g, CAVE_X[n]! - cam, GND - 26, CAVE_TAPE[n]!, gradeLabel(r), !!s.routes[r.id]?.sent),
     );
   if (gym) {
-    const lines = routesAt(s.seed, 'gym', s.day);
+    const lines = wallAt(s, 'gym');
     lines
       .filter((r) => !r.board)
       .forEach((r, n) =>

@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 47;
+export const SAVE_VERSION = 48;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -377,6 +377,11 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, coach: null, haul: null };
   },
+  // v47 -> v48 (Phase 18.4): no comps yet.
+  47: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, comps: { on: null, points: [], results: [] } };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -545,6 +550,21 @@ export function validate(x: unknown): string[] {
         isInt(x.haul.fatigue) &&
         isInt(x.haul.pay)),
     'haul',
+  );
+  const c = x.comps;
+  need(
+    isObj(c) &&
+      (c.on === null ||
+        (isObj(c.on) &&
+          isInt(c.on.tier) &&
+          isInt(c.on.day) &&
+          isObj(c.on.tops) &&
+          Object.values(c.on.tops).every(isInt))) &&
+      Array.isArray(c.points) &&
+      c.points.every((p) => isObj(p) && isInt(p.day) && isInt(p.pts)) &&
+      Array.isArray(c.results) &&
+      c.results.every((r) => isObj(r) && isInt(r.tier) && isInt(r.day) && isInt(r.place) && isInt(r.of)),
+    'comps',
   );
   need(typeof x.lifestyle === 'string' && x.lifestyle in LIFESTYLE, 'lifestyle');
   need(typeof x.spot === 'string' && x.spot in SPOTS, 'spot');

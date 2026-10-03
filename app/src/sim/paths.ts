@@ -23,12 +23,16 @@ function sent(s: GameState) {
 export function deedMet(s: GameState, d: Deed): boolean {
   if ('sends' in d) return sent(s).filter((x) => d.sends.includes(x.type)).length >= d.n;
   if ('first' in d) return sent(s).filter((x) => x.first).length >= d.first;
+  if ('comps' in d) return s.comps.results.length >= d.comps;
+  if ('podiums' in d) return s.comps.results.filter((r) => r.place <= 3).length >= d.podiums;
   return s.trips >= d.trips;
 }
 
 export function deedText(d: Deed): string {
   if ('sends' in d) return `${d.n} ${d.sends.join(' or ')} lines sent`;
   if ('first' in d) return `${d.first} lines flashed or onsighted`;
+  if ('comps' in d) return `${d.comps} comps entered`;
+  if ('podiums' in d) return `${d.podiums} podiums`;
   return `${d.trips} trips out to a crag`;
 }
 
@@ -122,6 +126,7 @@ export function edgeWindows(s: GameState, r: RouteDef, first: boolean): number {
       if (e.windows && (!e.style || e.style.includes(r.type))) m *= e.windows;
       if (first && e.firstGo) m *= e.firstGo;
       if (e.gym && indoor(r.place)) m *= e.gym;
+      if (e.comp && r.id.startsWith('cp-')) m *= e.comp;
       if (e.outside && !indoor(r.place)) m *= e.outside;
       if (e.fresh && s.energy >= QUIRK.fresh) m *= e.fresh;
       if (e.tired && s.energy < QUIRK.tired) m *= e.tired;
@@ -150,6 +155,7 @@ export function edgeText(e: Edge): string {
     );
   if (e.firstGo) out.push(`Cruxes ${more(e.firstGo, 'kinder', 'meaner')} on a first go.`);
   if (e.gym) out.push(`Cruxes ${more(e.gym, 'kinder', 'meaner')} indoors.`);
+  if (e.comp) out.push(`Cruxes ${more(e.comp, 'kinder', 'meaner')} in a comp.`);
   if (e.outside) out.push(`Cruxes ${more(e.outside, 'kinder', 'meaner')} outside.`);
   if (e.train) out.push(`Sessions teach ${more(e.train, 'more', 'less')}.`);
   if (e.fresh) out.push(`Cruxes ${more(e.fresh, 'kinder', 'meaner')} with energy at ${QUIRK.fresh} or more.`);

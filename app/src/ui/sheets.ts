@@ -182,6 +182,12 @@ import {
   HOLIDAYS,
   HOLIDAY_WITH,
   PLAY,
+  COMP,
+  COMP_TIERS,
+  compBlocked,
+  compOn,
+  ladderPoints,
+  yourScore,
   type Season,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
@@ -251,6 +257,7 @@ function actRow(game: Game, s: GameState, id: string): Row {
   const walkIn = a.job && !signedUp(s, a.job.id, s.day) ? 'A walk-in: it won’t count toward a raise' : '';
   let note = [bodyNote(cost), a.note && fill(a.note, TEXT_VALUES), a.job && jobNote(s, a.job.id), walkIn]
     .filter(Boolean)
+    .map((x) => String(x).replace(/\.$/, ''))
     .join('. ');
   if (a.sleep && !why) {
     const n = nightAt(s);
@@ -265,6 +272,44 @@ function actRow(game: Game, s: GameState, id: string): Row {
     note: why ?? note,
     off: !!why,
     run: () => game.doAct(id),
+  };
+}
+
+// The comp at this wall (Phase 18.4): sign up on the day, hand in your scorecard, or when
+// the next one is.
+function compRow(game: Game, s: GameState): Row {
+  const on = s.comps.on;
+  if (on && on.day === s.day) {
+    const you = yourScore(s);
+    return {
+      label: 'Hand in your scorecard',
+      note: `${you.tops} ${you.tops === 1 ? 'top' : 'tops'} in ${you.goes} ${you.goes === 1 ? 'go' : 'goes'} so far. A top counts in its first ${COMP.goes} goes.`,
+      run: () => game.comp('finish'),
+    };
+  }
+  const tier = compOn(s.day, s.at);
+  if (tier === null) {
+    const next = Array.from({ length: 60 }, (_, d) => s.day + 1 + d).find((d) => compOn(d, s.at) !== null);
+    const t = next !== undefined ? COMP_TIERS[compOn(next, s.at)!]! : null;
+    return {
+      label: 'Comps',
+      note: t
+        ? `Next here: ${t.name}, ${dayName(next!)}${next! - s.day > 6 ? ` (day ${next})` : ''}.`
+        : 'None here.',
+      off: true,
+      run: () => undefined,
+    };
+  }
+  const t = COMP_TIERS[tier]!;
+  const why = compBlocked(s);
+  return {
+    label: `Enter ${t.name}`,
+    cost: t.fee ? `$${t.fee}` : 'invitation',
+    note: why
+      ? `${why}.`
+      : `${t.field} climbers, problems V${t.grades[0]} to V${t.grades[1]}. ${money(t.purse[0])} to the winner. You have ${ladderPoints(s)} ladder points.`,
+    off: !!why,
+    run: () => game.comp('enter'),
   };
 }
 
@@ -742,7 +787,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             ? 'Wristband on. The comp wall is yours till ten.'
             : 'The comp team is warming up on problems you’d project. The set changes every seven days.',
           close: true,
-          rows: [actRow(game, s, 'center.pass'), trainRow(game, s), mapRow(game)],
+          rows: [actRow(game, s, 'center.pass'), compRow(game, s), trainRow(game, s), mapRow(game)],
         };
       if (s.at === 'cave')
         return {
@@ -754,6 +799,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           rows: [
             actRow(game, s, 'cave.pass'),
             ...actRows(game, s, 'cave.coach'),
+            compRow(game, s),
             trainRow(game, s),
             mapRow(game),
           ],
@@ -767,6 +813,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         rows: [
           actRow(game, s, 'gym.pass'),
           ...actRows(game, s, 'gym.set'),
+          compRow(game, s),
           actRow(game, s, 'gym.shower'),
           trainRow(game, s),
           mapRow(game),

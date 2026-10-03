@@ -77,6 +77,7 @@ const V43 = readFileSync(new URL('./fixtures/save-v43.json', import.meta.url), '
 const V44 = readFileSync(new URL('./fixtures/save-v44.json', import.meta.url), 'utf8');
 const V45 = readFileSync(new URL('./fixtures/save-v45.json', import.meta.url), 'utf8');
 const V46 = readFileSync(new URL('./fixtures/save-v46.json', import.meta.url), 'utf8');
+const V47 = readFileSync(new URL('./fixtures/save-v47.json', import.meta.url), 'utf8');
 // What R2's migration adds to any older save.
 const R2_BODY = {
   load: { acute: 20, chronic: 20, today: 0 },
@@ -145,6 +146,7 @@ const P226A = {
   leave: {},
   coach: null,
   haul: null,
+  comps: { on: null, points: [], results: [] },
 };
 
 describe('saves', () => {
@@ -632,6 +634,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
+      comps: { on: null, points: [], results: [] },
     });
   });
 
@@ -669,6 +672,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
+      comps: { on: null, points: [], results: [] },
     });
     expect(r.state.deck.met).toEqual({ busker: 2 });
   });
@@ -705,6 +709,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
+      comps: { on: null, points: [], results: [] },
     });
     expect(r.state.dog).toEqual({ name: 'Scout', since: 12, fed: 70, bond: 55 });
   });
@@ -740,6 +745,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
+      comps: { on: null, points: [], results: [] },
     });
     expect(r.state.dogs).toEqual([{ name: 'Scout', years: 16, day: 301 }]);
   });
@@ -774,6 +780,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
+      comps: { on: null, points: [], results: [] },
     });
     expect(r.state.dream).toEqual({ pick: 'rig', pot: 300, owned: [] });
   });
@@ -807,6 +814,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
+      comps: { on: null, points: [], results: [] },
     });
     expect(r.state.table?.who).toBe('hazel');
   });
@@ -851,6 +859,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
+      comps: { on: null, points: [], results: [] },
     });
   });
 
@@ -883,6 +892,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
+      comps: { on: null, points: [], results: [] },
     });
   });
 
@@ -915,6 +925,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
+      comps: { on: null, points: [], results: [] },
     });
   });
 
@@ -945,6 +956,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
+      comps: { on: null, points: [], results: [] },
     });
     const home = act(r.state, { t: 'exped', id: 'elcap', do: 'bail' }).state;
     expect(home.expedition).toBeNull();
@@ -987,6 +999,7 @@ describe('saves', () => {
       leave,
       coach,
       haul,
+      comps,
       ...rest
     } = r.state;
     expect(rest).toEqual(old);
@@ -1022,6 +1035,7 @@ describe('saves', () => {
       leave,
       coach,
       haul,
+      comps,
       ...rest
     } = r.state;
     expect(rest).toEqual(JSON.parse(V31).state);
@@ -1051,6 +1065,7 @@ describe('saves', () => {
       leave,
       coach,
       haul,
+      comps,
       ...rest
     } = r.state;
     expect(rest).toEqual(JSON.parse(V32).state);
@@ -1078,6 +1093,7 @@ describe('saves', () => {
       leave,
       coach,
       haul,
+      comps,
       ...rest
     } = r.state;
     expect(rest).toEqual(JSON.parse(V33).state);
@@ -1093,7 +1109,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(34);
-    const { scene, board, year, life, family, romance, folks, leave, coach, haul, ...rest } = r.state;
+    const { scene, board, year, life, family, romance, folks, leave, coach, haul, comps, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V34).state);
     expect(rest.quirk).toBe('nightowl');
     expect(scene).toEqual({ old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 });
@@ -1104,7 +1120,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(35);
-    const { board, year, life, family, romance, folks, leave, coach, haul, ...rest } = r.state;
+    const { board, year, life, family, romance, folks, leave, coach, haul, comps, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V35).state);
     expect(rest.scene.old).toBe(62);
     expect(board).toEqual({ week: 0, jobs: [], shifts0: 0, sessions: 0 });
@@ -1115,7 +1131,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(36);
-    const { year, life, family, romance, folks, leave, coach, haul, ...rest } = r.state;
+    const { year, life, family, romance, folks, leave, coach, haul, comps, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V36).state);
     expect(rest.day).toBe(70);
     expect(year).toEqual({ recapped: 1, home: 'none' });
@@ -1126,7 +1142,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(37);
-    const { life, family, romance, folks, leave, coach, haul, ...rest } = r.state;
+    const { life, family, romance, folks, leave, coach, haul, comps, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V37).state);
     expect(family).toBeNull();
     // Day 400 would be 44 on a new climber's clock; held back 21 days, it's 43, told.
@@ -1140,7 +1156,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(38);
-    const { goals, family, romance, folks, leave, coach, haul, ...rest } = r.state;
+    const { goals, family, romance, folks, leave, coach, haul, comps, ...rest } = r.state;
     expect(family).toBeNull();
     const { goals: was, ...old } = JSON.parse(V38).state;
     expect(rest).toEqual(old);
@@ -1156,7 +1172,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(39);
-    const { family, romance, folks, leave, coach, haul, ...rest } = r.state;
+    const { family, romance, folks, leave, coach, haul, comps, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V39).state);
     expect(family).toBeNull();
   });
@@ -1167,7 +1183,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(40);
     const old = JSON.parse(V40).state;
-    const { people, romance, folks, leave, coach, haul, ...rest } = r.state;
+    const { people, romance, folks, leave, coach, haul, comps, ...rest } = r.state;
     const { people: was, ...before } = old;
     expect(rest).toEqual(before);
     // Mara had belayed you without a word; the save can't tell, so her meeting doesn't replay.
@@ -1183,7 +1199,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(41);
-    const { romance, folks, leave, coach, haul, ...rest } = r.state;
+    const { romance, folks, leave, coach, haul, comps, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V41).state);
     expect(romance).toBeNull();
     // Sage at Ride-or-Die, Mara a Partner: either spark can come now.
@@ -1195,7 +1211,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(42);
-    const { folks, leave, coach, haul, ...rest } = r.state;
+    const { folks, leave, coach, haul, comps, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V42).state);
     expect(folks).toEqual({ calls: 0 });
     expect(r.state.romance).toMatchObject({ who: 'mara', stage: 3 });
@@ -1208,7 +1224,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(43);
-    const { folks, leave, coach, haul, ...rest } = r.state;
+    const { folks, leave, coach, haul, comps, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V43).state);
     expect(folks).toEqual({ calls: 0 });
     expect(r.state.people.frank!.gave).toBe(55);
@@ -1219,7 +1235,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(44);
-    const { leave, coach, haul, ...rest } = r.state;
+    const { leave, coach, haul, comps, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V44).state);
     expect(leave).toEqual({});
     expect(r.state.folks).toEqual({ calls: 2 });
@@ -1231,7 +1247,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(45);
-    const { leave, coach, haul, ...rest } = r.state;
+    const { leave, coach, haul, comps, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V45).state);
     expect(leave).toEqual({});
     expect(r.state.jobs.set).toBe(18);
@@ -1243,11 +1259,22 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(46);
-    const { coach, haul, ...rest } = r.state;
+    const { coach, haul, comps, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V46).state);
     expect(coach).toBeNull();
     expect(haul).toBeNull();
     expect(r.state.leave).toEqual({ set: [60] });
+  });
+
+  it('load a real 0.999.21 save: a coach with a client on the roster, and no comps yet', () => {
+    const r = fromSave(V47);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(47);
+    const { comps, ...rest } = r.state;
+    expect(rest).toEqual(JSON.parse(V47).state);
+    expect(comps).toEqual({ on: null, points: [], results: [] });
+    expect(r.state.coach!.clients[0]!.name).toBe('Kai');
   });
 
   // These pretend a longer history: a v1 file that stored `money` where the state now has
@@ -1257,7 +1284,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(47);
+    expect(SAVE_VERSION).toBe(48);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

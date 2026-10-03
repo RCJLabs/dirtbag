@@ -7,9 +7,10 @@
 // stay up four weeks, so a project carries over (v0.956's "persistent gym walls", Phase
 // 10), and a wet day late in the season still has something new to try.
 
+import { compOn, compRoute, compSet } from '../comps';
 import { Rng } from '../rng';
 import type { Style } from '../climber';
-import type { SkillId } from '../types';
+import type { GameState, SkillId } from '../types';
 import { EXPED_ROUTES } from './expeditions';
 import { libraryBoulder, ROUTES, type RouteDef } from './routes';
 
@@ -263,6 +264,8 @@ export const INDOOR_CLOSE = 22 * 60;
 export function routeById(seed: string, id: string): RouteDef | undefined {
   const fixed = ROUTES[id] ?? EXPED_ROUTES[id];
   if (fixed) return fixed;
+  const comp = compRoute(seed, id);
+  if (comp) return comp;
   const m = /^(sc|bd|cv|tc)-(\d+)-(\d+)$/.exec(id);
   if (!m) return undefined;
   const set =
@@ -283,4 +286,13 @@ export function routesAt(seed: string, place: string, day: number): RouteDef[] {
   if (place === CENTER) return centerSet(seed, weekOf(day));
   // A wall's pitches aren't lines you walk up to: they're climbed from the wall, in turn.
   return Object.values(ROUTES).filter((r) => r.place === place && !r.wall);
+}
+
+// The wall as you find it (Phase 18.4): signed up for today's comp here, its problems stand
+// in for the week's set (Send City's board stays up); anyone else climbs the week's set.
+export function wallAt(s: GameState, place: string): RouteDef[] {
+  const on = s.comps.on;
+  if (!on || on.day !== s.day || compOn(s.day, place) !== on.tier) return routesAt(s.seed, place, s.day);
+  const set = compSet(s.seed, on.tier, s.day);
+  return place === GYM ? [...set, ...boardSet(s.seed, blockOf(s.day))] : set;
 }

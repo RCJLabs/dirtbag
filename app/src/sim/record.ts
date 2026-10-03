@@ -5,6 +5,7 @@
 import { gradeOf } from './climber';
 import { gradeOfPerson } from './curves';
 import { indoor, routeById } from './content/gym';
+import { COMP_TIERS } from './content/comps';
 import { PLACES } from './content/places';
 import { RECORD, type RecordAim, type RecordEntry } from './content/record';
 import { rankAt } from './jobs';
@@ -47,6 +48,12 @@ export function aimEarned(s: GameState, aim: RecordAim, sent = sends(s)): boolea
     return !!s.people.dex && gradeOf(s.climber.skills) > (gradeOfPerson(s.seed, 'dex', s.day) ?? 99);
   // An old save filling the book on loading has no life yet.
   if ('retired' in aim) return !!s.life?.retired;
+  if ('comp' in aim) {
+    const r = s.comps?.results ?? [];
+    if (aim.comp === 'entered') return r.length > 0;
+    if (aim.comp === 'won') return r.some((x) => x.place === 1);
+    return r.some((x) => x.tier === COMP_TIERS.length - 1 && x.place <= 3);
+  }
   return false;
 }
 
