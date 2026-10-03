@@ -2575,7 +2575,7 @@ Players will ask "what am I working towards?" by hour 3.
 - **Tried first:** the comp's problems on the wall for everyone that day. The bots climbed them unentered, and V10 came 17 days sooner and one career missed Act III's end; now they're on the wall only for an entrant.
 - **Harness:** every target passes, unchanged from 18.1 (V10 on a median day 180.5, Act III in every career, median day 296.5).
 - **Also:** a row's note no longer doubles a full stop ("on the house.. Apprentice").
-- **Seen:** the desk on a league night, from a loaded save in Chromium; the e2e passes unchanged (its day four doesn't sign up).
+- **Seen:** the desk on a league night, from a loaded save in Chromium; the e2e passes unchanged (its day four doesn't sign up). A real v47 save loads.
 - **The download:** 368.5 KB of 400.
 
 ---

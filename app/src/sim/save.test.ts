@@ -77,6 +77,7 @@ const V43 = readFileSync(new URL('./fixtures/save-v43.json', import.meta.url), '
 const V44 = readFileSync(new URL('./fixtures/save-v44.json', import.meta.url), 'utf8');
 const V45 = readFileSync(new URL('./fixtures/save-v45.json', import.meta.url), 'utf8');
 const V46 = readFileSync(new URL('./fixtures/save-v46.json', import.meta.url), 'utf8');
+const V47 = readFileSync(new URL('./fixtures/save-v47.json', import.meta.url), 'utf8');
 // What R2's migration adds to any older save.
 const R2_BODY = {
   load: { acute: 20, chronic: 20, today: 0 },
@@ -1263,6 +1264,17 @@ describe('saves', () => {
     expect(coach).toBeNull();
     expect(haul).toBeNull();
     expect(r.state.leave).toEqual({ set: [60] });
+  });
+
+  it('load a real 0.999.21 save: a coach with a client on the roster, and no comps yet', () => {
+    const r = fromSave(V47);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(47);
+    const { comps, ...rest } = r.state;
+    expect(rest).toEqual(JSON.parse(V47).state);
+    expect(comps).toEqual({ on: null, points: [], results: [] });
+    expect(r.state.coach!.clients[0]!.name).toBe('Kai');
   });
 
   // These pretend a longer history: a v1 file that stored `money` where the state now has
