@@ -2471,7 +2471,7 @@ Players will ask "what am I working towards?" by hour 3.
 
 ---
 
-### Phase 18 — Careers and jobs   **<<< CURRENT MILESTONE**
+### Phase 18 — Careers and jobs
 
 **Goal.** Each career path — outdoor, competition, media, work — has a readable ladder, gameplay of its own and a capstone. Jobs are short, varied minigames with Stick-RPG-style goals.
 
@@ -2667,13 +2667,26 @@ Players will ask "what am I working towards?" by hour 3.
 - **Harness:** every other target passes.
 - **The download:** 379.7 KB of 400.
 
+**Phase 18 closed by Evan's call (3 Oct 2026).**
+- **Criterion 1 passes:** four ladders, five rungs or more each, a capstone each, on one screen.
+- **Criterion 2:** comps, media and business pass 8/8. Outdoors reaches The Line in 5 of 8, about two careers in three, accepted. The misses stall in Act III for reasons that differ by seed.
+- **Criterion 3 passes:** no job's minigame is solved in a shift (18.1 to 18.3).
+- **Criterion 4 passes:** the gym's till is drawn (18.6).
+- **Carried:**
+  - outdoors to playtesting, where a person reads the goals better than the bot
+  - the guiding outfit, a youth athlete and an expedition team
+  - comps outside the ladder (the dyno comp, a season-long league)
+  - the bluff's own rock shape
+  - the gym's top-end pay, and every [proposed] number in `OWN_GYM`, `LAND`, `MEDIA`, `COMP` and `CURVE`
+- **Next:** the CURRENT MILESTONE moves to Phase 14, the desktop and Steam build. The download is 379.7 KB of 400.
+
 ---
 
 ## Stage D — Get it in front of people
 
 *Moved here by Evan's call (29 Sep 2026): the whole game gets built first, and the Steam build, the demo and the store page come after it. The phase numbers stay as they were, so older references still find them.*
 
-### Phase 14 — Desktop and Steam build
+### Phase 14 — Desktop and Steam build   **<<< CURRENT MILESTONE**
 
 **Goal.** A Steam build that plays well with mouse, keyboard or gamepad on Windows, macOS, Linux and Steam Deck.
 
@@ -2961,3 +2974,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Phase 18.5 built: media; a post a day from what you did, sponsors with asks and stipends (followers alone pay nothing), a rival for the headline deal, threads answered by sending, and the film; the Influencer and four Record Book entries opened. Save v49. 0.999.23.
 - 2026-10-03 — Phase 18.6 built: Send City bought by its head setter, its till drawn, covered or sold (criterion 4), the morning's line, upgrades and your own wall; Miller's Bluff bought, its nine lines bolted or cleaned and open for first ascents; two Record Book entries. Save v50. 0.999.24.
 - 2026-10-03 — Phase 18.7 built: the ladders screen, a career bot per ladder and their harness; the grade curve compressed past V10 (Evan's call); followers saturate; the gym, the Games and the film tuned. Criterion 2: comps, media and business 8/8, outdoors 5/8. 0.999.25.
+- 2026-10-03 — Phase 18 closed by Evan's call: criteria 1, 3 and 4 pass; criterion 2 passes for comps, media and business, and outdoors at 5 of 8 is accepted. CURRENT MILESTONE moved to Phase 14, the desktop and Steam build.
