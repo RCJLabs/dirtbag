@@ -71,6 +71,9 @@ export function heirOf(
       van: { ...s.van },
       dream: { ...next.dream, owned: [...s.dream.owned] },
       unlocked: [...s.unlocked],
+      // The bolts you put in at the bluff stay in the rock (Phase 18.6); the gym doesn't pass
+      // down with them: it's theirs to earn.
+      bolted: [...s.bolted],
       dog: s.dog ? { ...s.dog } : null,
       dogs: [...s.dogs],
       mode: s.mode,

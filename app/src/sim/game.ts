@@ -14,6 +14,18 @@ import {
   SET_WALLS,
 } from './content/setting';
 import { COMP_SAYS, COMP_TIERS } from './content/comps';
+import { GYM_UPGRADE_SAYS } from './content/business';
+import { bolted, boltBlocked, gymBuyBlocked, gymNight, UPGRADES, wallWord, type Upgrade } from './business';
+import { DOC, HEAT_SAYS, MEDIA_RIVAL, POSTS, SPONSORS, TERMS } from './content/media';
+import {
+  cycleTasks,
+  heatTonight,
+  postBlocked,
+  postGain,
+  rivalFollowers,
+  tierEarned,
+  todaysBest,
+} from './media';
 import { compBlocked, compField, compOn, compSet, placing, pointsFor, yourScore } from './comps';
 import {
   coachRefused,
@@ -179,6 +191,10 @@ import {
   COACH,
   HAUL,
   COMP,
+  MEDIA,
+  OWN_GYM,
+  GYM_SET,
+  LAND,
   AGE,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
@@ -268,6 +284,7 @@ import type {
   GameState,
   Injury,
   Play,
+  MediaTask,
   Result,
   RouteLog,
   GoStyle,
@@ -314,6 +331,19 @@ export function newGame(seed: string): GameState {
     coach: null,
     haul: null,
     comps: { on: null, points: [], results: [] },
+    media: {
+      followers: 0,
+      engagement: MEDIA.engage.start,
+      posted: 0,
+      bait: -99,
+      sponsor: null,
+      offer: null,
+      heat: null,
+      doc: null,
+      lost: null,
+    },
+    gym: null,
+    bolted: [],
     lifestyle: 'dirtbag',
     spot: 'lot',
     lotNights: 0,
@@ -543,7 +573,7 @@ const TIER_LINE = [
 
 // Whether you can read a line yet: a myth stays unreadable until you've sent the one under it.
 export const revealed = (s: GameState, r: RouteDef): boolean =>
-  !r.hiddenUntil || !!s.routes[r.hiddenUntil]?.sent;
+  (!r.hiddenUntil || !!s.routes[r.hiddenUntil]?.sent) && bolted(s, r);
 
 // Phase 24: a pitch up there goes only in its turn, in your block, on a clear day, in the light.
 function expedBlocked(s: GameState, r: RouteDef): string | null {
@@ -566,6 +596,9 @@ function expedBlocked(s: GameState, r: RouteDef): string | null {
 
 export function goBlocked(s: GameState, r: RouteDef): string | null {
   if (r.exped) return expedBlocked(s, r);
+  // The bluff's lines (Phase 18.6): nobody's been up them, so there's nothing to clip.
+  if (!bolted(s, r))
+    return r.disc === 'boulder' ? 'Nobody’s cleaned it. Clean it first' : 'Nobody’s bolted it. Bolt it first';
   if (!revealed(s, r))
     return `You can't read this line yet. Send ${routeOfId(s, r.hiddenUntil!)?.name ?? 'the hardest line here'} first`;
   // Too far over your grade to try (Phase 16, OVER): nothing on it would hold for you.
@@ -708,6 +741,26 @@ export function act(s0: GameState, a: Action): Result {
     if (s.haul) bankHaul('You never clocked off; they paid you anyway.');
     // So is a comp's scorecard (Phase 18.4).
     if (s.comps.on) finishComp();
+    mediaNight(ended);
+    // Your own gym's night (Phase 18.6): the takings in the till, told in the morning.
+    if (s.gym) {
+      s.gym = gymNight(s.gym);
+      const g = s.gym;
+      line(
+        `Send City yesterday: ${g.last >= 0 ? '+' : '−'}${money(Math.abs(g.last))}, ${g.members} members, the wall ${wallWord(g.quality)}. ${money(Math.max(0, g.till))} in the till.`,
+      );
+      if (g.till < OWN_GYM.floor) {
+        const back = Math.max(0, Math.round(OWN_GYM.price * OWN_GYM.forced + g.till));
+        spend({ cash: back });
+        s.gym = null;
+        line(
+          `The bank's run out of patience with the till. They sell Send City from under you; ${money(back)} comes back to you.`,
+        );
+      } else if (g.till < 0)
+        line(
+          `The till's ${money(-g.till)} short. Cover it at the desk, or the bank sells at ${money(-OWN_GYM.floor)} short.`,
+        );
+    }
 
     // Going to bed hungry with food in the pantry: you eat some of it cold first (Phase 22.3).
     if (!away && s.fed < BODY.hungryBelow) {
@@ -777,7 +830,8 @@ export function act(s0: GameState, a: Action): Result {
       s.training.since = s.day;
       line(`${TRAIN.peakDays} days at peak is all you get. Your body calls a deload, and it isn’t asking.`);
     }
-    s.today = [];
+    // An owner's pass is the keys (Phase 18.6): the wall and the shower, every day.
+    s.today = s.gym ? ['pass'] : [];
     // A flight you didn't take (Phase 24.2): the booking's gone, and the money with it.
     if (s.booked && s.booked.day < s.day && !s.expedition) {
       line(`The flight to ${EXPEDITIONS[s.booked.id]!.name} left without you. The money went with it.`);
@@ -1161,6 +1215,7 @@ export function act(s0: GameState, a: Action): Result {
   const runAct = (id: string, play?: Play): string | null => {
     const d = ACTS[id];
     if (!d) return 'Nothing to do there.';
+    if (d.job?.id === 'set' && s.gym) return 'It’s your gym now. Set your own wall.';
     if (id.split('.')[0] !== s.at) return "You're not there.";
     const why = unmet(s, d.needs);
     if (why) return why;
@@ -1365,6 +1420,101 @@ export function act(s0: GameState, a: Action): Result {
     return null;
   };
   // The van's miles: tires and engine wear by the minute.
+  // A sponsor's ask met (Phase 18.5).
+  const markTask = (fits: (t: MediaTask) => boolean) => {
+    const sp = s.media.sponsor;
+    if (!sp) return;
+    const i = sp.tasks.findIndex((t) => !t.done && fits(t));
+    if (i < 0) return;
+    s.media = {
+      ...s.media,
+      sponsor: { ...sp, tasks: sp.tasks.map((t, j) => (j === i ? { ...t, done: true } : t)) },
+    };
+  };
+  const addFollowers = (n: number) => {
+    s.media = { ...s.media, followers: Math.max(0, Math.round(s.media.followers + n)) };
+  };
+  // The night's media (Phase 18.5): engagement slipping, a sponsor's cycle reckoned, a thread
+  // about you, the film's season, and offers.
+  const mediaNight = (ended: number) => {
+    const m = s.media;
+    const E = MEDIA.engage;
+    if (ended - m.posted >= E.quiet) s.media = { ...s.media, engagement: Math.max(0, m.engagement - E.fade) };
+    if (s.media.engagement < E.slump && m.followers > 0) addFollowers(-m.followers * E.loss);
+    const sp = s.media.sponsor;
+    if (sp && ended >= sp.due) {
+      const S = SPONSORS[sp.tier]!;
+      if (sp.tasks.every((t) => t.done)) {
+        const pay = Math.round(S.stipend * (sp.terms === 'brand' ? MEDIA.brand : 1));
+        spend({ cash: pay });
+        s.media = {
+          ...s.media,
+          sponsor: { ...sp, due: ended + MEDIA.cycle, tasks: cycleTasks(s, sp.tier, sp.terms), strikes: 0 },
+        };
+        line(`${S.name} pays the cycle: ${money(pay)}. A new list of asks lands the same hour.`);
+      } else if (sp.strikes + 1 >= MEDIA.strikes) {
+        s.media = { ...s.media, sponsor: null };
+        line(`${S.name} lets you go. Two cycles of asks not done; they're polite about it in writing.`);
+      } else {
+        s.media = {
+          ...s.media,
+          sponsor: {
+            ...sp,
+            due: ended + MEDIA.cycle,
+            tasks: cycleTasks(s, sp.tier, sp.terms),
+            strikes: sp.strikes + 1,
+          },
+        };
+        line(
+          `${S.name} notices what didn't get done. That's a warning; another cycle like it and you're done.`,
+        );
+      }
+    }
+    const h = s.media.heat;
+    if (h && ended >= h.due) {
+      addFollowers(-s.media.followers * MEDIA.heat.lose);
+      s.media = { ...s.media, heat: null };
+      line('The thread wins by default. Some followers go with it.');
+    } else if (!h && heatTonight(s)) {
+      const g = Math.max(0, gradeOf(s.climber.skills));
+      s.media = { ...s.media, heat: { grade: g, due: ended + MEDIA.heat.prove } };
+      line(
+        `${HEAT_SAYS[ended % HEAT_SAYS.length]} Send a V${g} by day ${ended + MEDIA.heat.prove} and it goes quiet.`,
+      );
+    }
+    const d = s.media.doc;
+    if (d && 'due' in d && ended >= d.due) {
+      s.media = { ...s.media, doc: { shelved: ended } };
+      line(DOC.shelved);
+    }
+    // Offers, one at a time: a sponsor your numbers have earned (the headline deal to the
+    // rival if hers are better), then the film.
+    if (!s.media.offer) {
+      const t = tierEarned(s);
+      if (t >= 0 && (!s.media.sponsor || s.media.sponsor.tier < t)) {
+        const head = t === SPONSORS.length - 1;
+        const cooled = s.media.lost === null || ended - s.media.lost >= MEDIA.lostFor;
+        if (head && rivalFollowers(ended) > s.media.followers) {
+          if (cooled) {
+            s.media = { ...s.media, lost: ended };
+            line(
+              `${SPONSORS[t]!.name} signs ${MEDIA_RIVAL.name}, ${MEDIA_RIVAL.who}. Her numbers were better. They'll look again.`,
+            );
+          }
+        } else if (!head || cooled) {
+          s.media = { ...s.media, offer: { kind: 'sponsor', tier: t } };
+          line(`An email from ${SPONSORS[t]!.name}: they'd like to talk about a sponsorship.`);
+        }
+      } else if (
+        s.media.sponsor?.tier === SPONSORS.length - 1 &&
+        !s.media.doc &&
+        s.media.followers >= MEDIA.doc.followers
+      ) {
+        s.media = { ...s.media, offer: { kind: 'doc' } };
+        line(`${DOC.who} ${DOC.offer}`);
+      }
+    }
+  };
   const ordinal = (n: number) =>
     `${n}${n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th'}`;
   // A comp's scorecard handed in (Phase 18.4): where you came against the field, the points
@@ -1384,6 +1534,7 @@ export function act(s0: GameState, a: Action): Result {
       results: [...s.comps.results, { tier: on.tier, day: on.day, place, of: t.field }],
     };
     if (prize) spend({ cash: prize });
+    markTask((t) => t.kind === 'comp');
     const says =
       place === 1
         ? COMP_SAYS.win
@@ -1831,6 +1982,219 @@ export function act(s0: GameState, a: Action): Result {
       break;
     }
 
+    // Media (Phase 18.5): a post a day, from what the day gave you.
+    case 'post': {
+      const why = postBlocked(s, a.style);
+      if (why) return refuse(`${why}.`);
+      const reach = s.calling.id ? (CALLINGS[s.calling.id]!.fx.reach ?? 1) : 1;
+      const gain = postGain(s, a.style, reach);
+      addFollowers(gain);
+      s.today.push('posted');
+      s.media = {
+        ...s.media,
+        posted: s.day,
+        engagement: Math.min(100, s.media.engagement + MEDIA.engage.post),
+      };
+      if (a.style === 'bait') {
+        s.media = { ...s.media, bait: s.day };
+        s.scene = { ...s.scene, old: Math.max(0, s.scene.old - 1) };
+      }
+      if (a.style === 'story')
+        s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + MEDIA.storyPsyche) };
+      if (a.style === 'ad') {
+        const sp = s.media.sponsor!;
+        const pay = SPONSORS[sp.tier]!.ad;
+        spend({ cash: pay });
+        markTask((t) => t.kind === 'ad');
+        line(`${POSTS.ad.says} +${money(pay)}.`);
+      } else {
+        line(POSTS[a.style].says);
+        const best = todaysBest(s);
+        markTask((t) => t.kind === 'send' && best >= t.grade);
+      }
+      line(
+        gain
+          ? `${gain.toLocaleString('en-US')} new followers. ${s.media.followers.toLocaleString('en-US')} in all.`
+          : 'Nobody new. You didn’t do much worth seeing today.',
+      );
+      break;
+    }
+
+    // An offer answered: a sponsor's terms, or the film.
+    case 'offer': {
+      const o = s.media.offer;
+      if (!o) return refuse('No offer on the table.');
+      if (o.kind === 'sponsor') {
+        if (a.take === 'no') {
+          s.media = { ...s.media, offer: null };
+          line(`You turn ${SPONSORS[o.tier]!.name} down. They say the door's open. It probably is.`);
+          break;
+        }
+        if (a.take !== 'real' && a.take !== 'brand') return refuse('Their terms, or yours.');
+        s.media = {
+          ...s.media,
+          offer: null,
+          sponsor: {
+            tier: o.tier,
+            terms: a.take,
+            due: s.day + MEDIA.cycle,
+            tasks: cycleTasks(s, o.tier, a.take),
+            strikes: 0,
+          },
+        };
+        line(
+          `You sign with ${SPONSORS[o.tier]!.name}, ${TERMS[a.take].name.toLowerCase()}. The first list of asks comes with the contract.`,
+        );
+        break;
+      }
+      if (a.take === 'yes') {
+        const g = Math.max(0, gradeOf(s.climber.skills)) + MEDIA.doc.over;
+        s.media = { ...s.media, offer: null, doc: { grade: g, due: s.day + MEDIA.doc.days } };
+        line(
+          `You say yes. Ines wants a V${g}, outside, by day ${s.day + MEDIA.doc.days}. The camera's already rolling.`,
+        );
+      } else {
+        s.media = { ...s.media, offer: null, doc: { shelved: s.day } };
+        line('You say no to the film. Some things are better not watched.');
+      }
+      break;
+    }
+
+    // A sponsor's shoot day, at the crag they want.
+    case 'shoot': {
+      const sp = s.media.sponsor;
+      const t = sp?.tasks.find((x) => x.kind === 'shoot' && !x.done);
+      if (!sp || !t || t.kind !== 'shoot') return refuse('No shoot on the list.');
+      if (s.at !== t.place) return refuse(`The shoot's at ${PLACES[t.place]!.name}.`);
+      if (s.today.includes('shoot')) return refuse('You’ve shot today.');
+      if (s.energy < MEDIA.shoot.energy) return refuse('Too tired to look good on camera.');
+      spend({ energy: -MEDIA.shoot.energy, min: MEDIA.shoot.min });
+      s.today.push('shoot');
+      markTask((x) => x.kind === 'shoot');
+      line(
+        `Three hours of the same move for ${SPONSORS[sp.tier]!.name}'s photographer, from four angles, in the good light.`,
+      );
+      break;
+    }
+
+    // Your own gym (Phase 18.6).
+    case 'gym': {
+      const g = s.gym;
+      if (a.do === 'buy') {
+        const why = gymBuyBlocked(s);
+        if (why) return refuse(`${why}.`);
+        spend({ cash: -OWN_GYM.price });
+        s.gym = {
+          since: s.day,
+          members: OWN_GYM.members.start,
+          quality: OWN_GYM.plain,
+          till: 0,
+          last: 0,
+          setter: false,
+          upgrades: [],
+          peak: OWN_GYM.members.start,
+          set: 0,
+        };
+        // You're the boss: nobody's posting you setting shifts now, and nobody sells you a pass.
+        s.shifts = s.shifts.filter((x) => x.job !== 'set');
+        if (!s.today.includes('pass')) s.today = [...s.today, 'pass'];
+        line(
+          `Marg hands you the keys and the alarm code and tells you which toilet runs. Send City is yours: ${money(OWN_GYM.price)}.`,
+        );
+        break;
+      }
+      if (!g) return refuse('You don’t own a gym.');
+      if (a.do === 'draw') {
+        if (g.till <= 0) return refuse('Nothing in the till to draw.');
+        spend({ cash: g.till });
+        line(
+          `You draw ${money(g.till)} from the till. It's yours; you earned it on someone else's sore fingers.`,
+        );
+        s.gym = { ...g, till: 0 };
+        break;
+      }
+      // A short till covered from your pocket, as far as your pocket goes.
+      if (a.do === 'pay') {
+        if (g.till >= 0) return refuse('The till isn’t short.');
+        const put = Math.min(s.cash, -g.till);
+        if (put <= 0) return refuse('Nothing in hand to put in.');
+        spend({ cash: -put });
+        s.gym = { ...g, till: g.till + put };
+        line(
+          g.till + put < 0
+            ? `You put ${money(put)} of your own in the till. It's still ${money(-(g.till + put))} short.`
+            : `You put ${money(put)} of your own in the till. The bank can stop calling.`,
+        );
+        break;
+      }
+      if (a.do === 'sell') {
+        const back = Math.round(OWN_GYM.price * OWN_GYM.resale + g.till);
+        spend({ cash: Math.max(0, back) });
+        s.gym = null;
+        line(
+          `You sell Send City to a couple from the city with big plans. ${money(Math.max(0, back))}, the till and all.`,
+        );
+        break;
+      }
+      if (a.do === 'hire' || a.do === 'fire') {
+        s.gym = { ...g, setter: a.do === 'hire' };
+        line(
+          a.do === 'hire'
+            ? `You hire a setter at ${money(OWN_GYM.setter)} a day. The wall won't go stale on your days off.`
+            : 'You let the setter go. The wall is yours to keep fresh again.',
+        );
+        break;
+      }
+      if (a.do === 'upgrade') {
+        const u = UPGRADES[a.what as Upgrade];
+        if (!u) return refuse('Not an upgrade.');
+        if (g.upgrades.includes(a.what!)) return refuse('You’ve built that already.');
+        if (s.cash < u.price) return refuse(`That's ${money(u.price)}, in hand.`);
+        spend({ cash: -u.price });
+        s.gym = { ...g, upgrades: [...g.upgrades, a.what!] };
+        line(`${GYM_UPGRADE_SAYS[a.what as Upgrade]} ${money(u.price)}.`);
+        break;
+      }
+      // The wall, set yourself: to the brief, or plainly.
+      if (s.at !== 'gym') return refuse('You set the wall at Send City.');
+      if (g.set === s.day) return refuse('You’ve set today.');
+      if (s.energy < GYM_SET.energy) return refuse('Too tired to haul holds.');
+      let q = OWN_GYM.plain;
+      if (a.set) {
+        const b = setBrief(s);
+        const no = setRefused(b, a.set);
+        if (no) return refuse(no);
+        q = scoreSet(b, a.set).score;
+      }
+      spend({ min: GYM_SET.min, energy: -GYM_SET.energy });
+      s.gym = { ...g, quality: Math.max(g.quality, q), set: s.day };
+      line(
+        a.set
+          ? `You set your own wall. ${[...SET_SAYS].reverse().find(([at]) => q >= at)![1]}`
+          : 'You put up a set nobody will remember. It’s fresh, which is what they pay for.',
+      );
+      break;
+    }
+
+    // A line on the bluff made climbable: bolted, or a boulder cleaned (Phase 18.6).
+    case 'bolt': {
+      const r = routeOfId(s, a.route);
+      if (!r) return refuse('Not a line.');
+      const why = boltBlocked(s, r);
+      if (why) return refuse(`${why}.`);
+      const c = r.disc === 'boulder' ? LAND.clean : LAND.bolt;
+      if (s.cash < c.cash) return refuse(`The hardware's ${money(c.cash)}.`);
+      if (s.energy < c.energy) return refuse('Too tired to hang on a rope with a drill all day.');
+      spend({ cash: -c.cash, min: c.min, energy: -c.energy });
+      s.bolted = [...s.bolted, r.id];
+      line(
+        r.disc === 'boulder'
+          ? `You brush ${r.name} clean, pull the moss off the top and kick the stones out of the landing. Nobody's ever been up it.`
+          : `A day on a rope with a drill, ${money(c.cash)} of glue-ins and chains, and ${r.name} is a line. Nobody's ever been up it.`,
+      );
+      break;
+    }
+
     // A comp (Phase 18.4): signed up for at the desk on the day, or the scorecard in.
     case 'comp': {
       if (a.do === 'finish') {
@@ -2086,7 +2450,11 @@ export function act(s0: GameState, a: Action): Result {
       if (to.minGrade !== undefined && gradeOf(s.climber.skills) < to.minGrade)
         return refuse(`${to.name}: ${to.locked ?? 'not yet.'}`);
       if (to.unlock && !s.unlocked.includes(a.to))
-        return refuse(`${to.name} is a trip you haven't paid for yet: ${money(to.unlock)}, once.`);
+        return refuse(
+          to.land
+            ? `${to.name} is private land. Ed Miller will sell it for ${money(to.unlock)}.`
+            : `${to.name} is a trip you haven't paid for yet: ${money(to.unlock)}, once.`,
+        );
       // A maxed-out card never strands you: you drive on what's in the tank. A permit isn't
       // gas: the ranger doesn't take fumes.
       // The old guard's say-so gets you in free (Phase 23.5).
@@ -2214,7 +2582,11 @@ export function act(s0: GameState, a: Action): Result {
       if (s.cash < p.unlock) return refuse(`${p.name} runs ${money(p.unlock)}, in hand. Keep saving.`);
       spend({ cash: -p.unlock });
       s.unlocked.push(a.place);
-      line(`Pads, water jugs and a guidebook, ${money(p.unlock)}. ${p.name} is on your map for good.`);
+      line(
+        p.land
+          ? `Ed Miller shakes your hand at the kitchen table and signs ${p.name} over to you, ${money(p.unlock)}. The cows come with it, he says. They don't.`
+          : `Pads, water jugs and a guidebook, ${money(p.unlock)}. ${p.name} is on your map for good.`,
+      );
       break;
     }
 
@@ -2754,6 +3126,25 @@ export function act(s0: GameState, a: Action): Result {
       s.skin = clamp100(s.skin - Math.max(0, tapedSkin(s, r, res.skin)));
       for (const l of wearKit(s, r)) line(l);
       L.hi = Math.max(L.hi, Math.min(r.moves, Math.max(0, Math.floor(res.hi))));
+      // A send answers a thread at its grade, and the film's line, outside (Phase 18.5).
+      if (res.sent && !lap) {
+        const h = s.media.heat;
+        if (h && r.grade >= h.grade) {
+          addFollowers(s.media.followers * MEDIA.heat.win);
+          s.media = {
+            ...s.media,
+            heat: null,
+            engagement: Math.min(100, s.media.engagement + MEDIA.engage.post),
+          };
+          line('That shuts the thread up. Plenty who came to argue stay to watch.');
+        }
+        const d = s.media.doc;
+        if (d && 'due' in d && r.grade >= d.grade && !indoor(r.place)) {
+          addFollowers(s.media.followers * MEDIA.doc.boost);
+          s.media = { ...s.media, doc: { aired: s.day } };
+          line(DOC.aired);
+        }
+      }
       // A comp problem topped in its first few goes counts on your scorecard (Phase 18.4).
       const on = s.comps.on;
       if (on && res.sent && !lap && r.id.startsWith(`cp-${on.tier}-${on.day}-`) && L.goes <= COMP.goes)

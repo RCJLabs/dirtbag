@@ -37,6 +37,12 @@ export const CALLING_END: Record<string, [string, string, string, string]> = {
     'A lifer, you said, and you stuck around long enough to consolidate {rungs} of the three you meant to.',
     'A lifer, all the way down: every grade you meant to own, you owned.',
   ],
+  influencer: [
+    'You said it was about the scene. The scene didn’t notice.',
+    'You went after the clout and got {rungs} of the three numbers you were after. People still tag you.',
+    'You went after the clout and got {rungs} of the three numbers you were after. People still tag you.',
+    'The clout, all of it: sixty thousand people watched you climb, and you never once looked into the lens on the crux.',
+  ],
 };
 
 // Where you stood with a crowd at the end, the far ends only.

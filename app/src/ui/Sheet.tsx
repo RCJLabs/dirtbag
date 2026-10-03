@@ -84,6 +84,11 @@ import {
   rushQueue,
   rushTips,
   type Play,
+  bolted,
+  boltBlocked,
+  gradeLabel,
+  GYM_SET,
+  LAND,
   type Client,
   coached,
   dropChance,
@@ -382,12 +387,21 @@ function PlayButton({
       id="play-go"
       disabled={!ready}
       onClick={() => {
+        // Your own wall (Phase 18.6): set for the gym, not for a shift's pay.
+        if (s.gym && 'set' in play) {
+          game.gymDo({ t: 'gym', do: 'set', set: play.set });
+          return;
+        }
         const why = game.playShift(act, play);
         if (why) game.toast(`${why}.`);
       }}
     >
       <span>{ACTS[act]!.job!.id === 'set' ? 'Hang it' : 'That’s the shift'}</span>
-      <span className="c">{costLabel(actCost(s, ACTS[act]!))}</span>
+      <span className="c">
+        {s.gym && 'set' in play
+          ? costLabel({ min: GYM_SET.min, energy: -GYM_SET.energy })
+          : costLabel(actCost(s, ACTS[act]!))}
+      </span>
       <small>{note}</small>
     </button>
   );
@@ -712,7 +726,7 @@ function SetBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
       {full && (
         <p className="note" id="play-says">
           {says}
-          {playBonus(pay, sc.score) ? ` +${money(playBonus(pay, sc.score))} on top.` : ''}
+          {!s.gym && playBonus(pay, sc.score) ? ` +${money(playBonus(pay, sc.score))} on top.` : ''}
         </p>
       )}
       <PlayButton
@@ -932,6 +946,40 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
   // Who else is at the base: a queue for the line, and beta to be had for the asking.
   const crowd = r.wall || r.exped || indoor(r.place) ? 'empty' : crowdNow(s, r.place);
   // A myth you can't read yet: no name, no grade, no beta. Just what it'll take.
+  // A line on your land nobody's bolted yet (Phase 18.6): bolt it, or clean it.
+  if (!bolted(s, r)) {
+    const boulder = r.disc === 'boulder';
+    const c = boulder ? LAND.clean : LAND.bolt;
+    const no = boltBlocked(s, r);
+    return (
+      <>
+        <h3 id="sheet-title">
+          {r.name} · {gradeLabel(r)}
+        </h3>
+        <p className="sub">
+          {r.line} Nobody’s ever been up it: {boulder ? 'it wants cleaning' : 'it wants bolting'} before
+          anyone can climb it, and then it’s yours to name.
+        </p>
+        <button
+          type="button"
+          className="opt"
+          id="bolt-it"
+          disabled={!!no || s.cash < c.cash || s.energy < c.energy}
+          onClick={() => game.bolt(r.id)}
+        >
+          <span>{boulder ? 'Clean it' : 'Bolt it'}</span>
+          <span className="c">{costLabel({ cash: -c.cash, min: c.min, energy: -c.energy })}</span>
+          <small>
+            {no
+              ? `${no}.`
+              : boulder
+                ? 'Brush the holds, pull the moss off the top, clear the landing.'
+                : 'A day on a rope with a drill: glue-in bolts and a set of chains.'}
+          </small>
+        </button>
+      </>
+    );
+  }
   if (!revealed(s, r))
     return (
       <>

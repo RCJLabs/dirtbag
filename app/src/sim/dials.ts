@@ -124,6 +124,84 @@ export const COACH = {
 // `steep` per grade; ladder points fade by half every `half` days.
 export const COMP = { goes: 5, close: 13 * 60, steep: 1.4, half: 56 };
 
+// Phase 18.5 [proposed]. Followers from a post: `k` × each of today's sends' worth (its grade
+// plus two, to the power `pow`; more outside, on a first go, or a first ascent) × how
+// engaged your followers are, for the post's style. Engagement rises a post and slips after
+// `quiet` days without one; under `slump` you lose a share of followers a night. A sponsor
+// cycle is `cycle` days, two missed and you're dropped. A thread comes up at `heat` a night
+// (more with followers, brand terms and bait), and gives you `prove` days to send at the
+// grade. The film wants a line `doc.over` grades harder, outside, in `doc.days`.
+export const MEDIA = {
+  k: 12,
+  pow: 1.4,
+  outside: 1.6,
+  first: 1.3,
+  fa: 2,
+  podium: 400,
+  style: { straight: 1, story: 0.6, bait: 1.6, ad: 0.3 },
+  engage: { start: 40, post: 6, quiet: 3, fade: 3, slump: 25, loss: 0.005 },
+  brand: 1.5,
+  cycle: 14,
+  strikes: 2,
+  heat: { chance: 0.012, cap: 0.05, from: 2000, bait: 1.8, prove: 7, win: 0.25, lose: 0.05 },
+  rival: { top: 60000, mid: 140, width: 35 },
+  lostFor: 28,
+  doc: { followers: 40000, over: 1, days: 28, boost: 0.5 },
+  storyPsyche: 4,
+  shoot: { energy: 20, min: 180 },
+};
+
+// Phase 18.6 [proposed]. Your own gym: Send City, bought off its owner once you're its head
+// setter. A day's money: dues from each member and a share of walk-ins, less rent and the
+// desk; members drift toward what the wall's worth (how fresh the set is) and the upgrades.
+// The set goes stale by `fade` a day unless you set it, or a hired setter keeps it at
+// `hired`. Profit goes in the till, and the till's yours to draw. A till under zero is
+// told every morning; under `floor`, the bank sells it, at `forced` of the price.
+export const OWN_GYM = {
+  // A head setter's season of saving; back in about two months with a hired setter.
+  price: 6000,
+  // Marg's sixty just about cover the costs. A wall at its freshest draws base + wall; `top`
+  // is the busiest gym in the valley, the business ladder's last rung.
+  members: { start: 60, base: 30, wall: 140, drift: 0.1, top: 200 },
+  // A member's dues a day (about $48 a month), and the walk-ins each brings, at a day pass.
+  dues: 1.6,
+  walkins: 0.12,
+  pass: MONEY.dayPass,
+  // A day's rent and the desk kid, and a setter's day if you hire one.
+  rent: 120,
+  desk: 70,
+  setter: 55,
+  // A plain set's worth nothing in under two weeks. A hired setter keeps the wall a good
+  // set; a plain set of yours lands just under, so the brief's the way past him.
+  fade: 0.04,
+  hired: 0.55,
+  plain: 0.45,
+  // Sold, 70% of the price; sold by the bank, half. The floor's a week or so of a stale
+  // gym's losses: time to read the warnings and act.
+  resale: 0.7,
+  forced: 0.5,
+  floor: -600,
+  // The board and the wall pay for themselves in about a month, as the members come; the
+  // café's quicker the busier you are.
+  upgrades: {
+    board: { price: 1500, members: 25 },
+    cafe: { price: 1200, dues: 0.5 },
+    wall: { price: 2500, members: 45 },
+  },
+};
+
+// Setting your own wall takes a shift's hours and legs.
+export const GYM_SET = { min: 240, energy: 22 };
+
+// Phase 18.6 [proposed]. Miller's Bluff: the land's price, and what a line costs to make
+// climbable: a sport line bolted (hardware and a day on a rope), a boulder cleaned. The
+// price is late money: half again the gym's, for nine lines nobody else will ever climb first.
+export const LAND = {
+  price: 9000,
+  bolt: { cash: 140, min: 300, energy: 35 },
+  clean: { cash: 0, min: 120, energy: 15 },
+};
+
 export const HAUL = {
   picks: 6,
   offer: 3,

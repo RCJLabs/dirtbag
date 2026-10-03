@@ -1451,6 +1451,92 @@ export const WALLS: Record<string, WallDef> = {
   },
 };
 
+// Phase 18.6: Miller's Bluff, limestone on the back of a farm, never climbed: yours to buy,
+// bolt and name. Every line here is an open project, and none is there to climb till you've
+// bolted it (or cleaned it, a boulder); the names are what Ed Miller calls them.
+const bluffSport = (
+  id: string,
+  name: string,
+  grade: number,
+  type: Style,
+  shape: Parameters<typeof librarySport>[5],
+): RouteDef => ({ ...librarySport(id, name, grade, type, 'bluff', shape), open: true });
+const bBarn = bluffSport('bbarn', 'The barn wall', 7, 'crimp', {
+  moves: 20,
+  heightFt: 60,
+  line: 'Grey limestone above the hay barn, edges all the way. Nobody has ever pulled on it.',
+  rest: 11,
+  a: { style: 'crimp', name: 'The first edges', from: 6.0, to: 8.2, win: 'Onto the ledge.' },
+  b: { style: 'technical', name: 'The slab', from: 14.4, to: 16.6, win: 'Where the chains would go.' },
+});
+const bTufa = bluffSport('btufa', 'The tufa', 8, 'power', {
+  moves: 22,
+  heightFt: 70,
+  line: 'A single tufa down the middle of the wall, like a drip of candle wax.',
+  rest: 12,
+  a: { style: 'power', name: 'The pinch', from: 7.2, to: 9.4, win: 'Round it.' },
+  b: { style: 'endurance', name: 'The pump', from: 16.0, to: 19.0, win: 'Top.' },
+});
+const bCow = bluffSport('bcow', 'Cow corner', 10, 'technical', {
+  moves: 24,
+  heightFt: 70,
+  line: 'The corner the cows shelter in, up into a groove that leans out at the top.',
+  rest: 13,
+  a: { style: 'technical', name: 'The groove', from: 8.0, to: 10.4, win: 'Bridged.' },
+  b: { style: 'power', name: 'The lean', from: 17.6, to: 20.0, win: 'Over the lip.' },
+});
+const bPillar = bluffSport('bpillar', 'The pillar', 11, 'crimp', {
+  moves: 26,
+  heightFt: 80,
+  line: 'A pillar stood off the wall, sharp on both edges.',
+  rest: 14,
+  a: { style: 'crimp', name: 'The edges', from: 8.4, to: 10.8, win: 'Onto the pillar.' },
+  b: { style: 'technical', name: 'The arête', from: 18.6, to: 21.2, win: 'The top of it.' },
+});
+const bRoof = bluffSport('broof', 'The big roof', 13, 'power', {
+  moves: 26,
+  heightFt: 70,
+  line: 'Fifteen feet of roof, sideways. Ed Miller says his grandfather sheltered under it in a storm.',
+  rest: 12,
+  a: { style: 'power', name: 'The roof', from: 7.6, to: 10.6, win: 'Out of it.' },
+  b: { style: 'dyno', name: 'The lip', from: 18.0, to: 20.0, win: 'Stood up.' },
+});
+const bLong = bluffSport('blong', 'The long wall', 15, 'endurance', {
+  moves: 30,
+  heightFt: 90,
+  line: 'The tallest stretch of the bluff, blank-looking from the field, holds when you’re on it.',
+  rest: 16,
+  a: { style: 'crimp', name: 'The blank bit', from: 9.0, to: 11.6, win: 'Through it.' },
+  b: { style: 'endurance', name: 'Everything after', from: 21.0, to: 26.0, win: 'The top of the bluff.' },
+});
+const bHay = libraryBoulder('bhay', 'The hay bale', 6, 'technical', 'bluff', {
+  moves: 6,
+  from: 2.8,
+  to: 4.2,
+  cruxName: 'The slab',
+  heightFt: 11,
+  line: 'A square block in the field that the farm kids call the hay bale.',
+  open: true,
+});
+const bTrough = libraryBoulder('btrough', 'The trough', 9, 'crimp', 'bluff', {
+  moves: 7,
+  from: 3.4,
+  to: 5.0,
+  cruxName: 'The rim',
+  heightFt: 12,
+  line: 'Beside the cattle trough, a leaning face of small, sharp edges.',
+  open: true,
+});
+const bSilo = libraryBoulder('bsilo', 'The silo stone', 12, 'dyno', 'bluff', {
+  moves: 6,
+  from: 3.2,
+  to: 4.6,
+  cruxName: 'The jump',
+  heightFt: 16,
+  line: 'The tall stone by the old silo: two good holds a long way apart.',
+  open: true,
+});
+
 const LINES: Record<string, RouteDef> = {
   warm: warmBoulder,
   dyno,
@@ -1526,6 +1612,15 @@ const LINES: Record<string, RouteDef> = {
   poverhang: pTide2,
   parete: pArete,
   pdeep: pDeep,
+  bbarn: bBarn,
+  btufa: bTufa,
+  bcow: bCow,
+  bpillar: bPillar,
+  broof: bRoof,
+  blong: bLong,
+  bhay: bHay,
+  btrough: bTrough,
+  bsilo: bSilo,
   ...Object.fromEntries(PITCHES.map((r) => [r.id, r])),
 };
 

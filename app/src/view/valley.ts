@@ -107,6 +107,17 @@ export const SIDE_ROADS: Record<string, { pts: Pt[]; dirt?: true }> = {
     ],
     dirt: true,
   },
+  // East to Miller's Bluff (Phase 18.6): a farm track off the highway above the Lot.
+  bluff: {
+    pts: [
+      [219, 596],
+      [248, 594],
+      [280, 592],
+      [312, 590],
+      [352, 590],
+    ],
+    dirt: true,
+  },
   // West to Psicobloc Cove: the Old Town spur, and on down to the coast.
   cove: {
     pts: [

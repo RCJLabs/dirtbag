@@ -8,7 +8,7 @@
 import { CARRIED, SKILLS, STARTS } from './climber';
 import { GEAR } from './content/gear';
 import { PLACES } from './content/places';
-import { AGE, FACTION, LIFESTYLE, PLANS, SPOTS, TRAIN, YEAR } from './dials';
+import { AGE, FACTION, OWN_GYM, LIFESTYLE, PLANS, SPOTS, TRAIN, YEAR } from './dials';
 import { JOBS } from './content/jobs';
 import { ROUTES, WALLS } from './content/routes';
 import { EXPEDITIONS } from './content/expeditions';
@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 48;
+export const SAVE_VERSION = 50;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -382,6 +382,29 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, comps: { on: null, points: [], results: [] } };
   },
+  // v48 -> v49 (Phase 18.5): nobody following you yet, no sponsor, nothing posted.
+  48: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return {
+      ...x,
+      media: {
+        followers: 0,
+        engagement: 40,
+        posted: 0,
+        bait: -99,
+        sponsor: null,
+        offer: null,
+        heat: null,
+        doc: null,
+        lost: null,
+      },
+    };
+  },
+  // v49 -> v50 (Phase 18.6): no gym of your own, nothing bolted.
+  49: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, gym: null, bolted: [] };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -565,6 +588,55 @@ export function validate(x: unknown): string[] {
       Array.isArray(c.results) &&
       c.results.every((r) => isObj(r) && isInt(r.tier) && isInt(r.day) && isInt(r.place) && isInt(r.of)),
     'comps',
+  );
+  const md = x.media;
+  const isTask = (t: unknown) =>
+    isObj(t) &&
+    typeof t.done === 'boolean' &&
+    ((t.kind === 'send' && isInt(t.grade)) ||
+      (t.kind === 'shoot' && typeof t.place === 'string' && t.place in PLACES) ||
+      t.kind === 'comp' ||
+      t.kind === 'ad');
+  need(
+    isObj(md) &&
+      isInt(md.followers) &&
+      md.followers >= 0 &&
+      isNum(md.engagement) &&
+      isInt(md.posted) &&
+      isInt(md.bait) &&
+      (md.sponsor === null ||
+        (isObj(md.sponsor) &&
+          isInt(md.sponsor.tier) &&
+          (md.sponsor.terms === 'real' || md.sponsor.terms === 'brand') &&
+          isInt(md.sponsor.due) &&
+          isInt(md.sponsor.strikes) &&
+          Array.isArray(md.sponsor.tasks) &&
+          md.sponsor.tasks.every(isTask))) &&
+      (md.offer === null ||
+        (isObj(md.offer) &&
+          (md.offer.kind === 'doc' || (md.offer.kind === 'sponsor' && isInt(md.offer.tier))))) &&
+      (md.heat === null || (isObj(md.heat) && isInt(md.heat.grade) && isInt(md.heat.due))) &&
+      (md.doc === null ||
+        (isObj(md.doc) &&
+          ((isInt(md.doc.grade) && isInt(md.doc.due)) || isInt(md.doc.aired) || isInt(md.doc.shelved)))) &&
+      (md.lost === null || isInt(md.lost)),
+    'media',
+  );
+  const gy = x.gym;
+  need(
+    gy === null ||
+      (isObj(gy) &&
+        [gy.since, gy.members, gy.till, gy.last, gy.peak, gy.set].every(isInt) &&
+        isNum(gy.quality) &&
+        typeof gy.setter === 'boolean' &&
+        Array.isArray(gy.upgrades) &&
+        gy.upgrades.every((u) => typeof u === 'string' && u in OWN_GYM.upgrades)),
+    'gym',
+  );
+  need(
+    Array.isArray(x.bolted) &&
+      x.bolted.every((id) => typeof id === 'string' && !!PLACES[ROUTES[id]?.place ?? '']?.land),
+    'bolted',
   );
   need(typeof x.lifestyle === 'string' && x.lifestyle in LIFESTYLE, 'lifestyle');
   need(typeof x.spot === 'string' && x.spot in SPOTS, 'spot');

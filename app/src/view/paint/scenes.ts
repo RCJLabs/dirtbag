@@ -1102,7 +1102,7 @@ function paintCragGround(P: Palette, id: string, kind: Rock): HTMLCanvasElement 
   // The lines, chalked up the wall, a sport line's bolts dotted along it. Trad has none, and
   // a myth nobody has climbed has no chalk at all.
   for (const rt of spec.lines) {
-    if (ROUTES[rt.route]?.hiddenUntil) continue;
+    if (ROUTES[rt.route]?.hiddenUntil || LOOK[id]?.bare) continue;
     const pts = routeWiggle(rt.x, rt.n * 7);
     g.strokeStyle = 'rgba(247,235,208,.9)';
     g.lineWidth = 1.8;
@@ -1274,7 +1274,7 @@ const cache = new Map<string, SceneArt>();
 export const SEEN = Math.max(600, W_MAX / Z);
 
 // The crags away from the valley: their own light, their own rock.
-const LOOK: Record<string, { P: Palette; seed: number; rock: Rock; sea?: true }> = {
+const LOOK: Record<string, { P: Palette; seed: number; rock: Rock; sea?: true; bare?: true }> = {
   gorge: { P: GORGE, seed: 17, rock: 'granite' },
   moon: { P: DESERT, seed: 23, rock: 'quartzite' },
   mesa: { P: MESA, seed: 29, rock: 'redrock' },
@@ -1282,6 +1282,8 @@ const LOOK: Record<string, { P: Palette; seed: number; rock: Rock; sea?: true }>
   wind: { P: ALPINE, seed: 37, rock: 'granite' },
   crucible: { P: FRIGID, seed: 41, rock: 'gneiss' },
   cove: { P: COAST, seed: 43, rock: 'limestone', sea: true },
+  // Phase 18.6: never climbed, so never chalked.
+  bluff: { P: VALLEY, seed: 47, rock: 'limestone', bare: true },
 };
 
 // The painted layers for a scene at a time of day. Two are kept: the one you're in and the
