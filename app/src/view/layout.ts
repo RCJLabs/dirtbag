@@ -455,12 +455,18 @@ export interface Spot {
 }
 
 export const SPOTS: Record<string, Spot[]> = {
-  lot: [{ who: 'hazel', x: 586, face: -1, pose: 'mug', talk: 'hazel-lot' }],
+  lot: [
+    { who: 'hazel', x: 586, face: -1, pose: 'mug', talk: 'hazel-lot' },
+    // Frank, past Hazel's van, by his rig.
+    { who: 'frank', x: 905, face: -1, pose: 'stand', talk: 'frank' },
+  ],
   crag: [
     { who: 'hazel', x: 760, face: -1, pose: 'belay', talk: 'hazel-crag' },
     { who: 'sage', x: 904, face: -1, pose: 'stand', talk: 'sage' },
     // Dex works the boulder field, by the project.
     { who: 'dex', x: 1168, face: 1, pose: 'stand', talk: 'dex' },
+    // Ray, on the guardrail at the wall's end, where he can see all of it.
+    { who: 'ray', x: 1052, face: -1, pose: 'mug', talk: 'ray' },
   ],
   gym: [
     { who: 'sage', x: 292, face: 1, pose: 'stand', talk: 'sage' },
@@ -471,15 +477,28 @@ export const SPOTS: Record<string, Spot[]> = {
   gorge: [
     { who: 'sage', x: 610, face: -1, pose: 'belay', talk: 'sage' },
     { who: 'dex', x: 1236, face: -1, pose: 'stand', talk: 'dex' },
+    // Mara, under the classic: her warm-up.
+    { who: 'mara', x: 878, face: -1, pose: 'belay', talk: 'mara' },
   ],
   // Nobody's day brings them out here, but Dex stays wherever he first saw you send a V4.
-  moon: [{ who: 'dex', x: 1190, face: -1, pose: 'stand', talk: 'dex' }],
-  mesa: [{ who: 'dex', x: 1320, face: -1, pose: 'stand', talk: 'dex' }],
+  moon: [
+    { who: 'dex', x: 1190, face: -1, pose: 'stand', talk: 'dex' },
+    { who: 'rico', x: 905, face: 1, pose: 'stand', talk: 'rico' },
+  ],
+  mesa: [
+    { who: 'dex', x: 1320, face: -1, pose: 'stand', talk: 'dex' },
+    // Tam, in the wall's morning shade, between the long lines.
+    { who: 'tam', x: 880, face: -1, pose: 'belay', talk: 'tam' },
+  ],
   stone: [{ who: 'dex', x: 1180, face: -1, pose: 'stand', talk: 'dex' }],
   wind: [{ who: 'dex', x: 1350, face: -1, pose: 'stand', talk: 'dex' }],
   crucible: [{ who: 'dex', x: 1340, face: -1, pose: 'stand', talk: 'dex' }],
   cove: [{ who: 'dex', x: 420, face: 1, pose: 'stand', talk: 'dex' }],
-  cave: [{ who: 'dex', x: 1020, face: -1, pose: 'stand', talk: 'dex' }],
+  cave: [
+    { who: 'dex', x: 1020, face: -1, pose: 'stand', talk: 'dex' },
+    // Rico, under the steepest of the week's problems.
+    { who: 'rico', x: 1090, face: -1, pose: 'stand', talk: 'rico' },
+  ],
   center: [{ who: 'dex', x: 1030, face: -1, pose: 'stand', talk: 'dex' }],
 };
 

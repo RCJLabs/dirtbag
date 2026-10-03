@@ -1,5 +1,6 @@
 // R2's crags: the rest of Roadside, Granite Gorge's gate, closure and shade, sandbags, and
 // first ascents.
+import { whereIs } from './presence';
 import { describe, expect, it } from 'vitest';
 import { betaScale } from './climb';
 import { needFor } from './climber';
@@ -79,7 +80,12 @@ describe('Granite Gorge', () => {
   });
 
   it('keeps its sport routes for when someone comes to belay', () => {
-    expect(goBlocked(at(5, { at: 'gorge', min: 10 * 60 }), ROUTES.gintro!)).toBe('Nobody here to belay you');
+    // A day Mara isn't there (Phase 17.1): she'd belay you.
+    const s = at(5, { at: 'gorge', min: 10 * 60 });
+    const day = days(s.day, s.day + 60).find(
+      (d) => conditionsAt(s.seed, d, 'gorge').open && !whereIs(s.seed, 'mara', d, 10 * 60),
+    )!;
+    expect(goBlocked({ ...s, day }, ROUTES.gintro!)).toBe('Nobody here to belay you');
   });
 });
 

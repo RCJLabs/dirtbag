@@ -300,6 +300,23 @@ export const BOND = {
   inviteBefore: 13 * 60,
 };
 
+// The cast past Hazel, Sage and Dex (Phase 17.1), on v0.956's figures where it had them
+// [proposed]. Each partner turns up on a day at `base`, plus BOND.perTier a tier, as Sage
+// does, inside their hours, and only where they climb.
+//   ray    Roadside on weekends, as v0.956's local was, through the morning;
+//   frank  the Lot on v0.956's 40% of nights (20% in winter), at his rig till late, from
+//          the third: the first two nights at the fire are Hazel's;
+//   mara   the Gorge on dry days: v0.956's 0.34, the least around and the hardest climber;
+//   rico   the Cave, or Moonstone when it's dry: v0.956's 0.55;
+//   tam    the Mesa on dry mornings, before the sandstone heats up: v0.956's 0.30.
+export const CAST = {
+  ray: { from: 8 * 60, till: 14 * 60 },
+  frank: { nights: 0.4, winter: 0.2, from: 17 * 60, till: 22 * 60, fromDay: 3 },
+  mara: { base: 0.34, from: 9 * 60, till: 17 * 60 },
+  rico: { base: 0.55, from: 11 * 60, till: 20 * 60, moon: 0.4 },
+  tam: { base: 0.3, from: 7 * 60, till: 14 * 60 },
+};
+
 // Partner arcs: v0.956's four beats, at bonds 1, 3, 5 and 7, with Phase 6's spacing (v0.956
 // had none, so a whole arc could land in a week).
 export const ARC = {
