@@ -48,6 +48,9 @@ export function aimEarned(s: GameState, aim: RecordAim, sent = sends(s)): boolea
     return !!s.people.dex && gradeOf(s.climber.skills) > (gradeOfPerson(s.seed, 'dex', s.day) ?? 99);
   // An old save filling the book on loading has no life yet.
   if ('retired' in aim) return !!s.life?.retired;
+  if ('followers' in aim) return (s.media?.followers ?? 0) >= aim.followers;
+  if ('sponsor' in aim) return (s.media?.sponsor?.tier ?? -1) >= aim.sponsor;
+  if ('film' in aim) return !!s.media?.doc && 'aired' in s.media.doc;
   if ('comp' in aim) {
     const r = s.comps?.results ?? [];
     if (aim.comp === 'entered') return r.length > 0;

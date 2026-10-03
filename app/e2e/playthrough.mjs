@@ -780,7 +780,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 48 ||
+  saved?.v !== 49 ||
   st.romance !== null ||
   st.family !== null ||
   // You spoke to Hazel about the roof (Phase 17.3).

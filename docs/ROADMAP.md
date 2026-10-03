@@ -2578,6 +2578,21 @@ Players will ask "what am I working towards?" by hour 3.
 - **Seen:** the desk on a league night, from a loaded save in Chromium; the e2e passes unchanged (its day four doesn't sign up). A real v47 save loads.
 - **The download:** 368.5 KB of 400.
 
+**Status (3 Oct 2026): 18.5 built: media.** Save v49, 0.999.23. Numbers [proposed] in `MEDIA` and `content/media.ts`; rules in `media.ts`. Evan's call: followers back.
+- **Followers pay nothing on their own.** v0.956 paid cash for every first send by followers, gym problems included, and ran to $2,300 a day by day 200 (the audit, §1.2). Here sponsors pay, and want days for it.
+- **A post a day, from what the day gave you:** each line first sent today, by its grade, more outside, on a first go, or a first ascent; a podium. Four ways to post it: as it was; the story (fewer follow, psyche up); bait the algorithm (more follow, the old crowd sours, threads come); the sponsor's ad (it pays). Engagement rises with posting and slips after a few quiet days; slumped, followers drift away.
+- **Sponsors with followers:** Chalkbag Co. at 2,000, Apex Climbing at 8,000, Meridian at 30,000, each an email at the van. Keep it real, or full brand (half again the money, an ad each cycle, more threads). A cycle's asks, every 14 days: a send posted at your grade less one; from Apex, a shoot day at a crag they name; from Meridian, a comp too. Done, the stipend; missed, a warning; missed twice, you're dropped.
+- **The rival for the headline deal:** Skye Maddox, a comp climber with a camera crew, her followers on a curve of their own (half of 60,000 by day 140). Meridian signs whoever's ahead when your numbers get there; lose it and they look again in four weeks.
+- **A thread about you,** now and then, likelier with followers, brand terms and bait: send at your grade within a week and it goes quiet with a quarter more followers; let it run and some go.
+- **The capstone, the film:** at Meridian with 40,000 followers, a filmmaker offers a season; a line a grade over yours, outside, in four weeks, and it airs.
+- **Opened:** the Influencer calling (posts bring a quarter more; 2,000, 15,000 and 60,000 followers); the Record Book's Internet Famous (5,000), Sponsored, Going Pro (Meridian), and a new one, On Screen (the film).
+- **The ladder, for 18.7:** known locally (1,000), each sponsor, the film: six rungs.
+- **Your feed** is a row at the van: followers and how engaged, the sponsor's asks ticked off, a thread, the film, the rival's numbers once she matters, an offer to answer, and the four posts each with the followers it would bring. A shoot is a row at the crag's van.
+- **Not measured:** the bots don't post, so the pace up the ladder (whether Meridian and the film land inside a career, and how often the rival wins) is unmeasured till 18.7's ladder bots. One small flash outside at middling engagement brings about 180.
+- **Seen:** the feed with a sponsor and a thread, from a loaded save in Chromium; the e2e passes unchanged; a real v48 save loads.
+- **Harness:** every target passes, unchanged.
+- **The download:** 373.5 KB of 400.
+
 ---
 
 ## Stage D — Get it in front of people
@@ -2869,3 +2884,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Phase 18.2 built: the café's rush (a queue made in the order you choose) and the diner's floor (tables taken on a wave at a time); a play row beside each plain shift. 0.999.20.
 - 2026-10-03 — Phase 18.3 built: the coach's roster (clients who stay, each an hour a session, a send's thanks) and the warehouse's picks (push-your-luck where a drop costs what you'd picked, the day moving the stop). Save v47. 0.999.21.
 - 2026-10-03 — Phase 18.4 built: the comp ladder, League night to the Games, opt-in, a fixed field, points that fade; the Scene path, Comp Beast and three Record Book entries opened. Save v48. 0.999.22.
+- 2026-10-03 — Phase 18.5 built: media; a post a day from what you did, sponsors with asks and stipends (followers alone pay nothing), a rival for the headline deal, threads answered by sending, and the film; the Influencer and four Record Book entries opened. Save v49. 0.999.23.

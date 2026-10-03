@@ -41,8 +41,8 @@ const at = (g: number, n = 1) =>
     .map((r) => r.id);
 
 describe('callings', () => {
-  it('offer three, with the Influencer waiting on followers; each a perk said from its numbers', () => {
-    expect(OPEN_CALLINGS).toEqual(['purist', 'sendorbust', 'lifer']);
+  it('offer four, the Influencer with the followers (Phase 18.5); each a perk said from its numbers', () => {
+    expect(OPEN_CALLINGS).toEqual(['purist', 'sendorbust', 'lifer', 'influencer']);
     for (const id of OPEN_CALLINGS) {
       const c = CALLINGS[id]!;
       expect(c.rungs).toHaveLength(3);
@@ -55,6 +55,8 @@ describe('callings', () => {
     expect(rungText(CALLINGS.lifer!.rungs[0]!)).toBe(
       `Consolidate 5 grades (${CALLING.consolidate} lines sent at each)`,
     );
+    expect(ambitionText(CALLINGS.influencer!)).toBe('Reach 2,000, 15,000, then 60,000 followers');
+    expect(callingTerms(CALLINGS.influencer!).perks).toEqual(['Posts bring 25% more followers.']);
   });
 
   it('are asked about once, after enough sends, and wait after that', () => {
@@ -74,7 +76,7 @@ describe('callings', () => {
 
   it('are taken up for good, and only an open one', () => {
     const s = made();
-    expect(act(s, { t: 'calling', id: 'influencer' }).events[0]?.k).toBe('refused');
+    expect(act(s, { t: 'calling', id: 'nobody' }).events[0]?.k).toBe('refused');
     const r = act(s, { t: 'calling', id: 'lifer' });
     expect(r.state.calling).toEqual({ id: 'lifer', since: s.day, rungs: [], offered: true });
     expect(act(r.state, { t: 'calling', id: 'purist' }).events[0]?.k).toBe('refused');

@@ -21,6 +21,7 @@ export function rungMet(s: GameState, aim: RungAim): boolean {
   const sent = sendsSince(s, s.calling.since);
   if ('outside' in aim) return sent.some((x) => x.outside && x.grade >= aim.outside);
   if ('flashOutside' in aim) return sent.some((x) => x.outside && x.first && x.grade >= aim.flashOutside);
+  if ('followers' in aim) return s.media.followers >= aim.followers;
   const at: Record<number, number> = {};
   for (const x of sent) at[x.grade] = (at[x.grade] ?? 0) + 1;
   return Object.values(at).filter((n) => n >= CALLING.consolidate).length >= aim.consolidate;
@@ -47,13 +48,20 @@ export const callingDue = (s: GameState): boolean =>
 export function rungText(aim: RungAim): string {
   if ('outside' in aim) return `Send a V${aim.outside} outside`;
   if ('flashOutside' in aim) return `Flash a V${aim.flashOutside} outside`;
+  if ('followers' in aim) return `Reach ${aim.followers.toLocaleString('en-US')} followers`;
   return `Consolidate ${aim.consolidate} grades (${CALLING.consolidate} lines sent at each)`;
 }
 
 // A whole ambition in one line: "Send a V8, V11, then V14 outside."
 export function ambitionText(c: Calling): string {
   const n = c.rungs.map((a) =>
-    'outside' in a ? a.outside : 'flashOutside' in a ? a.flashOutside : a.consolidate,
+    'outside' in a
+      ? a.outside
+      : 'flashOutside' in a
+        ? a.flashOutside
+        : 'followers' in a
+          ? a.followers.toLocaleString('en-US')
+          : a.consolidate,
   );
   const list = (pre: string) =>
     `${n
@@ -64,6 +72,7 @@ export function ambitionText(c: Calling): string {
   if (!a) return '';
   if ('outside' in a) return `Send a ${list('V')} outside`;
   if ('flashOutside' in a) return `Flash a ${list('V')} outside`;
+  if ('followers' in a) return `Reach ${list('')} followers`;
   return `Consolidate ${list('')} grades (${CALLING.consolidate} lines sent at each)`;
 }
 
@@ -85,6 +94,10 @@ export function callingTerms(c: Calling): { perks: string[]; costs: string[] } {
   if (f.injury && f.injury !== 1)
     (f.injury < 1 ? perks : costs).push(
       `You’re ${pct(f.injury)} ${f.injury < 1 ? 'less' : 'more'} likely to get hurt.`,
+    );
+  if (f.reach && f.reach !== 1)
+    (f.reach > 1 ? perks : costs).push(
+      `Posts bring ${pct(f.reach)} ${f.reach > 1 ? 'more' : 'fewer'} followers.`,
     );
   return { perks, costs };
 }

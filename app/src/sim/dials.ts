@@ -124,6 +124,33 @@ export const COACH = {
 // `steep` per grade; ladder points fade by half every `half` days.
 export const COMP = { goes: 5, close: 13 * 60, steep: 1.4, half: 56 };
 
+// Phase 18.5 [proposed]. Followers from a post: `k` × each of today's sends' worth (its grade
+// plus two, to the power `pow`; more outside, on a first go, or a first ascent) × how
+// engaged your followers are, for the post's style. Engagement rises a post and slips after
+// `quiet` days without one; under `slump` you lose a share of followers a night. A sponsor
+// cycle is `cycle` days, two missed and you're dropped. A thread comes up at `heat` a night
+// (more with followers, brand terms and bait), and gives you `prove` days to send at the
+// grade. The film wants a line `doc.over` grades harder, outside, in `doc.days`.
+export const MEDIA = {
+  k: 12,
+  pow: 1.4,
+  outside: 1.6,
+  first: 1.3,
+  fa: 2,
+  podium: 400,
+  style: { straight: 1, story: 0.6, bait: 1.6, ad: 0.3 },
+  engage: { start: 40, post: 6, quiet: 3, fade: 3, slump: 25, loss: 0.005 },
+  brand: 1.5,
+  cycle: 14,
+  strikes: 2,
+  heat: { chance: 0.012, cap: 0.05, from: 2000, bait: 1.8, prove: 7, win: 0.25, lose: 0.05 },
+  rival: { top: 60000, mid: 140, width: 35 },
+  lostFor: 28,
+  doc: { followers: 40000, over: 1, days: 28, boost: 0.5 },
+  storyPsyche: 4,
+  shoot: { energy: 20, min: 180 },
+};
+
 export const HAUL = {
   picks: 6,
   offer: 3,

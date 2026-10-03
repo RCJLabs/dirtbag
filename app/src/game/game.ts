@@ -119,6 +119,8 @@ export type SheetId =
       from: 'send' | 'wall';
     }
   | { k: 'dog' }
+  // Your feed (Phase 18.5): posting, sponsors, offers.
+  | { k: 'media' }
   // A shift with a minigame to play (Phase 18.1), or just to work.
   | { k: 'shift'; act: string }
   | { k: 'act'; n: number }
@@ -838,6 +840,20 @@ export class Game {
     this.today = noted(this.today, { place: this.state.at, act: id });
     this.shiftBack();
     return null;
+  }
+
+  // Media (Phase 18.5): a post, an offer answered, a shoot; the sheet stays up.
+  media(
+    a:
+      | { t: 'post'; style: 'straight' | 'story' | 'bait' | 'ad' }
+      | { t: 'offer'; take: 'real' | 'brand' | 'yes' | 'no' },
+  ): void {
+    this.dispatch(a);
+    this.openSheet({ k: 'media' });
+  }
+
+  shoot(): void {
+    this.dispatch({ t: 'shoot' });
   }
 
   // A comp (Phase 18.4): signed up for, or the scorecard in; back to the desk.

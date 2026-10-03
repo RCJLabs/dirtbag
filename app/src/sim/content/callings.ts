@@ -8,15 +8,23 @@
 //   outside: a line sent outside at this grade or harder
 //   flashOutside: one flashed or onsighted outside at this grade or harder
 //   consolidate: this many grades, each with CALLING.consolidate lines sent at it
+//   followers: this many following you (Phase 18.5); `reach`: followers a post brings ×
 
 export interface CallingFx {
   gainOut?: number;
   firstGo?: number;
   injury?: number;
   living?: number;
+  // Followers a post brings × (Phase 18.5).
+  reach?: number;
 }
 
-export type RungAim = { outside: number } | { flashOutside: number } | { consolidate: number };
+export type RungAim =
+  | { outside: number }
+  | { flashOutside: number }
+  | { consolidate: number }
+  // Followers (Phase 18.5).
+  | { followers: number };
 
 export interface Calling {
   name: string;
@@ -68,10 +76,13 @@ export const CALLINGS: Record<string, Calling> = {
   influencer: {
     name: 'The Influencer',
     blurb: 'It’s about the scene and the clout. Social, pragmatic.',
-    fx: {},
-    rungs: [],
-    said: [],
-    wait: 'followers and sponsors (Phase 18)',
+    fx: { reach: 1.25 },
+    rungs: [{ followers: 2000 }, { followers: 15000 }, { followers: 60000 }],
+    said: [
+      'People you’ve never met know your name. Some of them can pronounce it.',
+      'A brand reposts you without asking. You decide to be flattered.',
+      'Sixty thousand people watch you fall off things. You’ve started falling better.',
+    ],
   },
 };
 

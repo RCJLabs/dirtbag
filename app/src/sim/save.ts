@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 48;
+export const SAVE_VERSION = 49;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -382,6 +382,24 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, comps: { on: null, points: [], results: [] } };
   },
+  // v48 -> v49 (Phase 18.5): nobody following you yet, no sponsor, nothing posted.
+  48: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return {
+      ...x,
+      media: {
+        followers: 0,
+        engagement: 40,
+        posted: 0,
+        bait: -99,
+        sponsor: null,
+        offer: null,
+        heat: null,
+        doc: null,
+        lost: null,
+      },
+    };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -565,6 +583,39 @@ export function validate(x: unknown): string[] {
       Array.isArray(c.results) &&
       c.results.every((r) => isObj(r) && isInt(r.tier) && isInt(r.day) && isInt(r.place) && isInt(r.of)),
     'comps',
+  );
+  const md = x.media;
+  const isTask = (t: unknown) =>
+    isObj(t) &&
+    typeof t.done === 'boolean' &&
+    ((t.kind === 'send' && isInt(t.grade)) ||
+      (t.kind === 'shoot' && typeof t.place === 'string' && t.place in PLACES) ||
+      t.kind === 'comp' ||
+      t.kind === 'ad');
+  need(
+    isObj(md) &&
+      isInt(md.followers) &&
+      md.followers >= 0 &&
+      isNum(md.engagement) &&
+      isInt(md.posted) &&
+      isInt(md.bait) &&
+      (md.sponsor === null ||
+        (isObj(md.sponsor) &&
+          isInt(md.sponsor.tier) &&
+          (md.sponsor.terms === 'real' || md.sponsor.terms === 'brand') &&
+          isInt(md.sponsor.due) &&
+          isInt(md.sponsor.strikes) &&
+          Array.isArray(md.sponsor.tasks) &&
+          md.sponsor.tasks.every(isTask))) &&
+      (md.offer === null ||
+        (isObj(md.offer) &&
+          (md.offer.kind === 'doc' || (md.offer.kind === 'sponsor' && isInt(md.offer.tier))))) &&
+      (md.heat === null || (isObj(md.heat) && isInt(md.heat.grade) && isInt(md.heat.due))) &&
+      (md.doc === null ||
+        (isObj(md.doc) &&
+          ((isInt(md.doc.grade) && isInt(md.doc.due)) || isInt(md.doc.aired) || isInt(md.doc.shelved)))) &&
+      (md.lost === null || isInt(md.lost)),
+    'media',
   );
   need(typeof x.lifestyle === 'string' && x.lifestyle in LIFESTYLE, 'lifestyle');
   need(typeof x.spot === 'string' && x.spot in SPOTS, 'spot');

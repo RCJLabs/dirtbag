@@ -27,7 +27,11 @@ export type RecordAim =
   | { rival: true }
   | { retired: true }
   // Phase 18.4: a comp finished, won, or a podium at the Games.
-  | { comp: 'entered' | 'won' | 'games' };
+  | { comp: 'entered' | 'won' | 'games' }
+  // Phase 18.5: followers, a sponsor at a tier or better, the film.
+  | { followers: number }
+  | { sponsor: number }
+  | { film: true };
 
 export interface RecordEntry {
   id: string;
@@ -334,25 +338,36 @@ export const RECORD: RecordEntry[] = [
     id: 'famous',
     title: 'Internet Famous',
     desc: 'Reach 5,000 followers.',
-    story: '',
+    story:
+      'Five thousand people want to watch you climb. Your mother is one of them, and she comments on everything.',
     from: ['f1:famous'],
-    waits: 'media',
+    aim: { followers: 5000 },
   },
   {
     id: 'sponsored',
     title: 'Sponsored',
     desc: 'Land a sponsor.',
-    story: '',
+    story:
+      'A box arrives with your name on it: chalk, a shirt, a contract with a lot of clauses. You read them all, twice.',
     from: ['f1:sponsored'],
-    waits: 'sponsors',
+    aim: { sponsor: 0 },
   },
   {
     id: 'pro',
     title: 'Going Pro',
     desc: 'Turn pro.',
-    story: '',
+    story: 'The headline deal. Climbing pays the rent, for now, and you know exactly how lucky that is.',
     from: ['f1:pro'],
-    waits: 'sponsors',
+    aim: { sponsor: 2 },
+  },
+  {
+    id: 'film',
+    title: 'On Screen',
+    desc: 'Get the film made.',
+    story:
+      'The film goes out, and strangers write to you about their own projects. You answer every one, slowly, from the van.',
+    from: [],
+    aim: { film: true },
   },
   {
     id: 'giving',

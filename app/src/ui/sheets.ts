@@ -183,6 +183,16 @@ import {
   HOLIDAY_WITH,
   PLAY,
   COMP,
+  MEDIA,
+  MEDIA_RIVAL,
+  SPONSORS,
+  TERMS,
+  POSTS,
+  DOC,
+  postBlocked,
+  postGain,
+  rivalFollowers,
+  type MediaTask,
   COMP_TIERS,
   compBlocked,
   compOn,
@@ -273,6 +283,56 @@ function actRow(game: Game, s: GameState, id: string): Row {
     off: !!why,
     run: () => game.doAct(id),
   };
+}
+
+// Your feed's row at the van (Phase 18.5): an offer waiting, or how many follow you.
+function feedRow(game: Game, s: GameState): Row {
+  const o = s.media.offer;
+  return {
+    label: o
+      ? o.kind === 'sponsor'
+        ? `An email from ${SPONSORS[o.tier]!.name}`
+        : 'An email about a film'
+      : 'Your feed',
+    note: o
+      ? 'An offer, waiting on an answer.'
+      : `${s.media.followers.toLocaleString('en-US')} followers.${s.today.includes('posted') ? ' Posted today.' : ''}`,
+    run: () => game.openSheet({ k: 'media' }),
+  };
+}
+
+// A sponsor's ask, in words.
+function taskText(t: MediaTask): string {
+  if (t.kind === 'send') return `Post a send at V${t.grade} or harder`;
+  if (t.kind === 'shoot') return `A shoot day at ${PLACES[t.place]?.name ?? t.place}`;
+  if (t.kind === 'comp') return 'Compete in a comp';
+  return 'Post their ad';
+}
+
+const engageWord = (e: number): string =>
+  e >= 70
+    ? 'and they’re hanging on every post'
+    : e >= 40
+      ? 'and they’re paying attention'
+      : e >= 25
+        ? 'and they’re drifting'
+        : 'and they’ve mostly stopped looking';
+
+// A sponsor's shoot at this crag, at the van.
+function shootRows(game: Game, s: GameState): Row[] {
+  const t = s.media.sponsor?.tasks.find((x) => x.kind === 'shoot' && !x.done);
+  if (!t || t.kind !== 'shoot' || t.place !== s.at) return [];
+  return [
+    {
+      label: `Shoot for ${SPONSORS[s.media.sponsor!.tier]!.name}`,
+      cost: costLabel({ min: MEDIA.shoot.min, energy: -MEDIA.shoot.energy }),
+      note: s.today.includes('shoot')
+        ? 'You’ve shot today.'
+        : 'The same move, from four angles, in the good light.',
+      off: s.today.includes('shoot') || s.energy < MEDIA.shoot.energy,
+      run: () => game.shoot(),
+    },
+  ];
 }
 
 // The comp at this wall (Phase 18.4): sign up on the day, hand in your scorecard, or when
@@ -698,6 +758,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         tonight: isNight(s.min) ? tonight(s) : undefined,
         close: true,
         rows: [
+          // Phase 18.5: your feed, and an offer when there's one.
+          feedRow(game, s),
           // Phase 17.6: a call from home, waiting on the phone.
           ...(folksDue(s) !== null
             ? [{ label: 'Call home back', note: 'A missed call from home.', run: () => game.callHome() }]
@@ -767,6 +829,77 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       };
     }
 
+    // Your feed (Phase 18.5): posting what you did, sponsors and their asks, an offer, a
+    // thread, the film, and the rival's numbers once she matters.
+    case 'media': {
+      const m = s.media;
+      const sp = m.sponsor;
+      const lines: string[] = [];
+      if (sp) {
+        const S = SPONSORS[sp.tier]!;
+        lines.push(
+          `${S.name}, ${TERMS[sp.terms].name.toLowerCase()}: ${money(Math.round(S.stipend * (sp.terms === 'brand' ? MEDIA.brand : 1)))} on day ${sp.due} if this cycle's asks are done${sp.strikes ? ' (one warning already)' : ''}.`,
+          ...sp.tasks.map((t) => `${t.done ? '✓' : '·'} ${taskText(t)}`),
+        );
+      } else {
+        const next = SPONSORS.find((x) => x.followers > m.followers);
+        if (next)
+          lines.push(
+            `${next.name} looks at climbers with ${next.followers.toLocaleString('en-US')} followers.`,
+          );
+      }
+      if (m.heat)
+        lines.push(`A thread says you're soft: send a V${m.heat.grade} by day ${m.heat.due} to answer it.`);
+      if (m.doc && 'due' in m.doc) lines.push(`The film: a V${m.doc.grade} outside by day ${m.doc.due}.`);
+      if (m.doc && 'aired' in m.doc) lines.push('The film’s out.');
+      if (sp && sp.tier >= 1)
+        lines.push(`${MEDIA_RIVAL.name} has ${rivalFollowers(s.day).toLocaleString('en-US')} followers.`);
+      const offer = m.offer;
+      const offerRows: Row[] = !offer
+        ? []
+        : offer.kind === 'sponsor'
+          ? [
+              ...(['real', 'brand'] as const).map((t) => ({
+                label: `${SPONSORS[offer.tier]!.name}: ${TERMS[t].name}`,
+                cost: money(Math.round(SPONSORS[offer.tier]!.stipend * (t === 'brand' ? MEDIA.brand : 1))),
+                note: `${TERMS[t].says} A cycle every ${MEDIA.cycle} days; two missed and they let you go.`,
+                run: () => game.media({ t: 'offer', take: t }),
+              })),
+              { label: 'Turn them down', run: () => game.media({ t: 'offer', take: 'no' }) },
+            ]
+          : [
+              {
+                label: 'Make the film',
+                note: `${DOC.who} ${DOC.offer}`,
+                run: () => game.media({ t: 'offer', take: 'yes' }),
+              },
+              { label: 'Say no', run: () => game.media({ t: 'offer', take: 'no' }) },
+            ];
+      const reach = s.calling.id ? (CALLINGS[s.calling.id]?.fx.reach ?? 1) : 1;
+      const postRows: Row[] = (['straight', 'story', 'bait', 'ad'] as const)
+        .filter((st) => st !== 'ad' || sp)
+        .map((st) => {
+          const why = postBlocked(s, st);
+          const gain = postGain(s, st, reach);
+          return {
+            label: POSTS[st].name,
+            cost: `+${gain.toLocaleString('en-US')}`,
+            note: why
+              ? `${why}.`
+              : `${POSTS[st].note}.${st === 'ad' && sp ? ` ${money(SPONSORS[sp.tier]!.ad)}.` : ''}`,
+            off: !!why,
+            run: () => game.media({ t: 'post', style: st }),
+          };
+        });
+      return {
+        title: 'Your feed',
+        sub: `${m.followers.toLocaleString('en-US')} followers, ${engageWord(m.engagement)}. Followers don't pay; sponsors do.`,
+        lines,
+        close: true,
+        rows: [...offerRows, ...postRows],
+      };
+    }
+
     case 'cragVan': {
       const back = road(s.at, 'lot');
       return {
@@ -775,7 +908,11 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           ? `Parked on the shoulder. It's $${back.cash} of gas back to the Lot.`
           : 'Parked on the shoulder.',
         close: true,
-        rows: [...(back ? [driveRow(game, s, 'lot', 'Drive back to the Lot')] : []), mapRow(game)],
+        rows: [
+          ...shootRows(game, s),
+          ...(back ? [driveRow(game, s, 'lot', 'Drive back to the Lot')] : []),
+          mapRow(game),
+        ],
       };
     }
 
