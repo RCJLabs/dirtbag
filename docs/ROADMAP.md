@@ -2842,6 +2842,16 @@ Players will ask "what am I working towards?" by hour 3.
 
 **Phase 25 closed by Evan's call (4 Oct 2026).** All three criteria pass: every Record Book entry can be earned; every carried item is built, music in code included; the harness's targets pass (last run on 25.6). The CURRENT MILESTONE moves to Phase 14, the desktop and Steam build. The download is 398.2 KB of 440.
 
+**Phase 25's systems, measured (4 Oct 2026, Evan's call).** `harness/late.harness.ts`, in `npm run harness`: no targets, numbers for Evan's calls. Comps climbed with the career bots' human-ish hands (the careful ones are near perfect: with them a V3 swept League night and a V8 the dyno comp). LATE_SEEDS widens the samples; these are 4 a cell.
+- **Guiding** is in the band: a plain Lead guide shift is $17 an hour, with the head coach; the other jobs' top ranks run $13 to $17.
+- **The outfit** with three guides makes $155 a day (median, real weather, winters shut), $660 a week, $5,283 a year, and pays back its $3,000 in 32 days; one guide barely covers the insurance ($35 a day, 204 days to pay back). Against keeping the job: three Lead guide shifts a week, $258 ($360 played well). For comparison, 18.6's gym with a hired setter makes about $95 a day for $6,000. Late money that runs itself, as the gym's does; whether both are too generous is the same call.
+- **The mentee:** 16 sessions to V5 and 31 to V8 whoever coaches, 44 to V10 from a V12 coach; a V7 coach can't take one past V7 (by design: never past you). Shoes and fees to V8, $75. **An heir's head start is small and coarse:** from every start, a V5 mentee and a V8 one both make a V2 heir (from V0), a V10 one V3.
+- **A team's trip** costs $2,533 a summit at El Cap with one summit of yours ($1,568 at best), $9,066 at Cerro Torre, $23,601 at Trango ($14,610 at best). Only the first summit is an entry in the book; after it, the old crowd's nod.
+- **The dyno comp:** a V2 and a V4 never place; a V6 wins 1 year in 4 and podiums 2; a V8 wins 2 in 4; from V10 it's won every year, $285 after the fee. A mid-career thing, small money.
+- **League night's season:** a V1 or V2 is mid-table and loses the fees; a V3 wins 1 season in 4, a V4 3 in 4, and from V5 every night of every season ($490 a season). An early-career thing, as its V0–V5 problems are.
+- **Crew drama** came to 13 of 16 social careers by day 300 (median day 110), every time Rico asking over Sage, the only two of the four the bots make Regulars: Mara (the Gorge) and Tam (the Mesa) rarely get there. Mended in 10, set in 1, still a rift in 2. **A bot gap, fixed on the way:** the social bot didn't answer crew drama's beats, and Sage's own talk handled only her meeting and arc; it found it 0 times in 16 before. Every other harness target passes as before; ambient lines now come round 2.2 times by day 100 (2.1 before), the social bot's time on the drama, against v0.956's 7.
+- **Not measured:** the guides' royalties and giving (text and small money); the outfit and gym against each other in one career (no bot runs either).
+
 ## Stage D — Get it in front of people
 
 *Moved here by Evan's call (29 Sep 2026): the whole game gets built first, and the Steam build, the demo and the store page come after it. The phase numbers stay as they were, so older references still find them.*
@@ -3144,3 +3154,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-04 — Evan's call: the download budget goes from 400 KB to 440 KB for 25.7 (394.8 KB after 25.6).
 - 2026-10-04 — Phase 25.7 built: polish: a keepsake card for a trip, tappable glossary words, Miller's Bluff's own rock (and the line its six sport lines never had). Phase 25's criteria pass but for music, Evan's call. 0.999.32.
 - 2026-10-04 — Music, made in code (Evan's call: synthesize it and see how it turns out): six moods by place and hour, in stretches with quiet between, ducked under talk and goes, a Music setting. Phase 25 closed by Evan's call; CURRENT MILESTONE moved to Phase 14, the desktop and Steam build. 0.999.33.
+- 2026-10-04 — Phase 25's systems measured (Evan's call): a harness with no targets, numbers for the calls; the social bot taught crew drama, which it had never met (13 of 16 careers now). No numbers changed.
