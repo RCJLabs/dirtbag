@@ -21,7 +21,7 @@
     "path": "./android.keystore",
     "alias": "dirtbag"
   },
-  "appVersionName": "0.999.31",
+  "appVersionName": "0.999.32",
   "appVersionCode": 670,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",

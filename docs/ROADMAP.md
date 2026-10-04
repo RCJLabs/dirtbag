@@ -2814,6 +2814,25 @@ Players will ask "what am I working towards?" by hour 3.
 - **The e2e:** its café and diner checks read the old fixed lines; now Wren, and the Diner's card.
 - **Seen:** the crew's texts at the van, the Gorge's crowd and a stranger's line, Mara's ask with its two answers, and the diner's line, from loaded saves in Chromium.
 
+**Status (4 Oct 2026): 25.7 built: polish.** 0.999.32. No save change; view and UI only (`ui/card.ts`, `ui/gloss.ts`, `view/paint/wall.ts`).
+- **The keepsake card for a trip:** the send card's painter, drawn on the pitch you got to on the objective's own wall, the summit's or your high point's, with its name ("The Nose", or "The Nose, pitch 3"), how far ("Summit", or "High point, 3 of 6"), where, when, and who was on the rope.
+  - "Keep a card of it" on the trip's home card, and "A card of El Capitan" (the summit, or else your best) on the Expeditions sheet for every objective you've got a pitch up.
+  - None for a trip that never left the ground.
+- **Tappable glossary words** on place cards, route sheets, and the lines a go ends with: the first use of each word, three at most, opens a card with its entry, back to where you were or on to all the words.
+  - Only lowercase uses (YDS and V-scale as written), so the game's names stay names: The Pump is a route, Send City a gym.
+  - Left out as too common or part of a name: go, send, crag, soft, nut, lip, dirtbag.
+- **Miller's Bluff's own rock:** grey limestone, bedded flat, never chalked, with water streaks, the tufa, the cow corner leaning out at its top, the pillar's two edges and the big roof a third of the way up, where its lines say they are; the field, a fence and a hay bale at its foot.
+  - **A bug found on the way:** none of the bluff's six sport lines had a line drawn on any wall, so a go on one, once bolted, had nothing to climb. Each has one now, and a test holds every roped line to it.
+- **Size:** 396.6 KB of 440 (+1.8 KB).
+- **No harness run:** nothing the bots do changed.
+- **Seen:** El Cap's summit card, the big roof's route sheet with "project" marked, its word card over the bluff's new wall, from loaded saves in Chromium.
+
+**Phase 25 against its Done-when (4 Oct 2026):**
+1. **Passes:** all 45 Record Book entries have an aim; none waits.
+2. **Passes but for one:** every carried item is built, with tests (25.1–25.7). Music (Phase 13) is parked with its decision, which is Evan's: build it, or cut it.
+3. **Passes:** the harness's targets, last run on 25.6, with outdoors at the 2 of 4 seeds Evan accepted (5 of 8 in 18.7).
+- Closing Phase 25, and the call on music, are Evan's. Next after it, by the order set: Phase 14, the desktop and Steam build.
+
 ## Stage D — Get it in front of people
 
 *Moved here by Evan's call (29 Sep 2026): the whole game gets built first, and the Steam build, the demo and the store page come after it. The phase numbers stay as they were, so older references still find them.*
@@ -3114,3 +3133,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-04 — Phase 25.5 built: comps outside the ladder, the Fall Festival dyno comp once a year and League night's season table (Evan's calls); two Record Book entries. Save v55. 0.999.30.
 - 2026-10-04 — Phase 25.6 built: the people (Evan's calls): crew drama, a choice, a rift and a mend; the crew's texts back; the shops' small talk; a word from the crowd at a busy crag. Save v56. 0.999.31.
 - 2026-10-04 — Evan's call: the download budget goes from 400 KB to 440 KB for 25.7 (394.8 KB after 25.6).
+- 2026-10-04 — Phase 25.7 built: polish: a keepsake card for a trip, tappable glossary words, Miller's Bluff's own rock (and the line its six sport lines never had). Phase 25's criteria pass but for music, Evan's call. 0.999.32.

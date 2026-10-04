@@ -111,7 +111,8 @@ export type SheetId =
       first: boolean;
     }
   // The send card, and the sheet to go back to.
-  | { k: 'card'; route: string; back: SheetId }
+  // A keepsake card: of a send, or (Phase 25.7) of the trip at this place in the book.
+  | { k: 'card'; route: string; back: SheetId; trip?: number }
   // A first ascent to name: straight after the send (then the send card), or later from
   // the wall if you walked off without naming it.
   | {
@@ -136,6 +137,8 @@ export type SheetId =
   | { k: 'outfit' }
   | { k: 'league' }
   | { k: 'texts' }
+  // Phase 25.7: a glossary word, tapped where it appeared; back to where that was.
+  | { k: 'word'; term: string; back: SheetId }
   // A shift with a minigame to play (Phase 18.1), or just to work.
   | { k: 'shift'; act: string }
   | { k: 'act'; n: number }
