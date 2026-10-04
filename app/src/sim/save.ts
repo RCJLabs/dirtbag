@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 52;
+export const SAVE_VERSION = 53;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -414,6 +414,11 @@ export const MIGRATIONS: Record<number, Migration> = {
   51: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, outfit: null };
+  },
+  // v52 -> v53 (Phase 25.3): nobody to coach yet.
+  52: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, mentee: null };
   },
 };
 
@@ -982,8 +987,21 @@ export function validate(x: unknown): string[] {
         typeof fm.forebear === 'string' &&
         Array.isArray(fm.lines) &&
         fm.lines.every((l) => typeof l === 'string') &&
-        typeof fm.coach === 'boolean'),
+        typeof fm.coach === 'boolean' &&
+        (fm.mentee === undefined ||
+          (isObj(fm.mentee) && typeof fm.mentee.name === 'string' && isInt(fm.mentee.grade)))),
     'family',
+  );
+  const mt = x.mentee;
+  need(
+    mt === null ||
+      (isObj(mt) &&
+        typeof mt.name === 'string' &&
+        isNum(mt.level) &&
+        [mt.sessions, mt.since, mt.last].every(isInt) &&
+        Array.isArray(mt.told) &&
+        mt.told.every(isInt)),
+    'mentee',
   );
   const ro = x.romance;
   need(

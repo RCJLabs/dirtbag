@@ -235,6 +235,14 @@ export const GUIDING = {
   outfit: { price: 3000, guides: 3, fee: 160, wage: 100, insurance: 25, resale: 0.6 },
 };
 
+// Phase 25.3 [proposed]. A mentee, after v0.956's (available at V5, two-hour sessions, its
+// grade capped at 5 and passed to an heir). A kid at Send City, from V`from`: a session's
+// two hours and `energy` add `gain` to their level, slower as they grow (half as fast at
+// `slow`), never past your own grade. Their shoes and fees are `weekly` with the bills. Left
+// alone `lapse` days they're warned to be drifting; twice that, they've gone. At your
+// retirement their grade passes on: `heir` skill a grade, on each, to the next climber.
+export const MENTEE = { from: 7, min: 120, energy: 8, gain: 0.35, slow: 8, weekly: 15, lapse: 14, heir: 4 };
+
 // Phase 25.1 [proposed]. Giving, after v0.956's food bank and access fund: once a week each,
 // a little psyche for the food bank and the old crowd's nod for the access fund. v0.956 gave a
 // food-bank day +10 psyche and a 5-day odds buff; here it's less, and nothing on the rock.

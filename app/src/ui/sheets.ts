@@ -222,6 +222,10 @@ import {
   type Gift,
   GUIDING,
   outfitBlocked,
+  MENTEE,
+  menteeCoachBlocked,
+  menteeName,
+  menteeTakeBlocked,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import type { Game, SheetId } from '../game/game';
@@ -460,6 +464,44 @@ function outfitRows(game: Game, s: GameState): Row[] {
         : 'A permit, a policy and the shop’s overflow. Your guides out on every open day.',
       off: !!why,
       run: () => game.outfitDo({ t: 'outfit', do: 'start' }),
+    },
+  ];
+}
+
+// The kid you coach (Phase 25.3): offered from V7, then a session a day and letting them go.
+function menteeRows(game: Game, s: GameState): Row[] {
+  const m = s.mentee;
+  if (!m) {
+    if (gradeOf(s.climber.skills) < MENTEE.from) return [];
+    const why = menteeTakeBlocked(s);
+    return [
+      {
+        label: `Coach ${menteeName(s)}`,
+        note: why
+          ? `${why}.`
+          : `A kid by the board who's been watching you. ${money(MENTEE.weekly)} a week for their shoes and fees.`,
+        off: !!why,
+        run: () => game.menteeDo({ t: 'mentee', do: 'take' }),
+      },
+    ];
+  }
+  const why = menteeCoachBlocked(s);
+  const grade = Math.floor(m.level);
+  const next = Math.round((m.level - grade) * 100);
+  return [
+    {
+      label: `A session with ${m.name}`,
+      cost: costLabel({ min: MENTEE.min, energy: -MENTEE.energy }),
+      note: why
+        ? `${why}.`
+        : `V${grade}, ${next}% of the way to V${grade + 1}. ${m.sessions} sessions so far.`,
+      off: !!why,
+      run: () => game.menteeDo({ t: 'mentee', do: 'coach' }),
+    },
+    {
+      label: `Let ${m.name} go`,
+      note: 'They’ll find someone else to climb with.',
+      run: () => game.menteeDo({ t: 'mentee', do: 'let' }),
     },
   ];
 }
@@ -1294,6 +1336,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             ? [ownGymRow(game, s), ...ownWallRows(game, s)]
             : [actRow(game, s, 'gym.pass'), ...actRows(game, s, 'gym.set'), ...buyGymRows(game, s)]),
           compRow(game, s),
+          // Phase 25.3: the kid you coach.
+          ...menteeRows(game, s),
           actRow(game, s, 'gym.shower'),
           trainRow(game, s),
           mapRow(game),
