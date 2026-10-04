@@ -58,13 +58,18 @@ export {
   compField,
   compOn,
   compSet,
+  goesFor,
   ladderPoints,
+  leagueNights,
+  leagueTable,
   nextComp,
   podiums,
   rungOpen,
+  seasonEnds,
+  yearOf,
   yourScore,
 } from './comps';
-export { COMP_TIERS } from './content/comps';
+export { COMP_LADDER, COMP_TIERS, DYNO_COMP, GAMES_TIER } from './content/comps';
 export { bolted, boltBlocked, businessRung, gymBuyBlocked, gymDay, gymTarget, wallWord } from './business';
 export { GYM_UPGRADE_NAME } from './content/business';
 export { capstone, ladderById, LADDERS, type Ladder, type LadderId } from './ladders';
@@ -167,6 +172,7 @@ export { tonight, runway } from './tonight';
 export {
   COACH,
   COMP,
+  LEAGUE,
   FLOOR,
   GIVING,
   GUIDING,

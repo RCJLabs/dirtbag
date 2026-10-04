@@ -129,6 +129,7 @@ import {
   runsToday,
   signedUp,
   dayName,
+  ordinal,
   JOBS,
   friendFor,
   PART_NAME,
@@ -203,6 +204,12 @@ import {
   COMP_TIERS,
   compBlocked,
   compOn,
+  goesFor,
+  COMP_LADDER,
+  LEAGUE,
+  leagueNights,
+  leagueTable,
+  yearOf,
   ladderPoints,
   yourScore,
   type Season,
@@ -385,7 +392,7 @@ function ladderNext(s: GameState, id: LadderId, at: number): string {
     return `${g.title}: ${d}.`;
   }
   if (id === 'comp') {
-    const t = COMP_TIERS[at];
+    const t = COMP_TIERS[COMP_LADDER[at] ?? -1];
     if (!t) return 'The Games.';
     return t.need
       ? `${t.name}, at ${t.need} points on the ladder; you’ve ${ladderPoints(s)}.`
@@ -568,7 +575,7 @@ function compRow(game: Game, s: GameState): Row {
     const you = yourScore(s);
     return {
       label: 'Hand in your scorecard',
-      note: `${you.tops} ${you.tops === 1 ? 'top' : 'tops'} in ${you.goes} ${you.goes === 1 ? 'go' : 'goes'} so far. A top counts in its first ${COMP.goes} goes.`,
+      note: `${you.tops} ${you.tops === 1 ? 'top' : 'tops'} in ${you.goes} ${you.goes === 1 ? 'go' : 'goes'} so far. A top counts in its first ${goesFor(on.tier)} goes.`,
       run: () => game.comp('finish'),
     };
   }
@@ -592,9 +599,32 @@ function compRow(game: Game, s: GameState): Row {
     cost: t.fee ? `$${t.fee}` : 'invitation',
     note: why
       ? `${why}.`
-      : `${t.field} climbers, problems V${t.grades[0]} to V${t.grades[1]}. ${money(t.purse[0])} to the winner. You have ${ladderPoints(s)} ladder points.`,
+      : t.side
+        ? `${t.field} climbers, ${t.side.n} throws V${t.grades[0]} to V${t.grades[1]}, ${t.side.goes} goes each. ${money(t.purse[0])} to the winner. Off the ladder: no points.`
+        : `${t.field} climbers, problems V${t.grades[0]} to V${t.grades[1]}. ${money(t.purse[0])} to the winner. You have ${ladderPoints(s)} ladder points.`,
     off: !!why,
     run: () => game.comp('enter'),
+  };
+}
+
+// League night's season so far (Phase 25.5), at Send City's desk.
+function leagueRow(game: Game, s: GameState): Row {
+  const year = yearOf(s.day);
+  const nights = leagueNights(year);
+  const gone = nights.filter(
+    (d) => d < s.day || (d === s.day && s.comps.results.some((x) => x.tier === 0 && x.day === d)),
+  ).length;
+  const table = leagueTable(s, year, nights[gone - 1] ?? 0);
+  const mine = table.findIndex((r) => r.you);
+  const lead = table[0];
+  return {
+    label: 'League table',
+    note: !gone
+      ? `The season's ${nights.length} League nights start ${dayName(nights[0]!)}, day ${nights[0]}.`
+      : mine >= 0
+        ? `${gone} of ${nights.length} nights in: you're ${ordinal(mine + 1)} of ${table.length}, ${table[mine]!.pts} points.`
+        : `${gone} of ${nights.length} nights in: ${lead!.name} leads on ${lead!.pts}. You're not on it yet.`,
+    run: () => game.openSheet({ k: 'league' }),
   };
 }
 
@@ -1079,6 +1109,32 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     }
 
     // Your guiding outfit (Phase 25.2): the till, the guides, selling up.
+    // League night's table (Phase 25.5).
+    case 'league': {
+      const year = yearOf(s.day);
+      const nights = leagueNights(year);
+      const last = [...nights]
+        .reverse()
+        .find((d) => d < s.day || s.comps.results.some((x) => x.tier === 0 && x.day === d));
+      const table = last ? leagueTable(s, year, last) : [];
+      const was = s.comps.seasons.at(-1);
+      return {
+        title: 'League night',
+        sub: `This season's table. A night is worth ${COMP_TIERS[0]!.field} points for a win and one fewer each place down; your best ${LEAGUE.best} of ${nights.length} count. Top of it on the last night takes ${money(LEAGUE.prize)}.`,
+        close: true,
+        lines: [
+          ...(table.length
+            ? table.map(
+                (r, i) =>
+                  `${i + 1}. ${r.you ? 'You' : r.name}: ${r.pts} (${r.nights} ${r.nights === 1 ? 'night' : 'nights'})`,
+              )
+            : ['No League night yet this season.']),
+          ...(was ? [`Last season you finished ${ordinal(was.place)} of ${was.of}.`] : []),
+        ],
+        rows: [{ label: 'Back', run: () => game.openSheet({ k: 'desk' }) }],
+      };
+    }
+
     case 'outfit': {
       const o = s.outfit;
       if (!o) return null;
@@ -1340,6 +1396,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             ? [ownGymRow(game, s), ...ownWallRows(game, s)]
             : [actRow(game, s, 'gym.pass'), ...actRows(game, s, 'gym.set'), ...buyGymRows(game, s)]),
           compRow(game, s),
+          leagueRow(game, s),
           // Phase 25.3: the kid you coach.
           ...menteeRows(game, s),
           actRow(game, s, 'gym.shower'),

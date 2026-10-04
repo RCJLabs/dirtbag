@@ -13,7 +13,7 @@ import {
   SET_SAYS,
   SET_WALLS,
 } from './content/setting';
-import { COMP_SAYS, COMP_TIERS } from './content/comps';
+import { COMP_SAYS, COMP_TIERS, LEAGUE_SAYS } from './content/comps';
 import { GYM_UPGRADE_SAYS } from './content/business';
 import { giveBlocked } from './giving';
 import { menteeAfter, menteeCoachBlocked, menteeName, menteeTakeBlocked } from './mentee';
@@ -43,7 +43,19 @@ import {
   tierEarned,
   todaysBest,
 } from './media';
-import { compBlocked, compField, compOn, compSet, placing, pointsFor, yourScore } from './comps';
+import {
+  compBlocked,
+  compField,
+  compOn,
+  compSet,
+  goesFor,
+  leagueTable,
+  placing,
+  pointsFor,
+  seasonEnds,
+  yearOf,
+  yourScore,
+} from './comps';
 import {
   coachRefused,
   coachSession,
@@ -208,6 +220,7 @@ import {
   COACH,
   HAUL,
   COMP,
+  LEAGUE,
   MEDIA,
   OWN_GYM,
   GYM_SET,
@@ -268,7 +281,7 @@ import { SPOT_LINE, SPOT_NAME } from './content/spots';
 import { bodgeHolds, breakdownRoll, friendFor, gasFor, PART_NAME, repairCost, unsafePart } from './van';
 import { BODGE_FAILED, BODGE_HELD, BREAKDOWN_LINE } from './content/van';
 import { speedBlocked, speedGains, speedLoad, speedTime, runsToday } from './speed';
-import { fill, money, skillsNote } from './format';
+import { fill, money, ordinal, skillsNote } from './format';
 import { PARTNERS, tierOf, whereIs, whereNow } from './presence';
 import { hashSeed, Rng } from './rng';
 import { actEndedBy, aimMet, currentGoal } from './story';
@@ -352,7 +365,7 @@ export function newGame(seed: string): GameState {
     leave: {},
     coach: null,
     haul: null,
-    comps: { on: null, points: [], results: [] },
+    comps: { on: null, points: [], results: [], seasons: [] },
     media: {
       followers: 0,
       engagement: MEDIA.engage.start,
@@ -769,6 +782,8 @@ export function act(s0: GameState, a: Action): Result {
     if (s.haul) bankHaul('You never clocked off; they paid you anyway.');
     // So is a comp's scorecard (Phase 18.4).
     if (s.comps.on) finishComp();
+    // League night's season settled on its last night (Phase 25.5), if you were in it.
+    if (seasonEnds(ended)) settleSeason(yearOf(ended), ended);
     mediaNight(ended);
     // A mentee left alone (Phase 25.3): warned, then gone.
     if (s.mentee) {
@@ -1610,8 +1625,6 @@ export function act(s0: GameState, a: Action): Result {
       }
     }
   };
-  const ordinal = (n: number) =>
-    `${n}${n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th'}`;
   // A comp's scorecard handed in (Phase 18.4): where you came against the field, the points
   // and the purse, and the result kept.
   const finishComp = () => {
@@ -1624,8 +1637,10 @@ export function act(s0: GameState, a: Action): Result {
     const pts = pointsFor(on.tier, place, t.field);
     const prize = t.purse[place - 1] ?? 0;
     s.comps = {
+      ...s.comps,
       on: null,
-      points: [...s.comps.points, { day: on.day, pts }],
+      // A side comp (Phase 25.5) puts nothing on the ladder.
+      points: t.side ? s.comps.points : [...s.comps.points, { day: on.day, pts }],
       results: [...s.comps.results, { tier: on.tier, day: on.day, place, of: t.field }],
     };
     if (prize) spend({ cash: prize });
@@ -1639,7 +1654,19 @@ export function act(s0: GameState, a: Action): Result {
             ? COMP_SAYS.final
             : COMP_SAYS.low;
     line(
-      `${t.name}: ${you.tops} ${you.tops === 1 ? 'top' : 'tops'} in ${you.goes} ${you.goes === 1 ? 'go' : 'goes'}, ${ordinal(place)} of ${t.field}. ${says} +${pts} ${pts === 1 ? 'point' : 'points'}${prize ? `, and ${money(prize)}` : ''}.`,
+      `${t.name}: ${you.tops} ${you.tops === 1 ? 'top' : 'tops'} in ${you.goes} ${you.goes === 1 ? 'go' : 'goes'}, ${ordinal(place)} of ${t.field}. ${says}${t.side ? (prize ? ` ${money(prize)}.` : '') : ` +${pts} ${pts === 1 ? 'point' : 'points'}${prize ? `, and ${money(prize)}` : ''}.`}`,
+    );
+  };
+  // League night's season (Phase 25.5): the year's table, if you were on it, and the prize.
+  const settleSeason = (year: number, day: number) => {
+    const table = leagueTable(s, year, day);
+    const place = table.findIndex((r) => r.you) + 1;
+    if (!place) return;
+    s.comps = { ...s.comps, seasons: [...s.comps.seasons, { year, place, of: table.length }] };
+    if (place === 1) spend({ cash: LEAGUE.prize });
+    const said = place === 1 ? LEAGUE_SAYS.won : place <= 3 ? LEAGUE_SAYS.podium : LEAGUE_SAYS.rest;
+    line(
+      `${fill(said, { place: ordinal(place), of: table.length })}${place === 1 ? ` ${money(LEAGUE.prize)}.` : ''}`,
     );
   };
   // The warehouse's picks banked (Phase 18.3): what's on the board for them, paid.
@@ -2454,7 +2481,7 @@ export function act(s0: GameState, a: Action): Result {
       const pass = INDOOR[s.at]?.pass;
       if (pass && !s.today.includes(pass)) s.today.push(pass);
       line(
-        `${t.name}: you're in, number ${t.field}. ${compSet(s.seed, tier, s.day).length} problems, V${t.grades[0]} to V${t.grades[1]}; a top counts in its first ${COMP.goes} goes.`,
+        `${t.name}: you're in, number ${t.field}. ${compSet(s.seed, tier, s.day).length} ${t.side ? 'throws' : 'problems'}, V${t.grades[0]} to V${t.grades[1]}; a top counts in its first ${goesFor(tier)} goes.`,
       );
       break;
     }
@@ -3395,7 +3422,7 @@ export function act(s0: GameState, a: Action): Result {
       }
       // A comp problem topped in its first few goes counts on your scorecard (Phase 18.4).
       const on = s.comps.on;
-      if (on && res.sent && !lap && r.id.startsWith(`cp-${on.tier}-${on.day}-`) && L.goes <= COMP.goes)
+      if (on && res.sent && !lap && r.id.startsWith(`cp-${on.tier}-${on.day}-`) && L.goes <= goesFor(on.tier))
         s.comps = { ...s.comps, on: { ...on, tops: { ...on.tops, [r.id]: L.goes } } };
       if (res.sent) {
         // The log keeps how the first send went; any send after it is a repeat.

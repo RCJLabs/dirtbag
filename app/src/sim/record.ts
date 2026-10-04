@@ -5,7 +5,7 @@
 import { gradeOf } from './climber';
 import { gradeOfPerson } from './curves';
 import { indoor, routeById } from './content/gym';
-import { COMP_TIERS } from './content/comps';
+import { DYNO_COMP, GAMES_TIER } from './content/comps';
 import { PLACES } from './content/places';
 import { RECORD, type RecordAim, type RecordEntry } from './content/record';
 import { rankAt } from './jobs';
@@ -59,11 +59,13 @@ export function aimEarned(s: GameState, aim: RecordAim, sent = sends(s)): boolea
   if ('guide' in aim) return Object.values(s.guides ?? {}).some((g) => g.out !== null);
   if ('quirk' in aim) return !!s.quirk;
   if ('given' in aim) return (s.giving?.total ?? 0) >= aim.given;
+  if ('league' in aim) return (s.comps?.seasons ?? []).some((x) => x.place === 1);
   if ('comp' in aim) {
     const r = s.comps?.results ?? [];
     if (aim.comp === 'entered') return r.length > 0;
     if (aim.comp === 'won') return r.some((x) => x.place === 1);
-    return r.some((x) => x.tier === COMP_TIERS.length - 1 && x.place <= 3);
+    if (aim.comp === 'dyno') return r.some((x) => x.tier === DYNO_COMP && x.place === 1);
+    return r.some((x) => x.tier === GAMES_TIER && x.place <= 3);
   }
   return false;
 }

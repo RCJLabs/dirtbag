@@ -94,3 +94,7 @@ export function skillsNote(t: Partial<Skills>): string {
 // weekend (cond.ts isWeekend) and the week's bills land on a Sunday night.
 const WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 export const dayName = (day: number): string => WEEKDAY[day % 7]!;
+
+// 1st, 2nd, 3rd, 4th, 11th, 12th, 13th, 21st.
+export const ordinal = (n: number): string =>
+  `${n}${n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th'}`;

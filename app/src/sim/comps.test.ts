@@ -69,7 +69,10 @@ describe('the comp ladder', () => {
   });
 
   it('fades points by half every so often, and lets you up the ladder on them', () => {
-    const s = base({ day: 100, comps: { on: null, points: [{ day: 100, pts: 30 }], results: [] } });
+    const s = base({
+      day: 100,
+      comps: { on: null, points: [{ day: 100, pts: 30 }], results: [], seasons: [] },
+    });
     expect(ladderPoints(s)).toBe(30);
     expect(ladderPoints({ ...s, day: 100 + COMP.half })).toBe(15);
     expect(rungOpen(s)).toBe(1);

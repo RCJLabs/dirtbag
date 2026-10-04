@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 54;
+export const SAVE_VERSION = 55;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -425,6 +425,12 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, team: null, teams: [] };
   },
+  // v54 -> v55 (Phase 25.5): no League night season settled yet.
+  54: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    if (!isObj(x.comps)) throw new Error('comps is not an object');
+    return { ...x, comps: { ...x.comps, seasons: [] } };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -606,7 +612,9 @@ export function validate(x: unknown): string[] {
       Array.isArray(c.points) &&
       c.points.every((p) => isObj(p) && isInt(p.day) && isInt(p.pts)) &&
       Array.isArray(c.results) &&
-      c.results.every((r) => isObj(r) && isInt(r.tier) && isInt(r.day) && isInt(r.place) && isInt(r.of)),
+      c.results.every((r) => isObj(r) && isInt(r.tier) && isInt(r.day) && isInt(r.place) && isInt(r.of)) &&
+      Array.isArray(c.seasons) &&
+      c.seasons.every((x) => isObj(x) && isInt(x.year) && isInt(x.place) && isInt(x.of)),
     'comps',
   );
   const md = x.media;

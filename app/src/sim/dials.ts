@@ -129,6 +129,10 @@ export const COACH = {
 // closes at `close`; the field's chance of a top rises with grade over the problem's,
 // `steep` per grade; ladder points fade by half every `half` days.
 export const COMP = { goes: 5, close: 13 * 60, steep: 1.4, half: 56 };
+// Phase 25.5 [proposed]. League night's season: the year's eight nights, a night's points the
+// field's size less one a place, the `best` six counting (two missed nights don't sink you).
+// Top of the table when it's settled, on the year's last League night, pays `prize`.
+export const LEAGUE = { best: 6, prize: 250 };
 
 // Phase 18.5 [proposed]. Followers from a post: `k` × the worth of today's best send (its
 // grade plus two, to the power `pow`; more outside, on a first go, or a first ascent) × how

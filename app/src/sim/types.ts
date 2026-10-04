@@ -79,6 +79,9 @@ export interface GameState {
     on: { tier: number; day: number; tops: Record<string, number> } | null;
     points: { day: number; pts: number }[];
     results: { tier: number; day: number; place: number; of: number }[];
+    // Phase 25.5 (save v55): League night's seasons, settled: the year, your place on its
+    // table, and how many were on it.
+    seasons: { year: number; place: number; of: number }[];
   };
   // Phase 18.5 (save v49): followers and how engaged they are, the day you last posted (and
   // last baited), a sponsor and this cycle's asks, an offer waiting, a thread to answer, the

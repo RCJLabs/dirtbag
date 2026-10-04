@@ -1240,7 +1240,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     const grade = gradeOf(s.climber.skills);
     for (let i = COMP_TIERS.length - 1; i >= 0; i--) {
       const t = COMP_TIERS[i]!;
-      if (compOn(day, t.venue) !== i || grade < t.grades[0]) continue;
+      if (t.side || compOn(day, t.venue) !== i || grade < t.grades[0]) continue;
       const at = { ...s, day, at: t.venue, min: 9 * 60, cash: money ? s.cash : Infinity };
       if (compBlocked({ ...at, comps: { ...s.comps, on: null } })) continue;
       // A comp's worth a thin day for it: the fee and a night's food over.

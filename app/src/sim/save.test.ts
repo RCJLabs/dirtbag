@@ -84,6 +84,9 @@ const V50 = readFileSync(new URL('./fixtures/save-v50.json', import.meta.url), '
 const V51 = readFileSync(new URL('./fixtures/save-v51.json', import.meta.url), 'utf8');
 const V52 = readFileSync(new URL('./fixtures/save-v52.json', import.meta.url), 'utf8');
 const V53 = readFileSync(new URL('./fixtures/save-v53.json', import.meta.url), 'utf8');
+const V54 = readFileSync(new URL('./fixtures/save-v54.json', import.meta.url), 'utf8');
+// And Phase 25.5's: no League night season settled, on a save that had comps.
+const seasoned = (st: { comps: object }) => ({ ...st, comps: { ...st.comps, seasons: [] } });
 // What R2's migration adds to any older save.
 const R2_BODY = {
   load: { acute: 20, chronic: 20, today: 0 },
@@ -152,7 +155,7 @@ const P226A = {
   leave: {},
   coach: null,
   haul: null,
-  comps: { on: null, points: [], results: [] },
+  comps: { on: null, points: [], results: [], seasons: [] },
   media: expect.objectContaining({ followers: 0, sponsor: null, offer: null }),
   gym: null,
   bolted: [],
@@ -649,7 +652,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
-      comps: { on: null, points: [], results: [] },
+      comps: { on: null, points: [], results: [], seasons: [] },
       media: expect.objectContaining({ followers: 0, sponsor: null, offer: null }),
       gym: null,
       bolted: [],
@@ -696,7 +699,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
-      comps: { on: null, points: [], results: [] },
+      comps: { on: null, points: [], results: [], seasons: [] },
       media: expect.objectContaining({ followers: 0, sponsor: null, offer: null }),
       gym: null,
       bolted: [],
@@ -742,7 +745,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
-      comps: { on: null, points: [], results: [] },
+      comps: { on: null, points: [], results: [], seasons: [] },
       media: expect.objectContaining({ followers: 0, sponsor: null, offer: null }),
       gym: null,
       bolted: [],
@@ -787,7 +790,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
-      comps: { on: null, points: [], results: [] },
+      comps: { on: null, points: [], results: [], seasons: [] },
       media: expect.objectContaining({ followers: 0, sponsor: null, offer: null }),
       gym: null,
       bolted: [],
@@ -831,7 +834,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
-      comps: { on: null, points: [], results: [] },
+      comps: { on: null, points: [], results: [], seasons: [] },
       media: expect.objectContaining({ followers: 0, sponsor: null, offer: null }),
       gym: null,
       bolted: [],
@@ -874,7 +877,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
-      comps: { on: null, points: [], results: [] },
+      comps: { on: null, points: [], results: [], seasons: [] },
       media: expect.objectContaining({ followers: 0, sponsor: null, offer: null }),
       gym: null,
       bolted: [],
@@ -928,7 +931,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
-      comps: { on: null, points: [], results: [] },
+      comps: { on: null, points: [], results: [], seasons: [] },
       media: expect.objectContaining({ followers: 0, sponsor: null, offer: null }),
       gym: null,
       bolted: [],
@@ -970,7 +973,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
-      comps: { on: null, points: [], results: [] },
+      comps: { on: null, points: [], results: [], seasons: [] },
       media: expect.objectContaining({ followers: 0, sponsor: null, offer: null }),
       gym: null,
       bolted: [],
@@ -1012,7 +1015,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
-      comps: { on: null, points: [], results: [] },
+      comps: { on: null, points: [], results: [], seasons: [] },
       media: expect.objectContaining({ followers: 0, sponsor: null, offer: null }),
       gym: null,
       bolted: [],
@@ -1052,7 +1055,7 @@ describe('saves', () => {
       leave: {},
       coach: null,
       haul: null,
-      comps: { on: null, points: [], results: [] },
+      comps: { on: null, points: [], results: [], seasons: [] },
       media: expect.objectContaining({ followers: 0, sponsor: null, offer: null }),
       gym: null,
       bolted: [],
@@ -1631,7 +1634,7 @@ describe('saves', () => {
     expect(r.from).toBe(47);
     const { comps, media, gym, bolted, giving, guides, outfit, mentee, team, teams, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V47).state);
-    expect(comps).toEqual({ on: null, points: [], results: [] });
+    expect(comps).toEqual({ on: null, points: [], results: [], seasons: [] });
     expect(r.state.coach!.clients[0]!.name).toBe('Kai');
   });
 
@@ -1641,7 +1644,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(48);
     const { media, gym, bolted, giving, guides, outfit, mentee, team, teams, ...rest } = r.state;
-    expect(rest).toEqual(JSON.parse(V48).state);
+    expect(rest).toEqual(seasoned(JSON.parse(V48).state));
     expect(media).toMatchObject({ followers: 0, sponsor: null, offer: null, doc: null });
     expect(r.state.comps.results[0]!.place).toBe(1);
   });
@@ -1652,7 +1655,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(49);
     const { gym, bolted, giving, guides, outfit, mentee, team, teams, ...rest } = r.state;
-    expect(rest).toEqual(JSON.parse(V49).state);
+    expect(rest).toEqual(seasoned(JSON.parse(V49).state));
     expect(gym).toBeNull();
     expect(bolted).toEqual([]);
     expect(r.state.media.followers).toBe(2400);
@@ -1665,7 +1668,7 @@ describe('saves', () => {
     expect(r.from).toBe(50);
     const { giving, guides, outfit, mentee, team, teams, record, ...rest } = r.state;
     const { record: was, ...old } = JSON.parse(V50).state;
-    expect(rest).toEqual(old);
+    expect(rest).toEqual(seasoned(old));
     expect(giving).toEqual({ total: 0, food: 0, access: 0 });
     expect(guides).toEqual({});
     expect(outfit).toBeNull();
@@ -1680,7 +1683,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(51);
     const { outfit, mentee, team, teams, ...rest } = r.state;
-    expect(rest).toEqual(JSON.parse(V51).state);
+    expect(rest).toEqual(seasoned(JSON.parse(V51).state));
     expect(outfit).toBeNull();
     expect(r.state.guides.road!.out).toBe(80);
   });
@@ -1691,7 +1694,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(52);
     const { mentee, team, teams, ...rest } = r.state;
-    expect(rest).toEqual(JSON.parse(V52).state);
+    expect(rest).toEqual(seasoned(JSON.parse(V52).state));
     expect(mentee).toBeNull();
     expect(r.state.outfit?.guides).toBe(2);
   });
@@ -1702,11 +1705,21 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(53);
     const { team, teams, ...rest } = r.state;
-    expect(rest).toEqual(JSON.parse(V53).state);
+    expect(rest).toEqual(seasoned(JSON.parse(V53).state));
     expect(team).toBeNull();
     expect(teams).toEqual([]);
     expect(r.state.mentee?.name).toBe('Fen');
     expect(r.state.book[0]!.end).toBe('summit');
+  });
+
+  it('load a real 0.999.29 save: its team away and its League nights kept, no season settled', () => {
+    const r = fromSave(V54);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(54);
+    expect(r.state).toEqual(seasoned(JSON.parse(V54).state));
+    expect(r.state.team?.names).toEqual(['Ana', 'Wes']);
+    expect(r.state.comps.results).toHaveLength(2);
   });
 
   // These pretend a longer history: a v1 file that stored `money` where the state now has
@@ -1716,7 +1729,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(54);
+    expect(SAVE_VERSION).toBe(55);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

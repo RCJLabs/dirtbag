@@ -3,7 +3,7 @@
 // system (the story, comps, media, the business); this only reads them.
 
 import { businessRung } from './business';
-import { COMP_TIERS } from './content/comps';
+import { COMP_LADDER, COMP_TIERS } from './content/comps';
 import { JOBS } from './content/jobs';
 import { SPONSORS } from './content/media';
 import { MEDIA, OWN_GYM } from './dials';
@@ -25,7 +25,9 @@ export interface Ladder {
 // Comps: each rung once you've competed at it; the Games, by invitation, on top. A podium
 // there is the Record Book's, not the ladder's: the comp bots make the Games at V13 or so and
 // place sixth at best (Phase 18.7).
-const compAt = (s: GameState): number => s.comps.results.reduce((a, r) => Math.max(a, r.tier + 1), 0);
+// The highest rung you've competed on; the side comps aren't rungs (Phase 25.5).
+const compAt = (s: GameState): number =>
+  s.comps.results.reduce((a, r) => Math.max(a, COMP_LADDER.indexOf(r.tier) + 1), 0);
 
 export const LADDERS: Ladder[] = [
   {
@@ -38,7 +40,7 @@ export const LADDERS: Ladder[] = [
   {
     id: 'comp',
     name: 'Comps',
-    rungs: () => COMP_TIERS.map((t) => t.name),
+    rungs: () => COMP_LADDER.map((i) => COMP_TIERS[i]!.name),
     at: compAt,
   },
   {

@@ -34,7 +34,9 @@ export type RecordAim =
   | { rival: true }
   | { retired: true }
   // Phase 18.4: a comp finished, won, or a podium at the Games.
-  | { comp: 'entered' | 'won' | 'games' }
+  | { comp: 'entered' | 'won' | 'games' | 'dyno' }
+  // Phase 25.5: League night's season won.
+  | { league: true }
   // Phase 18.5: followers, a sponsor at a tier or better, the film.
   | { followers: number }
   | { sponsor: number }
@@ -336,6 +338,24 @@ export const RECORD: RecordEntry[] = [
     story: 'A podium at the Games. Every gym you ever paid a day pass at would claim you, if they knew.',
     from: ['k8:olymedal'],
     aim: { comp: 'games' },
+  },
+  {
+    id: 'dynocomp',
+    title: 'Big Throw',
+    desc: 'Win the Fall Festival dyno comp.',
+    story:
+      'The last throw, the one nobody else stuck, and a whole gym holding its breath while you hung there. Somebody filmed it sideways. You’ve watched it more times than you’ll admit.',
+    from: [],
+    aim: { comp: 'dyno' },
+  },
+  {
+    id: 'league',
+    title: 'Season Champion',
+    desc: 'Top League night’s table for a season.',
+    story:
+      'Eight Thursday nights, a whiteboard by the desk, and your name at the top of it in somebody’s good marker. Nobody outside Send City will ever know. Everybody inside it does.',
+    from: [],
+    aim: { league: true },
   },
   {
     id: 'trait',

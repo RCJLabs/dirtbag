@@ -2783,6 +2783,23 @@ Players will ask "what am I working towards?" by hour 3.
 - **No harness run:** the bots don't fund teams. Forty seeded El Cap teams summit within 0.2 of the odds they left with (a test).
 - **Seen:** the Expeditions sheet with two rows, then a team away, from a loaded save in Chromium.
 
+**Status (4 Oct 2026): 25.5 built: comps outside the ladder.** Save v55, 0.999.30. Evan's calls: the dyno comp is the Fall Festival, yearly; the league is League night's season. Numbers [proposed] in `content/comps.ts` and `LEAGUE`; rules in `comps.ts`.
+- **The Fall Festival dyno comp:** day 13 of every year (the fall) at Send City, signed up for at the desk like any comp.
+  - Five throws from V2 to V10, each further than the last: one-crux dynos of three or four moves, climbed with the real go (v0.956 rolled dice).
+  - A top counts in its first three goes. A field of 12, $15 to enter, $300, $150 and $75.
+  - Off the ladder: no points, never a rung, not on the ladders screen. Its win also counts as Top Step's comp win.
+  - Played by the bot's hands: a V3 climber sticks the first two, V6 four, V9 all five.
+- **League night's season:** the year's eight Thursday nights.
+  - The same nine faces all year (drawn once a year), each night rolling its own tops, so a table means something.
+  - A night is worth 10 points for a win, one fewer a place down; your best six of eight count.
+  - A "League table" row at Send City's desk, and the table itself.
+  - Settled the night of the year's last League night if you were on it: your place, $250 for the top.
+- **Two Record Book entries:** Big Throw (win the dyno comp) and Season Champion (top a season).
+- **Underneath:** the comps list keeps the dyno comp at the end, so saved results keep their rungs; the ladder, its rungs, the Games' podium and the comp bot all read only the ladder's five.
+- **Save v55:** `comps.seasons`; a real v54 save loads.
+- **Harness:** League night's field is new, so it ran. The comp bot reaches the Games 4/4 on a median day 218, as in 18.7. The other comps draw their fields exactly as before. Outdoors shows 2/4 on these four seeds, the shortfall Evan accepted (5/8 in 18.7); its bot never enters a comp, so this change can't move it. The bots don't enter the dyno comp.
+- **Seen:** Send City's desk on the dyno comp's day, and the League table, from a loaded save in Chromium. A first look showed the table in the warning color; it's plain lines now.
+
 ## Stage D — Get it in front of people
 
 *Moved here by Evan's call (29 Sep 2026): the whole game gets built first, and the Steam build, the demo and the store page come after it. The phase numbers stay as they were, so older references still find them.*
@@ -3080,3 +3097,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-04 — Phase 25.2 built: guiding, a sixth job with its own day to plan, and an outfit of your own at Lead guide; Phase 25's slices planned with Evan's calls. Save v52. 0.999.27.
 - 2026-10-04 — Phase 25.3 built: the mentee, a kid you coach at Send City from V7 whose grade passes to an heir as a head start; a Record Book entry. Save v53. 0.999.28.
 - 2026-10-04 — Phase 25.4 built: an expedition team, a young pair's trip you pay for to an objective you've summited, their odds from your trips there and its weather; a Record Book entry. Save v54. 0.999.29.
+- 2026-10-04 — Phase 25.5 built: comps outside the ladder, the Fall Festival dyno comp once a year and League night's season table (Evan's calls); two Record Book entries. Save v55. 0.999.30.
