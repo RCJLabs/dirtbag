@@ -2800,6 +2800,20 @@ Players will ask "what am I working towards?" by hour 3.
 - **Harness:** League night's field is new, so it ran. The comp bot reaches the Games 4/4 on a median day 218, as in 18.7. The other comps draw their fields exactly as before. Outdoors shows 2/4 on these four seeds, the shortfall Evan accepted (5/8 in 18.7); its bot never enters a comp, so this change can't move it. The bots don't enter the dyno comp.
 - **Seen:** Send City's desk on the dyno comp's day, and the League table, from a loaded save in Chromium. A first look showed the table in the warning color; it's plain lines now.
 
+**Status (4 Oct 2026): 25.6 built: the people.** Save v56, 0.999.31. Evan's calls: crew drama is a choice, a rift and a mend; the crowd is tapped. Numbers [proposed] in `CREW`; rules in `crew.ts`, `texts.ts`, `keepers.ts` and `crowdtalk.ts`; words in `content/crew.ts`, `texts.ts`, `keepers.ts` and `crowd.ts`.
+- **Crew drama,** once a life, from day 28.
+  - The two of Sage, Mara, Rico and Tam you're closest to, both Regulars and around: the closer asks for the weekend you'd promised the other. Each asks in their own voice.
+  - Go with them, or keep your word. Whoever you let down loses 2 bond and is away a week.
+  - After that, they won't come where the other is. The crew's days never cross on their own (measured: Sage, Mara, Rico and Tam never share a place unasked), so it bites on invites: ask both to the same crag and one won't come.
+  - Three weeks on, the one you picked asks about it. Getting them both to the fire works at 40%, 15% more a tier you've rebuilt with the one you let down. It mends (both +1 bond) or sets for good. Leaving it asks again three weeks later.
+- **Busy texts:** "Text the crew" at the van. Each partner you know answers with where and when they'll be out, or why not, in their own words: six each, walked by the seed (v0.956 had two or three, turned by the day). A stint away or hurt, and a week's sulk after a falling-out, have their own lines. In the evening, with nothing left of today, they answer for tomorrow.
+- **The shops' small talk:** the diner, the gear shop, the café, the market, the garage and the clinic each say what's going on today when you're there: their old line and five or six others, plus one to three only when true (rain, an injury, winter, a worn tire). Walked by the seed, a day at a time.
+- **The crowd:** the strangers at a busy crag are tappable, and each has a line: 11 for any day, 6 more only when true (the heat, the cold, a prime day, and two that recognize you from V9 and V11). Five a day, then they're back on their own projects. They stand in front of the lines, so a tap on one is for them; the line above still opens its card. The screen reader names each "Someone in the crowd".
+- **Save v56:** `crew`, and a partner's `avoid`; a real v55 save loads.
+- **Harness:** every target as in 25.5: the social bot sees something new every week to day 300 in 8 of 8 runs; comps, media and business 4/4; outdoors the accepted 2/4 on four seeds. It doesn't report whether the social bot met crew drama, so how often a player does is unmeasured; the texts, the shops and the crowd are text only.
+- **The e2e:** its café and diner checks read the old fixed lines; now Wren, and the Diner's card.
+- **Seen:** the crew's texts at the van, the Gorge's crowd and a stranger's line, Mara's ask with its two answers, and the diner's line, from loaded saves in Chromium.
+
 ## Stage D — Get it in front of people
 
 *Moved here by Evan's call (29 Sep 2026): the whole game gets built first, and the Steam build, the demo and the store page come after it. The phase numbers stay as they were, so older references still find them.*
@@ -3098,3 +3112,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-04 — Phase 25.3 built: the mentee, a kid you coach at Send City from V7 whose grade passes to an heir as a head start; a Record Book entry. Save v53. 0.999.28.
 - 2026-10-04 — Phase 25.4 built: an expedition team, a young pair's trip you pay for to an objective you've summited, their odds from your trips there and its weather; a Record Book entry. Save v54. 0.999.29.
 - 2026-10-04 — Phase 25.5 built: comps outside the ladder, the Fall Festival dyno comp once a year and League night's season table (Evan's calls); two Record Book entries. Save v55. 0.999.30.
+- 2026-10-04 — Phase 25.6 built: the people (Evan's calls): crew drama, a choice, a rift and a mend; the crew's texts back; the shops' small talk; a word from the crowd at a busy crag. Save v56. 0.999.31.

@@ -28,6 +28,7 @@ export function hotLabel(s: GameState, h: Hot): string {
   if ('talk' in u) return PEOPLE[TALK[u.talk]?.who ?? '']?.name ?? 'Someone';
   if ('thing' in u) return u.thing === 'scout' && s.dog ? s.dog.name : (THINGS[u.thing]?.name ?? 'Something');
   if ('wall' in u) return WALLS[u.wall]?.name ?? 'A wall';
+  if ('crowd' in u) return 'Someone in the crowd';
   if ('route' in u) {
     const r = routeOfId(s, u.route);
     return r ? `${lineName(s, r)}, ${lineGrade(s, r)}${s.routes[r.id]?.sent ? ', sent' : ''}` : 'A line';

@@ -1,7 +1,8 @@
 // Where things are on screen. The rules never see any of this: scenes, hotspots and pins
 // are staging, keyed to content ids so the painters and the sim meet only through ids.
 
-import { whereNow, type GameState } from '../sim';
+import { whereNow, type Crowd, type GameState } from '../sim';
+import { mulberry32 } from './kit/noise';
 
 // A portrait phone screen in logical pixels; the page scales it to fit the device. The
 // screen is always H tall. It is W wide in portrait, and on a wider window it widens to
@@ -40,7 +41,9 @@ export type Use =
   | { thing: string; wag?: true }
   | { route: string }
   | { problem: number }
-  | { wall: string };
+  | { wall: string }
+  // Phase 25.6: one of the strangers at a busy crag.
+  | { crowd: number };
 
 export interface Hot {
   x0: number;
@@ -619,3 +622,32 @@ export const screenToMap = (x: number, y: number): [number, number] => [
   W / 2 + (x - W / 2) / MAP_K,
   MAP_FIT.from + (y - MAP_FIT.top) / MAP_K,
 ];
+
+// Phase 25.6: the strangers at a crag, the same ones all day: as many as the crowd, each by
+// a line or a boulder, facing one way or the other, some sitting. Drawn and tapped alike.
+export interface Stranger {
+  x: number;
+  dir: 1 | -1;
+  sit: boolean;
+}
+export function strangersAt(place: string, crag: CragSpec, day: number, crowd: Crowd): Stranger[] {
+  const n = { empty: 0, quiet: 1, busy: 3, packed: 5 }[crowd];
+  const spots = [...crag.lines.map((l) => l.x), ...crag.boulders.map((b) => b.x)];
+  const r = mulberry32(day * 131 + place.length * 17 + spots.length);
+  const out: Stranger[] = [];
+  for (let i = 0; i < n && spots.length; i++) {
+    const x = spots.splice(Math.floor(r() * spots.length), 1)[0]! + (r() - 0.5) * 36;
+    out.push({ x, dir: r() < 0.5 ? -1 : 1, sit: r() < 0.25 });
+  }
+  return out;
+}
+
+export const strangerHot = (p: Stranger, i: number): Hot => ({
+  x0: p.x - 14,
+  x1: p.x + 14,
+  y0: GND - 64,
+  y1: GND + 8,
+  stand: p.x - p.dir * 34,
+  face: p.dir > 0 ? -1 : 1,
+  use: { crowd: i },
+});

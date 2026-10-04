@@ -127,6 +127,9 @@ export interface GameState {
   // Phase 25.4 (save v54): a team you've paid to go, away now (where, who, the day they left,
   // the last day away, and their odds as you paid), and every team come home.
   team: { id: string; names: [string, string]; left: number; back: number; odds: number } | null;
+  // Phase 25.6 (save v56): crew drama, once it's happened: the one you picked, the one you
+  // let down, the day it happened (or was last left alone), and where it stands.
+  crew: { a: string; b: string; day: number; stage: 'rift' | 'mended' | 'set' } | null;
   teams: { id: string; day: number; summit: boolean; high: number }[];
   // How you live (dials.ts LIFESTYLE): paid at the van every night.
   lifestyle: 'dirtbag' | 'comfortable' | 'plush';
@@ -426,6 +429,8 @@ export interface PersonLog {
   heard?: number;
   // And of their nights on a wall's portaledge (save v45).
   ledge?: number;
+  // Crew drama (Phase 25.6, save v56): someone they've fallen out with, and keep away from.
+  avoid?: string;
 }
 
 // How a line's first send went, kept in its log.

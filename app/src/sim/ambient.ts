@@ -9,7 +9,7 @@ import { Rng } from './rng';
 import type { GameState } from './types';
 
 // The kth line of a pool, walking a seeded shuffle of it.
-function walk(seed: string, key: string, pool: readonly string[], k: number): string {
+export function walk(seed: string, key: string, pool: readonly string[], k: number): string {
   const order = pool.map((_, i) => i);
   const r = Rng.fromStream(seed, 'events').derive(`ambient-${key}`);
   for (let i = order.length - 1; i > 0; i--) {

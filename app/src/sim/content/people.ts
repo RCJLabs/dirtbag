@@ -10,6 +10,7 @@ import { arcNodes, arcStarts } from './arcs';
 import { FIRE_ASK, GIFTS } from './gifts';
 import { money } from '../format';
 import { romanceNodes, romanceStarts } from './romance';
+import { crewNodes, crewStarts } from './crew';
 import { PLACES } from './places';
 import type { Delta, Skills } from '../types';
 
@@ -40,6 +41,8 @@ export interface TalkFx {
   away?: number;
   // They'll meet you at this place today.
   invite?: string;
+  // Crew drama (Phase 25.6): you go with them, keep your word to `with`, try to mend it, or leave it.
+  crew?: { do: 'pick' | 'keep' | 'mend' | 'leave'; with: string };
 }
 
 export interface TalkOpt {
@@ -259,11 +262,14 @@ export const TALK: Record<string, TalkDef> = {
       { when: { arc: 'sage/4', outside: true }, node: 'beat-4' },
       // A romance after the arc's due beats (Phase 17.4): a friend's moment comes first.
       ...romanceStarts('sage'),
+      // Crew drama (Phase 25.6).
+      ...crewStarts('sage'),
       { when: { today: 'sage' }, node: 'done' },
       { node: 'again' },
     ],
     nodes: {
       ...romanceNodes('sage'),
+      ...crewNodes('sage'),
       meet: {
         text: "You're the one Hazel says keeps staring at The Pump. I'm Sage. I climb slow and I read everything first.",
         opts: [
@@ -523,10 +529,12 @@ export const TALK: Record<string, TalkDef> = {
 
       ...arcStarts('mara'),
       ...romanceStarts('mara'),
+      ...crewStarts('mara'),
       { node: 'again' },
     ],
     nodes: {
       ...romanceNodes('mara'),
+      ...crewNodes('mara'),
       ...arcNodes('mara'),
       meet: {
         text: 'A woman on the next line lowers off, looks at your chalk bag, then at you. "Mara. You’re on my warm-up." She doesn’t move you off it. "Go on, then. Don’t celebrate if you get it."',
@@ -548,9 +556,15 @@ export const TALK: Record<string, TalkDef> = {
   },
   rico: {
     who: 'rico',
-    start: [{ when: { notMet: 'rico' }, node: 'meet' }, ...arcStarts('rico'), { node: 'again' }],
+    start: [
+      { when: { notMet: 'rico' }, node: 'meet' },
+      ...arcStarts('rico'),
+      ...crewStarts('rico'),
+      { node: 'again' },
+    ],
     nodes: {
       ...arcNodes('rico'),
+      ...crewNodes('rico'),
       meet: {
         text: 'Someone in a sleeveless tee is hanging off the steepest thing here by one heel, arguing with it. He drops, sees you watching, and grins. "Rico. You want next go? It’s horrible. You’ll love it."',
         opts: [
@@ -575,10 +589,12 @@ export const TALK: Record<string, TalkDef> = {
       { when: { notMet: 'tam' }, node: 'meet' },
       { when: { life: 'tam/1' }, node: 'slowing' },
       ...arcStarts('tam'),
+      ...crewStarts('tam'),
       { node: 'again' },
     ],
     nodes: {
       ...arcNodes('tam'),
+      ...crewNodes('tam'),
       slowing: {
         calls: true,
         text: 'Tam takes the first pitch slower than you’ve seen him take anything, and doesn’t pretend otherwise. At the ledge he says, "The good seasons are getting shorter. Or I am."',

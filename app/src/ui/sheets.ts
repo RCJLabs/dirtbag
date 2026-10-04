@@ -205,6 +205,9 @@ import {
   compBlocked,
   compOn,
   goesFor,
+  crewTexts,
+  crewToText,
+  keeperLine,
   COMP_LADDER,
   LEAGUE,
   leagueNights,
@@ -1048,6 +1051,16 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             note: weekNote(s),
             run: () => game.openSheet({ k: 'week' }),
           },
+          // Phase 25.6: who's out, and where, or why not.
+          ...(crewToText(s).length
+            ? [
+                {
+                  label: 'Text the crew',
+                  note: 'Who’s out, where and when, or why not.',
+                  run: () => game.openSheet({ k: 'texts' }),
+                },
+              ]
+            : []),
           {
             label: 'Your guides',
             note: Object.values(s.guides).some((g) => g.out !== null)
@@ -1109,6 +1122,16 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     }
 
     // Your guiding outfit (Phase 25.2): the till, the guides, selling up.
+    // The crew's texts back (Phase 25.6).
+    case 'texts':
+      return {
+        title: 'Text the crew',
+        sub: 'You send the same text to everyone: "Climbing?"',
+        close: true,
+        lines: crewTexts(s),
+        rows: [{ label: 'Back', run: () => game.openSheet({ k: 'van' }) }],
+      };
+
     // League night's table (Phase 25.5).
     case 'league': {
       const year = yearOf(s.day);
@@ -1429,7 +1452,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       const min = here ? s.min : s.min + (road(s.at, id.id)?.min ?? 0);
       const head = { place: id.id, min, say: `${p.name}, ${clockShort(min)}.` };
       const who = p.scene ? whoAround(s, id.id, min) : undefined;
-      const sub = fill(here ? p.here : p.away, {
+      // A shop in town, when you're in it, says what's going on today (Phase 25.6).
+      const sub = fill(here ? (keeperLine(s, id.id) ?? p.here) : p.away, {
         ...TEXT_VALUES,
         lines: Object.values(ROUTES).filter((r) => r.place === id.id).length,
       });
