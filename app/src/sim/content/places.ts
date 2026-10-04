@@ -410,6 +410,7 @@ export const PLACES: Record<string, PlaceDef> = {
       'shop.usedShoes',
       'shop.usedPad',
       'shop.usedRack',
+      'shop.guide',
     ],
   },
   cafe: {
@@ -970,6 +971,23 @@ export const ACTS: Record<string, ActDef> = {
   },
   // v0.956's Cave job: coaching, four hours at $34, training head and technique. Nobody
   // pays for coaching from someone who can't climb [proposed: V5 to start].
+  // Phase 25.2: a day out with the shop's clients at Roadside.
+  'shop.guide': {
+    label: 'Guide a day at Roadside',
+    cost: { min: 300, cash: 50, energy: -26, fed: -12 },
+    needs: [
+      oneShift,
+      { grade: 6, why: 'The shop wants guides who climb V6.' },
+      ...onSchedule('guide'),
+      { before: 10 * 60, why: 'Clients meet at the shop by {t}.' },
+      { energy: 26, why: 'Too tired to look after anyone on a rope.' },
+    ],
+    note: 'A whole day out. Clients tip, and the best days are the ones where they send.',
+    sets: ['worked'],
+    trains: { head: 1, technique: 1 },
+    job: { id: 'guide', shifts: 1 },
+    says: 'A day of tying knots for other people, and saying "nice" like you mean it. You mean it.',
+  },
   'cave.coach': {
     label: 'Coach a session',
     cost: { min: 240, cash: 34, energy: -18, fed: -10 },

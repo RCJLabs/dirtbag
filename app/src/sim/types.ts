@@ -108,6 +108,9 @@ export interface GameState {
   // each; the guides you're writing or have out, by crag (pages written, the day it came out).
   giving: { total: number; food: number; access: number };
   guides: Record<string, { pages: number; out: number | null }>;
+  // Phase 25.2 (save v52): your guiding outfit, once you've started one: since when, how many
+  // guides, the till and yesterday's take.
+  outfit: { since: number; guides: number; till: number; last: number } | null;
   // How you live (dials.ts LIFESTYLE): paid at the van every night.
   lifestyle: 'dirtbag' | 'comfortable' | 'plush';
   // Phase 22.2b. Where you park for the night (dials.ts SPOTS), nights in a row at the Lot
@@ -470,6 +473,7 @@ export type Play =
   | { queue: number[] }
   | { tables: number[][] }
   | { coach: ('burns' | 'drill' | 'head' | 'rest')[] }
+  | { guide: string[] }
   | { haul: true };
 
 export type Action =
@@ -493,6 +497,8 @@ export type Action =
   | { t: 'bolt'; route: string }
   // Phase 25.1: a gift to the food bank or the access fund; an evening on a crag's guide.
   | { t: 'give'; to: 'food' | 'access' }
+  // Phase 25.2: your own guiding outfit: started, a guide hired or let go, the till, sold.
+  | { t: 'outfit'; do: 'start' | 'hire' | 'fire' | 'draw' | 'sell' }
   | { t: 'guide'; place: string }
   // `carry`: a v0.956 climber's skills, when they come across rather than picking a start.
   | { t: 'create'; name: string; start: string; origin?: string; carry?: Skills; solo?: true }

@@ -207,6 +207,34 @@ export const OWN_GYM = {
 // Setting your own wall takes a shift's hours and legs.
 export const GYM_SET = { min: 240, energy: 22 };
 
+// Phase 25.2 [proposed]. Guiding, after v0.956's guide days (V5 and some standing; 2 or 3
+// clients; 5 hours, 26 energy; $50 plus $14 a grade of the client's goal). A day's clients,
+// `clients` by rank, each with a goal in `goal0` (a grade higher a rank, never past the crag's
+// hardest line) and climbing a grade or two under it, some nervous;
+// you put each on a different line at `crag`, up to `maxGrade`. A line under their level by
+// more than one bores them (`bored`); one past their goal frightens them (`scared`, none if
+// nervous); in between is a good day (1). Their goal is worth 1 + `goal` if they send it and
+// `fail` if they don't (even odds a grade over their level, `steep` a grade either side, a
+// grade worse for nerves), so it's the right line only for a calm client a grade short. Scored against the best the day allowed;
+// a played day pays from `from`.
+export const GUIDING = {
+  clients: [2, 3, 3],
+  goal0: [2, 4],
+  nerves: 0.3,
+  crag: 'road',
+  maxGrade: 9,
+  bored: 0.4,
+  scared: 0.15,
+  goal: 2,
+  fail: 0.2,
+  steep: 1.5,
+  from: 0.9,
+  // Your own outfit, at Lead guide: the permit, the insurance and the ropes. Each guide out on
+  // an open day brings in `fee` and costs `wage`; the insurance is every day, open or not, and
+  // nobody books in winter. The till's yours to draw, as at Send City.
+  outfit: { price: 3000, guides: 3, fee: 160, wage: 100, insurance: 25, resale: 0.6 },
+};
+
 // Phase 25.1 [proposed]. Giving, after v0.956's food bank and access fund: once a week each,
 // a little psyche for the food bank and the old crowd's nod for the access fund. v0.956 gave a
 // food-bank day +10 psyche and a 5-day odds buff; here it's less, and nothing on the rock.

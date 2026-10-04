@@ -127,6 +127,8 @@ export type SheetId =
   | { k: 'ladders' }
   // Your guides (Phase 25.1).
   | { k: 'guides' }
+  // Your guiding outfit (Phase 25.2).
+  | { k: 'outfit' }
   // A shift with a minigame to play (Phase 18.1), or just to work.
   | { k: 'shift'; act: string }
   | { k: 'act'; n: number }
@@ -864,6 +866,12 @@ export class Game {
     this.dispatch(a);
     if (a.do === 'set' || a.do === 'buy') this.openSheet({ k: 'desk' });
     else this.openSheet(this.state.gym ? { k: 'owngym' } : { k: 'desk' });
+  }
+
+  // Your outfit (Phase 25.2); back to its sheet, or the shop's card.
+  outfitDo(a: Extract<Action, { t: 'outfit' }>): void {
+    this.dispatch(a);
+    this.openSheet(this.state.outfit ? { k: 'outfit' } : { k: 'place', id: 'shop' });
   }
 
   // A gift (Phase 25.1); back to the place's card.

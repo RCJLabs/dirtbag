@@ -53,6 +53,7 @@ export function aimEarned(s: GameState, aim: RecordAim, sent = sends(s)): boolea
   if ('film' in aim) return !!s.media?.doc && 'aired' in s.media.doc;
   if ('gym' in aim) return !!s.gym;
   if ('land' in aim) return s.unlocked.some((id) => PLACES[id]?.land);
+  if ('outfit' in aim) return !!s.outfit;
   if ('guide' in aim) return Object.values(s.guides ?? {}).some((g) => g.out !== null);
   if ('quirk' in aim) return !!s.quirk;
   if ('given' in aim) return (s.giving?.total ?? 0) >= aim.given;

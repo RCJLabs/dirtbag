@@ -97,4 +97,17 @@ export const JOBS: Record<string, JobDef> = {
     posts: 3,
     leave: [0, 1, 2, 3],
   },
+  // Phase 25.2 [proposed]: the gear shop's guide service, after v0.956's guide days. A whole
+  // day out with clients at Roadside, from V6, and a long one. Its lead guides can start an
+  // outfit of their own.
+  guide: {
+    name: 'Guiding',
+    place: 'shop',
+    ranks: ['Assistant guide', 'Guide', 'Lead guide'],
+    at: [0, 8, 20],
+    grade: [6, 8, 10],
+    raise: 18,
+    posts: 3,
+    leave: [0, 2, 3],
+  },
 };
