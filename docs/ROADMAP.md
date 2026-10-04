@@ -2770,6 +2770,19 @@ Players will ask "what am I working towards?" by hour 3.
 - **No harness run:** the bots don't mentor.
 - **Seen:** the desk with a mentee, and a session, from a loaded save in Chromium.
 
+**Status (4 Oct 2026): 25.4 built: an expedition team.** Save v54, 0.999.29. Numbers [proposed] in `TEAM`; rules in `team.ts`; words in `content/team.ts`.
+- **Where:** a row on the Expeditions sheet for each objective you've stood on top of. v0.956's goal was a first-ascent team; this one goes where your notes are worth something.
+- **Cost:** half again what your own trip there costs: $1,350 to El Cap, $3,300 to Cerro Torre, $6,750 to Trango.
+- **Their odds:** the objective's weather (1 − its storm odds) times what you can tell them.
+  - A base, more for each time you've topped out there and a little for each other trip, up to two of each.
+  - With one summit of yours: 53% on El Cap, 36% on Cerro Torre, 29% on Trango. At most 78%, 53% and 42%.
+  - The kid you coach leads it once they're V8, for a little more (86%, 59%, 46% at best), and isn't drifting or coachable while they're away.
+- **Away:** as long as your own trip leaving that day (12, 20 and 38 days). One team at a time; the row shows them away and when they're due.
+- **Home:** a line the night they're back: the summit, how many pitches they fixed, or that the weather never let them start. A summit is the old crowd's nod, and a new Record Book entry, Somebody Else's Summit.
+- **Save v54:** `team` and `teams`; a real v53 save loads.
+- **No harness run:** the bots don't fund teams. Forty seeded El Cap teams summit within 0.2 of the odds they left with (a test).
+- **Seen:** the Expeditions sheet with two rows, then a team away, from a loaded save in Chromium.
+
 ## Stage D — Get it in front of people
 
 *Moved here by Evan's call (29 Sep 2026): the whole game gets built first, and the Steam build, the demo and the store page come after it. The phase numbers stay as they were, so older references still find them.*
@@ -3066,3 +3079,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-04 — Phase 25 added by Evan's call: every gameplay feature before the Steam build; CURRENT MILESTONE moved to it from Phase 14. 25.1 built: guides, giving and a trait, the Record Book's last three entries. Save v51. 0.999.26.
 - 2026-10-04 — Phase 25.2 built: guiding, a sixth job with its own day to plan, and an outfit of your own at Lead guide; Phase 25's slices planned with Evan's calls. Save v52. 0.999.27.
 - 2026-10-04 — Phase 25.3 built: the mentee, a kid you coach at Send City from V7 whose grade passes to an heir as a head start; a Record Book entry. Save v53. 0.999.28.
+- 2026-10-04 — Phase 25.4 built: an expedition team, a young pair's trip you pay for to an objective you've summited, their odds from your trips there and its weather; a Record Book entry. Save v54. 0.999.29.

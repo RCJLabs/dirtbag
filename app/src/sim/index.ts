@@ -82,6 +82,7 @@ export {
 } from './guiding';
 export { GUIDE_SAYS } from './content/guiding';
 export { menteeAfter, menteeCoachBlocked, menteeName, menteeTakeBlocked } from './mentee';
+export { teamBlocked, teamCost, teamNames, teamOdds } from './team';
 export { GUIDE_CRAGS, guideBlocked, guideLeft, guideLines, guidesOut } from './guides';
 export { mediaRung, postBlocked, postGain, rivalFollowers, tierEarned } from './media';
 export { DOC, MEDIA_RIVAL, POSTS, SPONSORS, TERMS } from './content/media';

@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 53;
+export const SAVE_VERSION = 54;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -419,6 +419,11 @@ export const MIGRATIONS: Record<number, Migration> = {
   52: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, mentee: null };
+  },
+  // v53 -> v54 (Phase 25.4): no team away, none come home.
+  53: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, team: null, teams: [] };
   },
 };
 
@@ -1002,6 +1007,32 @@ export function validate(x: unknown): string[] {
         Array.isArray(mt.told) &&
         mt.told.every(isInt)),
     'mentee',
+  );
+  const tm = x.team;
+  need(
+    tm === null ||
+      (isObj(tm) &&
+        typeof tm.id === 'string' &&
+        tm.id in EXPEDITIONS &&
+        Array.isArray(tm.names) &&
+        tm.names.length === 2 &&
+        tm.names.every((n) => typeof n === 'string') &&
+        [tm.left, tm.back].every(isInt) &&
+        isNum(tm.odds)),
+    'team',
+  );
+  need(
+    Array.isArray(x.teams) &&
+      x.teams.every(
+        (t) =>
+          isObj(t) &&
+          typeof t.id === 'string' &&
+          t.id in EXPEDITIONS &&
+          isInt(t.day) &&
+          typeof t.summit === 'boolean' &&
+          isInt(t.high),
+      ),
+    'teams',
   );
   const ro = x.romance;
   need(

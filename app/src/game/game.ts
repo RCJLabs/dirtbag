@@ -868,6 +868,12 @@ export class Game {
     else this.openSheet(this.state.gym ? { k: 'owngym' } : { k: 'desk' });
   }
 
+  // A team's trip, paid for (Phase 25.4); back to the expeditions.
+  team(id: string): void {
+    this.dispatch({ t: 'team', id });
+    this.openSheet({ k: 'expeds' });
+  }
+
   // The kid you coach (Phase 25.3); back to the desk.
   menteeDo(a: Extract<Action, { t: 'mentee' }>): void {
     this.dispatch(a);

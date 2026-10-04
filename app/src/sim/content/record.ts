@@ -10,6 +10,7 @@ export type RecordAim =
   | { guide: true }
   | { outfit: true }
   | { mentee: number }
+  | { team: true }
   | { quirk: true }
   | { given: number }
   | { sends: number }
@@ -406,6 +407,15 @@ export const RECORD: RecordEntry[] = [
       'A permit in a plastic sleeve on the dash, and a sign on the van with your name spelled right. Somebody calls asking for you by name, and you have to sit down.',
     from: [],
     aim: { outfit: true },
+  },
+  {
+    id: 'patron',
+    title: 'Somebody Else’s Summit',
+    desc: 'Pay for a young team’s trip, and see them stand on top.',
+    story:
+      'A photo on your phone of two kids on a summit you know, holding your notes up to the camera. You were in the van at the Lot. It counts more than you’d have guessed.',
+    from: [],
+    aim: { team: true },
   },
   {
     id: 'landowner',

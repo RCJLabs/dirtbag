@@ -3,6 +3,7 @@
 // your retirement their grade passes to the next climber as a head start.
 
 import { gradeOf } from './climber';
+import { EXPEDITIONS } from './content/expeditions';
 import { MENTEES } from './content/mentee';
 import { MENTEE } from './dials';
 import { INDOOR } from './content/gym';
@@ -22,6 +23,7 @@ export function menteeTakeBlocked(s: GameState): string | null {
 // Why you can't coach them now, or null.
 export function menteeCoachBlocked(s: GameState): string | null {
   if (!s.mentee) return 'Nobody to coach';
+  if (s.team?.names[0] === s.mentee.name) return `${s.mentee.name}’s away on ${EXPEDITIONS[s.team.id]!.name}`;
   if (s.at !== 'gym') return 'You coach them at Send City';
   if (!s.today.includes(INDOOR.gym!.pass)) return 'Buy a day pass at the desk first';
   if (s.today.includes('mentored')) return 'One session a day';

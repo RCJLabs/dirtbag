@@ -121,6 +121,10 @@ export interface GameState {
     last: number;
     told: number[];
   } | null;
+  // Phase 25.4 (save v54): a team you've paid to go, away now (where, who, the day they left,
+  // the last day away, and their odds as you paid), and every team come home.
+  team: { id: string; names: [string, string]; left: number; back: number; odds: number } | null;
+  teams: { id: string; day: number; summit: boolean; high: number }[];
   // How you live (dials.ts LIFESTYLE): paid at the van every night.
   lifestyle: 'dirtbag' | 'comfortable' | 'plush';
   // Phase 22.2b. Where you park for the night (dials.ts SPOTS), nights in a row at the Lot
@@ -518,6 +522,8 @@ export type Action =
   | { t: 'outfit'; do: 'start' | 'hire' | 'fire' | 'draw' | 'sell' }
   // Phase 25.3: a mentee taken on, coached, or let go.
   | { t: 'mentee'; do: 'take' | 'coach' | 'let' }
+  // Phase 25.4: a team's trip to an objective, paid for.
+  | { t: 'team'; id: string }
   | { t: 'guide'; place: string }
   // `carry`: a v0.956 climber's skills, when they come across rather than picking a start.
   | { t: 'create'; name: string; start: string; origin?: string; carry?: Skills; solo?: true }

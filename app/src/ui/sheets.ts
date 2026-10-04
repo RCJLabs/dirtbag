@@ -222,6 +222,10 @@ import {
   type Gift,
   GUIDING,
   outfitBlocked,
+  teamBlocked,
+  teamCost,
+  teamNames,
+  teamOdds,
   MENTEE,
   menteeCoachBlocked,
   menteeName,
@@ -2213,6 +2217,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             note: `${e.objective}, ${e.region}. ${payLine(s, eid)} ${oddsLine(s, eid)}`,
             run: () => game.openSheet({ k: 'exped', id: eid }),
           })),
+          ...teamRows(game, s),
           { label: 'Back', run: () => game.openSheet({ k: 'van' }) },
         ],
       };
@@ -2241,6 +2246,34 @@ export function crowdNote(c: Crowd): string {
 }
 
 const pct = (p: number): string => `${Math.round(p * 100)}%`;
+
+// A young team's trip (Phase 25.4): one away, or one for each objective you've topped out on.
+function teamRows(game: Game, s: GameState): Row[] {
+  const t = s.team;
+  if (t)
+    return [
+      {
+        label: `${t.names.join(' and ')}, away`,
+        note: `On ${EXPEDITIONS[t.id]!.name}, home ${t.back === s.day ? 'tonight' : `by day ${t.back}`}. Their odds when they left: ${pct(t.odds)}.`,
+        off: true,
+        run: () => undefined,
+      },
+    ];
+  const names = teamNames(s).join(' and ');
+  return Object.entries(EXPEDITIONS)
+    .filter(([id]) => s.book.some((b) => b.id === id && b.end === 'summit'))
+    .map(([id, e]) => {
+      const why = teamBlocked(s, id);
+      const away = tripDays(id, s.day);
+      return {
+        label: `Send a team to ${e.name}`,
+        cost: costLabel({ cash: -teamCost(s, id) }),
+        note: `${names}, with your notes on ${e.objective}. Their odds: ${pct(teamOdds(s, id))}. Gone ${away.to - away.from + 1} days. ${why ? `${why}.` : ''}`.trim(),
+        off: !!why,
+        run: () => game.team(id),
+      };
+    });
+}
 
 // The summit's odds before you pay, with whoever'd come, as the go's own model has them.
 function oddsLine(s: GameState, id: string): string {
