@@ -28,6 +28,8 @@ import {
 } from './content/mentee';
 import { bestPlan, guestsToday, outfitBlocked, outfitDay, planRefused, planValue } from './guiding';
 import { GUIDE_SAYS } from './content/guiding';
+import { teamBack, teamBlocked, teamCost, teamHome, teamNames, teamOdds } from './team';
+import { TEAM_FUNDED, TEAM_NOTHING, TEAM_SUMMIT, TEAM_TURNED } from './content/team';
 import { guideBlocked, guidesOut } from './guides';
 import { bolted, boltBlocked, gymBuyBlocked, gymNight, UPGRADES, wallWord, type Upgrade } from './business';
 import { DOC, HEAT_SAYS, MEDIA_RIVAL, POSTS, SPONSORS, TERMS } from './content/media';
@@ -214,6 +216,7 @@ import {
   GUIDE,
   GUIDING,
   MENTEE,
+  TEAM,
   AGE,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
@@ -367,6 +370,8 @@ export function newGame(seed: string): GameState {
     guides: {},
     outfit: null,
     mentee: null,
+    team: null,
+    teams: [],
     lifestyle: 'dirtbag',
     spot: 'lot',
     lotNights: 0,
@@ -773,6 +778,24 @@ export function act(s0: GameState, a: Action): Result {
         line(fill(MENTEE_GONE, { name: s.mentee.name }));
         s.mentee = null;
       }
+    }
+    // A team you paid for, home (Phase 25.4): the summit, or how high they got.
+    if (s.team && ended >= s.team.back) {
+      const t = s.team;
+      const e = EXPEDITIONS[t.id]!;
+      const { summit, high } = teamHome(s);
+      const words = {
+        team: t.names.join(' and '),
+        lead: t.names[0],
+        name: e.name,
+        objective: e.objective,
+        high,
+        pitches: e.pitches,
+      };
+      line(fill(summit ? TEAM_SUMMIT : high ? TEAM_TURNED : TEAM_NOTHING, words));
+      if (summit) s.scene = { ...s.scene, old: Math.min(100, s.scene.old + TEAM.old) };
+      s.teams = [...s.teams, { id: t.id, day: ended, summit, high }];
+      s.team = null;
     }
     // Your outfit's day (Phase 25.2): guides out if Roadside was open, the insurance always.
     if (s.outfit) {
@@ -2263,6 +2286,26 @@ export function act(s0: GameState, a: Action): Result {
         r.disc === 'boulder'
           ? `You brush ${r.name} clean, pull the moss off the top and kick the stones out of the landing. Nobody's ever been up it.`
           : `A day on a rope with a drill, ${money(c.cash)} of glue-ins and chains, and ${r.name} is a line. Nobody's ever been up it.`,
+      );
+      break;
+    }
+
+    // A team's trip, paid for (Phase 25.4).
+    case 'team': {
+      const why = teamBlocked(s, a.id);
+      if (why) return refuse(`${why}.`);
+      const names = teamNames(s);
+      const back = teamBack(a.id, s.day);
+      s.team = { id: a.id, names, left: s.day, back, odds: teamOdds(s, a.id) };
+      spend({ cash: -teamCost(s, a.id), min: 10 });
+      // The kid you coach is away with them, not drifting.
+      if (s.mentee?.name === names[0]) s.mentee = { ...s.mentee, last: back };
+      line(
+        fill(TEAM_FUNDED, {
+          team: names.join(' and '),
+          lead: names[0],
+          objective: EXPEDITIONS[a.id]!.objective,
+        }),
       );
       break;
     }

@@ -243,6 +243,25 @@ export const GUIDING = {
 // retirement their grade passes on: `heir` skill a grade, on each, to the next climber.
 export const MENTEE = { from: 7, min: 120, energy: 8, gain: 0.35, slow: 8, weekly: 15, lapse: 14, heir: 4 };
 
+// Phase 25.4 [proposed]. A team's trip, after v0.956's late-money goal (fund a first-ascent
+// team): to an objective you've stood on top of, at `cost` times your own trip's price (their
+// flights, permits and food, and nobody's sponsor). Their odds are the objective's weather
+// (1 − its storm odds) times what you can tell them: `base`, `summit` for each time you've
+// topped out there and `tried` for each other trip, up to `cap` of each; `coached` more when
+// the kid you coach, at V`mentee` or better, leads it; never past `max`. A summit is the old
+// crowd's nod, `old`. They're gone as long as your trip would be.
+export const TEAM = {
+  cost: 1.5,
+  base: 0.45,
+  summit: 0.2,
+  tried: 0.05,
+  cap: 2,
+  mentee: 8,
+  coached: 0.1,
+  max: 0.9,
+  old: 5,
+};
+
 // Phase 25.1 [proposed]. Giving, after v0.956's food bank and access fund: once a week each,
 // a little psyche for the food bank and the old crowd's nod for the access fund. v0.956 gave a
 // food-bank day +10 psyche and a 5-day odds buff; here it's less, and nothing on the rock.
