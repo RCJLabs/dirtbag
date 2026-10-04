@@ -63,12 +63,12 @@
 | 10 Crags as places | Built on the rebuild (the board, conditions you can see, Moonstone) and closed by Evan's call. Its testers' criterion carries. |
 | 11 Valley map | Built on the rebuild (the taps, place cards, adding a place, the daily plan) and closed by Evan's call. Criteria 2 to 5 pass; its testers' criterion carries. Released in 0.961.0 with Phase 10. |
 | 12 UI system | Built on the rebuild (the Journal, the wide screen, keyboard and access, Tonight, no inline styles) and closed by Evan's call. The flows the e2e doesn't play in landscape or by keyboard carry to playtesting. |
-| 13 Sound and feel | Built on the rebuild (effects and ambience made in code, the licence ledger, credits) and closed by Evan's call. Criterion 4 (music) carries with the music decision; criteria 1 and 2 wait on an ear. |
+| 13 Sound and feel | Built on the rebuild (effects and ambience made in code, the licence ledger, credits) and closed by Evan's call. Music, made in code, came in Phase 25 by Evan's call, to hear how it turns out; criteria 1 and 2 wait on an ear. |
 | 14 Desktop and Steam, 15 Demo and store page | Moved after Phase 18 by Evan's call: the full game first. |
 | 21 The climber, 22 The life, 23 Who you are | Added by Evan's call after the gap check; they run before 16. Phase 21 is the current milestone. |
 | 16 The spine | Next after 21–23. |
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
-| 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18: every gameplay feature the closed phases carried, before 14 and 15. The order from here: 25, 14, 15, 19, 20. |
+| 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
 
 ## The rebuild track
 
@@ -2683,7 +2683,7 @@ Players will ask "what am I working towards?" by hour 3.
 
 ---
 
-### Phase 25 — Finish the game   **<<< CURRENT MILESTONE**
+### Phase 25 — Finish the game
 
 *Evan's call (4 Oct 2026): every gameplay feature and phase before the Steam build. Stage D waits on this.*
 
@@ -2833,11 +2833,20 @@ Players will ask "what am I working towards?" by hour 3.
 3. **Passes:** the harness's targets, last run on 25.6, with outdoors at the 2 of 4 seeds Evan accepted (5 of 8 in 18.7).
 - Closing Phase 25, and the call on music, are Evan's. Next after it, by the order set: Phase 14, the desktop and Steam build.
 
+**Music (4 Oct 2026, Evan's call: synthesize it for now and see how it turns out).** 0.999.33. In `src/audio/moods.ts` (what plays where) and `music.ts` (the engine), all [proposed] by ear.
+- **Six moods:** camp (the Lot by day), fire (the Lot at night, and a crag after dark or in winter), crag, town (the gyms and the shops), road (the map and driving), big (an expedition). Each has a key and scale, a loop of four chords, a tempo from 56 to 100, and how busy its tune is.
+- **What plays:** the chords on a soft pad, a bass on the beat, a plucked tune made up four bars at a time and repeated with changes, and in town and on the road a soft kick and brush. In stretches of 16 to 32 bars with 25 to 60 seconds of quiet between, so it doesn't wear; a new place waits for the bar.
+- **In the mix:** its own bus, under the ambience's level, ducking under talk and during a go; silent while the app's hidden, as everything is. "Music: On / Off" in Settings, on by default.
+- **Heard by nobody yet:** rendered offline it doesn't clip and sits at a steady level, between the Lot's quiet bed and the Gorge's wind, louder than the Lot's. 30 seconds of each mood are on the dev sound sheet (`npm run dev`, /sounds.html). Whether it's any good is Evan's ear to say.
+- **In the licence ledger:** made in code, so 50 sounds, no recordings.
+
+**Phase 25 closed by Evan's call (4 Oct 2026).** All three criteria pass: every Record Book entry can be earned; every carried item is built, music in code included; the harness's targets pass (last run on 25.6). The CURRENT MILESTONE moves to Phase 14, the desktop and Steam build. The download is 398.2 KB of 440.
+
 ## Stage D — Get it in front of people
 
 *Moved here by Evan's call (29 Sep 2026): the whole game gets built first, and the Steam build, the demo and the store page come after it. The phase numbers stay as they were, so older references still find them.*
 
-### Phase 14 — Desktop and Steam build
+### Phase 14 — Desktop and Steam build   **<<< CURRENT MILESTONE**
 
 **Goal.** A Steam build that plays well with mouse, keyboard or gamepad on Windows, macOS, Linux and Steam Deck.
 
@@ -3134,3 +3143,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-04 — Phase 25.6 built: the people (Evan's calls): crew drama, a choice, a rift and a mend; the crew's texts back; the shops' small talk; a word from the crowd at a busy crag. Save v56. 0.999.31.
 - 2026-10-04 — Evan's call: the download budget goes from 400 KB to 440 KB for 25.7 (394.8 KB after 25.6).
 - 2026-10-04 — Phase 25.7 built: polish: a keepsake card for a trip, tappable glossary words, Miller's Bluff's own rock (and the line its six sport lines never had). Phase 25's criteria pass but for music, Evan's call. 0.999.32.
+- 2026-10-04 — Music, made in code (Evan's call: synthesize it and see how it turns out): six moods by place and hour, in stretches with quiet between, ducked under talk and goes, a Music setting. Phase 25 closed by Evan's call; CURRENT MILESTONE moved to Phase 14, the desktop and Steam build. 0.999.33.

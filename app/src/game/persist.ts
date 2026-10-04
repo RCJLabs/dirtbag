@@ -120,9 +120,17 @@ export interface Settings {
   sound: 'on' | 'quiet' | 'off';
   // A buzz in the hand on a send, a fall or a crux, where the device can.
   buzz: 'on' | 'off';
+  // Phase 25: the music, made in code.
+  music: 'on' | 'off';
 }
 
-export const DEFAULT_SETTINGS: Settings = { motion: 'system', text: 'normal', sound: 'on', buzz: 'on' };
+export const DEFAULT_SETTINGS: Settings = {
+  motion: 'system',
+  text: 'normal',
+  sound: 'on',
+  buzz: 'on',
+  music: 'on',
+};
 
 export function loadSettings(): Settings {
   try {
@@ -134,6 +142,7 @@ export function loadSettings(): Settings {
       text: v.text === 'large' ? 'large' : 'normal',
       sound: v.sound === 'quiet' || v.sound === 'off' ? v.sound : 'on',
       buzz: v.buzz === 'off' ? 'off' : 'on',
+      music: v.music === 'off' ? 'off' : 'on',
     };
   } catch {
     return DEFAULT_SETTINGS;

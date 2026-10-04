@@ -2454,6 +2454,11 @@ function SettingsBody({ game, settings }: { game: Game; settings: Settings }) {
         {choice('sound', 'quiet', 'Quiet')}
         {choice('sound', 'off', 'Off')}
       </div>
+      <p className="crux">Music</p>
+      <div role="radiogroup" aria-label="Music">
+        {choice('music', 'on', 'On')}
+        {choice('music', 'off', 'Off')}
+      </div>
       <p className="crux">Vibration</p>
       <div role="radiogroup" aria-label="Vibration">
         {choice('buzz', 'on', 'On, where the phone can')}
