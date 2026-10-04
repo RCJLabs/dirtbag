@@ -129,6 +129,7 @@ export type SheetId =
   | { k: 'guides' }
   // Your guiding outfit (Phase 25.2).
   | { k: 'outfit' }
+  | { k: 'league' }
   // A shift with a minigame to play (Phase 18.1), or just to work.
   | { k: 'shift'; act: string }
   | { k: 'act'; n: number }

@@ -2,7 +2,7 @@
 // capstone, and counts what you've climbed from the systems that own them.
 import { describe, expect, it } from 'vitest';
 import { JOBS } from './content/jobs';
-import { COMP_TIERS } from './content/comps';
+import { GAMES_TIER } from './content/comps';
 import { OWN_GYM } from './dials';
 import { act, newGame } from './game';
 import { capstone, ladderById, LADDERS } from './ladders';
@@ -37,7 +37,7 @@ describe('the ladders', () => {
 
   it('comps: a rung for each you’ve competed at, the Games on top', () => {
     const s = base();
-    const games = COMP_TIERS.length - 1;
+    const games = GAMES_TIER;
     const r = (tier: number, place: number) => ({ tier, day: 1, place, of: 20 });
     expect(ladderById('comp').rungs(s).at(-1)).toBe('The Games');
     expect(at({ ...s, comps: { ...s.comps, results: [r(0, 8), r(1, 5)] } }, 'comp')).toBe(2);

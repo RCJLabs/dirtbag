@@ -4,9 +4,9 @@
 // the grades it draws: tops first, then fewest goes. A place earns points, which fade, and
 // points let you into the next rung up. Nothing here moves to meet you.
 
-import { COMP_TIERS, COMPETITORS } from './content/comps';
+import { COMP_LADDER, COMP_TIERS, COMPETITORS } from './content/comps';
 import { libraryBoulder, type RouteDef } from './content/routes';
-import { COMP } from './dials';
+import { COMP, LEAGUE, YEAR } from './dials';
 import { Rng } from './rng';
 import type { Style } from './climber';
 import type { GameState } from './types';
@@ -38,21 +38,24 @@ export function compSet(seed: string, tier: number, day: number): RouteDef[] {
   const hit = cache.get(key);
   if (hit) return hit;
   const t = COMP_TIERS[tier]!;
-  const n = SLOTS[t.venue] ?? 6;
+  const side = t.side;
+  const n = side?.n ?? SLOTS[t.venue] ?? 6;
   const r = Rng.fromStream(seed, 'worldgen').derive(`comp-${tier}-${day}`);
   const [lo, hi] = t.grades;
   const set = Array.from({ length: n }, (_, i) => {
     const grade = Math.round(lo + (i * (hi - lo)) / (n - 1));
-    const type = TYPES[r.int(0, TYPES.length - 1)]!;
-    const moves = r.int(5, 9);
+    const type = side ? side.type : TYPES[r.int(0, TYPES.length - 1)]!;
+    const moves = side ? r.int(...side.moves) : r.int(5, 9);
     const from = Math.round(moves * r.float(0.4, 0.65) * 100) / 100;
     return libraryBoulder(`cp-${tier}-${day}-${i + 1}`, `${t.problem} ${i + 1}`, grade, type, t.venue, {
       moves,
       from,
       to: Math.round((from + r.float(1.3, 1.9)) * 100) / 100,
-      cruxName: 'The crux',
+      cruxName: side ? 'The throw' : 'The crux',
       heightFt: 14,
-      line: `${t.name}, problem ${i + 1} of ${n}. Tape says V${grade}.`,
+      line: side
+        ? `${t.name}, throw ${i + 1} of ${n}, further than the last. Tape says V${grade}.`
+        : `${t.name}, problem ${i + 1} of ${n}. Tape says V${grade}.`,
     });
   });
   cache.set(key, set);
@@ -75,30 +78,63 @@ export interface Score {
   goes: number;
 }
 
-// The field: names drawn from the pool, each with the grade they climb, which their tops
-// come from, problem by problem.
-export function compField(seed: string, tier: number, day: number): Score[] {
-  const t = COMP_TIERS[tier]!;
-  const r = Rng.fromStream(seed, 'events').derive(`field-${tier}-${day}`);
+// The goes a top counts in, at a comp.
+export const goesFor = (tier: number): number => COMP_TIERS[tier]!.side?.goes ?? COMP.goes;
+
+// The year a day is in, from 0.
+export const yearOf = (day: number): number => Math.floor((day - 1) / YEAR.days);
+
+// A field drawn from the pool: a shuffle, then each name's grade, handed to `each` as it's
+// drawn (so a comp's tops can be rolled there and then, as they always were).
+function draw<T>(
+  r: Rng,
+  field: number,
+  grades: [number, number],
+  each: (name: string, grade: number) => T,
+): T[] {
   const names = [...COMPETITORS];
   for (let i = names.length - 1; i > 0; i--) {
     const j = r.int(0, i);
     [names[i], names[j]] = [names[j]!, names[i]!];
   }
-  const set = compSet(seed, tier, day);
-  return names.slice(0, t.field - 1).map((name) => {
-    const grade = t.grades[0] - 1 + r.float(0, t.grades[1] - t.grades[0] + 1.5);
-    let tops = 0;
-    let goes = 0;
-    for (const p of set) {
-      const chance = 1 / (1 + Math.exp(-COMP.steep * (grade - p.grade + 0.5)));
-      if (r.next() < chance) {
-        tops++;
-        goes += r.int(1, COMP.goes);
-      }
-    }
-    return { name, tops, goes };
+  return names.slice(0, field - 1).map((name) => {
+    const grade = grades[0] - 1 + r.float(0, grades[1] - grades[0] + 1.5);
+    return each(name, grade);
   });
+}
+
+// One entrant's tops at a set, from the grade they climb, problem by problem.
+function rollTops(r: Rng, grade: number, set: RouteDef[], goes: number): Score {
+  let tops = 0;
+  let n = 0;
+  for (const p of set) {
+    const chance = 1 / (1 + Math.exp(-COMP.steep * (grade - p.grade + 0.5)));
+    if (r.next() < chance) {
+      tops++;
+      n += r.int(1, goes);
+    }
+  }
+  return { name: '', tops, goes: n };
+}
+
+// The field. League night's (Phase 25.5) is drawn once a year, so its season has the same
+// faces every week, and each night rolls its own tops; every other comp's is the day's.
+export function compField(seed: string, tier: number, day: number): Score[] {
+  const t = COMP_TIERS[tier]!;
+  const set = compSet(seed, tier, day);
+  const goes = goesFor(tier);
+  if (tier !== 0) {
+    const r = Rng.fromStream(seed, 'events').derive(`field-${tier}-${day}`);
+    return draw(r, t.field, t.grades, (name, g) => ({ ...rollTops(r, g, set, goes), name }));
+  }
+  const year = draw(
+    Rng.fromStream(seed, 'events').derive(`league-${yearOf(day)}`),
+    t.field,
+    t.grades,
+    (name, grade) => ({ name, grade }),
+  );
+  const r = Rng.fromStream(seed, 'events').derive(`night-${day}`);
+  return year.map((e) => ({ ...rollTops(r, e.grade, set, goes), name: e.name }));
 }
 
 // Where you came: tops first, then fewest goes; a tie goes your way.
@@ -116,7 +152,7 @@ export const ladderPoints = (s: GameState): number =>
 
 // The highest rung your points let you into.
 export const rungOpen = (s: GameState): number =>
-  COMP_TIERS.reduce((top, t, i) => (ladderPoints(s) >= t.need ? i : top), 0);
+  COMP_LADDER.reduce((top, i) => (ladderPoints(s) >= COMP_TIERS[i]!.need ? i : top), 0);
 
 // Why you can't sign up for today's comp here, or null when you can.
 export function compBlocked(s: GameState): string | null {
@@ -139,3 +175,59 @@ export const yourScore = (s: GameState): Score => {
 };
 
 export const podiums = (s: GameState): number => s.comps.results.filter((r) => r.place <= 3).length;
+
+// ---- Phase 25.5: League night's season ----
+
+// The year's League nights, in order.
+export function leagueNights(year: number): number[] {
+  const from = year * YEAR.days + 1;
+  return Array.from({ length: YEAR.days }, (_, i) => from + i).filter((d) => compOn(d, 'gym') === 0);
+}
+
+// Everyone's place on one League night: the field's from their scores, yours from the result
+// you brought home, if you were there (the field ranked below you a place further down).
+export function nightPlaces(s: GameState, day: number): Map<string, number> {
+  const mine = s.comps.results.find((x) => x.tier === 0 && x.day === day);
+  const ranked = compField(s.seed, 0, day)
+    .map((f, i) => ({ ...f, i }))
+    .sort((a, b) => b.tops - a.tops || a.goes - b.goes || a.i - b.i);
+  const out = new Map<string, number>();
+  ranked.forEach((f, i) => out.set(f.name, mine && i + 1 >= mine.place ? i + 2 : i + 1));
+  if (mine) out.set(s.climber.name, mine.place);
+  return out;
+}
+
+export interface LeagueRow {
+  name: string;
+  pts: number;
+  nights: number;
+  you: boolean;
+}
+
+// The year's table so far, nights up to and including `upTo`: a night's points are the
+// field's size, less one a place down it, and only your best `LEAGUE.best` nights count.
+// A tie goes your way.
+export function leagueTable(s: GameState, year: number, upTo: number): LeagueRow[] {
+  const of = COMP_TIERS[0]!.field;
+  const scores = new Map<string, number[]>();
+  for (const d of leagueNights(year).filter((d) => d <= upTo))
+    for (const [name, place] of nightPlaces(s, d))
+      scores.set(name, [...(scores.get(name) ?? []), of + 1 - place]);
+  return [...scores]
+    .map(([name, pts]) => ({
+      name,
+      pts: [...pts]
+        .sort((a, b) => b - a)
+        .slice(0, LEAGUE.best)
+        .reduce((a, b) => a + b, 0),
+      nights: pts.length,
+      you: name === s.climber.name,
+    }))
+    .sort((a, b) => b.pts - a.pts || Number(b.you) - Number(a.you) || a.name.localeCompare(b.name));
+}
+
+// Whether a day is its year's last League night, when the season's table is settled.
+export const seasonEnds = (day: number): boolean => {
+  const n = leagueNights(yearOf(day));
+  return n[n.length - 1] === day;
+};

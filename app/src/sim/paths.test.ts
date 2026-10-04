@@ -185,7 +185,11 @@ describe('quirks', () => {
     // Two podiums, and the crowd's yours (Phase 18.4).
     const podium = { tier: 0, day: 4, place: 2, of: 10 };
     expect(
-      quirkFor({ ...s, habits: habits({}), comps: { on: null, points: [], results: [podium, podium] } }),
+      quirkFor({
+        ...s,
+        habits: habits({}),
+        comps: { on: null, points: [], results: [podium, podium], seasons: [] },
+      }),
     ).toBe('compbeast');
     const r = act(
       { ...s, at: 'lot', min: 9 * 60, habits: habits({ outdoor: 28 }) },

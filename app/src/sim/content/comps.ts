@@ -4,6 +4,8 @@
 // Opt-in: nothing happens unless you sign up at the desk on the day. Every number here is
 // [proposed]; the field doesn't move with you (v0.956's comps rubber-banded).
 
+import type { Style } from '../climber';
+
 export interface CompTier {
   name: string;
   // Where, and when: on day `on` of every `every` days.
@@ -21,6 +23,9 @@ export interface CompTier {
   need: number;
   // What the problems are called, numbered.
   problem: string;
+  // Phase 25.5: off the ladder (no points, never a rung), and a set of its own: how many
+  // problems, all of one style, how many moves each, and the goes a top counts in.
+  side?: { n: number; type: Style; moves: [number, number]; goes: number };
 }
 
 export const COMP_TIERS: CompTier[] = [
@@ -89,7 +94,31 @@ export const COMP_TIERS: CompTier[] = [
     need: 200,
     problem: 'Games',
   },
+  // Phase 25.5 (Evan's call, 4 Oct 2026): v0.956's Fall Festival dyno comp, once a year at
+  // Send City in the fall, off the ladder. Five dynos, each further than the last, climbed
+  // like any comp problem; v0.956 rolled dice for it.
+  {
+    name: 'The Fall Festival dyno comp',
+    venue: 'gym',
+    every: 56,
+    on: 13,
+    grades: [2, 10],
+    field: 12,
+    fee: 15,
+    purse: [300, 150, 75],
+    pts: 0,
+    need: 0,
+    problem: 'Dyno',
+    side: { n: 5, type: 'dyno', moves: [3, 4], goes: 3 },
+  },
 ];
+
+// The rungs of the ladder, by index: every comp but the side ones.
+export const COMP_LADDER = COMP_TIERS.flatMap((t, i) => (t.side ? [] : [i]));
+// The Games, the ladder's top.
+export const GAMES_TIER = COMP_LADDER[COMP_LADDER.length - 1]!;
+// The dyno comp.
+export const DYNO_COMP = COMP_TIERS.findIndex((t) => t.side?.type === 'dyno');
 
 // Who you're up against: a pool of names the fields are drawn from.
 export const COMPETITORS = [
@@ -125,4 +154,11 @@ export const COMP_SAYS = {
   podium: 'On the podium, a step down from the top. You can see the top step from here.',
   final: 'Mid-field: some tops, some falls you’ll be thinking about all week.',
   low: 'A rough one. The problems were harder than your nerves, and everyone saw.',
+};
+
+// Phase 25.5: League night's season, the year's table settled on its last night.
+export const LEAGUE_SAYS = {
+  won: 'League night’s season is yours: top of the table on the whiteboard by the desk, in somebody’s good marker. They hand you an envelope and a T-shirt in the wrong size.',
+  podium: 'League night’s season ends with you {place} on the table. Close enough to see the top from here.',
+  rest: 'League night’s season ends with you {place} of {of} on the table. Next year’s field is already talking.',
 };
