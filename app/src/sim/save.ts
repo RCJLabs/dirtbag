@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 50;
+export const SAVE_VERSION = 51;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -405,6 +405,11 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, gym: null, bolted: [] };
   },
+  // v50 -> v51 (Phase 25.1): nothing given yet, no guides.
+  50: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, giving: { total: 0, food: 0, access: 0 }, guides: {} };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -637,6 +642,20 @@ export function validate(x: unknown): string[] {
     Array.isArray(x.bolted) &&
       x.bolted.every((id) => typeof id === 'string' && !!PLACES[ROUTES[id]?.place ?? '']?.land),
     'bolted',
+  );
+  const gv = x.giving;
+  need(isObj(gv) && [gv.total, gv.food, gv.access].every((n) => isInt(n) && n >= 0), 'giving');
+  need(
+    isObj(x.guides) &&
+      Object.entries(x.guides).every(
+        ([id, g]) =>
+          !!PLACES[id]?.crag &&
+          isObj(g) &&
+          isInt(g.pages) &&
+          g.pages >= 0 &&
+          (g.out === null || isInt(g.out)),
+      ),
+    'guides',
   );
   need(typeof x.lifestyle === 'string' && x.lifestyle in LIFESTYLE, 'lifestyle');
   need(typeof x.spot === 'string' && x.spot in SPOTS, 'spot');

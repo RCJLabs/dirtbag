@@ -74,6 +74,8 @@ export function heirOf(
       // The bolts you put in at the bluff stay in the rock (Phase 18.6); the gym doesn't pass
       // down with them: it's theirs to earn.
       bolted: [...s.bolted],
+      // A guide in print stays in print (Phase 25.1); one half-written goes with you.
+      guides: Object.fromEntries(Object.entries(s.guides).filter(([, g]) => g.out !== null)),
       dog: s.dog ? { ...s.dog } : null,
       dogs: [...s.dogs],
       mode: s.mode,

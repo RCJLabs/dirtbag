@@ -207,6 +207,20 @@ export const OWN_GYM = {
 // Setting your own wall takes a shift's hours and legs.
 export const GYM_SET = { min: 240, energy: 22 };
 
+// Phase 25.1 [proposed]. Giving, after v0.956's food bank and access fund: once a week each,
+// a little psyche for the food bank and the old crowd's nod for the access fund. v0.956 gave a
+// food-bank day +10 psyche and a 5-day odds buff; here it's less, and nothing on the rock.
+export const GIVING = {
+  food: { cash: 50, psyche: 5 },
+  access: { cash: 40, old: 2 },
+  every: 7,
+};
+
+// Phase 25.1 [proposed]. A crag's guide, written at the van once you've sent every line there
+// and put up one of your own: `pages` evenings of `min` minutes, then royalties every week.
+// v0.956 paid up to $18 a day for its guide; a dirtbag's guide pays for gas.
+export const GUIDE = { pages: 5, min: 180, energy: 10, royalty: 15 };
+
 // Phase 18.6 [proposed]. Miller's Bluff: the land's price, and what a line costs to make
 // climbable: a sport line bolted (hardware and a day on a rope), a boulder cleaned. The
 // price is late money: half again the gym's, for nine lines nobody else will ever climb first.

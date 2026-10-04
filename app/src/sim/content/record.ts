@@ -6,6 +6,10 @@
 // stable: Phase 14 maps them to Steam achievements.
 
 export type RecordAim =
+  // Phase 25.1: a guide out, a quirk named, what you've given over a life.
+  | { guide: true }
+  | { quirk: true }
+  | { given: number }
   | { sends: number }
   | { grade: number }
   | { style: 'flash' | 'onsight' }
@@ -299,9 +303,10 @@ export const RECORD: RecordEntry[] = [
     id: 'guidebook',
     title: 'Guidebook Author',
     desc: 'Write and publish a crag’s guide.',
-    story: '',
+    story:
+      'Every line, its grade, who put it up, and where the water comes off the top. Somebody at the shop asks you to sign one. You don’t know where to put your name.',
     from: ['f1:guidebook'],
-    waits: 'guidebooks',
+    aim: { guide: true },
   },
   {
     id: 'comp',
@@ -332,10 +337,11 @@ export const RECORD: RecordEntry[] = [
   {
     id: 'trait',
     title: 'Known For It',
-    desc: 'Earn a trait.',
-    story: '',
+    desc: 'Have your habits give you a name.',
+    story:
+      'Nobody decided it. You climbed the way you climb for long enough, and now there’s a word for you at the fire.',
     from: ['f1:trait1'],
-    waits: 'paths (Phase 23.4)',
+    aim: { quirk: true },
   },
   {
     id: 'famous',
@@ -394,9 +400,10 @@ export const RECORD: RecordEntry[] = [
     id: 'giving',
     title: 'Dirtbag Philanthropist',
     desc: 'Give $1,000 to charity, over a life.',
-    story: '',
+    story:
+      'A thousand dollars, fifty and forty at a time, from somebody who counts the propane. Nobody keeps that tally but you, and you’d stopped keeping it.',
     from: ['f1:giving1000'],
-    waits: 'giving',
+    aim: { given: 1000 },
   },
   {
     id: 'retired',
