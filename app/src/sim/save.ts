@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 55;
+export const SAVE_VERSION = 56;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -430,6 +430,11 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     if (!isObj(x.comps)) throw new Error('comps is not an object');
     return { ...x, comps: { ...x.comps, seasons: [] } };
+  },
+  // v55 -> v56 (Phase 25.6): no crew drama yet; nobody's fallen out (a new optional field).
+  55: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, crew: null };
   },
 };
 
@@ -1016,6 +1021,18 @@ export function validate(x: unknown): string[] {
         mt.told.every(isInt)),
     'mentee',
   );
+  const cw = x.crew;
+  need(
+    cw === null ||
+      (isObj(cw) &&
+        typeof cw.a === 'string' &&
+        cw.a in PEOPLE &&
+        typeof cw.b === 'string' &&
+        cw.b in PEOPLE &&
+        isInt(cw.day) &&
+        ['rift', 'mended', 'set'].includes(cw.stage as string)),
+    'crew',
+  );
   const tm = x.team;
   need(
     tm === null ||
@@ -1140,6 +1157,7 @@ const isPerson = (x: unknown): x is PersonLog =>
   optInt(x.gave) &&
   optInt(x.heard) &&
   optInt(x.ledge) &&
+  (x.avoid === undefined || (typeof x.avoid === 'string' && x.avoid in PEOPLE)) &&
   (x.invite === undefined ||
     (isObj(x.invite) &&
       isInt(x.invite.day) &&

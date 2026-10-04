@@ -29,6 +29,8 @@ import {
 import { bestPlan, guestsToday, outfitBlocked, outfitDay, planRefused, planValue } from './guiding';
 import { GUIDE_SAYS } from './content/guiding';
 import { teamBack, teamBlocked, teamCost, teamHome, teamNames, teamOdds } from './team';
+import { mends } from './crew';
+import { CREW_LINES } from './content/crew';
 import { TEAM_FUNDED, TEAM_NOTHING, TEAM_SUMMIT, TEAM_TURNED } from './content/team';
 import { guideBlocked, guidesOut } from './guides';
 import { bolted, boltBlocked, gymBuyBlocked, gymNight, UPGRADES, wallWord, type Upgrade } from './business';
@@ -230,6 +232,7 @@ import {
   GUIDING,
   MENTEE,
   TEAM,
+  CREW,
   AGE,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
@@ -385,6 +388,7 @@ export function newGame(seed: string): GameState {
     mentee: null,
     team: null,
     teams: [],
+    crew: null,
     lifestyle: 'dirtbag',
     spot: 'lot',
     lotNights: 0,
@@ -1977,7 +1981,9 @@ export function act(s0: GameState, a: Action): Result {
         // (Their day at the crag ends before dark: whoever was there, the latest in the day.)
         let mate: string | null = null;
         for (let m = Math.min(s.min, CLIMB.darkFrom - 1); !mate && m >= DAY.wakeMin; m -= 30)
-          mate = PARTNERS.find((who) => whereIs(s.seed, who, s.day, m, s.people[who]) === w.place) ?? null;
+          mate =
+            PARTNERS.find((who) => whereIs(s.seed, who, s.day, m, s.people[who], s.people) === w.place) ??
+            null;
         sleep('ledge');
         if (mate)
           s.people = {
@@ -2707,6 +2713,36 @@ export function act(s0: GameState, a: Action): Result {
         delete p.invite;
       }
       if (fx.invite) p.invite = { day: s.day, place: fx.invite, from: s.min };
+      // Crew drama (Phase 25.6): who you let down falls out with the other.
+      if (fx.crew) {
+        const other = fx.crew.with;
+        const names = (a: string, b: string) => ({ a: PEOPLE[a]?.name ?? a, b: PEOPLE[b]?.name ?? b });
+        if (fx.crew.do === 'pick' || fx.crew.do === 'keep') {
+          const [a, b] = fx.crew.do === 'pick' ? [talk.who, other] : [other, talk.who];
+          s.crew = { a, b, day: s.day, stage: 'rift' };
+          const down = meet(b);
+          bond(b, down.bond - CREW.cost);
+          down.avoid = a;
+          down.away = Math.max(down.away ?? 0, s.day + CREW.sulk);
+          delete down.invite;
+          line(fill(CREW_LINES[fx.crew.do], names(a, b)));
+        } else if (s.crew) {
+          const { a, b } = s.crew;
+          if (fx.crew.do === 'leave') {
+            s.crew = { ...s.crew, day: s.day };
+            line(CREW_LINES.leave);
+          } else if (mends(s)) {
+            s.crew = { ...s.crew, stage: 'mended' };
+            delete meet(b).avoid;
+            bond(a, meet(a).bond + 1);
+            bond(b, meet(b).bond + 1);
+            line(fill(CREW_LINES.mended, names(a, b)));
+          } else {
+            s.crew = { ...s.crew, stage: 'set' };
+            line(fill(CREW_LINES.set, names(a, b)));
+          }
+        }
+      }
       if (fx.line) {
         const said = fill(fx.line, { away: fx.away ?? 0 });
         line(fx.train ? `${said} ${skillsNote(fx.train)}.` : said);

@@ -120,7 +120,22 @@ function tam(seed: string, day: number, min: number, p?: PersonLog): string | nu
   return conditionsAt(seed, day, 'mesa').open ? 'mesa' : null;
 }
 
-export function whereIs(seed: string, who: string, day: number, min: number, p?: PersonLog): string | null {
+// Where someone is. With everyone's logs, someone who's fallen out with another (Phase 25.6)
+// isn't wherever that one is.
+export function whereIs(
+  seed: string,
+  who: string,
+  day: number,
+  min: number,
+  p?: PersonLog,
+  people?: Record<string, PersonLog>,
+): string | null {
+  const at = whereAlone(seed, who, day, min, p);
+  if (!at || !p?.avoid || !people) return at;
+  return whereAlone(seed, p.avoid, day, min, people[p.avoid]) === at ? null : at;
+}
+
+function whereAlone(seed: string, who: string, day: number, min: number, p?: PersonLog): string | null {
   if (who === 'hazel') return hazel(seed, day, min, p);
   if (who === 'sage') return sage(seed, day, min, p);
   if (who === 'dex') return dex(seed, day, min, p);
@@ -134,7 +149,7 @@ export function whereIs(seed: string, who: string, day: number, min: number, p?:
 
 // Where someone is right now, in this game.
 export const whereNow = (s: GameState, who: string): string | null =>
-  whereIs(s.seed, who, s.day, s.min, s.people[who]);
+  whereIs(s.seed, who, s.day, s.min, s.people[who], s.people);
 
 // The people you can climb with: they belay, and a day climbing near them is a day together.
 export const PARTNERS = ['hazel', 'sage', 'mara', 'rico', 'tam'];
@@ -146,7 +161,7 @@ export const around = (
   day: number,
   min: number,
   people: Record<string, PersonLog> = {},
-): string[] => PARTNERS.filter((w) => whereIs(seed, w, day, min, people[w]) === place);
+): string[] => PARTNERS.filter((w) => whereIs(seed, w, day, min, people[w], people) === place);
 
 // Whether you'd know someone by name: you've met, or they were there from the start.
 export const knows = (s: GameState, who: string): boolean => !!s.people[who] || !!PEOPLE[who]?.known;
@@ -170,7 +185,7 @@ export function staysAt(s: GameState, place: string, from: number): Stay[] {
   for (const who of Object.keys(PEOPLE)) {
     let open: Stay | null = null;
     for (let m = from; m < DAY_END; m++) {
-      const here = whereIs(s.seed, who, s.day, m, s.people[who]) === place;
+      const here = whereIs(s.seed, who, s.day, m, s.people[who], s.people) === place;
       if (here && !open) out.push((open = { who, from: m, till: DAY_END }));
       else if (!here && open) {
         open.till = m;

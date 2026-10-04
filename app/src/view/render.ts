@@ -46,6 +46,7 @@ import {
   CENTER_X,
   SCENES,
   SPEED_LANE,
+  strangersAt,
   MAP_FIT,
   MAP_K,
   W,
@@ -302,21 +303,16 @@ export function sceneLive(g: G, s: GameState, scene: string, cam: number, eye: E
       );
   }
   // The crowd, if there is one: strangers at the foot of the lines, the same ones all day.
-  if (crag) {
-    const n = { empty: 0, quiet: 1, busy: 3, packed: 5 }[crowdNow(s, place)];
-    const spots = [...crag.lines.map((l) => l.x), ...crag.boulders.map((b) => b.x)];
-    const r = mulberry32(s.day * 131 + place.length * 17 + spots.length);
-    for (let i = 0; i < n && spots.length; i++) {
-      const x = spots.splice(Math.floor(r() * spots.length), 1)[0]! + (r() - 0.5) * 36;
+  if (crag)
+    strangersAt(place, crag, s.day, crowdNow(s, place)).forEach((p, i) =>
       drawPerson(g, STRANGERS[i % STRANGERS.length]!, {
-        x: x - cam,
+        x: p.x - cam,
         y: GND,
-        dir: r() < 0.5 ? -1 : 1,
-        pose: r() < 0.25 ? 'sit' : 'stand',
+        dir: p.dir,
+        pose: p.sit ? 'sit' : 'stand',
         t: f.t + i,
-      });
-    }
-  }
+      }),
+    );
   for (const p of presentIn(s, scene)) {
     drawPerson(g, LOOK[p.who]!, { x: p.x - cam, y: GND, dir: p.face, pose: p.pose, t: f.t });
     // They've something to tell you.

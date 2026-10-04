@@ -516,7 +516,8 @@ await driveFrom('the Lot to the café', PIN.cafe, /Coffee Shop/, {
   // A place you only see as a card has its front drawn: the café, with Wren at the window.
   onCard: async () => log(`the café's front: ${await header("the café's front")}`),
 });
-await expectText('#sheet', /Wren is on the bar/, 'at the café');
+// What's going on at the café changes by the day (Phase 25.6), and Wren's in all of it.
+await expectText('#sheet', /Wren/, 'at the café');
 // The rush (Phase 18.2), looked at and left: the queue made in the order tapped, each
 // drink in time or not, and back to the café's card without working it.
 await click('#sheet .opt', 'Work the rush');
@@ -526,7 +527,7 @@ for (let i = 0; i < orders; i++) await page.locator('#rush .beta').nth(i).click(
 await expectText('#play-says', /% of the tips this queue had in it/, 'the rush, scored');
 await shot('rush');
 await click('#sheet .x');
-await expectText('#sheet', /Wren is on the bar/, 'back at the café');
+await expectText('#sheet', /Wren/, 'back at the café');
 await click('#sheet .opt', 'Pick up a double');
 // The double's $56, 12% more for Sold It All.
 await expectText('#h-cash', /^\$253$/, 'paid');
@@ -608,7 +609,7 @@ await click('#sheet .opt', 'Walk off');
 console.log('Dinner');
 await until('the crag again', async () => (await text('#b-nav')) === 'Map');
 await driveFrom('Roadside to the diner', PIN.diner, /The Diner/);
-await expectText('#sheet', /Otis is reading the paper/, 'at the diner');
+await expectText('#sheet-title', /The Diner/, 'at the diner');
 await click('#sheet .opt', 'Order the special');
 await shot('diner');
 await driveOn('the diner to the Lot', 'Drive back to the Lot');
@@ -780,7 +781,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 55 ||
+  saved?.v !== 56 ||
   st.romance !== null ||
   st.family !== null ||
   // You spoke to Hazel about the roof (Phase 17.3).

@@ -1284,6 +1284,23 @@ export const ROMANCE = {
   after: 3,
 };
 
+// Phase 25.6 [proposed]. Crew drama: two of `who`, both a Regular (`tier`) or better and
+// both around, ask for the same day, from day `from`. Whoever you let down loses `cost` bond,
+// keeps away from you `sulk` days, and after that won't come where the other is (the crew's
+// days never cross, so it's an invite to the same crag they turn down). `mend` days on, the one you picked asks about it; getting
+// them to the fire works at `odds`, `perTier` more for each tier you've rebuilt with the
+// one you let down, and failing sets it for good. Once a life.
+export const CREW = {
+  who: ['sage', 'mara', 'rico', 'tam'],
+  tier: 2,
+  from: 28,
+  cost: 2,
+  mend: 21,
+  odds: 0.4,
+  perTier: 0.15,
+  sulk: 7,
+};
+
 // Lives that change (Phase 17.3), on the age clock (AGE.days to a year, Evan's call), all
 // [proposed]:
 //   ray     his last season from the sixth year (day 91), and he stops coming out in the

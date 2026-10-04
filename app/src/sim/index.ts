@@ -87,6 +87,10 @@ export {
 } from './guiding';
 export { GUIDE_SAYS } from './content/guiding';
 export { menteeAfter, menteeCoachBlocked, menteeName, menteeTakeBlocked } from './mentee';
+export { crewTexts, crewToText, textBack } from './texts';
+export { keeperLine } from './keepers';
+export { crowdLine } from './crowdtalk';
+export { crewPair, crewDue, mendOdds } from './crew';
 export { teamBlocked, teamCost, teamNames, teamOdds } from './team';
 export { GUIDE_CRAGS, guideBlocked, guideLeft, guideLines, guidesOut } from './guides';
 export { mediaRung, postBlocked, postGain, rivalFollowers, tierEarned } from './media';

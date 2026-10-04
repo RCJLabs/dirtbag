@@ -395,7 +395,7 @@ export const PLACES: Record<string, PlaceDef> = {
     scene: null,
     ambience: { room: 0.3, murmur: 0.25, clinks: 0.1 },
     away: 'Midtown. Shoes, chalk, pads, and a resole bench in the back.',
-    here: "A bell on the door. Two guys by the cams, arguing about a route neither's done.",
+    here: 'A bell on the door. Two guys by the cams, arguing about a route neither’s done.',
     acts: [
       'shop.resole',
       'shop.chalk',

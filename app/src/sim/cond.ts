@@ -9,6 +9,7 @@ import { repairCost } from './van';
 import { isSick } from './sick';
 import { lifeDue } from './lives';
 import { romanceDue, strained } from './romance';
+import { crewDue } from './crew';
 import { strayDue } from './scout';
 import { clockShort, fill } from './format';
 import { benchedUntil, isPosted } from './jobs';
@@ -34,6 +35,7 @@ export interface Cond {
   life?: string; // "who/n": the nth moment of their life is due for you to hear (lives.ts)
   romance?: string; // "who/n": beat n of a romance with them is due (romance.ts)
   strained?: string; // you're together, and it's gone too long without a day together
+  crew?: string; // "who/ask/other" or "who/mend/other": a beat of crew drama is due (crew.ts)
   giftDue?: string; // you can give them something: a week since the last (Phase 17.5)
   sky?: Sky; // today's weather
   arc?: string; // "who/n": beat n of their arc is due (bond reached, days since the last)
@@ -59,6 +61,7 @@ export interface Cond {
   payVan?: VanPart; // the card covers the garage's bill for that part
   stock?: string; // a serving of that ingredient in the pantry (Phase 22.3)
   notSeason?: Season; // it isn't this season (the lake's swim, not in winter)
+  season?: Season; // it is this season (Phase 25.6: the shops' small talk)
   injured?: boolean; // you've an injury (the clinic)
   treatable?: boolean; // an injury, or an old one flaring (physio)
   sick?: boolean; // you're sick (Phase 22.4c)
@@ -113,6 +116,7 @@ export function holds(s: GameState, c: Cond): boolean {
   if (c.life !== undefined && !lifeDue(s, c.life)) return false;
   if (c.romance !== undefined && !romanceDue(s, c.romance)) return false;
   if (c.strained !== undefined && !strained(s, c.strained)) return false;
+  if (c.crew !== undefined && !crewDue(s, c.crew)) return false;
   if (c.giftDue !== undefined) {
     const gave = s.people[c.giftDue]?.gave;
     if (gave !== undefined && s.day - gave < GIVE.every) return false;
@@ -156,6 +160,7 @@ export function holds(s: GameState, c: Cond): boolean {
   if (c.payVan !== undefined && headroom(s) < repairCost(s, c.payVan)) return false;
   if (c.stock !== undefined && !((s.pantry[c.stock] ?? 0) > 0)) return false;
   if (c.notSeason !== undefined && seasonOf(s.day) === c.notSeason) return false;
+  if (c.season !== undefined && seasonOf(s.day) !== c.season) return false;
   if (c.injured !== undefined && !!s.injury !== c.injured) return false;
   if (c.sick !== undefined && isSick(s) !== c.sick) return false;
   if (c.suppliesBelow !== undefined && !(s.supplies < c.suppliesBelow)) return false;

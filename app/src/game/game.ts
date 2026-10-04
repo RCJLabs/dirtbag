@@ -9,6 +9,8 @@ import {
   attemptInput,
   CLIMB,
   dogOffered,
+  crowdLine,
+  crowdNow,
   goResult,
   gradeLabel,
   isNight,
@@ -58,12 +60,15 @@ import { actCue, VERB_CUES } from '../audio/cues';
 import { Sound } from '../audio/sound';
 import { arcTable, atLen, clamp, type Pt } from '../view/kit/geom';
 import {
+  CRAGS,
   DIM_PINS,
   MAP_PINS,
   OY,
   presentIn,
   SCENES,
   spotHot,
+  strangerHot,
+  strangersAt,
   W,
   WAKE_X,
   widthOf,
@@ -130,6 +135,7 @@ export type SheetId =
   // Your guiding outfit (Phase 25.2).
   | { k: 'outfit' }
   | { k: 'league' }
+  | { k: 'texts' }
   // A shift with a minigame to play (Phase 18.1), or just to work.
   | { k: 'shift'; act: string }
   | { k: 'act'; n: number }
@@ -297,6 +303,8 @@ export class Game {
   private speedRun: { t: number; last: number; slipUntil: number } | null = null;
   private player = { x: 300, tx: 300, dir: 1, phase: 0, speed: 0, onArrive: null as (() => void) | null };
   private scout = { x: 436, wag: 0 };
+  // The strangers you've stopped by today (Phase 25.6): the day, and how many.
+  private chats = { day: 0, n: 0 };
   // The sound, and when on the wall the next breath is due, in the go's own seconds.
   readonly sound = new Sound();
   private breathAt = 0;
@@ -448,7 +456,8 @@ export class Game {
     const s = this.state;
     if (before.at !== s.at || before.day !== s.day) return;
     for (const who of Object.keys(PEOPLE)) {
-      const was = whereIs(before.seed, who, before.day, before.min, before.people[who]) === s.at;
+      const was =
+        whereIs(before.seed, who, before.day, before.min, before.people[who], before.people) === s.at;
       const is = whereNow(s, who) === s.at;
       const name = PEOPLE[who]!.name;
       if (was && !is) this.toast(`${name} heads out.`);
@@ -685,7 +694,12 @@ export class Game {
   }
 
   private hots(scene: string): Hot[] {
-    return [...SCENES[scene]!.hots, ...presentIn(this.state, scene).map(spotHot)];
+    // The crowd at a crag stands in front of the lines, so a tap on one of them is for them.
+    const crag = CRAGS[scene];
+    const s = this.state;
+    const place = SCENES[scene]?.place ?? s.at;
+    const crowd = crag ? strangersAt(place, crag, s.day, crowdNow(s, place)).map(strangerHot) : [];
+    return [...crowd, ...SCENES[scene]!.hots, ...presentIn(s, scene).map(spotHot)];
   }
 
   private walkTo(x: number, then: (() => void) | null): void {
@@ -718,6 +732,11 @@ export class Game {
       else if (night && u.thing === 'fire') this.openSheet({ k: 'fire' });
       else if (night && th.nightAct) this.dispatch({ t: 'act', act: th.nightAct });
       else this.toast(night ? (th.night ?? th.day) : th.day);
+    } else if ('crowd' in u) {
+      // A word from a stranger in the crowd (Phase 25.6).
+      const s = this.state;
+      if (this.chats.day !== s.day) this.chats = { day: s.day, n: 0 };
+      this.toast(crowdLine(s, this.chats.n++));
     } else if ('route' in u) this.lookUp(u.route);
     else if ('wall' in u) this.openSheet({ k: 'wall', id: u.wall });
     else {
