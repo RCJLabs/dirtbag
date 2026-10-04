@@ -214,7 +214,8 @@ import type { Settings } from '../game/persist';
 import { paintHeader } from '../view/header';
 import { planLine, stepLabel, stepsAt, withStep, type PlanStep } from '../game/plan';
 import { CARD, cardPng } from '../view/paint/card';
-import { cardFile, cardOf, cardText } from './card';
+import { cardFile, cardOf, cardText, tripCardOf } from './card';
+import { glossSplit } from './gloss';
 import { buildSheet, SKILL_NAME, type ListSpec } from './sheets';
 import { CREDITS } from './credits';
 import { kitNote, kitState } from './kit';
@@ -325,15 +326,19 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
       <h3 id="sheet-title">{spec.title}</h3>
       {spec.head && <PlaceHead s={state} {...spec.head} />}
       {spec.reach && <Reach {...spec.reach} />}
-      {spec.sub && <p className="sub">{spec.sub}</p>}
+      {spec.sub && (
+        <p className="sub">
+          <Glossed game={game} at={id} text={spec.sub} />
+        </p>
+      )}
       {spec.lines?.map((l) => (
         <p className="sub" key={l}>
-          {l}
+          <Glossed game={game} at={id} text={l} />
         </p>
       ))}
       {spec.notes?.map((n) => (
         <p className="note" key={n}>
-          {n}
+          <Glossed game={game} at={id} text={n} />
         </p>
       ))}
       {spec.tonight && <TonightList t={spec.tonight} />}
@@ -1066,10 +1071,14 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
         {lineName(s, r)} · {lineGrade(s, r)}
       </h3>
       <p className="sub">
-        {r.line} {goes ? `Go ${goes + 1} today.` : 'First go today.'} Tap the wall to reopen this.
+        <Glossed game={game} at={{ k: 'beta', route }} text={r.line} />{' '}
+        {goes ? `Go ${goes + 1} today.` : 'First go today.'} Tap the wall to reopen this.
       </p>
       {r.open && !log?.sent && !s.firsts[route] && (
-        <p className="note">Open project: nobody’s sent it. Send it and it’s yours to name.</p>
+        <p className="note">
+          <Glossed game={game} at={{ k: 'beta', route }} text="Open project: nobody’s sent it." /> Send it and
+          it’s yours to name.
+        </p>
       )}
       {r.highball && <p className="note">{landingNote(s, r)}</p>}
       {s.fear.includes(r.type) && (
@@ -1216,7 +1225,7 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
 // The send card: painted here from the save, shown as an image (so a long press saves it
 // too), with a share button where the phone can share files, and a plain download.
 function CardBody({ game, id, s }: { game: Game; id: Extract<SheetId, { k: 'card' }>; s: GameState }) {
-  const [card] = useState(() => cardOf(s, id.route));
+  const [card] = useState(() => (id.trip !== undefined ? tripCardOf(s, id.trip) : cardOf(s, id.route)));
   const [png, setPng] = useState<{ file: File; url: string } | null>(null);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
@@ -1614,6 +1623,30 @@ function BookBody({ s }: { s: GameState }) {
         </Fragment>
       ))}
     </div>
+  );
+}
+
+// Phase 25.7: a sheet's text with the glossary's words in it marked, each a tap from its
+// entry. Not on a word's own card, nor the journal.
+function Glossed({ game, at, text }: { game: Game; at: SheetId; text: string }) {
+  if (at.k === 'word') return <>{text}</>;
+  return (
+    <>
+      {glossSplit(text).map((p, i) =>
+        typeof p === 'string' ? (
+          <Fragment key={i}>{p}</Fragment>
+        ) : (
+          <button
+            type="button"
+            key={i}
+            className="gloss"
+            onClick={() => game.openSheet({ k: 'word', term: p.term, back: at })}
+          >
+            {p.text}
+          </button>
+        ),
+      )}
+    </>
   );
 }
 

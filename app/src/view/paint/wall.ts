@@ -435,6 +435,66 @@ for (const r of Object.values(ROUTES)) if (r.wall) TOPO_PTS[r.id] = pitchPts(r);
 // (Phase 24.6–24.8).
 for (const r of Object.values(EXPED_ROUTES)) TOPO_PTS[r.id] = pitchPts(r);
 
+// Miller's Bluff (Phase 25.7): its six lines on its own face, left to right as the field
+// sees them: edges up the barn wall, the tufa, the corner leaning out at its top, the
+// pillar's edge, out under the big roof a third of the way up, and the long wall to the top.
+Object.assign(TOPO_PTS, {
+  bbarn: [
+    [44, 540],
+    [50, 470],
+    [40, 400],
+    [52, 330],
+    [44, 260],
+    [50, 190],
+    [46, 136],
+  ],
+  btufa: [
+    [104, 540],
+    [102, 460],
+    [108, 380],
+    [104, 300],
+    [110, 220],
+    [106, 132],
+  ],
+  bcow: [
+    [162, 540],
+    [158, 460],
+    [160, 380],
+    [156, 300],
+    [164, 220],
+    [178, 160],
+    [184, 124],
+  ],
+  bpillar: [
+    [222, 540],
+    [214, 470],
+    [218, 400],
+    [212, 320],
+    [218, 240],
+    [214, 166],
+    [220, 112],
+  ],
+  broof: [
+    [268, 540],
+    [272, 470],
+    [266, 410],
+    [276, 386],
+    [298, 380],
+    [306, 340],
+    [300, 260],
+    [306, 180],
+    [300, 118],
+  ],
+  blong: [
+    [332, 540],
+    [326, 450],
+    [334, 360],
+    [326, 270],
+    [332, 180],
+    [328, 84],
+  ],
+});
+
 const TOPO: Record<string, Topo> = Object.fromEntries(
   Object.entries(TOPO_PTS).map(([id, pts]) => [id, topoOf(spline(pts, 14))]),
 );
@@ -735,6 +795,145 @@ function paintCove(g: G): void {
     for (let x = -4; x <= W + 8; x += 12) g.lineTo(x, y + Math.sin(x * 0.06 + y) * 3);
     g.stroke();
   }
+}
+
+// Miller's Bluff (Phase 25.7): grey limestone on the back of a farm, bedded flat and never
+// chalked, with water streaks down it, the tufa, the cow corner, the pillar and the big
+// roof where its lines say they are; the field and a fence at its foot.
+const BL_WALL: Pt[] = [
+  [-4, BASE_Y],
+  [-4, 142],
+  [70, 128],
+  [130, 134],
+  [190, 112],
+  [250, 116],
+  [300, 104],
+  [364, 76],
+  [364, BASE_Y],
+];
+
+function paintBluff(g: G): void {
+  const r = mulberry32(223);
+  g.fillStyle = lin(g, 0, 0, 0, 160, [
+    [0, '#8FC0E0'],
+    [1, '#EAF0E6'],
+  ]);
+  g.fillRect(0, 0, W, H);
+  g.fillStyle = '#9DB07A';
+  g.beginPath();
+  trace(
+    g,
+    [
+      [-4, 150],
+      [90, 134],
+      [200, 146],
+      [300, 128],
+      [364, 140],
+    ],
+    false,
+  );
+  g.lineTo(364, 220);
+  g.lineTo(-4, 220);
+  g.closePath();
+  g.fill();
+  g.save();
+  g.beginPath();
+  poly(g, BL_WALL, true);
+  g.clip();
+  g.fillStyle = '#BDB9B0';
+  g.fillRect(0, 0, W, H);
+  // Bedding, flat across the face, and the water's streaks down it.
+  g.strokeStyle = 'rgba(70,68,64,.28)';
+  g.lineWidth = 1.2;
+  for (let y = 150; y < BASE_Y; y += 26 + r() * 22) {
+    g.beginPath();
+    for (let x = -4; x <= W + 8; x += 24) g.lineTo(x, y + (r() - 0.5) * 3);
+    g.stroke();
+  }
+  for (let i = 0; i < 16; i++) {
+    const x = r() * W;
+    g.fillStyle = lin(g, 0, 120, 0, 120 + 200 + r() * 260, [
+      [0, r() < 0.6 ? 'rgba(52,52,58,.3)' : 'rgba(170,120,70,.25)'],
+      [1, 'rgba(0,0,0,0)'],
+    ]);
+    g.fillRect(x, 120, 4 + r() * 10, 460);
+  }
+  // The tufa: a drip of wax down the middle of the wall.
+  g.fillStyle = '#D9D4C8';
+  g.beginPath();
+  g.ellipse(112, 330, 9, 190, 0, 0, 6.2832);
+  g.fill();
+  g.fillStyle = 'rgba(60,58,54,.3)';
+  g.fillRect(118, 150, 4, 360);
+  // The corner the cows shelter in, and its groove leaning out at the top.
+  g.fillStyle = 'rgba(48,48,54,.35)';
+  g.beginPath();
+  poly(
+    g,
+    [
+      [146, BASE_Y],
+      [170, BASE_Y],
+      [176, 220],
+      [196, 120],
+      [184, 120],
+      [160, 220],
+    ],
+    true,
+  );
+  g.fill();
+  // The pillar, stood off the wall, sharp on both edges.
+  g.fillStyle = '#CFCBC1';
+  g.fillRect(204, 104, 30, 436);
+  g.fillStyle = 'rgba(40,40,46,.45)';
+  g.fillRect(234, 104, 5, 436);
+  g.fillStyle = 'rgba(255,255,255,.18)';
+  g.fillRect(204, 104, 3, 436);
+  // The big roof, a third of the way up: its lip, and the dark under it.
+  g.fillStyle = '#3F3E44';
+  g.beginPath();
+  poly(
+    g,
+    [
+      [256, 384],
+      [320, 376],
+      [320, 398],
+      [262, 402],
+    ],
+    true,
+  );
+  g.fill();
+  g.fillStyle = '#E3DFD5';
+  g.fillRect(256, 372, 66, 6);
+  // Pockets, here and there, nobody's chalk in them.
+  g.fillStyle = 'rgba(46,44,42,.5)';
+  for (let i = 0; i < 26; i++) {
+    g.beginPath();
+    g.ellipse(r() * W, 160 + r() * 360, 1.5 + r() * 3, 1 + r() * 2, 0, 0, 6.2832);
+    g.fill();
+  }
+  g.restore();
+  // The field, a fence, and a hay bale.
+  g.fillStyle = '#7E9A52';
+  g.fillRect(-4, BASE_Y, W + 8, H - BASE_Y);
+  g.strokeStyle = '#6A5640';
+  g.lineWidth = 3;
+  for (let x = 10; x < W; x += 58) {
+    g.beginPath();
+    g.moveTo(x, BASE_Y + 46);
+    g.lineTo(x, BASE_Y + 18);
+    g.stroke();
+  }
+  g.lineWidth = 1.4;
+  for (const y of [BASE_Y + 24, BASE_Y + 36]) {
+    g.beginPath();
+    g.moveTo(-4, y);
+    g.lineTo(W + 4, y);
+    g.stroke();
+  }
+  g.fillStyle = '#D8B25C';
+  g.beginPath();
+  g.ellipse(326, BASE_Y + 64, 26, 18, 0, 0, 6.2832);
+  g.fill();
 }
 
 // The Crucible: a black gneiss face under a grey sky, folded into pale bands, frost in
@@ -1433,6 +1632,7 @@ function paintWall(g: G, place: string, selected: string): void {
   else if (place === 'wind') paintWind(g);
   else if (place === 'crucible') paintCrucible(g);
   else if (place === 'cove') paintCove(g);
+  else if (place === 'bluff') paintBluff(g);
   else if (SCENED.includes(place)) paintExpedWall(g, place);
   else paintRoadside(g);
   paintLines(g, place, selected);
@@ -1455,6 +1655,7 @@ const FACE: Record<string, Pt[]> = {
   wind: R_WALL,
   crucible: C_WALL,
   cove: P_WALL,
+  bluff: BL_WALL,
   elcap: EXPED_FACE,
   cerrotorre: EXPED_FACE,
   trango: EXPED_FACE,

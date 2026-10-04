@@ -264,6 +264,19 @@ button.pill:disabled {
   font: 600 calc(13px * var(--u-fs)) / 1.35 var(--u-mono);
   color: var(--u-acc);
 }
+/* Phase 25.7: a glossary word in a sheet's text, a tap from its entry. */
+.sheet .gloss {
+  display: inline;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  cursor: help;
+}
 .sheet .x {
   position: absolute;
   right: 8px;

@@ -2,7 +2,8 @@
 import { describe, expect, it } from 'vitest';
 import { emptyLog, newGame } from '../sim/game';
 import type { GameState, RouteLog } from '../sim/types';
-import { cardFile, cardOf, cardText } from './card';
+import { bestTrip, cardFile, cardOf, cardText, tripCardOf } from './card';
+import type { TripLog } from '../sim/types';
 
 const sent = (day: number, go: number, style: 'onsight' | 'flash' | 'redpoint'): RouteLog => ({
   ...emptyLog(),
@@ -60,5 +61,48 @@ describe('the send card', () => {
     )!;
     expect(theirs.fa).toEqual({ mine: false, by: 'Dex Calloway' });
     expect(cardFile({ ...mine, name: 'Arête ¡Ya!' })).toBe('dirtbag-arete-ya.png');
+  });
+});
+
+// Phase 25.7: a trip's card, drawn on the pitch you got to.
+describe('the trip card', () => {
+  const trip = (over: Partial<TripLog>): TripLog => ({
+    id: 'elcap',
+    day: 60,
+    end: 'bail',
+    high: 3,
+    partner: 'hazel',
+    nights: 4,
+    seen: [],
+    told: true,
+    ...over,
+  });
+
+  it('draws the summit pitch for a summit, your high point for anything else, nothing from the ground', () => {
+    const s = robin({ book: [trip({}), trip({ end: 'summit', high: 6, day: 80 }), trip({ high: 0 })] });
+    expect(tripCardOf(s, 0)).toMatchObject({
+      name: 'The Nose, pitch 3',
+      style: 'High point, 3 of 6',
+      where: 'El Capitan, Yosemite, USA',
+      who: 'Robin and Hazel',
+      fa: null,
+    });
+    expect(tripCardOf(s, 0)!.route.id).toBe('elcap-3');
+    expect(tripCardOf(s, 1)).toMatchObject({
+      name: 'The Nose',
+      style: 'Summit',
+      when: expect.stringMatching(/^Day 80, /),
+    });
+    expect(tripCardOf(s, 1)!.route.id).toBe('elcap-6');
+    expect(tripCardOf(s, 2)).toBeNull();
+  });
+
+  it('picks the summit, or else the highest you got, for an objective’s card', () => {
+    expect(
+      bestTrip(robin({ book: [trip({ high: 2 }), trip({ high: 4 }), trip({ high: 3 })] }), 'elcap'),
+    ).toBe(1);
+    expect(bestTrip(robin({ book: [trip({ high: 5 }), trip({ end: 'summit', high: 6 })] }), 'elcap')).toBe(1);
+    expect(bestTrip(robin({ book: [trip({ high: 0 })] }), 'elcap')).toBeNull();
+    expect(bestTrip(robin({ book: [trip({})] }), 'trango')).toBeNull();
   });
 });

@@ -242,6 +242,8 @@ import {
   menteeTakeBlocked,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
+import { bestTrip } from './card';
+import { wordOf } from './gloss';
 import type { Game, SheetId } from '../game/game';
 import { CRAGS } from '../view/layout';
 import { whoAround, type Who } from './who';
@@ -1014,7 +1016,25 @@ function homeSheet(game: Game, s: GameState): ListSpec | null {
     sub: `${fill(TRIP_END[t.end], w)}, ${t.partner ? `with ${w.partner}` : 'alone'}.`,
     notes,
     close: false,
-    rows: [{ label: 'Right', run: () => game.closeSheet() }],
+    rows: [
+      // Phase 25.7: a keepsake of it, drawn on the pitch you got to.
+      ...(t.high
+        ? [
+            {
+              label: 'Keep a card of it',
+              note: 'The pitch you got to, drawn on its own wall, to save or send on.',
+              run: () =>
+                game.openSheet({
+                  k: 'card',
+                  route: expedPitches(t.id)[t.high - 1]!.id,
+                  trip: s.book.length - 1,
+                  back: { k: 'home' },
+                }),
+            },
+          ]
+        : []),
+      { label: 'Right', run: () => game.closeSheet() },
+    ],
   };
 }
 
@@ -1122,6 +1142,21 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     }
 
     // Your guiding outfit (Phase 25.2): the till, the guides, selling up.
+    // A glossary word, tapped in a sheet's text (Phase 25.7).
+    case 'word': {
+      const w = wordOf(id.term);
+      if (!w) return null;
+      return {
+        title: w.term,
+        sub: w.says,
+        close: true,
+        rows: [
+          { label: 'Back', run: () => game.openSheet(id.back) },
+          { label: 'All the words', run: () => game.openSheet({ k: 'journal', page: 'words' }) },
+        ],
+      };
+    }
+
     // The crew's texts back (Phase 25.6).
     case 'texts':
       return {
@@ -2299,6 +2334,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             run: () => game.openSheet({ k: 'exped', id: eid }),
           })),
           ...teamRows(game, s),
+          ...tripCardRows(game, s),
           { label: 'Back', run: () => game.openSheet({ k: 'van' }) },
         ],
       };
@@ -2327,6 +2363,31 @@ export function crowdNote(c: Crowd): string {
 }
 
 const pct = (p: number): string => `${Math.round(p * 100)}%`;
+
+// A keepsake of each objective you've got a pitch up (Phase 25.7): the summit, or your high point.
+function tripCardRows(game: Game, s: GameState): Row[] {
+  return Object.entries(EXPEDITIONS).flatMap(([id, e]) => {
+    const i = bestTrip(s, id);
+    if (i === null) return [];
+    const t = s.book[i]!;
+    return [
+      {
+        label: `A card of ${e.name}`,
+        note:
+          t.end === 'summit'
+            ? `The summit, day ${t.day}.`
+            : `Your high point, ${t.high} of ${e.pitches} pitches.`,
+        run: () =>
+          game.openSheet({
+            k: 'card',
+            route: expedPitches(id)[t.high - 1]!.id,
+            trip: i,
+            back: { k: 'expeds' },
+          }),
+      },
+    ];
+  });
+}
 
 // A young team's trip (Phase 25.4): one away, or one for each objective you've topped out on.
 function teamRows(game: Game, s: GameState): Row[] {
