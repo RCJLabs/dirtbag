@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 51;
+export const SAVE_VERSION = 52;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -410,6 +410,11 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, giving: { total: 0, food: 0, access: 0 }, guides: {} };
   },
+  // v51 -> v52 (Phase 25.2): no guiding outfit.
+  51: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, outfit: null };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -656,6 +661,12 @@ export function validate(x: unknown): string[] {
           (g.out === null || isInt(g.out)),
       ),
     'guides',
+  );
+  const of = x.outfit;
+  need(
+    of === null ||
+      (isObj(of) && [of.since, of.guides, of.till, of.last].every(isInt) && (of.guides as number) >= 1),
+    'outfit',
   );
   need(typeof x.lifestyle === 'string' && x.lifestyle in LIFESTYLE, 'lifestyle');
   need(typeof x.spot === 'string' && x.spot in SPOTS, 'spot');

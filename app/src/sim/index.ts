@@ -69,6 +69,18 @@ export { bolted, boltBlocked, businessRung, gymBuyBlocked, gymDay, gymTarget, wa
 export { GYM_UPGRADE_NAME } from './content/business';
 export { capstone, ladderById, LADDERS, type Ladder, type LadderId } from './ladders';
 export { GIFT_AT, giveBlocked, type Gift } from './giving';
+export {
+  bestPlan,
+  guestsToday,
+  guestValue,
+  guideCragLines,
+  outfitBlocked,
+  outfitDay,
+  planRefused,
+  sendChance as guestSendChance,
+  type Guest,
+} from './guiding';
+export { GUIDE_SAYS } from './content/guiding';
 export { GUIDE_CRAGS, guideBlocked, guideLeft, guideLines, guidesOut } from './guides';
 export { mediaRung, postBlocked, postGain, rivalFollowers, tierEarned } from './media';
 export { DOC, MEDIA_RIVAL, POSTS, SPONSORS, TERMS } from './content/media';
@@ -155,6 +167,7 @@ export {
   COMP,
   FLOOR,
   GIVING,
+  GUIDING,
   GUIDE,
   GYM_SET,
   HAUL,

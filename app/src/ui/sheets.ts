@@ -220,6 +220,8 @@ import {
   guideBlocked,
   guideLeft,
   type Gift,
+  GUIDING,
+  outfitBlocked,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import type { Game, SheetId } from '../game/game';
@@ -437,6 +439,31 @@ function guideRows(game: Game, s: GameState): Row[] {
   });
 }
 
+// Your guiding outfit (Phase 25.2): offered at the shop from Guide, yours from Lead guide.
+function outfitRows(game: Game, s: GameState): Row[] {
+  if (s.outfit)
+    return [
+      {
+        label: 'Your outfit',
+        note: `${s.outfit.guides} ${s.outfit.guides === 1 ? 'guide' : 'guides'}. ${money(Math.max(0, s.outfit.till))} in the till.`,
+        run: () => game.openSheet({ k: 'outfit' }),
+      },
+    ];
+  if (rankAt(s, 'guide') < 1) return [];
+  const why = outfitBlocked(s);
+  return [
+    {
+      label: 'Start your own outfit',
+      cost: costLabel({ cash: -GUIDING.outfit.price }),
+      note: why
+        ? `${why}.`
+        : 'A permit, a policy and the shop’s overflow. Your guides out on every open day.',
+      off: !!why,
+      run: () => game.outfitDo({ t: 'outfit', do: 'start' }),
+    },
+  ];
+}
+
 // Your feed's row at the van (Phase 18.5): an offer waiting, or how many follow you.
 function feedRow(game: Game, s: GameState): Row {
   const o = s.media.offer;
@@ -533,6 +560,7 @@ const PLAYED: Record<string, string> = {
   diner: 'Work the floor',
   coach: 'Coach your clients',
   warehouse: 'Pick on the clock',
+  guide: 'Plan the day',
 };
 
 // What playing pays, where it isn't a share of the shift.
@@ -1004,6 +1032,49 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       };
     }
 
+    // Your guiding outfit (Phase 25.2): the till, the guides, selling up.
+    case 'outfit': {
+      const o = s.outfit;
+      if (!o) return null;
+      const O = GUIDING.outfit;
+      const day = (O.fee - O.wage) * o.guides - O.insurance;
+      return {
+        title: 'Your outfit',
+        sub: `${o.guides} ${o.guides === 1 ? 'guide' : 'guides'}. ${money(Math.max(0, o.till))} in the till${o.till < 0 ? `, ${money(-o.till)} short` : ''}.`,
+        lines: [
+          `An open day at Roadside: ${day >= 0 ? '+' : '−'}${money(Math.abs(day))}. A shut one, or any day in winter: −${money(O.insurance)} of insurance. Yesterday: ${o.last >= 0 ? '+' : '−'}${money(Math.abs(o.last))}.`,
+        ],
+        close: true,
+        rows: [
+          {
+            label: 'Draw the till',
+            cost: o.till > 0 ? `+${money(o.till)}` : '',
+            note: o.till > 0 ? 'The outfit’s profit, to your pocket.' : 'Nothing in it.',
+            off: o.till <= 0,
+            run: () => game.outfitDo({ t: 'outfit', do: 'draw' }),
+          },
+          {
+            label: 'Take on a guide',
+            note:
+              o.guides >= O.guides
+                ? `${O.guides} is as many as the permit allows.`
+                : `${money(O.fee - O.wage)} more on an open day.`,
+            off: o.guides >= O.guides,
+            run: () => game.outfitDo({ t: 'outfit', do: 'hire' }),
+          },
+          ...(o.guides > 1
+            ? [{ label: 'Let a guide go', run: () => game.outfitDo({ t: 'outfit', do: 'fire' }) }]
+            : []),
+          {
+            label: 'Sell up',
+            cost: `+${money(Math.max(0, Math.round(O.price * O.resale + o.till)))}`,
+            note: 'To one of your guides, the till with it.',
+            run: () => game.outfitDo({ t: 'outfit', do: 'sell' }),
+          },
+        ],
+      };
+    }
+
     // Your guides (Phase 25.1): a crag each, written at the van.
     case 'guides':
       return {
@@ -1309,6 +1380,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           ...p.acts.flatMap((a) => actRows(game, s, a)),
           // Phase 22.5b: a set out front.
           ...(id.id === 'cafe' ? [buskRow(game, s)] : []),
+          // Phase 25.2: an outfit of your own.
+          ...(id.id === 'shop' ? outfitRows(game, s) : []),
           // Phase 25.1: giving.
           ...(Object.keys(GIFT_AT) as Gift[])
             .filter((g) => GIFT_AT[g] === id.id)

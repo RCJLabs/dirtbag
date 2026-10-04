@@ -16,6 +16,8 @@ import {
 import { COMP_SAYS, COMP_TIERS } from './content/comps';
 import { GYM_UPGRADE_SAYS } from './content/business';
 import { giveBlocked } from './giving';
+import { bestPlan, guestsToday, outfitBlocked, outfitDay, planRefused, planValue } from './guiding';
+import { GUIDE_SAYS } from './content/guiding';
 import { guideBlocked, guidesOut } from './guides';
 import { bolted, boltBlocked, gymBuyBlocked, gymNight, UPGRADES, wallWord, type Upgrade } from './business';
 import { DOC, HEAT_SAYS, MEDIA_RIVAL, POSTS, SPONSORS, TERMS } from './content/media';
@@ -200,6 +202,7 @@ import {
   LAND,
   GIVING,
   GUIDE,
+  GUIDING,
   AGE,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
@@ -351,6 +354,7 @@ export function newGame(seed: string): GameState {
     bolted: [],
     giving: { total: 0, food: 0, access: 0 },
     guides: {},
+    outfit: null,
     lifestyle: 'dirtbag',
     spot: 'lot',
     lotNights: 0,
@@ -749,6 +753,18 @@ export function act(s0: GameState, a: Action): Result {
     // So is a comp's scorecard (Phase 18.4).
     if (s.comps.on) finishComp();
     mediaNight(ended);
+    // Your outfit's day (Phase 25.2): guides out if Roadside was open, the insurance always.
+    if (s.outfit) {
+      const c = conditionsAt(s.seed, ended, GUIDING.crag);
+      const open = c.open && !c.closed && seasonOf(ended) !== 'winter';
+      const net = outfitDay(s.outfit.guides, open);
+      s.outfit = { ...s.outfit, till: s.outfit.till + net, last: net };
+      line(
+        open
+          ? `The outfit yesterday: ${s.outfit.guides} out at Roadside, ${net >= 0 ? '+' : '−'}${money(Math.abs(net))}. ${money(Math.max(0, s.outfit.till))} in its till.`
+          : `The outfit yesterday: nobody out, ${money(GUIDING.outfit.insurance)} of insurance all the same.`,
+      );
+    }
     // Your own gym's night (Phase 18.6): the takings in the till, told in the morning.
     if (s.gym) {
       s.gym = gymNight(s.gym);
@@ -1296,6 +1312,17 @@ export function act(s0: GameState, a: Action): Result {
         if (no) return no;
         coaching = coachSession(s, play.coach);
         played = { score: 0, from: 1, line: '' };
+      } else if ('guide' in play && job === 'guide') {
+        const guests = guestsToday(s);
+        const no = planRefused(guests, play.guide);
+        if (no) return no;
+        const score = planValue(guests, play.guide) / Math.max(0.01, bestPlan(guests).value);
+        const topped = guests.filter((g, i) => (ROUTES[play.guide[i]!]?.grade ?? 0) >= g.goal).length;
+        played = {
+          score,
+          from: GUIDING.from,
+          line: `${topped} of ${guests.length} on the line they came for. ${say(GUIDE_SAYS, score)}`,
+        };
       } else if ('haul' in play && job === 'warehouse') {
         if (s.haul) return 'You’re picking already.';
         hauling = true;
@@ -2211,6 +2238,46 @@ export function act(s0: GameState, a: Action): Result {
           ? `You brush ${r.name} clean, pull the moss off the top and kick the stones out of the landing. Nobody's ever been up it.`
           : `A day on a rope with a drill, ${money(c.cash)} of glue-ins and chains, and ${r.name} is a line. Nobody's ever been up it.`,
       );
+      break;
+    }
+
+    // Your guiding outfit (Phase 25.2).
+    case 'outfit': {
+      const O = GUIDING.outfit;
+      const o = s.outfit;
+      if (a.do === 'start') {
+        const why = outfitBlocked(s);
+        if (why) return refuse(`${why}.`);
+        if (s.at !== 'shop') return refuse('You start it at the gear shop.');
+        spend({ cash: -O.price });
+        s.outfit = { since: s.day, guides: 1, till: 0, last: 0 };
+        // Your own outfit's days aren't the shop's: no more shop shifts.
+        s.shifts = s.shifts.filter((x) => x.job !== 'guide');
+        line(
+          `A permit, a policy, six ropes and a sign for the van. The shop sends you its overflow and one guide to start. ${money(O.price)}.`,
+        );
+        break;
+      }
+      if (!o) return refuse('You don’t run an outfit.');
+      if (a.do === 'hire') {
+        if (o.guides >= O.guides) return refuse(`${O.guides} guides is as many as the permit allows.`);
+        s.outfit = { ...o, guides: o.guides + 1 };
+        line(`Another guide on the books: ${o.guides + 1} now.`);
+      } else if (a.do === 'fire') {
+        if (o.guides <= 1) return refuse('One guide’s the outfit. Sell it if you’re done.');
+        s.outfit = { ...o, guides: o.guides - 1 };
+        line(`One guide fewer on the books: ${o.guides - 1} now.`);
+      } else if (a.do === 'draw') {
+        if (o.till <= 0) return refuse('Nothing in the till to draw.');
+        spend({ cash: o.till });
+        line(`You draw ${money(o.till)} from the outfit's till.`);
+        s.outfit = { ...o, till: 0 };
+      } else {
+        const back = Math.max(0, Math.round(O.price * O.resale + o.till));
+        spend({ cash: back });
+        s.outfit = null;
+        line(`You sell the outfit to one of your guides, ropes, permit and all. ${money(back)}.`);
+      }
       break;
     }
 

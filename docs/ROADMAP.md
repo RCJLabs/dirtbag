@@ -2705,9 +2705,14 @@ Players will ask "what am I working towards?" by hour 3.
 2. Each carried item is built, with tests, or cut by Evan's call.
 3. The harness's targets still pass.
 
-*The slices:*
+*The slices (Evan's calls, 4 Oct 2026: guide days then an outfit; a mentee you coach; fund a team's trip):*
 - **25.1 The Record Book's last three:** guides, a trait, giving.
-- The rest are planned after 25.1, with Evan.
+- **25.2 Guiding:** guide days, a sixth job with its own small game, then an outfit of your own.
+- **25.3 The mentee:** a local kid you take on and coach over seasons; their grade passes to an heir.
+- **25.4 An expedition team:** late money funds a young team's trip to an objective you've summited.
+- **25.5 Comps outside the ladder:** the dyno comp, and a season-long bouldering league.
+- **25.6 The people:** crew drama, walker chats, busy-texts, shopkeepers' small talk.
+- **25.7 Polish:** the keepsake card for a trip, tappable glossary words, the bluff's own rock.
 
 **Status (4 Oct 2026): 25.1 built: the Record Book's last three.** Save v51, 0.999.26. Numbers [proposed] in `GIVING` and `GUIDE`; rules in `giving.ts` and `guides.ts`.
 - **Known For It** is earned when your habits name a quirk. Phase 23 made v0.956's traits quirks; its page was waiting on a name that already existed.
@@ -2723,6 +2728,33 @@ Players will ask "what am I working towards?" by hour 3.
 - **Where:** "Your guides" at the van; a row each at the market and the gear shop.
 - **Save v51:** `giving` and `guides`; a real v50 save loads.
 - **No harness run:** the bots don't give or write.
+
+**Status (4 Oct 2026): 25.2 built: guiding.** Save v52, 0.999.27. Numbers [proposed] in `GUIDING` and the `guide` job; rules in `guiding.ts`.
+- **A sixth job:** the gear shop's guide service, from V6.
+  - Ranks: Assistant guide, Guide, Lead guide.
+  - A whole day out at Roadside: 5 hours, 26 energy, $50 and $18 more a rank.
+  - Signed up for and posted like the rest, with "Plan the day" beside the plain shift.
+- **Plan the day:** two clients, or three from Guide, each with a goal (harder as you rise, never past Roadside's hardest guidable line) and climbing a grade or two under it; some are nervous.
+  - You put each on a different line, one rope to a line.
+  - Too easy bores them.
+  - Past their goal frightens them, and a nervous one won't leave the ground.
+  - Their goal is the day of their life if they send it and a frightening one if they don't, so it's right only for a calm client a grade short.
+- **Not solved (criterion 3), tested:**
+  - Over 60 days, more than 20 different best plans.
+  - Every fixed rule (their goal, their level, a grade under the goal) scores 0.88 to 0.89 of the best, and random play about 0.6.
+  - Reading each client scores 1.00.
+  - The bonus starts at 0.9, so only reading them pays.
+  - Tried first, the goal for everyone scored 0.99: a failed go at the goal now costs the client's day.
+- **The outfit:** at Lead guide, $3,000 at the shop starts your own.
+  - One guide to start, up to three.
+  - An open day at Roadside: $60 a guide, less $25 insurance.
+  - A shut day, or any day in winter: the insurance alone.
+  - The till is drawn as at Send City, and it sells for 60% of the price plus the till.
+  - A line every morning. A new Record Book entry, Ropes for Hire.
+- **Lines:** a guided day uses Roadside's lines up to grade 9, boulders included (Roadside has five roped lines, all V5 or under), and never the open project. Clients' grades show in both scales.
+- **Not measured:** the bots don't guide, so the job's pay against the other five and the outfit's take are unmeasured. On paper the outfit makes about $155 a day with three guides on an open day.
+- **Seen:** the day's plan and the outfit's sheet, from loaded saves in Chromium. A first look showed clients in V-grades against roped lines in YDS, and the open project on offer; both fixed.
+- **Save v52:** `outfit`; a real v51 save loads.
 
 ## Stage D — Get it in front of people
 
@@ -3018,3 +3050,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Phase 18.7 built: the ladders screen, a career bot per ladder and their harness; the grade curve compressed past V10 (Evan's call); followers saturate; the gym, the Games and the film tuned. Criterion 2: comps, media and business 8/8, outdoors 5/8. 0.999.25.
 - 2026-10-03 — Phase 18 closed by Evan's call: criteria 1, 3 and 4 pass; criterion 2 passes for comps, media and business, and outdoors at 5 of 8 is accepted. CURRENT MILESTONE moved to Phase 14, the desktop and Steam build.
 - 2026-10-04 — Phase 25 added by Evan's call: every gameplay feature before the Steam build; CURRENT MILESTONE moved to it from Phase 14. 25.1 built: guides, giving and a trait, the Record Book's last three entries. Save v51. 0.999.26.
+- 2026-10-04 — Phase 25.2 built: guiding, a sixth job with its own day to plan, and an outfit of your own at Lead guide; Phase 25's slices planned with Evan's calls. Save v52. 0.999.27.

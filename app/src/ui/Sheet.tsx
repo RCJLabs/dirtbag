@@ -202,6 +202,11 @@ import {
   livingMult,
   WORD_GROUP,
   type WordGroup,
+  guestsToday,
+  guestValue,
+  guestSendChance,
+  guideCragLines,
+  type Guest,
 } from '../sim';
 import type { Game, JournalPage, SheetId, Ui } from '../game/game';
 import { legacyFile, saveLegacyFile } from '../game/legacy';
@@ -359,6 +364,8 @@ function ShiftBody({ game, act, s }: { game: Game; act: string; s: GameState }) 
     <HaulBody game={game} act={act} s={s} />
   ) : job === 'diner' ? (
     <FloorBody game={game} act={act} s={s} />
+  ) : job === 'guide' ? (
+    <GuideBody game={game} act={act} s={s} />
   ) : (
     <SetBody game={game} act={act} s={s} />
   );
@@ -598,6 +605,70 @@ function focusNote(c: Client, f: Focus): string {
   if (f === 'rest') return c.tired ? `rested to ${after.tired}` : 'nothing to rest';
   if (f === 'head' && c.scared) return `the fear gone, +${gain}%`;
   return `+${gain}%${after.progress >= 100 ? ', and the send' : ''}`;
+}
+
+// A guiding day (Phase 25.2): a line each at Roadside, one rope to a line.
+function GuideBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
+  const guests = guestsToday(s);
+  const lines = guideCragLines();
+  const [picks, setPicks] = useState<(string | null)[]>(() => guests.map(() => null));
+  const ready = picks.every((p) => p !== null);
+  return (
+    <>
+      <h3 id="sheet-title">Plan the day</h3>
+      <p className="sub">
+        A line each, one rope to a line. Too easy and they’re bored; past their goal and they’re frightened;
+        their goal pays best if they can send it.
+      </p>
+      {guests.map((g, i) => (
+        <div key={g.name} className="client" id={`guest-${i}`}>
+          <p className="note">
+            {g.name}: climbs {gradeName('boulder', g.level)} or {gradeName('sport', g.level)}, here for a{' '}
+            {gradeName('boulder', g.goal)} or {gradeName('sport', g.goal)}
+            {g.nervous ? ', and nervous about it.' : '.'}
+          </p>
+          <div className="moves">
+            {lines.map((r) => {
+              const taken = picks.some((p, j) => j !== i && p === r.id);
+              return (
+                <button
+                  key={r.id}
+                  type="button"
+                  className="beta"
+                  role="radio"
+                  aria-checked={picks[i] === r.id}
+                  disabled={taken}
+                  onClick={() => setPicks((x) => x.map((y, j) => (j === i ? r.id : y)))}
+                >
+                  <span className="dot" />
+                  <span>{r.name}</span>
+                  <span className="c">{gradeLabel(r)}</span>
+                  <small>{taken ? 'Another client’s on it.' : guestNote(g, r.grade)}</small>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+      <PlayButton
+        game={game}
+        act={act}
+        s={s}
+        play={{ guide: picks as string[] }}
+        ready={ready}
+        note={ready ? 'The day’s pay, and more for a good day.' : 'A line for everyone first.'}
+      />
+    </>
+  );
+}
+
+// What a line would be for a client, said from the rules.
+function guestNote(g: Guest, grade: number): string {
+  const v = guestValue(g, grade);
+  if (grade < g.level - 1) return 'Too easy: bored.';
+  if (grade > g.goal) return g.nervous ? 'Too much: they won’t leave the ground.' : 'Too much: frightened.';
+  if (grade >= g.goal) return `Their goal: ${Math.round(guestSendChance(g, grade) * 100)}% they send it.`;
+  return v >= 1 ? 'A good day.' : 'Fine.';
 }
 
 // The warehouse's picks (Phase 18.3): the day on the floor, then three on the board at a
