@@ -86,6 +86,8 @@ export function heirOf(
         forebear,
         lines: own,
         coach: !!dex && tierOf(dex.bond) >= HOME.tier,
+        // The kid you coached (Phase 25.3), grown: their grade, a head start for the next.
+        ...(s.mentee ? { mentee: { name: s.mentee.name, grade: Math.floor(s.mentee.level) } } : {}),
       },
     },
     events: [{ k: 'heir', forebear }],

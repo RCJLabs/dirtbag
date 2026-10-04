@@ -2756,6 +2756,20 @@ Players will ask "what am I working towards?" by hour 3.
 - **Seen:** the day's plan and the outfit's sheet, from loaded saves in Chromium. A first look showed clients in V-grades against roped lines in YDS, and the open project on offer; both fixed.
 - **Save v52:** `outfit`; a real v51 save loads.
 
+**Status (4 Oct 2026): 25.3 built: the mentee.** Save v53, 0.999.28. Numbers [proposed] in `MENTEE`; rules in `mentee.ts`; words in `content/mentee.ts`.
+- **A kid at Send City,** from V7 (v0.956's was V5): a row at the desk.
+- **Sessions:** two hours at the gym, once a day, 8 energy.
+  - Each one moves them along, slower as they grow (half as fast at V8), and never past your own grade.
+  - 16 sessions to V5, 31 to V8, 44 to V10 (v0.956's capped at V5).
+  - The desk says where they are and how far to the next grade.
+- **Cost:** their shoes and comp fees, $15 a week with the bills.
+- **Drift:** left alone two weeks, they're warned to be drifting to the comp team; four weeks, they've gone. You can also let them go.
+- **Their story:** a line at 1, 5, 10, 20 and 35 sessions, and at V5, V8 and V10. A new Record Book entry, Pass It On, at V8.
+- **To an heir:** a mentee at your retirement passes their grade on. The next climber starts with 4 skill a grade on each (a V8 mentee: +32 each, about a V2 head start on its own), and the mentee turns up at the Lot to coach them.
+- **Save v53:** `mentee`, and the family's mentee; a real v52 save loads.
+- **No harness run:** the bots don't mentor.
+- **Seen:** the desk with a mentee, and a session, from a loaded save in Chromium.
+
 ## Stage D — Get it in front of people
 
 *Moved here by Evan's call (29 Sep 2026): the whole game gets built first, and the Steam build, the demo and the store page come after it. The phase numbers stay as they were, so older references still find them.*
@@ -3051,3 +3065,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Phase 18 closed by Evan's call: criteria 1, 3 and 4 pass; criterion 2 passes for comps, media and business, and outdoors at 5 of 8 is accepted. CURRENT MILESTONE moved to Phase 14, the desktop and Steam build.
 - 2026-10-04 — Phase 25 added by Evan's call: every gameplay feature before the Steam build; CURRENT MILESTONE moved to it from Phase 14. 25.1 built: guides, giving and a trait, the Record Book's last three entries. Save v51. 0.999.26.
 - 2026-10-04 — Phase 25.2 built: guiding, a sixth job with its own day to plan, and an outfit of your own at Lead guide; Phase 25's slices planned with Evan's calls. Save v52. 0.999.27.
+- 2026-10-04 — Phase 25.3 built: the mentee, a kid you coach at Send City from V7 whose grade passes to an heir as a head start; a Record Book entry. Save v53. 0.999.28.

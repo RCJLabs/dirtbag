@@ -16,6 +16,16 @@ import {
 import { COMP_SAYS, COMP_TIERS } from './content/comps';
 import { GYM_UPGRADE_SAYS } from './content/business';
 import { giveBlocked } from './giving';
+import { menteeAfter, menteeCoachBlocked, menteeName, menteeTakeBlocked } from './mentee';
+import {
+  MENTEE_GONE,
+  MENTEE_DRIFT,
+  MENTEE_GRADES,
+  MENTEE_HEIR,
+  MENTEE_LET,
+  MENTEE_SESSIONS,
+  MENTEE_TAKEN,
+} from './content/mentee';
 import { bestPlan, guestsToday, outfitBlocked, outfitDay, planRefused, planValue } from './guiding';
 import { GUIDE_SAYS } from './content/guiding';
 import { guideBlocked, guidesOut } from './guides';
@@ -63,7 +73,7 @@ import { together } from './romance';
 import { frankParks, RAY_GONE, stintOn, tamStops } from './lives';
 import { beyond } from './reach';
 import { cold, daysOff, freshLoad, goLoad, projected, ratio, rollInjury } from './body';
-import { CARRIED, carried, gains, gradeOf, STARTS, type GoSummary } from './climber';
+import { CARRIED, carried, gains, gradeOf, SKILLS, STARTS, type GoSummary } from './climber';
 import { headroom, holds, isNight, leadOver, unmet } from './cond';
 import { dexHurt, dexSeason, gradeOfPerson } from './curves';
 import { indoor, INDOOR, INDOOR_CLOSE, routeById, routesAt } from './content/gym';
@@ -203,6 +213,7 @@ import {
   GIVING,
   GUIDE,
   GUIDING,
+  MENTEE,
   AGE,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
@@ -355,6 +366,7 @@ export function newGame(seed: string): GameState {
     giving: { total: 0, food: 0, access: 0 },
     guides: {},
     outfit: null,
+    mentee: null,
     lifestyle: 'dirtbag',
     spot: 'lot',
     lotNights: 0,
@@ -753,6 +765,15 @@ export function act(s0: GameState, a: Action): Result {
     // So is a comp's scorecard (Phase 18.4).
     if (s.comps.on) finishComp();
     mediaNight(ended);
+    // A mentee left alone (Phase 25.3): warned, then gone.
+    if (s.mentee) {
+      const away = ended - s.mentee.last;
+      if (away === MENTEE.lapse) line(fill(MENTEE_DRIFT, { name: s.mentee.name }));
+      else if (away >= 2 * MENTEE.lapse) {
+        line(fill(MENTEE_GONE, { name: s.mentee.name }));
+        s.mentee = null;
+      }
+    }
     // Your outfit's day (Phase 25.2): guides out if Roadside was open, the insurance always.
     if (s.outfit) {
       const c = conditionsAt(s.seed, ended, GUIDING.crag);
@@ -984,6 +1005,11 @@ export function act(s0: GameState, a: Action): Result {
           ? `Registration: $${bills}. No insurance: the week's bills don't care about your card.`
           : `Registration and insurance: $${bills}. The week's bills don't care about your card.`,
       );
+      // Your mentee's shoes and fees (Phase 25.3), with the week's bills.
+      if (s.mentee) {
+        spend({ cash: -MENTEE.weekly });
+        line(`${s.mentee.name}'s shoes and comp fees: ${money(MENTEE.weekly)}.`);
+      }
       // Your guides' royalties (Phase 25.1), with the week's bills.
       const out = guidesOut(s);
       if (out.length) {
@@ -2241,6 +2267,47 @@ export function act(s0: GameState, a: Action): Result {
       break;
     }
 
+    // The kid you coach (Phase 25.3).
+    case 'mentee': {
+      if (a.do === 'take') {
+        const why = menteeTakeBlocked(s);
+        if (why) return refuse(`${why}.`);
+        const name = menteeName(s);
+        s.mentee = { name, level: 1, sessions: 0, since: s.day, last: s.day, told: [] };
+        line(fill(MENTEE_TAKEN, { name }));
+        break;
+      }
+      const m = s.mentee;
+      if (!m) return refuse('Nobody to coach.');
+      if (a.do === 'let') {
+        line(fill(MENTEE_LET, { name: m.name }));
+        s.mentee = null;
+        break;
+      }
+      const why = menteeCoachBlocked(s);
+      if (why) return refuse(`${why}.`);
+      spend({ min: MENTEE.min, energy: -MENTEE.energy });
+      s.today.push('mentored');
+      const was = Math.floor(m.level);
+      const level = menteeAfter(m.level, gradeOf(s.climber.skills));
+      const sessions = m.sessions + 1;
+      const told = [...m.told];
+      const say = MENTEE_SESSIONS[sessions];
+      if (say) line(fill(say, { name: m.name }));
+      const now = Math.floor(level);
+      for (let g = was + 1; g <= now; g++) {
+        const said = MENTEE_GRADES[g];
+        if (said && !told.includes(g)) {
+          told.push(g);
+          line(fill(said, { name: m.name }));
+        }
+      }
+      if (!say && now === was)
+        line(`Two hours with ${m.name} on the board. V${now}, and closer to the next.`);
+      s.mentee = { ...m, level, sessions, last: s.day, told };
+      break;
+    }
+
     // Your guiding outfit (Phase 25.2).
     case 'outfit': {
       const O = GUIDING.outfit;
@@ -2495,6 +2562,12 @@ export function act(s0: GameState, a: Action): Result {
       if (s.family) {
         line(familyFill(s, HEIR_OPEN));
         if (s.family.coach) line(familyFill(s, COACH_LINE));
+        // The kid your forebear coached, grown, coaching you (Phase 25.3): a head start.
+        const mt = s.family.mentee;
+        if (mt) {
+          for (const k of SKILLS) skills[k] += MENTEE.heir * mt.grade;
+          line(fill(MENTEE_HEIR, { mentee: mt.name, forebear: s.family.forebear }));
+        }
       }
       if (origin) {
         line(origin.open);

@@ -9,6 +9,7 @@ export type RecordAim =
   // Phase 25.1: a guide out, a quirk named, what you've given over a life.
   | { guide: true }
   | { outfit: true }
+  | { mentee: number }
   | { quirk: true }
   | { given: number }
   | { sends: number }
@@ -387,6 +388,15 @@ export const RECORD: RecordEntry[] = [
       'The keys to Send City are on your van keyring now, heavier than the rest. You still check the toilet runs before you lock up.',
     from: [],
     aim: { gym: true },
+  },
+  {
+    id: 'mentor',
+    title: 'Pass It On',
+    desc: 'Coach a kid to V8.',
+    story:
+      'They used to watch you on the board. Now there are kids watching them, and you can see them deciding what to copy.',
+    from: [],
+    aim: { mentee: 8 },
   },
   {
     id: 'outfitter',

@@ -868,6 +868,12 @@ export class Game {
     else this.openSheet(this.state.gym ? { k: 'owngym' } : { k: 'desk' });
   }
 
+  // The kid you coach (Phase 25.3); back to the desk.
+  menteeDo(a: Extract<Action, { t: 'mentee' }>): void {
+    this.dispatch(a);
+    this.openSheet({ k: 'desk' });
+  }
+
   // Your outfit (Phase 25.2); back to its sheet, or the shop's card.
   outfitDo(a: Extract<Action, { t: 'outfit' }>): void {
     this.dispatch(a);

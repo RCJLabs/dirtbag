@@ -111,6 +111,16 @@ export interface GameState {
   // Phase 25.2 (save v52): your guiding outfit, once you've started one: since when, how many
   // guides, the till and yesterday's take.
   outfit: { since: number; guides: number; till: number; last: number } | null;
+  // Phase 25.3 (save v53): the kid you coach: their level (a grade, and the way to the next),
+  // sessions, since when, the day of the last, and the grades and sessions already told.
+  mentee: {
+    name: string;
+    level: number;
+    sessions: number;
+    since: number;
+    last: number;
+    told: number[];
+  } | null;
   // How you live (dials.ts LIFESTYLE): paid at the van every night.
   lifestyle: 'dirtbag' | 'comfortable' | 'plush';
   // Phase 22.2b. Where you park for the night (dials.ts SPOTS), nights in a row at the Lot
@@ -278,7 +288,14 @@ export interface GameState {
   folks: { calls: number };
   // Phase 16.5: the family you climb on after. Your generation (2 for the kid of the first),
   // who coached you, the lines they put up, and whether Dex coaches you for their sake.
-  family: { gen: number; forebear: string; lines: string[]; coach: boolean } | null;
+  // `mentee` (Phase 25.3): the kid the forebear coached, and the grade they'd reached.
+  family: {
+    gen: number;
+    forebear: string;
+    lines: string[];
+    coach: boolean;
+    mentee?: { name: string; grade: number };
+  } | null;
   // Phase 17.4 (save v42): who you're with, how far along, since when, the day of the last
   // beat, and the day it ended if it did. One a life.
   romance: { who: string; stage: number; since: number; beatDay: number; over?: number } | null;
@@ -499,6 +516,8 @@ export type Action =
   | { t: 'give'; to: 'food' | 'access' }
   // Phase 25.2: your own guiding outfit: started, a guide hired or let go, the till, sold.
   | { t: 'outfit'; do: 'start' | 'hire' | 'fire' | 'draw' | 'sell' }
+  // Phase 25.3: a mentee taken on, coached, or let go.
+  | { t: 'mentee'; do: 'take' | 'coach' | 'let' }
   | { t: 'guide'; place: string }
   // `carry`: a v0.956 climber's skills, when they come across rather than picking a start.
   | { t: 'create'; name: string; start: string; origin?: string; carry?: Skills; solo?: true }
