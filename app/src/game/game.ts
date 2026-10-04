@@ -125,6 +125,8 @@ export type SheetId =
   | { k: 'owngym' }
   // The four ladders (Phase 18.7).
   | { k: 'ladders' }
+  // Your guides (Phase 25.1).
+  | { k: 'guides' }
   // A shift with a minigame to play (Phase 18.1), or just to work.
   | { k: 'shift'; act: string }
   | { k: 'act'; n: number }
@@ -862,6 +864,18 @@ export class Game {
     this.dispatch(a);
     if (a.do === 'set' || a.do === 'buy') this.openSheet({ k: 'desk' });
     else this.openSheet(this.state.gym ? { k: 'owngym' } : { k: 'desk' });
+  }
+
+  // A gift (Phase 25.1); back to the place's card.
+  give(to: 'food' | 'access'): void {
+    this.dispatch({ t: 'give', to });
+    this.openSheet({ k: 'place', id: to === 'food' ? 'market' : 'shop' });
+  }
+
+  // An evening on a crag's guide (Phase 25.1); back to the guides.
+  guide(place: string): void {
+    this.dispatch({ t: 'guide', place });
+    this.openSheet({ k: 'guides' });
   }
 
   // A line on your land, bolted; back to its sheet.

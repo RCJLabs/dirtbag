@@ -68,6 +68,7 @@
 | 21 The climber, 22 The life, 23 Who you are | Added by Evan's call after the gap check; they run before 16. Phase 21 is the current milestone. |
 | 16 The spine | Next after 21–23. |
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
+| 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18: every gameplay feature the closed phases carried, before 14 and 15. The order from here: 25, 14, 15, 19, 20. |
 
 ## The rebuild track
 
@@ -2682,11 +2683,52 @@ Players will ask "what am I working towards?" by hour 3.
 
 ---
 
+### Phase 25 — Finish the game   **<<< CURRENT MILESTONE**
+
+*Evan's call (4 Oct 2026): every gameplay feature and phase before the Steam build. Stage D waits on this.*
+
+**Goal.** Nothing in the game is a placeholder: every Record Book entry can be earned, and what the closed phases carried is built or cut by Evan's call.
+
+**Scope.** What the closed phases carried, gameplay only:
+- **The Record Book's three waiting entries:** Guidebook Author (guides), Known For It (a trait), Dirtbag Philanthropist (giving).
+- **Phase 18's:** the guiding outfit, a youth athlete, an expedition team; comps outside the ladder (the dyno comp, a season-long league).
+- **Phase 17's:** crew drama (two partners falling out because of you), walker chats, busy-texts, shopkeepers' small talk.
+- **Phase 24's:** the drawn keepsake card for a trip.
+- **Phase 22's:** tappable glossary words.
+- **The bluff's own rock**, in place of Roadside's shape.
+- **Music** (Phase 13), parked with its decision: Evan's.
+
+**Not here:** balance that only playtesting can settle (outdoors at about two in three, the Late Bloomer's speed run, the boulderer and the all-rounder alike in week one, the odds above an objective's grade, the gym's top-end pay). Those carry to testers.
+
+**Done when.**
+1. Every Record Book entry has an aim: none waits on a system.
+2. Each carried item is built, with tests, or cut by Evan's call.
+3. The harness's targets still pass.
+
+*The slices:*
+- **25.1 The Record Book's last three:** guides, a trait, giving.
+- The rest are planned after 25.1, with Evan.
+
+**Status (4 Oct 2026): 25.1 built: the Record Book's last three.** Save v51, 0.999.26. Numbers [proposed] in `GIVING` and `GUIDE`; rules in `giving.ts` and `guides.ts`.
+- **Known For It** is earned when your habits name a quirk. Phase 23 made v0.956's traits quirks; its page was waiting on a name that already existed.
+- **Giving,** after v0.956's food bank and access fund:
+  - The food bank at the market: $50 once a week, for a little psyche (v0.956 gave +10 and five days of better odds).
+  - The access fund at the gear shop: $40 once a week, and the old crowd's nod.
+  - Dirtbag Philanthropist at $1,000 over a life. An heir's life starts its own tally.
+- **Guides,** after v0.956's (a crag you knew well enough let you write one):
+  - Send every line at a crag and put up one of your own there.
+  - Then write at the van, five evenings of three hours.
+  - Out, it pays $15 a week with the week's bills, a crag each (v0.956 paid up to $18 a day).
+  - Guidebook Author on the first. A guide in print passes to an heir; one half-written doesn't.
+- **Where:** "Your guides" at the van; a row each at the market and the gear shop.
+- **Save v51:** `giving` and `guides`; a real v50 save loads.
+- **No harness run:** the bots don't give or write.
+
 ## Stage D — Get it in front of people
 
 *Moved here by Evan's call (29 Sep 2026): the whole game gets built first, and the Steam build, the demo and the store page come after it. The phase numbers stay as they were, so older references still find them.*
 
-### Phase 14 — Desktop and Steam build   **<<< CURRENT MILESTONE**
+### Phase 14 — Desktop and Steam build
 
 **Goal.** A Steam build that plays well with mouse, keyboard or gamepad on Windows, macOS, Linux and Steam Deck.
 
@@ -2975,3 +3017,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-03 — Phase 18.6 built: Send City bought by its head setter, its till drawn, covered or sold (criterion 4), the morning's line, upgrades and your own wall; Miller's Bluff bought, its nine lines bolted or cleaned and open for first ascents; two Record Book entries. Save v50. 0.999.24.
 - 2026-10-03 — Phase 18.7 built: the ladders screen, a career bot per ladder and their harness; the grade curve compressed past V10 (Evan's call); followers saturate; the gym, the Games and the film tuned. Criterion 2: comps, media and business 8/8, outdoors 5/8. 0.999.25.
 - 2026-10-03 — Phase 18 closed by Evan's call: criteria 1, 3 and 4 pass; criterion 2 passes for comps, media and business, and outdoors at 5 of 8 is accepted. CURRENT MILESTONE moved to Phase 14, the desktop and Steam build.
+- 2026-10-04 — Phase 25 added by Evan's call: every gameplay feature before the Steam build; CURRENT MILESTONE moved to it from Phase 14. 25.1 built: guides, giving and a trait, the Record Book's last three entries. Save v51. 0.999.26.

@@ -15,6 +15,8 @@ import {
 } from './content/setting';
 import { COMP_SAYS, COMP_TIERS } from './content/comps';
 import { GYM_UPGRADE_SAYS } from './content/business';
+import { giveBlocked } from './giving';
+import { guideBlocked, guidesOut } from './guides';
 import { bolted, boltBlocked, gymBuyBlocked, gymNight, UPGRADES, wallWord, type Upgrade } from './business';
 import { DOC, HEAT_SAYS, MEDIA_RIVAL, POSTS, SPONSORS, TERMS } from './content/media';
 import {
@@ -196,6 +198,8 @@ import {
   OWN_GYM,
   GYM_SET,
   LAND,
+  GIVING,
+  GUIDE,
   AGE,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
@@ -345,6 +349,8 @@ export function newGame(seed: string): GameState {
     },
     gym: null,
     bolted: [],
+    giving: { total: 0, food: 0, access: 0 },
+    guides: {},
     lifestyle: 'dirtbag',
     spot: 'lot',
     lotNights: 0,
@@ -962,6 +968,17 @@ export function act(s0: GameState, a: Action): Result {
           ? `Registration: $${bills}. No insurance: the week's bills don't care about your card.`
           : `Registration and insurance: $${bills}. The week's bills don't care about your card.`,
       );
+      // Your guides' royalties (Phase 25.1), with the week's bills.
+      const out = guidesOut(s);
+      if (out.length) {
+        const pay = out.length * GUIDE.royalty;
+        spend({ cash: pay });
+        line(
+          out.length === 1
+            ? `The shop sold a few of ${PLACES[out[0]!]!.name}'s guides: ${money(pay)}.`
+            : `Royalties from your ${out.length} guides: ${money(pay)}.`,
+        );
+      }
     }
     rivalNight(ended);
     livesNight(ended);
@@ -2194,6 +2211,52 @@ export function act(s0: GameState, a: Action): Result {
           ? `You brush ${r.name} clean, pull the moss off the top and kick the stones out of the landing. Nobody's ever been up it.`
           : `A day on a rope with a drill, ${money(c.cash)} of glue-ins and chains, and ${r.name} is a line. Nobody's ever been up it.`,
       );
+      break;
+    }
+
+    // A gift (Phase 25.1): the food bank or the access fund, once a week each.
+    case 'give': {
+      const why = giveBlocked(s, a.to);
+      if (why) return refuse(`${why}.`);
+      const g = GIVING[a.to];
+      spend({ cash: -g.cash, min: 10 });
+      s.giving = { ...s.giving, total: s.giving.total + g.cash, [a.to]: s.day };
+      if (a.to === 'food') {
+        s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + GIVING.food.psyche) };
+        line(
+          `${money(g.cash)} in the food bank's tin. The woman behind the table says thank you like she means it.`,
+        );
+      } else {
+        s.scene = { ...s.scene, old: Math.min(100, s.scene.old + GIVING.access.old) };
+        line(
+          `${money(g.cash)} in the access fund's jar. Somebody's drawn a carabiner on the label. It's what keeps the gates at the crags open.`,
+        );
+      }
+      break;
+    }
+
+    // An evening on a crag's guide (Phase 25.1): pages, and at the last, it's out.
+    case 'guide': {
+      const why = guideBlocked(s, a.place);
+      if (why) return refuse(`${why}.`);
+      const was = s.guides[a.place]?.pages ?? 0;
+      const pages = was + 1;
+      spend({ min: GUIDE.min, energy: -GUIDE.energy });
+      s.today.push('guide');
+      const name = PLACES[a.place]!.name;
+      if (pages >= GUIDE.pages) {
+        s.guides = { ...s.guides, [a.place]: { pages, out: s.day } };
+        line(
+          `The last page of ${name}'s guide: every line, its grade, who put it up, and where the water comes off the top. The shop takes a box of them. ${money(GUIDE.royalty)} a week, give or take.`,
+        );
+      } else {
+        s.guides = { ...s.guides, [a.place]: { pages, out: null } };
+        line(
+          was === 0
+            ? `You start ${name}'s guide on the back of a gas receipt, then a notebook. Page one: the approach.`
+            : `Another evening on ${name}'s guide. ${GUIDE.pages - pages} to go.`,
+        );
+      }
       break;
     }
 

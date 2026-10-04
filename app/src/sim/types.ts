@@ -104,6 +104,10 @@ export interface GameState {
   // bolted (or cleaned) so far.
   gym: OwnGym | null;
   bolted: string[];
+  // Phase 25.1 (save v51): what you've given over this life, and the day you last gave to
+  // each; the guides you're writing or have out, by crag (pages written, the day it came out).
+  giving: { total: number; food: number; access: number };
+  guides: Record<string, { pages: number; out: number | null }>;
   // How you live (dials.ts LIFESTYLE): paid at the van every night.
   lifestyle: 'dirtbag' | 'comfortable' | 'plush';
   // Phase 22.2b. Where you park for the night (dials.ts SPOTS), nights in a row at the Lot
@@ -487,6 +491,9 @@ export type Action =
       set?: string[];
     }
   | { t: 'bolt'; route: string }
+  // Phase 25.1: a gift to the food bank or the access fund; an evening on a crag's guide.
+  | { t: 'give'; to: 'food' | 'access' }
+  | { t: 'guide'; place: string }
   // `carry`: a v0.956 climber's skills, when they come across rather than picking a start.
   | { t: 'create'; name: string; start: string; origin?: string; carry?: Skills; solo?: true }
   // Phase 23.3: take up a calling.

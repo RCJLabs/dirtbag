@@ -212,6 +212,14 @@ import {
   LADDERS,
   shiftsAt,
   type LadderId,
+  GIFT_AT,
+  GIVING,
+  GUIDE,
+  GUIDE_CRAGS,
+  giveBlocked,
+  guideBlocked,
+  guideLeft,
+  type Gift,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import type { Game, SheetId } from '../game/game';
@@ -389,6 +397,44 @@ function ladderNext(s: GameState, id: LadderId, at: number): string {
   }
   if (at === j.ranks.length) return `Send City, when Marg sells: ${money(OWN_GYM.price)}.`;
   return `${OWN_GYM.members.top} members; you’ve ${s.gym?.members ?? 0}.`;
+}
+
+// A gift (Phase 25.1): the food bank at the market, the access fund at the gear shop.
+function giveRow(game: Game, s: GameState, to: Gift): Row {
+  const why = giveBlocked(s, to);
+  const g = GIVING[to];
+  return {
+    label: to === 'food' ? 'Give to the food bank' : 'Give to the access fund',
+    cost: costLabel({ cash: -g.cash }),
+    note: why
+      ? `${why}.`
+      : to === 'food'
+        ? `Once a week. You've given ${money(s.giving.total)} in all.`
+        : 'Once a week. It keeps the gates at the crags open, and the old crowd notices.',
+    off: !!why,
+    run: () => game.give(to),
+  };
+}
+
+// Your guides (Phase 25.1): where each crag stands, and tonight's pages where you can write.
+function guideRows(game: Game, s: GameState): Row[] {
+  return GUIDE_CRAGS.filter((id) => !PLACES[id]!.unlock || s.unlocked.includes(id)).map((id) => {
+    const g = s.guides[id];
+    const why = guideBlocked(s, id);
+    const left = guideLeft(s, id);
+    const note = g?.out
+      ? `Out since day ${g.out}: ${money(GUIDE.royalty)} a week.`
+      : left.unsent || !left.fa
+        ? `${why}.`
+        : `${g?.pages ?? 0} of ${GUIDE.pages} evenings written.${why ? ` ${why}.` : ''}`;
+    return {
+      label: PLACES[id]!.name,
+      cost: why ? '' : costLabel({ min: GUIDE.min, energy: -GUIDE.energy }),
+      note,
+      off: !!why,
+      run: () => game.guide(id),
+    };
+  });
 }
 
 // Your feed's row at the van (Phase 18.5): an offer waiting, or how many follow you.
@@ -899,6 +945,13 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             run: () => game.openSheet({ k: 'week' }),
           },
           {
+            label: 'Your guides',
+            note: Object.values(s.guides).some((g) => g.out !== null)
+              ? `${Object.values(s.guides).filter((g) => g.out !== null).length} out, paying a little every week.`
+              : 'Every line at a crag sent, and one of them yours: write its guide.',
+            run: () => game.openSheet({ k: 'guides' }),
+          },
+          {
             label: 'Your ladders',
             note: LADDERS.map((l) => `${l.name} ${l.at(s)}/${l.rungs(s).length}`).join(' · '),
             run: () => game.openSheet({ k: 'ladders' }),
@@ -950,6 +1003,15 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         ],
       };
     }
+
+    // Your guides (Phase 25.1): a crag each, written at the van.
+    case 'guides':
+      return {
+        title: 'Your guides',
+        sub: 'Every line at a crag sent, and one of them yours. Then a few evenings at the van.',
+        close: true,
+        rows: guideRows(game, s),
+      };
 
     // The four ladders (Phase 18.7): outdoors, comps, media, work and business.
     case 'ladders':
@@ -1247,6 +1309,10 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           ...p.acts.flatMap((a) => actRows(game, s, a)),
           // Phase 22.5b: a set out front.
           ...(id.id === 'cafe' ? [buskRow(game, s)] : []),
+          // Phase 25.1: giving.
+          ...(Object.keys(GIFT_AT) as Gift[])
+            .filter((g) => GIFT_AT[g] === id.id)
+            .map((g) => giveRow(game, s, g)),
           ...onward.map((o) =>
             driveRow(game, s, o, o === 'lot' ? 'Drive back to the Lot' : `Drive to ${PLACES[o]!.name}`),
           ),
