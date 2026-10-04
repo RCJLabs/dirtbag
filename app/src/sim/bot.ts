@@ -661,7 +661,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       // A beat can send her off mid-conversation.
       if (whereNow(s, 'sage') !== s.at) return;
       const node = talkStart(s, 'sage');
-      if (!node || !(node === 'meet' || node === 'again' || node.startsWith('beat-'))) return;
+      const crew = !!opts.social && node?.startsWith('crew-');
+      if (!node || !(node === 'meet' || node === 'again' || node.startsWith('beat-') || crew)) return;
       if (node === 'again' && s.today.includes('sage')) return;
       const opt = TALK.sage!.nodes[node]!.opts.findIndex((o) => !o.when || holds(s, o.when));
       if (opt < 0 || !go({ t: 'say', talk: 'sage', node, opt })) return;
@@ -784,7 +785,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   // Phase 17.7, the social bot only: whoever's here with something due (a meeting, a beat of
   // their arc, a moment of their life, a romance's), answered the first way, and a sit with a
   // local. The others leave the people be, so their targets measure what they always have.
-  const MOMENT = /^(meet|beat-|love-|last-season|slowing|parked)/;
+  // Phase 25.6's crew drama too: its ask and its mend, answered the first way.
+  const MOMENT = /^(meet|beat-|love-|last-season|slowing|parked|crew-)/;
   function maybePeople() {
     if (!opts.social) return;
     for (const [talk, t] of Object.entries(TALK)) {
