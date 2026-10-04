@@ -3113,3 +3113,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-04 — Phase 25.4 built: an expedition team, a young pair's trip you pay for to an objective you've summited, their odds from your trips there and its weather; a Record Book entry. Save v54. 0.999.29.
 - 2026-10-04 — Phase 25.5 built: comps outside the ladder, the Fall Festival dyno comp once a year and League night's season table (Evan's calls); two Record Book entries. Save v55. 0.999.30.
 - 2026-10-04 — Phase 25.6 built: the people (Evan's calls): crew drama, a choice, a rift and a mend; the crew's texts back; the shops' small talk; a word from the crowd at a busy crag. Save v56. 0.999.31.
+- 2026-10-04 — Evan's call: the download budget goes from 400 KB to 440 KB for 25.7 (394.8 KB after 25.6).
