@@ -7,6 +7,8 @@ import type { Cue } from './cues';
 import { Ambience } from './ambience';
 import type { Bed } from './beds';
 import { VOICES, type V } from './voices';
+import { Music } from './music';
+import type { Mood } from './moods';
 
 // The master level for each setting. It was 0.9 and 0.35, too loud on a phone even on
 // quiet (Evan, testing 0.962.0).
@@ -15,6 +17,9 @@ const LEVEL: Record<Settings['sound'], number> = { on: 0.5, quiet: 0.15, off: 0 
 const AMB = 0.7;
 // How far the ambience drops while someone's talking to you.
 const DUCKED = 0.3;
+// The music (Phase 25) sits under the ambience, and drops further for talk and for a go.
+const MUS = 0.6;
+const MUS_DUCKED = 0.25;
 
 export class Sound {
   private ctx: AudioContext | null = null;
@@ -28,6 +33,11 @@ export class Sound {
   private ambience: Ambience | null = null;
   // The bed asked for, by name: kept till the context exists, and so a repeat is free.
   private bed: { key: string; bed: Bed } | null = null;
+  private mus: GainNode | null = null;
+  private music: Music | null = null;
+  private musicOn = true;
+  private mood: Mood | null = null;
+  private quietFor = { talk: false, go: false };
 
   constructor() {
     if (typeof document !== 'undefined')
@@ -37,6 +47,8 @@ export class Sound {
   configure(s: Settings): void {
     this.level = LEVEL[s.sound];
     this.buzz = s.buzz === 'on';
+    this.musicOn = s.music === 'on';
+    this.musicLevel();
     if (this.master && this.ctx) this.master.gain.setTargetAtTime(this.level, this.ctx.currentTime, 0.05);
   }
 
@@ -59,6 +71,12 @@ export class Sound {
       for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
       this.ctx = ctx;
       this.ambience = new Ambience(ctx, this.amb, this.noise);
+      this.mus = ctx.createGain();
+      this.mus.gain.value = 0;
+      this.mus.connect(this.master);
+      this.music = new Music(ctx, this.mus, this.noise);
+      if (this.mood) this.music.set(this.mood);
+      this.musicLevel();
       if (this.bed) {
         this.ambience.set(this.bed.bed);
         window.dispatchEvent(new CustomEvent('dirtbag:ambience', { detail: this.bed.key }));
@@ -84,15 +102,40 @@ export class Sound {
     window.dispatchEvent(new CustomEvent('dirtbag:ambience', { detail: key }));
   }
 
-  // Once a frame.
-  tick(dt: number): void {
-    if (this.ctx?.state === 'running' && this.level > 0) this.ambience?.tick(dt);
+  // What the music's playing, by mood (moods.ts).
+  setMood(m: Mood): void {
+    if (this.mood === m) return;
+    this.mood = m;
+    this.music?.set(m);
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('dirtbag:music', { detail: m }));
   }
 
-  // Someone's talking: the ambience drops under them, and comes back after.
+  // Once a frame.
+  tick(dt: number): void {
+    if (this.ctx?.state === 'running' && this.level > 0) {
+      this.ambience?.tick(dt);
+      if (this.musicOn) this.music?.tick();
+    }
+  }
+
+  // Someone's talking: the ambience drops under them, and comes back after. The music too.
   duck(on: boolean): void {
     if (this.amb && this.ctx)
       this.amb.gain.setTargetAtTime(on ? DUCKED * AMB : AMB, this.ctx.currentTime, 0.15);
+    this.quietFor.talk = on;
+    this.musicLevel();
+  }
+
+  // On a go, the music keeps out of the way.
+  climbing(on: boolean): void {
+    this.quietFor.go = on;
+    this.musicLevel();
+  }
+
+  private musicLevel(): void {
+    if (!this.mus || !this.ctx) return;
+    const to = !this.musicOn ? 0 : this.quietFor.talk || this.quietFor.go ? MUS * MUS_DUCKED : MUS;
+    this.mus.gain.setTargetAtTime(to, this.ctx.currentTime, 0.4);
   }
 
   private live(): V | null {

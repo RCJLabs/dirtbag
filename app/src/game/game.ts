@@ -56,6 +56,7 @@ import {
   type TripPlan,
 } from '../sim';
 import { bedFor, ON_THE_MAP } from '../audio/beds';
+import { moodFor } from '../audio/moods';
 import { actCue, VERB_CUES } from '../audio/cues';
 import { Sound } from '../audio/sound';
 import { arcTable, atLen, clamp, type Pt } from '../view/kit/geom';
@@ -382,14 +383,17 @@ export class Game {
     // The ambience drops while someone's talking to you, and follows you about: the place
     // you're at, or the map while you're on it or driving.
     let talking = false;
+    let climbing = false;
     const listen = () => {
       const u = this.ui.get();
       const t = !!u.talk;
       if (t !== talking) this.sound.duck((talking = t));
+      if (u.climbing !== climbing) this.sound.climbing((climbing = u.climbing));
       const s = this.state;
       const map = u.view === 'map' && (u.driving || !!PLACES[s.at]?.scene);
       const key = map ? 'map' : `${s.at}:${isNight(s.min) ? 'night' : 'day'}:${s.day}`;
       this.sound.setBed(key, map ? ON_THE_MAP : bedFor(s, s.at));
+      this.sound.setMood(moodFor(s, s.at, map));
     };
     this.ui.subscribe(listen);
     listen();

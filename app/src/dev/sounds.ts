@@ -5,6 +5,8 @@ import { bedFor, ON_THE_MAP, type Bed } from '../audio/beds';
 import type { Cue } from '../audio/cues';
 import { newGame, PLACES } from '../sim';
 import { VOICES } from '../audio/voices';
+import { Music } from '../audio/music';
+import { MOODS, type Mood } from '../audio/moods';
 
 const RATE = 44100;
 // How hard each cue plays here: a heavy breath and a full drive, the rest as they come.
@@ -105,6 +107,32 @@ for (const cue of Object.keys(VOICES) as Cue[]) {
   rendered[cue] = blob;
   const li = document.createElement('li');
   li.textContent = cue;
+  const a = document.createElement('audio');
+  a.controls = true;
+  a.src = URL.createObjectURL(blob);
+  li.append(a);
+  list.append(li);
+}
+// Phase 25: half a minute of each mood's music, as it would play from a standing start.
+async function renderMusic(mood: Mood): Promise<Blob> {
+  const secs = 30;
+  const ctx = new OfflineAudioContext(1, RATE * secs, RATE);
+  const noise = ctx.createBuffer(1, RATE * 2, RATE);
+  const d = noise.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const out = ctx.createGain();
+  out.gain.value = 0.9;
+  out.connect(ctx.destination);
+  const m = new Music(ctx, out, noise);
+  m.set(mood);
+  for (let t = 0; t < secs; t += 0.1) m.tick(t);
+  return wav(await ctx.startRendering());
+}
+for (const mood of Object.keys(MOODS) as Mood[]) {
+  const blob = await renderMusic(mood);
+  rendered[`music ${mood}`] = blob;
+  const li = document.createElement('li');
+  li.textContent = `music: ${mood}`;
   const a = document.createElement('audio');
   a.controls = true;
   a.src = URL.createObjectURL(blob);

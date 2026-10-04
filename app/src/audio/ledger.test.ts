@@ -9,8 +9,9 @@ describe('the licence ledger', () => {
   const sounds = ledger.sounds as Record<string, { made: string; in?: string; recording?: string }>;
   const recordings = ledger.recordings as { file: string; author: string; licence: string; url: string }[];
 
-  it('lists every cue and every layer of ambience, and nothing that isn’t one', () => {
-    const all = [...Object.keys(VOICES), ...Object.keys(QUIET)].sort();
+  it('lists every cue, every layer of ambience and the music, and nothing that isn’t one', () => {
+    // The cues, the ambience's layers, and the music (Phase 25), all made in code.
+    const all = [...Object.keys(VOICES), ...Object.keys(QUIET), 'music'].sort();
     expect(Object.keys(sounds).sort()).toEqual(all);
   });
 
