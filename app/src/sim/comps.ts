@@ -4,7 +4,7 @@
 // the grades it draws: tops first, then fewest goes. A place earns points, which fade, and
 // points let you into the next rung up. Nothing here moves to meet you.
 
-import { COMP_LADDER, COMP_TIERS, COMPETITORS } from './content/comps';
+import { A_LEAGUE, COMP_LADDER, COMP_TIERS, COMPETITORS } from './content/comps';
 import { libraryBoulder, type RouteDef } from './content/routes';
 import { COMP, LEAGUE, YEAR } from './dials';
 import { Rng } from './rng';
@@ -16,18 +16,49 @@ import type { GameState } from './types';
 const SLOTS: Record<string, number> = { gym: 6, cave: 8, center: 8 };
 const TYPES: Style[] = ['crimp', 'power', 'technical', 'dyno', 'technical', 'dyno'];
 
-// The rung on at a wall that day, or null.
+// Whether a comp's on a day, by its own calendar.
+const onDay = (t: (typeof COMP_TIERS)[number], day: number): boolean =>
+  (day - 1) % t.every === t.on - 1 && !t.division;
+
+// The rung on at a wall that day, or null. The A league shares League night's nights: which
+// of the two is yours is compHere's to say.
 export function compOn(day: number, venue: string): number | null {
-  const i = COMP_TIERS.findIndex((t) => t.venue === venue && (day - 1) % t.every === t.on - 1);
+  const i = COMP_TIERS.findIndex((t) => t.venue === venue && onDay(t, day));
   return i < 0 ? null : i;
 }
 
 // The next comp on or after a day, at any wall: its rung and day.
 export function nextComp(day: number): { tier: number; day: number } {
   for (let d = day; ; d++) {
-    const i = COMP_TIERS.findIndex((t) => (d - 1) % t.every === t.on - 1);
+    const i = COMP_TIERS.findIndex((t) => onDay(t, d));
     if (i >= 0) return { tier: i, day: d };
   }
+}
+
+// ---- Phase 26: the A league ----
+
+// Whether you're in the A league in a year: you've won a season before it. Up for good
+// (Evan's call), so it's read off the seasons and nothing new is kept.
+export const promotedIn = (s: GameState, year: number): boolean =>
+  (s.comps?.seasons ?? []).some((x) => x.place === 1 && x.year < year);
+
+// Which league's yours in a year.
+export const leagueTier = (s: GameState, year: number): number => (promotedIn(s, year) ? A_LEAGUE : 0);
+
+// Whether a rung is one of League night's leagues.
+export const isLeague = (tier: number): boolean => tier === 0 || tier === A_LEAGUE;
+
+// The comp that's yours at a wall that day: League night is the A league once you're in it.
+export function compHere(s: GameState, day: number, venue: string): number | null {
+  const i = compOn(day, venue);
+  return i === 0 ? leagueTier(s, yearOf(day)) : i;
+}
+
+// A rung's grades on a day: its own, raised for the years it's been growing.
+export function gradesFor(tier: number, day: number): [number, number] {
+  const t = COMP_TIERS[tier]!;
+  const up = t.grows ? t.grows.by * Math.min(t.grows.years, yearOf(day)) : 0;
+  return [t.grades[0] + up, t.grades[1] + up];
 }
 
 const cache = new Map<string, RouteDef[]>();
@@ -41,7 +72,7 @@ export function compSet(seed: string, tier: number, day: number): RouteDef[] {
   const side = t.side;
   const n = side?.n ?? SLOTS[t.venue] ?? 6;
   const r = Rng.fromStream(seed, 'worldgen').derive(`comp-${tier}-${day}`);
-  const [lo, hi] = t.grades;
+  const [lo, hi] = gradesFor(tier, day);
   const set = Array.from({ length: n }, (_, i) => {
     const grade = Math.round(lo + (i * (hi - lo)) / (n - 1));
     const type = side ? side.type : TYPES[r.int(0, TYPES.length - 1)]!;
@@ -118,22 +149,24 @@ function rollTops(r: Rng, grade: number, set: RouteDef[], goes: number): Score {
 }
 
 // The field. League night's (Phase 25.5) is drawn once a year, so its season has the same
-// faces every week, and each night rolls its own tops; every other comp's is the day's.
+// faces every week, and each night rolls its own tops; the A league's (Phase 26) too, drawn
+// apart from it; every other comp's is the day's.
 export function compField(seed: string, tier: number, day: number): Score[] {
   const t = COMP_TIERS[tier]!;
   const set = compSet(seed, tier, day);
   const goes = goesFor(tier);
-  if (tier !== 0) {
+  if (!isLeague(tier)) {
     const r = Rng.fromStream(seed, 'events').derive(`field-${tier}-${day}`);
-    return draw(r, t.field, t.grades, (name, g) => ({ ...rollTops(r, g, set, goes), name }));
+    return draw(r, t.field, gradesFor(tier, day), (name, g) => ({ ...rollTops(r, g, set, goes), name }));
   }
+  const a = tier === 0 ? '' : 'a-';
   const year = draw(
-    Rng.fromStream(seed, 'events').derive(`league-${yearOf(day)}`),
+    Rng.fromStream(seed, 'events').derive(`league-${a}${yearOf(day)}`),
     t.field,
     t.grades,
     (name, grade) => ({ name, grade }),
   );
-  const r = Rng.fromStream(seed, 'events').derive(`night-${day}`);
+  const r = Rng.fromStream(seed, 'events').derive(`night-${a}${day}`);
   return year.map((e) => ({ ...rollTops(r, e.grade, set, goes), name: e.name }));
 }
 
@@ -156,7 +189,7 @@ export const rungOpen = (s: GameState): number =>
 
 // Why you can't sign up for today's comp here, or null when you can.
 export function compBlocked(s: GameState): string | null {
-  const tier = compOn(s.day, s.at);
+  const tier = compHere(s, s.day, s.at);
   if (tier === null) return 'No comp here today';
   const t = COMP_TIERS[tier]!;
   if (s.comps.on) return 'You’re signed up already';
@@ -184,11 +217,12 @@ export function leagueNights(year: number): number[] {
   return Array.from({ length: YEAR.days }, (_, i) => from + i).filter((d) => compOn(d, 'gym') === 0);
 }
 
-// Everyone's place on one League night: the field's from their scores, yours from the result
-// you brought home, if you were there (the field ranked below you a place further down).
-export function nightPlaces(s: GameState, day: number): Map<string, number> {
-  const mine = s.comps.results.find((x) => x.tier === 0 && x.day === day);
-  const ranked = compField(s.seed, 0, day)
+// Everyone's place on one League night, in one league: the field's from their scores, yours
+// from the result you brought home, if you were there (the field ranked below you a place
+// further down).
+export function nightPlaces(s: GameState, day: number, tier = 0): Map<string, number> {
+  const mine = s.comps.results.find((x) => x.tier === tier && x.day === day);
+  const ranked = compField(s.seed, tier, day)
     .map((f, i) => ({ ...f, i }))
     .sort((a, b) => b.tops - a.tops || a.goes - b.goes || a.i - b.i);
   const out = new Map<string, number>();
@@ -204,14 +238,19 @@ export interface LeagueRow {
   you: boolean;
 }
 
-// The year's table so far, nights up to and including `upTo`: a night's points are the
-// field's size, less one a place down it, and only your best `LEAGUE.best` nights count.
-// A tie goes your way.
-export function leagueTable(s: GameState, year: number, upTo: number): LeagueRow[] {
-  const of = COMP_TIERS[0]!.field;
+// The year's table so far, in your league that year, nights up to and including `upTo`: a
+// night's points are the field's size, less one a place down it, and only your best
+// `LEAGUE.best` nights count. A tie goes your way.
+export function leagueTable(
+  s: GameState,
+  year: number,
+  upTo: number,
+  tier = leagueTier(s, year),
+): LeagueRow[] {
+  const of = COMP_TIERS[tier]!.field;
   const scores = new Map<string, number[]>();
   for (const d of leagueNights(year).filter((d) => d <= upTo))
-    for (const [name, place] of nightPlaces(s, d))
+    for (const [name, place] of nightPlaces(s, d, tier))
       scores.set(name, [...(scores.get(name) ?? []), of + 1 - place]);
   return [...scores]
     .map(([name, pts]) => ({

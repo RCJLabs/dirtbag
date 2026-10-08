@@ -45,8 +45,9 @@ describe('the comp ladder', () => {
     const signed = act(day, { t: 'comp', do: 'enter' }).state;
     expect(wallAt(signed, 'gym').slice(0, 6)).toEqual(set);
     expect(nextComp(1)).toEqual({ tier: 0, day: LEAGUE.on });
-    // Every rung's days fall on a wall that has a comp.
-    for (const [i, t] of COMP_TIERS.entries()) expect(compOn(t.on, t.venue)).toBe(i);
+    // Every rung's days fall on a wall that has a comp; the A league's are League night's
+    // (Phase 26).
+    for (const [i, t] of COMP_TIERS.entries()) expect(compOn(t.on, t.venue)).toBe(t.division ? 0 : i);
   });
 
   it('draws a fixed field: the same on a reload, and it doesn’t move with you', () => {

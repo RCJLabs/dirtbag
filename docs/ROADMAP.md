@@ -2909,6 +2909,44 @@ Players will ask "what am I working towards?" by hour 3.
 3. V5, V8 and V10 mentees leave different heirs.
 4. The harness's targets still pass.
 
+**Status (8 Oct 2026): built.** Save v57, 0.999.34. Evan's calls (8 Oct 2026):
+- the outfit and the gym stay as they are;
+- a Record Book entry for team summits on every objective;
+- the A league is for good;
+- Mara goes to the Cave and Tam to the Gorge when their own crags are shut.
+
+Numbers [proposed] in `LEAGUE.prizeA`, `MENTEE.heir`, `WORK.forgive` and the comp tiers.
+- **Mara and Tam.** On a day they'd come out, Mara trains in the Cave when the Gorge is wet or shut for the raptors. Tam climbs the Gorge's shade when the Mesa is wet or too hot, if the Gorge is open. Before, each of them stood at a crag that was shut. Tam's first line no longer mentions sandstone, since you can meet him at the Gorge now.
+- **The A league.** It runs on League night's nights, with problems V3 to V8, a field of its own and $500 for its season. It's yours from the year after you win a season, for good. It's read off the seasons you've settled, so nothing new is saved.
+- **The dyno comp** grows a grade a year for its first three years, the throws and the field together: V2–V10 in the first year, V5–V13 from the fourth.
+- **An heir's head start** is 0.4 of the mentee's grade, rounded, with the start's own shape kept. A V5 mentee makes a V2 heir, a V8 a V3, a V10 a V4 and a V12 a V5.
+- **The crowd** stands in the gaps, clear of every line, boulder, the van and the cast, so a tap at a line's foot is for the line. Roadside has room for three strangers, so on a packed day it shows three, not five.
+- **Warnings lapse** 28 days after the last one. The save keeps that day (v57), and the jobs sheet says when they lapse. A v56 save's warnings count from the day it loads.
+- **The Record Book has 46 entries.** The new one is Everybody Else's Summits, a team up every objective. Olympic Medalist is now Games Medalist.
+- **The bots** answer Sage's romance beats: the social bot the first way, the others as friends. Her romance comes before her lesson in her talk, so from Partner on they'd lost her lessons for good.
+- **Dropped:** "an expedition cancels the shifts it covers". Phase 24.3 already settled it by Evan's call: book a week ahead and the shifts drop free; at short notice they count as missed.
+
+**Measured** (the late harness, 4 seeds a cell):
+- **Crew drama** came to 16 of 16 social careers (13 before), median day 113. Mara ends a Regular in all 16 (rarely before), Tam in 1. Three pairs: Rico over Sage 10, Sage over Rico 4, Rico over Mara 2.
+- **The A league:** a promoted V4 or V5 is mid-table and wins no season; a V6 comes second. From V7 it wins every season, $945 to $1,020 a season.
+- **The dyno comp,** won year by year: sampled four times in each of its first four years:
+  - a V8 wins 2, 3, 0 and 0 of 4 (it won 2 in 4 before);
+  - a V10 wins 4, 3, 2 and 2 of 4 (every one before);
+  - a V12 wins 4, 4, 4 and 3;
+  - a V14 wins every one.
+- **Heirs:** V2, V3 and V4 from V5, V8 and V10 mentees, from every start.
+- **The full harness:** every target passes but Outdoors, the accepted shortfall, which is now 3 of 4 (2 of 4 before).
+  - The career bots reach V10 on a median day 179.5 (180.5 before).
+  - Act III ends in every career, on a median day 274.5 (296.5 before). That's Sage's lessons coming back to the bots.
+
+**Against its Done-when:** all four pass.
+1. Crew drama falls on three pairs.
+2. A promoted V5 doesn't sweep the A league, and from the second year a V10 doesn't win every dyno comp.
+3. V5, V8 and V10 mentees leave different heirs.
+4. The harness's targets pass as before.
+
+Closing it is Evan's call.
+
 ### Phase 27 — The rock, by hand
 
 *Large. The core, deepened.*
@@ -3400,3 +3438,4 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-04 — Music, made in code (Evan's call: synthesize it and see how it turns out): six moods by place and hour, in stretches with quiet between, ducked under talk and goes, a Music setting. Phase 25 closed by Evan's call; CURRENT MILESTONE moved to Phase 14, the desktop and Steam build. 0.999.33.
 - 2026-10-04 — Phase 25's systems measured (Evan's call): a harness with no targets, numbers for the calls; the social bot taught crew drama, which it had never met (13 of 16 careers now). No numbers changed.
 - 2026-10-08 — Evan's call: Phase 14 waits until he asks for it. Phases 26–35 added to deepen the game: a tune-up from the measurements, the rock by hand, the crew, the van lived in, getting older, after you, the Hollow, comps with rounds, money that means something, the road and the year. CURRENT MILESTONE moved to Phase 26.
+- 2026-10-08 — Phase 26 built (Evan's calls: the outfit and gym stay, a Record Book entry for team summits on every objective, the A league for good, Mara in the Cave and Tam at the Gorge when their crags are shut). Crew drama in 16 of 16 social careers across three pairs; the A league from a season won; the dyno comp grows for three years; heirs graded by the mentee; the crowd clear of the lines; warnings lapse; the bots get Sage's lessons back. Its criteria pass; closing it is Evan's call. Save v57. 0.999.34.

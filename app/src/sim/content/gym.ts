@@ -7,7 +7,7 @@
 // stay up four weeks, so a project carries over (v0.956's "persistent gym walls", Phase
 // 10), and a wet day late in the season still has something new to try.
 
-import { compOn, compRoute, compSet } from '../comps';
+import { compHere, compRoute, compSet } from '../comps';
 import { Rng } from '../rng';
 import type { Style } from '../climber';
 import type { GameState, SkillId } from '../types';
@@ -292,7 +292,7 @@ export function routesAt(seed: string, place: string, day: number): RouteDef[] {
 // in for the week's set (Send City's board stays up); anyone else climbs the week's set.
 export function wallAt(s: GameState, place: string): RouteDef[] {
   const on = s.comps.on;
-  if (!on || on.day !== s.day || compOn(s.day, place) !== on.tier) return routesAt(s.seed, place, s.day);
+  if (!on || on.day !== s.day || compHere(s, s.day, place) !== on.tier) return routesAt(s.seed, place, s.day);
   const set = compSet(s.seed, on.tier, s.day);
   return place === GYM ? [...set, ...boardSet(s.seed, blockOf(s.day))] : set;
 }

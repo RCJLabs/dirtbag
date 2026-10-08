@@ -66,6 +66,9 @@ export interface GameState {
   // shifts you didn't work, by job; and the day each job that let you go will take you back.
   shifts: { job: string; day: number }[];
   strikes: Record<string, number>;
+  // Phase 26 (save v57): the day of each job's last warning; a long enough run without
+  // another clears them.
+  struck: Record<string, number>;
   benched: Record<string, number>;
   // Phase 18.1 (save v46): the days you took as leave, by job.
   leave: Record<string, number[]>;

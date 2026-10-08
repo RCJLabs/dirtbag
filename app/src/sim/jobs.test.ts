@@ -132,6 +132,23 @@ describe('the week', () => {
     expect(act(back, { t: 'act', act: 'cafe.shift' }).events[0]?.k).not.toBe('refused');
   });
 
+  it('forgets the warnings after a long enough run without another (Phase 26)', () => {
+    const s = at({ jobs: { cafe: JOBS.cafe!.at[2]! }, leave: { cafe: [1] } });
+    const warned = sleepAt({ ...s, shifts: [{ job: 'cafe', day: s.day }] }).state;
+    expect(warned.struck.cafe).toBe(s.day);
+    // Still counted the night before it lapses, and gone the night it does.
+    const before = sleepAt({ ...warned, day: s.day + WORK.forgive - 1 });
+    expect(before.state.strikes.cafe).toBe(1);
+    const lapsed = sleepAt({ ...warned, day: s.day + WORK.forgive });
+    expect(lapsed.state.strikes.cafe).toBeUndefined();
+    expect(lapsed.state.struck.cafe).toBeUndefined();
+    expect(lines(lapsed).some((l) => l.includes('stopped counting your no-shows'))).toBe(true);
+    // A second no-show restarts the count from its own day.
+    const again = sleepAt({ ...warned, day: s.day + 10, shifts: [{ job: 'cafe', day: s.day + 10 }] }).state;
+    expect(again.strikes.cafe).toBe(2);
+    expect(again.struck.cafe).toBe(s.day + 10);
+  });
+
   it('charges how you live every night at the van, and gives it back by morning', () => {
     const s = { ...at({ lifestyle: 'plush' as const, energy: 20, skin: 20 }), cash: 200 };
     const r = sleepAt(s);

@@ -62,15 +62,21 @@ describe('the cast (Phase 17.1)', () => {
 
   it('keeps each partner at their own crag: Mara the Gorge, Rico the Cave or Moonstone, Tam the Mesa', () => {
     const where = (who: string, m: number) => new Set(days.map((d) => at(who, d, m)).filter(Boolean));
-    expect(where('mara', 12 * 60)).toEqual(new Set(['gorge']));
+    // Phase 26: Mara in the Cave when the Gorge is shut, Tam at the Gorge when the Mesa is.
+    expect(where('mara', 12 * 60)).toEqual(new Set(['gorge', 'cave']));
     expect(where('rico', 14 * 60)).toEqual(new Set(['cave', 'moon']));
-    expect(where('tam', 9 * 60)).toEqual(new Set(['mesa']));
+    expect(where('tam', 9 * 60)).toEqual(new Set(['mesa', 'gorge']));
     // Tam's done before the sandstone heats up.
     expect(days.every((d) => at('tam', d, 15 * 60) === null)).toBe(true);
-    // Only on dry days at the crags; the Cave's indoors.
+    // Only where it's open to climb: their own crag when it is, the other when it isn't.
+    const shut = (d: number, p: string) =>
+      !conditionsAt(SEED, d, p).open || !!conditionsAt(SEED, d, p).closed;
     for (const d of days) {
-      if (at('mara', d, 12 * 60)) expect(conditionsAt(SEED, d, 'gorge').open).toBe(true);
-      if (at('tam', d, 9 * 60)) expect(conditionsAt(SEED, d, 'mesa').open).toBe(true);
+      const m = at('mara', d, 12 * 60);
+      if (m) expect(m).toBe(shut(d, 'gorge') ? 'cave' : 'gorge');
+      const t = at('tam', d, 9 * 60);
+      if (t) expect(t).toBe(shut(d, 'mesa') ? 'gorge' : 'mesa');
+      if (t === 'gorge') expect(shut(d, 'gorge')).toBe(false);
     }
     expect(PARTNERS).toEqual(expect.arrayContaining(['mara', 'rico', 'tam']));
     expect(PARTNERS).not.toContain('ray');

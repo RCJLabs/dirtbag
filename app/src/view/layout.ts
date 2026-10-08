@@ -505,6 +505,9 @@ export const SPOTS: Record<string, Spot[]> = {
     { who: 'dex', x: 1236, face: -1, pose: 'stand', talk: 'dex' },
     // Mara, under the classic: her warm-up.
     { who: 'mara', x: 878, face: -1, pose: 'belay', talk: 'mara' },
+    // Tam, racking up in the shade between the corner and the last line, when the Mesa's
+    // shut to him (Phase 26).
+    { who: 'tam', x: 1015, face: -1, pose: 'stand', talk: 'tam' },
   ],
   // Nobody's day brings them out here, but Dex stays wherever he first saw you send a V4.
   moon: [
@@ -526,6 +529,8 @@ export const SPOTS: Record<string, Spot[]> = {
     { who: 'dex', x: 1020, face: -1, pose: 'stand', talk: 'dex' },
     // Rico, under the steepest of the week's problems.
     { who: 'rico', x: 1090, face: -1, pose: 'stand', talk: 'rico' },
+    // Mara, on the mats by the door taping up, the days the Gorge is shut (Phase 26).
+    { who: 'mara', x: 282, face: 1, pose: 'stand', talk: 'mara' },
   ],
   center: [{ who: 'dex', x: 1030, face: -1, pose: 'stand', talk: 'dex' }],
 };
@@ -623,21 +628,42 @@ export const screenToMap = (x: number, y: number): [number, number] => [
   MAP_FIT.from + (y - MAP_FIT.top) / MAP_K,
 ];
 
-// Phase 25.6: the strangers at a crag, the same ones all day: as many as the crowd, each by
-// a line or a boulder, facing one way or the other, some sitting. Drawn and tapped alike.
+// Phase 25.6: the strangers at a crag, the same ones all day: as many as the crowd, facing
+// one way or the other, some sitting. Drawn and tapped alike. Phase 26: they stand in the
+// gaps, clear of every line, boulder, van and partner you'd tap, so a tap on a line's foot is
+// for the line; a crag with fewer gaps than the crowd shows fewer of them.
 export interface Stranger {
   x: number;
   dir: 1 | -1;
   sit: boolean;
 }
+// A stranger's tap, either side of them, and the room kept either side of that.
+const STRANGER = 14;
+const CLEAR = 2;
 export function strangersAt(place: string, crag: CragSpec, day: number, crowd: Crowd): Stranger[] {
   const n = { empty: 0, quiet: 1, busy: 3, packed: 5 }[crowd];
-  const spots = [...crag.lines.map((l) => l.x), ...crag.boulders.map((b) => b.x)];
-  const r = mulberry32(day * 131 + place.length * 17 + spots.length);
+  const scene = Object.keys(SCENES).find((k) => SCENES[k]!.place === place);
+  const span = (x: number, half: number): [number, number] => [x - half, x + half];
+  const taken = [
+    // The van's tap (cragScene's).
+    span(134, 100),
+    ...crag.lines.map((l) => span(l.x, 26)),
+    ...crag.boulders.map((b) => span(b.x, b.w / 2)),
+    ...(SPOTS[scene ?? ''] ?? []).map((p) => span(p.x, 20)),
+  ].sort((a, b) => a[0] - b[0]);
+  const need = 2 * (STRANGER + CLEAR);
+  const gaps: [number, number][] = [];
+  let from = 0;
+  for (const [a, b] of [...taken, span(crag.width, 0)]) {
+    if (a - from >= need) gaps.push([from, a]);
+    from = Math.max(from, b);
+  }
+  const r = mulberry32(day * 131 + place.length * 17 + gaps.length);
   const out: Stranger[] = [];
-  for (let i = 0; i < n && spots.length; i++) {
-    const x = spots.splice(Math.floor(r() * spots.length), 1)[0]! + (r() - 0.5) * 36;
-    out.push({ x, dir: r() < 0.5 ? -1 : 1, sit: r() < 0.25 });
+  for (let i = 0; i < n && gaps.length; i++) {
+    const [a, b] = gaps.splice(Math.floor(r() * gaps.length), 1)[0]!;
+    const room = (b - a - need) / 2;
+    out.push({ x: (a + b) / 2 + (r() - 0.5) * 2 * room, dir: r() < 0.5 ? -1 : 1, sit: r() < 0.25 });
   }
   return out;
 }

@@ -16,7 +16,7 @@ import {
 import { COMP_SAYS, COMP_TIERS, LEAGUE_SAYS } from './content/comps';
 import { GYM_UPGRADE_SAYS } from './content/business';
 import { giveBlocked } from './giving';
-import { menteeAfter, menteeCoachBlocked, menteeName, menteeTakeBlocked } from './mentee';
+import { heirStart, menteeAfter, menteeCoachBlocked, menteeName, menteeTakeBlocked } from './mentee';
 import {
   MENTEE_GONE,
   MENTEE_DRIFT,
@@ -48,12 +48,14 @@ import {
 import {
   compBlocked,
   compField,
-  compOn,
+  compHere,
   compSet,
   goesFor,
+  gradesFor,
   leagueTable,
   placing,
   pointsFor,
+  promotedIn,
   seasonEnds,
   yearOf,
   yourScore,
@@ -364,6 +366,7 @@ export function newGame(seed: string): GameState {
     jobs: {},
     shifts: [],
     strikes: {},
+    struck: {},
     benched: {},
     leave: {},
     coach: null,
@@ -980,18 +983,27 @@ export function act(s0: GameState, a: Action): Result {
       const n = (s.strikes[m.job] ?? 0) + 1;
       if (n < WORK.strikes) {
         s.strikes[m.job] = n;
+        s.struck[m.job] = m.day;
         line(
           `You didn't show for your shift at ${PLACES[j.place]!.name}. That's a warning, ${n} of ${WORK.strikes - 1}.`,
         );
         continue;
       }
       delete s.strikes[m.job];
+      delete s.struck[m.job];
       s.jobs[m.job] = 0;
       s.benched[m.job] = ended + 1 + WORK.benchDays;
       s.shifts = s.shifts.filter((x) => x.job !== m.job);
       line(
         `Another no-show, and ${PLACES[j.place]!.name} lets you go. They'll take you back from day ${s.benched[m.job]}, as ${j.ranks[0]!.toLowerCase()}.`,
       );
+    }
+    // Phase 26: a long enough run without another no-show, and a job forgets the warnings.
+    for (const job of Object.keys(s.strikes)) {
+      if (ended - (s.struck[job] ?? ended) < WORK.forgive) continue;
+      delete s.strikes[job];
+      delete s.struck[job];
+      line(`${PLACES[JOBS[job]!.place]!.name} has stopped counting your no-shows.`);
     }
     if (s.dog && !away) {
       s.dog.fed = Math.max(0, s.dog.fed - DOG.nightFed);
@@ -1662,15 +1674,25 @@ export function act(s0: GameState, a: Action): Result {
     );
   };
   // League night's season (Phase 25.5): the year's table, if you were on it, and the prize.
+  // Phase 26: in the A league once you've won one; its season pays more.
   const settleSeason = (year: number, day: number) => {
+    const a = promotedIn(s, year);
     const table = leagueTable(s, year, day);
     const place = table.findIndex((r) => r.you) + 1;
     if (!place) return;
     s.comps = { ...s.comps, seasons: [...s.comps.seasons, { year, place, of: table.length }] };
-    if (place === 1) spend({ cash: LEAGUE.prize });
-    const said = place === 1 ? LEAGUE_SAYS.won : place <= 3 ? LEAGUE_SAYS.podium : LEAGUE_SAYS.rest;
+    const prize = a ? LEAGUE.prizeA : LEAGUE.prize;
+    if (place === 1) spend({ cash: prize });
+    const said =
+      place === 1
+        ? a
+          ? LEAGUE_SAYS.wonA
+          : LEAGUE_SAYS.won
+        : place <= 3
+          ? LEAGUE_SAYS.podium
+          : LEAGUE_SAYS.rest;
     line(
-      `${fill(said, { place: ordinal(place), of: table.length })}${place === 1 ? ` ${money(LEAGUE.prize)}.` : ''}`,
+      `${fill(said, { place: ordinal(place), of: table.length, league: a ? 'The A league' : 'League night' })}${place === 1 ? ` ${money(prize)}.` : ''}`,
     );
   };
   // The warehouse's picks banked (Phase 18.3): what's on the board for them, paid.
@@ -2479,15 +2501,16 @@ export function act(s0: GameState, a: Action): Result {
       }
       const why = compBlocked(s);
       if (why) return refuse(`${why}.`);
-      const tier = compOn(s.day, s.at)!;
+      const tier = compHere(s, s.day, s.at)!;
       const t = COMP_TIERS[tier]!;
+      const [lo, hi] = gradesFor(tier, s.day);
       if (t.fee) spend({ cash: -t.fee });
       s.comps = { ...s.comps, on: { tier, day: s.day, tops: {} } };
       // The entry's the wall for the day: no pass to buy on top.
       const pass = INDOOR[s.at]?.pass;
       if (pass && !s.today.includes(pass)) s.today.push(pass);
       line(
-        `${t.name}: you're in, number ${t.field}. ${compSet(s.seed, tier, s.day).length} ${t.side ? 'throws' : 'problems'}, V${t.grades[0]} to V${t.grades[1]}; a top counts in its first ${goesFor(tier)} goes.`,
+        `${t.name}: you're in, number ${t.field}. ${compSet(s.seed, tier, s.day).length} ${t.side ? 'throws' : 'problems'}, V${lo} to V${hi}; a top counts in its first ${goesFor(tier)} goes.`,
       );
       break;
     }
@@ -2641,7 +2664,7 @@ export function act(s0: GameState, a: Action): Result {
         // The kid your forebear coached, grown, coaching you (Phase 25.3): a head start.
         const mt = s.family.mentee;
         if (mt) {
-          for (const k of SKILLS) skills[k] += MENTEE.heir * mt.grade;
+          Object.assign(skills, heirStart(skills, mt.grade));
           line(fill(MENTEE_HEIR, { mentee: mt.name, forebear: s.family.forebear }));
         }
       }

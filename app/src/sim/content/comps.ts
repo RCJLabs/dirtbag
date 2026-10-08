@@ -26,6 +26,12 @@ export interface CompTier {
   // Phase 25.5: off the ladder (no points, never a rung), and a set of its own: how many
   // problems, all of one style, how many moves each, and the goes a top counts in.
   side?: { n: number; type: Style; moves: [number, number]; goes: number };
+  // Phase 26: the grades, set and field, rise `by` a year for the first `years` years, as
+  // word of it gets round.
+  grows?: { by: number; years: number };
+  // Phase 26: League night's A league. The same nights as League night, for whoever has won
+  // a season: never a comp on a day of its own, never a rung.
+  division?: 'A';
 }
 
 export const COMP_TIERS: CompTier[] = [
@@ -110,15 +116,35 @@ export const COMP_TIERS: CompTier[] = [
     need: 0,
     problem: 'Dyno',
     side: { n: 5, type: 'dyno', moves: [3, 4], goes: 3 },
+    // Phase 26: a V10 won it every year; three years on, the throws and the field run V5 to V13.
+    grows: { by: 1, years: 3 },
+  },
+  // Phase 26 (Evan's call, 8 Oct 2026): a season won moves you up for good. League night's
+  // same nights, harder problems, a field that's been at it longer.
+  {
+    name: 'The A league',
+    venue: 'gym',
+    every: 7,
+    on: 4,
+    grades: [3, 8],
+    field: 10,
+    fee: 15,
+    purse: [80, 50, 30],
+    pts: 15,
+    need: 0,
+    problem: 'A league',
+    division: 'A',
   },
 ];
 
-// The rungs of the ladder, by index: every comp but the side ones.
-export const COMP_LADDER = COMP_TIERS.flatMap((t, i) => (t.side ? [] : [i]));
+// The rungs of the ladder, by index: every comp but the side ones and the A league.
+export const COMP_LADDER = COMP_TIERS.flatMap((t, i) => (t.side || t.division ? [] : [i]));
 // The Games, the ladder's top.
 export const GAMES_TIER = COMP_LADDER[COMP_LADDER.length - 1]!;
 // The dyno comp.
 export const DYNO_COMP = COMP_TIERS.findIndex((t) => t.side?.type === 'dyno');
+// League night's A league.
+export const A_LEAGUE = COMP_TIERS.findIndex((t) => t.division === 'A');
 
 // Who you're up against: a pool of names the fields are drawn from.
 export const COMPETITORS = [
@@ -158,7 +184,8 @@ export const COMP_SAYS = {
 
 // Phase 25.5: League night's season, the year's table settled on its last night.
 export const LEAGUE_SAYS = {
-  won: 'League night’s season is yours: top of the table on the whiteboard by the desk, in somebody’s good marker. They hand you an envelope and a T-shirt in the wrong size.',
-  podium: 'League night’s season ends with you {place} on the table. Close enough to see the top from here.',
-  rest: 'League night’s season ends with you {place} of {of} on the table. Next year’s field is already talking.',
+  won: 'League night’s season is yours: top of the table on the whiteboard by the desk, in somebody’s good marker. They hand you an envelope and a T-shirt in the wrong size. Next year you’re in the A league.',
+  wonA: 'The A league’s season is yours. The whiteboard gets a fresh marker for it, and the setters start asking what you want on the wall.',
+  podium: '{league}’s season ends with you {place} on the table. Close enough to see the top from here.',
+  rest: '{league}’s season ends with you {place} of {of} on the table. Next year’s field is already talking.',
 };

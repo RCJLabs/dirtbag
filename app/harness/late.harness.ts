@@ -3,18 +3,21 @@
 // leaves an heir; a team's cost per summit; the dyno comp and League night's season, climbed
 // with the bot's hands at every grade; and how often crew drama comes to a social career.
 // No targets: these are measurements for Evan's calls. LATE_SEEDS widens the samples.
+// Phase 26: the A league, the dyno comp as it grows, the heir's graded head start, and which
+// pairs crew drama falls on.
 import { it } from 'vitest';
 import { gradeOf, needFor, STARTS } from '../src/sim/climber';
 import { compField, compSet, goesFor, leagueNights, leagueTable, placing } from '../src/sim/comps';
-import { COMP_TIERS, DYNO_COMP } from '../src/sim/content/comps';
+import { A_LEAGUE, COMP_TIERS, DYNO_COMP } from '../src/sim/content/comps';
 import { EXPEDITIONS } from '../src/sim/content/expeditions';
 import { ACTS } from '../src/sim/content/places';
 import { JOBS } from '../src/sim/content/jobs';
 import { GUIDING, LEAGUE, MENTEE, PLAY, YEAR } from '../src/sim/dials';
+import { gradesFor } from '../src/sim/comps';
 import { act, newGame } from '../src/sim/game';
 import { outfitDay } from '../src/sim/guiding';
 import { median, season } from '../src/sim/harness';
-import { menteeAfter } from '../src/sim/mentee';
+import { heirStart, menteeAfter } from '../src/sim/mentee';
 import { humanHands, playGo } from '../src/sim/bot';
 import { Rng } from '../src/sim/rng';
 import { teamCost, teamOdds } from '../src/sim/team';
@@ -127,8 +130,7 @@ it('Phase 25’s systems, measured', { timeout: 3_600_000 }, () => {
   for (const start of Object.keys(STARTS)) {
     const s = act(newGame(`heir-${start}`), { t: 'create', name: 'Heir', start }).state;
     const sk = s.climber.skills;
-    const up = (g: number) =>
-      gradeOf(Object.fromEntries(Object.entries(sk).map(([k, v]) => [k, v + MENTEE.heir * g])) as Skills);
+    const up = (g: number) => gradeOf(heirStart(sk, g));
     out(`| ${start} | V${gradeOf(sk)} | V${up(5)} | V${up(8)} | V${up(10)} |`);
   }
 
@@ -160,17 +162,24 @@ it('Phase 25’s systems, measured', { timeout: 3_600_000 }, () => {
   }
 
   // ---- The dyno comp ----
+  // Phase 26: it grows for its first years, so each year is sampled on its own.
   const D = COMP_TIERS[DYNO_COMP]!;
-  out(`\n## The Fall Festival dyno comp, thrown with human-ish hands (${SEEDS} years each)\n`);
-  out('| grade | throws stuck, median | won | podium | purse a year, average |');
+  const YEARS = 4;
+  out(
+    `\n## The Fall Festival dyno comp, thrown with human-ish hands (${SEEDS} a year, years 1 to ${YEARS}: V${gradesFor(DYNO_COMP, D.on).join('–V')} the first, V${gradesFor(DYNO_COMP, D.on + (YEARS - 1) * YEAR.days).join('–V')} the last)\n`,
+  );
+  out('| grade | throws stuck, median | won, year by year | podium | purse a year, average |');
   out('|---|---|---|---|---|');
-  for (const g of [2, 4, 6, 8, 10, 12]) {
-    const res = Array.from({ length: SEEDS }, (_, y) =>
-      climbComp(climber(`dyno-${g}-${y}`, g), DYNO_COMP, D.on + y * YEAR.days),
+  for (const g of [2, 4, 6, 8, 10, 12, 14]) {
+    const years = Array.from({ length: YEARS }, (_, y) =>
+      Array.from({ length: SEEDS }, (_, k) =>
+        climbComp(climber(`dyno-${g}-${y}-${k}`, g), DYNO_COMP, D.on + y * YEAR.days),
+      ),
     );
+    const res = years.flat();
     const purse = res.reduce((a, r) => a + (D.purse[r.place - 1] ?? 0), 0) / res.length;
     out(
-      `| V${g} | ${median(res.map((r) => r.tops))} of ${D.side!.n} | ${res.filter((r) => r.place === 1).length}/${SEEDS} | ${res.filter((r) => r.place <= 3).length}/${SEEDS} | ${money(purse - D.fee)} after the fee |`,
+      `| V${g} | ${median(res.map((r) => r.tops))} of ${D.side!.n} | ${years.map((ys) => `${ys.filter((r) => r.place === 1).length}/${SEEDS}`).join(', ')} | ${res.filter((r) => r.place <= 3).length}/${res.length} | ${money(purse - D.fee)} after the fee |`,
     );
   }
 
@@ -203,12 +212,43 @@ it('Phase 25’s systems, measured', { timeout: 3_600_000 }, () => {
     );
   }
 
+  // ---- Phase 26: the A league ----
+  out(`\n## The A league, every night entered, a season won the year before (${SEEDS} seasons each)\n`);
+  out('| grade | nights won, of 8 | season place, median | seasons won | money a season, average |');
+  out('|---|---|---|---|---|');
+  const A = COMP_TIERS[A_LEAGUE]!;
+  for (const g of [4, 5, 6, 7, 8, 10]) {
+    let nightsWon = 0;
+    const places: number[] = [];
+    let cash = 0;
+    for (let y = 1; y <= SEEDS; y++) {
+      let s = climber(`aleague-${g}-${y}`, g);
+      s = { ...s, comps: { ...s.comps, seasons: [{ year: y - 1, place: 1, of: 10 }] } };
+      const results: GameState['comps']['results'] = [];
+      for (const d of leagueNights(y)) {
+        const r = climbComp(s, A_LEAGUE, d);
+        results.push({ tier: A_LEAGUE, day: d, place: r.place, of: r.of });
+        if (r.place === 1) nightsWon++;
+        cash += (A.purse[r.place - 1] ?? 0) - A.fee;
+      }
+      s = { ...s, comps: { ...s.comps, results } };
+      const place = leagueTable(s, y, leagueNights(y).at(-1)!).findIndex((r) => r.you) + 1;
+      places.push(place);
+      if (place === 1) cash += LEAGUE.prizeA;
+    }
+    out(
+      `| V${g} | ${(nightsWon / SEEDS).toFixed(1)} | ${median(places)} of ${A.field} | ${places.filter((p) => p === 1).length}/${SEEDS} | ${money(cash / SEEDS)} |`,
+    );
+  }
+
   // ---- Crew drama ----
   out(`\n## Crew drama in social careers (${SEEDS} seeds a start, 300 days)\n`);
   out('| start | seed | crew drama | Regulars of the four at the end |');
   out('|---|---|---|---|');
   let fired = 0;
   let runs = 0;
+  const pairs = new Set<string>();
+  const regulars: Record<string, number> = { sage: 0, mara: 0, rico: 0, tam: 0 };
   for (const start of Object.keys(STARTS))
     for (let k = 0; k < SEEDS; k++) {
       const r = season(`crew-${start}-${k}`, {
@@ -220,11 +260,22 @@ it('Phase 25’s systems, measured', { timeout: 3_600_000 }, () => {
       });
       runs++;
       const c = r.state.crew;
-      if (c) fired++;
+      if (c) {
+        fired++;
+        pairs.add(`${c.a} over ${c.b}`);
+      }
       const regs = ['sage', 'mara', 'rico', 'tam'].filter((w) => (r.state.people[w]?.bond ?? 0) >= 3);
+      for (const w of regs) regulars[w]!++;
       out(
         `| ${start} | ${k} | ${c ? `day ${c.day}: ${c.a} over ${c.b}, ${c.stage}` : '–'} | ${regs.length ? regs.join(', ') : 'none'} |`,
       );
     }
-  out(`\nCrew drama came to ${fired} of ${runs} social careers.`);
+  out(
+    `\nCrew drama came to ${fired} of ${runs} social careers, ${pairs.size} pairs: ${[...pairs].join('; ')}.`,
+  );
+  out(
+    `Regulars at the end, of ${runs}: ${Object.entries(regulars)
+      .map(([w, n]) => `${w} ${n}`)
+      .join(', ')}.`,
+  );
 });

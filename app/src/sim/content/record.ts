@@ -10,7 +10,7 @@ export type RecordAim =
   | { guide: true }
   | { outfit: true }
   | { mentee: number }
-  | { team: true }
+  | { team: true | 'all' }
   | { quirk: true }
   | { given: number }
   | { sends: number }
@@ -333,7 +333,7 @@ export const RECORD: RecordEntry[] = [
   },
   {
     id: 'olympics',
-    title: 'Olympic Medalist',
+    title: 'Games Medalist',
     desc: 'Podium at the Games.',
     story: 'A podium at the Games. Every gym you ever paid a day pass at would claim you, if they knew.',
     from: ['k8:olymedal'],
@@ -436,6 +436,16 @@ export const RECORD: RecordEntry[] = [
       'A photo on your phone of two kids on a summit you know, holding your notes up to the camera. You were in the van at the Lot. It counts more than you’d have guessed.',
     from: [],
     aim: { team: true },
+  },
+  // Phase 26 (Evan's call, 8 Oct 2026): what more team summits are worth.
+  {
+    id: 'patrons',
+    title: 'Everybody Else’s Summits',
+    desc: 'See a team you paid for stand on top of every objective.',
+    story:
+      'Three photos on your phone now: three summits you know, three pairs of kids holding your notes up to the camera. Somebody at the Lot asks what you climbed this year, and you show them those.',
+    from: [],
+    aim: { team: 'all' },
   },
   {
     id: 'landowner',

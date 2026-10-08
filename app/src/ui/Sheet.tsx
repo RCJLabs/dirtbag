@@ -2243,7 +2243,8 @@ function ShiftRows({ game, s }: { game: Game; s: GameState }) {
       <p className="crux">Shifts</p>
       <p className="sub">
         Sign up to {WORK.ahead} days ahead. Only those count toward a raise: today&rsquo;s are walk-ins. Skip
-        one you signed up for and it&rsquo;s a warning; {WORK.strikes} cost the job.
+        one you signed up for and it&rsquo;s a warning; {WORK.strikes} cost the job. {WORK.forgive} days
+        without another, and they&rsquo;re forgotten.
       </p>
       <ul className="days shifts" id="shifts">
         {days.map((d) => (
@@ -2287,7 +2288,9 @@ function workLine(s: GameState, job: string): string {
   const n = s.strikes[job] ?? 0;
   const back = benchedUntil(s, job);
   if (back !== null) return `${JOBS[job]!.name}: let go, back from day ${back}.`;
-  return `${JOBS[job]!.name}: ${rankName(s, job)}${n ? `, ${n} warning${n > 1 ? 's' : ''}` : ''}.`;
+  // Phase 26: warnings lapse, and the day they do is said.
+  const clear = (s.struck[job] ?? s.day) + WORK.forgive;
+  return `${JOBS[job]!.name}: ${rankName(s, job)}${n ? `, ${n} warning${n > 1 ? 's' : ''} till day ${clear}` : ''}.`;
 }
 
 // Where you park (Phase 22.2b): chosen here, and it stays until you change it.

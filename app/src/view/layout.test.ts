@@ -14,6 +14,8 @@ import {
   SCENES,
   screenWidth,
   SPOTS,
+  strangerHot,
+  strangersAt,
   W,
   W_MAX,
   WIDE,
@@ -21,6 +23,33 @@ import {
   Z,
 } from './layout';
 import { drivePath, joinOf, roadX, SIDE_ROADS } from './valley';
+
+describe('the crowd at a crag (Phase 26)', () => {
+  it('stands clear of every line, boulder, van and partner, so a tap there is for them', () => {
+    for (const [scene, c] of Object.entries(CRAGS)) {
+      const place = SCENES[scene]!.place;
+      const hots = SCENES[scene]!.hots.filter((h) => h.y1 > 500);
+      const spots = (SPOTS[scene] ?? []).map((p) => [p.x - 20, p.x + 20]);
+      let most = 0;
+      for (let day = 1; day <= 40; day++) {
+        const crowd = strangersAt(place, c, day, 'packed');
+        most = Math.max(most, crowd.length);
+        for (const [i, p] of crowd.entries()) {
+          const h = strangerHot(p, i);
+          expect(h.x0, scene).toBeGreaterThanOrEqual(0);
+          expect(h.x1, scene).toBeLessThanOrEqual(c.width);
+          for (const o of hots) expect(h.x1 <= o.x0 || h.x0 >= o.x1, `${scene} ${p.x}`).toBe(true);
+          for (const [a, b] of spots) expect(h.x1 <= a! || h.x0 >= b!, `${scene} ${p.x}`).toBe(true);
+        }
+        // Nobody stands on anybody.
+        const xs = crowd.map((p) => p.x).sort((a, b) => a - b);
+        for (let k = 1; k < xs.length; k++) expect(xs[k]! - xs[k - 1]!).toBeGreaterThanOrEqual(28);
+      }
+      // A busy day's three find room at every crag.
+      expect(most, scene).toBeGreaterThanOrEqual(3);
+    }
+  });
+});
 
 describe('the crags on screen', () => {
   it('put every crag line in its place’s scene, once', () => {

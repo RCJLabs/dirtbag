@@ -56,8 +56,10 @@ describe('the cast’s milestones (Phase 17.2)', () => {
   });
 
   it('plays Mara’s arc at her bonds, spaced out, and a no keeps her away', () => {
-    const day = Array.from({ length: 200 }, (_, i) => i + 10).find((d) =>
-      whereIs('arcs', 'mara', d, 12 * 60),
+    const day = Array.from({ length: 200 }, (_, i) => i + 10).find(
+      (d) =>
+        // At the Gorge: on a shut day she's in the Cave (Phase 26).
+        whereIs('arcs', 'mara', d, 12 * 60) === 'gorge',
     )!;
     const at = (bond: number, p: Partial<PersonLog>, d = day) =>
       made(
@@ -70,8 +72,8 @@ describe('the cast’s milestones (Phase 17.2)', () => {
     expect(one.people.mara).toMatchObject({ arc: 1, beatDay: day });
     // Beat two waits for the bond, then for the spacing.
     expect(talkStart({ ...one, people: { mara: { ...one.people.mara!, bond: 3 } } }, 'mara')).toBe('again');
-    const next = Array.from({ length: 200 }, (_, i) => day + ARC.spacing + i).find((d) =>
-      whereIs('arcs', 'mara', d, 12 * 60, { ...one.people.mara!, bond: 3 }),
+    const next = Array.from({ length: 200 }, (_, i) => day + ARC.spacing + i).find(
+      (d) => whereIs('arcs', 'mara', d, 12 * 60, { ...one.people.mara!, bond: 3 }) === 'gorge',
     )!;
     const later = { ...one, day: next, people: { mara: { ...one.people.mara!, bond: 3 } } };
     expect(talkStart(later, 'mara')).toBe('beat-2');
