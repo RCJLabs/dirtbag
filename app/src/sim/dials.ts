@@ -84,10 +84,13 @@ export const MONEY = {
 // Phase 22.1: the week's shifts. You sign up for a posted shift up to a week ahead (from
 // tomorrow: today's you walk in to). A shift you signed up for and didn't work is a
 // warning; the third costs the job: back to its first rank, and off its schedule for a week.
+// Phase 26 [proposed]: `forgive` days without another and a job's warnings are cleared, two
+// of the year's seasons; Phase 22.1 had them never expire.
 export const WORK = {
   ahead: 7,
   strikes: 3,
   benchDays: 7,
+  forgive: 28,
 };
 
 // Phase 18.1: a shift played, not just worked [proposed]. Played well, it pays up to `top`
@@ -131,8 +134,9 @@ export const COACH = {
 export const COMP = { goes: 5, close: 13 * 60, steep: 1.4, half: 56 };
 // Phase 25.5 [proposed]. League night's season: the year's eight nights, a night's points the
 // field's size less one a place, the `best` six counting (two missed nights don't sink you).
-// Top of the table when it's settled, on the year's last League night, pays `prize`.
-export const LEAGUE = { best: 6, prize: 250 };
+// Top of the table when it's settled, on the year's last League night, pays `prize`. Phase 26
+// [proposed]: a season won moves you to the A league for good, whose top pays `prizeA`.
+export const LEAGUE = { best: 6, prize: 250, prizeA: 500 };
 
 // Phase 18.5 [proposed]. Followers from a post: `k` × the worth of today's best send (its
 // grade plus two, to the power `pow`; more outside, on a first go, or a first ascent) × how
@@ -244,8 +248,10 @@ export const GUIDING = {
 // two hours and `energy` add `gain` to their level, slower as they grow (half as fast at
 // `slow`), never past your own grade. Their shoes and fees are `weekly` with the bills. Left
 // alone `lapse` days they're warned to be drifting; twice that, they've gone. At your
-// retirement their grade passes on: `heir` skill a grade, on each, to the next climber.
-export const MENTEE = { from: 7, min: 120, energy: 8, gain: 0.35, slow: 8, weekly: 15, lapse: 14, heir: 4 };
+// retirement their grade passes on: the next climber starts at `heir` of it, rounded. Phase 26:
+// it was 4 skill a grade, which the curve squashed (a V5 and a V8 both made a V2); now a V5
+// makes a V2, a V8 a V3, a V10 a V4, a V12 a V5.
+export const MENTEE = { from: 7, min: 120, energy: 8, gain: 0.35, slow: 8, weekly: 15, lapse: 14, heir: 0.4 };
 
 // Phase 25.4 [proposed]. A team's trip, after v0.956's late-money goal (fund a first-ascent
 // team): to an objective you've stood on top of, at `cost` times your own trip's price (their
@@ -533,8 +539,10 @@ export const BOND = {
 //   frank  the Lot on v0.956's 40% of nights (20% in winter), at his rig till late, from
 //          the third: the first two nights at the fire are Hazel's;
 //   mara   the Gorge on dry days: v0.956's 0.34, the least around and the hardest climber;
+//          the Cave when the Gorge is wet or shut (Phase 26);
 //   rico   the Cave, or Moonstone when it's dry: v0.956's 0.55;
-//   tam    the Mesa on dry mornings, before the sandstone heats up: v0.956's 0.30.
+//   tam    the Mesa on dry mornings, before the sandstone heats up: v0.956's 0.30; the
+//          Gorge's shade when the Mesa is wet or shut and the Gorge isn't (Phase 26).
 export const CAST = {
   ray: { from: 8 * 60, till: 14 * 60 },
   frank: { nights: 0.4, winter: 0.2, from: 17 * 60, till: 22 * 60, fromDay: 3 },

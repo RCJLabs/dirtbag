@@ -86,14 +86,21 @@ function frank(seed: string, day: number, min: number, p?: PersonLog): string | 
   return Rng.fromStream(seed, 'events').derive(`frank-${day}`).chance(odds) ? 'lot' : null;
 }
 
-// Mara climbs at the Gorge, on dry days.
+// Whether a crag's shut to climbing today: wet, or closed for the season.
+const shut = (seed: string, day: number, place: string): boolean => {
+  const c = conditionsAt(seed, day, place);
+  return !c.open || !!c.closed;
+};
+
+// Mara climbs at the Gorge on dry days. When it's wet, or shut for the raptors, she trains
+// in the Cave (Phase 26): the hardest climber in the valley doesn't take days off.
 function mara(seed: string, day: number, min: number, p?: PersonLog): string | null {
   const M = CAST.mara;
   if (min < M.from || min >= M.till || away(seed, 'mara', day, p)) return null;
   const inv = asked(day, min, p);
   if (inv) return inv;
   if (!turnsUp(seed, 'mara', day, M.base, p)) return null;
-  return conditionsAt(seed, day, 'gorge').open ? 'gorge' : null;
+  return shut(seed, day, 'gorge') ? 'cave' : 'gorge';
 }
 
 // Rico is in the Cave most days, and out at Moonstone on some dry ones.
@@ -107,7 +114,8 @@ function rico(seed: string, day: number, min: number, p?: PersonLog): string | n
   return dry && Rng.fromStream(seed, 'events').derive(`rico-moon-${day}`).chance(R.moon) ? 'moon' : 'cave';
 }
 
-// Tam climbs the Mesa early, before the sandstone heats up.
+// Tam climbs the Mesa early, before the sandstone heats up. When it's wet, or the summer has
+// shut it, he climbs the Gorge's shade instead, if that's open (Phase 26).
 function tam(seed: string, day: number, min: number, p?: PersonLog): string | null {
   const T = CAST.tam;
   if (min < T.from || min >= T.till || away(seed, 'tam', day, p)) return null;
@@ -117,7 +125,8 @@ function tam(seed: string, day: number, min: number, p?: PersonLog): string | nu
   if (inv) return inv;
   const slow = day >= (tamSlows(p) ?? Infinity) ? LIFE.tam.slowBy : 1;
   if (!turnsUp(seed, 'tam', day, T.base * slow, p)) return null;
-  return conditionsAt(seed, day, 'mesa').open ? 'mesa' : null;
+  if (!shut(seed, day, 'mesa')) return 'mesa';
+  return shut(seed, day, 'gorge') ? null : 'gorge';
 }
 
 // Where someone is. With everyone's logs, someone who's fallen out with another (Phase 25.6)

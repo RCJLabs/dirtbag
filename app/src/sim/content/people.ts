@@ -607,7 +607,7 @@ export const TALK: Record<string, TalkDef> = {
         ],
       },
       meet: {
-        text: 'An older climber is coiling a rope in the shade of the wall, slow and exact, the way you’d fold a flag. "Tam Okonkwo. I climb long, and I climb early, before the rock gets hot." He looks at your hands. "You’ll want tape for this sandstone."',
+        text: 'An older climber is coiling a rope in the shade of the wall, slow and exact, the way you’d fold a flag. "Tam Okonkwo. I climb long, and I climb early, before the rock gets hot." He looks at your hands. "You’ll want tape. Everyone thinks they won’t."',
         opts: [
           { label: 'Nod', primary: true },
           { label: '"How long have you been at it?"', next: 'long' },

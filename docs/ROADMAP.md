@@ -69,6 +69,7 @@
 | 16 The spine | Next after 21–23. |
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 | 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
+| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 is the current milestone. |
 
 ## The rebuild track
 
@@ -2852,11 +2853,292 @@ Players will ask "what am I working towards?" by hour 3.
 - **Crew drama** came to 13 of 16 social careers by day 300 (median day 110), every time Rico asking over Sage, the only two of the four the bots make Regulars: Mara (the Gorge) and Tam (the Mesa) rarely get there. Mended in 10, set in 1, still a rift in 2. **A bot gap, fixed on the way:** the social bot didn't answer crew drama's beats, and Sage's own talk handled only her meeting and arc; it found it 0 times in 16 before. Every other harness target passes as before; ambient lines now come round 2.2 times by day 100 (2.1 before), the social bot's time on the drama, against v0.956's 7.
 - **Not measured:** the guides' royalties and giving (text and small money); the outfit and gym against each other in one career (no bot runs either).
 
+### Phases 26–35 — Deepen the game
+
+*Evan's call (8 Oct 2026): Phase 14 waits until he asks for it. Until then, keep building the game: tune what's measured, deepen what's thin, tie the systems together, and add what's missing. Ten phases, some small and some large, drawn from a map of every system's depth, what the audit and the closed phases carried, and Phase 25's measurements.*
+
+**The order:** 26, 27, 28, 29, 33, 34, 30, 31, 32, 35.
+- 26 is cheap and acts on numbers already measured.
+- 27 is the attempt, the star.
+- 32 builds on 28's crew project and 34's money.
+- 35 fits anywhere.
+
+**Weigh first:**
+- **Bots only.** No person has played a full career, and the testers' criteria are all still open: 10–12's, the Late Bloomer's speed run, the boulderer and the all-rounder in week one, outdoors at about two in three, the gym's top-end pay. Ten phases on bot-tested balance can deepen the wrong things. A week of 0.999.33 before Phase 27 would help.
+- **The download.** 398.2 KB of 440. Phases 27 and 32 are mostly content and will likely need the budget raised [INFERRED].
+- **One reversal.** Phase 34's photo sales undo part of Phase 5's "photography economy beyond posts and prints: defer past 1.0". The garden and the farm stay saved for later, with the audit's objection.
+
+**Not here, considered:**
+- **More expeditions or destination trips.** There are three objectives. The strongest runner-up.
+- **The town's places as scenes,** the diner and the café with their regulars. A large art cost.
+- **The garden and the farm.** Still saved (Phase 22).
+- **Speed comps, grade votes** (cut in Phase 5), **a rival gym.**
+
+### Phase 26 — Tune-up: act on the measurements   **<<< CURRENT MILESTONE**
+
+*Small. Phase 25's measurements, acted on. Nothing there has been changed yet.*
+
+**Goal.** Each late system matters for longer than it does now, and the bots measure what a player meets.
+
+**Scope.**
+- **Crew breadth.**
+  - Crew drama came to 13 of 16 social careers, always Rico asking over Sage. Mara (tied to the Gorge) and Tam (tied to the Mesa) rarely become Regulars.
+  - Give each of them a way into the valley's days, a town hour or invites of their own, and draw the drama's pair from your closest two.
+- **League night.**
+  - From V5 a player wins every night of every season.
+  - A season won moves you up to the A league the next year, with a stronger field and a bigger prize.
+- **The dyno comp.**
+  - From V10 a player wins every year.
+  - The field grows with the years, as the festival gets known.
+- **An heir's head start.**
+  - A V5 mentee and a V8 one both make a V2 heir.
+  - Scale it with the mentee's level, not in bands.
+- **Smaller:**
+  - The crowd stands clear of the lines' bases, so a tap there reaches the line.
+  - The bot answers Sage's romance beats in social mode, and a due beat no longer costs a non-social bot its lesson. Her romance starts come before her lesson in her talk.
+  - Carried from Phase 22: a warning expires after a while, and leaving on an expedition cancels the shifts it covers.
+  - Phase 5's rename of "Olympic Medalist".
+
+**Evan's calls:**
+- whether the outfit ($155 a day) and the gym's top end are trimmed;
+- what a team's repeat summits are worth.
+
+**Done when.**
+1. A re-run of the late harness finds crew drama across at least three different pairs.
+2. A promoted V5 doesn't sweep the A league, and from V10 the dyno comp is won in fewer than four years of four.
+3. V5, V8 and V10 mentees leave different heirs.
+4. The harness's targets still pass.
+
+**Status (8 Oct 2026): built.** Save v57, 0.999.34. Evan's calls (8 Oct 2026):
+- the outfit and the gym stay as they are;
+- a Record Book entry for team summits on every objective;
+- the A league is for good;
+- Mara goes to the Cave and Tam to the Gorge when their own crags are shut.
+
+Numbers [proposed] in `LEAGUE.prizeA`, `MENTEE.heir`, `WORK.forgive` and the comp tiers.
+- **Mara and Tam.** On a day they'd come out, Mara trains in the Cave when the Gorge is wet or shut for the raptors. Tam climbs the Gorge's shade when the Mesa is wet or too hot, if the Gorge is open. Before, each of them stood at a crag that was shut. Tam's first line no longer mentions sandstone, since you can meet him at the Gorge now.
+- **The A league.** It runs on League night's nights, with problems V3 to V8, a field of its own and $500 for its season. It's yours from the year after you win a season, for good. It's read off the seasons you've settled, so nothing new is saved.
+- **The dyno comp** grows a grade a year for its first three years, the throws and the field together: V2–V10 in the first year, V5–V13 from the fourth.
+- **An heir's head start** is 0.4 of the mentee's grade, rounded, with the start's own shape kept. A V5 mentee makes a V2 heir, a V8 a V3, a V10 a V4 and a V12 a V5.
+- **The crowd** stands in the gaps, clear of every line, boulder, the van and the cast, so a tap at a line's foot is for the line. Roadside has room for three strangers, so on a packed day it shows three, not five.
+- **Warnings lapse** 28 days after the last one. The save keeps that day (v57), and the jobs sheet says when they lapse. A v56 save's warnings count from the day it loads.
+- **The Record Book has 46 entries.** The new one is Everybody Else's Summits, a team up every objective. Olympic Medalist is now Games Medalist.
+- **The bots** answer Sage's romance beats: the social bot the first way, the others as friends. Her romance comes before her lesson in her talk, so from Partner on they'd lost her lessons for good.
+- **Dropped:** "an expedition cancels the shifts it covers". Phase 24.3 already settled it by Evan's call: book a week ahead and the shifts drop free; at short notice they count as missed.
+
+**Measured** (the late harness, 4 seeds a cell):
+- **Crew drama** came to 16 of 16 social careers (13 before), median day 113. Mara ends a Regular in all 16 (rarely before), Tam in 1. Three pairs: Rico over Sage 10, Sage over Rico 4, Rico over Mara 2.
+- **The A league:** a promoted V4 or V5 is mid-table and wins no season; a V6 comes second. From V7 it wins every season, $945 to $1,020 a season.
+- **The dyno comp,** won year by year: sampled four times in each of its first four years:
+  - a V8 wins 2, 3, 0 and 0 of 4 (it won 2 in 4 before);
+  - a V10 wins 4, 3, 2 and 2 of 4 (every one before);
+  - a V12 wins 4, 4, 4 and 3;
+  - a V14 wins every one.
+- **Heirs:** V2, V3 and V4 from V5, V8 and V10 mentees, from every start.
+- **The full harness:** every target passes but Outdoors, the accepted shortfall, which is now 3 of 4 (2 of 4 before).
+  - The career bots reach V10 on a median day 179.5 (180.5 before).
+  - Act III ends in every career, on a median day 274.5 (296.5 before). That's Sage's lessons coming back to the bots.
+
+**Against its Done-when:** all four pass.
+1. Crew drama falls on three pairs.
+2. A promoted V5 doesn't sweep the A league, and from the second year a V10 doesn't win every dyno comp.
+3. V5, V8 and V10 mentees leave different heirs.
+4. The harness's targets pass as before.
+
+Closing it is Evan's call.
+
+### Phase 27 — The rock, by hand
+
+*Large. The core, deepened.*
+
+**Goal.** Each crag climbs like its rock, and no two lines at a crag ask for the same moves.
+
+**Why.**
+- 68 of the 83 single lines draw their cruxes from one library: two sequences a style, 12 in all.
+- All 24 wall pitches share one shape and one line.
+- Big Stone has five single lines.
+
+**Scope.**
+- **Each crag's rock in its cruxes:**
+  - granite's friction and cracks;
+  - sandstone soft after rain (carried from Phase 10);
+  - tufas, with kneebar rests.
+- **A hand-made crux on every classic** (about three a crag), and a library for each crag for the rest.
+- **Wall pitches by kind:** crack, chimney, traverse, roof, slab, each with its own crux and lines.
+- **Declare a flash** (the audit's climbing #12). Say it before the go: a send pays psyche and goes in the Record Book, and a fall costs the flash and some psyche.
+- **Pads and a spotter** on boulders and highballs (the audit's climbing #21). Where a boulder has two places to fall, where the pad goes matters.
+- More single lines at Big Stone.
+
+**Evan's call:** which rock and which moves go where. This phase leans on his coaching most.
+
+**Done when.**
+1. The content test finds no crux sequence shared within a crag, and at least three pitch kinds on every wall.
+2. A declared flash plays in tests and in the e2e.
+3. The harness's grade progression stays inside Phase 6's bands.
+
+### Phase 28 — The crew
+
+*Medium. New, from the audit's list of what to keep (`social.md`): the crew's name, its renown, a crew project, favours. The rebuild has none of them.*
+
+**Goal.** Your partners are a crew with a name, a shared project and debts to each other.
+
+**Scope.**
+- **A name.** With two Regulars or more, you name the crew.
+- **A crew project:** a hard line the crew works over weeks.
+  - Each partner's go shows everyone a crux. It's the send train the glossary already names.
+  - The crew's send goes in the Record Book.
+- **Favours.**
+  - Ask a Regular to cover a shift, lend a rack, or drive you.
+  - They ask back on their own clock, and a no costs bond.
+  - A favour two of them want is another way into crew drama.
+- **Renown.** The crew's name turns up in the threads and in the old guard's lines.
+
+**Done when.**
+1. A social bot's career names a crew, sends its project, and trades favours both ways.
+2. Old saves load into the new shape.
+
+### Phase 29 — The van, lived in
+
+*Medium. Ties the hustle, the van, food and psyche together.*
+
+**Goal.** What you scavenge builds the van, the van ages into a decision, and a meal is a thing you make.
+
+**Why.**
+- The hustle, the Board and cooking are single taps.
+- The van never ages out (the audit's core loop, ADD 4).
+- Carried from Phase 22: the cooking minigame, and psyche lifted by Scout, the fire and the events.
+
+**Scope.**
+- **Scavenging finds parts** for build-outs (a shelf, a solar panel, a heater, a better bed), each with an effect on supplies, winter nights or sleep.
+- **The van ages.** When repairs cost more than it's worth, you choose: rebuild it, replace it (the dream van), or limp on.
+- **Cooking at the van** is a short minigame. A good meal lifts recovery and psyche, as Scout and the fire do.
+- **The Board** posts three bounties a week, and you pick one.
+
+**Done when.**
+1. The hustle has a choice with a trade-off.
+2. The replacement decision comes to a bot career by year three.
+3. Cooking plays in the e2e.
+
+### Phase 30 — Getting older
+
+*Medium. Age is only a deadline now: nothing about the body changes from 22 to 45.*
+
+**Goal.** The body changes with the years, and a late career has somewhere to go.
+
+**Scope.**
+- **Recovery and skin slow** with age, and past a dial's age injuries heal slower.
+- **Head and technique grow** with years climbed.
+- **A runway** (the audit's core loop, ADD 4): clinics, setting comps, an ambassador's deal.
+- **Insurance priced by age.**
+
+**Evan's call:** how hard age bites, from his coaching. The risk is that it reads as a punishment [INFERRED].
+
+**Done when.**
+1. A 40-year-old bot climbs within a set number of grades of its peak.
+2. Careers retired at 30 and at 45 both read well in the epilogue.
+
+### Phase 31 — After you
+
+*Medium. The heir has a five-goal act and a coarse head start. The audit (`meta.md` #11) asked for the family name in the scene, a share of the money and a first quest of the heir's own. An inherited gym stays out.*
+
+**Goal.** The climber who retires stays in the valley, and the heir inherits more than a head start.
+
+**Scope.**
+- **The old climber stays.**
+  - Some nights they're at the fire, with lines from their career: sends, scars, crew, expeditions.
+  - They give beta on the lines they sent.
+- **What the heir inherits:** a share of the money (a dial), a name the old guard knows, and a first quest from the old climber.
+- **A family book:** the old Record Book beside the heir's.
+
+**Done when.**
+1. An heir's career meets the old climber and takes beta from them on a line they sent.
+2. A save from before the phase, with an heir, loads.
+
+### Phase 32 — The Hollow
+
+*Large. The Hollow waits for "the quest that finds it" (Phase 21). Phase 5 kept "projects and FAs" to deepen. The Bluff's bolting covers lines already drawn.*
+
+**Goal.** A crag nobody has a topo for, found by a quest, where you put up lines and name them.
+
+**Scope.**
+- **The quest.** Clues come from an old-timer, a hitchhiker, and an old guidebook at the shop. The walk-in is an epic.
+- **First ascents.**
+  - Scope a line, clean it, bolt it or climb it on gear, and name it.
+  - Its grade settles as others repeat it.
+- **What an FA touches:**
+  - your guidebook, whose royalties rise;
+  - the scene, which argues over your bolts;
+  - the crew project (28), which can live here.
+- **A painter** for the Hollow.
+
+**Done when.**
+1. A bot finds the Hollow and names a first ascent.
+2. The content test holds the Hollow's lines to the same rules as every other line.
+3. The download stays within its budget, raised if Evan agrees.
+
+### Phase 33 — Comps with rounds
+
+*Medium. Every comp is one round on one day, climbed like the gym, and there's no national team.*
+
+**Goal.** A comp is a comp: rounds, rules, a field you know.
+
+**Scope.**
+- **Rounds.** From Nationals up, a qualifier and then the final the next day. The World Series adds a semi.
+- **Comp rules:**
+  - isolation, so no beta from watching;
+  - a time limit on each problem.
+- **A field that comes back** each year: rivals you get to know, Skye among them.
+- **Selection.** The Nationals podium makes the team for the World Series.
+
+**Done when.**
+1. The harness's comp table measures the rounds.
+2. The e2e plays a qualifier and a final.
+
+### Phase 34 — Money that means something
+
+*Medium. Followers pay nothing; a job's ranks raise its pay and nothing else; costs don't grow with ambition. The audit's economy #8, #9, #16 and #17.*
+
+**Goal.** Jobs, media and ambition each change what a climber can afford.
+
+**Scope.**
+- **Rank perks:**
+  - the setter climbs free;
+  - the shop's gear discount for its clerk;
+  - fuel for the courier;
+  - rescue cover for the guide.
+- **Costs of ambition:** a physio on retainer, a coach for your own training, travel to comps.
+- **Media that pays:** photos that sell, a magazine piece, trade shows for the sponsored, and a film you pay for.
+
+**Evan's call:** the photo sales, which reverse part of Phase 5's deferral.
+
+**Done when.**
+1. The harness's money table shows media income in a media career, never more than a job's.
+2. Every perk's text is formatted from its dial.
+
+### Phase 35 — The road and the year
+
+*Small. The knocks have no follow-up. There are eight hitchhikers, and no pull toward the ones you haven't met (the audit's social #9). The roadside stops are one-line lifts. Holidays are fire cards (the audit's social #16).*
+
+**Goal.** The road and the calendar remember you.
+
+**Scope.**
+- **Knocks that come back:** someone you helped turns up again.
+- **More hitchhikers,** the ones you haven't met first.
+- **Roadside stops with a choice.**
+- **Holiday nights:** a Sendsgiving potluck, a Halloween night send, the solstice.
+- **The music's second pass,** once Evan has heard it.
+
+**Done when.**
+1. The content tests cover the new pools.
+2. In a two-year bot career, no hitchhiker comes a third time before every one has come once.
+
 ## Stage D — Get it in front of people
 
 *Moved here by Evan's call (29 Sep 2026): the whole game gets built first, and the Steam build, the demo and the store page come after it. The phase numbers stay as they were, so older references still find them.*
 
-### Phase 14 — Desktop and Steam build   **<<< CURRENT MILESTONE**
+### Phase 14 — Desktop and Steam build
+
+*Waits until Evan asks for it (8 Oct 2026). Phases 26–35 come first.*
 
 **Goal.** A Steam build that plays well with mouse, keyboard or gamepad on Windows, macOS, Linux and Steam Deck.
 
@@ -3155,3 +3437,5 @@ Players will ask "what am I working towards?" by hour 3.
 - 2026-10-04 — Phase 25.7 built: polish: a keepsake card for a trip, tappable glossary words, Miller's Bluff's own rock (and the line its six sport lines never had). Phase 25's criteria pass but for music, Evan's call. 0.999.32.
 - 2026-10-04 — Music, made in code (Evan's call: synthesize it and see how it turns out): six moods by place and hour, in stretches with quiet between, ducked under talk and goes, a Music setting. Phase 25 closed by Evan's call; CURRENT MILESTONE moved to Phase 14, the desktop and Steam build. 0.999.33.
 - 2026-10-04 — Phase 25's systems measured (Evan's call): a harness with no targets, numbers for the calls; the social bot taught crew drama, which it had never met (13 of 16 careers now). No numbers changed.
+- 2026-10-08 — Evan's call: Phase 14 waits until he asks for it. Phases 26–35 added to deepen the game: a tune-up from the measurements, the rock by hand, the crew, the van lived in, getting older, after you, the Hollow, comps with rounds, money that means something, the road and the year. CURRENT MILESTONE moved to Phase 26.
+- 2026-10-08 — Phase 26 built (Evan's calls: the outfit and gym stay, a Record Book entry for team summits on every objective, the A league for good, Mara in the Cave and Tam at the Gorge when their crags are shut). Crew drama in 16 of 16 social careers across three pairs; the A league from a season won; the dyno comp grows for three years; heirs graded by the mentee; the crowd clear of the lines; warnings lapse; the bots get Sage's lessons back. Its criteria pass; closing it is Evan's call. Save v57. 0.999.34.

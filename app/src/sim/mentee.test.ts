@@ -1,11 +1,11 @@
 // Phase 25.3: the kid you coach: taken on from V7, built a session a day, never past you;
 // drifting off if left alone, warned first; and their grade, a head start for an heir.
 import { describe, expect, it } from 'vitest';
-import { needFor } from './climber';
+import { gradeOf, needFor, STARTS } from './climber';
 import { MENTEE } from './dials';
 import { act, newGame } from './game';
 import { aimEarned } from './record';
-import { menteeAfter } from './mentee';
+import { heirStart, menteeAfter } from './mentee';
 import type { GameState, Skills } from './types';
 
 const at = (g: number): Skills => {
@@ -89,7 +89,25 @@ describe('a mentee', () => {
       name: 'Robin',
       start: 'allrounder',
     });
-    expect(kid.state.climber.skills.power - plain.state.climber.skills.power).toBe(MENTEE.heir * 8);
+    // Phase 26: a V8 makes a V3, the start's own shape kept.
+    expect(gradeOf(kid.state.climber.skills)).toBe(3);
+    expect(gradeOf(plain.state.climber.skills)).toBe(0);
+    const gap = (k: keyof Skills) => kid.state.climber.skills[k] - plain.state.climber.skills[k];
+    expect(gap('head')).toBe(gap('power'));
     expect(lines(kid).some((l) => l.includes(s.mentee!.name))).toBe(true);
+  });
+
+  it('gives an heir a head start that grows with the kid’s grade, from any start (Phase 26)', () => {
+    for (const st of Object.values(STARTS)) {
+      const from = (g: number) => gradeOf(heirStart(st.skills, g));
+      expect([5, 8, 10, 12].map(from)).toEqual([2, 3, 4, 5]);
+      expect(from(0)).toBe(gradeOf(st.skills));
+      // Whole skill, nobody's made weaker.
+      const up = heirStart(st.skills, 8);
+      for (const k of Object.keys(up) as (keyof Skills)[]) {
+        expect(Number.isInteger(up[k])).toBe(true);
+        expect(up[k]).toBeGreaterThanOrEqual(st.skills[k]);
+      }
+    }
   });
 });

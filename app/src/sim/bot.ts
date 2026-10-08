@@ -70,7 +70,7 @@ import { EXPEDITIONS, expedPitches } from './content/expeditions';
 import { defaultPlan, planBlocked, planCost, stormOn, summitOdds, yourPitch } from './expeditions';
 import { WALLS } from './content/routes';
 import { COMP_TIERS } from './content/comps';
-import { compBlocked, compOn } from './comps';
+import { compBlocked, compHere, gradesFor } from './comps';
 import { postBlocked } from './media';
 import { gymBuyBlocked, UPGRADES, type Upgrade } from './business';
 import { scoreSet, setBrief } from './work';
@@ -655,16 +655,21 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   }
 
   // Talks to Sage when she's here: her lesson once a day, and whatever beat of her arc is
-  // due (the first answer, like a player who doesn't read).
+  // due (the first answer, like a player who doesn't read). Phase 26: her romance's beats
+  // too, which come before her lesson and had stopped the lessons for good once she was a
+  // Partner: the social bot answers them the first way; the others keep it a friendship.
   function maybeSage() {
-    for (let n = 0; n < 3; n++) {
+    for (let n = 0; n < 4; n++) {
       // A beat can send her off mid-conversation.
       if (whereNow(s, 'sage') !== s.at) return;
       const node = talkStart(s, 'sage');
       const crew = !!opts.social && node?.startsWith('crew-');
-      if (!node || !(node === 'meet' || node === 'again' || node.startsWith('beat-') || crew)) return;
+      const love = !!node?.startsWith('love-');
+      if (!node || !(node === 'meet' || node === 'again' || node.startsWith('beat-') || crew || love)) return;
       if (node === 'again' && s.today.includes('sage')) return;
-      const opt = TALK.sage!.nodes[node]!.opts.findIndex((o) => !o.when || holds(s, o.when));
+      const choices = TALK.sage!.nodes[node]!.opts;
+      const friends = love && !opts.social ? choices.findIndex((o) => o.fx?.romance === 'friends') : -1;
+      const opt = friends >= 0 ? friends : choices.findIndex((o) => !o.when || holds(s, o.when));
       if (opt < 0 || !go({ t: 'say', talk: 'sage', node, opt })) return;
       if (node === 'meet' || node === 'again') return;
     }
@@ -1242,7 +1247,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     const grade = gradeOf(s.climber.skills);
     for (let i = COMP_TIERS.length - 1; i >= 0; i--) {
       const t = COMP_TIERS[i]!;
-      if (t.side || compOn(day, t.venue) !== i || grade < t.grades[0]) continue;
+      if (t.side || compHere(s, day, t.venue) !== i || grade < gradesFor(i, day)[0]) continue;
       const at = { ...s, day, at: t.venue, min: 9 * 60, cash: money ? s.cash : Infinity };
       if (compBlocked({ ...at, comps: { ...s.comps, on: null } })) continue;
       // A comp's worth a thin day for it: the fee and a night's food over.

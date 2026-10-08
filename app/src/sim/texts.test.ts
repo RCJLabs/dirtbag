@@ -41,7 +41,8 @@ describe('texting the crew', () => {
       const said = textBack(at, 'mara');
       if (outLater(at, 'mara', d)) {
         out++;
-        expect(said).toMatch(new RegExp(`^${PLACES.gorge!.name}, \\d`));
+        // The Gorge, or the Cave when it's shut (Phase 26).
+        expect(said).toMatch(new RegExp(`^(${PLACES.gorge!.name}|${PLACES.cave!.name}), \\d`));
         expect(said).toContain('You coming?');
       } else {
         busy++;

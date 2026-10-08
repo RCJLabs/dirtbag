@@ -6,6 +6,7 @@ import { gradeOf } from './climber';
 import { gradeOfPerson } from './curves';
 import { indoor, routeById } from './content/gym';
 import { DYNO_COMP, GAMES_TIER } from './content/comps';
+import { EXPEDITIONS } from './content/expeditions';
 import { PLACES } from './content/places';
 import { RECORD, type RecordAim, type RecordEntry } from './content/record';
 import { rankAt } from './jobs';
@@ -55,7 +56,11 @@ export function aimEarned(s: GameState, aim: RecordAim, sent = sends(s)): boolea
   if ('land' in aim) return s.unlocked.some((id) => PLACES[id]?.land);
   if ('outfit' in aim) return !!s.outfit;
   if ('mentee' in aim) return (s.mentee?.level ?? 0) >= aim.mentee;
-  if ('team' in aim) return (s.teams ?? []).some((t) => t.summit);
+  if ('team' in aim) {
+    // Phase 26: every objective, or any.
+    const up = new Set((s.teams ?? []).filter((t) => t.summit).map((t) => t.id));
+    return aim.team === 'all' ? Object.keys(EXPEDITIONS).every((id) => up.has(id)) : up.size > 0;
+  }
   if ('guide' in aim) return Object.values(s.guides ?? {}).some((g) => g.out !== null);
   if ('quirk' in aim) return !!s.quirk;
   if ('given' in aim) return (s.giving?.total ?? 0) >= aim.given;

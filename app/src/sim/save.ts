@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 56;
+export const SAVE_VERSION = 57;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -436,6 +436,14 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, crew: null };
   },
+  // v56 -> v57 (Phase 26): warnings expire. A save's standing warnings count from the day it
+  // loads into, since the day they were given wasn't kept.
+  56: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const day = isInt(x.day) ? x.day : 1;
+    const strikes = isObj(x.strikes) ? x.strikes : {};
+    return { ...x, struck: Object.fromEntries(Object.keys(strikes).map((job) => [job, day])) };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -571,6 +579,7 @@ export function validate(x: unknown): string[] {
   const perJob = (o: unknown) =>
     isObj(o) && Object.entries(o).every(([id, n]) => id in JOBS && isInt(n) && n >= 0);
   need(perJob(x.strikes), 'strikes');
+  need(perJob(x.struck), 'struck');
   need(perJob(x.benched), 'benched');
   need(
     isObj(x.leave) &&

@@ -56,20 +56,24 @@ export { together } from './romance';
 export {
   compBlocked,
   compField,
+  compHere,
   compOn,
   compSet,
   goesFor,
+  gradesFor,
   ladderPoints,
   leagueNights,
   leagueTable,
+  leagueTier,
   nextComp,
   podiums,
+  promotedIn,
   rungOpen,
   seasonEnds,
   yearOf,
   yourScore,
 } from './comps';
-export { COMP_LADDER, COMP_TIERS, DYNO_COMP, GAMES_TIER } from './content/comps';
+export { A_LEAGUE, COMP_LADDER, COMP_TIERS, DYNO_COMP, GAMES_TIER } from './content/comps';
 export { bolted, boltBlocked, businessRung, gymBuyBlocked, gymDay, gymTarget, wallWord } from './business';
 export { GYM_UPGRADE_NAME } from './content/business';
 export { capstone, ladderById, LADDERS, type Ladder, type LadderId } from './ladders';

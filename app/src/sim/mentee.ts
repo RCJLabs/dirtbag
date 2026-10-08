@@ -2,12 +2,12 @@
 // them, slower as they grow and never past you; left alone they drift off, warned first. At
 // your retirement their grade passes to the next climber as a head start.
 
-import { gradeOf } from './climber';
+import { average, gradeOf, needFor } from './climber';
 import { EXPEDITIONS } from './content/expeditions';
 import { MENTEES } from './content/mentee';
 import { MENTEE } from './dials';
 import { INDOOR } from './content/gym';
-import type { GameState } from './types';
+import type { GameState, Skills } from './types';
 
 // Who'd ask: the next name not already somebody's, by the seed.
 export const menteeName = (s: GameState): string => MENTEES[(s.seed.length + s.day) % MENTEES.length]!;
@@ -34,3 +34,12 @@ export function menteeCoachBlocked(s: GameState): string | null {
 // A session's gain: slower as they grow, and never past your own grade.
 export const menteeAfter = (level: number, yours: number): number =>
   Math.min(Math.max(level, yours), level + MENTEE.gain / (1 + level / MENTEE.slow));
+
+// Phase 26: an heir's head start, from the grade of the kid their forebear coached. They start
+// at `heir` of it, rounded (a V5 makes a V2, a V8 a V3, a V10 a V4), their own shape kept, and
+// never below where they'd have started anyway. Whole skill, a hair past the grade's need.
+export function heirStart(skills: Skills, grade: number): Skills {
+  const need = needFor(Math.round(MENTEE.heir * grade));
+  const add = Math.max(0, Math.floor(need - average(skills)) + 1);
+  return Object.fromEntries(Object.entries(skills).map(([k, v]) => [k, v + add])) as unknown as Skills;
+}

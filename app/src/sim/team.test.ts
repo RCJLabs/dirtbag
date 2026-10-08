@@ -88,4 +88,17 @@ describe('an expedition team', () => {
     expect(summits / 40).toBeGreaterThan(odds - 0.2);
     expect(summits / 40).toBeLessThan(odds + 0.2);
   });
+
+  it('puts every objective summited by a team you paid for in the book too (Phase 26)', () => {
+    const ids = Object.keys(EXPEDITIONS);
+    const up = (n: number) =>
+      base({ teams: ids.slice(0, n).map((id, i) => ({ id, day: 10 + i, summit: true, high: 1 })) });
+    expect(aimEarned(up(ids.length - 1), { team: 'all' })).toBe(false);
+    expect(aimEarned(up(ids.length), { team: 'all' })).toBe(true);
+    // A turned-back team doesn't count for its objective.
+    const turned = up(ids.length);
+    turned.teams[0] = { ...turned.teams[0]!, summit: false };
+    expect(aimEarned(turned, { team: 'all' })).toBe(false);
+    expect(aimEarned(turned, { team: true })).toBe(true);
+  });
 });
