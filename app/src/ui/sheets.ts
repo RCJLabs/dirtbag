@@ -252,6 +252,7 @@ import {
   menteeCoachBlocked,
   menteeName,
   menteeTakeBlocked,
+  CALL_SAYS,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import { bestTrip } from './card';
@@ -1628,6 +1629,9 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             : `${aFoot(id.fall.ft)} catch at move ${id.fall.move} of ${r.moves}.`;
       const why = goBlocked(s, r);
       const gained = gainsLine(id.gains);
+      // A first go you'd called (Phase 27.4).
+      const log = s.routes[id.route];
+      const called = log?.goes === 1 && !log.sent && s.today.includes(`called-${id.route}`);
       return {
         title: `Off at ${where}`,
         reach: {
@@ -1638,7 +1642,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         },
         sub: `${id.fall.text} ${how} High point: move ${hi}.`,
         close: false,
-        notes: [...id.notes, ...(gained ? [gained] : [])],
+        notes: [...(called ? [CALL_SAYS.fell] : []), ...id.notes, ...(gained ? [gained] : [])],
         rows: [
           {
             label: 'Rest, then go again',
@@ -1656,11 +1660,14 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       const r = routeOfId(s, id.route)!;
       const gained = gainsLine(id.gains);
       if (r.wall) return pitchSent(game, s, id, r, gained);
+      // A first send you'd called before the go (Phase 27.4).
+      const sent = s.routes[id.route]?.sent;
+      const called = id.first && sent?.called ? [fill(CALL_SAYS.sent, { style: sent.style })] : [];
       return {
         title: SEND_NAME[id.style],
         sub: `${lineName(s, r)}, ${lineGrade(s, r)}, on go ${id.go}.${r.disc === 'sport' ? " Rent's still due." : r.disc === 'trad' ? ' On gear you placed.' : ''}`,
         close: false,
-        notes: [...id.notes, ...(gained ? [gained] : [])],
+        notes: [...called, ...id.notes, ...(gained ? [gained] : [])],
         rows: [
           {
             label:

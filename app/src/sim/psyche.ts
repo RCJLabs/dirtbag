@@ -28,6 +28,17 @@ export function psycheDay(
   };
   if (Object.values(s.routes).some((r) => r.sentToday && r.sent?.day === s.day))
     lift(PSYCHE.send, 'a new send');
+  // A call is a bet (Phase 27.4), settled outside the day's cap, so a good day can't swallow
+  // what it won and a bad one doesn't hide what it cost.
+  let bet = 0;
+  if (s.today.includes('called-sent')) {
+    bet += PSYCHE.called;
+    up.push('a send you called');
+  }
+  if (s.today.includes('called-fell')) {
+    bet -= PSYCHE.calledFell;
+    down.push('a call that didn’t go');
+  }
   if (s.today.includes('new-crag')) lift(PSYCHE.newCrag, 'somewhere new');
   else if (away || s.today.includes('crag')) lift(PSYCHE.crag, 'a day out');
   // Cards at the fire count as company (Evan, 1 Oct 2026), though they move no bond.
@@ -51,7 +62,7 @@ export function psycheDay(
     d -= Math.min(stale - 1, PSYCHE.staleMax);
     down.push('more of the same');
   }
-  return { delta: Math.max(-PSYCHE.cap, Math.min(PSYCHE.cap, d)), up, down, stale };
+  return { delta: Math.max(-PSYCHE.cap, Math.min(PSYCHE.cap, d)) + bet, up, down, stale };
 }
 
 // Where it'll be by morning: today's change, then the drift back toward even.

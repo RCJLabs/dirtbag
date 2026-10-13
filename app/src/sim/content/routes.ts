@@ -1785,3 +1785,13 @@ export const SEND_NAME: Record<GoStyle, string> = {
   redpoint: 'Redpoint',
   repeat: 'Repeat',
 };
+
+// Calling the flash or the onsight (Phase 27.4): the toggle on the beta sheet, what you say
+// before the go, and what's said after it. {style} is flash or onsight.
+export const CALL_SAYS = {
+  label: 'Call the {style}',
+  note: 'Say it before you start. Send it, and you’ll feel it tonight. Fall, and you’ll feel that too.',
+  call: 'You call the {style} before you start. Everyone heard.',
+  sent: 'You called the {style}, and it went.',
+  fell: 'You called it, and it didn’t go. That’ll sit with you tonight.',
+};

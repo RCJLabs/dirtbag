@@ -554,8 +554,12 @@ await expectText('#sheet', /Warm Boulder · V2/, 'beta sheet');
 // Boulder, by the road, is the last line it reaches.
 await expectText('#sheet', /in the shade till 4 PM/, 'the shade on it');
 await shot('beta-warm');
+// Phase 27.4: call the onsight first. A checkbox of its own, never a beta row.
+await click('#sheet .call', 'Call the onsight');
+await until('the call', async () => (await page.locator('#sheet .call[aria-checked="true"]').count()) === 1);
 const goes = await sendIt('Warm Boulder');
 await expectText('#sheet', go1(goes), 'result');
+if (goes === 1) await expectText('#sheet', /You called the onsight, and it went\./, 'the call answered');
 // Every extra go on the boulder is a rest and a go: the rest of the day's clock moves by it.
 const late = (goes - 1) * 20;
 await shot('sent-warm');
@@ -571,7 +575,7 @@ const card = await until('the card', () =>
 if (
   card[0] !== 1080 ||
   card[1] !== 1920 ||
-  !/^Warm Boulder, V2\. Onsight\. Roadside Crag, day 1, fall\.$/.test(card[2])
+  !/^Warm Boulder, V2\. Onsight, called\. Roadside Crag, day 1, fall\.$/.test(card[2])
 )
   await fail(`the card: ${JSON.stringify(card)}`);
 log(`card: ${card[0]}×${card[1]}, "${card[2]}"`);
@@ -781,7 +785,9 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 57 ||
+  saved?.v !== 58 ||
+  // Phase 27.4: the onsight was called, and it went.
+  st.routes.warm?.sent?.called !== true ||
   // Phase 26: no warnings, so nothing to lapse.
   JSON.stringify(st.struck) !== '{}' ||
   st.romance !== null ||

@@ -16,6 +16,8 @@ export type RecordAim =
   | { sends: number }
   | { grade: number }
   | { style: 'flash' | 'onsight' }
+  // Phase 27.4: first sends you called before the go.
+  | { called: number }
   | { outside: true }
   | { fa: number }
   | { shift: true }
@@ -86,6 +88,16 @@ export const RECORD: RecordEntry[] = [
       'Nobody told you anything. You read it from the ground, guessed right twice and lucky once, and clipped the chains. It counts more than it should.',
     from: ['f1:onsight1'],
     aim: { style: 'onsight' },
+  },
+  // Phase 27.4 (Evan's call): calling it.
+  {
+    id: 'called',
+    title: 'Called It',
+    desc: 'Call the flash or the onsight before a first go, and send it, ten times.',
+    story:
+      'Ten times you said it before you touched the rock, and ten times it went. The ones that didn’t, you remember better. That’s the price of saying it.',
+    from: [],
+    aim: { called: 10 },
   },
   {
     id: 'outside',

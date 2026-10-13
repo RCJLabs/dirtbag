@@ -3023,8 +3023,9 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
 - **27.1 Rock as a rule:** each crag's rock, its skin, sandstone shut the day after rain, and Moonstone's pads kept at Moonstone.
 - **27.2 The rock's beta:** a pool of moves for each rock. Within a crag no two cruxes share an obvious move or a pair. One hand-made signature line a crag. The gyms keep the plastic library.
 - **27.3 Wall pitches by kind:** crack, corner, chimney, traverse, roof, slab and face, each with its own line, crux, rest and topo.
-- **27.4 Calling it, and the pad:** call the flash or the onsight on a first go. Highballs get a top-out crux, and you choose which crux the pad goes under.
-- **27.5 More at the Big Stone,** and the close.
+- **27.4 Calling it:** call the flash or the onsight on a first go.
+- **27.5 The top-outs and the pad:** highballs get a top-out crux, and you choose which crux the pad goes under. Split from 27.4 (13 Oct 2026), since the top-outs need moves of their own and a balance pass.
+- **27.6 More at the Big Stone,** and the close.
 
 **Status (13 Oct 2026): 27.1 built: rock as a rule.** 0.999.36, no save change.
 - **The rock:** each crag carries its rock (`PlaceDef.rock`). A go's skin outdoors is real rock's 1.35 times the rock's own (`ROCK.skin`): sandstone 1.25, quartzite 1.12, granite 1, gneiss 0.95, limestone 0.85. A crimp at the Mesa costs 12 skin, the same at the Bluff 8.
@@ -3074,6 +3075,24 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
   - Act III ended on day 269.5;
   - walls and expeditions with no refusals and no stuck nights;
   - Outdoors at 3 of 4 on day 387, the accepted shortfall.
+
+**Status (13 Oct 2026): 27.4 built: calling it.** 0.999.39, save v58. Done-when 2 passes: a called first go that sends plays in the tests and in the e2e.
+- **The call.** On a first go at a line you've never sent, the beta sheet offers "Call the onsight", or "Call the flash" once someone's told you the beta. It's off till you tap it, and it's a checkbox of its own, not a beta row.
+  - The go carries it (`call: true`), and you say it out loud before you start.
+  - Any other go has nothing to call, and the call is dropped.
+- **How it ends:**
+  - A called go that sends keeps the call in the log (`SendRecord.called`). The send sheet and the card say so: "Onsight, called".
+  - A called go that falls says so on the fall sheet. The next go is a plain one.
+- **Psyche, both ways (Evan's call):**
+  - A called send is worth a send again (`PSYCHE.called`, 4).
+  - A called go that falls costs as much (`PSYCHE.calledFell`, 4).
+  - Both are settled outside the day's cap, since a good day out reaches the cap already and would swallow the win.
+  - Tonight's sheet names them: "a send you called", "a call that didn't go".
+- **The Record Book:** "Called It", for ten called sends, makes 47 entries.
+- **Save v58:** a send can carry `called`. The migration from v57 changes nothing, since nothing before it was called. A real 0.999.38 save (`fixtures/save-v57.json`, 35 sends) loads as it was.
+- **The bots** never call, so the harness doesn't move.
+- **The e2e** calls the onsight on the Warm Boulder, sends it, and checks the sheet, the card and the save.
+- **The download** is 418.0 KB of 440.
 
 ### Phase 28 — The crew
 
@@ -3542,3 +3561,4 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
 - 2026-10-13 — Phase 26 closed by Evan's call; CURRENT MILESTONE moved to Phase 27, the rock, by hand, planned with Evan's calls (the rock leans on styles, sandstone shut after rain, calling a flash, placing the pad). 27.1 built: each crag's rock, its skin, sandstone shut the day after rain, Moonstone's pads kept at Moonstone. 0.999.36.
 - 2026-10-13 — Phase 27.2 built: the rock's beta. Every outdoor line's cruxes in moves written for its rock, 158 of them, none repeated as a crux's first way within a crag; the signature lines by hand; difficulty kept, the verb checked and the numbers carried from the beta each move replaces. 0.999.37.
 - 2026-10-13 — Phase 27.3 built: wall pitches by kind. Seven kinds (face, crack, corner, chimney, traverse, roof, slab) set each pitch's length, crux and rest; 48 granite moves written for them; topos and the rock drawn by kind; no crux's first way or sequence repeats at a crag, its wall pitches counted. Each pitch within 0.16 of a grade of where it was. 0.999.38.
+- 2026-10-13 — Phase 27's 27.4 split in two (the top-outs and the pad are now 27.5, the Big Stone and the close 27.6). 27.4 built: calling the flash or the onsight before a first go, psyche staked both ways outside the day's cap, "Called It" for ten called sends. Save v58. 0.999.39.

@@ -26,7 +26,10 @@ export function cardOf(s: GameState, route: string): Card | null {
     route: r,
     name: lineName(s, r),
     grade: lineGrade(s, r),
-    style: sent.style === 'redpoint' ? `${SEND_NAME.redpoint}, go ${sent.go}` : SEND_NAME[sent.style],
+    style:
+      sent.style === 'redpoint'
+        ? `${SEND_NAME.redpoint}, go ${sent.go}`
+        : `${SEND_NAME[sent.style]}${sent.called ? ', called' : ''}`,
     where: PLACES[r.place]?.name ?? r.place,
     when: `Day ${sent.day}, ${seasonOf(sent.day)}`,
     who: s.climber.name,

@@ -402,6 +402,44 @@ button.pill:disabled {
   background: var(--u-acc);
   box-shadow: inset 0 0 0 2px var(--u-bg);
 }
+/* Calling it (Phase 27.4): a beta row's look, as a checkbox, with its own class so nothing
+   that counts the beta rows counts it. */
+.call {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 9px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  margin: 11px 0 0;
+  padding: 8px 9px;
+  background: none;
+  color: var(--u-ink);
+  border: 1.5px dashed color-mix(in srgb, var(--u-ink) 40%, transparent);
+  border-radius: calc(var(--u-rad) + 2px);
+  font: 600 calc(14px * var(--u-fs)) / 1.2 var(--u-mono);
+}
+.call[aria-checked='true'] {
+  border-style: solid;
+  border-color: var(--u-ink);
+  box-shadow: inset 0 0 0 1.5px var(--u-ink);
+}
+.call .dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 2px solid var(--u-ink);
+}
+.call[aria-checked='true'] .dot {
+  background: var(--u-acc);
+  box-shadow: inset 0 0 0 2px var(--u-bg);
+}
+.call small {
+  grid-column: 2;
+  font: 500 calc(12px * var(--u-fs)) / 1.3 var(--u-mono);
+  color: var(--u-dim);
+}
 .beta small {
   grid-column: 2/-1;
   font: 500 calc(12px * var(--u-fs)) / 1.3 var(--u-mono);

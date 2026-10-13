@@ -445,6 +445,8 @@ export interface SendRecord {
   day: number;
   go: number;
   style: SendStyle;
+  // Called before the first go, and sent on it (Phase 27.4).
+  called?: true;
 }
 
 export interface LogLine {
@@ -555,7 +557,8 @@ export type Action =
   | { t: 'unlock'; place: string }
   | { t: 'stand'; x: number }
   | { t: 'pick'; route: string; crux: string; beta: string }
-  | { t: 'go'; route: string }
+  // `call`: the flash or the onsight, called before a first go (Phase 27.4).
+  | { t: 'go'; route: string; call?: true }
   | { t: 'rest'; route: string }
   | { t: 'done'; route: string; result: GoResult }
   | { t: 'name'; route: string; name: string; call: -1 | 0 | 1; for?: string }

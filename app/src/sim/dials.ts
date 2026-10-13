@@ -891,6 +891,11 @@ export const PSYCHE = {
   // A shift; and each day in a row with none of the above past the first, up to `staleMax`.
   shift: -3,
   staleMax: 4,
+  // Calling the flash or the onsight (Phase 27.4, Evan's call: it stakes psyche both ways):
+  // a called send is worth a send again, and a called go that falls costs as much. Settled
+  // outside `cap`. [proposed]
+  called: 4,
+  calledFell: 4,
   windows: 0.05,
   // Where the words change: under 25 low, then flat, steady, keen, and psyched from 80.
   bands: [25, 45, 60, 80],
