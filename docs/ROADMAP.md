@@ -3032,6 +3032,22 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
 - **Pads:** the Moonstone haul's pads count only at Moonstone. They'd been counting at every crag once it was unlocked. A second pad of your own goes everywhere. The landing note says one pad, two pads, or the haul's.
 - **The harness:** every target passes as before. The career bots reach V10 on a median day 181 (179.5 before) and end Act III on day 270.5 (274.5). Outdoors, the accepted shortfall, is 3 of 4, now on a median day 387 (374): the Mesa's wet days and its skin.
 
+**Status (13 Oct 2026): 27.2 built: the rock's beta.** 0.999.37, no save change. The moves are in `content/rock.ts`; `inRock` in `content/routes.ts` applies them.
+- **The moves.** Each rock has a pool of moves, 158 in all: 29 first ways and 12 earned on granite, 9 and 9 on quartzite, 14 and 10 on sandstone, 12 and 9 on gneiss, 20 and 6 on limestone. The other 28 are the signature lines'.
+  - They're written for the rock: friction, crystals, ring-locks, offwidths and stems on granite; pockets and slopey lips on quartzite; varnish, huecos, ironstone and soft cracks on sandstone; razor incuts and compression on gneiss; tufas, kneebars and two-finger pockets on limestone.
+- **Each line's cruxes** take a first way and an earned one from its rock, chosen to fit the crux by hand in `ROCK_LINES`.
+  - Within a crag no two cruxes start the same way, and no two share a sequence. `content.test` holds every crag to that.
+  - The test also checks that no outdoor crux still uses plastic moves, and that every move in a pool is used, and only at its rock's crags.
+- **Difficulty stays put.** A move must have the same verb as the beta it replaces. It keeps that beta's window, drift, time in the band and skin cost, so the Local Testpiece's hand-tuned windows survive.
+  - What changes is the name, the words, and the style it leans on. Sandstone's crimps are as often a pinch (power); quartzite's hard moves are as often a razor crimp.
+  - A crimp-style move is crimpy, so thin skin narrows it.
+- **The signature lines**, made by hand: the Gorge Classic, Moonlight Arête, The Prow, Valley Classic, Astroman (with a Harding slot), the myth above Threshold (its kneebar and its mono), The Deep End, and the bluff's tufa. The Pump was hand-made already.
+- **What stays put:**
+  - The gyms, the Cave, the Center and the comps keep the plastic library.
+  - Beta ids are unchanged, so saves keep what they'd learned. The e2e's Pump heel-hook is the Pump's own.
+  - The download is 412.6 KB of 440 (401.6 before).
+- **The harness:** every target passes as before. A median climber's first V5 go is on day 19. The career bots reach V10 on a median day 181.5 (181 after 27.1) and end Act III on day 269.5 (270.5). Outdoors, the accepted shortfall, is 3 of 4 on a median day 387, unchanged.
+
 ### Phase 28 — The crew
 
 *Medium. New, from the audit's list of what to keep (`social.md`): the crew's name, its renown, a crew project, favours. The rebuild has none of them.*
@@ -3497,3 +3513,4 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
 - 2026-10-08 — Phase 26 built (Evan's calls: the outfit and gym stay, a Record Book entry for team summits on every objective, the A league for good, Mara in the Cave and Tam at the Gorge when their crags are shut). Crew drama in 16 of 16 social careers across three pairs; the A league from a season won; the dyno comp grows for three years; heirs graded by the mentee; the crowd clear of the lines; warnings lapse; the bots get Sage's lessons back. Its criteria pass; closing it is Evan's call. Save v57. 0.999.34.
 - 2026-10-13 — Phase 26b, money in a day (Evan's calls, from playing it): a second shift a day at another job, day labor on the market's board, a family's rope at a busy crag, selling kit back at the gear shop, plasma at the clinic. From −$150, back to $0 in 2 to 4 days rather than 7 or 8. No save change. 0.999.35.
 - 2026-10-13 — Phase 26 closed by Evan's call; CURRENT MILESTONE moved to Phase 27, the rock, by hand, planned with Evan's calls (the rock leans on styles, sandstone shut after rain, calling a flash, placing the pad). 27.1 built: each crag's rock, its skin, sandstone shut the day after rain, Moonstone's pads kept at Moonstone. 0.999.36.
+- 2026-10-13 — Phase 27.2 built: the rock's beta. Every outdoor line's cruxes in moves written for its rock, 158 of them, none repeated as a crux's first way within a crag; the signature lines by hand; difficulty kept, the verb checked and the numbers carried from the beta each move replaces. 0.999.37.
