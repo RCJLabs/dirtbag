@@ -1000,7 +1000,8 @@ function landingNote(s: GameState, r: RouteDef): string {
   const at = c ? (c.from + c.to) / 2 : r.moves;
   const ft = Math.round(fallFt(r, at));
   const who = belayer(s);
-  const pads = morePads(s) ? 'The haul’s pads' : 'One pad';
+  // Phase 27.1: the haul's pads only at Moonstone; a second pad of your own goes everywhere.
+  const pads = !morePads(s, r.place) ? 'One pad' : (s.gear.pad ?? 0) > 0 ? 'Two pads' : 'The haul’s pads';
   const spot = who ? `${PEOPLE[who]?.name ?? 'a friend'} spotting` : 'nobody spotting';
   const p = landingChance(s, r, at);
   const odds = p > 0 ? `about 1 in ${Math.max(2, Math.round(1 / p))} lands badly` : 'you’ll land fine';

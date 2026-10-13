@@ -730,6 +730,14 @@ export const HUSTLE = {
   teach: { fed: 35, cash: 10 },
 };
 
+// Phase 27.1 (Evan's call, 13 Oct 2026): the rock each crag is made of. Its skin, on top of
+// real rock's (CLIMB.rockSkin): v0.956's table, sandstone the roughest and limestone the
+// kindest. Sandstone's soft after rain: a sandstone crag is shut the day after it rains.
+export type Rock = 'granite' | 'quartzite' | 'sandstone' | 'gneiss' | 'limestone';
+export const ROCK: { skin: Record<Rock, number> } = {
+  skin: { granite: 1, quartzite: 1.12, sandstone: 1.25, gneiss: 0.95, limestone: 0.85 },
+};
+
 // Phase 26b (Evan's call, 13 Oct 2026) [proposed]: money in a day, for the climb out of the
 // red, where a shift only treads water and a double clears $24.
 //   Day labor: one gig on `odds` of days (content/gigs.ts), on the board by the market door;

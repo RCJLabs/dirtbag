@@ -204,6 +204,7 @@ import {
   MONEY,
   PLANS,
   RIVAL,
+  ROCK,
   SCARS,
   BUSK,
   EVENTS,
@@ -495,7 +496,9 @@ export const routeOfId = (s: GameState, id: string): RouteDef | undefined => rou
 export function goCost(r: RouteDef, s?: GameState): Required<Pick<Delta, 'min' | 'energy' | 'fed' | 'skin'>> {
   const kind = indoor(r.place) ? 'gym' : r.disc;
   const c = r.exped ? EXPED.pitch : r.wall ? WALL.pitch : CLIMB.go[kind];
-  const bare = CLIMB.skin[r.type] * (indoor(r.place) ? 1 : CLIMB.rockSkin);
+  // Real rock is rougher than plastic, and some rock rougher than the rest (Phase 27.1).
+  const rock = ROCK.skin[PLACES[r.place]?.rock ?? 'granite'];
+  const bare = CLIMB.skin[r.type] * (indoor(r.place) ? 1 : CLIMB.rockSkin * rock);
   const skin = Math.round(s ? tapedSkin(s, r, bare) : bare);
   // A busy crag's queue comes first.
   return { min: c.min + (s ? queueMin(s, r) : 0), energy: -c.energy, fed: -c.fed, skin: -skin };
@@ -541,9 +544,11 @@ export function belayer(s: GameState): string | null {
 
 // ---- highballs [proposed] ----
 
-// Whether the pads you own are more than the one every boulderer has: the Moonstone haul's,
-// or one you bought.
-export const morePads = (s: GameState): boolean => has(s, 'pad') || s.unlocked.some((id) => PLACES[id]?.pads);
+// Whether the pads you have are more than the one every boulderer has: one you bought, or,
+// at Moonstone, the haul's. Phase 27.1: the haul's pads stay at Moonstone; they'd been
+// counting at every crag once it was unlocked.
+export const morePads = (s: GameState, place = s.at): boolean =>
+  has(s, 'pad') || (!!PLACES[place]?.pads && s.unlocked.includes(place));
 
 // How far you'd fall from `moves` up a boulder, in feet.
 export const fallFt = (r: RouteDef, moves: number): number =>
@@ -558,7 +563,11 @@ export function landingChance(s: GameState, r: RouteDef, moves: number): number 
   // An old ankle injury lands worse (Phase 22.4b).
   const scar = s.scars.includes('ankle') ? SCARS.risk : 1;
   return (
-    HIGHBALL.perFoot * over * (morePads(s) ? HIGHBALL.pads : 1) * (belayer(s) ? HIGHBALL.spotter : 1) * scar
+    HIGHBALL.perFoot *
+    over *
+    (morePads(s, r.place) ? HIGHBALL.pads : 1) *
+    (belayer(s) ? HIGHBALL.spotter : 1) *
+    scar
   );
 }
 

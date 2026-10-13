@@ -69,7 +69,7 @@
 | 16 The spine | Next after 21–23. |
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 | 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
-| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 is the current milestone. |
+| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026); Phase 27 is the current milestone. |
 
 ## The rebuild track
 
@@ -2874,7 +2874,7 @@ Players will ask "what am I working towards?" by hour 3.
 - **The garden and the farm.** Still saved (Phase 22).
 - **Speed comps, grade votes** (cut in Phase 5), **a rival gym.**
 
-### Phase 26 — Tune-up: act on the measurements   **<<< CURRENT MILESTONE**
+### Phase 26 — Tune-up: act on the measurements   ✅ Closed
 
 *Small. Phase 25's measurements, acted on. Nothing there has been changed yet.*
 
@@ -2945,7 +2945,7 @@ Numbers [proposed] in `LEAGUE.prizeA`, `MENTEE.heir`, `WORK.forgive` and the com
 3. V5, V8 and V10 mentees leave different heirs.
 4. The harness's targets pass as before.
 
-Closing it is Evan's call.
+**Phase 26 closed by Evan's call (13 Oct 2026),** with Phase 26b's money in a day. Carried: crew drama still falls mostly on Rico over Sage, and Tam is rarely a Regular, for playtesting. The CURRENT MILESTONE moves to Phase 27.
 
 **Phase 26b, money in a day (13 Oct 2026, Evan's call, from playing it).** 0.999.35, no save change.
 
@@ -2971,7 +2971,7 @@ Evan's calls: day labor, crag tourists, selling kit, plasma and a second shift a
 
 An hour of each: day labor $9 (a first-rank café shift $9, the warehouse $7), a family's rope $20 and tips, plasma $15. The last two out-earn a shift an hour but are limited: busy crag days only, and twice a week. The hustle target (cans, bins, foraging under the worst shift) is unchanged. No bot uses the new earners, so every other target measures what it did: unchanged from Phase 26. V10 on a median day 179.5, Act III on a median day 274.5, and Outdoors, the accepted shortfall, 3 of 4.
 
-### Phase 27 — The rock, by hand
+### Phase 27 — The rock, by hand   **<<< CURRENT MILESTONE**
 
 *Large. The core, deepened.*
 
@@ -2999,6 +2999,38 @@ An hour of each: day labor $9 (a first-rank café shift $9, the warehouse $7), a
 1. The content test finds no crux sequence shared within a crag, and at least three pitch kinds on every wall.
 2. A declared flash plays in tests and in the e2e.
 3. The harness's grade progression stays inside Phase 6's bands.
+
+*Evan's calls (13 Oct 2026):*
+- **The rock leans on styles:** each rock's beta comes in the styles it favors, and v0.956's skin cost by rock comes back.
+- **Sandstone is shut the day after rain.**
+- **Calling a flash (or onsight)** stakes psyche both ways, with a Record Book entry for ten called sends.
+- **On a highball you choose where the pad goes.**
+
+*The rock map, proposed for Evan to edit:*
+- Roadside: granite, crimps, cracks and slabs.
+- The Gorge: granite, shaded, slabs, cracks and corners.
+- Moonstone: quartzite, sharp edges and high slopey top-outs.
+- The Mesa: sandstone, slopers, splitters and varnish crimps.
+- The Big Stone: granite, corners, cracks and roofs.
+- Wind River: alpine granite, thin cracks and cold edges.
+- The Crucible: gneiss, incuts and compression.
+- The Cove: limestone, tufas, pockets and steep jugs.
+- Miller's Bluff: limestone, tufas, kneebars and pockets.
+
+A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moonstone, The Prow, The Classic (Big Stone), Astroman, The Myth, The Deep, The Tufa.
+
+*The slices:*
+- **27.1 Rock as a rule:** each crag's rock, its skin, sandstone shut the day after rain, and Moonstone's pads kept at Moonstone.
+- **27.2 The rock's beta:** a pool of moves for each rock. Within a crag no two cruxes share an obvious move or a pair. One hand-made signature line a crag. The gyms keep the plastic library.
+- **27.3 Wall pitches by kind:** crack, corner, chimney, traverse, roof, slab and face, each with its own line, crux, rest and topo.
+- **27.4 Calling it, and the pad:** call the flash or the onsight on a first go. Highballs get a top-out crux, and you choose which crux the pad goes under.
+- **27.5 More at the Big Stone,** and the close.
+
+**Status (13 Oct 2026): 27.1 built: rock as a rule.** 0.999.36, no save change.
+- **The rock:** each crag carries its rock (`PlaceDef.rock`). A go's skin outdoors is real rock's 1.35 times the rock's own (`ROCK.skin`): sandstone 1.25, quartzite 1.12, granite 1, gneiss 0.95, limestone 0.85. A crimp at the Mesa costs 12 skin, the same at the Bluff 8.
+- **Sandstone after rain:** a sandstone crag that's seeping is shut: "The sandstone’s soft after rain. Holds snap when it’s wet." The place card says so before you drive, a go and a wall refuse, and Tam goes to the Gorge.
+- **Pads:** the Moonstone haul's pads count only at Moonstone. They'd been counting at every crag once it was unlocked. A second pad of your own goes everywhere. The landing note says one pad, two pads, or the haul's.
+- **The harness:** every target passes as before. The career bots reach V10 on a median day 181 (179.5 before) and end Act III on day 270.5 (274.5). Outdoors, the accepted shortfall, is 3 of 4, now on a median day 387 (374): the Mesa's wet days and its skin.
 
 ### Phase 28 — The crew
 
@@ -3464,3 +3496,4 @@ An hour of each: day labor $9 (a first-rank café shift $9, the warehouse $7), a
 - 2026-10-08 — Evan's call: Phase 14 waits until he asks for it. Phases 26–35 added to deepen the game: a tune-up from the measurements, the rock by hand, the crew, the van lived in, getting older, after you, the Hollow, comps with rounds, money that means something, the road and the year. CURRENT MILESTONE moved to Phase 26.
 - 2026-10-08 — Phase 26 built (Evan's calls: the outfit and gym stay, a Record Book entry for team summits on every objective, the A league for good, Mara in the Cave and Tam at the Gorge when their crags are shut). Crew drama in 16 of 16 social careers across three pairs; the A league from a season won; the dyno comp grows for three years; heirs graded by the mentee; the crowd clear of the lines; warnings lapse; the bots get Sage's lessons back. Its criteria pass; closing it is Evan's call. Save v57. 0.999.34.
 - 2026-10-13 — Phase 26b, money in a day (Evan's calls, from playing it): a second shift a day at another job, day labor on the market's board, a family's rope at a busy crag, selling kit back at the gear shop, plasma at the clinic. From −$150, back to $0 in 2 to 4 days rather than 7 or 8. No save change. 0.999.35.
+- 2026-10-13 — Phase 26 closed by Evan's call; CURRENT MILESTONE moved to Phase 27, the rock, by hand, planned with Evan's calls (the rock leans on styles, sandstone shut after rain, calling a flash, placing the pad). 27.1 built: each crag's rock, its skin, sandstone shut the day after rain, Moonstone's pads kept at Moonstone. 0.999.36.
