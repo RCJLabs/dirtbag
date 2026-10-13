@@ -2,7 +2,9 @@
 // money and body only move here, and only because of an action. Nothing ticks while you
 // stand still. The UI stages the events; it never edits the state itself.
 
-import { fireLine, ledgeLine, sendCheer } from './ambient';
+import { fireLine, ledgeLine, sendCheer, walk } from './ambient';
+import { GIGS, TOURISTS_ASK, TOURISTS_SAYS } from './content/gigs';
+import { gigBlocked, gigOn, touristLine, touristsBlocked, touristTip } from './gigs';
 import {
   CROWDS,
   FLOOR_SAYS,
@@ -212,6 +214,8 @@ import {
   TRAD,
   UPGRADE,
   TRAIN,
+  GIG,
+  TOURISTS,
   SPOT,
   SPOTS,
   VAN,
@@ -1415,7 +1419,10 @@ export function act(s0: GameState, a: Action): Result {
     // So is a hustle's take (Phase 22.5a), by the day.
     const take = d.hustle ? hustleTake(s, d.hustle) : 0;
     spend(cost);
+    // Phase 26b: a shift marks its job worked today, and a second shift makes it two.
+    const secondShift = !!d.job && s.today.includes('worked');
     for (const f of d.sets ?? []) if (!s.today.includes(f)) s.today.push(f);
+    if (d.job) for (const f of [`shift-${d.job.id}`, ...(secondShift ? ['worked2'] : [])]) s.today.push(f);
     if (d.trains) train(d.trains);
     if (d.dog?.adopt) s.dog = { name: nextDogName(s), since: s.day, fed: 60, bond: 0 };
     if (s.dog && d.dog?.fill) s.dog.fed = 100;
@@ -1727,6 +1734,11 @@ export function act(s0: GameState, a: Action): Result {
       if (s.dog && !s.today.includes('dog-out')) {
         s.today.push('dog-out');
         line(dogLine(s, 'crag')!);
+      }
+      // Phase 26b: a family who'd pay you to hang them a rope, said once a day.
+      if (!s.today.includes('tourists-asked') && !touristsBlocked(s)) {
+        s.today.push('tourists-asked');
+        line(`${TOURISTS_ASK} Your van’s where to say yes.`);
       }
     }
   };
@@ -2223,6 +2235,30 @@ export function act(s0: GameState, a: Action): Result {
       markTask((x) => x.kind === 'shoot');
       line(
         `Three hours of the same move for ${SPONSORS[sp.tier]!.name}'s photographer, from four angles, in the good light.`,
+      );
+      break;
+    }
+
+    // Phase 26b: money in a day. The day labor at the market: the whole day, flat pay.
+    case 'gig': {
+      const why = gigBlocked(s);
+      if (why) return refuse(`${why}.`);
+      const g = GIGS[gigOn(s.seed, s.day)!]!;
+      spend({ min: GIG.min, energy: -GIG.energy, fed: -GIG.fed, cash: GIG.pay });
+      for (const f of ['worked', 'worked2', 'gig']) if (!s.today.includes(f)) s.today.push(f);
+      line(`${g.says} +${money(GIG.pay)}.`);
+      break;
+    }
+    // A family's top rope, hung on the easiest line you've sent here.
+    case 'tourists': {
+      const why = touristsBlocked(s);
+      if (why) return refuse(`${why}.`);
+      const r = touristLine(s)!;
+      const tip = touristTip(s);
+      spend({ min: TOURISTS.min, energy: -TOURISTS.energy, cash: TOURISTS.pay + tip });
+      s.today.push('tourists');
+      line(
+        `${fill(walk(s.seed, 'tourists', TOURISTS_SAYS, s.day), { line: r.name })} +${money(TOURISTS.pay)}${tip ? `, and ${money(tip)} folded into your hand` : ''}.`,
       );
       break;
     }

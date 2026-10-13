@@ -54,6 +54,7 @@ export interface Cond {
   hasNot?: string; // you don't
   gearBelow?: string; // "id/n": that gear's condition or uses are under n
   weekend?: boolean; // true: only on a weekend (the swap meet); false: only on a weekday
+  weekday?: number[]; // only on these days of the week (day % 7: 0 is Sunday)
   unlocked?: string; // you've paid for that place's haul
   posted?: string; // that job has a shift posted today (content/jobs.ts)
   hired?: string; // that job hasn't let you go, or has taken you back
@@ -154,6 +155,7 @@ export function holds(s: GameState, c: Cond): boolean {
     if (!((s.gear[id] ?? 0) < n)) return false;
   }
   if (c.weekend !== undefined && isWeekend(s.day) !== c.weekend) return false;
+  if (c.weekday && !c.weekday.includes(s.day % 7)) return false;
   if (c.posted !== undefined && !isPosted(s.seed, c.posted, s.day)) return false;
   if (c.hired !== undefined && benchedUntil(s, c.hired) !== null) return false;
   if (c.worn !== undefined && !(s.van[c.worn] < 95)) return false;

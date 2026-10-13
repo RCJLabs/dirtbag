@@ -192,7 +192,7 @@ describe('the day', () => {
     expect(day6.state.cash).toBe(100 - MONEY.vanSpot);
   });
 
-  it('pays a shift at the café, one a day, and setting at Send City trains technique', () => {
+  it('pays a shift at the café, one a day there, and setting at Send City trains technique', () => {
     const s = play(newGame('t'), { t: 'travel', to: 'cafe' }).state;
     const r = play(s, { t: 'act', act: 'cafe.shift' });
     expect(r.state).toMatchObject({
@@ -204,7 +204,8 @@ describe('the day', () => {
     expect(r.state.today).toContain('worked');
     expect(refusal(act(r.state, { t: 'act', act: 'cafe.shift' }).events)).toEqual({
       k: 'refused',
-      why: "You've done your shift today.",
+      // Phase 26b: a second shift is somewhere else.
+      why: "You've worked here today.",
     });
     const gym = { ...at(newGame('t'), 'gym'), day: postedIn('t', 'set', 1)[0]! };
     const set = play(gym, { t: 'act', act: 'gym.set' }).state;

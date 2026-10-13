@@ -12,7 +12,8 @@ import { A_LEAGUE, COMP_TIERS, DYNO_COMP } from '../src/sim/content/comps';
 import { EXPEDITIONS } from '../src/sim/content/expeditions';
 import { ACTS } from '../src/sim/content/places';
 import { JOBS } from '../src/sim/content/jobs';
-import { GUIDING, LEAGUE, MENTEE, PLAY, YEAR } from '../src/sim/dials';
+import { GIG, GUIDING, LEAGUE, MENTEE, PLASMA, PLAY, TOURISTS, YEAR } from '../src/sim/dials';
+import { gigOn } from '../src/sim/gigs';
 import { gradesFor } from '../src/sim/comps';
 import { act, newGame } from '../src/sim/game';
 import { outfitDay } from '../src/sim/guiding';
@@ -240,6 +241,93 @@ it('Phase 25’s systems, measured', { timeout: 3_600_000 }, () => {
       `| V${g} | ${(nightsWon / SEEDS).toFixed(1)} | ${median(places)} of ${A.field} | ${places.filter((p) => p === 1).length}/${SEEDS} | ${money(cash / SEEDS)} |`,
     );
   }
+
+  // ---- Phase 26b: out of the hole ----
+  // A V3 at −$150 in spring, at the Lot, working its way back to $0, a day at a time: ramen
+  // when it's hungry, the Lot at night (or the pullout, when the card won't have it), and
+  // nothing climbed. Each way of earning, and the days it takes; 30 at most.
+  out(`\n## Out of the hole: from −${money(150)} to $0, nothing climbed (${SEEDS} seeds each)\n`);
+  out('| how | days, median | slowest | rough nights, median |');
+  out('|---|---|---|---|');
+  type Plan = 'double' | 'second' | 'gig' | 'plasma' | 'rack';
+  const PLANS: [Plan, string][] = [
+    ['double', 'a café double every day'],
+    ['second', 'a café shift, then the diner or setting when either is posted'],
+    ['gig', 'day labor when it’s posted, a double when it isn’t'],
+    ['plasma', 'a double, and plasma on its days'],
+    ['rack', 'sell the rack, then a double every day'],
+  ];
+  const step = (st: GameState, a: Parameters<typeof act>[1]): GameState => {
+    const r = act(st, a);
+    return r.events[0]?.k === 'refused' ? st : r.state;
+  };
+  const eat = (st: GameState): GameState => {
+    let x = st;
+    for (let k = 0; k < 3 && x.fed < 60; k++) {
+      const at = x.at === 'lot' ? x : step(x, { t: 'travel', to: 'lot' });
+      const next = step(at, { t: 'act', act: 'lot.cook' });
+      if (next === at) break;
+      x = next;
+    }
+    return x;
+  };
+  for (const [plan, said] of PLANS) {
+    const days: number[] = [];
+    const rough: number[] = [];
+    for (let k = 0; k < SEEDS; k++) {
+      let st: GameState = {
+        ...climber(`hole-${plan}-${k}`, 3),
+        day: 2 * 14 + 3,
+        min: 7 * 60 + 10,
+        at: 'lot',
+        cash: -150,
+        fed: 80,
+        gear: { ...climber('x', 3).gear, rack: 1 },
+      };
+      let n = 0;
+      let nights = 0;
+      while (n < 30 && st.cash < 0) {
+        n++;
+        st = eat(st);
+        if (plan === 'rack' && n === 1)
+          st = step(step(st, { t: 'travel', to: 'shop' }), { t: 'act', act: 'shop.sellRack' });
+        if (plan === 'gig' && gigOn(st.seed, st.day))
+          st = step(step(st, { t: 'travel', to: 'market' }), { t: 'gig' });
+        if (!st.today.includes('worked')) {
+          st = step(st, { t: 'travel', to: 'cafe' });
+          const want = plan === 'second' ? 'cafe.shift' : 'cafe.double';
+          const done = step(st, { t: 'act', act: want });
+          st = done === st ? step(st, { t: 'act', act: 'cafe.shift' }) : done;
+        }
+        if (plan === 'second') {
+          for (const [place, id] of [
+            ['diner', 'diner.shift'],
+            ['gym', 'gym.set'],
+          ] as const) {
+            if (st.today.includes('worked2')) break;
+            const there = step(eat(st), { t: 'travel', to: place });
+            const worked = step(there, { t: 'act', act: id });
+            if (worked !== there) st = worked;
+          }
+        }
+        if (plan === 'plasma')
+          st = step(step(st, { t: 'travel', to: 'clinic' }), { t: 'act', act: 'clinic.plasma' });
+        st = eat(st);
+        st = step({ ...st, at: st.at === 'lot' ? 'lot' : st.at }, { t: 'travel', to: 'lot' });
+        const slept = act({ ...st, min: Math.max(st.min, 22 * 60) }, { t: 'act', act: 'lot.sleep' });
+        if (slept.events.some((e) => e.k === 'line' && e.text.includes('pullout'))) nights++;
+        st = slept.state.encounter ? act(slept.state, { t: 'answer', opt: 0 }).state : slept.state;
+      }
+      days.push(st.cash >= 0 ? n : 31);
+      rough.push(nights);
+    }
+    out(
+      `| ${said} | ${median(days) > 30 ? 'over 30' : median(days)} | ${Math.max(...days) > 30 ? 'over 30' : Math.max(...days)} | ${median(rough)} |`,
+    );
+  }
+  out(
+    `\nAn hour of each: day labor ${money(GIG.pay / (GIG.min / 60))}, a family’s rope ${money(TOURISTS.pay)} and up to ${money(TOURISTS.tip)} in tips, plasma ${money(PLASMA.pay / (PLASMA.min / 60))}; a first-rank café shift ${money(28 / 3)}, the warehouse ${money(52 / 8)}.`,
+  );
 
   // ---- Crew drama ----
   out(`\n## Crew drama in social careers (${SEEDS} seeds a start, 300 days)\n`);

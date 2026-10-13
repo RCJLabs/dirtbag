@@ -21,6 +21,7 @@ import {
   LAKE,
   LAND,
   MONEY,
+  PLASMA,
   SICK,
   SUPPLIES,
   UPGRADE,
@@ -29,7 +30,7 @@ import {
   type VanPart,
 } from '../dials';
 import { DOG_LINES, DOG_OFFER } from './dog';
-import { clockShort } from '../format';
+import { clockShort, dayName } from '../format';
 import type { Delta, Skills } from '../types';
 import type { Season } from '../weather';
 
@@ -410,6 +411,11 @@ export const PLACES: Record<string, PlaceDef> = {
       'shop.usedShoes',
       'shop.usedPad',
       'shop.usedRack',
+      'shop.sellRack',
+      'shop.sellRope',
+      'shop.sellPad',
+      'shop.sellHangboard',
+      'shop.sellHeadlamp',
       'shop.guide',
     ],
   },
@@ -438,7 +444,7 @@ export const PLACES: Record<string, PlaceDef> = {
     ambience: { room: 0.4, murmur: 0.2, clinks: 0.15 },
     away: 'Old Town, round the corner from the diner. Physio, and a cortisone shot if you’re in a hurry.',
     here: 'A waiting room full of runners, and a poster of the knee nobody reads.',
-    acts: ['clinic.physio', 'clinic.cortisone', 'clinic.doctor'],
+    acts: ['clinic.physio', 'clinic.cortisone', 'clinic.doctor', 'clinic.plasma'],
   },
   // Phase 22.3b [proposed]: the lake west of the Lot, down a dirt track past the creek.
   lake: {
@@ -492,7 +498,13 @@ export const PLACES: Record<string, PlaceDef> = {
   },
 };
 
-const oneShift: Need = { notToday: 'worked', why: "You've done your shift today." };
+// Phase 26b (Evan's call, 13 Oct 2026): two shifts a day at most, at two different jobs; a
+// double, a warehouse day or day labor is the whole day (`worked2`). A second is never one
+// you signed up for, so it pays and doesn't count toward a raise.
+const shiftNeeds = (job: string): Need[] => [
+  { notToday: 'worked2', why: "That's two shifts today. Enough." },
+  { notToday: `shift-${job}`, why: "You've worked here today." },
+];
 // A van upgrade at the garage: fitted once, for its price and time (UPGRADE in dials.ts).
 const upgrade = (id: keyof typeof UPGRADE, label: string, says: string): Record<string, ActDef> => {
   const u = UPGRADE[id];
@@ -600,6 +612,20 @@ export const ACTS: Record<string, ActDef> = {
     sets: ['shower'],
     supplies: SUPPLIES.shower,
     says: 'Hot water that someone else pays for. You stay in until it runs lukewarm.',
+  },
+  // Phase 26b (Evan's call, 13 Oct 2026): plasma, on the clinic's two days. Money for an
+  // afternoon, and the power goes with it.
+  'clinic.plasma': {
+    label: 'Give plasma',
+    cost: { min: PLASMA.min, cash: PLASMA.pay, energy: -PLASMA.energy, fed: -PLASMA.fed },
+    needs: [
+      { weekday: PLASMA.days, why: `They draw ${PLASMA.days.map(dayName).join(' and ')}.` },
+      { notToday: 'plasma', why: 'Once a visit. Your arm has opinions about it.' },
+      { energy: PLASMA.energy, why: 'Too tired. They check.' },
+    ],
+    note: 'Your power goes with it for the rest of the day.',
+    sets: ['plasma'],
+    says: 'Two hours in a recliner with a needle in your arm and a cooking show nobody chose. Juice, a cookie, and a card they load with cash.',
   },
   'clinic.doctor': {
     label: 'See a doctor',
@@ -730,7 +756,7 @@ export const ACTS: Record<string, ActDef> = {
     label: 'Wait tables',
     cost: { min: 240, cash: 30, energy: -16, fed: -6 },
     needs: [
-      oneShift,
+      ...shiftNeeds('diner'),
       ...onSchedule('diner'),
       { before: 14 * 60, why: 'Shifts start by {t}.' },
       { energy: 16, why: 'Too tired to carry four plates.' },
@@ -750,7 +776,7 @@ export const ACTS: Record<string, ActDef> = {
     label: 'Work a shift',
     cost: { min: 180, cash: 28, energy: -12, fed: -8 },
     needs: [
-      oneShift,
+      ...shiftNeeds('cafe'),
       ...onSchedule('cafe'),
       { before: 15 * 60, why: 'Shifts start by {t}.' },
       { energy: 12, why: 'Too tired to pull shots.' },
@@ -763,13 +789,13 @@ export const ACTS: Record<string, ActDef> = {
     label: 'Pick up a double',
     cost: { min: 360, cash: 56, energy: -24, fed: -16 },
     needs: [
-      oneShift,
+      ...shiftNeeds('cafe'),
       ...onSchedule('cafe'),
       { before: 11 * 60, why: 'Doubles start by {t}.' },
       { energy: 24, why: 'Too tired for a double.' },
     ],
     note: 'The day is gone after this.',
-    sets: ['worked'],
+    sets: ['worked', 'worked2'],
     job: { id: 'cafe', shifts: 2 },
     says: 'Six hours on your feet.',
   },
@@ -780,13 +806,13 @@ export const ACTS: Record<string, ActDef> = {
     cost: { min: 480, cash: 52, energy: -40, fed: -20 },
     trains: { endurance: 2 },
     needs: [
-      oneShift,
+      ...shiftNeeds('warehouse'),
       ...onSchedule('warehouse'),
       { before: 9 * 60, why: 'The shift starts by {t}. Late is a no.' },
       { energy: 40, why: 'Too tired to lift anything.' },
     ],
     note: 'Trains your endurance. The day is gone after this.',
-    sets: ['worked'],
+    sets: ['worked', 'worked2'],
     job: { id: 'warehouse', shifts: 1 },
     says: 'Eight hours of pallets, and a scanner that beeps at you.',
   },
@@ -955,6 +981,44 @@ export const ACTS: Record<string, ActDef> = {
     says: 'Somebody’s old rack: faded slings, cams that still cam. You check every trigger twice.',
   },
 
+  // Phase 26b (Evan's call, 13 Oct 2026): the shop buys kit back, any day, at KIT.sell of
+  // its price. Money now, and whatever it climbed is shut to you till you buy it again.
+  'shop.sellRack': {
+    label: 'Sell your rack',
+    cost: { min: 10, cash: Math.round(KIT.sell * KIT.rack.price) },
+    needs: [{ has: 'rack', why: 'You’ve no rack to sell.' }],
+    gear: { id: 'rack', set: 0 },
+    says: 'The shop gives you a fair price for the cams and a look for the slings.',
+  },
+  'shop.sellRope': {
+    label: 'Sell your rope and harness',
+    cost: { min: 10, cash: Math.round(KIT.sell * KIT.rope.price) },
+    needs: [{ has: 'rope', why: 'You’ve no rope to sell.' }],
+    gear: { id: 'rope', set: 0 },
+    says: 'The rope goes on the used rack with a tag on it. You feel lighter, and not in the good way.',
+  },
+  'shop.sellPad': {
+    label: 'Sell your second pad',
+    cost: { min: 10, cash: Math.round(KIT.sell * KIT.pad.price) },
+    needs: [{ has: 'pad', why: 'You’ve no second pad to sell.' }],
+    gear: { id: 'pad', set: 0 },
+    says: 'The second pad goes on the swap table. The highballs get taller on the way home.',
+  },
+  'shop.sellHangboard': {
+    label: 'Sell your hangboard',
+    cost: { min: 10, cash: Math.round(KIT.sell * KIT.hangboard.price) },
+    needs: [{ has: 'hangboard', why: 'You’ve no hangboard to sell.' }],
+    gear: { id: 'hangboard', set: 0 },
+    says: 'The board comes off the back doors. The van’s quieter for it, and so are your fingers.',
+  },
+  'shop.sellHeadlamp': {
+    label: 'Sell your headlamp',
+    cost: { min: 10, cash: Math.round(KIT.sell * KIT.headlamp.price) },
+    needs: [{ has: 'headlamp', why: 'You’ve no headlamp to sell.' }],
+    gear: { id: 'headlamp', set: 0 },
+    says: 'The headlamp goes in a basket of headlamps by the register. You’d best be off the crag by dark.',
+  },
+
   'center.pass': {
     label: 'Buy a day pass',
     cost: { min: 5, cash: -MONEY.centerPass },
@@ -976,7 +1040,7 @@ export const ACTS: Record<string, ActDef> = {
     label: 'Guide a day at Roadside',
     cost: { min: 300, cash: 50, energy: -26, fed: -12 },
     needs: [
-      oneShift,
+      ...shiftNeeds('guide'),
       { grade: 6, why: 'The shop wants guides who climb V6.' },
       ...onSchedule('guide'),
       { before: 10 * 60, why: 'Clients meet at the shop by {t}.' },
@@ -992,7 +1056,7 @@ export const ACTS: Record<string, ActDef> = {
     label: 'Coach a session',
     cost: { min: 240, cash: 34, energy: -18, fed: -10 },
     needs: [
-      oneShift,
+      ...shiftNeeds('coach'),
       { grade: 5, why: 'They want a coach who climbs V5.' },
       ...onSchedule('coach'),
       { before: 14 * 60, why: 'Sessions start by {t}.' },
@@ -1015,7 +1079,7 @@ export const ACTS: Record<string, ActDef> = {
     label: 'Set problems for a shift',
     cost: { min: 240, cash: 30, energy: -22, fed: -10 },
     needs: [
-      oneShift,
+      ...shiftNeeds('set'),
       ...onSchedule('set'),
       { before: 14 * 60, why: 'Setting starts by {t}.' },
       { energy: 22, why: 'Too tired to haul holds.' },

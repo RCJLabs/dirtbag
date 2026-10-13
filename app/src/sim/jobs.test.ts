@@ -91,6 +91,38 @@ describe('the week', () => {
     expect(booked.state.shifts).toEqual([]);
   });
 
+  it('takes a second shift at another job as a walk-in, and no third (Phase 26b)', () => {
+    // A day the diner's posted too.
+    const day = Array.from({ length: 28 }, (_, i) => i + 1).find((d) => isPosted('jobs', 'diner', d))!;
+    const s = at({ day, shifts: [{ job: 'cafe', day }] });
+    const first = act(s, { t: 'act', act: 'cafe.shift' });
+    expect(first.state.jobs.cafe).toBe(1);
+    // Not the café again, but the diner, by its start time.
+    expect(act(first.state, { t: 'act', act: 'cafe.shift' }).events[0]).toMatchObject({
+      k: 'refused',
+      why: expect.stringMatching(/worked here today/),
+    });
+    const diner = act({ ...first.state, at: 'diner' }, { t: 'act', act: 'diner.shift' });
+    expect(diner.events[0]?.k).not.toBe('refused');
+    expect(diner.state.cash).toBeGreaterThanOrEqual(first.state.cash + 30);
+    expect(diner.state.jobs.diner ?? 0).toBe(0);
+    expect(lines(diner).some((l) => l.startsWith('A walk-in'))).toBe(true);
+    expect(diner.state.today).toEqual(
+      expect.arrayContaining(['worked', 'worked2', 'shift-cafe', 'shift-diner']),
+    );
+    // Two is the day's lot, whatever else is posted.
+    const third = act({ ...diner.state, at: 'warehouse', min: 6 * 60 }, { t: 'act', act: 'warehouse.shift' });
+    expect(third.events[0]).toMatchObject({ k: 'refused', why: expect.stringMatching(/two shifts/) });
+  });
+
+  it('counts a double or a warehouse day as the whole day (Phase 26b)', () => {
+    const day = Array.from({ length: 28 }, (_, i) => i + 1).find((d) => isPosted('jobs', 'diner', d))!;
+    const double = act(at({ day, shifts: [] }), { t: 'act', act: 'cafe.double' });
+    expect(double.state.today).toContain('worked2');
+    const after = act({ ...double.state, at: 'diner', min: 13 * 60 }, { t: 'act', act: 'diner.shift' });
+    expect(after.events[0]).toMatchObject({ k: 'refused', why: expect.stringMatching(/two shifts/) });
+  });
+
   it('signs you up for posted days up to a week ahead, one shift a day, and lets you drop them', () => {
     const s = at({ shifts: [] });
     const day = postedIn('jobs', 'warehouse', 1).find((d) => d > 1)!;

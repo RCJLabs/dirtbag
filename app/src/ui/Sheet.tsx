@@ -142,6 +142,8 @@ import {
   signupBlocked,
   benchedUntil,
   WORK,
+  GIG,
+  gigOn,
   type Lifestyle,
   PARTS,
   PART_NAME,
@@ -2242,9 +2244,10 @@ function ShiftRows({ game, s }: { game: Game; s: GameState }) {
     <>
       <p className="crux">Shifts</p>
       <p className="sub">
-        Sign up to {WORK.ahead} days ahead. Only those count toward a raise: today&rsquo;s are walk-ins. Skip
-        one you signed up for and it&rsquo;s a warning; {WORK.strikes} cost the job. {WORK.forgive} days
-        without another, and they&rsquo;re forgotten.
+        Sign up to {WORK.ahead} days ahead, a shift a day. Only those count toward a raise: today&rsquo;s are
+        walk-ins, and so is a second shift somewhere else, if the day and your legs have one in them. Skip one
+        you signed up for and it&rsquo;s a warning; {WORK.strikes} cost the job. {WORK.forgive} days without
+        another, and they&rsquo;re forgotten.
       </p>
       <ul className="days shifts" id="shifts">
         {days.map((d) => (
@@ -2280,8 +2283,19 @@ function ShiftRows({ game, s }: { game: Game; s: GameState }) {
           {known.map((j) => workLine(s, j)).join(' ')}
         </p>
       )}
+      <p className="sub" id="gigs">
+        {gigWeek(s)}
+      </p>
     </>
   );
+}
+
+// Phase 26b: the day labor posted in the days the schedule shows, on the market's board.
+function gigWeek(s: GameState): string {
+  const days = Array.from({ length: WORK.ahead + 1 }, (_, i) => s.day + i).filter((d) => gigOn(s.seed, d));
+  if (!days.length) return `No day labor on the market’s board this week.`;
+  const when = days.map((d) => (d === s.day ? 'today' : dayName(d))).join(', ');
+  return `Day labor on the market’s board: ${when}. A whole day for ${money(GIG.pay)}, no shift after.`;
 }
 
 function workLine(s: GameState, job: string): string {

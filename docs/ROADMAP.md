@@ -2947,6 +2947,30 @@ Numbers [proposed] in `LEAGUE.prizeA`, `MENTEE.heir`, `WORK.forgive` and the com
 
 Closing it is Evan's call.
 
+**Phase 26b, money in a day (13 Oct 2026, Evan's call, from playing it).** 0.999.35, no save change.
+
+**The problem:** once the card is in the red it's hard to climb out, even working doubles, busking and collecting cans.
+- A broke day costs about $31: the Lot, the week's bills, ramen.
+- One shift a day, and a first-rank shift pays $28–30. That only treads water.
+- A double clears about $24, so from the card's floor (−$150) it was 6–9 days of doubles and nothing else.
+
+Evan's calls: day labor, crag tourists, selling kit, plasma and a second shift a day. Not borrowing from friends. Numbers [proposed] in `GIG`, `TOURISTS`, `PLASMA` and `KIT.sell`; rules in `gigs.ts`; the gigs and lines in `content/gigs.ts`.
+- **A second shift:** two shifts a day at most, at two different jobs. A double, a warehouse day or day labor is the whole day. Sign-ups stay one a day, so a second shift is always a walk-in: it pays, and it doesn't count toward a raise.
+- **Day labor:** a gig on the market's board on about 3 days in 7. A move in Old Town, a truck at the market, a trail crew day, the crafts fair, Ed Miller's hay in summer and fall, the motel's snow in winter. Start by 8:00, nine hours, $80, the whole day, no rank. The jobs sheet lists the week's gig days.
+- **Crag tourists:** at a busy or packed crag, with a rope and a roped line you've sent there, about one day in two a family asks you to hang them a rope. An hour, $20 and up to $10 in tips, once a day. You're told when you get there, and you say yes from the van. It's the one earner that leaves the day for climbing.
+- **Selling kit:** the gear shop buys back the rack, the rope and harness, a second pad, the hangboard or the headlamp, any day, at 40% of the price. It's money now, and whatever the kit climbed is shut to you till you buy it again.
+- **Plasma:** at the clinic, Tuesdays and Fridays, once each. Two hours, $30, and the rest of the day's windows narrowed to 92%.
+- **Fixed on the way:** the card's dial said a maxed card stops you driving. The rules never did: you drive on what's in the tank. The comment now says so.
+
+**Measured** (the late harness, "Out of the hole": a V3 from −$150 in spring, nothing climbed, 4 seeds each), days to get back to $0, median (slowest):
+- a café double every day: 7.5 (9);
+- a café shift, then the diner or setting when either is posted: 4 (8);
+- day labor when it's posted, a double when not: 4 (6);
+- a double, and plasma on its days: 4 (4);
+- selling the rack, then doubles: 2 (2).
+
+An hour of each: day labor $9 (a first-rank café shift $9, the warehouse $7), a family's rope $20 and tips, plasma $15. The last two out-earn a shift an hour but are limited: busy crag days only, and twice a week. The hustle target (cans, bins, foraging under the worst shift) is unchanged. No bot uses the new earners, so every other target measures what it did: unchanged from Phase 26. V10 on a median day 179.5, Act III on a median day 274.5, and Outdoors, the accepted shortfall, 3 of 4.
+
 ### Phase 27 — The rock, by hand
 
 *Large. The core, deepened.*
@@ -3439,3 +3463,4 @@ Closing it is Evan's call.
 - 2026-10-04 — Phase 25's systems measured (Evan's call): a harness with no targets, numbers for the calls; the social bot taught crew drama, which it had never met (13 of 16 careers now). No numbers changed.
 - 2026-10-08 — Evan's call: Phase 14 waits until he asks for it. Phases 26–35 added to deepen the game: a tune-up from the measurements, the rock by hand, the crew, the van lived in, getting older, after you, the Hollow, comps with rounds, money that means something, the road and the year. CURRENT MILESTONE moved to Phase 26.
 - 2026-10-08 — Phase 26 built (Evan's calls: the outfit and gym stay, a Record Book entry for team summits on every objective, the A league for good, Mara in the Cave and Tam at the Gorge when their crags are shut). Crew drama in 16 of 16 social careers across three pairs; the A league from a season won; the dyno comp grows for three years; heirs graded by the mentee; the crowd clear of the lines; warnings lapse; the bots get Sage's lessons back. Its criteria pass; closing it is Evan's call. Save v57. 0.999.34.
+- 2026-10-13 — Phase 26b, money in a day (Evan's calls, from playing it): a second shift a day at another job, day labor on the market's board, a family's rope at a busy crag, selling kit back at the gear shop, plasma at the clinic. From −$150, back to $0 in 2 to 4 days rather than 7 or 8. No save change. 0.999.35.

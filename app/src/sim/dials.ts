@@ -73,8 +73,9 @@ export const MONEY = {
   dayPass: 14,
   // The Training Center's: dearer, for the walls and the setting [proposed].
   centerPass: 20,
-  // How far the card goes. Past it, gas and the van spot are declined: you drive nowhere
-  // and sleep rough. Bills still land. No game over: v0.956's hard wipe is gone.
+  // How far the card goes. Past it, the van spot and anything you'd buy are declined: you
+  // sleep rough. You still drive, on what's in the tank, and bills still land. No game over:
+  // v0.956's hard wipe is gone.
   cardLimit: 150,
   // Every seventh night, v0.956's weekly bills.
   registration: 45,
@@ -729,6 +730,22 @@ export const HUSTLE = {
   teach: { fed: 35, cash: 10 },
 };
 
+// Phase 26b (Evan's call, 13 Oct 2026) [proposed]: money in a day, for the climb out of the
+// red, where a shift only treads water and a double clears $24.
+//   Day labor: one gig on `odds` of days (content/gigs.ts), on the board by the market door;
+//   start by `by`, `min` minutes, `energy` and `fed` off you, `pay` flat. $8.90 an hour,
+//   under the café's first rank, but a bigger day than a double, and the whole day: no
+//   second shift after it, and it counts toward no rank.
+export const GIG = { odds: 0.43, by: 8 * 60, min: 540, energy: 40, fed: 20, pay: 80 };
+//   Crag tourists: at a busy or packed crag with a roped line you've sent, and a rope, on
+//   `odds` of days a family asks you to hang them one: `min` minutes, `energy`, `pay` and a
+//   tip of up to `tip`, before `till`, once a day. The one earner that leaves the day for climbing.
+export const TOURISTS = { odds: 0.5, min: 60, energy: 6, pay: 20, tip: 10, till: 17 * 60 };
+//   Plasma at the clinic, on its `days` (day % 7: Tuesday and Friday), once each: `min`
+//   minutes, `energy` and `fed` off you, `pay`, and the rest of the day's windows narrowed
+//   to `windows` of themselves. $15 an hour, twice a week, and the power goes with it.
+export const PLASMA = { days: [2, 5], min: 120, energy: 15, fed: 10, pay: 30, windows: 0.92 };
+
 // Phase 22.5b: busking outside the café [proposed]. Evan's call: it pays less than any job
 // at first, and after hundreds of sets more an hour than any job, because you've become a
 // good guitar player; and the crowds grow as you do. Your playing is `learn`-scaled: after
@@ -1052,6 +1069,8 @@ export const KIT = {
   hangboard: { price: 60 },
   // The swap meet at the shop on weekends: v0.956's 55% of new, in fair shape.
   used: { share: 0.55, condition: 60 },
+  // Phase 26b [proposed]: the gear shop buys kit back at `sell` of its price, any day.
+  sell: 0.4,
 };
 
 // Training (Phase 21.3): v0.956's protocols, cut from 16 to six and prehab, with its
