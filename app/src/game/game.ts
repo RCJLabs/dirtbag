@@ -1393,12 +1393,18 @@ export class Game {
     this.dispatch({ t: 'pick', route, crux, beta });
   }
 
-  // `call`: the flash or the onsight, called on the beta sheet before a first go (Phase 27.4).
-  go(call = false): void {
+  // From the beta sheet: `call`, the flash or the onsight called before a first go (Phase
+  // 27.4); `pad`, the crux of a highball its extra pads go under (Phase 27.5).
+  go({ call = false, pad = null }: { call?: boolean; pad?: string | null } = {}): void {
     const route = this.ui.get().wallRoute;
     const r = routeOfId(this.state, route);
     if (!r) return;
-    const ev = this.dispatch({ t: 'go', route, ...(call ? { call: true as const } : {}) });
+    const ev = this.dispatch({
+      t: 'go',
+      route,
+      ...(call ? { call: true as const } : {}),
+      ...(pad ? { pad } : {}),
+    });
     if (ev.some((e) => e.k === 'refused')) return;
     this.today = noted(this.today, { place: this.state.at, climb: true });
     this.att = startAttempt(this.state, r);

@@ -43,6 +43,8 @@ import {
   belayer,
   fallFt,
   landingChance,
+  cruxFallMoves,
+  padUnder,
   morePads,
   DOG,
   DOG_TIER_NAME,
@@ -995,19 +997,68 @@ function rockNote(s: GameState, r: RouteDef): string {
   return light + (c.seeping ? ' · damp from the rain' : '');
 }
 
-// A highball's landing, before you go: how far a fall from its crux is, what's under you,
-// who's spotting, and the odds that come of it [proposed].
-function landingNote(s: GameState, r: RouteDef): string {
-  const c = r.cruxes[0];
-  const at = c ? (c.from + c.to) / 2 : r.moves;
-  const ft = Math.round(fallFt(r, at));
+// A highball's landing, before you go [proposed]: who's spotting, what's under you, and how
+// far each of its two falls is, the crux and the top-out, with the odds that come of it.
+// Phase 27.5: with more than the one pad, they cover one fall, and you choose which.
+const fallName = (c: { name: string }): string => c.name.replace(/^The /, 'the ');
+const odds = (p: number): string =>
+  p > 0 ? `about 1 in ${Math.max(2, Math.round(1 / p))} lands badly` : 'lands fine';
+
+function Landing({
+  s,
+  r,
+  pad,
+  setPad,
+}: {
+  s: GameState;
+  r: RouteDef;
+  pad: string | null;
+  setPad: (c: string) => void;
+}) {
   const who = belayer(s);
+  const spot = who ? `${PEOPLE[who]?.name ?? 'A friend'} spots you` : 'Nobody’s spotting';
   // Phase 27.1: the haul's pads only at Moonstone; a second pad of your own goes everywhere.
-  const pads = !morePads(s, r.place) ? 'One pad' : (s.gear.pad ?? 0) > 0 ? 'Two pads' : 'The haul’s pads';
-  const spot = who ? `${PEOPLE[who]?.name ?? 'a friend'} spotting` : 'nobody spotting';
-  const p = landingChance(s, r, at);
-  const odds = p > 0 ? `about 1 in ${Math.max(2, Math.round(1 / p))} lands badly` : 'you’ll land fine';
-  return `Highball: a fall from the crux is ${ft} ft. ${pads}, ${spot}: ${odds}.`;
+  const pads = !morePads(s, r.place) ? null : (s.gear.pad ?? 0) > 0 ? 'Your second pad' : 'The haul’s pads';
+  // Each fall's odds with the pads under `at`.
+  const under = (at: string | null): GameState =>
+    at ? { ...s, today: [...s.today.filter((f) => !f.startsWith(`pad-${r.id}-`)), `pad-${r.id}-${at}`] } : s;
+  const falls = (at: string | null): string =>
+    r.cruxes
+      .map((c) => {
+        const m = cruxFallMoves(c);
+        return `off ${fallName(c)}, ${Math.round(fallFt(r, m))} ft, ${odds(landingChance(under(at), r, m, c.id))}`;
+      })
+      .join('; ');
+  if (!pads)
+    return (
+      <p className="note">
+        Highball. {spot}, on the one pad: {falls(null)}.
+      </p>
+    );
+  const at = pad ?? padUnder(s, r);
+  return (
+    <>
+      <p className="note">
+        Highball. {spot}. {pads} can cover one fall: choose which.
+      </p>
+      <div role="radiogroup" aria-label="Where the pads go">
+        {r.cruxes.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            className="pad"
+            role="radio"
+            aria-checked={at === c.id}
+            onClick={() => setPad(c.id)}
+          >
+            <span className="dot" />
+            <span>Under {fallName(c)}</span>
+            <small>{falls(c.id).replace(/^off/, 'Off')}.</small>
+          </button>
+        ))}
+      </div>
+    </>
+  );
 }
 
 // Pick your beta for each crux, then tie in. Beta you haven't earned shows as a locked card
@@ -1016,6 +1067,8 @@ function landingNote(s: GameState, r: RouteDef): string {
 function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState }) {
   // Calling the flash or the onsight (Phase 27.4): off till you tap it, for this go only.
   const [call, setCall] = useState(false);
+  // Where a highball's extra pads go (Phase 27.5): today's choice, or the worse fall, till you move them.
+  const [pad, setPad] = useState<string | null>(null);
   const r = routeOfId(s, route);
   if (!r) return null;
   const pick = picks(s, r);
@@ -1089,7 +1142,7 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
           it’s yours to name.
         </p>
       )}
-      {r.highball && <p className="note">{landingNote(s, r)}</p>}
+      {r.highball && <Landing s={s} r={r} pad={pad} setPad={setPad} />}
       {s.fear.includes(r.type) && (
         <p className="note" id="fear-note">
           {STYLE_NAME[r.type]} lines have had your nerve since the fall: every window tighter until you send
@@ -1227,7 +1280,12 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
           <small>{CALL_SAYS.note}</small>
         </button>
       )}
-      <button type="button" className="go" disabled={!!why} onClick={() => game.go(call && callable)}>
+      <button
+        type="button"
+        className="go"
+        disabled={!!why}
+        onClick={() => game.go({ call: call && callable, pad: r.highball ? (pad ?? padUnder(s, r)) : null })}
+      >
         {why ?? (r.disc === 'trad' ? 'Rack up and go' : r.disc === 'sport' ? 'Tie in and go' : 'Pull on')}
         <small>{cost}</small>
       </button>

@@ -739,9 +739,9 @@ const highball = libraryBoulder('highball', 'Highball Arête', 5, 'technical', '
   moves: 8,
   from: 5.0,
   to: 6.8,
-  cruxName: 'The top',
+  cruxName: 'The arête',
   heightFt: 18,
-  line: 'Eight moves up a clean arête, and the crux is where the pads stop helping.',
+  line: 'A clean arête a long way up, and the crux is where the pads stop helping.',
 });
 const theProject = libraryBoulder('project', 'The Project', 6, 'power', 'road', {
   moves: 6,
@@ -867,7 +867,7 @@ const mArete = libraryBoulder('marete', 'Tall Arête', 6, 'technical', 'moon', {
   moves: 9,
   from: 5.6,
   to: 7.4,
-  cruxName: 'The top',
+  cruxName: 'The rounded arête',
   heightFt: 22,
   line: 'An arête as tall as a house, and the hard part is at the top of it.',
 });
@@ -875,9 +875,9 @@ const mMantel = libraryBoulder('mmantel', 'Moonstone Mantel', 7, 'power', 'moon'
   moves: 5,
   from: 3.0,
   to: 4.4,
-  cruxName: 'The mantel',
+  cruxName: 'The lip',
   heightFt: 16,
-  line: 'Five moves to the lip, then the mantel everybody gets wrong the first time.',
+  line: 'Up to the lip, then the mantel everybody gets wrong the first time.',
 });
 const mEgg = libraryBoulder('megg', 'The Egg', 8, 'dyno', 'moon', {
   moves: 5,
@@ -916,7 +916,7 @@ const mOpen = libraryBoulder('mopen', 'The Moonstone project', 12, 'power', 'moo
   moves: 8,
   from: 3.6,
   to: 6.2,
-  cruxName: 'The last hard move',
+  cruxName: 'The hard move',
   heightFt: 22,
   line: 'Nobody’s done it. The chalk stops two-thirds of the way up a very tall boulder.',
   open: true,
@@ -1733,6 +1733,38 @@ const LINES: Record<string, RouteDef> = {
 export const isHighball = (r: RouteDef): boolean =>
   r.disc === 'boulder' && !r.dws && !r.board && r.heightFt >= HIGHBALL.fromFt;
 
+// Phase 27.5: a highball's top-out. Every boulder tall enough to be a highball gets a second
+// crux at its lip, past where the line used to end, so there are two places to fall, the
+// higher one harder to land, and where the pad goes is a choice. It plays as LIBRARY's
+// technical pair, whose verb and numbers the rock's moves keep (inRock), and the height
+// stays, so the line's first crux comes off lower than it did.
+export const TOP_OUT = { name: 'The top-out', moves: 2, from: 0.4, to: 1.6, win: 'Over the lip. Stand up.' };
+
+function topOut(r: RouteDef): RouteDef {
+  const [t1, t2] = LIBRARY.technical;
+  const b1 = { ...t1, ...HIGHBALL.topOut.first };
+  const b2 = { ...t2, ...HIGHBALL.topOut.earned };
+  const end = r.moves;
+  return {
+    ...r,
+    moves: end + TOP_OUT.moves,
+    cruxes: [
+      ...r.cruxes.map((c) =>
+        c.win === 'Through it. Top out.' ? { ...c, win: 'Through it. Now the top.' } : c,
+      ),
+      {
+        id: 'B',
+        name: TOP_OUT.name,
+        from: end + TOP_OUT.from,
+        to: end + TOP_OUT.to,
+        win: TOP_OUT.win,
+        beta: ['B1', 'B2'],
+      },
+    ],
+    beta: { ...r.beta, B1: b1, B2: b2 },
+  };
+}
+
 // Phase 27.2: an outdoor line's cruxes in its rock's moves (content/rock.ts), in place of the
 // plastic library's. A move plays as the beta it replaces did, its verb, window and costs
 // kept (the Local Testpiece's were tuned by hand), so how hard a line is doesn't move; a
@@ -1771,7 +1803,7 @@ function inRock(r: RouteDef): RouteDef {
 
 export const ROUTES: Record<string, RouteDef> = Object.fromEntries(
   Object.entries(LINES).map(([id, l]) => {
-    const r = inRock(l);
+    const r = inRock(isHighball(l) ? topOut(l) : l);
     return [id, isHighball(r) ? { ...r, highball: true as const } : r];
   }),
 );

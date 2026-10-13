@@ -176,6 +176,7 @@ import {
   gradeLabel,
   gradeName,
   roped,
+  type CruxDef,
   type RouteDef,
 } from './content/routes';
 import {
@@ -555,27 +556,68 @@ export const morePads = (s: GameState, place = s.at): boolean =>
 export const fallFt = (r: RouteDef, moves: number): number =>
   r.heightFt * Math.min(1, Math.max(0, moves) / (r.moves || 1));
 
-// The chance a fall from `moves` up a highball lands you badly: nothing up to the safe
-// height, then more with every foot, less with the haul's pads and a partner spotting.
-export function landingChance(s: GameState, r: RouteDef, moves: number): number {
+// The move a fall off a crux comes from: the one past where it starts, as a go counts your
+// high point (climb.ts), so the odds a sheet or a bot reads are the odds the fall rolls.
+export const cruxFallMoves = (c: CruxDef): number => Math.floor(c.from) + 1;
+
+// Which crux a fall at `moves` is under: the one it came off, or failing that the nearest.
+export function fallCrux(r: RouteDef, moves: number, fell: string | null = null): string | null {
+  if (fell && r.cruxes.some((c) => c.id === fell)) return fell;
+  let near: CruxDef | null = null;
+  for (const c of r.cruxes)
+    if (!near || Math.abs(cruxFallMoves(c) - moves) <= Math.abs(cruxFallMoves(near) - moves)) near = c;
+  return near?.id ?? null;
+}
+
+// A fall's odds before the pads: nothing up to the safe height, then more with every foot,
+// less with a partner spotting.
+function bareLanding(s: GameState, r: RouteDef, moves: number): number {
   if (!r.highball) return 0;
   const over = fallFt(r, moves) - HIGHBALL.safeFt;
   if (over <= 0) return 0;
   // An old ankle injury lands worse (Phase 22.4b).
   const scar = s.scars.includes('ankle') ? SCARS.risk : 1;
-  return (
-    HIGHBALL.perFoot *
-    over *
-    (morePads(s, r.place) ? HIGHBALL.pads : 1) *
-    (belayer(s) ? HIGHBALL.spotter : 1) *
-    scar
-  );
+  return HIGHBALL.perFoot * over * (belayer(s) ? HIGHBALL.spotter : 1) * scar;
 }
 
-// Rolls a fall's landing. `n` numbers the go within the day, as the injury roll does, on its
-// own label so the two never share a draw.
-export function rollLanding(s: GameState, r: RouteDef, moves: number, n: number): Injury | null {
-  const p = landingChance(s, r, moves);
+// Phase 27.5: where the extra pads go on a highball. It has two places to fall, its crux and
+// its top-out, and they cover one: the one you chose for today's goes, or until you choose,
+// the worse fall.
+export function padUnder(s: GameState, r: RouteDef): string | null {
+  if (!r.highball || !morePads(s, r.place)) return null;
+  const flag = `pad-${r.id}-`;
+  const chosen = s.today.find((f) => f.startsWith(flag))?.slice(flag.length);
+  if (chosen && r.cruxes.some((c) => c.id === chosen)) return chosen;
+  let worst: CruxDef | null = null;
+  for (const c of r.cruxes)
+    if (!worst || bareLanding(s, r, cruxFallMoves(c)) >= bareLanding(s, r, cruxFallMoves(worst))) worst = c;
+  return worst?.id ?? null;
+}
+
+// The chance a fall from `moves` up a highball, under crux `under`, lands you badly: halved
+// again where the extra pads are.
+export function landingChance(
+  s: GameState,
+  r: RouteDef,
+  moves: number,
+  under: string | null = fallCrux(r, moves),
+): number {
+  const bare = bareLanding(s, r, moves);
+  if (bare <= 0) return 0;
+  const padded = morePads(s, r.place) && (r.cruxes.length < 2 || under === padUnder(s, r));
+  return bare * (padded ? HIGHBALL.pads : 1);
+}
+
+// Rolls a fall's landing, under the crux it came off. `n` numbers the go within the day, as
+// the injury roll does, on its own label so the two never share a draw.
+export function rollLanding(
+  s: GameState,
+  r: RouteDef,
+  moves: number,
+  n: number,
+  fell: string | null = null,
+): Injury | null {
+  const p = landingChance(s, r, moves, fallCrux(r, moves, fell));
   if (p <= 0) return null;
   const rng = Rng.fromStream(s.seed, 'session').derive(`landing-${s.day}-${n}`);
   if (rng.next() >= p) return null;
@@ -3006,6 +3048,11 @@ export function act(s0: GameState, a: Action): Result {
       L.goes += 1;
       L.goesToday += 1;
       if (queued && L.goesToday === 1) line(`A queue for it. You wait ${queued} minutes for your turn.`);
+      // Phase 27.5: the extra pads moved under the fall you chose, for today's goes.
+      if (a.pad && morePads(s, r.place) && r.highball && r.cruxes.some((c) => c.id === a.pad)) {
+        s.today = s.today.filter((f) => !f.startsWith(`pad-${r.id}-`));
+        s.today.push(`pad-${r.id}-${a.pad}`);
+      }
       // Phase 27.4: calling it, out loud, before the first go on a line you've never sent. Any
       // other go has nothing to call, and the call is dropped.
       if (a.call && L.goes === 1 && !L.sent) {
@@ -3507,7 +3554,11 @@ export function act(s0: GameState, a: Action): Result {
       // A deck is only as far as the result says, and only on trad: nothing else has one.
       const deck = r.disc === 'trad' && !res.sent && res.deck ? Math.min(res.deck, r.heightFt) : 0;
       const landed =
-        strain || res.sent ? null : deck ? rollDeck(s, deck, goN) : rollLanding(s, r, res.hi, goN);
+        strain || res.sent
+          ? null
+          : deck
+            ? rollDeck(s, deck, goN)
+            : rollLanding(s, r, res.hi, goN, res.fellAt);
       const hurt = strain ?? landed;
       if (deck && !hurt) line(fill(DECK_WALKED, { route: r.name }));
       if (!s.today.includes('warm')) s.today.push('warm');
