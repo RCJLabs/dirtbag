@@ -209,6 +209,8 @@ import {
   guestSendChance,
   guideCragLines,
   type Guest,
+  CALL_SAYS,
+  fill,
 } from '../sim';
 import type { Game, JournalPage, SheetId, Ui } from '../game/game';
 import { legacyFile, saveLegacyFile } from '../game/legacy';
@@ -279,7 +281,7 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
   }, [kind]);
   const body =
     id.k === 'beta' ? (
-      <BetaBody game={game} route={id.route} s={state} />
+      <BetaBody key={id.route} game={game} route={id.route} s={state} />
     ) : id.k === 'fa' ? (
       <FaBody game={game} route={id.route} s={state} />
     ) : id.k === 'journal' ? (
@@ -1012,6 +1014,8 @@ function landingNote(s: GameState, r: RouteDef): string {
 // with a hint about where to find it. Each card's window is its real width for you today:
 // your skills in its style against the grade, the rock and your hunger.
 function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState }) {
+  // Calling the flash or the onsight (Phase 27.4): off till you tap it, for this go only.
+  const [call, setCall] = useState(false);
   const r = routeOfId(s, route);
   if (!r) return null;
   const pick = picks(s, r);
@@ -1022,6 +1026,8 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
   const cost = `${costLabel({ min: c.min })} · ${bodyNote({ energy: c.energy, skin: c.skin })}${rockNote(s, r)}`;
   const log = s.routes[route];
   const unnamed = r.open && log?.sent && !s.firsts[route];
+  // Only a first go at a line you've never sent can be called; not up on an expedition.
+  const callable = !why && !r.exped && !log?.sent && (log?.goes ?? 0) === 0;
   // Who else is at the base: a queue for the line, and beta to be had for the asking.
   const crowd = r.wall || r.exped || indoor(r.place) ? 'empty' : crowdNow(s, r.place);
   // A myth you can't read yet: no name, no grade, no beta. Just what it'll take.
@@ -1207,7 +1213,21 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
           {kitNote(s, r)}
         </p>
       )}
-      <button type="button" className="go" disabled={!!why} onClick={() => game.go()}>
+      {callable && (
+        <button
+          type="button"
+          className="call"
+          id="call"
+          role="checkbox"
+          aria-checked={call}
+          onClick={() => setCall(!call)}
+        >
+          <span className="dot" />
+          <span>{fill(CALL_SAYS.label, { style: log?.told.length ? 'flash' : 'onsight' })}</span>
+          <small>{CALL_SAYS.note}</small>
+        </button>
+      )}
+      <button type="button" className="go" disabled={!!why} onClick={() => game.go(call && callable)}>
         {why ?? (r.disc === 'trad' ? 'Rack up and go' : r.disc === 'sport' ? 'Tie in and go' : 'Pull on')}
         <small>{cost}</small>
       </button>

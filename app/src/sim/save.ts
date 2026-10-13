@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 57;
+export const SAVE_VERSION = 58;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -443,6 +443,12 @@ export const MIGRATIONS: Record<number, Migration> = {
     const day = isInt(x.day) ? x.day : 1;
     const strikes = isObj(x.strikes) ? x.strikes : {};
     return { ...x, struck: Object.fromEntries(Object.keys(strikes).map((job) => [job, day])) };
+  },
+  // v57 -> v58 (Phase 27.4): a first send can be one you called (a new optional field on a
+  // send). Nothing before it was called, so nothing changes.
+  57: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return x;
   },
 };
 
@@ -1198,7 +1204,8 @@ function isSend(x: unknown): x is SendRecord {
     isObj(x) &&
     isInt(x.day) &&
     isInt(x.go) &&
-    (x.style === 'onsight' || x.style === 'flash' || x.style === 'redpoint')
+    (x.style === 'onsight' || x.style === 'flash' || x.style === 'redpoint') &&
+    (x.called === undefined || x.called === true)
   );
 }
 

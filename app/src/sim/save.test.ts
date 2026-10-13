@@ -87,6 +87,7 @@ const V53 = readFileSync(new URL('./fixtures/save-v53.json', import.meta.url), '
 const V54 = readFileSync(new URL('./fixtures/save-v54.json', import.meta.url), 'utf8');
 const V55 = readFileSync(new URL('./fixtures/save-v55.json', import.meta.url), 'utf8');
 const V56 = readFileSync(new URL('./fixtures/save-v56.json', import.meta.url), 'utf8');
+const V57 = readFileSync(new URL('./fixtures/save-v57.json', import.meta.url), 'utf8');
 // And Phase 25.5's: no League night season settled, on a save that had comps.
 const seasoned = (st: { comps: object }) => ({ ...st, comps: { ...st.comps, seasons: [] } });
 // What R2's migration adds to any older save.
@@ -1822,6 +1823,17 @@ describe('saves', () => {
     expect(r.state.comps.seasons[0]).toMatchObject({ year: 1, place: 1 });
   });
 
+  it('load a real 0.999.38 save: its sends kept as they were, none of them called', () => {
+    const r = fromSave(V57);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(57);
+    expect(r.state).toEqual(JSON.parse(V57).state);
+    const sends = Object.values(r.state.routes).flatMap((l) => (l.sent ? [l.sent] : []));
+    expect(sends.length).toBeGreaterThan(20);
+    expect(sends.some((x) => x.called)).toBe(false);
+  });
+
   // These pretend a longer history: a v1 file that stored `money` where the state now has
   // `cash`, loaded by a build two versions on, with test migrations in place of the real ones.
   it('run the migration chain in order, and stop at a gap or a throw', () => {
@@ -1829,7 +1841,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(57);
+    expect(SAVE_VERSION).toBe(58);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

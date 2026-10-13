@@ -168,6 +168,7 @@ import { JOBS } from './content/jobs';
 import { livingTonight, raiseAt, rankAt, rankName, shiftsAt, signupBlocked, skimps, tipsFor } from './jobs';
 import { freshTraining, PHASE_NAME, phaseLock, taperDay, taperWait } from './training';
 import {
+  CALL_SAYS,
   ROUTES,
   SEND_NAME,
   WALLS,
@@ -3005,6 +3006,12 @@ export function act(s0: GameState, a: Action): Result {
       L.goes += 1;
       L.goesToday += 1;
       if (queued && L.goesToday === 1) line(`A queue for it. You wait ${queued} minutes for your turn.`);
+      // Phase 27.4: calling it, out loud, before the first go on a line you've never sent. Any
+      // other go has nothing to call, and the call is dropped.
+      if (a.call && L.goes === 1 && !L.sent) {
+        s.today.push(`called-${r.id}`);
+        line(fill(CALL_SAYS.call, { style: L.told.length ? 'flash' : 'onsight' }));
+      }
       if (soloed(s, r)) {
         s.soloing = r.id;
         if (L.goesToday === 1) line('No rope. Nothing between you and the ground but the next move.');
@@ -3471,6 +3478,8 @@ export function act(s0: GameState, a: Action): Result {
       const L = logOf(s, a.route);
       const res = a.result;
       const lap = L.sent !== null;
+      // A call made before this, the first go, settled by how the go ends (Phase 27.4).
+      const called = L.goes === 1 && !lap && s.today.includes(`called-${r.id}`);
       // A solo: off it is the end of it; up it is a lesson for the head.
       if (soloed(s, r)) {
         s.soloing = null;
@@ -3532,9 +3541,18 @@ export function act(s0: GameState, a: Action): Result {
         // The log keeps how the first send went; any send after it is a repeat.
         const firstStyle: SendStyle = L.goes === 1 ? (L.told.length ? 'flash' : 'onsight') : 'redpoint';
         const style: GoStyle = lap ? 'repeat' : firstStyle;
-        L.sent ??= { day: s.day, go: L.goes, style: firstStyle };
+        L.sent ??= {
+          day: s.day,
+          go: L.goes,
+          style: firstStyle,
+          ...(called ? { called: true as const } : {}),
+        };
         L.sentToday = true;
         events.push({ k: 'sent', route: a.route, style, go: L.goes });
+        if (called) {
+          s.today.push('called-sent');
+          line(fill(CALL_SAYS.sent, { style: firstStyle }));
+        }
         if (r.wall && s.wall?.id === r.wall) wallPitch(r.wall, lap);
         if (r.exped && s.expedition?.id === r.exped) expedPitch();
         if (r.open && !s.firsts[r.id] && L.sent.day === s.day && L.sent.go === L.goes)
@@ -3569,7 +3587,11 @@ export function act(s0: GameState, a: Action): Result {
           s.fear = s.fear.filter((f) => f !== r.type);
           line(`That's the fear gone. ${STYLE_NAME[r.type]} lines feel like yours again.`);
         }
-      } else if (res.fellAt) {
+      } else if (called) {
+        s.today.push('called-fell');
+        line(CALL_SAYS.fell);
+      }
+      if (!res.sent && res.fellAt) {
         const crux = r.cruxes.find((c) => c.id === res.fellAt);
         if (!crux) return refuse('No such crux.');
         const falls = (L.falls[crux.id] ?? 0) + 1;

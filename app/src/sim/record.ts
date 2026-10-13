@@ -17,7 +17,7 @@ import type { GameState } from './types';
 function sends(s: GameState) {
   return Object.entries(s.routes)
     .filter(([, l]) => l.sent)
-    .map(([id, l]) => ({ r: routeById(s.seed, id), style: l.sent!.style }));
+    .map(([id, l]) => ({ r: routeById(s.seed, id), style: l.sent!.style, called: !!l.sent!.called }));
 }
 
 export function aimEarned(s: GameState, aim: RecordAim, sent = sends(s)): boolean {
@@ -25,6 +25,7 @@ export function aimEarned(s: GameState, aim: RecordAim, sent = sends(s)): boolea
   if ('grade' in aim) return sent.some(({ r }) => (r?.grade ?? -1) >= aim.grade);
   if ('style' in aim)
     return sent.some(({ style }) => style === aim.style || (aim.style === 'flash' && style === 'onsight'));
+  if ('called' in aim) return sent.filter((x) => x.called).length >= aim.called;
   if ('outside' in aim) return sent.some(({ r }) => !!r && !indoor(r.place));
   if ('fa' in aim) return Object.values(s.firsts).filter((f) => !f.by).length >= aim.fa;
   // A walk-in doesn't count toward a raise, but it's a shift: today's counts when it's worked.
