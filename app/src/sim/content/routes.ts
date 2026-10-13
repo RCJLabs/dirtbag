@@ -12,6 +12,8 @@
 
 import type { Style } from '../climber';
 import { HIGHBALL } from '../dials';
+import { PLACES } from './places';
+import { ROCK_LINES, ROCK_MOVES } from './rock';
 import type { GoStyle } from '../types';
 
 export type Verb = 'tension' | 'timing' | 'load';
@@ -1630,8 +1632,47 @@ const LINES: Record<string, RouteDef> = {
 export const isHighball = (r: RouteDef): boolean =>
   r.disc === 'boulder' && !r.dws && !r.board && r.heightFt >= HIGHBALL.fromFt;
 
+// Phase 27.2: an outdoor line's cruxes in its rock's moves (content/rock.ts), in place of the
+// plastic library's. A move plays as the beta it replaces did, its verb, window and costs
+// kept (the Local Testpiece's were tuned by hand), so how hard a line is doesn't move; a
+// move of another verb is a mistake in the table, said loudly. What changes is its name, its
+// words, and the style it leans on. A roped line's second crux takes two falls to earn, as
+// librarySport's did.
+function inRock(r: RouteDef): RouteDef {
+  const crux = ROCK_LINES[r.id];
+  if (!crux) return r;
+  const rock = PLACES[r.place]?.rock;
+  const moves = rock ? ROCK_MOVES[rock] : undefined;
+  if (!moves || crux.length !== r.cruxes.length) throw new Error(`${r.id}: no rock moves for its cruxes`);
+  const beta = { ...r.beta };
+  r.cruxes.forEach((c, i) => {
+    crux[i]!.forEach((id, k) => {
+      const key = c.beta[k]!;
+      const was = r.beta[key]!;
+      const move = moves[id];
+      if (!move || move.verb !== was.verb) throw new Error(`${r.id} ${key}: ${id} isn't a ${was.verb} move`);
+      const { w: _w, rate: _r, need: _n, skin: _s, ...words } = move;
+      const plays = {
+        w: was.w,
+        ...(was.rate !== undefined ? { rate: was.rate, need: was.need } : {}),
+        ...(was.skin !== undefined ? { skin: was.skin } : {}),
+      };
+      const falls = k === 1 && i > 0 && roped(r) ? 2 : move.unlock?.falls;
+      beta[key] = {
+        ...words,
+        ...plays,
+        ...(move.unlock ? { unlock: { ...move.unlock, falls: falls! } } : {}),
+      };
+    });
+  });
+  return { ...r, beta };
+}
+
 export const ROUTES: Record<string, RouteDef> = Object.fromEntries(
-  Object.entries(LINES).map(([id, r]) => [id, isHighball(r) ? { ...r, highball: true as const } : r]),
+  Object.entries(LINES).map(([id, l]) => {
+    const r = inRock(l);
+    return [id, isHighball(r) ? { ...r, highball: true as const } : r];
+  }),
 );
 
 // Said when you come off between cruxes with nothing left in your arms.

@@ -15,7 +15,8 @@ import {
 import { ACTS, PLACES, road, ROADS, TEXT_VALUES } from './content/places';
 import { fill } from './format';
 import { PEOPLE, TALK, THINGS } from './content/people';
-import { ROUTES, type RouteDef } from './content/routes';
+import { LIBRARY, ROUTES, type RouteDef } from './content/routes';
+import { ROCK_LINES, ROCK_MOVES } from './content/rock';
 import { HIGHBALL } from './dials';
 
 const STYLES = Object.keys(MIX);
@@ -156,6 +157,47 @@ describe('content', () => {
   it("a place that's shut to you says the grade that opens it", () => {
     for (const [id, p] of Object.entries(PLACES))
       if (p.minGrade !== undefined) expect(p.locked, id).toContain(`V${p.minGrade}`);
+  });
+
+  // Phase 27.2: the rock's beta.
+  it('climbs every crag in its own rock: no crux at a crag starts the way another does', () => {
+    const plastic = new Set(Object.values(LIBRARY).flatMap(([a, b]) => [a.name, b.name]));
+    // Made by hand before the rock had moves of its own.
+    const byHand = new Set(['warmup', 'roadside', 'pump']);
+    for (const [id, p] of Object.entries(PLACES)) {
+      if (!p.crag) continue;
+      const lines = Object.values(ROUTES).filter((r) => r.place === id && !r.wall);
+      const firsts: string[] = [];
+      const pairs: string[] = [];
+      for (const r of lines) {
+        if (!byHand.has(r.id)) expect(ROCK_LINES[r.id], r.id).toBeDefined();
+        for (const c of r.cruxes) {
+          const [a, b] = c.beta.map((k) => r.beta[k]!.name);
+          expect(plastic.has(a!) || plastic.has(b!), `${r.id} ${c.id} is still plastic`).toBe(false);
+          firsts.push(a!);
+          pairs.push(`${a} / ${b}`);
+        }
+      }
+      expect(new Set(firsts).size, `${id}: a first way through repeats`).toBe(firsts.length);
+      expect(new Set(pairs).size, `${id}: a crux sequence repeats`).toBe(pairs.length);
+    }
+  });
+
+  it('uses every move each rock has, and only at that rock’s crags', () => {
+    const used = new Map<string, Set<string>>();
+    for (const [id, cruxes] of Object.entries(ROCK_LINES)) {
+      const rock = PLACES[ROUTES[id]!.place]!.rock!;
+      for (const pair of cruxes)
+        for (const m of pair) {
+          expect(ROCK_MOVES[rock][m], `${id}: ${m} isn’t ${rock}`).toBeDefined();
+          (used.get(rock) ?? used.set(rock, new Set()).get(rock)!).add(m);
+        }
+    }
+    for (const [rock, moves] of Object.entries(ROCK_MOVES))
+      expect(
+        Object.keys(moves).filter((m) => !used.get(rock)?.has(m)),
+        rock,
+      ).toEqual([]);
   });
 
   it('every sunny crag lists all its lines, once each, in the path the sun takes', () => {
