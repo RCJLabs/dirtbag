@@ -2,7 +2,7 @@
 // each) and weights (docs/audit/climbing.md §2.13). Nothing is stored: a day's sky is a
 // pure function of the seed and the day, so the forecast is simply tomorrow's roll.
 
-import { PLACES } from './content/places';
+import { PLACES, SANDSTONE_WET } from './content/places';
 import { CLIMB } from './dials';
 import { Rng } from './rng';
 
@@ -119,7 +119,10 @@ export function conditionsAt(
   const closed =
     p?.closed && (Array.isArray(shut) ? shut.includes(seasonOf(day)) : seasonOf(day) === shut)
       ? p.closed.why
-      : null;
+      : // Phase 27.1: sandstone's soft after rain; nobody climbs it the day after.
+        p?.rock === 'sandstone' && c.seeping
+        ? SANDSTONE_WET
+        : null;
   if (p?.desert) return { ...c, closed, windows: c.windows * CLIMB.desertFactor };
   if (!p?.shaded) return { ...c, closed };
   return {

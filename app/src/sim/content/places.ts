@@ -27,12 +27,16 @@ import {
   UPGRADE,
   VAN,
   WINTER,
+  type Rock,
   type VanPart,
 } from '../dials';
 import { DOG_LINES, DOG_OFFER } from './dog';
 import { clockShort, dayName } from '../format';
 import type { Delta, Skills } from '../types';
 import type { Season } from '../weather';
+
+// Phase 27.1: why a sandstone crag is shut the day after rain.
+export const SANDSTONE_WET = 'The sandstone’s soft after rain. Holds snap when it’s wet';
 
 export interface PlaceDef {
   name: string;
@@ -53,7 +57,9 @@ export interface PlaceDef {
   // a permit paid on every trip in (v0.956's permit).
   unlock?: number;
   permit?: number;
-  // The haul you paid for includes crash pads: every highball lands softer (HIGHBALL.pads).
+  // Phase 27.1: what it's made of (ROCK), for the crags.
+  rock?: Rock;
+  // The haul you paid for includes crash pads: every highball here lands softer (HIGHBALL.pads).
   pads?: true;
   // Land you buy (Phase 18.6), not a trip you pay for: `unlock` is its price, and its lines
   // are there to climb once you've bolted them (land.ts). The bots don't buy land.
@@ -164,6 +170,7 @@ export const PLACES: Record<string, PlaceDef> = {
     crowd: 0.6,
     name: 'Roadside Crag',
     crag: true,
+    rock: 'granite',
     scene: 'crag',
     ambience: { wind: 0.35, birds: 0.4 },
     away: 'Granite. {lines} lines, from a V2 warm-up to The Pump.',
@@ -191,6 +198,7 @@ export const PLACES: Record<string, PlaceDef> = {
     crowd: 0.5,
     name: 'Granite Gorge',
     crag: true,
+    rock: 'granite',
     scene: 'gorge',
     ambience: { wind: 0.2, birds: 0.3, creek: 0.6 },
     away: 'Classic granite, two hours out and in the shade. Harder lines.',
@@ -208,6 +216,7 @@ export const PLACES: Record<string, PlaceDef> = {
     crowd: 0.45,
     name: 'Moonstone Boulders',
     crag: true,
+    rock: 'quartzite',
     scene: 'moon',
     ambience: { wind: 0.6, hawk: 0.3 },
     away: 'Quartzite highballs out in the desert. A real road trip.',
@@ -231,6 +240,7 @@ export const PLACES: Record<string, PlaceDef> = {
     crowd: 0.45,
     name: 'Sandstone Mesa',
     crag: true,
+    rock: 'sandstone',
     scene: 'mesa',
     ambience: { wind: 0.5, hawk: 0.25 },
     away: 'Red desert sandstone, three hours out. World-class, and brutal about it.',
@@ -264,6 +274,7 @@ export const PLACES: Record<string, PlaceDef> = {
     crowd: 0.6,
     name: 'The Big Stone',
     crag: true,
+    rock: 'granite',
     scene: 'stone',
     ambience: { wind: 0.3, birds: 0.3, creek: 0.4 },
     away: 'A valley of granite big walls, four hours out. The proving ground.',
@@ -283,6 +294,7 @@ export const PLACES: Record<string, PlaceDef> = {
     crowd: 0.3,
     name: 'Wind River Walls',
     crag: true,
+    rock: 'granite',
     scene: 'wind',
     ambience: { wind: 0.7, creek: 0.3, hawk: 0.15 },
     away: 'High alpine granite past the Gorge. A long, costly haul for the committed.',
@@ -303,6 +315,7 @@ export const PLACES: Record<string, PlaceDef> = {
     crowd: 0.2,
     name: 'The Crucible',
     crag: true,
+    rock: 'gneiss',
     scene: 'crucible',
     ambience: { wind: 0.8, hawk: 0.1 },
     away: 'A remote, frigid wall four hours east, over the pass. Where the grades run out.',
@@ -320,6 +333,7 @@ export const PLACES: Record<string, PlaceDef> = {
     crowd: 0.6,
     name: 'Psicobloc Cove',
     crag: true,
+    rock: 'limestone',
     scene: 'cove',
     ambience: { wind: 0.4, creek: 0.7, birds: 0.2 },
     away: 'Deep-water solo on a limestone sea cliff, two hours out. A fall is just a splash.',
@@ -339,6 +353,7 @@ export const PLACES: Record<string, PlaceDef> = {
     crowd: 0.05,
     name: 'Miller’s Bluff',
     crag: true,
+    rock: 'limestone',
     land: true,
     unlock: LAND.price,
     // Nobody's day brings them here: ask a Regular along, for the roped lines.
