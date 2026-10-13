@@ -1592,6 +1592,569 @@ const LIMESTONE: Record<string, BetaDef> = {
 };
 
 // ---------------------------------------------------------------------------------------
+// The walls' pitches (Phase 27.3), all granite: written for each pitch's kind, so a slab
+// pads, a crack jams and a roof swings, and none repeats a single-pitch line's moves at its
+// crag.
+
+const WALL_MOVES: Record<string, BetaDef> = {
+  // The Long Prow, above Roadside.
+  padslab: first(
+    'technical',
+    'technical',
+    'Pad up the slab',
+    'pad',
+    'No holds worth the name. Flat feet, low heels, and keep moving before you think about it.',
+    {
+      fall: 'Your feet skate, and you slide down the slab onto the rope.',
+    },
+  ),
+  dishslab: earned(
+    'technical',
+    'technical',
+    'Stand in the dish',
+    'the dish',
+    'A shallow dish off to the side. Get a foot in it and stand, and the blank bit is a step.',
+    'Sliding back down, you see a dish off to the side. New beta: stand in the dish.',
+    {
+      fall: 'You get the foot in the dish, and it isn’t enough.',
+    },
+  ),
+  ladder: first(
+    'crimp',
+    'crimp',
+    'Climb the ladder',
+    'ladder',
+    'Edges in a line up the face, a body length apart. Lock off each one and reach.',
+    {
+      fall: 'You lock off, reach, and the next rung isn’t there yet.',
+    },
+  ),
+  ladderfeet: earned(
+    'crimp',
+    'technical',
+    'Feet on the rungs',
+    'rung feet',
+    'The rung you just let go of is a foothold. Stand on it, and the next one comes to you.',
+    'Off the ladder, you see the rung below is as good a foot as a hand. New beta: feet on the rungs.',
+    {
+      hit: 'Foot on the rung.',
+      miss: 'Missed the rung.',
+      fall: 'Your foot slips off the rung.',
+    },
+  ),
+  roofreach: first(
+    'power',
+    'power',
+    'Reach out the roof',
+    'reach out',
+    'Jugs to the lip, feet cut, and one long pull round it.',
+    {
+      short: 'Short. You slap the lip and swing.',
+      long: 'Too much. You overshoot the lip, and the swing takes you.',
+      held: 'You hang under the roof working up to it, and your arms go.',
+    },
+  ),
+  roofbicycle: earned(
+    'power',
+    'technical',
+    'Bicycle the lip',
+    'bicycle',
+    'One toe pulls, the other pushes, and the lip holds your feet while your hands move.',
+    'Twice off the lip. Your feet could hold it while your hands move. New beta: bicycle.',
+    {
+      fall: 'One foot slips, and the bicycle comes apart.',
+    },
+  ),
+  handjams: first(
+    'endurance',
+    'crack',
+    'Hand jams to the top',
+    'hand jams',
+    'A splitter the width of your hand, the whole headwall. Jam, step, jam, and breathe.',
+    {
+      fall: 'Your jams get sloppy, and one slides out.',
+    },
+  ),
+  jamrest: earned(
+    'endurance',
+    'endurance',
+    'Hang off a foot jam',
+    'foot jam',
+    'Twist a foot into the crack and hang straight-armed. Then go.',
+    'Off again near the top. Your feet could have been jamming too. New beta: hang off a foot jam.',
+    {
+      hit: 'Foot jammed.',
+      miss: 'Your foot won’t seat.',
+      fall: 'The foot jam rolls out.',
+    },
+  ),
+
+  // Golden Buttress, at the Big Stone.
+  goldenpad: first(
+    'technical',
+    'technical',
+    'Trust the gold',
+    'trust it',
+    'The gold patina grips better than it looks. Weight your toes and don’t look down.',
+    {
+      fall: 'You stop trusting it for a second, and so do your feet.',
+    },
+  ),
+  ripple: earned(
+    'technical',
+    'crimp',
+    'Pinch the ripple',
+    'ripple',
+    'A ripple in the slab, just big enough to pinch. It takes enough weight off your feet.',
+    'Back on the rope, you see a ripple in the slab at your shoulder. New beta: pinch the ripple.',
+    {
+      fall: 'The ripple slips through your fingers.',
+    },
+  ),
+  stemcorner: first(
+    'endurance',
+    'technical',
+    'Stem the corner',
+    'stem',
+    'A foot on each wall, and walk it up. Your legs do the work, until the corner closes.',
+    {
+      fall: 'The corner closes, your stem goes, and so do you.',
+    },
+  ),
+  cornerlayback: earned(
+    'endurance',
+    'endurance',
+    'Layback the corner’s edge',
+    'layback the edge',
+    'Where it closes, grab the edge of the crack in the back, lean off it and run your feet up.',
+    'Off where it closes. The crack in the back has an edge to lean on. New beta: layback the edge.',
+    {
+      hit: 'Feet set.',
+      miss: 'Your feet skid.',
+      fall: 'You barn-door out of the corner.',
+    },
+  ),
+  goldcrimps: first(
+    'crimp',
+    'crimp',
+    'Crimp the gold',
+    'crimp',
+    'Rounded little crimps, the gold rubbed off them by everyone before you. Squeeze.',
+    {
+      fall: 'A polished crimp slides out from under your fingers.',
+    },
+  ),
+  goldside: earned(
+    'crimp',
+    'technical',
+    'Sidepull and step through',
+    'sidepull',
+    'Turn the crimps into sidepulls and step your feet through. Less squeeze, more lean.',
+    'Off the crimps. They’re sidepulls, if you turn your hips. New beta: sidepull and step through.',
+    {
+      hit: 'Hips in.',
+      miss: 'Your hip swings out.',
+      fall: 'The sidepull lets go as you step through.',
+    },
+  ),
+  bulgeslap: first(
+    'power',
+    'power',
+    'Slap over the bulge',
+    'slap',
+    'Feet high under the bulge, and slap blind for whatever’s over it.',
+    {
+      short: 'Short. Your hand slides back down the bulge.',
+      long: 'Too much. You slap past the hold, and the bulge pushes you off.',
+      held: 'You crouch under the bulge too long, and your feet go.',
+    },
+  ),
+  bulgehip: earned(
+    'power',
+    'technical',
+    'Hips into the bulge',
+    'hips in',
+    'Get your hips up against the bulge and press. It’s a mantel, not a pull.',
+    'Twice off the bulge. It wants a press, not a pull. New beta: hips in.',
+    {
+      fall: 'You press, and your hips slide back off the bulge.',
+    },
+  ),
+  twincracks: first(
+    'endurance',
+    'crack',
+    'A hand in each crack',
+    'twin cracks',
+    'Two thin cracks side by side. A hand in each, and your feet where they can go.',
+    {
+      fall: 'Your fingers come out of both cracks at once.',
+    },
+  ),
+  switchcracks: earned(
+    'endurance',
+    'crack',
+    'Switch cracks',
+    'switch',
+    'The left crack keeps going where the right one closes. Step across at the right moment.',
+    'Off the cracks, you see the left one keeps going where the right one doesn’t. New beta: switch cracks.',
+    {
+      hit: 'Across.',
+      miss: 'Too early.',
+      fall: 'You step across, and the new crack spits your foot.',
+    },
+  ),
+
+  // Obsidian Tower.
+  dihedral: first(
+    'crimp',
+    'crimp',
+    'Crimp up the dihedral',
+    'crimp the corner',
+    'The dihedral’s too slick to stem, and the edges are all on its right wall.',
+    {
+      fall: 'Your feet slide down the slick left wall, and your crimps follow.',
+    },
+  ),
+  dimple: earned(
+    'crimp',
+    'technical',
+    'Stem off the dimple',
+    'stem the dimple',
+    'One dimple on the left wall, the only one. Get a toe on it and the crimps get easier.',
+    'Sliding off the dihedral, you see a dimple on the left wall. New beta: stem off the dimple.',
+    {
+      hit: 'Toe on it.',
+      miss: 'Missed the dimple.',
+      fall: 'The dimple’s too smooth for your toe.',
+    },
+  ),
+  glass: first(
+    'technical',
+    'technical',
+    'Smear the glass',
+    'smear the glass',
+    'Black, and polished smooth. You can’t stand on it. You can stand on the friction.',
+    {
+      fall: 'Your feet go out from under you all at once.',
+    },
+  ),
+  glassseam: earned(
+    'technical',
+    'technical',
+    'Toe the seam',
+    'toe the seam',
+    'A seam runs up the slab, hairline. Your toe fits it, and nothing else does.',
+    'Off the glass, you see a seam you took for a scratch. New beta: toe the seam.',
+    {
+      fall: 'Your toe pops out of the seam.',
+    },
+  ),
+  swingout: first(
+    'power',
+    'power',
+    'Swing out the roof',
+    'swing out',
+    'Big holds, a huge roof, and a swing when your feet cut that you have to hold.',
+    {
+      short: 'Short. You reach for the lip and swing back under the roof.',
+      long: 'Too much. The swing takes you off the lip.',
+      held: 'You hang under the roof working out the swing, and your arms quit.',
+    },
+  ),
+  roofjam: earned(
+    'power',
+    'crack',
+    'Jam the roof crack',
+    'roof jam',
+    'A crack splits the roof. Jam it upside down, and the swing never comes.',
+    'Twice off the roof. There’s a crack in it you could jam. New beta: jam the roof crack.',
+    {
+      fall: 'Your jam twists out, and you swing.',
+    },
+  ),
+  leapflake: first(
+    'dyno',
+    'dyno',
+    'Leap for the flake',
+    'leap',
+    'A flake far above, nothing in between, and two good footholds to launch off.',
+    {
+      short: 'Short. Your fingers brush the flake.',
+      long: 'Too much. You hit the flake and bounce off it.',
+      held: 'You crouch on the footholds too long, and your legs go flat.',
+    },
+  ),
+  pebble: earned(
+    'dyno',
+    'power',
+    'Tag the pebble',
+    'tag',
+    'A pebble halfway. Tag it, and the leap’s two jumps.',
+    'Twice off the leap. There’s a pebble halfway you could tag. New beta: tag the pebble.',
+    {
+      hit: 'Tagged.',
+      miss: 'Missed the pebble.',
+      fall: 'You tag the pebble, and it doesn’t hold you.',
+    },
+  ),
+  shuffle: first(
+    'endurance',
+    'endurance',
+    'Shuffle up the crack',
+    'shuffle',
+    'A long crack, steeper than it looks. Hand jams, no rests, and the pump starts early.',
+    {
+      fall: 'The pump wins. Your jam slides out.',
+    },
+  ),
+  thumbsdown: earned(
+    'endurance',
+    'crack',
+    'Thumbs-down jams',
+    'thumbs down',
+    'Turn your thumbs down, and the jams lock. Less squeeze, longer arms.',
+    'Off again, you remember the thumb-down jam. New beta: thumbs down.',
+    {
+      hit: 'Locked.',
+      miss: 'The jam won’t turn.',
+      fall: 'The thumb-down jam rolls out.',
+    },
+  ),
+  crimpacross: first(
+    'crimp',
+    'crimp',
+    'Crimp across',
+    'across',
+    'Sharp edges going sideways, your feet smearing below them. Keep your weight on your toes.',
+    {
+      fall: 'Your feet swing out from under the crimps.',
+    },
+  ),
+  crossthrough: earned(
+    'crimp',
+    'endurance',
+    'Cross through',
+    'cross through',
+    'Cross your hands instead of matching, and the traverse is half as many moves.',
+    'Off the traverse. You were matching on every edge. New beta: cross through.',
+    {
+      hit: 'Crossed.',
+      miss: 'Your hand misses the edge.',
+      fall: 'You cross through, and your feet cut.',
+    },
+  ),
+  keepmoving: first(
+    'endurance',
+    'endurance',
+    'Don’t stop',
+    'don’t stop',
+    'Good edges, a long way of them. Don’t stop, or you’ll never start again.',
+    {
+      fall: 'You stop for one breath, and the pump catches up.',
+    },
+  ),
+  outrightjug: earned(
+    'endurance',
+    'endurance',
+    'Go and get the jug',
+    'jug',
+    'One jug out right, half a body length off the line. Go and get it, and shake.',
+    'Off the headwall, you see a jug out right. New beta: go and get the jug.',
+    {
+      hit: 'Jug.',
+      miss: 'Missed the jug.',
+      fall: 'You reach the jug too pumped to hold it.',
+    },
+  ),
+
+  // The Ascendant.
+  backfoot: first(
+    'endurance',
+    'technical',
+    'Back and foot',
+    'back and foot',
+    'Back on one wall, feet on the other, and shuffle. It’s slow, and it doesn’t stop.',
+    {
+      fall: 'You shuffle too far, and the chimney lets go of your back.',
+    },
+  ),
+  stackfeet: earned(
+    'endurance',
+    'technical',
+    'Stack your feet',
+    'stack feet',
+    'Where it flares, turn your feet across it: heel on one wall, toe on the other.',
+    'Off where it flares, you remember heel-toe. New beta: stack your feet.',
+    {
+      hit: 'Wedged.',
+      miss: 'Your heel slides.',
+      fall: 'The heel-toe slips out of the flare.',
+    },
+  ),
+  seam: first(
+    'crimp',
+    'crimp',
+    'Crimp the hairline',
+    'crimp the hairline',
+    'A crack too thin for fingers. Crimp its edges and stand on nothing.',
+    {
+      fall: 'Your fingers pull out of the seam.',
+    },
+  ),
+  pinscar: earned(
+    'crimp',
+    'crack',
+    'The pin scar',
+    'pin scar',
+    'An old pin scar where the seam widens. One finger in it, and you can move.',
+    'Off the seam, you see where someone hammered a pin once. New beta: the pin scar.',
+    {
+      hit: 'Finger in.',
+      miss: 'Your finger misses the scar.',
+      fall: 'You get the finger in, and it isn’t enough.',
+    },
+  ),
+  standup: first(
+    'technical',
+    'technical',
+    'Stand up on nothing',
+    'stand up',
+    'A slab so smooth it shines. Every move is a stand-up, and none of them are on anything.',
+    {
+      fall: 'You stand up, and you slide down.',
+    },
+  ),
+  palms: earned(
+    'technical',
+    'technical',
+    'Palm and press',
+    'palm',
+    'Flat hands on the slab, and press down. Your palms are footholds too.',
+    'Off the mirror, you notice your hands were doing nothing. New beta: palm and press.',
+    {
+      fall: 'Your palms skate.',
+    },
+  ),
+  throwlip: first(
+    'power',
+    'power',
+    'Throw off the roof crack',
+    'throw',
+    'Out along the roof, feet in a crack, and one throw for the lip when the crack runs out.',
+    {
+      short: 'Short. Your hand touches the lip, and the roof drops you.',
+      long: 'Too much. You hit the lip too hard to hold.',
+      held: 'You hang under the roof winding up, and your fingers open.',
+    },
+  ),
+  roofcrackfeet: earned(
+    'power',
+    'crack',
+    'Toes in the roof crack',
+    'toes in',
+    'Keep your toes in the roof crack right to the lip, and the throw’s a reach.',
+    'Twice off the roof. Your feet came out too soon. New beta: toes in the roof crack.',
+    {
+      fall: 'Your toes pull out of the crack.',
+    },
+  ),
+  faith: first(
+    'dyno',
+    'dyno',
+    'Leap of faith',
+    'leap of faith',
+    'A blind jump for a hold you’ve only seen from the belay. You have to believe it’s there.',
+    {
+      short: 'Short. It’s there; you aren’t.',
+      long: 'Too much. You fly past it.',
+      held: 'You crouch, you doubt, and your feet go.',
+    },
+  ),
+  lookfirst: earned(
+    'dyno',
+    'dyno',
+    'Look first',
+    'look',
+    'Lean out and look before you go. It’s further left than it seemed.',
+    'Twice off. From the rope you see the hold’s further left. New beta: look first.',
+    {
+      hit: 'Seen.',
+      miss: 'It’s not where you thought.',
+      fall: 'You see it, you jump, and it’s still too far.',
+    },
+  ),
+  barely: first(
+    'crimp',
+    'crimp',
+    'Crimp what barely counts',
+    'crimp across',
+    'Three moves sideways on edges that barely count, with the whole wall under your heels.',
+    {
+      fall: 'An edge that barely counts stops counting.',
+    },
+  ),
+  handfoot: earned(
+    'crimp',
+    'technical',
+    'Hand-foot match',
+    'hand-foot',
+    'Bring your foot up to the edge your hand’s on, and stand on it. The only way across.',
+    'Off the crux, you see the edge is a foot too. New beta: hand-foot match.',
+    {
+      hit: 'Matched.',
+      miss: 'Your foot misses the edge.',
+      fall: 'You match, and your hand peels off.',
+    },
+  ),
+  fingercrack: first(
+    'endurance',
+    'crack',
+    'Fingers up the headwall',
+    'finger crack',
+    'A finger crack up the middle of the headwall, and pitches of air under you.',
+    {
+      fall: 'Your fingers twist out of the crack.',
+    },
+  ),
+  pods: earned(
+    'endurance',
+    'technical',
+    'Toe into the pods',
+    'pods',
+    'The crack pods out in places, wide enough for your toes. Use them.',
+    'Off again, you see the pods are footholds. New beta: toe into the pods.',
+    {
+      hit: 'Toe in.',
+      miss: 'The pod’s too shallow.',
+      fall: 'Your toe skates out of the pod.',
+    },
+  ),
+  pullover: first(
+    'power',
+    'power',
+    'Pull over the block',
+    'pull over',
+    'A block on top of everything. Hands on its top edge, and pull.',
+    {
+      short: 'Short. The edge is still above you.',
+      long: 'Too much. You pull past the edge and lose it.',
+      held: 'You hang off the block too long, and your arms empty.',
+    },
+  ),
+  mantelblock: earned(
+    'power',
+    'technical',
+    'Mantel the block',
+    'mantel',
+    'Palms flat on top, and press. Down, not up.',
+    'Twice off the block. It’s a mantel. New beta: mantel the block.',
+    {
+      fall: 'You press out, and your elbow buckles.',
+    },
+  ),
+};
+
+// ---------------------------------------------------------------------------------------
 // The signature lines, by hand: one a crag, the one people drive in for (Phase 27.2). The
 // Pump at Roadside was hand-made already.
 
@@ -1928,7 +2491,7 @@ const SIGNATURE: Record<Rock, Record<string, BetaDef>> = {
 
 // Each rock's moves, the signature lines' with them.
 export const ROCK_MOVES: Record<Rock, Record<string, BetaDef>> = {
-  granite: { ...GRANITE, ...SIGNATURE.granite },
+  granite: { ...GRANITE, ...SIGNATURE.granite, ...WALL_MOVES },
   quartzite: { ...QUARTZITE, ...SIGNATURE.quartzite },
   sandstone: { ...SANDSTONE, ...SIGNATURE.sandstone },
   gneiss: { ...GNEISS, ...SIGNATURE.gneiss },
@@ -2111,4 +2674,29 @@ export const ROCK_LINES: Record<string, [string, string][]> = {
   bhay: [['rockbale', 'twofinger']],
   btrough: [['crimprim', 'steppocket']],
   bsilo: [['silojump', 'bumptufa']],
+  // The walls' pitches (Phase 27.3): granite, by kind.
+  'prow-1': [['padslab', 'dishslab']],
+  'prow-2': [['ladder', 'ladderfeet']],
+  'prow-3': [['roofreach', 'roofbicycle']],
+  'prow-4': [['handjams', 'jamrest']],
+  'golden-1': [['goldenpad', 'ripple']],
+  'golden-2': [['stemcorner', 'cornerlayback']],
+  'golden-3': [['goldcrimps', 'goldside']],
+  'golden-4': [['bulgeslap', 'bulgehip']],
+  'golden-5': [['twincracks', 'switchcracks']],
+  'obsidian-1': [['dihedral', 'dimple']],
+  'obsidian-2': [['glass', 'glassseam']],
+  'obsidian-3': [['swingout', 'roofjam']],
+  'obsidian-4': [['leapflake', 'pebble']],
+  'obsidian-5': [['shuffle', 'thumbsdown']],
+  'obsidian-6': [['crimpacross', 'crossthrough']],
+  'obsidian-7': [['keepmoving', 'outrightjug']],
+  'ascendant-1': [['backfoot', 'stackfeet']],
+  'ascendant-2': [['seam', 'pinscar']],
+  'ascendant-3': [['standup', 'palms']],
+  'ascendant-4': [['throwlip', 'roofcrackfeet']],
+  'ascendant-5': [['faith', 'lookfirst']],
+  'ascendant-6': [['barely', 'handfoot']],
+  'ascendant-7': [['fingercrack', 'pods']],
+  'ascendant-8': [['pullover', 'mantelblock']],
 };

@@ -3048,6 +3048,33 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
   - The download is 412.6 KB of 440 (401.6 before).
 - **The harness:** every target passes as before. A median climber's first V5 go is on day 19. The career bots reach V10 on a median day 181.5 (181 after 27.1) and end Act III on day 269.5 (270.5). Outdoors, the accepted shortfall, is 3 of 4 on a median day 387, unchanged.
 
+**Status (13 Oct 2026): 27.3 built: wall pitches by kind.** 0.999.38, no save change.
+- **Seven kinds** (`PITCH_KINDS` in `content/routes.ts`): face, crack, corner, chimney, traverse, roof and slab. A kind sets a pitch's length, where its crux sits, whether there's a rest, and its line on the beta sheet.
+  - A chimney and a corner rest partway, and a slab at its stance. A roof, a crack, a traverse and a face give you nowhere to rest.
+  - Each crux comes after about as much climbing as the old single shape's, counted from the belay or from the rest. So a pitch is still as hard as its grade.
+  - Measured with the bot's hands, the grade at which a balanced climber sends a pitch half the time moves by 0.16 at most. That's the roofs, which got a little easier. No wall's hardest pitch got harder.
+- **Each wall's kinds** follow its pitch names:
+  - the Long Prow has a slab, a face, a roof and a crack;
+  - Golden Buttress has five kinds, Obsidian Tower six and the Ascendant six;
+  - every kind is used somewhere.
+- **The moves:** 48 new granite moves written for the pitches (`content/rock.ts`), a first way and an earned one for each. For example:
+  - pad, or stand in the dish, on a slab;
+  - stem, or layback the edge, in a corner;
+  - back and foot in the chimney;
+  - bicycle the lip of a roof;
+  - cross through on a traverse.
+- **Pitches follow the crag's rule.** At Roadside and the Big Stone, single lines and wall pitches together, no crux repeats a first way or a sequence.
+- **The topo.** A pitch's line follows its kind: a traverse goes across the face, a roof goes up to the roof and out to its lip, and a corner leans with the corner. Its feature is drawn on the rock under your line: a crack's seam, a chimney's slot, a corner's shadowed wall, the roof, or the traverse's break.
+- **What stays put:** expeditions keep their pitches, as planned.
+- **`content.test`:** every wall has at least three kinds, each pitch has its kind's shape, and any rest comes before the crux.
+- **The download** is 417.3 KB of 440 (412.6 before).
+- **The harness:** every target passes, with the same medians as 27.2:
+  - first V5 go on day 19;
+  - V10 on day 181.5;
+  - Act III ended on day 269.5;
+  - walls and expeditions with no refusals and no stuck nights;
+  - Outdoors at 3 of 4 on day 387, the accepted shortfall.
+
 ### Phase 28 — The crew
 
 *Medium. New, from the audit's list of what to keep (`social.md`): the crew's name, its renown, a crew project, favours. The rebuild has none of them.*
@@ -3514,3 +3541,4 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
 - 2026-10-13 — Phase 26b, money in a day (Evan's calls, from playing it): a second shift a day at another job, day labor on the market's board, a family's rope at a busy crag, selling kit back at the gear shop, plasma at the clinic. From −$150, back to $0 in 2 to 4 days rather than 7 or 8. No save change. 0.999.35.
 - 2026-10-13 — Phase 26 closed by Evan's call; CURRENT MILESTONE moved to Phase 27, the rock, by hand, planned with Evan's calls (the rock leans on styles, sandstone shut after rain, calling a flash, placing the pad). 27.1 built: each crag's rock, its skin, sandstone shut the day after rain, Moonstone's pads kept at Moonstone. 0.999.36.
 - 2026-10-13 — Phase 27.2 built: the rock's beta. Every outdoor line's cruxes in moves written for its rock, 158 of them, none repeated as a crux's first way within a crag; the signature lines by hand; difficulty kept, the verb checked and the numbers carried from the beta each move replaces. 0.999.37.
+- 2026-10-13 — Phase 27.3 built: wall pitches by kind. Seven kinds (face, crack, corner, chimney, traverse, roof, slab) set each pitch's length, crux and rest; 48 granite moves written for them; topos and the rock drawn by kind; no crux's first way or sequence repeats at a crag, its wall pitches counted. Each pitch within 0.16 of a grade of where it was. 0.999.38.

@@ -15,7 +15,7 @@ import {
 import { ACTS, PLACES, road, ROADS, TEXT_VALUES } from './content/places';
 import { fill } from './format';
 import { PEOPLE, TALK, THINGS } from './content/people';
-import { LIBRARY, ROUTES, type RouteDef } from './content/routes';
+import { LIBRARY, PITCH_KINDS, ROUTES, WALLS, type RouteDef } from './content/routes';
 import { ROCK_LINES, ROCK_MOVES } from './content/rock';
 import { HIGHBALL } from './dials';
 
@@ -166,7 +166,8 @@ describe('content', () => {
     const byHand = new Set(['warmup', 'roadside', 'pump']);
     for (const [id, p] of Object.entries(PLACES)) {
       if (!p.crag) continue;
-      const lines = Object.values(ROUTES).filter((r) => r.place === id && !r.wall);
+      // A wall's pitches are the crag's too (Phase 27.3).
+      const lines = Object.values(ROUTES).filter((r) => r.place === id);
       const firsts: string[] = [];
       const pairs: string[] = [];
       for (const r of lines) {
@@ -198,6 +199,23 @@ describe('content', () => {
         Object.keys(moves).filter((m) => !used.get(rock)?.has(m)),
         rock,
       ).toEqual([]);
+  });
+
+  // Phase 27.3: a wall's pitches by kind.
+  it('climbs every wall in at least three kinds of pitch, each in its kind’s shape', () => {
+    for (const [id, w] of Object.entries(WALLS)) {
+      const kinds = new Set(w.pitches.map((p) => ROUTES[p]!.kind));
+      expect(kinds.has(undefined), id).toBe(false);
+      expect(kinds.size, id).toBeGreaterThanOrEqual(3);
+      for (const p of w.pitches) {
+        const r = ROUTES[p]!;
+        const k = PITCH_KINDS[r.kind!];
+        expect([r.moves, r.cruxes[0]!.from, r.rest?.at ?? null], p).toEqual([k.moves, k.from, k.rest]);
+        // A rest is somewhere to rest: never in the crux, and before it.
+        if (k.rest !== null) expect(k.rest, p).toBeLessThan(k.from - 1);
+        expect(k.to, p).toBeLessThan(k.moves);
+      }
+    }
   });
 
   it('every sunny crag lists all its lines, once each, in the path the sun takes', () => {
