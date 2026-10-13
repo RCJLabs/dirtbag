@@ -101,6 +101,8 @@ export interface RouteDef {
   dws?: true;
   // A pitch of a multi-pitch wall (WALLS): climbed only in its turn, on the wall.
   wall?: string;
+  // And what kind of pitch it is (Phase 27.3), which gave it its shape (PITCH_KINDS).
+  kind?: PitchKind;
   // A pitch of an expedition (Phase 24): climbed only up there, in your block.
   exped?: string;
 }
@@ -1384,41 +1386,140 @@ export interface WallDef {
   line: string;
 }
 
-const pitches = (wall: string, place: string, list: [string, number, Style][]): RouteDef[] =>
-  list.map(([name, grade, type], i) => libraryPitch(wall, i + 1, name, grade, type, place));
+// Phase 27.3: a wall's pitches by kind, where they all used to be one shape. The kind sets how
+// long a pitch is, where its crux sits and whether there's a rest: a chimney rests, a roof
+// doesn't. Each crux comes after about as much climbing from the belay, or from the rest, as
+// the old shape's did, so a pitch is still as hard as its grade; what moves is where it's
+// hard and what it asks. Its moves are its rock's (content/rock.ts).
+export type PitchKind = 'crack' | 'corner' | 'chimney' | 'traverse' | 'roof' | 'slab' | 'face';
+
+interface PitchShape {
+  moves: number;
+  from: number;
+  to: number;
+  rest: number | null;
+  line: string;
+  win: string;
+}
+
+export const PITCH_KINDS: Record<PitchKind, PitchShape> = {
+  face: {
+    moves: 16,
+    from: 9.2,
+    to: 11.4,
+    rest: null,
+    line: 'Open face to the next ledge, and the hard bit most of the way up it.',
+    win: 'Through it. On to the ledge.',
+  },
+  crack: {
+    moves: 16,
+    from: 8.6,
+    to: 10.8,
+    rest: null,
+    line: 'One crack, ledge to ledge. It pinches down past halfway, then it’s jams to the top.',
+    win: 'Past the pinch. Jams to the ledge.',
+  },
+  corner: {
+    moves: 20,
+    from: 13.4,
+    to: 15.6,
+    rest: 4,
+    line: 'A long corner. You can stem and shake out low down; the hard part is where it closes up.',
+    win: 'Out of the corner, and on to the ledge.',
+  },
+  chimney: {
+    moves: 20,
+    from: 17.2,
+    to: 19.2,
+    rest: 9,
+    line: 'A chimney. Wide enough to get inside, and to rest in, until it flares at the top.',
+    win: 'Out of the flare. The ledge is right there.',
+  },
+  traverse: {
+    moves: 14,
+    from: 7.8,
+    to: 10,
+    rest: null,
+    line: 'More across than up. The rope runs sideways behind you, and the hard moves are in the middle.',
+    win: 'Across. The ledge is a short way up.',
+  },
+  roof: {
+    moves: 15,
+    from: 10,
+    to: 12.2,
+    rest: null,
+    line: 'Steep to a roof and out along it. The lip is the crux, high, with nowhere to shake out first.',
+    win: 'Over the lip. The ledge is above you.',
+  },
+  slab: {
+    moves: 18,
+    from: 13.6,
+    to: 15.8,
+    rest: 5,
+    line: 'A slab. Padding to a stance, and above it the blank bit where the friction runs out.',
+    win: 'Through the blank bit. Padding to the ledge.',
+  },
+};
+
+// A wall's pitch in its kind's shape: the library pitch's crux, moved and renamed by kind,
+// whose moves inRock then swaps for the rock's.
+function wallPitch(
+  wall: string,
+  n: number,
+  name: string,
+  grade: number,
+  type: Style,
+  place: string,
+  kind: PitchKind,
+): RouteDef {
+  const k = PITCH_KINDS[kind];
+  const r = libraryPitch(wall, n, name, grade, type, place);
+  return {
+    ...r,
+    kind,
+    moves: k.moves,
+    line: `Pitch ${n}. ${k.line}`,
+    cruxes: [{ ...r.cruxes[0]!, from: k.from, to: k.to, win: k.win }],
+    rest: k.rest === null ? null : { at: k.rest, radius: 0.8 },
+    bolts: boltsFor(k.moves),
+  };
+}
+
+const pitches = (wall: string, place: string, list: [string, number, Style, PitchKind][]): RouteDef[] =>
+  list.map(([name, grade, type, kind], i) => wallPitch(wall, i + 1, name, grade, type, place, kind));
 
 const PITCHES: RouteDef[] = [
   ...pitches('prow', 'road', [
-    ['Slab Start', 3, 'technical'],
-    ['The Crimp Ladder', 4, 'crimp'],
-    ['The Roof Crux', 5, 'power'],
-    ['Summit Headwall', 4, 'endurance'],
+    ['Slab Start', 3, 'technical', 'slab'],
+    ['The Crimp Ladder', 4, 'crimp', 'face'],
+    ['The Roof Crux', 5, 'power', 'roof'],
+    ['Summit Headwall', 4, 'endurance', 'crack'],
   ]),
   ...pitches('golden', 'stone', [
-    ['Friction Slab', 7, 'technical'],
-    ['The Long Corner', 8, 'endurance'],
-    ['Golden Crimps', 9, 'crimp'],
-    ['The Bulge', 8, 'power'],
-    ['Exit Cracks', 7, 'endurance'],
+    ['Friction Slab', 7, 'technical', 'slab'],
+    ['The Long Corner', 8, 'endurance', 'corner'],
+    ['Golden Crimps', 9, 'crimp', 'face'],
+    ['The Bulge', 8, 'power', 'roof'],
+    ['Exit Cracks', 7, 'endurance', 'crack'],
   ]),
   ...pitches('obsidian', 'stone', [
-    ['Black Dihedral', 11, 'crimp'],
-    ['Glass Slab', 12, 'technical'],
-    ['The Obsidian Roof', 13, 'power'],
-    ['The Leap', 12, 'dyno'],
-    ['Pumpfest', 11, 'endurance'],
-    ['Razor Traverse', 12, 'crimp'],
-    ['Tower Headwall', 11, 'endurance'],
+    ['Black Dihedral', 11, 'crimp', 'corner'],
+    ['Glass Slab', 12, 'technical', 'slab'],
+    ['The Obsidian Roof', 13, 'power', 'roof'],
+    ['The Leap', 12, 'dyno', 'face'],
+    ['Pumpfest', 11, 'endurance', 'crack'],
+    ['Razor Traverse', 12, 'crimp', 'traverse'],
+    ['Tower Headwall', 11, 'endurance', 'face'],
   ]),
   ...pitches('ascendant', 'stone', [
-    ['The Approach Pitch', 14, 'endurance'],
-    ['Hairline', 15, 'crimp'],
-    ['The Mirror', 16, 'technical'],
-    ['The Great Roof', 16, 'power'],
-    ['The Leap of Faith', 17, 'dyno'],
-    ['The Ascendant Crux', 18, 'crimp'],
-    ['The Headwall', 16, 'endurance'],
-    ['Summit Block', 15, 'power'],
+    ['The Approach Pitch', 14, 'endurance', 'chimney'],
+    ['Hairline', 15, 'crimp', 'crack'],
+    ['The Mirror', 16, 'technical', 'slab'],
+    ['The Great Roof', 16, 'power', 'roof'],
+    ['The Leap of Faith', 17, 'dyno', 'face'],
+    ['The Ascendant Crux', 18, 'crimp', 'traverse'],
+    ['The Headwall', 16, 'endurance', 'crack'],
+    ['Summit Block', 15, 'power', 'face'],
   ]),
 ];
 

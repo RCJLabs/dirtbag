@@ -420,14 +420,116 @@ const topoOf = (d: Pt[]): Topo => {
 const WALL_X: Record<string, number> = { prow: 172, golden: 120, obsidian: 180, ascendant: 230 };
 const PITCH_TOP: Record<string, number> = { road: 184 };
 
+// Each kind of pitch's line (Phase 27.3), as [across, up] for its seven points: across in px,
+// toward the middle of the face; up as a share of the climb. A traverse goes across the
+// middle of it, where its crux is; a roof goes up to the roof and out to its lip, where its
+// crux is; a corner leans with the corner. Cracks, chimneys, slabs and faces go straight up.
+const PITCH_PATH: Partial<Record<NonNullable<RouteDef['kind']>, Pt[]>> = {
+  traverse: [
+    [0, 0],
+    [2, 0.25],
+    [6, 0.5],
+    [40, 0.56],
+    [86, 0.62],
+    [124, 0.7],
+    [128, 1],
+  ],
+  roof: [
+    [0, 0],
+    [2, 0.22],
+    [-2, 0.44],
+    [0, 0.66],
+    [44, 0.69],
+    [46, 0.84],
+    [44, 1],
+  ],
+  corner: [0, 1, 2, 3, 4, 5, 6].map((i): Pt => [i * 6, i / 6]),
+};
+// How far each kind wanders off its path: a crack or a chimney hardly at all.
+const PITCH_WANDER: Partial<Record<NonNullable<RouteDef['kind']>, number>> = {
+  crack: 6,
+  chimney: 6,
+  corner: 4,
+  traverse: 6,
+  roof: 4,
+  slab: 18,
+};
+
 function pitchPts(r: RouteDef): Pt[] {
   const n = Number(r.id.split('-').pop());
   const rnd = mulberry32(n * 97 + r.id.length * 13 + (WALL_X[r.wall!] ?? 0));
   const top = PITCH_TOP[r.place] ?? 80;
   const x0 = (WALL_X[r.wall!] ?? 180) + ((n % 3) - 1) * 26;
+  const dir = x0 > W / 2 ? -1 : 1;
+  const path = r.kind && PITCH_PATH[r.kind];
+  // An expedition's pitch has no kind, and wanders as every pitch used to.
+  const wander = (r.kind && PITCH_WANDER[r.kind]) ?? 26;
   const pts: Pt[] = [];
-  for (let i = 0; i < 7; i++) pts.push([x0 + (rnd() - 0.5) * 26, 540 - ((540 - top) * i) / 6]);
+  for (let i = 0; i < 7; i++) {
+    const [dx, up] = path?.[i] ?? [0, i / 6];
+    pts.push([x0 + dir * dx + (rnd() - 0.5) * wander, 540 - (540 - top) * up]);
+  }
   return pts;
+}
+
+// What a pitch's kind looks like on the rock, under your line: a crack's dark seam, a
+// chimney's slot, a corner's shadowed wall, a roof above the line where it goes out, and the
+// break a traverse follows. A slab and a face are just the rock.
+function paintPitch(g: G, r: RouteDef, t: Topo): void {
+  const pts = TOPO_PTS[r.id]!;
+  const dir = pts[6]![0] >= pts[0]![0] ? 1 : -1;
+  const along = (d: Pt[], dx: number, dy: number): Pt[] => d.map(([x, y]): Pt => [x + dx, y + dy]);
+  g.save();
+  g.lineCap = 'round';
+  if (r.kind === 'crack') {
+    g.strokeStyle = 'rgba(30,32,38,.6)';
+    g.lineWidth = 1.8;
+    g.beginPath();
+    trace(g, along(t.d, 4, 0), false);
+    g.stroke();
+  } else if (r.kind === 'chimney') {
+    g.strokeStyle = 'rgba(24,26,32,.42)';
+    g.lineWidth = 20;
+    g.lineCap = 'butt';
+    g.beginPath();
+    trace(g, t.d, false);
+    g.stroke();
+  } else if (r.kind === 'corner') {
+    const edge = along(t.d, dir * 6, 0);
+    g.fillStyle = 'rgba(24,26,32,.34)';
+    g.beginPath();
+    poly(g, [...edge, ...along(edge, dir * 30, 0).reverse()], true);
+    g.fill();
+    g.strokeStyle = 'rgba(255,255,255,.4)';
+    g.lineWidth = 1.4;
+    g.beginPath();
+    trace(g, edge, false);
+    g.stroke();
+  } else if (r.kind === 'roof') {
+    // Over the stretch where the line goes out under it, to the lip it pulls over.
+    const [ax, ay] = pts[3]!;
+    const [bx, by] = pts[4]!;
+    const under: Pt[] = [
+      [ax - dir * 22, ay - 10],
+      [bx + dir * 4, by - 10],
+    ];
+    g.fillStyle = '#4A515B';
+    g.beginPath();
+    poly(g, [...under, [bx + dir * 4, by - 26], [ax - dir * 22, ay - 22]], true);
+    g.fill();
+    g.strokeStyle = 'rgba(255,255,255,.5)';
+    g.lineWidth = 1.6;
+    g.beginPath();
+    poly(g, under, false);
+    g.stroke();
+  } else if (r.kind === 'traverse') {
+    g.strokeStyle = 'rgba(30,32,38,.6)';
+    g.lineWidth = 2.2;
+    g.beginPath();
+    trace(g, along(pts.slice(2, 6), 0, 7), false);
+    g.stroke();
+  }
+  g.restore();
 }
 
 for (const r of Object.values(ROUTES)) if (r.wall) TOPO_PTS[r.id] = pitchPts(r);
@@ -1598,6 +1700,7 @@ function paintLines(g: G, place: string, selected: string): void {
   }
   // A myth's own line waits for the render, which draws it once you can read it.
   if (ROUTES[selected]?.hiddenUntil) return;
+  if (ROUTES[selected]?.kind) paintPitch(g, ROUTES[selected]!, TOPO[selected]!);
   traceSelected(g, TOPO[selected]!);
 }
 
