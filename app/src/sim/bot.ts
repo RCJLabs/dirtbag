@@ -51,6 +51,7 @@ import {
   goBlocked,
   knowsBeta,
   landingChance,
+  cruxFallMoves,
   newGame,
   routeOfId,
   talkStart,
@@ -134,10 +135,10 @@ const CAVE_FROM = 5;
 // won't work one while a fall from its crux lands badly more than 1 time in 20, so they wait
 // for someone to spot them. A reckless one doesn't look.
 const HIGHBALL_ODDS = 0.05;
-const cruxLanding = (s: GameState, r: RouteDef): number => {
-  const c = r.cruxes[0];
-  return landingChance(s, r, c ? (c.from + c.to) / 2 : r.moves);
-};
+// Phase 27.5: the worse of a highball's falls, with the pads where the go puts them by
+// default, under the worse.
+const cruxLanding = (s: GameState, r: RouteDef): number =>
+  Math.max(0, ...r.cruxes.map((c) => landingChance(s, r, cruxFallMoves(c), c.id)));
 
 // How a bot spends its days. The climber works only when the money's nearly gone; the
 // balanced one keeps a cushion; the worker takes every shift going and climbs after.

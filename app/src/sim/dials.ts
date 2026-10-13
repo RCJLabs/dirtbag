@@ -926,6 +926,10 @@ export const HIGHBALL = {
   spotter: 0.5,
   tier2: 6,
   tier3: 12,
+  // Phase 27.5: the top-out every highball gets, a second crux at the lip. The line's grade
+  // is its crux's, so the top-out is easier: a wider window, less time in it, tuned so no
+  // highball's half-send grade moves by more than a quarter (0.2 at most, measured).
+  topOut: { first: { w: 0.22, need: 1.1 }, earned: { w: 0.24, need: 0.9 } },
 };
 
 export const CLIMB = {

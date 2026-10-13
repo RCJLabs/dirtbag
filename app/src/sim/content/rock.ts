@@ -2155,6 +2155,402 @@ const WALL_MOVES: Record<string, BetaDef> = {
 };
 
 // ---------------------------------------------------------------------------------------
+// The highballs' top-outs (Phase 27.5), each in its rock: a granite mantel, a quartzite
+// sloper, a sandstone top gone to sand, a cold gneiss lip, a limestone top under the grass.
+// They stand in for LIBRARY's technical pair (routes.ts's topOut).
+
+const TOP_OUTS: Record<Rock, Record<string, BetaDef>> = {
+  granite: {
+    hbpress: first(
+      'technical',
+      'technical',
+      'Press out the top',
+      'press out',
+      'Palms flat on top, elbows locked, and press. It feels higher than it is.',
+      {
+        fall: 'Your elbows buckle, and you go back down the way you came.',
+      },
+    ),
+    hbheel: earned(
+      'technical',
+      'technical',
+      'Heel over the lip',
+      'heel over',
+      'Throw a heel onto the top and roll onto it, instead of pressing.',
+      'Off the top, you see a heel would have done it. New beta: heel over the lip.',
+      {
+        fall: 'The heel skates off the rounded top.',
+      },
+    ),
+    naveslab: first(
+      'technical',
+      'technical',
+      'Smear onto the summit slab',
+      'smear on',
+      'The top rolls back into a slab. Get your feet up and trust the friction to stand.',
+      {
+        fall: 'Your feet skate on the summit slab.',
+      },
+    ),
+    naveknob: earned(
+      'technical',
+      'power',
+      'Grab the summit knob',
+      'the knob',
+      'A knob just over the lip, out of sight. Reach over blind and find it.',
+      'Off the top. From the ground you can see a knob over the lip. New beta: grab the summit knob.',
+      {
+        fall: 'You find the knob, and it’s slicker than it looked.',
+      },
+    ),
+    shelf: first(
+      'technical',
+      'endurance',
+      'Belly onto the shelf',
+      'belly on',
+      'No style to it: get your chest on the shelf and wriggle.',
+      {
+        fall: 'You wriggle, and slide back off the shelf.',
+      },
+    ),
+    shelffoot: earned(
+      'technical',
+      'technical',
+      'Foot on the shelf first',
+      'foot first',
+      'Get a foot up on the shelf before your hands, and stand.',
+      'Off the shelf. Your foot reaches it before your chest does. New beta: foot on the shelf first.',
+      {
+        fall: 'Your foot slides off the shelf’s edge.',
+      },
+    ),
+    jamout: first(
+      'technical',
+      'crack',
+      'Jam out the top of the crack',
+      'jam out',
+      'The crack runs right over the lip. Jam it to the end, then let go of it for the top.',
+      {
+        fall: 'The last jam pulls out where the crack flares.',
+      },
+    ),
+    crackrock: earned(
+      'technical',
+      'technical',
+      'Rock over the crack’s lip',
+      'rock over',
+      'A high foot in the crack and a rock-over, and you’re standing on top.',
+      'Off again at the top. Your foot fits the crack right at the lip. New beta: rock over.',
+      {
+        fall: 'You rock over, and your foot pops out of the crack.',
+      },
+    ),
+    squirm: first(
+      'technical',
+      'endurance',
+      'Squirm out the top',
+      'squirm',
+      'The offwidth spits you out onto the top. It isn’t pretty, and it doesn’t need to be.',
+      {
+        fall: 'You squirm out, and the top’s too rounded to hold you.',
+      },
+    ),
+    lipwing: earned(
+      'technical',
+      'crack',
+      'Chicken-wing the lip',
+      'chicken-wing',
+      'Fold an arm into the last of the crack, and lever up onto the top.',
+      'Off the top. There’s room in the crack for an arm, right at the lip. New beta: chicken-wing the lip.',
+      {
+        fall: 'The chicken-wing slides out of the crack.',
+      },
+    ),
+    coldlip: first(
+      'technical',
+      'technical',
+      'Mantel the cold lip',
+      'cold mantel',
+      'The lip’s in the wind and colder than the rest. Press it out before your hands go numb.',
+      {
+        fall: 'Your numb palms slip off the lip.',
+      },
+    ),
+    lipcrystal: earned(
+      'technical',
+      'crimp',
+      'Pinch the lip crystal',
+      'crystal',
+      'One crystal on the lip. Pinch it, and pull your feet up under you.',
+      'Off the top. There’s a crystal on the lip you could pinch. New beta: pinch the lip crystal.',
+      {
+        fall: 'The crystal turns in your fingers.',
+      },
+    ),
+  },
+  quartzite: {
+    hugtop: first(
+      'technical',
+      'technical',
+      'Ride the arête over',
+      'ride it over',
+      'The arête rounds off into the top. Lean over it, and walk your feet up behind you.',
+      {
+        fall: 'Your hug slides off the rounded arête.',
+      },
+    ),
+    aretemantel: earned(
+      'technical',
+      'technical',
+      'Mantel where it flattens',
+      'mantel',
+      'Where the arête flattens, get a palm on it and press.',
+      'Off the top. The arête flattens enough to mantel. New beta: mantel where it flattens.',
+      {
+        fall: 'Your palm slides on the flat.',
+      },
+    ),
+    pressit: first(
+      'technical',
+      'power',
+      'Press it out',
+      'press out',
+      'The mantel. Palms flat, one elbow over, and press like you mean it.',
+      {
+        fall: 'You press, and your palms slide off the sloping top.',
+      },
+    ),
+    kneetop: earned(
+      'technical',
+      'technical',
+      'Knee onto the top',
+      'knee',
+      'Not elegant: a knee on the top, then a foot.',
+      'Off the mantel, you think: a knee. New beta: knee onto the top.',
+      {
+        fall: 'Your knee skates on the sloper.',
+      },
+    ),
+    summithueco: first(
+      'technical',
+      'power',
+      'Pull into the summit hueco',
+      'summit hueco',
+      'A hueco right on top, big enough for both hands. Get there, and pull.',
+      {
+        fall: 'You reach the hueco a move too late.',
+      },
+    ),
+    stepin: earned(
+      'technical',
+      'technical',
+      'Step into the hueco',
+      'step in',
+      'Pull your feet up into the hueco you were holding, and stand in it.',
+      'Off the top, you see the hueco’s a foothold too. New beta: step into the hueco.',
+      {
+        fall: 'Your foot slips out of the hueco’s lip.',
+      },
+    ),
+    liebackend: first(
+      'technical',
+      'crack',
+      'Lieback the splitter’s end',
+      'lieback',
+      'The splitter ends at the lip. Lean off it for the last moves.',
+      {
+        fall: 'You lean, and your feet skid on the clean quartzite.',
+      },
+    ),
+    topjug: earned(
+      'technical',
+      'power',
+      'Find the jug on top',
+      'top jug',
+      'There’s a jug over the top, well back, if you go up and look for it.',
+      'Off the top. Someone walking past says there’s a jug over the lip. New beta: find the jug on top.',
+      {
+        fall: 'You reach for the jug, and it’s further back than you thought.',
+      },
+    ),
+    rollon: first(
+      'technical',
+      'technical',
+      'Roll onto the slab top',
+      'roll on',
+      'The top is a sloping slab. Roll onto it on your belly, and stand when it lets you.',
+      {
+        fall: 'You roll on, and the slab rolls you back off.',
+      },
+    ),
+    summitrib: earned(
+      'technical',
+      'crimp',
+      'Pinch the summit rib',
+      'rib',
+      'A thin rib runs over the top. Pinch it, and walk your feet past your hands.',
+      'Off the top. There’s a rib running over it. New beta: pinch the summit rib.',
+      {
+        fall: 'The rib’s too thin to stop you.',
+      },
+    ),
+  },
+  sandstone: {
+    sandpalm: first(
+      'technical',
+      'technical',
+      'Top out the prow',
+      'top out',
+      'The prow ends in rounded sandstone with sand on it. Don’t trust the sand. Trust your palms.',
+      {
+        fall: 'Sand under your palm, and nothing under the sand.',
+      },
+    ),
+    whale: earned(
+      'technical',
+      'endurance',
+      'Whale onto the top',
+      'whale',
+      'Belly on the rounded top, legs kicking, and drag yourself on.',
+      'Off the top. It’s a belly flop, not a mantel. New beta: whale onto the top.',
+      {
+        fall: 'You belly onto the top, and slide back off it.',
+      },
+    ),
+    fisttop: first(
+      'technical',
+      'crack',
+      'Fist-jam the top of the split',
+      'fist jam',
+      'The split widens at the lip. Stack a fist in, and pull over.',
+      {
+        fall: 'The fist jam slides out of the soft sandstone.',
+      },
+    ),
+    varnishstep: earned(
+      'technical',
+      'technical',
+      'Stand on the varnish strip',
+      'varnish strip',
+      'A strip of varnish below the lip takes a toe. Stand on it, and the top comes.',
+      'Off the top, you see the varnish strip below the lip. New beta: stand on the varnish strip.',
+      {
+        fall: 'The varnish crumbles under your toe.',
+      },
+    ),
+    roundtop: first(
+      'technical',
+      'technical',
+      'Press onto the rounded top',
+      'press',
+      'Rounded, sandy, and higher than it looked. Press it out slowly.',
+      {
+        fall: 'The top rolls away under your hands.',
+      },
+    ),
+    roundheel: earned(
+      'technical',
+      'power',
+      'Heel-hook the rounded lip',
+      'heel the lip',
+      'A heel on the lip, and you can let go of the press.',
+      'Off the top. The lip will take a heel. New beta: heel-hook the rounded lip.',
+      {
+        fall: 'Your heel rolls off the rounded lip.',
+      },
+    ),
+  },
+  gneiss: {
+    summitblock: first(
+      'technical',
+      'power',
+      'Squeeze the summit block',
+      'squeeze',
+      'The top’s a block you can get your arms round. Squeeze, and walk your feet up.',
+      {
+        fall: 'The block’s too wide to hold, and you slide.',
+      },
+    ),
+    blindincut: earned(
+      'technical',
+      'crimp',
+      'Find the incut on top',
+      'incut',
+      'Over the lip there’s an incut edge you can’t see. Reach over blind.',
+      'Off the top. There’s an incut over the lip. New beta: find the incut on top.',
+      {
+        fall: 'You find the incut, and your fingers are too cold to close.',
+      },
+    ),
+    blacklip: first(
+      'technical',
+      'technical',
+      'Mantel the black lip',
+      'mantel',
+      'A flat black lip, cold as metal. Mantel it before your palms go.',
+      {
+        fall: 'Your palms slide on the cold lip.',
+      },
+    ),
+    compresstop: earned(
+      'technical',
+      'power',
+      'Compress the summit',
+      'compress',
+      'Two sidepulls at the lip. Squeeze them together, and step up.',
+      'Off the top. The lip has two sidepulls to squeeze. New beta: compress the summit.',
+      {
+        fall: 'You squeeze, and one hand slips.',
+      },
+    ),
+    incutsover: first(
+      'technical',
+      'crimp',
+      'Pull over on the incuts',
+      'incuts',
+      'Square incuts all the way over the top. Just keep pulling.',
+      {
+        fall: 'One incut’s colder than the rest, and you let go of it.',
+      },
+    ),
+    lipstep: earned(
+      'technical',
+      'technical',
+      'High-step onto the lip',
+      'high step',
+      'Get a foot up on the lip itself, and stand up off it.',
+      'Off the top, you see the lip is a foothold. New beta: high-step onto the lip.',
+      {
+        fall: 'The high step slips.',
+      },
+    ),
+  },
+  limestone: {
+    grasstop: first(
+      'technical',
+      'technical',
+      'Pull onto the grassy top',
+      'grassy top',
+      'Grass and dirt over the lip. Grab the rock under it, not the grass.',
+      {
+        fall: 'You grab the grass. The grass lets go.',
+      },
+    ),
+    dirtpocket: earned(
+      'technical',
+      'crimp',
+      'Clean the pocket over the lip',
+      'dirt pocket',
+      'A pocket over the lip, full of dirt. Clean it with a finger, and pull.',
+      'Off the top. There’s a pocket under the dirt over the lip. New beta: clean the pocket over the lip.',
+      {
+        fall: 'Your finger hooks dirt, not rock.',
+      },
+    ),
+  },
+};
+
+// ---------------------------------------------------------------------------------------
 // The signature lines, by hand: one a crag, the one people drive in for (Phase 27.2). The
 // Pump at Roadside was hand-made already.
 
@@ -2491,11 +2887,11 @@ const SIGNATURE: Record<Rock, Record<string, BetaDef>> = {
 
 // Each rock's moves, the signature lines' with them.
 export const ROCK_MOVES: Record<Rock, Record<string, BetaDef>> = {
-  granite: { ...GRANITE, ...SIGNATURE.granite, ...WALL_MOVES },
-  quartzite: { ...QUARTZITE, ...SIGNATURE.quartzite },
-  sandstone: { ...SANDSTONE, ...SIGNATURE.sandstone },
-  gneiss: { ...GNEISS, ...SIGNATURE.gneiss },
-  limestone: { ...LIMESTONE, ...SIGNATURE.limestone },
+  granite: { ...GRANITE, ...SIGNATURE.granite, ...TOP_OUTS.granite, ...WALL_MOVES },
+  quartzite: { ...QUARTZITE, ...SIGNATURE.quartzite, ...TOP_OUTS.quartzite },
+  sandstone: { ...SANDSTONE, ...SIGNATURE.sandstone, ...TOP_OUTS.sandstone },
+  gneiss: { ...GNEISS, ...SIGNATURE.gneiss, ...TOP_OUTS.gneiss },
+  limestone: { ...LIMESTONE, ...SIGNATURE.limestone, ...TOP_OUTS.limestone },
 };
 
 // Each outdoor line's cruxes, in order: the first way through and the earned one, from its
@@ -2506,7 +2902,10 @@ export const ROCK_LINES: Record<string, [string, string][]> = {
   dyno: [['jumplip', 'deadpoint']],
   crimpfest: [['dimes', 'thumb']],
   fingercrack: [['ringlock', 'layback']],
-  highball: [['arete', 'crimpflake']],
+  highball: [
+    ['arete', 'crimpflake'],
+    ['hbpress', 'hbheel'],
+  ],
   project: [['undercling', 'heel']],
   rsopen: [['leap', 'bump']],
   testpiece: [
@@ -2522,7 +2921,10 @@ export const ROCK_LINES: Record<string, [string, string][]> = {
   gserenity: [['flarejam', 'layback']],
   gpinch: [['pinch', 'heel']],
   gdyno: [['throwbadfeet', 'deadpoint']],
-  gcathedral: [['razors', 'thumb']],
+  gcathedral: [
+    ['razors', 'thumb'],
+    ['naveslab', 'naveknob'],
+  ],
   gopen: [['dimes', 'footswap']],
   gintro: [
     ['crystals', 'thumb'],
@@ -2541,13 +2943,28 @@ export const ROCK_LINES: Record<string, [string, string][]> = {
     ['longcorner', 'dropknee'],
   ],
   // Moonstone: quartzite.
-  marete: [['hugarete', 'edgearete']],
-  mmantel: [['heave', 'heelrock']],
+  marete: [
+    ['hugarete', 'edgearete'],
+    ['hugtop', 'aretemantel'],
+  ],
+  mmantel: [
+    ['heave', 'heelrock'],
+    ['pressit', 'kneetop'],
+  ],
   megg: [['throwsloper', 'pastebump']],
-  mhueco: [['pockets', 'toepocket']],
-  msplitter: [['jamsplitter', 'laybacksplitter']],
+  mhueco: [
+    ['pockets', 'toepocket'],
+    ['summithueco', 'stepin'],
+  ],
+  msplitter: [
+    ['jamsplitter', 'laybacksplitter'],
+    ['liebackend', 'topjug'],
+  ],
   mroof: [['cutfeet', 'toehookroof']],
-  mopen: [['snatch', 'heeltoe']],
+  mopen: [
+    ['snatch', 'heeltoe'],
+    ['rollon', 'summitrib'],
+  ],
   mspire: [
     ['jumphorn', 'bumprail'],
     ['smearblock', 'crimpsummit'],
@@ -2559,11 +2976,20 @@ export const ROCK_LINES: Record<string, [string, string][]> = {
   // The Mesa: sandstone.
   svarnish: [['keepslap', 'shakevarnish']],
   scrimps: [['gentleflakes', 'smearstep']],
-  sprow: [['prow', 'prowheel']],
-  ssplit: [['redsplitter', 'laybacksplitter']],
+  sprow: [
+    ['prow', 'prowheel'],
+    ['sandpalm', 'whale'],
+  ],
+  ssplit: [
+    ['redsplitter', 'laybacksplitter'],
+    ['fisttop', 'varnishstep'],
+  ],
   spowerhouse: [['slapsloper', 'heelsloper']],
   smega: [['launch', 'bumphueco']],
-  sopen: [['crimpvarnish', 'rockscoop']],
+  sopen: [
+    ['crimpvarnish', 'rockscoop'],
+    ['roundtop', 'roundheel'],
+  ],
   sdlap: [
     ['pinchrail', 'smearstep'],
     ['smearred', 'edgevarnish'],
@@ -2582,8 +3008,14 @@ export const ROCK_LINES: Record<string, [string, string][]> = {
   ],
   // The Big Stone: granite.
   bbase: [['lipthrow', 'heel']],
-  bwarm: [['dimes', 'thumb']],
-  bsplit: [['fingerlock', 'layback']],
+  bwarm: [
+    ['dimes', 'thumb'],
+    ['shelf', 'shelffoot'],
+  ],
+  bsplit: [
+    ['fingerlock', 'layback'],
+    ['jamout', 'crackrock'],
+  ],
   btrad: [
     ['cornerjam', 'stemrest'],
     ['traverse', 'edgecrystal'],
@@ -2595,9 +3027,15 @@ export const ROCK_LINES: Record<string, [string, string][]> = {
   // Wind River: alpine granite.
   walpine: [['frozen', 'thumb']],
   wdiamond: [['facets', 'crimpflake']],
-  woffwidth: [['armbar', 'stemrest']],
+  woffwidth: [
+    ['armbar', 'stemrest'],
+    ['squirm', 'lipwing'],
+  ],
   wthin: [['lunge', 'toehook']],
-  wopen: [['arete', 'edgecrystal']],
+  wopen: [
+    ['arete', 'edgecrystal'],
+    ['coldlip', 'lipcrystal'],
+  ],
   wglacier: [
     ['dimes', 'footswap'],
     ['smear', 'crimpflake'],
@@ -2616,11 +3054,20 @@ export const ROCK_LINES: Record<string, [string, string][]> = {
   ],
   // The Crucible: gneiss.
   creckoning: [['razorgneiss', 'thumbstep']],
-  cvise: [['vise', 'laybackvise']],
+  cvise: [
+    ['vise', 'laybackvise'],
+    ['summitblock', 'blindincut'],
+  ],
   capparition: [['ghost', 'toehooksee']],
   canvil: [['strike', 'squeezeblock']],
-  chorizon: [['commit', 'bumpundercut']],
-  cgenesis: [['flyedge', 'doubleclutch']],
+  chorizon: [
+    ['commit', 'bumpundercut'],
+    ['blacklip', 'compresstop'],
+  ],
+  cgenesis: [
+    ['flyedge', 'doubleclutch'],
+    ['incutsover', 'lipstep'],
+  ],
   ccrux: [
     ['gneissrail', 'bumpundercut'],
     ['coldincuts', 'rockincut'],
@@ -2673,7 +3120,10 @@ export const ROCK_LINES: Record<string, [string, string][]> = {
   ],
   bhay: [['rockbale', 'twofinger']],
   btrough: [['crimprim', 'steppocket']],
-  bsilo: [['silojump', 'bumptufa']],
+  bsilo: [
+    ['silojump', 'bumptufa'],
+    ['grasstop', 'dirtpocket'],
+  ],
   // The walls' pitches (Phase 27.3): granite, by kind.
   'prow-1': [['padslab', 'dishslab']],
   'prow-2': [['ladder', 'ladderfeet']],

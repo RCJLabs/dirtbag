@@ -557,8 +557,9 @@ export type Action =
   | { t: 'unlock'; place: string }
   | { t: 'stand'; x: number }
   | { t: 'pick'; route: string; crux: string; beta: string }
-  // `call`: the flash or the onsight, called before a first go (Phase 27.4).
-  | { t: 'go'; route: string; call?: true }
+  // `call`: the flash or the onsight, called before a first go (Phase 27.4). `pad`: the crux
+  // of a highball the extra pads go under (Phase 27.5).
+  | { t: 'go'; route: string; call?: true; pad?: string }
   | { t: 'rest'; route: string }
   | { t: 'done'; route: string; result: GoResult }
   | { t: 'name'; route: string; name: string; call: -1 | 0 | 1; for?: string }

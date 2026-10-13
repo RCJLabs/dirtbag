@@ -11,6 +11,8 @@ export {
   actCost,
   belayer,
   landingChance,
+  cruxFallMoves,
+  padUnder,
   deckChance,
   fallFt,
   morePads,
