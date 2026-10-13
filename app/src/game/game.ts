@@ -935,6 +935,15 @@ export class Game {
     this.dispatch({ t: 'shoot' });
   }
 
+  // Phase 26b: money in a day.
+  gig(): void {
+    this.dispatch({ t: 'gig' });
+  }
+
+  tourists(): void {
+    this.dispatch({ t: 'tourists' });
+  }
+
   // A comp (Phase 18.4): signed up for, or the scorecard in; back to the desk.
   comp(what: 'enter' | 'finish'): void {
     this.dispatch({ t: 'comp', do: what });

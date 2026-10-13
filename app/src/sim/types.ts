@@ -517,6 +517,9 @@ export type Action =
   | { t: 'post'; style: 'straight' | 'story' | 'bait' | 'ad' }
   | { t: 'offer'; take: 'real' | 'brand' | 'yes' | 'no' }
   | { t: 'shoot' }
+  // Phase 26b: the day's day labor at the market, and a family's rope hung at a busy crag.
+  | { t: 'gig' }
+  | { t: 'tourists' }
   // Your own gym (Phase 18.6): bought, its till drawn or a short one covered, sold; a setter
   // hired or let go; an upgrade; the wall set yourself (a set from the brief, or plainly).
   // A line bolted.

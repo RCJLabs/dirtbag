@@ -145,6 +145,14 @@ import {
   RECIPES,
   BUSK,
   buskBlocked,
+  GIG,
+  GIGS,
+  gigBlocked,
+  gigOn,
+  TOURISTS,
+  touristLine,
+  touristsBlocked,
+  touristsOn,
   bjTotal,
   boardAt,
   CARD_NAME,
@@ -801,6 +809,36 @@ const mapRow = (game: Game): Row => ({
 
 // Busking outside the café (Phase 22.5b): what you play like, and what an ordinary crowd
 // pays that an hour.
+// Phase 26b: money in a day. Today's day labor, on the board by the market door.
+function gigRow(game: Game, s: GameState): Row | null {
+  const id = gigOn(s.seed, s.day);
+  if (!id) return null;
+  const why = gigBlocked(s);
+  return {
+    label: GIGS[id]!.label,
+    cost: costLabel({ min: GIG.min, energy: -GIG.energy, cash: GIG.pay }),
+    note: why ? `${why}.` : 'Day labor: the whole day, cash at the end of it. No shift after.',
+    off: !!why,
+    run: () => game.gig(),
+  };
+}
+
+// A family's top rope, at a busy crag, from the van.
+function touristRows(game: Game, s: GameState): Row[] {
+  if (!touristsOn(s)) return [];
+  const why = touristsBlocked(s);
+  const r = touristLine(s);
+  return [
+    {
+      label: 'Hang a rope for the family',
+      cost: costLabel({ min: TOURISTS.min, energy: -TOURISTS.energy, cash: TOURISTS.pay }),
+      note: why ? `${why}.` : `On ${r!.name}, for their kids. Tips happen.`,
+      off: !!why,
+      run: () => game.tourists(),
+    },
+  ];
+}
+
 function buskRow(game: Game, s: GameState): Row {
   const why = buskBlocked(s);
   return {
@@ -1421,6 +1459,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         close: true,
         rows: [
           ...shootRows(game, s),
+          ...touristRows(game, s),
           ...(back ? [driveRow(game, s, 'lot', 'Drive back to the Lot')] : []),
           mapRow(game),
         ],
@@ -1556,6 +1595,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           ...p.acts.flatMap((a) => actRows(game, s, a)),
           // Phase 22.5b: a set out front.
           ...(id.id === 'cafe' ? [buskRow(game, s)] : []),
+          // Phase 26b: the day labor posted at the market.
+          ...(id.id === 'market' ? [gigRow(game, s)].filter((r): r is Row => !!r) : []),
           // Phase 25.2: an outfit of your own.
           ...(id.id === 'shop' ? outfitRows(game, s) : []),
           // Phase 25.1: giving.

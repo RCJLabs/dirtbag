@@ -226,6 +226,9 @@ export {
   CROWD,
   SPEED,
   BUSK,
+  GIG,
+  TOURISTS,
+  PLASMA,
   EVENTS,
   GAMES,
   FREESOLO,
@@ -288,6 +291,8 @@ export { DOG_FAREWELL } from './content/dog';
 export { HITCHERS, STOPS, type Hitcher, type RoadStop } from './content/road';
 export { KNOCKS, type Knock } from './content/knocks';
 export { buskBlocked, buskHeads, buskRate, guitarRank, guitarSkill, RANK_NAME } from './busk';
+export { gigBlocked, gigOn, touristLine, touristsBlocked, touristsOn } from './gigs';
+export { GIGS } from './content/gigs';
 export { MARK_NAME, STYLE_NAME, type Mark } from './content/injuries';
 export { INGREDIENTS, RECIPES, MEAL_NAME } from './content/food';
 export type { SpotId } from './dials';
