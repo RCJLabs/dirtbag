@@ -3094,6 +3094,29 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
 - **The e2e** calls the onsight on the Warm Boulder, sends it, and checks the sheet, the card and the save.
 - **The download** is 418.0 KB of 440.
 
+**Status (13 Oct 2026): 27.5 built: highball top-outs, and where the pad goes.** 0.999.40, no save change.
+- **The top-out.** Every highball gets a second crux at its lip, "The top-out", two moves past where the line used to end (`topOut`, `TOP_OUT` in `content/routes.ts`).
+  - The height stays, so the line's first crux now comes off lower, and the top-out is the worse fall.
+  - Its 36 moves are written for each rock (`TOP_OUTS` in `content/rock.ts`): a granite mantel, a quartzite sloper, a sandy sandstone top, a cold gneiss lip, a grassy limestone top.
+  - Four crux names changed to fit: the Highball Arête's and the Tall Arête's "The top", Moonstone Mantel's "The mantel" (its top-out is now the mantel) and "The last hard move". Two lines lost the move counts they'd hand-typed.
+- **Difficulty:**
+  - A top-out as hard as a crux at the line's grade made highballs up to 1.1 grades harder, because it decided the sends that the easier cruxes used to.
+  - Its window is widened instead (`HIGHBALL.topOut`), since the line's grade is its crux's.
+  - Measured with the bot's hands, no highball's half-send grade moves more than 0.2, and most don't move.
+- **One fall height.** A fall off a crux comes from the move after it starts (`cruxFallMoves`), as the climb counts your high point. The landing roll, the beta sheet and the bot all use it now. The sheet and the bot used to take the crux's midpoint.
+- **The pads.** With more than the one pad (your second, or the haul's at Moonstone), they cover one fall, and you choose which on the beta sheet.
+  - It defaults to the worse fall, and the choice holds for the day's goes.
+  - Each choice shows the odds at both falls.
+  - The spotter, when there is one, is named and still halves every fall.
+- **The bots** read the worse of the two falls, with the pads under it.
+- **The harness:** every target passes.
+  - First V5 go on day 19; V10 on day 179.5 (181.5).
+  - Outdoors reached the top in 4 of 4 runs, on day 369.5 (it was 3 of 4, the accepted shortfall).
+  - Act III's median moved from day 269.5 to 314, so I reran the ending with 6 seeds a start on main and on this branch:
+    - Act III's median was 312 on main and 319 here. Career by career, the branch averages 13.6 days later, with a standard error of 14 days, so it's within the noise. The 269.5 had been a low draw from 8 careers.
+    - Act IV finished 18 of 24 times, against 15 on main.
+- **The download** is 421.3 KB of 440.
+
 ### Phase 28 — The crew
 
 *Medium. New, from the audit's list of what to keep (`social.md`): the crew's name, its renown, a crew project, favours. The rebuild has none of them.*
@@ -3562,3 +3585,4 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
 - 2026-10-13 — Phase 27.2 built: the rock's beta. Every outdoor line's cruxes in moves written for its rock, 158 of them, none repeated as a crux's first way within a crag; the signature lines by hand; difficulty kept, the verb checked and the numbers carried from the beta each move replaces. 0.999.37.
 - 2026-10-13 — Phase 27.3 built: wall pitches by kind. Seven kinds (face, crack, corner, chimney, traverse, roof, slab) set each pitch's length, crux and rest; 48 granite moves written for them; topos and the rock drawn by kind; no crux's first way or sequence repeats at a crag, its wall pitches counted. Each pitch within 0.16 of a grade of where it was. 0.999.38.
 - 2026-10-13 — Phase 27's 27.4 split in two (the top-outs and the pad are now 27.5, the Big Stone and the close 27.6). 27.4 built: calling the flash or the onsight before a first go, psyche staked both ways outside the day's cap, "Called It" for ten called sends. Save v58. 0.999.39.
+- 2026-10-13 — Phase 27.5 built: every highball tops out (a second crux at the lip, 36 rock moves, its window widened so no highball moves more than 0.2 of a grade); one fall height for the roll, the sheet and the bot; the extra pads cover the fall you choose, or the worse. No save change. 0.999.40.
