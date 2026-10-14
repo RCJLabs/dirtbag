@@ -337,7 +337,7 @@ import {
 import { MASTERY, PATHS, QUIRKS } from './content/paths';
 import { CALLING_SCENE, ECHOES } from './content/scene';
 import { echoDue, echoOpts, permitFor, shift, stanceDue, stanceOpts } from './scene';
-import { boardWeek, jobProgress, postBoard } from './board';
+import { boardWeek, bountyProgress, jobProgress, jobText, payWords, postBoard } from './board';
 import { homeCrowd, homeReady, yearsDone } from './year';
 import { ageOf, birthdayLine, bodyWaits, retireBlocked } from './age';
 import { familyFill, heirOf } from './heir';
@@ -468,7 +468,7 @@ export function newGame(seed: string): GameState {
     quirk: null,
     habits: { goes: 0, outdoor: 0, fresh: 0, tired: 0, evening: 0, dawn: 0, easy: 0, power: 0 },
     scene: { old: FACTION.start, gym: FACTION.start, stances: [], echoes: [], last: 0, echoLast: 0 },
-    board: { week: 0, jobs: [], shifts0: 0, sessions: 0 },
+    board: { week: 0, jobs: [], shifts0: 0, sessions: 0, pick: null },
     year: { recapped: 0, home: 'none' },
     life: { held: 0, told: 0, retired: null },
     family: null,
@@ -3940,6 +3940,20 @@ export function act(s0: GameState, a: Action): Result {
       break;
     }
 
+    // A bounty taken off the Board (Phase 29.2): one a week, counted from now; the rest come
+    // down.
+    case 'bounty': {
+      const job = s.board.jobs[a.i];
+      const j = job && BOARD_JOBS[job.id];
+      if (!s.climber.name || s.board.week !== boardWeek(s.day))
+        return refuse('This week’s board goes up the next thing you do.');
+      if (s.board.pick) return refuse('You took one this week. The rest came down.');
+      if (!job || !j) return refuse('That’s not on the board.');
+      s.board = { ...s.board, pick: { i: a.i, base: jobProgress(s, job) } };
+      line(`You take ${j.title}, for ${payWords(job)}. ${jobText(j, job.grade)} It counts from now.`);
+      break;
+    }
+
     // The crew goes first on the project (Phase 28.2): each of them here who hasn't today has
     // a go, and shows you the next way through you didn't know.
     case 'crewGo': {
@@ -4081,16 +4095,19 @@ export function act(s0: GameState, a: Action): Result {
       }
     }
   }
-  // Phase 23.6: a new week's board goes up; a job done pays, on its own.
+  // Phase 23.6: a new week's board goes up. Phase 29.2: the bounty you took pays, on its own,
+  // the moment it's done.
   if (s.climber.name) {
     const wk = boardWeek(s.day);
     if (s.board.week !== wk) s.board = postBoard(s, wk);
-    for (const [i, job] of s.board.jobs.entries()) {
-      const j = BOARD_JOBS[job.id];
-      if (!j || job.paid || jobProgress(s, job) < j.n) continue;
-      s.board.jobs[i] = { ...job, paid: true };
-      s.cash += j.cash;
-      line(`${j.title}, done. ${money(j.cash)} off the board.`);
+    const p = s.board.pick;
+    const job = p ? s.board.jobs[p.i] : undefined;
+    const j = job && BOARD_JOBS[job.id];
+    if (job && j && !job.paid && bountyProgress(s) >= j.n) {
+      s.board.jobs[p!.i] = { ...job, paid: true };
+      s.cash += job.cash;
+      s.parts += job.parts;
+      line(`${j.title}, done. ${payWords(job)} off the board.`);
     }
   }
   // Phase 23.4: a path tier you could claim, said once; a style mastered; a quirk named.

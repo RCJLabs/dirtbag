@@ -9,7 +9,7 @@ import { PROTOCOLS } from '../src/sim/content/training';
 import { newGame } from '../src/sim/game';
 import { sessionGains } from '../src/sim/sessions';
 import { BOARD, HUSTLE, SPEED, TRAIN } from '../src/sim/dials';
-import { bestWeek } from '../src/sim/board';
+import { bestWeek, partWorth } from '../src/sim/board';
 import { DREAMS } from '../src/sim/content/dreams';
 import { JOBS } from '../src/sim/content/jobs';
 import { speedGains } from '../src/sim/speed';
@@ -235,18 +235,22 @@ function targets(all: Record<Seasonal, BotRun[]>, reckless: BotRun[]): void {
       )
       .join(', ')}.`,
   );
-  // 9. Phase 23.6: the Board is a bonus, not a living. A week's best board (its three best-
-  // paying jobs) pays under BOARD.capDays days of the worst shift; what the bots took off it
-  // a week, beside it.
+  // 9. Phase 23.6: the Board is a bonus, not a living. A week's best board (Phase 29.2: its
+  // best bounty, parts at what they'd fetch) pays under BOARD.capDays days of the worst shift;
+  // what the bots took off it a week, beside it.
   const boardPaid = (r: BotRun) =>
     r.lines
-      .map((l) => l.match(/\$(\d+) off the board/))
+      .map((l) => l.match(/, done\. (.+) off the board\./)?.[1])
       .filter((m) => !!m)
-      .reduce((n, m) => n + Number(m![1]), 0) /
+      .reduce(
+        (n, m) =>
+          n + Number(m!.match(/\$(\d+)/)?.[1] ?? 0) + Number(m!.match(/(\d+) parts?/)?.[1] ?? 0) * partWorth,
+        0,
+      ) /
     (DAYS / 7);
   say(
     bestWeek() < BOARD.capDays * shiftDay,
-    `The Board isn’t a living: a week’s best board pays under ${BOARD.capDays} days of the worst shift`,
+    `The Board isn’t a living: a week’s best bounty pays under ${BOARD.capDays} days of the worst shift`,
     `best week $${bestWeek()}, against $${BOARD.capDays * shiftDay}; the bots took, a week, median: ${STRATEGIES.map((k) => `${k} $${median(all[k].map(boardPaid)).toFixed(0)}`).join(', ')}.`,
   );
   // 10. Phase 23's criterion 2: every echo lands later in the game, for a bot that answers

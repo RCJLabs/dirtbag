@@ -400,7 +400,7 @@ export { PATHS, OPEN_PATHS, MASTERY, HYBRIDS, QUIRKS, type Path, type Edge } fro
 export { deedText, edgeText, masteryOf, pathBlocked, pathsTaken, tiersOn } from './paths';
 export { STANCES, ECHOES, FACTIONS, FACTION_PERKS, type Faction } from './content/scene';
 export { BOARD_JOBS } from './content/board';
-export { boardWeek, jobProgress, jobText } from './board';
+export { boardWeek, bountyProgress, jobProgress, jobText, payWords } from './board';
 export { homeCrowd, homeReady, recapLines, recapOf, yearsDone } from './year';
 export {
   ageOf,

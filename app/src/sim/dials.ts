@@ -1293,8 +1293,11 @@ export const FACTION = {
   elder: 65,
 };
 // Phase 23.6 [proposed]. The Board: jobs a week, and the most a week's best board may pay
-// against a day of the worst shift (the harness holds it there).
-export const BOARD = { jobs: 3, capDays: 2 };
+// against a day of the worst shift (the harness holds it there). Phase 29.2 (Evan's call,
+// 14 Oct 2026): one bounty of the three pays, `pay` times its job's worth (double: a week's
+// best goes from three jobs' $54 to one bounty's $36, and a parts bounty buys a build-out or
+// two); a split bounty pays `split` of that in cash and the rest in parts.
+export const BOARD = { jobs: 3, capDays: 2, pay: 2, split: 0.5 };
 // Phase 23.7. A year is 56 days (Evan's call 10, the audit's clock fix; "A Year on the Road"
 // already counts it), and its recap comes the day the next begins. The Homecoming, once a
 // life [proposed, v0.956's cash and psyche]: there once `people` people are at `tier` or

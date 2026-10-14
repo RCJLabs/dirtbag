@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 62;
+export const SAVE_VERSION = 63;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -470,6 +470,12 @@ export const MIGRATIONS: Record<number, Migration> = {
   61: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, parts: 0 };
+  },
+  // v62 -> v63 (Phase 29.2): the Board's jobs became bounties, so the week's board comes down
+  // and goes up again, dealt its pay, the next thing you do (as v36 put the first one up).
+  62: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, board: { week: 0, jobs: [], shifts0: 0, sessions: 0, pick: null } };
   },
 };
 
@@ -1003,10 +1009,20 @@ export function validate(x: unknown): string[] {
           typeof j.id === 'string' &&
           j.id in BOARD_JOBS &&
           isInt(j.grade) &&
+          isInt(j.cash) &&
+          j.cash >= 0 &&
+          isInt(j.parts) &&
+          j.parts >= 0 &&
           typeof j.paid === 'boolean',
       ) &&
       isInt(brd.shifts0) &&
-      isInt(brd.sessions),
+      isInt(brd.sessions) &&
+      (brd.pick === null ||
+        (isObj(brd.pick) &&
+          isInt(brd.pick.i) &&
+          brd.pick.i >= 0 &&
+          brd.pick.i < brd.jobs.length &&
+          isInt(brd.pick.base))),
     'board',
   );
   const yr = x.year;

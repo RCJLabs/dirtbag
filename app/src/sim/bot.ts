@@ -84,6 +84,8 @@ import { gymBuyBlocked, UPGRADES, type Upgrade } from './business';
 import { scoreSet, setBrief } from './work';
 import { LADDERS } from './ladders';
 import { MEDIA, OWN_GYM, SETTING } from './dials';
+import { boardWeek, jobProgress } from './board';
+import { BOARD_JOBS } from './content/board';
 
 export interface BotRun {
   state: GameState;
@@ -361,6 +363,21 @@ const WALL_AHEAD = 8;
 // A crag day starts by here, or it's not worth the drive.
 const LAST_START = 14 * 60;
 
+// Phase 29.2: the bounty a bot takes off a new week's board, the best for its time: the cash
+// each pays, by how much of the job it got done the week before. With nothing to go on, the
+// one that pays most. Parts count for nothing to it: measured over 32 Outdoors careers, a bot
+// that took parts at what they'd fetch (while it had a build-out left) reached the top in 13,
+// against main's 20; on cash alone, 21. The trips' money was worth more than the van.
+export function bountyFor(s: GameState, last: GameState | null): number {
+  const rated = s.board.jobs.map((job, i) => ({
+    i,
+    pays: job.cash,
+    odds: Math.min(1, (last ? jobProgress(last, job) : 0) / BOARD_JOBS[job.id]!.n),
+  }));
+  rated.sort((a, b) => b.pays * b.odds - a.pays * a.odds || b.pays - a.pays);
+  return rated[0]?.i ?? 0;
+}
+
 export const playWeek = (seed: string, opts: WeekOpts = {}): BotRun => playDays(seed, { days: 7, ...opts });
 
 // Phase 24's expedition, played as the odds assume, for the harness and the career bot alike:
@@ -442,7 +459,10 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   }
   // The answer it gives an encounter: the one it's told for a call, else the first.
   const answer = (): number => (s.encounter ? (opts.answers?.[s.encounter.id] ?? 0) : 0);
+  // The state the last week's board went out on, for judging the next (Phase 29.2).
+  let lastBoard: GameState | null = null;
   const go = (a: Action): boolean => {
+    const was = s;
     const r = act(s, a);
     const no = r.events.find((e) => e.k === 'refused');
     if (no && no.k === 'refused') {
@@ -470,6 +490,14 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       go({ t: 'answer', opt: answer() });
     // Its paths' next tiers, the moment it can claim them.
     for (const id of opts.paths ?? []) if (a.t !== 'path' && !pathBlocked(s, id)) go({ t: 'path', id });
+    // A new week's board, and a bounty taken off it (Phase 29.2).
+    if (s.board.week !== was.board.week) lastBoard = was;
+    const up = s.board.week === boardWeek(s.day) && s.board.jobs.length > 0;
+    // Not while the day won't have it (away on a trip, an answer owed): it waits, as a tap would.
+    if (a.t !== 'bounty' && s.climber.name && up && !s.board.pick) {
+      const take: Action = { t: 'bounty', i: bountyFor(s, lastBoard) };
+      if (!act(s, take).events.some((e) => e.k === 'refused')) go(take);
+    }
     return true;
   };
   // Only asks for an act when its needs hold, like a player reading a greyed-out button.

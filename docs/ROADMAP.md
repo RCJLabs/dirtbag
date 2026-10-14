@@ -3294,6 +3294,22 @@ Carried, for playtesting or a call:
   - The hustle rule holds; the pile pays parts, not cash.
 - **The download** is 431.3 KB of 460.
 
+**Status (14 Oct 2026): 29.2 built: the Board's bounties.** Save v63, 0.999.47.
+- **The Board's three jobs are bounties** (Evan's calls). You take one on the Journal's Board page; the other two come down, and only yours pays.
+  - **It counts from when you take it,** so a job already done is worth nothing taken late.
+  - **It pays double the job's old worth,** dealt each week as one cash, one parts and one split bounty. A part counts as $4: what the cans pay for the time the pile takes to find one. So every week is money now or the van later.
+  - The best a week can pay is $36 (it was $54, all three paying), under the cap of $56.
+- **Save v63:** each job's pay, and the pick. The week's board comes down and goes up again as bounties on the next thing you do. A real 0.999.46 save loads, its parts kept.
+- **The bots** take one the moment the board goes up, or when they're next free (not away on a trip, no answer owed): the one whose cash, times how much of the job they got done the week before, is most.
+  - **Measured:** a bot that counted parts at what they'd fetch reached the top of Outdoors in 13 of 32 careers, against main's 20; on cash alone, 21. So the bots never take parts, and the build-outs stay a player's choice the harness doesn't exercise.
+  - The first run also caught the bots asking for a bounty on El Capitan, refused 403 times across the full careers. They now wait until the day will have it.
+  - The bots take $10 a week off the Board, down from about $14.
+- **The e2e** takes a bounty on day two.
+- **The harness:** every target passes but Outdoors, at the known 3 of 4.
+  - V10 on day 180.5; Act III ended on day 310.5; Media 4 of 4.
+  - The hustle rule and the Board's cap hold.
+- **The download** is 431.9 KB of 460.
+
 ### Phase 30 — Getting older
 
 *Medium. Age is only a deadline now: nothing about the body changes from 22 to 45.*
@@ -3728,3 +3744,4 @@ Carried, for playtesting or a call:
 - 2026-10-14 — Phase 28.4 built: renown in lines only (Evan's call): the threads, Ray and Frank, the crowd and the shops say the crew's name more the more it's done. Phase 28's two Done-when criteria pass; closing it is Evan's call. No save change. 0.999.45.
 - 2026-10-14 — Phase 28 closed by Evan's call; CURRENT MILESTONE moved to Phase 29, the van, lived in.
 - 2026-10-14 — Phase 29 planned with Evan's calls (the van ages with miles; a used van or the Rig to replace it; new build-outs from parts; the budget to 460 KB). 29.1 built: the free pile, parts for a shelf, a solar panel, door seals and a bed platform; the bots go to the pile only on days off the rock. Save v62. 0.999.46.
+- 2026-10-14 — 29.2 built: the Board's bounties (Evan's calls: double a job's worth, counted from when you take it, one cash, one parts and one split a week). The bots take cash only, measured on Outdoors. Save v63. 0.999.47.

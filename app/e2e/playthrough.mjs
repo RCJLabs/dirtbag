@@ -785,7 +785,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 62 ||
+  saved?.v !== 63 ||
   // Phase 29.1: nothing scavenged, a few days in.
   st.parts !== 0 ||
   // Phase 27.4: the onsight was called, and it went.
@@ -807,6 +807,7 @@ if (
   st.life.told !== 22 ||
   st.year?.home !== 'none' ||
   !Array.isArray(st.board?.jobs) ||
+  st.board.pick !== null ||
   typeof st.scene?.old !== 'number' ||
   typeof st.habits?.goes !== 'number' ||
   typeof st.calling?.offered !== 'boolean' ||
@@ -848,11 +849,15 @@ if (
   await fail(`the save doesn't show the two days: ${JSON.stringify(st).slice(0, 400)}`);
 log(`save: ${st.climber.name}, skills ${JSON.stringify(st.climber.skills)}`);
 
-// Phase 23.6: the week's board, in the journal, with what's been done on it.
+// Phase 23.6: the week's board, in the journal. Phase 29.2: its bounties, one taken, and
+// the rest come down.
 await click('#h-you');
 await click('#j-board');
-await expectText('#board', /This week’s, up at the café.*of \d|Paid/, 'the board');
-log(`board: ${st.board.jobs.map((j) => `${j.id}${j.paid ? ' (paid)' : ''}`).join(', ')}`);
+await expectText('#board', /This week’s, up at the café.*Take one/, 'the board');
+log(`board: ${st.board.jobs.map((j) => `${j.id} ($${j.cash}, ${j.parts} parts)`).join(', ')}`);
+await shot('bounties');
+await click('#bounty-0');
+await expectText('#board', /You took one.*since you took it/, 'a bounty taken');
 await click('#sheet .x');
 
 console.log('Offline');

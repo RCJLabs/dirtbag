@@ -194,8 +194,9 @@ import {
   BOARD_JOBS,
   WEEK_DAYS,
   boardWeek,
-  jobProgress,
+  bountyProgress,
   jobText,
+  payWords,
   ECHOES,
   FACTIONS,
   homeCrowd,
@@ -1741,7 +1742,7 @@ function JournalBody({ game, page, s }: { game: Game; page: JournalPage; s: Game
       ) : page === 'book' ? (
         <BookBody s={s} />
       ) : page === 'board' ? (
-        <BoardBody s={s} />
+        <BoardBody game={game} s={s} />
       ) : (
         <LatelyBody s={s} />
       )}
@@ -1757,34 +1758,59 @@ const JOURNAL_PAGES: [JournalPage, string][] = [
   ['words', 'Words'],
 ];
 
-// Phase 23.6: this week's board, each job's progress and pay. It pays itself.
-function BoardBody({ s }: { s: GameState }) {
+// Phase 23.6: this week's board. Phase 29.2: its bounties; you take one, the rest come down,
+// and it pays itself the moment it's done.
+function BoardBody({ game, s }: { game: Game; s: GameState }) {
   const left = boardWeek(s.day) * WEEK_DAYS - s.day + 1;
-  const now = s.board.week === boardWeek(s.day);
+  const up = `This week’s, up at the café: ${left} day${left > 1 ? 's' : ''} left.`;
+  if (s.board.week !== boardWeek(s.day))
+    return (
+      <div id="board">
+        <p className="sub">This week’s goes up the next thing you do.</p>
+      </div>
+    );
+  const mine = s.board.pick ? s.board.jobs[s.board.pick.i] : undefined;
+  const j = mine && BOARD_JOBS[mine.id];
+  if (mine && j) {
+    const n = Math.min(j.n, bountyProgress(s));
+    return (
+      <div id="board">
+        <p className="sub">{up} You took one; the rest came down.</p>
+        <p className="crux">
+          {mine.paid ? '✓ ' : ''}
+          {j.title} · {payWords(mine)}
+        </p>
+        <p className="sub">
+          {jobText(j, mine.grade)} {mine.paid ? 'Paid.' : `${n} of ${j.n} since you took it.`}
+        </p>
+      </div>
+    );
+  }
   return (
     <div id="board">
       <p className="sub">
-        {now
-          ? `This week’s, up at the café: ${left} day${left > 1 ? 's' : ''} left. Each pays the moment it’s done.`
-          : 'This week’s goes up the next thing you do.'}
+        {up} Take one and the rest come down. It counts from when you take it, and pays the moment it’s done.
       </p>
-      {now &&
-        s.board.jobs.map((job) => {
-          const j = BOARD_JOBS[job.id];
-          if (!j) return null;
-          const n = Math.min(j.n, jobProgress(s, job));
-          return (
-            <Fragment key={job.id}>
-              <p className="crux">
-                {job.paid ? '✓ ' : ''}
-                {j.title} · {money(j.cash)}
-              </p>
-              <p className="sub">
-                {jobText(j, job.grade)} {job.paid ? 'Paid.' : `${n} of ${j.n}.`}
-              </p>
-            </Fragment>
-          );
-        })}
+      {s.board.jobs.map((job, i) => {
+        const b = BOARD_JOBS[job.id];
+        if (!b) return null;
+        return (
+          <button
+            type="button"
+            key={job.id}
+            className="opt"
+            id={`bounty-${i}`}
+            onClick={() => game.dispatch({ t: 'bounty', i })}
+          >
+            <span>{b.title}</span>
+            <span className="c">{payWords(job)}</span>
+            <small>{jobText(b, job.grade)}</small>
+          </button>
+        );
+      })}
+      <p className="sub">
+        {s.parts} part{s.parts === 1 ? '' : 's'} in the van.
+      </p>
     </div>
   );
 }

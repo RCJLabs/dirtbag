@@ -292,12 +292,14 @@ export interface GameState {
   };
   // Phase 23.6. The week's board: which week, its jobs (each pitched at a grade when it went
   // up, and whether it's paid), the shifts you'd worked when it went up, and the sessions
-  // since.
+  // since. Phase 29.2: each job's a bounty, dealt its pay; `pick` is the one you took, and
+  // how far along it already was then (it counts from the pick).
   board: {
     week: number;
-    jobs: { id: string; grade: number; paid: boolean }[];
+    jobs: { id: string; grade: number; cash: number; parts: number; paid: boolean }[];
     shifts0: number;
     sessions: number;
+    pick: { i: number; base: number } | null;
   };
   // Phase 23.7. The last year recapped (0 before the first); and the Homecoming: not yet,
   // armed for your next send outside, or had (and the day).
@@ -585,6 +587,8 @@ export type Action =
   | { t: 'crewProject'; route: string | null }
   | { t: 'crewDay' }
   | { t: 'crewGo' }
+  // Phase 29.2: take one of this week's bounties off the Board.
+  | { t: 'bounty'; i: number }
   // Phase 28.3: a favour asked of one of the crew.
   | { t: 'favour'; who: string; what: FavourWhat }
   // Phase 17.6: calling home back.
