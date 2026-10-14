@@ -142,6 +142,8 @@ export type SheetId =
   | { k: 'crew' }
   // Phase 28.3: a favour from the crew: who, then what.
   | { k: 'favour'; who?: string }
+  // Phase 29.1: the van's build-outs.
+  | { k: 'build' }
   // Phase 25.7: a glossary word, tapped where it appeared; back to where that was.
   | { k: 'word'; term: string; back: SheetId }
   // A shift with a minigame to play (Phase 18.1), or just to work.

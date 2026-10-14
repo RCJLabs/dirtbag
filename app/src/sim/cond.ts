@@ -42,6 +42,7 @@ export interface Cond {
   favour?: string; // "who/kind": their ask is due (Phase 28.3, favours.ts)
   favourClash?: string; // "who/b": their ask clashes with your yes to b today
   renown?: number; // the crew's renown is at this tier or past it (Phase 28.4)
+  parts?: number; // this many scavenged parts in hand (Phase 29.1)
   renownBeat?: string; // "who/n": one of the old guard has a line about the crew at tier n
   sky?: Sky; // today's weather
   arc?: string; // "who/n": beat n of their arc is due (bond reached, days since the last)
@@ -128,6 +129,7 @@ export function holds(s: GameState, c: Cond): boolean {
   if (c.favour !== undefined && !favourDue(s, c.favour)) return false;
   if (c.favourClash !== undefined && !clashDue(s, c.favourClash)) return false;
   if (c.renown !== undefined && renownTier(s) < c.renown) return false;
+  if (c.parts !== undefined && s.parts < c.parts) return false;
   if (c.renownBeat !== undefined && !renownBeatDue(s, c.renownBeat)) return false;
   if (c.giftDue !== undefined) {
     const gave = s.people[c.giftDue]?.gave;

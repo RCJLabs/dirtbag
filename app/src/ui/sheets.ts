@@ -225,6 +225,7 @@ import {
   owedWord,
   FAVOUR,
   FAVOUR_WHAT,
+  GEAR,
   type FavourWhat,
   crewToText,
   keeperLine,
@@ -1118,6 +1119,21 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           ...(isNight(s.min) ? [] : [actRow(game, s, 'lot.rest')]),
           // Phase 22.5a: the cans, by day.
           ...(isNight(s.min) ? [] : [actRow(game, s, 'lot.cans')]),
+          // Phase 29.1: the free pile, for parts, and what they build.
+          ...(isNight(s.min) ? [] : [actRow(game, s, 'lot.scrap')]),
+          ...(BUILDS.some((b) => !(s.gear[b] ?? 0))
+            ? [
+                {
+                  label: 'Build-outs',
+                  note: `${s.parts === 1 ? 'One part' : `${s.parts} parts`} in the van. Still to build: ${BUILDS.filter(
+                    (b) => !(s.gear[b] ?? 0),
+                  )
+                    .map((b) => GEAR[b]!.name.toLowerCase())
+                    .join(', ')}.`,
+                  run: () => game.openSheet({ k: 'build' }),
+                },
+              ]
+            : []),
           trainRow(game, s),
           {
             label: 'Your week',
@@ -1230,6 +1246,18 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
                 },
               ]
             : []),
+          { label: 'Back', run: () => game.openSheet({ k: 'van' }) },
+        ],
+      };
+
+    // Phase 29.1: the van's build-outs, from scavenged parts.
+    case 'build':
+      return {
+        title: 'Build-outs',
+        sub: `${s.parts === 1 ? 'One part' : `${s.parts} parts`} from the free pile. Each build-out is yours for good.`,
+        close: true,
+        rows: [
+          ...BUILDS.filter((b) => !(s.gear[b] ?? 0)).map((b) => actRow(game, s, `lot.${b}`)),
           { label: 'Back', run: () => game.openSheet({ k: 'van' }) },
         ],
       };
@@ -2870,6 +2898,9 @@ function crewDayRows(game: Game, s: GameState): Row[] {
     },
   ];
 }
+
+// Phase 29.1: the build-outs, in the order they're shown.
+const BUILDS = ['shelf', 'solar', 'seals', 'platform'];
 
 // Phase 28.3: what you owe one of the crew, or they owe you, said.
 export function owedNote(s: GameState, who: string): string {

@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 61;
+export const SAVE_VERSION = 62;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -465,6 +465,11 @@ export const MIGRATIONS: Record<number, Migration> = {
   60: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return x;
+  },
+  // v61 -> v62 (Phase 29.1): scavenged parts. Nobody had picked over the free pile.
+  61: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, parts: 0 };
   },
 };
 
@@ -1072,6 +1077,7 @@ export function validate(x: unknown): string[] {
   const cp = x.crewProject;
   need(cp === null || (isObj(cp) && typeof cp.route === 'string' && isInt(cp.day)), 'crewProject');
   need(x.crewDay === null || isInt(x.crewDay), 'crewDay');
+  need(isInt(x.parts) && (x.parts as number) >= 0, 'parts');
   need(
     Array.isArray(x.crewSends) &&
       x.crewSends.every(

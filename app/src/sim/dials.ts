@@ -419,6 +419,18 @@ export const UPGRADE = {
   // Phase 22.3: a camp kitchen, and the recipes with it (content/food.ts).
   kitchen: { price: 80, min: 60 },
 };
+// Phase 29.1 [proposed]. Build-outs from scavenged parts (Evan's call: new ones; the garage's
+// cash upgrades stay): what each takes in parts and time, and what it does. A shelf keeps the
+// water and soap from spilling, so supplies last longer; a solar panel keeps the battery up
+// overnight; door seals and foam take some of a winter night's cold; a platform under the bed
+// is a little more back from a night's sleep. All of them is about nine mornings at the pile.
+export const BUILD = {
+  shelf: { parts: 2, min: 60, supplies: 0.75 },
+  solar: { parts: 5, min: 120 },
+  seals: { parts: 3, min: 90, cold: 0.7 },
+  platform: { parts: 3, min: 120, energy: 3 },
+};
+
 export const WINTER = {
   // What a winter night in the van takes out of you on top of the spot's own chill, before
   // the heater and insulation.
@@ -726,6 +738,9 @@ export const HUSTLE = {
   cans: { min: 120, energy: -8, cash: [3, 9] as [number, number] },
   bins: { min: 60, energy: -4, odds: 0.78, fed: [24, 39] as [number, number] },
   forage: { min: 120, energy: -6, fed: [18, 29] as [number, number], winter: 0.4 },
+  // Phase 29.1: the free pile by the dumpsters, by day. The cans' time and sweat for parts
+  // instead of cash: a broke morning is money now or the van later (criterion 1).
+  scrap: { min: 120, energy: -8, parts: [1, 2] as [number, number] },
   // Hungry under this and broke under this, the game says where the net is, once.
   teach: { fed: 35, cash: 10 },
 };

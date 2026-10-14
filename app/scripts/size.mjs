@@ -13,9 +13,10 @@ const DIST = new URL('../dist/', import.meta.url).pathname;
 // 24's three expedition scenes (287.4 KB before them), and to 360 KB on 3 Oct 2026 for Phase
 // 17's writing (338.3 KB after its cast), and to 400 KB the same day for Phase 18's
 // minigames and ladders (357.3 KB before them), and to 440 KB on 4 Oct 2026 for Phase 25.7's
-// polish (394.8 KB after 25.6's people). The art is code, so the game is mostly React, the
-// fonts and the painters; this catches an accidental asset or dependency.
-const BUDGET = 440 * 1024;
+// polish (394.8 KB after 25.6's people), and to 460 KB on 14 Oct 2026 for Phases 29 to 32
+// (430.2 KB after Phase 28's crew). The art is code, so the game is mostly React, the fonts
+// and the painters; this catches an accidental asset or dependency.
+const BUDGET = 460 * 1024;
 
 const PART = { '.js': 'script', '.css': 'styles', '.html': 'page', '.svg': 'icon', '.woff2': 'fonts' };
 const TEXT = new Set(['.js', '.css', '.html', '.svg']);

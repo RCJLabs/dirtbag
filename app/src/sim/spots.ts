@@ -2,7 +2,7 @@
 // night will cost and give, and the ticket odds at the Lot. sleep() and Tonight both read
 // nightAt, so the numbers a player weighs are the ones the night uses.
 
-import { DOG, SPOT, SPOTS, UPGRADE, WINTER, type SpotId } from './dials';
+import { BUILD, DOG, SPOT, SPOTS, UPGRADE, WINTER, type SpotId } from './dials';
 import { headroom } from './cond';
 import { PARTNERS, tierOf } from './presence';
 import { Rng } from './rng';
@@ -82,8 +82,14 @@ export function nightAt(s: GameState): Night {
   const winter = seasonOf(s.day) === 'winter';
   const heat = winter && (s.gear.heater ?? 0) > 0 && (s.gear.propane ?? 0) > 0;
   const chill = winter && !heat ? WINTER.cold + (rough ? 0 : d.winter) : 0;
-  const cold = Math.round(chill * ((s.gear.insulation ?? 0) > 0 ? UPGRADE.insulation.cold : 1));
-  const bed = (s.gear.bed ?? 0) > 0 && !rough ? UPGRADE.bed.energy : 0;
+  // Phase 29.1: door seals from scrap take some more of it.
+  const sealed = (s.gear.seals ?? 0) > 0 ? BUILD.seals.cold : 1;
+  const cold = Math.round(chill * ((s.gear.insulation ?? 0) > 0 ? UPGRADE.insulation.cold : 1) * sealed);
+  // A mattress, and (Phase 29.1) a platform under it.
+  const bed = rough
+    ? 0
+    : ((s.gear.bed ?? 0) > 0 ? UPGRADE.bed.energy : 0) +
+      ((s.gear.platform ?? 0) > 0 ? BUILD.platform.energy : 0);
   return {
     spot,
     wanted: spot === want ? null : want,

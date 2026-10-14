@@ -69,7 +69,7 @@
 | 16 The spine | Next after 21–23. |
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 | 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
-| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phase 27 (14 Oct 2026); Phase 28 is the current milestone. |
+| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27 and 28 (14 Oct 2026); Phase 29 is the current milestone. |
 
 ## The rebuild track
 
@@ -3142,7 +3142,7 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
 
 **Phase 27 closed by Evan's call (14 Oct 2026).** Carried: the Big Stone's four new names and grades stay [proposed] for Evan to edit; the bots don't call a go, so the call's psyche is in the tests and the e2e but not the harness. The CURRENT MILESTONE moves to Phase 28.
 
-### Phase 28 — The crew   **<<< CURRENT MILESTONE**
+### Phase 28 — The crew
 
 *Medium. New, from the audit's list of what to keep (`social.md`): the crew's name, its renown, a crew project, favours. The rebuild has none of them.*
 
@@ -3244,9 +3244,9 @@ Carried, for playtesting or a call:
 - The bots never say no to a favour.
 - Outdoors' four-career target sits on a rate of about 60%.
 
-Closing it is Evan's call.
+**Phase 28 closed by Evan's call (14 Oct 2026),** with those four carried. The CURRENT MILESTONE moves to Phase 29. The download is 430.2 KB of 440.
 
-### Phase 29 — The van, lived in
+### Phase 29 — The van, lived in   **<<< CURRENT MILESTONE**
 
 *Medium. Ties the hustle, the van, food and psyche together.*
 
@@ -3267,6 +3267,32 @@ Closing it is Evan's call.
 1. The hustle has a choice with a trade-off.
 2. The replacement decision comes to a bot career by year three.
 3. Cooking plays in the e2e.
+
+**Planned (14 Oct 2026), with Evan's calls:**
+- **Age:** the van ages with miles driven.
+- **Replacing:** a used van (fresh miles, no build-outs) or the Rig; rebuild and limp on are the other choices.
+- **Build-outs:** new ones, from scavenged parts; the garage's cash upgrades stay.
+- **The download budget** goes to 460 KB.
+- **Slices:** 29.1 scavenging and build-outs; 29.2 the Board's bounties; 29.3 the van ages, and the decision; 29.4 cooking, and the close.
+
+**Status (14 Oct 2026): 29.1 built: scavenging and build-outs.** Save v62, 0.999.46.
+- **The free pile,** a new hustle at the Lot, by day, once a day. It takes the cans' time and sweat and finds one or two parts, not money. A broke morning is cash now or the van later: criterion 1's choice with a trade-off.
+- **Build-outs from parts,** at the van, each built once:
+  - **a shelf:** a quarter less supplies used a night;
+  - **a solar panel:** the battery holds overnight;
+  - **door seals:** less of a winter night's cold, on top of insulation;
+  - **a bed platform:** more energy from a night's sleep, on top of the mattress.
+
+  All four take about nine mornings at the pile.
+- **The budget** is 460 KB (Evan's call).
+- **Save v62:** `parts`. A real 0.999.45 save loads, its favours owed kept.
+- **The bots** go to the pile only on a day they didn't climb, with energy to spare, and build in a set order.
+  - **Measured:** at the pile every evening they could, the media bots' climbing paid for the lost rest. Over 16 careers each, 12 reached the top against main's 15. With the rule, it's 16 of 16.
+  - **The cost of the rule:** the career bots climb nearly every day, so they rarely reach the pile: 0 or 1 parts by day 224, and nothing built. The build-outs are a player's choice the harness doesn't exercise [measured].
+- **The harness:** every target passes but Outdoors, at the known 3 of 4.
+  - V10 on day 179; Act III ended on day 303; Media 4 of 4.
+  - The hustle rule holds; the pile pays parts, not cash.
+- **The download** is 431.3 KB of 460.
 
 ### Phase 30 — Getting older
 
@@ -3700,3 +3726,5 @@ Closing it is Evan's call.
 - 2026-10-14 — Phase 28.2 built: the crew project (you pick it, two grades over your best), a crew day a week by text, the crew's goes showing you the way, and the send train when your send goes (Evan's calls); Send Train in the Record Book. Save v60. 0.999.43.
 - 2026-10-14 — Phase 28.3 built: favours both ways (a shift covered, a rack, a ride; their belays, rides and loans), two owed and no third (Evan's call), and a clash of two asks as another way into crew drama. Outdoors' four-career target came out 3 of 4, the same rate as main over 16. Save v61. 0.999.44.
 - 2026-10-14 — Phase 28.4 built: renown in lines only (Evan's call): the threads, Ray and Frank, the crowd and the shops say the crew's name more the more it's done. Phase 28's two Done-when criteria pass; closing it is Evan's call. No save change. 0.999.45.
+- 2026-10-14 — Phase 28 closed by Evan's call; CURRENT MILESTONE moved to Phase 29, the van, lived in.
+- 2026-10-14 — Phase 29 planned with Evan's calls (the van ages with miles; a used van or the Rig to replace it; new build-outs from parts; the budget to 460 KB). 29.1 built: the free pile, parts for a shelf, a solar panel, door seals and a bed platform; the bots go to the pile only on days off the rock. Save v62. 0.999.46.

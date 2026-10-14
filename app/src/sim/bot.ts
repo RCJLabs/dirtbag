@@ -34,6 +34,7 @@ import {
   MONEY,
   SICK,
   HUSTLE,
+  BUILD,
   PSYCHE,
   SUPPLIES,
   UPGRADE,
@@ -320,6 +321,10 @@ const CAREER_PLACES = [
   'center',
   'gym',
 ];
+// Phase 29.1: the energy a bot keeps back before an evening at the free pile.
+const BOT_SCRAP = 50;
+// Phase 29.1: the order a bot builds the van out in.
+const BUILD_ORDER = ['shelf', 'solar', 'seals', 'platform'] as const;
 // The jobs a career bot weighs, by what they pay an hour.
 const JOB_ACTS = ['cafe.shift', 'diner.shift', 'cave.coach', 'gym.set', 'warehouse.shift'];
 // Each job's one-shift act (Phase 22.1): what a bot signed up for goes to work as.
@@ -579,6 +584,18 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
 
   // Phase 22.3: the best meal the pantry makes, the ones that fuel you first; ramen when
   // there's no kitchen or nothing in the pantry for it.
+  // Phase 29.1: the van's build-outs, in a set order: what the parts in hand build, and the
+  // free pile for the rest on a day it didn't climb, with energy to spare. Measured: at the
+  // pile every evening it could, the media bots' climbing paid for the lost rest (12 of 16
+  // to the top against main's 15).
+  function buildOut(where: string) {
+    const next = BUILD_ORDER.find((b) => !(s.gear[b] ?? 0));
+    if (!next) return;
+    const climbed = !!PLACES[where];
+    if (!climbed && s.parts < BUILD[next].parts && s.energy >= BOT_SCRAP) tryAct('lot.scrap');
+    if (s.parts >= BUILD[next].parts) tryAct(`lot.${next}`);
+  }
+
   function eat(): boolean {
     for (const id of MEAL_ORDER) if (tryAct(`lot.${id}`)) return true;
     return tryAct('lot.cook');
@@ -957,6 +974,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     if (s.dog && s.dog.fed < 40) tryAct('lot.kibble');
     // Broke (Phase 22.5a): cans by day, and the bins after dark if there's no food money.
     if (s.cash < HUSTLE.teach.cash) tryAct('lot.cans');
+    buildOut(where);
     if (!isNight(s.min)) tryAct('lot.rest');
     if (s.fed < HUSTLE.teach.fed && s.cash < -(ACTS['lot.cook']!.cost.cash ?? 0)) binRun();
     // The fire when the days have gone flat (Phase 22.4d), as a player would; every night,
@@ -1486,6 +1504,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     if (s.dog && s.dog.fed < 40) tryAct('lot.kibble');
     // Broke (Phase 22.5a): cans by day, and the bins after dark if there's no food money.
     if (s.cash < HUSTLE.teach.cash) tryAct('lot.cans');
+    buildOut(where);
     if (!isNight(s.min)) tryAct('lot.rest');
     if (s.fed < HUSTLE.teach.fed && s.cash < -(ACTS['lot.cook']!.cost.cash ?? 0)) binRun();
     // The fire when the days have gone flat (Phase 22.4d), as a player would; every night,
