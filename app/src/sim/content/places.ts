@@ -27,6 +27,7 @@ import {
   UPGRADE,
   BUILD,
   VAN,
+  VAN_AGE,
   WINTER,
   type Rock,
   type VanPart,
@@ -131,6 +132,8 @@ export interface ActDef {
   gear?: { id: string; set?: number; add?: number };
   // A repair at the garage (Phase 22.2a): that part back to new, at a price by its wear.
   van?: VanPart;
+  // Phase 29.3: Dale's verdict taken, a rebuild or a used van (VAN_AGE in dials.ts).
+  swap?: 'rebuild' | 'used';
   // Phase 22.3: a recipe it cooks (content/food.ts), an ingredient it buys a pack of, a meal it
   // is (for the variety count), and whether it's a cup of coffee.
   recipe?: string;
@@ -505,6 +508,8 @@ export const PLACES: Record<string, PlaceDef> = {
       'garage.tires',
       'garage.engine',
       'garage.battery',
+      'garage.rebuild',
+      'garage.used',
       'garage.bed',
       'garage.curtains',
       'garage.toolkit',
@@ -920,6 +925,26 @@ export const ACTS: Record<string, ActDef> = {
     needs: [{ worn: 'battery', why: 'It’s holding a charge fine.' }, { payVan: 'battery' }],
     van: 'battery',
     says: 'A new battery. The van starts first time, like it’s showing off.',
+  },
+  // Phase 29.3: when a rebuild costs more than the van's worth, Dale puts it to you (van.ts).
+  'garage.rebuild': {
+    label: 'Rebuild the engine',
+    note: 'A day on the lift. It keeps everything fitted, and runs like a van with fewer miles on it.',
+    cost: { min: VAN_AGE.rebuild.min, cash: -VAN_AGE.rebuild.price },
+    needs: [{ verdict: true, why: 'Dale says it has miles in it yet.' }, { pay: VAN_AGE.rebuild.price }],
+    swap: 'rebuild',
+    says: 'Dale has it in pieces all day. By closing it idles like it means it.',
+  },
+  'garage.used': {
+    label: 'Trade it in for a used van',
+    note: 'Off Dale’s lot, yours taken in part exchange. Fresh miles. What’s fitted stays with the old one; the toolkit comes with you.',
+    cost: { min: VAN_AGE.used.min },
+    needs: [
+      { verdict: true, why: 'Dale says it has miles in it yet.' },
+      { payUsed: true, why: "The card won't cover it." },
+    ],
+    swap: 'used',
+    says: 'You move your life across in an afternoon. The new one smells of somebody else’s dog.',
   },
   // Phase 22.2c: what Dale fits to the van, once and for good (UPGRADE in dials.ts).
   ...upgrade(

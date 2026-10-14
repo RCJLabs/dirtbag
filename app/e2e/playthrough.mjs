@@ -785,9 +785,12 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 63 ||
+  saved?.v !== 64 ||
   // Phase 29.1: nothing scavenged, a few days in.
   st.parts !== 0 ||
+  // Phase 29.3: miles on the clock past a new climber's, and nothing for Dale to say yet.
+  !(st.van?.miles > 160000) ||
+  st.van.verdict !== null ||
   // Phase 27.4: the onsight was called, and it went.
   st.routes.warm?.sent?.called !== true ||
   // Phase 28.1: no crew to name yet, a few days in.
@@ -1177,7 +1180,7 @@ console.log('Broken down on the road');
     x: null,
     min: 9 * 60,
     cash: 300,
-    van: { tires: 5, engine: 80, battery: 80 },
+    van: { ...saved.state.van, tires: 5, engine: 80, battery: 80 },
     breakdown: { part: 'tires', to: 'road', rest: 30, bodged: false },
   };
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
@@ -1307,7 +1310,7 @@ console.log('A hitchhiker on the way to Roadside');
     cash: 150,
     energy: 80,
     guitar: 0,
-    van: { tires: 100, engine: 100, battery: 100 },
+    van: { ...saved.state.van, tires: 100, engine: 100, battery: 100 },
     deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0 },
     encounter: null,
   };
@@ -1365,7 +1368,7 @@ console.log('A roadside stop on the way to Roadside');
     x: null,
     cash: 150,
     energy: 80,
-    van: { tires: 100, engine: 100, battery: 100 },
+    van: { ...saved.state.van, tires: 100, engine: 100, battery: 100 },
     deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0 },
     encounter: null,
   };
@@ -1425,7 +1428,7 @@ console.log('A walk-out from Roadside');
     cash: 150,
     people: {},
     injury: null,
-    van: { tires: 100, engine: 100, battery: 100 },
+    van: { ...saved.state.van, tires: 100, engine: 100, battery: 100 },
     deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0 },
     encounter: null,
   };

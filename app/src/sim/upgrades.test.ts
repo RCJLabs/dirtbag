@@ -3,7 +3,7 @@
 // burns propane.
 import { describe, expect, it } from 'vitest';
 import { road } from './content/places';
-import { BODY, SICK, SPOT, UPGRADE, VAN, WINTER } from './dials';
+import { BODY, SICK, SPOT, UPGRADE, VAN, WINTER, VAN_AGE } from './dials';
 import { act, newGame } from './game';
 import { nightAt, ticketOdds } from './spots';
 import type { GameState } from './types';
@@ -76,7 +76,7 @@ describe('what Dale fits', () => {
 
   it('takes a fifth off the gas with the tune-up', () => {
     const gas = road('lot', 'road')!.cash;
-    const van = { tires: 100, engine: 100, battery: 100 };
+    const van = { tires: 100, engine: 100, battery: 100, miles: VAN_AGE.start, rebuilt: 0, verdict: null };
     const plain = act(base({ van }), { t: 'travel', to: 'road' }).state;
     const tuned = act(base({ van, gear: { tuneup: 1 } }), { t: 'travel', to: 'road' }).state;
     expect(400 - plain.cash).toBe(gas);

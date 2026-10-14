@@ -6,7 +6,7 @@ import { fromSave, MIGRATIONS, SAVE_VERSION, toSave, validate, type Migration } 
 import type { Action } from './types';
 import { ageOf, daysLeft } from './age';
 import { currentGoal } from './story';
-import { AGE, BOARD } from './dials';
+import { AGE, BOARD, VAN_AGE } from './dials';
 import { boardWeek } from './board';
 
 const played = () => {
@@ -95,11 +95,18 @@ const V59 = readFileSync(new URL('./fixtures/save-v59.json', import.meta.url), '
 const V60 = readFileSync(new URL('./fixtures/save-v60.json', import.meta.url), 'utf8');
 const V61 = readFileSync(new URL('./fixtures/save-v61.json', import.meta.url), 'utf8');
 const V62 = readFileSync(new URL('./fixtures/save-v62.json', import.meta.url), 'utf8');
+const V63 = readFileSync(new URL('./fixtures/save-v63.json', import.meta.url), 'utf8');
+// And Phase 29.3's: the van's clock started at a new climber's.
+const revan = <T extends object>(st: T): T =>
+  'van' in st
+    ? { ...st, van: { ...(st as { van: object }).van, miles: VAN_AGE.start, rebuilt: 0, verdict: null } }
+    : st;
 // And Phase 29.2's: the week's board taken down, to go up again as bounties.
-const reboard = <T extends object>(st: T) => ({
-  ...st,
-  board: { week: 0, jobs: [], shifts0: 0, sessions: 0, pick: null },
-});
+const reboard = <T extends object>(st: T) =>
+  revan({
+    ...st,
+    board: { week: 0, jobs: [], shifts0: 0, sessions: 0, pick: null },
+  });
 // And Phase 25.5's: no League night season settled, on a save that had comps.
 const seasoned = (st: { comps: object }) => ({ ...st, comps: { ...st.comps, seasons: [] } });
 // What R2's migration adds to any older save.
@@ -128,7 +135,10 @@ const P216 = { speed: { pb: null, runs: 0, day: 0 }, mode: 'rope', soloing: null
 // Phase 22.1's week: nothing signed up for, no warnings, living as a dirtbag.
 const P221 = { shifts: [], strikes: {}, benched: {}, lifestyle: 'dirtbag' };
 // Phase 22.2a's van: worn from the miles on it, and running.
-const P222 = { van: { tires: 70, engine: 70, battery: 70 }, breakdown: null };
+const P222 = {
+  van: { tires: 70, engine: 70, battery: 70, miles: VAN_AGE.start, rebuilt: 0, verdict: null },
+  breakdown: null,
+};
 // Phase 22.2b: parked at the Lot, no nights counted, no driveway.
 const P222B = { spot: 'lot', lotNights: 0, driveway: 0 };
 // Phase 22.3: an empty pantry, no meals remembered, not fueled.
@@ -271,7 +281,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(2);
     expect(r.state).toEqual({
-      ...spoken(JSON.parse(V2).state),
+      ...revan(spoken(JSON.parse(V2).state)),
       ...R2_BODY,
       ...P10,
       ...P21,
@@ -300,7 +310,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(3);
     expect(r.state).toEqual({
-      ...spoken(JSON.parse(V3).state),
+      ...revan(spoken(JSON.parse(V3).state)),
       ...P10,
       ...P21,
       ...P213(JSON.parse(V3).state.day),
@@ -328,7 +338,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(4);
     expect(r.state).toEqual({
-      ...spoken(JSON.parse(V4).state),
+      ...revan(spoken(JSON.parse(V4).state)),
       ...P21,
       ...P213(JSON.parse(V4).state.day),
       ...JOBS0,
@@ -410,7 +420,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(7);
     expect(r.state).toEqual({
-      ...spoken(JSON.parse(V7).state),
+      ...revan(spoken(JSON.parse(V7).state)),
       ...P215,
       ...P216,
       ...P221,
@@ -434,7 +444,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(8);
     expect(r.state).toEqual({
-      ...spoken(JSON.parse(V8).state),
+      ...revan(spoken(JSON.parse(V8).state)),
       ...P216,
       ...P221,
       ...P222,
@@ -457,7 +467,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(9);
     expect(r.state).toEqual({
-      ...spoken(JSON.parse(V9).state),
+      ...revan(spoken(JSON.parse(V9).state)),
       ...P221,
       ...P222,
       ...P222B,
@@ -479,7 +489,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(10);
     expect(r.state).toEqual({
-      ...spoken(JSON.parse(V10).state),
+      ...revan(spoken(JSON.parse(V10).state)),
       ...P222,
       ...P222B,
       ...P223,
@@ -501,7 +511,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(11);
     expect(r.state).toEqual({
-      ...spoken(JSON.parse(V11).state),
+      ...revan(spoken(JSON.parse(V11).state)),
       ...P222B,
       ...P223,
       ...P224,
@@ -521,7 +531,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(12);
     expect(r.state).toEqual({
-      ...spoken(JSON.parse(V12).state),
+      ...revan(spoken(JSON.parse(V12).state)),
       ...P223,
       ...P224,
       ...P224B,
@@ -540,7 +550,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(13);
     expect(r.state).toEqual({
-      ...spoken(JSON.parse(V13).state),
+      ...revan(spoken(JSON.parse(V13).state)),
       ...P224,
       ...P224B,
       ...P224C,
@@ -558,7 +568,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(14);
     expect(r.state).toEqual({
-      ...spoken(JSON.parse(V14).state),
+      ...revan(spoken(JSON.parse(V14).state)),
       ...P224B,
       ...P224C,
       ...P224D,
@@ -575,7 +585,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(15);
     expect(r.state).toEqual({
-      ...spoken(JSON.parse(V15).state),
+      ...revan(spoken(JSON.parse(V15).state)),
       ...P224C,
       ...P224D,
       ...P225A,
@@ -590,7 +600,9 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(16);
-    expect(r.state).toEqual({ ...spoken(JSON.parse(V16).state), ...P224D, ...P225A, ...P225B, ...P226A });
+    expect(r.state).toEqual(
+      revan({ ...spoken(JSON.parse(V16).state), ...P224D, ...P225A, ...P225B, ...P226A }),
+    );
     expect(r.state.sick).toEqual({ kind: 'cold', until: 4 });
     // It had been to the Road: going back isn't somewhere new.
     const back = act(r.state, { t: 'travel', to: 'road' }).state;
@@ -603,7 +615,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(17);
-    expect(r.state).toEqual({ ...spoken(JSON.parse(V17).state), ...P225A, ...P225B, ...P226A });
+    expect(r.state).toEqual(revan({ ...spoken(JSON.parse(V17).state), ...P225A, ...P225B, ...P226A }));
     expect(r.state.psyche).toEqual({ level: 41, stale: 2 });
     expect(r.state.crags).toEqual(['road']);
     // It's hungry and broke: the next thing it does, it's told where the net is, once.
@@ -616,7 +628,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(18);
-    expect(r.state).toEqual({ ...spoken(JSON.parse(V18).state), ...P225B, ...P226A });
+    expect(r.state).toEqual(revan({ ...spoken(JSON.parse(V18).state), ...P225B, ...P226A }));
     expect(r.state.seen).toEqual(['hustle']);
     expect(r.state.today).toContain('cans');
   });
@@ -626,7 +638,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(19);
-    expect(r.state).toEqual({ ...spoken(JSON.parse(V19).state), ...P226A });
+    expect(r.state).toEqual(revan({ ...spoken(JSON.parse(V19).state), ...P226A }));
     expect(r.state.guitar).toBe(12.5);
     expect(r.state.spot).toBe('driveway');
   });
@@ -647,7 +659,7 @@ describe('saves', () => {
       epic: 0,
     });
     expect(r.state).toEqual({
-      ...spoken(JSON.parse(V20).state),
+      ...revan(spoken(JSON.parse(V20).state)),
       deck: r.state.deck,
       dogs: [],
       dream: { pick: null, pot: 0, owned: [] },
@@ -701,7 +713,7 @@ describe('saves', () => {
     expect(r.from).toBe(21);
     const old = spoken(JSON.parse(V21).state);
     expect(r.state).toEqual({
-      ...old,
+      ...revan(old),
       deck: { ...old.deck, epic: 0 },
       dogs: [],
       dream: { pick: null, pot: 0, owned: [] },
@@ -755,7 +767,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(22);
     expect(r.state).toEqual({
-      ...spoken(JSON.parse(V22).state),
+      ...revan(spoken(JSON.parse(V22).state)),
       dogs: [],
       dream: { pick: null, pot: 0, owned: [] },
       table: null,
@@ -808,7 +820,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(23);
     expect(r.state).toEqual({
-      ...spoken(JSON.parse(V23).state),
+      ...revan(spoken(JSON.parse(V23).state)),
       dream: { pick: null, pot: 0, owned: [] },
       table: null,
       cards: null,
@@ -860,7 +872,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(24);
     expect(r.state).toEqual({
-      ...spoken(JSON.parse(V24).state),
+      ...revan(spoken(JSON.parse(V24).state)),
       table: null,
       cards: null,
       reads: {},
@@ -911,7 +923,7 @@ describe('saves', () => {
     if (!r.ok) return;
     expect(r.from).toBe(25);
     expect(r.state).toEqual({
-      ...spoken(JSON.parse(V25).state),
+      ...revan(spoken(JSON.parse(V25).state)),
       cards: null,
       reads: {},
       booked: null,
@@ -963,7 +975,7 @@ describe('saves', () => {
     const old = spoken(JSON.parse(V26).state);
     expect(old.expedition).toEqual({ id: 'elcap', day: 3, pitch: 0, energy: 100 });
     expect(r.state).toEqual({
-      ...old,
+      ...revan(old),
       expedition: {
         id: 'elcap',
         day: 3,
@@ -1022,7 +1034,7 @@ describe('saves', () => {
     expect(r.from).toBe(27);
     const old = spoken(JSON.parse(V27).state);
     expect(r.state).toEqual({
-      ...old,
+      ...revan(old),
       expedition: { ...old.expedition, food: 14, ledge: true, stove: true, seen: [] },
       booked: null,
       book: [],
@@ -1072,7 +1084,7 @@ describe('saves', () => {
     const old = spoken(JSON.parse(V28).state);
     expect(old.expedition).toMatchObject({ id: 'elcap', day: 2, pitch: 1, nights: 1 });
     expect(r.state).toEqual({
-      ...old,
+      ...revan(old),
       expedition: { ...old.expedition, seen: [] },
       book: [],
       record: expect.any(Object),
@@ -1120,7 +1132,7 @@ describe('saves', () => {
     expect(r.from).toBe(29);
     const old = spoken(JSON.parse(V29).state);
     expect(r.state).toEqual({
-      ...old,
+      ...revan(old),
       book: [],
       record: expect.any(Object),
       origin: null,
@@ -1218,7 +1230,7 @@ describe('saves', () => {
       parts,
       ...rest
     } = r.state;
-    expect(rest).toEqual(old);
+    expect(rest).toEqual(revan(old));
     expect(family).toBeNull();
     expect(origin).toBeNull();
     expect(talents.ids).toEqual([]);
@@ -1270,7 +1282,7 @@ describe('saves', () => {
       parts,
       ...rest
     } = r.state;
-    expect(rest).toEqual(JSON.parse(V31).state);
+    expect(rest).toEqual(revan(JSON.parse(V31).state));
     expect(calling.id).toBeNull();
     expect(origin).toBeNull();
     expect(talents).toEqual({ ids: [], known: [], from: rest.climber.skills });
@@ -1316,7 +1328,7 @@ describe('saves', () => {
       parts,
       ...rest
     } = r.state;
-    expect(rest).toEqual(JSON.parse(V32).state);
+    expect(rest).toEqual(revan(JSON.parse(V32).state));
     expect(rest.origin).toBe('desert');
     expect(calling).toEqual({ id: null, since: 0, rungs: [], offered: false });
   });
@@ -1360,7 +1372,7 @@ describe('saves', () => {
       parts,
       ...rest
     } = r.state;
-    expect(rest).toEqual(JSON.parse(V33).state);
+    expect(rest).toEqual(revan(JSON.parse(V33).state));
     expect(rest.calling.id).toBe('sendorbust');
     expect(paths).toEqual({ tiers: {}, told: [] });
     expect(mastery).toEqual([]);
@@ -1403,7 +1415,7 @@ describe('saves', () => {
       parts,
       ...rest
     } = r.state;
-    expect(rest).toEqual(JSON.parse(V34).state);
+    expect(rest).toEqual(revan(JSON.parse(V34).state));
     expect(rest.quirk).toBe('nightowl');
     expect(scene).toEqual({ old: 50, gym: 50, stances: [], echoes: [], last: 0, echoLast: 0 });
   });
@@ -1442,7 +1454,7 @@ describe('saves', () => {
       parts,
       ...rest
     } = r.state;
-    expect(rest).toEqual(JSON.parse(V35).state);
+    expect(rest).toEqual(revan(JSON.parse(V35).state));
     expect(rest.scene.old).toBe(62);
     expect(board).toEqual({ week: 0, jobs: [], shifts0: 0, sessions: 0, pick: null });
   });
@@ -2117,6 +2129,22 @@ describe('saves', () => {
     expect(Object.values(r.state.people).some((p) => (p.owed ?? 0) > 0)).toBe(true);
   });
 
+  it('load a real 0.999.47 save: its bounty kept, the van’s clock started at a new climber’s', () => {
+    const r = fromSave(V63);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(63);
+    const old = JSON.parse(V63).state;
+    expect(old.board.pick).not.toBeNull();
+    expect(r.state).toEqual(revan(old));
+    expect(r.state.van).toMatchObject({
+      engine: old.van.engine,
+      miles: VAN_AGE.start,
+      rebuilt: 0,
+      verdict: null,
+    });
+  });
+
   it('load a real 0.999.46 save: its parts kept, the week’s board up again as bounties', () => {
     const r = fromSave(V62);
     expect(r.ok).toBe(true);
@@ -2141,7 +2169,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(63);
+    expect(SAVE_VERSION).toBe(64);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

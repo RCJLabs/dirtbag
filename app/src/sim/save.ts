@@ -8,7 +8,7 @@
 import { CARRIED, SKILLS, STARTS } from './climber';
 import { GEAR } from './content/gear';
 import { PLACES } from './content/places';
-import { AGE, FACTION, OWN_GYM, LIFESTYLE, PLANS, SPOTS, TRAIN, YEAR } from './dials';
+import { AGE, FACTION, OWN_GYM, LIFESTYLE, PLANS, SPOTS, TRAIN, VAN_AGE, YEAR } from './dials';
 import { JOBS } from './content/jobs';
 import { ROUTES, WALLS } from './content/routes';
 import { EXPEDITIONS } from './content/expeditions';
@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 63;
+export const SAVE_VERSION = 64;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -477,6 +477,13 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, board: { week: 0, jobs: [], shifts0: 0, sessions: 0, pick: null } };
   },
+  // v63 -> v64 (Phase 29.3): the van's miles. The clock starts now, at a new climber's (Evan's
+  // call), so nobody loads into a dying engine.
+  63: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const van = isObj(x.van) ? x.van : {};
+    return { ...x, van: { ...van, miles: VAN_AGE.start, rebuilt: 0, verdict: null } };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -866,7 +873,16 @@ export function validate(x: unknown): string[] {
   need(isInt(x.driveway) && x.driveway >= 0, 'driveway');
   const pct = (v: unknown) => isNum(v) && v >= 0 && v <= 100;
   const van = x.van;
-  need(isObj(van) && ['tires', 'engine', 'battery'].every((k) => pct(van[k])), 'van');
+  need(
+    isObj(van) &&
+      ['tires', 'engine', 'battery'].every((k) => pct(van[k])) &&
+      isInt(van.miles) &&
+      van.miles >= 0 &&
+      isInt(van.rebuilt) &&
+      van.rebuilt >= 0 &&
+      (van.verdict === null || isInt(van.verdict)),
+    'van',
+  );
   const bd = x.breakdown;
   need(
     bd === null ||

@@ -19,7 +19,7 @@ export const DREAMS: Dream[] = [
     name: 'The Dream Rig',
     cost: 2800,
     blurb: 'A fully dialed adventure van: the rig you actually want to live out of.',
-    perk: 'Every spot costs half as much for good, and every upgrade Dale fits is fitted.',
+    perk: 'Every spot costs half as much for good. It comes fitted and built out, with next to no miles on it, and Dale takes the old van.',
     claimed:
       'The Dream Rig. Bed, kitchen, heater, the lot, and a van you’d choose again. Every spot costs half now.',
   },

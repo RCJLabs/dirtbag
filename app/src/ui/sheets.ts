@@ -133,6 +133,9 @@ import {
   JOBS,
   friendFor,
   PART_NAME,
+  engineCap,
+  vanWorth,
+  verdictDue,
   PARTS,
   partWord,
   PEOPLE,
@@ -334,6 +337,9 @@ function actRow(game: Game, s: GameState, id: string): Row {
     .filter(Boolean)
     .map((x) => String(x).replace(/\.$/, ''))
     .join('. ');
+  // Phase 29.3: the engine comes back only as far as its miles let it.
+  if (a.van === 'engine' && !why && engineCap(s) < 100)
+    note = `Back to ${engineCap(s)} of 100: the most it’ll take at ${s.van.miles.toLocaleString('en-US')} miles`;
   if (a.sleep && !why) {
     const n = nightAt(s);
     note = n.rough
@@ -1170,7 +1176,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           },
           {
             label: 'Under the hood',
-            note: `${PARTS.map((p) => `${PART_NAME[p]} ${partWord(s.van[p])}`).join(', ')}. The garage is in Midtown.`,
+            note: `${PARTS.map((p) => `${PART_NAME[p]} ${partWord(s.van[p])}`).join(', ')}. ${s.van.miles.toLocaleString('en-US')} miles; Dale would give you ${money(vanWorth(s))} for it. The garage is in Midtown.`,
             run: () => game.openSheet({ k: 'journal', page: 'you' }),
           },
           // Phase 24.2: a trip you've booked, and the day you fly.
@@ -1647,7 +1653,11 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         close: true,
         head,
         rows: [
-          ...p.acts.flatMap((a) => actRows(game, s, a)),
+          // Phase 29.3: Dale's verdict, once it's come to that, the Rig beside it.
+          ...p.acts.filter((a) => !ACTS[a]!.swap || verdictDue(s)).flatMap((a) => actRows(game, s, a)),
+          ...(id.id === 'garage' && verdictDue(s)
+            ? [{ label: 'The Dream Rig', note: dreamNote(s), run: () => game.openSheet({ k: 'dreams' }) }]
+            : []),
           // Phase 22.5b: a set out front.
           ...(id.id === 'cafe' ? [buskRow(game, s)] : []),
           // Phase 26b: the day labor posted at the market.

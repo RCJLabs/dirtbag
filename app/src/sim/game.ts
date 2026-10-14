@@ -242,6 +242,7 @@ import {
   SPOT,
   SPOTS,
   VAN,
+  VAN_AGE,
   WALL,
   WINTER,
   WORK,
@@ -314,7 +315,22 @@ import { PSYCHE_LINE, psycheBy, psycheWord } from './psyche';
 import { AREA, MARK_NAME, STYLE_NAME, type Mark } from './content/injuries';
 import { drivewayHost, nightAt, spotBlocked, ticketRoll } from './spots';
 import { SPOT_LINE, SPOT_NAME } from './content/spots';
-import { bodgeHolds, breakdownRoll, friendFor, gasFor, PART_NAME, repairCost, unsafePart } from './van';
+import {
+  bodgeHolds,
+  breakdownRoll,
+  capOf,
+  engineCap,
+  FITTED,
+  friendFor,
+  gasFor,
+  milesFor,
+  PART_NAME,
+  repairCost,
+  unsafePart,
+  usedPrice,
+  vanWorth,
+  verdictDue,
+} from './van';
 import { BODGE_FAILED, BODGE_HELD, BREAKDOWN_LINE } from './content/van';
 import { speedBlocked, speedGains, speedLoad, speedTime, runsToday } from './speed';
 import { fill, lower, money, ordinal, skillsNote } from './format';
@@ -343,6 +359,7 @@ import { ageOf, birthdayLine, bodyWaits, retireBlocked } from './age';
 import { familyFill, heirOf } from './heir';
 import { COACH_LINE, HEIR_OPEN } from './content/heir';
 import { BOARD_JOBS } from './content/board';
+import { DALE_VERDICT, RIG_TRADE } from './content/garage';
 import { CALLINGS, OPEN_CALLINGS } from './content/callings';
 import { CAME_ACROSS, ORIGINS } from './content/origins';
 import { TALENTS } from './content/talents';
@@ -433,7 +450,7 @@ export function newGame(seed: string): GameState {
     spot: 'lot',
     lotNights: 0,
     driveway: 0,
-    van: { ...VAN.start },
+    van: { ...VAN.start, miles: VAN_AGE.start, rebuilt: 0, verdict: null },
     breakdown: null,
     pantry: {},
     meals: [],
@@ -553,6 +570,8 @@ export function actCost(s: GameState, d: ActDef): Delta {
     return { ...d.cost, cash: Math.round((d.cost.cash ?? 0) * shopMult(s)) };
   // A repair costs its share of the part's price, by wear.
   if (d.van) return { ...d.cost, cash: -repairCost(s, d.van) };
+  // Phase 29.3: a used van, yours taken in part exchange.
+  if (d.swap === 'used') return { ...d.cost, cash: -usedPrice(s) };
   // The clinic's care, on your plan (Phase 22.4a), and a doctor's (22.4c).
   if (d.clinic) return { ...d.cost, cash: -carePrice(s, d.clinic) };
   if (d.doctor) return { ...d.cost, cash: -Math.round(SICK.doctor.price * PLANS[s.insurance].care) };
@@ -1532,7 +1551,17 @@ export function act(s0: GameState, a: Action): Result {
     if (d.gear) s.gear[d.gear.id] = d.gear.set ?? (s.gear[d.gear.id] ?? 0) + (d.gear.add ?? 0);
     // Phase 29.1: a build-out's parts.
     if (d.parts) s.parts -= d.parts;
-    if (d.van) s.van[d.van] = 100;
+    if (d.van) s.van[d.van] = capOf(s, d.van);
+    // Phase 29.3: Dale's verdict taken. A rebuild takes miles off the engine; a used van is a
+    // new start, and what was fitted stays with the old one.
+    if (d.swap === 'rebuild') {
+      s.van = { ...s.van, rebuilt: s.van.rebuilt + VAN_AGE.rebuild.off, verdict: null };
+      s.van.engine = engineCap(s);
+    }
+    if (d.swap === 'used') {
+      for (const id of FITTED) delete s.gear[id];
+      s.van = { ...VAN.start, miles: VAN_AGE.used.miles, rebuilt: 0, verdict: null };
+    }
     // Phase 22.3: the pantry, the meals, the day's fuel, and the cups of coffee.
     if (d.buys) s.pantry[d.buys] = (s.pantry[d.buys] ?? 0) + INGREDIENTS[d.buys]!.servings;
     if (d.recipe) {
@@ -1826,6 +1855,8 @@ export function act(s0: GameState, a: Action): Result {
   const wear = (min: number) => {
     s.van.tires = round2(Math.max(0, s.van.tires - VAN.wear.tires * min));
     s.van.engine = round2(Math.max(0, s.van.engine - VAN.wear.engine * min));
+    // Phase 29.3: and the miles on the clock.
+    s.van.miles += milesFor(min);
   };
   // Getting there, however you did.
   const arriveAt = (id: string) => {
@@ -3055,7 +3086,7 @@ export function act(s0: GameState, a: Action): Result {
           line(BODGE_FAILED[b.part]);
           break;
         }
-        s.van[b.part] = VAN.bodge.to;
+        s.van[b.part] = Math.min(VAN.bodge.to, capOf(s, b.part));
         s.breakdown = null;
         line(BODGE_HELD[b.part]);
         spend({ min: b.rest });
@@ -3071,7 +3102,7 @@ export function act(s0: GameState, a: Action): Result {
         const hitch = who ? null : hitchFriend(s);
         if (!who && !hitch) return refuse('Nobody you’d call for this. Not yet.');
         spend({ min: VAN.friend.min });
-        s.van[b.part] = Math.max(s.van[b.part], VAN.friend.to);
+        s.van[b.part] = Math.max(s.van[b.part], Math.min(VAN.friend.to, capOf(s, b.part)));
         s.breakdown = null;
         line(
           who
@@ -3458,8 +3489,22 @@ export function act(s0: GameState, a: Action): Result {
       if (!d) return refuse('Pick a dream first.');
       if (D.pot < d.cost) return refuse(`${d.name} is ${money(d.cost)}. The jar has ${money(D.pot)}.`);
       s.dream = { pick: null, pot: D.pot - d.cost, owned: [...D.owned, d.id] };
-      // The Rig comes with every upgrade Dale fits; Home Base with a kitchen.
-      if (d.id === 'rig') for (const u of Object.keys(UPGRADE)) s.gear[u] = 1;
+      // The Rig comes with every upgrade Dale fits; Home Base with a kitchen. Phase 29.3: and
+      // the Rig is a new van, built out, with the old one taken off your hands.
+      if (d.id === 'rig') {
+        for (const u of [...Object.keys(UPGRADE), ...Object.keys(BUILD)]) s.gear[u] = 1;
+        const worth = vanWorth(s);
+        s.cash += worth;
+        s.van = {
+          tires: 100,
+          engine: 100,
+          battery: 100,
+          miles: VAN_AGE.rig.miles,
+          rebuilt: 0,
+          verdict: null,
+        };
+        line(fill(RIG_TRADE, { worth: money(worth) }));
+      }
       if (d.id === 'homebase') s.gear.kitchen = 1;
       line(d.claimed);
       note(`${d.name}, day ${s.day}. ${d.perk}`);
@@ -4109,6 +4154,11 @@ export function act(s0: GameState, a: Action): Result {
       s.parts += job.parts;
       line(`${j.title}, done. ${payWords(job)} off the board.`);
     }
+  }
+  // Phase 29.3: at the garage, once the van's worth is under a rebuild, Dale puts it to you.
+  if (s.at === 'garage' && s.van.verdict === null && verdictDue(s)) {
+    s.van = { ...s.van, verdict: s.day };
+    line(fill(DALE_VERDICT, { rebuild: money(VAN_AGE.rebuild.price), worth: money(vanWorth(s)) }));
   }
   // Phase 23.4: a path tier you could claim, said once; a style mastered; a quirk named.
   if (s.climber.name) {

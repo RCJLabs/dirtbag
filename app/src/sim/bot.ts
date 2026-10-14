@@ -39,6 +39,7 @@ import {
   SUPPLIES,
   UPGRADE,
   VAN,
+  VAN_AGE,
   WINTER,
   type SpotId,
   type VanPart,
@@ -65,7 +66,7 @@ import { crewDayFrom, crewOf } from './crew';
 import { riding } from './favours';
 import { has } from './kit';
 import { rankAt, signupBlocked } from './jobs';
-import { friendFor, PARTS, repairCost, unsafePart } from './van';
+import { friendFor, PARTS, repairCost, unsafePart, usedPrice, verdictDue } from './van';
 import { hitchFriend } from './events';
 import { carePrice, weeklyBills } from './clinic';
 import { spotBlocked, ticketOdds } from './spots';
@@ -539,7 +540,10 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   const wantFor = (day: number) =>
     CUSHION[strategy] + (Math.ceil(day / 7) * 7 - day <= 1 ? weeklyBills(s) : 0) + repairs();
   // A worn part is saved for, the way the bills are.
-  const repairs = () => PARTS.filter((p) => s.van[p] < GARAGE_AT).reduce((n, p) => n + repairCost(s, p), 0);
+  // Phase 29.3: and once Dale's verdict is due, the cheaper way out of it.
+  const repairs = () =>
+    PARTS.filter((p) => s.van[p] < GARAGE_AT).reduce((n, p) => n + repairCost(s, p), 0) +
+    (verdictDue(s) ? Math.min(usedPrice(s), VAN_AGE.rebuild.price) : 0);
   // Today's shift, if the bot signed up for one: it goes whatever the money says, or it's a
   // warning.
   const booked = (): string | null => {
@@ -703,8 +707,22 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       : strategy === 'career' && (storyTripCost() > 0 || storyUnlock() > 0)
         ? undefined
         : BOT_UPGRADES.find((id) => !s.gear[id] && s.cash >= UPGRADE[id].price + CUSHION[strategy] + SPARE);
-    if (due.length || fit) {
+    // Phase 29.3: Dale's verdict, heard when it's due, and taken by a rule: a rebuild when the
+    // money's there past the cushion (it keeps what's fitted), a used van when that is, and
+    // limping on otherwise; it saves for the cheaper (`repairs`). Measured over 32 careers to
+    // day 480, 20 saw the story through, against 21 before the van aged; keeping the story's
+    // trip money back from the van instead, 16.
+    const hear = verdictDue(s) && s.van.verdict === null;
+    const swap = !verdictDue(s)
+      ? null
+      : s.cash >= VAN_AGE.rebuild.price + CUSHION[strategy]
+        ? 'rebuild'
+        : s.cash >= usedPrice(s) + CUSHION[strategy]
+          ? 'used'
+          : null;
+    if (due.length || fit || hear || swap) {
       travel('garage');
+      if (swap) tryAct(`garage.${swap}`);
       for (const p of PARTS) if (needs(p)) tryAct(`garage.${p}`);
       if (
         fit &&

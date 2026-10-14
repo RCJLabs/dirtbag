@@ -5,7 +5,7 @@ import { gradeOf } from './climber';
 import { PLACES } from './content/places';
 import { gradeOfPerson } from './curves';
 import { ARC, DAY, DOG, GIVE, MONEY, type VanPart } from './dials';
-import { repairCost } from './van';
+import { capOf, repairCost, usedPrice, verdictDue } from './van';
 import { isSick } from './sick';
 import { lifeDue } from './lives';
 import { romanceDue, strained } from './romance';
@@ -67,6 +67,8 @@ export interface Cond {
   hired?: string; // that job hasn't let you go, or has taken you back
   worn?: VanPart; // that part of the van could use the garage (under 95)
   payVan?: VanPart; // the card covers the garage's bill for that part
+  verdict?: true; // Phase 29.3: the van's worth is under a rebuild, and Dale's put it to you
+  payUsed?: true; // the card covers a used van, yours taken in part exchange
   stock?: string; // a serving of that ingredient in the pantry (Phase 22.3)
   notSeason?: Season; // it isn't this season (the lake's swim, not in winter)
   season?: Season; // it is this season (Phase 25.6: the shops' small talk)
@@ -171,8 +173,10 @@ export function holds(s: GameState, c: Cond): boolean {
   if (c.weekday && !c.weekday.includes(s.day % 7)) return false;
   if (c.posted !== undefined && !isPosted(s.seed, c.posted, s.day)) return false;
   if (c.hired !== undefined && benchedUntil(s, c.hired) !== null) return false;
-  if (c.worn !== undefined && !(s.van[c.worn] < 95)) return false;
+  if (c.worn !== undefined && !(s.van[c.worn] < capOf(s, c.worn) - 5)) return false;
   if (c.payVan !== undefined && headroom(s) < repairCost(s, c.payVan)) return false;
+  if (c.verdict !== undefined && !verdictDue(s)) return false;
+  if (c.payUsed !== undefined && headroom(s) < usedPrice(s)) return false;
   if (c.stock !== undefined && !((s.pantry[c.stock] ?? 0) > 0)) return false;
   if (c.notSeason !== undefined && seasonOf(s.day) === c.notSeason) return false;
   if (c.season !== undefined && seasonOf(s.day) !== c.season) return false;
