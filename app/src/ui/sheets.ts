@@ -333,7 +333,14 @@ function actRow(game: Game, s: GameState, id: string): Row {
   const cost = actCost(s, a);
   // A shift you didn't sign up for is a walk-in: it pays, and that's all.
   const walkIn = a.job && !signedUp(s, a.job.id, s.day) ? 'A walk-in: it won’t count toward a raise' : '';
-  let note = [bodyNote(cost), a.note && fill(a.note, TEXT_VALUES), a.job && jobNote(s, a.job.id), walkIn]
+  const stove = a.recipe ? 'Cooked right, a better night and a lift' : '';
+  let note = [
+    bodyNote(cost),
+    a.note && fill(a.note, TEXT_VALUES),
+    a.job && jobNote(s, a.job.id),
+    walkIn,
+    stove,
+  ]
     .filter(Boolean)
     .map((x) => String(x).replace(/\.$/, ''))
     .join('. ');
@@ -352,7 +359,8 @@ function actRow(game: Game, s: GameState, id: string): Row {
     cost: costLabel(cost, a.sleep ? 'van spot' : ''),
     note: why ?? note,
     off: !!why,
-    run: () => game.doAct(id),
+    // Phase 29.4: a recipe goes to the stove, on the beat.
+    run: () => (a.recipe ? game.cookStart(id) : game.doAct(id)),
   };
 }
 

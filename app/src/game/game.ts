@@ -49,6 +49,8 @@ import {
   speedTime,
   BUSK,
   buskBlocked,
+  COOK,
+  unmet,
   GAMES,
   gameBlocked,
   EXPED_ROUTES,
@@ -238,7 +240,9 @@ export interface Ui {
 // (1 in the band, a half near it, 0 off it), and when it's done, what the set came to. The
 // same beat throws horseshoes at the fire (Phase 22.9a), a throw a sweep.
 export interface BuskUi {
-  kind: 'busk' | 'shoes';
+  // Phase 29.4: and a recipe stirred at the van's stove, `recipe` its act.
+  kind: 'busk' | 'shoes' | 'cook';
+  recipe?: string;
   phase: 'play' | 'done';
   note: number;
   pos: number;
@@ -1336,6 +1340,32 @@ export class Game {
     });
   }
 
+  // Phase 29.4: a recipe at the van's stove, stirred on the beat; or skipped, a plain meal.
+  cookStart(id: string): void {
+    const a = ACTS[id];
+    const why = a
+      ? id.split('.')[0] !== this.state.at
+        ? "You're not there"
+        : unmet(this.state, a.needs)
+      : 'No';
+    if (why) {
+      this.toast(why.endsWith('.') ? why : `${why}.`);
+      return;
+    }
+    this.set({
+      sheet: null,
+      busk: { kind: 'cook', recipe: id, phase: 'play', note: 0, pos: 0, scores: [], said: null },
+    });
+  }
+
+  cookSkip(): void {
+    const u = this.ui.get().busk;
+    if (!u || u.kind !== 'cook' || u.phase !== 'play') return;
+    this.set({ busk: null });
+    this.doAct(u.recipe!);
+    this.openSheet({ k: 'van' });
+  }
+
   // A hand of liar's dice: dealt, then called or raised. The fire's card shows it.
   // Phase 24.5: the last trip, told at the fire.
   story(): void {
@@ -1380,14 +1410,23 @@ export class Game {
   }
 
   private buskScore(u: BuskUi, score: number): void {
-    this.sound.play(u.kind === 'shoes' ? 'clang' : 'strum', score);
+    this.sound.play(u.kind === 'shoes' ? 'clang' : u.kind === 'cook' ? 'tap' : 'strum', score);
     const scores = [...u.scores, score];
-    if (scores.length < (u.kind === 'shoes' ? GAMES.shoes.throws : BUSK.notes)) {
+    const of = u.kind === 'shoes' ? GAMES.shoes.throws : u.kind === 'cook' ? COOK.beats : BUSK.notes;
+    if (scores.length < of) {
       this.set({ busk: { ...u, note: scores.length, pos: 0, scores } });
       return;
     }
     const acc = scores.reduce((a, b) => a + b, 0) / scores.length;
-    const ev = this.dispatch(u.kind === 'shoes' ? { t: 'shoes', throws: scores } : { t: 'busk', acc });
+    const ev = this.dispatch(
+      u.kind === 'shoes'
+        ? { t: 'shoes', throws: scores }
+        : u.kind === 'cook'
+          ? { t: 'act', act: u.recipe!, play: { cook: scores } }
+          : { t: 'busk', acc },
+    );
+    if (u.kind === 'cook' && !ev.some((e) => e.k === 'refused'))
+      this.today = noted(this.today, { place: this.state.at, act: u.recipe! });
     const said = ev.flatMap((e) => (e.k === 'line' ? [e.text] : [])).join(' ') || null;
     this.set({ busk: { ...u, phase: 'done', pos: 0, scores, said } });
   }
@@ -1396,7 +1435,9 @@ export class Game {
   buskDone(): void {
     const kind = this.ui.get().busk?.kind;
     this.set({ busk: null });
-    this.openSheet(kind === 'shoes' ? { k: 'fire' } : { k: 'place', id: this.state.at });
+    this.openSheet(
+      kind === 'shoes' ? { k: 'fire' } : kind === 'cook' ? { k: 'van' } : { k: 'place', id: this.state.at },
+    );
   }
 
   // Ask the crowd at the base for a line's beta.

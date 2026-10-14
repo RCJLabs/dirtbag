@@ -244,6 +244,7 @@ export {
   CROWD,
   SPEED,
   BUSK,
+  COOK,
   GIG,
   TOURISTS,
   PLASMA,

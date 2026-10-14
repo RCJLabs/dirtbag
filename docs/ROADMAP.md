@@ -3329,6 +3329,23 @@ Carried, for playtesting or a call:
   - Over 32 careers, Outdoors is 20 against main's 21.
 - **The download** is 433.0 KB of 460.
 
+**Status (14 Oct 2026): 29.4 built: cooking at the van.** No save change, 0.999.49. Phase 29's criterion 3 passes.
+- **A recipe goes to the stove:** the beat panel the busking and the horseshoes use, five stirs as the marker crosses the band. Or "Just eat it" before the first stir, and it's the plain meal it always was. Ramen stays a tap.
+- **Cooked right** (seven in ten of the stirs' worth, a half for a near one), it's a good meal: 5 more energy from tonight's sleep, wherever you sleep, and psyche lifted as much as the fire's, inside the day's cap. Once a day. Scorched, it's still dinner. [proposed numbers]
+- **The bots** eat as they did, so the balance they measure doesn't move. The harness wasn't rerun: no bot's path touches it.
+- **The e2e** cooks pasta and greens on the beat at seven at the Lot and checks the good meal, the pantry and the sounds.
+- **The download** is 433.7 KB of 460.
+
+**Phase 29's Done-when, checked (14 Oct 2026):**
+1. **The hustle has a choice with a trade-off** (29.1): the free pile's parts or the cans' cash, for the same morning.
+2. **The replacement decision comes to a bot career by year three** (29.3): 16 of 16, days 91 to 136, now a harness target.
+3. **Cooking plays in the e2e** (29.4).
+
+All three pass. Closing the phase is Evan's call. Carried caveats:
+- the bots never take parts, so the build-outs are a player's choice the harness doesn't exercise;
+- Act II ends later since the van aged (median day 156, against 100.5), with the story finished as often (20 of 32, against 21);
+- Outdoors is 2 of 4 in the harness's four careers.
+
 ### Phase 30 — Getting older
 
 *Medium. Age is only a deadline now: nothing about the body changes from 22 to 45.*
@@ -3765,3 +3782,4 @@ Carried, for playtesting or a call:
 - 2026-10-14 — Phase 29 planned with Evan's calls (the van ages with miles; a used van or the Rig to replace it; new build-outs from parts; the budget to 460 KB). 29.1 built: the free pile, parts for a shelf, a solar panel, door seals and a bed platform; the bots go to the pile only on days off the rock. Save v62. 0.999.46.
 - 2026-10-14 — 29.2 built: the Board's bounties (Evan's calls: double a job's worth, counted from when you take it, one cash, one parts and one split a week). The bots take cash only, measured on Outdoors. Save v63. 0.999.47.
 - 2026-10-14 — 29.3 built: the van ages with miles, its engine's cap falls, and Dale puts it to you (rebuild, a used van, the Rig, or limp on). Every career bot hears it by year three (criterion 2). Save v64. 0.999.48.
+- 2026-10-14 — 29.4 built: a recipe at the van plays the beat panel, and a meal cooked right adds to the night's sleep and psyche; the e2e cooks one (criterion 3). Phase 29's Done-when all pass; closing is Evan's call. 0.999.49.

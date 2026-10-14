@@ -937,10 +937,18 @@ export const PSYCHE = {
   crewNamed: 4,
   // The crew's project sent with them there (Phase 28.2): worth a send again. [proposed]
   train: 4,
+  // A meal cooked right (Phase 29.4): worth the fire. [proposed]
+  meal: 2,
   windows: 0.05,
   // Where the words change: under 25 low, then flat, steady, keen, and psyched from 80.
   bands: [25, 45, 60, 80],
 };
+
+// Phase 29.4 [proposed]: cooking a recipe at the van plays the beat panel, `beats` stirs as the
+// marker crosses the band. Cooked at `good` or better (the share of stirs in the band, a half
+// for near it), it's a good meal: `energy` more from tonight's sleep, and PSYCHE.meal. Under
+// `burnt`, it's still dinner. Skipped, it's the plain meal it always was; ramen stays a tap.
+export const COOK = { beats: 5, good: 0.7, burnt: 0.3, energy: 5 };
 
 export const INJURY = {
   days: [

@@ -536,7 +536,9 @@ export type Play =
   | { tables: number[][] }
   | { coach: ('burns' | 'drill' | 'head' | 'rest')[] }
   | { guide: string[] }
-  | { haul: true };
+  | { haul: true }
+  // Phase 29.4: a recipe cooked on the beat, each stir's score.
+  | { cook: number[] };
 
 export type Action =
   // The warehouse's picks (Phase 18.3): one more from what's on offer, or stop and bank it.

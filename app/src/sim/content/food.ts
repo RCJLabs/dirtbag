@@ -77,3 +77,8 @@ export const MEAL_NAME: Record<string, string> = {
   forage: 'what the shore had',
   ...Object.fromEntries(Object.entries(RECIPES).map(([id, r]) => [id, r.name.toLowerCase()])),
 };
+
+// Phase 29.4: a recipe cooked on the beat, said after the recipe's own line.
+export const COOK_GOOD =
+  'Done right for once: nothing stuck, everything hot at the same time. You’ll sleep on it.';
+export const COOK_BURNT = 'You scorch the bottom of the pot. It’s still dinner.';

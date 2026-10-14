@@ -173,7 +173,7 @@ import { dreamById } from './content/dreams';
 import { PEOPLE, RACE_ROUTE, RIVAL_FA_NAMES, TALK } from './content/people';
 import { ACT_PAID } from './content/story';
 import { START_KIT } from './content/gear';
-import { INGREDIENTS, RECIPES } from './content/food';
+import { COOK_BURNT, COOK_GOOD, INGREDIENTS, RECIPES } from './content/food';
 import { has, tapedSkin, wearKit } from './kit';
 import {
   prehabBlocked,
@@ -229,6 +229,7 @@ import {
   ROCK,
   SCARS,
   BUSK,
+  COOK,
   EVENTS,
   GAMES,
   PSYCHE,
@@ -1458,6 +1459,10 @@ export function act(s0: GameState, a: Action): Result {
     if (id.split('.')[0] !== s.at) return "You're not there.";
     const why = unmet(s, d.needs);
     if (why) return why;
+    // Phase 29.4: a recipe cooked on the beat, one score a stir.
+    const cook = play && 'cook' in play ? play.cook : null;
+    if (cook && !(d.recipe && cook.length === COOK.beats && cook.every((x) => x >= 0 && x <= 1)))
+      return 'Not a meal.';
     if (d.sleep) {
       // A knock on the van (Phase 22.6a): the night waits for your answer.
       const night = nightAt(s);
@@ -1532,7 +1537,7 @@ export function act(s0: GameState, a: Action): Result {
         if (s.haul) return 'You’re picking already.';
         hauling = true;
         played = { score: 0, from: 1, line: '' };
-      } else return 'There’s nothing to play at that.';
+      } else if (!cook) return 'There’s nothing to play at that.';
     }
     const cost = actCost(s, d);
     // The lake's catch is rolled when you cast, at the hour you cast (Phase 22.3b).
@@ -1569,6 +1574,8 @@ export function act(s0: GameState, a: Action): Result {
       for (const u of r.uses) s.pantry[u] = (s.pantry[u] ?? 0) - 1;
       if (r.fuels) s.fueled = s.day;
     }
+    const cooked = cook ? cook.reduce((a, b) => a + b, 0) / cook.length : null;
+    if (cooked !== null && cooked >= COOK.good && !s.today.includes('meal-good')) s.today.push('meal-good');
     if (d.meal) {
       s.meals.push(d.meal);
       if (s.meals.length > FOOD.same) s.meals.splice(0, s.meals.length - FOOD.same);
@@ -1653,6 +1660,8 @@ export function act(s0: GameState, a: Action): Result {
           : said,
       );
     if (d.saysOneOf) line(ofDay(s, id, d.saysOneOf));
+    if (cooked !== null && (cooked >= COOK.good || cooked < COOK.burnt))
+      line(cooked >= COOK.good ? COOK_GOOD : COOK_BURNT);
     if (coaching) {
       // The coach's session (Phase 18.3): each client's hour, and a send's thanks.
       const was = rosterToday(s);
