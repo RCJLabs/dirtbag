@@ -1125,7 +1125,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             ? [
                 {
                   label: 'Build-outs',
-                  note: `${s.parts === 1 ? 'One part' : `${s.parts} parts`} in the van. ${BUILDS.filter(
+                  note: `${s.parts === 1 ? 'One part' : `${s.parts} parts`} in the van. Still to build: ${BUILDS.filter(
                     (b) => !(s.gear[b] ?? 0),
                   )
                     .map((b) => GEAR[b]!.name.toLowerCase())

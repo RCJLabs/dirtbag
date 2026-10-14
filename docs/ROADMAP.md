@@ -3268,6 +3268,32 @@ Carried, for playtesting or a call:
 2. The replacement decision comes to a bot career by year three.
 3. Cooking plays in the e2e.
 
+**Planned (14 Oct 2026), with Evan's calls:**
+- **Age:** the van ages with miles driven.
+- **Replacing:** a used van (fresh miles, no build-outs) or the Rig; rebuild and limp on are the other choices.
+- **Build-outs:** new ones, from scavenged parts; the garage's cash upgrades stay.
+- **The download budget** goes to 460 KB.
+- **Slices:** 29.1 scavenging and build-outs; 29.2 the Board's bounties; 29.3 the van ages, and the decision; 29.4 cooking, and the close.
+
+**Status (14 Oct 2026): 29.1 built: scavenging and build-outs.** Save v62, 0.999.46.
+- **The free pile,** a new hustle at the Lot, by day, once a day. It takes the cans' time and sweat and finds one or two parts, not money. A broke morning is cash now or the van later: criterion 1's choice with a trade-off.
+- **Build-outs from parts,** at the van, each built once:
+  - **a shelf:** a quarter less supplies used a night;
+  - **a solar panel:** the battery holds overnight;
+  - **door seals:** less of a winter night's cold, on top of insulation;
+  - **a bed platform:** more energy from a night's sleep, on top of the mattress.
+
+  All four take about nine mornings at the pile.
+- **The budget** is 460 KB (Evan's call).
+- **Save v62:** `parts`. A real 0.999.45 save loads, its favours owed kept.
+- **The bots** go to the pile only on a day they didn't climb, with energy to spare, and build in a set order.
+  - **Measured:** at the pile every evening they could, the media bots' climbing paid for the lost rest. Over 16 careers each, 12 reached the top against main's 15. With the rule, it's 16 of 16.
+  - **The cost of the rule:** the career bots climb nearly every day, so they rarely reach the pile: 0 or 1 parts by day 224, and nothing built. The build-outs are a player's choice the harness doesn't exercise [measured].
+- **The harness:** every target passes but Outdoors, at the known 3 of 4.
+  - V10 on day 179; Act III ended on day 303; Media 4 of 4.
+  - The hustle rule holds; the pile pays parts, not cash.
+- **The download** is 431.3 KB of 460.
+
 ### Phase 30 — Getting older
 
 *Medium. Age is only a deadline now: nothing about the body changes from 22 to 45.*
@@ -3701,3 +3727,4 @@ Carried, for playtesting or a call:
 - 2026-10-14 — Phase 28.3 built: favours both ways (a shift covered, a rack, a ride; their belays, rides and loans), two owed and no third (Evan's call), and a clash of two asks as another way into crew drama. Outdoors' four-career target came out 3 of 4, the same rate as main over 16. Save v61. 0.999.44.
 - 2026-10-14 — Phase 28.4 built: renown in lines only (Evan's call): the threads, Ray and Frank, the crowd and the shops say the crew's name more the more it's done. Phase 28's two Done-when criteria pass; closing it is Evan's call. No save change. 0.999.45.
 - 2026-10-14 — Phase 28 closed by Evan's call; CURRENT MILESTONE moved to Phase 29, the van, lived in.
+- 2026-10-14 — Phase 29 planned with Evan's calls (the van ages with miles; a used van or the Rig to replace it; new build-outs from parts; the budget to 460 KB). 29.1 built: the free pile, parts for a shelf, a solar panel, door seals and a bed platform; the bots go to the pile only on days off the rock. Save v62. 0.999.46.

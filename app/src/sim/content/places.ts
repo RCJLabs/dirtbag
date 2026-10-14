@@ -538,11 +538,17 @@ const upgrade = (id: keyof typeof UPGRADE, label: string, says: string): Record<
 };
 // Phase 29.1: a build-out at the van, from scavenged parts (BUILD in dials.ts): built once,
 // for its parts and its time.
-const buildOut = (id: keyof typeof BUILD, label: string, says: string): Record<string, ActDef> => {
+const buildOut = (
+  id: keyof typeof BUILD,
+  label: string,
+  does: string,
+  says: string,
+): Record<string, ActDef> => {
   const b = BUILD[id];
   return {
     [`lot.${id}`]: {
       label,
+      note: `${b.parts} parts. ${does}`,
       cost: { min: b.min },
       needs: [
         { hasNot: id, why: 'Already built.' },
@@ -700,16 +706,28 @@ export const ACTS: Record<string, ActDef> = {
     sets: ['scrap'],
     hustle: 'scrap',
   },
-  ...buildOut('shelf', 'Build a shelf', 'A shelf over the sink, braced twice. The jugs stop sliding off it.'),
+  ...buildOut(
+    'shelf',
+    'Build a shelf',
+    `Supplies last longer: ${Math.round((1 - BUILD.shelf.supplies) * 100)}% less used a night.`,
+    'A shelf over the sink, braced twice. The jugs stop sliding off it.',
+  ),
   ...buildOut(
     'solar',
     'Mount the solar panel',
+    'The battery holds through the night.',
     'A cracked panel, a salvaged controller and a lot of wire. The battery holds through the night now.',
   ),
-  ...buildOut('seals', 'Seal the doors', 'Door seals, foam in the gaps. The wind finds less of the van.'),
+  ...buildOut(
+    'seals',
+    'Seal the doors',
+    `${Math.round((1 - BUILD.seals.cold) * 100)}% less cold on a winter night.`,
+    'Door seals, foam in the gaps. The wind finds less of the van.',
+  ),
   ...buildOut(
     'platform',
     'Build a bed platform',
+    `+${BUILD.platform.energy} energy from a night in the van.`,
     'A platform under the mattress, from pallet wood and stubbornness. You sleep off the cold floor.',
   ),
   'market.bins': {
