@@ -3185,6 +3185,25 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
 - **Early, as v0.956's was** [measured]. Two Regulars come in the first month, so the name comes before the crew has done much. The roadmap's rule says two. If it should wait, `CREW_NAME.min` or the tier is the dial.
 - **The download** is 423.6 KB of 440.
 
+**Status (14 Oct 2026): 28.2 built: the crew project and the send train.** Save v60, 0.999.43.
+- **The project:** with the crew named, any line can be its project if it's:
+  - unsent, at a crag the crew can be called to;
+  - two grades or more over your hardest send of its kind (Evan's call).
+
+  There's one at a time, and you can drop it.
+- **A crew day:** called from the crew's texts, once a week across projects. Before the invite hour it's for today; after, for tomorrow.
+  - Everyone who can make it comes.
+  - The away, the not-close-enough and anyone keeping clear of a yes say no, so a falling-out bites here.
+- **The crew goes first:** each of them there has a go and shows you a way through you didn't have, in their voice, as told beta. A first-go send after it is a flash.
+- **The send train:** your send takes them up it after you (Evan's call). The night lifts like a send, and the Record Book has "Send Train" (48 entries). Sent alone, it's sent with no train.
+- **The bots:** only the social bot runs a project. It picks the easiest line that qualifies, calls a day a week, and works the project on it.
+- **Save v60:** `crewProject`, `crewDay`, `crewSends`. A real 0.999.42 save loads, its crew named and no project yet.
+- **The harness:** every target passes.
+  - A project was sent with the crew in 8 of 8 social careers: the first on day 30 at the median (26 to 93), and 5 a career by day 300.
+  - V10 on day 178; Act III ended on day 312.5; Outdoors 4 of 4, on day 376.5.
+- **The first one goes fast** [measured], about a crew day after the crew is named. Two grades over a month-one climber's best is a small step while they're improving quickly. Later projects take about two months each. `CREW_PROJECT.over` is the dial if it should feel like weeks from the start.
+- **The download** is 426.1 KB of 440.
+
 ### Phase 29 — The van, lived in
 
 *Medium. Ties the hustle, the van, food and psyche together.*
@@ -3636,3 +3655,4 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
 - 2026-10-14 — Phase 27.6 built: four more lines at the Big Stone (Meadow Arête V8, The Erratic V11, an open V13 project by Evan's call, The Apron 5.13b), granite moves and a new top-out; Phase 27's three Done-when criteria pass; closing it is Evan's call. No save change. 0.999.41.
 - 2026-10-14 — Phase 27 closed by Evan's call; CURRENT MILESTONE moved to Phase 28, the crew.
 - 2026-10-14 — Phase 28 planned with Evan's calls (you pick the project, your send starts the train, two favours owed and no third, renown in lines only). 28.1 built: the crew's name, brought up by the crew once two are Regulars, named from your record or your own words. Save v59. 0.999.42.
+- 2026-10-14 — Phase 28.2 built: the crew project (you pick it, two grades over your best), a crew day a week by text, the crew's goes showing you the way, and the send train when your send goes (Evan's calls); Send Train in the Record Book. Save v60. 0.999.43.
