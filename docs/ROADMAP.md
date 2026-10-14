@@ -69,7 +69,7 @@
 | 16 The spine | Next after 21–23. |
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 | 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
-| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026); Phase 27 is the current milestone. |
+| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phase 27 (14 Oct 2026); Phase 28 is the current milestone. |
 
 ## The rebuild track
 
@@ -2971,7 +2971,7 @@ Evan's calls: day labor, crag tourists, selling kit, plasma and a second shift a
 
 An hour of each: day labor $9 (a first-rank café shift $9, the warehouse $7), a family's rope $20 and tips, plasma $15. The last two out-earn a shift an hour but are limited: busy crag days only, and twice a week. The hustle target (cans, bins, foraging under the worst shift) is unchanged. No bot uses the new earners, so every other target measures what it did: unchanged from Phase 26. V10 on a median day 179.5, Act III on a median day 274.5, and Outdoors, the accepted shortfall, 3 of 4.
 
-### Phase 27 — The rock, by hand   **<<< CURRENT MILESTONE**
+### Phase 27 — The rock, by hand
 
 *Large. The core, deepened.*
 
@@ -3140,9 +3140,9 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
 2. A called flash or onsight plays in the tests (`call.test.ts`) and in the e2e, which calls the onsight on the Warm Boulder and sends it (27.4).
 3. The harness's targets, the grade progression among them, pass after every slice.
 
-Closing it is Evan's call.
+**Phase 27 closed by Evan's call (14 Oct 2026).** Carried: the Big Stone's four new names and grades stay [proposed] for Evan to edit; the bots don't call a go, so the call's psyche is in the tests and the e2e but not the harness. The CURRENT MILESTONE moves to Phase 28.
 
-### Phase 28 — The crew
+### Phase 28 — The crew   **<<< CURRENT MILESTONE**
 
 *Medium. New, from the audit's list of what to keep (`social.md`): the crew's name, its renown, a crew project, favours. The rebuild has none of them.*
 
@@ -3612,3 +3612,4 @@ Closing it is Evan's call.
 - 2026-10-13 — Phase 27's 27.4 split in two (the top-outs and the pad are now 27.5, the Big Stone and the close 27.6). 27.4 built: calling the flash or the onsight before a first go, psyche staked both ways outside the day's cap, "Called It" for ten called sends. Save v58. 0.999.39.
 - 2026-10-13 — Phase 27.5 built: every highball tops out (a second crux at the lip, 36 rock moves, its window widened so no highball moves more than 0.2 of a grade); one fall height for the roll, the sheet and the bot; the extra pads cover the fall you choose, or the worse. No save change. 0.999.40.
 - 2026-10-14 — Phase 27.6 built: four more lines at the Big Stone (Meadow Arête V8, The Erratic V11, an open V13 project by Evan's call, The Apron 5.13b), granite moves and a new top-out; Phase 27's three Done-when criteria pass; closing it is Evan's call. No save change. 0.999.41.
+- 2026-10-14 — Phase 27 closed by Evan's call; CURRENT MILESTONE moved to Phase 28, the crew.
