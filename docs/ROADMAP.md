@@ -3163,6 +3163,28 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
 1. A social bot's career names a crew, sends its project, and trades favours both ways.
 2. Old saves load into the new shape.
 
+**Planned (14 Oct 2026), with Evan's calls:**
+- **The project:** you pick it: any unsent line at a crag the crew can be called to, two grades or more above your hardest send.
+- **The send train:** your send starts it. Each partner's go shows you a crux; when you send with the crew there, each of them sends after you.
+- **Owing:** a Regular you owe two won't do a third till you've done one back. It's shown on the People list, with no hidden clock.
+- **Renown:** lines only, counted from what the crew has done, never a number.
+- **Slices:** 28.1 the name (save v59); 28.2 the project, crew days and the send train; 28.3 favours; 28.4 renown and the close.
+
+**Status (14 Oct 2026): 28.1 built: the crew's name.** Save v59, 0.999.42.
+- **The crew** is the partners you're a Regular with or closer, closest first. Tam leaves it once he's stopped coming out.
+- **The beat:** with two of them, whichever you see first brings it up, once, in their own words.
+  - "Name it" opens the naming sheet.
+  - "Later" leaves a "Name the crew" button on the People list.
+- **The name:** your own words, or one of four from your record: where you send most, your dog, the crowd you're in with (or neither), the van. It's 2 to 28 characters, and it stays named.
+- **Shown:** the People list ("The crew: …, named on day N. Hazel, Sage and you.") and the crew's texts. The night lifts psyche like a send.
+- **The bots:** every bot names it with the first suggestion. Sage's beat is answered by all of them, so it can't stand in front of her lessons.
+- **Save v59:** `crewName`. A real 0.999.41 save loads, its crew close and ready to name.
+- **The harness:** every target passes.
+  - The crew was named in 8 of 8 social careers, on day 22 at the median (18 to 29).
+  - V10 on day 178 (179 after 27.6); Act III ended on day 312.5 (317; its spread is about ±40 days); Outdoors 4 of 4, on day 376.5.
+- **Early, as v0.956's was** [measured]. Two Regulars come in the first month, so the name comes before the crew has done much. The roadmap's rule says two. If it should wait, `CREW_NAME.min` or the tier is the dial.
+- **The download** is 423.6 KB of 440.
+
 ### Phase 29 — The van, lived in
 
 *Medium. Ties the hustle, the van, food and psyche together.*
@@ -3613,3 +3635,4 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
 - 2026-10-13 — Phase 27.5 built: every highball tops out (a second crux at the lip, 36 rock moves, its window widened so no highball moves more than 0.2 of a grade); one fall height for the roll, the sheet and the bot; the extra pads cover the fall you choose, or the worse. No save change. 0.999.40.
 - 2026-10-14 — Phase 27.6 built: four more lines at the Big Stone (Meadow Arête V8, The Erratic V11, an open V13 project by Evan's call, The Apron 5.13b), granite moves and a new top-out; Phase 27's three Done-when criteria pass; closing it is Evan's call. No save change. 0.999.41.
 - 2026-10-14 — Phase 27 closed by Evan's call; CURRENT MILESTONE moved to Phase 28, the crew.
+- 2026-10-14 — Phase 28 planned with Evan's calls (you pick the project, your send starts the train, two favours owed and no third, renown in lines only). 28.1 built: the crew's name, brought up by the crew once two are Regulars, named from your record or your own words. Save v59. 0.999.42.
