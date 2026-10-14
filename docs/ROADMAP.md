@@ -3453,6 +3453,22 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - **Caveats:** the clock's minutes follow the World Cup's boulder rounds (5 in qualifiers, 4 after) [INFERRED: not checked against the current rules]. A gym go still costs 8 minutes of the day, so a "5-minute" problem can take 40 minutes of the in-game clock: the clock limits goes, not the day.
 - **The download** is 435.0 KB of 460.
 
+**Status (14 Oct 2026): 33.3 built: the field that comes back.** No save change, 0.999.52.
+- **Rosters** (Evan's call: a roster per tier). The Circuit, Nationals, the World Series and the Games each have 5–7 named rivals (`ROSTER`), each with a grade in a career's first year and a trend (rising, steady or fading) that runs five years and then holds, give or take a seeded half-grade each year (`RIVALS`). Each rung's favourites sit at or just over its top grade. Skye Maddox is on the World Series roster and comes back for Nationals.
+- **Moving up.** A rival goes up a rung for good the first year their grade is a grade past the top of their own rung's, and out of the one below. Across 12 careers: Nico Hale leaves the Circuit by year 3 in all 12, Mae Okafor leaves Nationals by year 3 in 9; Kai Mendez and Arjun Mehta go up by year 7 in all 12. Rory Kerr rises and never quite makes it.
+- **A field** is the rung's rivals that year and fillers from the old pool to make up the numbers. Fillers are never named. League night, the A league and the dyno comp keep their fields.
+- **Shown.** The desk's entry row names the three favourites and anyone up from the rung below this year ("Up from the Circuit this year: Nico Hale"). A comp handed in names who won it (a filler is "somebody nobody had on their sheet"), or who was second if you won, and the rival one place ahead of you; out before the final, only that.
+- **The field's tops, go by go.** Stronger favourites alone didn't stop the top grade winning every time: a top's goes were drawn evenly from 1 to the clock's, so a favourite topped as slowly as anyone and lost on goes to a flash. Now each go has the chance that tops it in the round's goes as often as before, so a climber well over a problem tops it in a go or two. This is every comp's field, League night's included.
+- **The comps table** (12 comps a grade), against 33.2:
+  - Nationals: a V10 makes the final 25% of the time (58%), a V12 wins 25% (50%), a V13 wins 83% (100%).
+  - The World Series: a V13 makes the final 42% (75%), a V14 wins 50% (75%), a V15 92% (100%).
+  - The Games: a V15 makes the final 58% (83%); a V17 still wins every time.
+  - So the middle of every rung is harder than it was. The comp bots reach the Games on day 218.5, median (219).
+  - League night, the A league and the dyno comp (the late harness, against main): a V3 wins 0.8 League nights a season (2.5) and no season (1 of 4); a V8 makes the dyno comp's podium 6 times in 16 (10); a V14 wins it 13 times in 16 (16). The rest held.
+- **The main harness** passes every target but Outdoors, at 2 of 4 as on main.
+- **Caveat:** a filler's grade is drawn as before, so most of a field's strength change is the named favourites; how a field feels from the floor is a playtest question.
+- **The download** is 436.0 KB of 460.
+
 ### Phase 34 — Money that means something
 
 *Medium. Followers pay nothing; a job's ranks raise its pay and nothing else; costs don't grow with ambition. The audit's economy #8, #9, #16 and #17.*
@@ -3818,3 +3834,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-14 — Phase 29 closed by Evan's call; CURRENT MILESTONE moved to Phase 33, comps with rounds.
 - 2026-10-14 — Phase 33 planned with Evan's calls (a go budget for the time limit; small finals; the Nationals podium makes the team; a roster of rivals per tier). 33.1 built: comps from Nationals up in rounds, a day apart; the comps harness measures them. Save v65. 0.999.50.
 - 2026-10-14 — 33.2 built: comp rules. A clock on each problem (5 minutes in a qualifier, 4 after, a go a minute) caps its goes; isolation keeps everyone's beta off comp problems, and Sage no longer teaches the week's set mid-comp. No save change. 0.999.51.
+- 2026-10-14 — 33.3 built: the field that comes back. Named rivals on each rung from the Circuit up, with grades by year, some going up a rung; Skye at the World Series and Nationals; the desk names the favourites and a comp names its winner. The field's tops roll go by go, so the top grade no longer wins every time. No save change. 0.999.52.

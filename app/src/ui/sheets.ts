@@ -218,6 +218,8 @@ import {
   compOn,
   compClock,
   compSet,
+  FIELD_SAYS,
+  rivalsIn,
   roundName,
   listOf,
   gradesFor,
@@ -621,6 +623,17 @@ function roundsNote(tier: number): string {
   return ` A qualifier; ${listOf(steps)}, a round a day.`;
 }
 
+// Phase 33.3: the rivals in a comp you could enter: its favourites, and who's come up to it
+// this year.
+function rivalsNote(s: GameState, tier: number): string {
+  const all = rivalsIn(s.seed, tier, yearOf(s.day));
+  if (!all.length) return '';
+  const fav = fill(FIELD_SAYS.favourites, { names: listOf(all.slice(0, 3).map((r) => r.name)) });
+  const ups = all.filter((r) => r.up !== null);
+  const from = ups[0] ? COMP_TIERS[ups[0].up!]!.name.replace(/^The /, 'the ') : '';
+  return ` ${fav}${ups.length ? ` ${fill(FIELD_SAYS.up, { from, names: listOf(ups.map((r) => r.name)) })}` : ''}`;
+}
+
 function compRow(game: Game, s: GameState): Row {
   const on = s.comps.on;
   if (on && on.day === s.day) {
@@ -664,7 +677,7 @@ function compRow(game: Game, s: GameState): Row {
       ? `${why}.`
       : t.side
         ? `${t.field} climbers, ${t.side.n} throws V${lo} to V${hi}, ${compClock(tier, 0)}. ${money(t.purse[0])} to the winner. Off the ladder: no points.`
-        : `${t.field} climbers, problems V${lo} to V${hi}, ${compClock(tier, 0)}.${roundsNote(tier)} ${money(t.purse[0])} to the winner. You have ${ladderPoints(s)} ladder points.`,
+        : `${t.field} climbers, problems V${lo} to V${hi}, ${compClock(tier, 0)}.${roundsNote(tier)} ${money(t.purse[0])} to the winner.${rivalsNote(s, tier)} You have ${ladderPoints(s)} ladder points.`,
     off: !!why,
     run: () => game.comp('enter'),
   };

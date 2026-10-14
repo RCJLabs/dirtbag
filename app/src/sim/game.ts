@@ -74,6 +74,7 @@ import {
   roundName,
   compHere,
   compSet,
+  fieldSays,
   goesFor,
   goesLeft,
   gradesFor,
@@ -83,6 +84,7 @@ import {
   placing,
   pointsFor,
   promotedIn,
+  rostered,
   seasonEnds,
   yearOf,
   yourScore,
@@ -1853,6 +1855,9 @@ export function act(s0: GameState, a: Action): Result {
     line(
       `${called}: ${card}, ${ordinal(place)} of ${t.field}. ${says}${t.side ? (prize ? ` ${money(prize)}.` : '') : ` +${pts} ${pts === 1 ? 'point' : 'points'}${prize ? `, and ${money(prize)}` : ''}.`}`,
     );
+    // Phase 33.3: the rivals, by name: who won it, and who was a place ahead of you.
+    const named = rostered(on.tier) ? fieldSays(field, place, cut === undefined) : '';
+    if (named) line(named);
   };
   // League night's season (Phase 25.5): the year's table, if you were on it, and the prize.
   // Phase 26: in the A league once you've won one; its season pays more.

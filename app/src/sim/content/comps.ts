@@ -5,6 +5,7 @@
 // [proposed]; the field doesn't move with you (v0.956's comps rubber-banded).
 
 import type { Style } from '../climber';
+import { MEDIA_RIVAL } from './media';
 
 export interface CompTier {
   name: string;
@@ -180,6 +181,63 @@ export const COMPETITORS = [
   'Dara Kelly',
   'Ana Silva',
 ];
+
+// Phase 33.3 (Evan's call, 14 Oct 2026: a roster per tier): the field that comes back. Each
+// rung from the Circuit up has its named rivals, each with a grade in the career's first
+// year and a trend a year (rising, steady, fading) for the first few years (dials: RIVALS),
+// wobbled a little each year by the seed.
+// A rival whose grade gets past the top of their rung (dials: RIVALS.up) goes up a rung for
+// good, and out of the one below. Skye is on the
+// World Series' roster and comes back for Nationals too. The rest of a field is fillers from
+// the pool, never named. Every grade here is [proposed]; each rung's favourites sit at or
+// just over its top grade.
+export interface Rival {
+  name: string;
+  // The rung they climb in, in the first year, and any they enter as well.
+  tier: number;
+  also?: number[];
+  grade: number;
+  trend: number;
+}
+
+export const ROSTER: Rival[] = [
+  // The Circuit: V4 to V10.
+  { name: 'Priya Raman', tier: 1, grade: 10.3, trend: 0 },
+  { name: 'Gus Ferrante', tier: 1, grade: 9.6, trend: -0.2 },
+  { name: 'Nico Hale', tier: 1, grade: 9.2, trend: 0.8 },
+  { name: 'Lotte Brink', tier: 1, grade: 8, trend: 0 },
+  { name: 'Kai Mendez', tier: 1, grade: 6.5, trend: 1 },
+  // Nationals: V7 to V13.
+  { name: 'Ines Duarte', tier: 2, grade: 13.2, trend: 0 },
+  { name: 'Callum Reyes', tier: 2, grade: 12.6, trend: -0.3 },
+  { name: 'Mae Okafor', tier: 2, grade: 12, trend: 0.8 },
+  { name: 'Rory Kerr', tier: 2, grade: 11, trend: 0.4 },
+  { name: 'Tobias Lund', tier: 2, grade: 10, trend: 0 },
+  { name: 'June Park', tier: 2, grade: 8.8, trend: 0.3 },
+  // The World Series: V10 to V15.
+  { name: MEDIA_RIVAL.name, tier: 3, also: [2], grade: 14.6, trend: 0.1 },
+  { name: 'Elio Varga', tier: 3, grade: 15.2, trend: 0 },
+  { name: 'Noor Haddad', tier: 3, grade: 14, trend: -0.1 },
+  { name: 'Signe Holm', tier: 3, grade: 13.4, trend: 0.3 },
+  { name: 'Arjun Mehta', tier: 3, grade: 13.5, trend: 0.6 },
+  { name: 'Luca Bellini', tier: 3, grade: 12, trend: -0.3 },
+  // The Games: V12 to V17.
+  { name: 'Akira Sato', tier: 4, grade: 17.2, trend: 0 },
+  { name: 'Freya Lind', tier: 4, grade: 16.5, trend: 0.1 },
+  { name: 'Dmitri Volkov', tier: 4, grade: 16, trend: -0.3 },
+  { name: 'Clara Moreau', tier: 4, grade: 15, trend: 0.2 },
+  { name: 'Owen Byrne', tier: 4, grade: 14, trend: 0 },
+];
+
+// Phase 33.3: the field, said. Only rivals are named; a filler who wins is a stranger.
+export const FIELD_SAYS = {
+  favourites: 'The favourites: {names}.',
+  up: 'Up from {from} this year: {names}.',
+  won: '{name} won it.',
+  stranger: 'Somebody nobody had on their sheet won it.',
+  second: '{name} was second.',
+  ahead: '{name} finished one place ahead of you.',
+};
 
 // Said of how you placed, from the top down.
 export const COMP_SAYS = {
