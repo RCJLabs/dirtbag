@@ -64,6 +64,9 @@ import {
   NAMED_FOR,
   goBlocked,
   goCost,
+  goesLeft,
+  isCompProblem,
+  COMP_RULES,
   gradeName,
   gradeOf,
   gradeOfPerson,
@@ -1090,6 +1093,8 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
   const cost = `${costLabel({ min: c.min })} · ${bodyNote({ energy: c.energy, skin: c.skin })}${rockNote(s, r)}`;
   const log = s.routes[route];
   const unnamed = r.open && log?.sent && !s.firsts[route];
+  // Phase 33.2: a comp problem's clock, the goes it has left.
+  const left = goesLeft(s, route);
   // Only a first go at a line you've never sent can be called; not up on an expedition.
   const callable = !why && !r.exped && !log?.sent && (log?.goes ?? 0) === 0;
   // Who else is at the base: a queue for the line, and beta to be had for the asking.
@@ -1145,7 +1150,14 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
       </h3>
       <p className="sub">
         <Glossed game={game} at={{ k: 'beta', route }} text={r.line} />{' '}
-        {goes ? `Go ${goes + 1} today.` : 'First go today.'} Tap the wall to reopen this.
+        {left !== null
+          ? left
+            ? fill(COMP_RULES.go, { n: (log?.goes ?? 0) + 1, goes: left + (log?.goes ?? 0) })
+            : ''
+          : goes
+            ? `Go ${goes + 1} today.`
+            : 'First go today.'}{' '}
+        Tap the wall to reopen this.
       </p>
       {r.open && !log?.sent && !s.firsts[route] && (
         <p className="note">
@@ -1259,7 +1271,11 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
                     ))}
                   </span>
                   <small>
-                    {known ? `${VERB_TEXT[B.verb]}. ${B.note} Leans on ${a}, then ${b}.` : B.hint}
+                    {known
+                      ? `${VERB_TEXT[B.verb]}. ${B.note} Leans on ${a}, then ${b}.`
+                      : isCompProblem(route)
+                        ? COMP_RULES.hint
+                        : B.hint}
                   </small>
                 </button>
               );

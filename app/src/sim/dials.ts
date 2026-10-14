@@ -124,17 +124,24 @@ export const COACH = {
   send: 6,
 };
 
-// The warehouse's picks: after the shift's quota, picks on top, three on offer at a time,
-// each paying something and weighing something. Every pick's a chance to drop it, rising
-// with how worn out you are, and a drop costs some of what you'd picked so far and ends the
-// run: so there's a time to stop, and the day (the heat, the supervisor) moves it. The
-// forklift driver (rank 2 and up) carries `easier`.
-// Phase 18.4 [proposed]. A comp: a top counts if it's in the first `goes` goes; sign-up
-// closes at `close`; the field's chance of a top rises with grade over the problem's,
-// `steep` per grade; ladder points fade by half every `half` days.
+// Phase 18.4 [proposed]. A comp: sign-up closes at `close`; the field's chance of a top rises
+// with grade over the problem's, `steep` per grade; ladder points fade by half every `half`
+// days.
 // Phase 33.1 [proposed]: a round after the qualifier sets `roundProblems` problems, from the
 // middle of the comp's grades up (the final) or a quarter of the way (a semi-final).
-export const COMP = { goes: 5, close: 13 * 60, steep: 1.4, half: 56, roundProblems: 4 };
+// Phase 33.2 [proposed] (Evan's call, 14 Oct 2026: a go budget): the time limit. A problem's
+// on the clock for `clock` minutes, the qualifier's and then every round after it's, and a go
+// with the rest after it is `perGo` minutes: so five goes a problem in a qualifier and four
+// after it, as the World Cup's boulder rounds ran. The goes are all you get, and a top counts
+// in any of them. (18.4's top counted in its first five goes, and you could go on after.)
+export const COMP = {
+  close: 13 * 60,
+  steep: 1.4,
+  half: 56,
+  roundProblems: 4,
+  clock: [5, 4] as const,
+  perGo: 1,
+};
 // Phase 25.5 [proposed]. League night's season: the year's eight nights, a night's points the
 // field's size less one a place, the `best` six counting (two missed nights don't sink you).
 // Top of the table when it's settled, on the year's last League night, pays `prize`. Phase 26
@@ -298,6 +305,11 @@ export const LAND = {
   clean: { cash: 0, min: 120, energy: 15 },
 };
 
+// The warehouse's picks: after the shift's quota, picks on top, three on offer at a time,
+// each paying something and weighing something. Every pick's a chance to drop it, rising
+// with how worn out you are, and a drop costs some of what you'd picked so far and ends the
+// run: so there's a time to stop, and the day (the heat, the supervisor) moves it. The
+// forklift driver (rank 2 and up) carries `easier`.
 export const HAUL = {
   picks: 6,
   offer: 3,

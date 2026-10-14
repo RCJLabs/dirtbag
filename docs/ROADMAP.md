@@ -3442,6 +3442,17 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
   - The main harness passes every target but Outdoors, at 2 of 4 as on main. The comp bots reach the Games by day 219.
 - **The download** is 434.5 KB of 460.
 
+**Status (14 Oct 2026): 33.2 built: comp rules, the clock and isolation.** No save change, 0.999.51.
+- **The clock** (Evan's call: a go budget). A comp problem is on the clock 5 minutes a round in a qualifier and 4 in any round after, at a minute a go (`COMP.clock`, `COMP.perGo`): 5 goes a problem, then 4. Those goes are all you get. A go past them is refused ("Time's up on this one"), and a top in any of them counts. Before, a top counted in its first 5 goes, and you could keep going.
+  - Every ladder comp runs the clock, League night and the Circuit included: for them the only change is that a sixth go is refused. The dyno comp keeps its 3 throws a dyno.
+  - The field's goes in each round roll against that round's budget.
+- **Isolation.** On a comp problem nobody gives you beta: not the crowd's shout, not asking around (refused, with the rule), not the crew. A lesson reads the wall as you find it and skips comp problems, which fixes Sage teaching the week's set in the middle of a comp. Asked there, she says she can't. Your own falls still show you another way.
+- **Shown,** all from the dials: the clock at the desk's entry row, in the entry line, on the scorecard row and on the round you're through to; "Go 2 of 4 on the clock" on a comp problem's sheet, with the time's-up reason on its button; the locked beta card's hint says isolation. The Training Center's painted comp clock, a hand-typed "4:00", now reads the qualifier's minutes.
+- **The bots** take at most 3 goes a problem a day, so the cap never binds them.
+- **The harness:** the comps table moved little. At Nationals a V9 still makes the final 42% of the time, and a V12 now wins 50% (67% in 33.1: 6 of 12 against 8, with the final's field and you both on 4 goes); at the World Series a V13 still makes the final 75%. The main harness passes every target but Outdoors, at 2 of 4 as on main; the comp bots reach the Games by day 219.
+- **Caveats:** the clock's minutes follow the World Cup's boulder rounds (5 in qualifiers, 4 after) [INFERRED: not checked against the current rules]. A gym go still costs 8 minutes of the day, so a "5-minute" problem can take 40 minutes of the in-game clock: the clock limits goes, not the day.
+- **The download** is 435.0 KB of 460.
+
 ### Phase 34 — Money that means something
 
 *Medium. Followers pay nothing; a job's ranks raise its pay and nothing else; costs don't grow with ambition. The audit's economy #8, #9, #16 and #17.*
@@ -3806,3 +3817,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-14 — 29.4 built: a recipe at the van plays the beat panel, and a meal cooked right adds to the night's sleep and psyche; the e2e cooks one (criterion 3). Phase 29's Done-when all pass; closing is Evan's call. 0.999.49.
 - 2026-10-14 — Phase 29 closed by Evan's call; CURRENT MILESTONE moved to Phase 33, comps with rounds.
 - 2026-10-14 — Phase 33 planned with Evan's calls (a go budget for the time limit; small finals; the Nationals podium makes the team; a roster of rivals per tier). 33.1 built: comps from Nationals up in rounds, a day apart; the comps harness measures them. Save v65. 0.999.50.
+- 2026-10-14 — 33.2 built: comp rules. A clock on each problem (5 minutes in a qualifier, 4 after, a go a minute) caps its goes; isolation keeps everyone's beta off comp problems, and Sage no longer teaches the week's set mid-comp. No save change. 0.999.51.

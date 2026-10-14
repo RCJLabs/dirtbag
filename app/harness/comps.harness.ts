@@ -4,7 +4,7 @@
 // podium and the win, and where you place. COMP_SEEDS widens the sample.
 import { it } from 'vitest';
 import { needFor } from '../src/sim/climber';
-import { compField, compSet, goesFor, gradesFor, placing, roundName } from '../src/sim/comps';
+import { compField, compSet, goesFor, gradesFor, placing, roundName, roundOf } from '../src/sim/comps';
 import { COMP_TIERS } from '../src/sim/content/comps';
 import { act, newGame } from '../src/sim/game';
 import { median } from '../src/sim/harness';
@@ -25,13 +25,13 @@ const climber = (seed: string, g: number): GameState => {
   };
 };
 
-// One round climbed fresh: each problem gone at up to its goes; the tops, their goes, and
-// the place against the round's field.
+// One round climbed fresh: each problem gone at up to the goes its clock buys (Phase 33.2);
+// the tops, their goes, and the place against the round's field.
 function climbRound(s: GameState, tier: number, day: number) {
   let tops = 0;
   let goes = 0;
   for (const p of compSet(s.seed, tier, day))
-    for (let g = 1; g <= goesFor(tier); g++)
+    for (let g = 1; g <= goesFor(tier, roundOf(tier, day)); g++)
       if (
         playGo(
           { ...s, day, energy: 100, skin: 100 },
