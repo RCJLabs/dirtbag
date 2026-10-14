@@ -97,6 +97,9 @@ const WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 export const listOf = (xs: string[]): string =>
   xs.length < 2 ? (xs[0] ?? '') : `${xs.slice(0, -1).join(', ')} and ${xs.at(-1)}`;
 
+// A name mid-sentence: "The roof" → "the roof".
+export const lower = (t: string): string => t.charAt(0).toLowerCase() + t.slice(1);
+
 export const dayName = (day: number): string => WEEKDAY[day % 7]!;
 
 // 1st, 2nd, 3rd, 4th, 11th, 12th, 13th, 21st.

@@ -18,6 +18,8 @@ export type RecordAim =
   | { style: 'flash' | 'onsight' }
   // Phase 27.4: first sends you called before the go.
   | { called: number }
+  // Phase 28.2: crew projects sent with the crew there.
+  | { train: number }
   | { outside: true }
   | { fa: number }
   | { shift: true }
@@ -98,6 +100,16 @@ export const RECORD: RecordEntry[] = [
       'Ten times you said it before you touched the rock, and ten times it went. The ones that didn’t, you remember better. That’s the price of saying it.',
     from: [],
     aim: { called: 10 },
+  },
+  // Phase 28.2: the crew's project, and the train up it.
+  {
+    id: 'train',
+    title: 'Send Train',
+    desc: 'Send the crew project with the crew there, and watch them follow you up it.',
+    story:
+      'You went first because somebody had to. Then they came up it one after another, each of them doing it a little differently, all of them doing it your way at the crux. Nobody will remember who sent it first. Everyone will remember the afternoon.',
+    from: [],
+    aim: { train: 1 },
   },
   {
     id: 'outside',

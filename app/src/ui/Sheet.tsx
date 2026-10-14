@@ -54,6 +54,9 @@ import {
   crewNameable,
   crewOf,
   crewSuggestions,
+  crewHere,
+  projectable,
+  CREW_PROJECT,
   GEAR,
   KIT,
   faSuggestions,
@@ -1186,6 +1189,7 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
           </small>
         </button>
       )}
+      <ProjectRows game={game} s={s} r={r} />
       {s.race?.route === route && (
         <p className="note">
           Dex is racing you for it: {s.race.until - s.day + 1} day{s.race.until === s.day ? '' : 's'} left.
@@ -1495,6 +1499,56 @@ function FaBody({ game, route, s }: { game: Game; route: string; s: GameState })
         </small>
       </button>
     </form>
+  );
+}
+
+// Phase 28.2: the crew project on its line's sheet: make it the project, or, on the project,
+// who's here, their goes, and dropping it.
+function ProjectRows({ game, s, r }: { game: Game; s: GameState; r: RouteDef }) {
+  const name = (w: string) => PEOPLE[w]?.name ?? w;
+  if (projectable(s, r))
+    return (
+      <button
+        type="button"
+        className="opt"
+        id="crew-project"
+        onClick={() => game.dispatch({ t: 'crewProject', route: r.id })}
+      >
+        <span>Make it the crew project</span>
+        <small>The crew works it with you, a crew day at a time, and follows you up it when it goes.</small>
+      </button>
+    );
+  if (s.crewProject?.route !== r.id) return null;
+  const here = s.at === r.place ? crewHere(s) : [];
+  const up = here.filter((w) => !s.today.includes(`crewgo-${w}`));
+  return (
+    <>
+      <p className="note" id="project-note">
+        The crew project since day {s.crewProject.day}.{' '}
+        {here.length
+          ? `${listOf(here.map(name))} ${here.length > 1 ? 'are' : 'is'} here: send it and the train follows you up it.`
+          : 'None of the crew is here. Send it now and there’s no train.'}
+      </p>
+      {up.length > 0 && (
+        <button type="button" className="opt" id="crew-go" onClick={() => game.dispatch({ t: 'crewGo' })}>
+          <span>Watch the crew go</span>
+          <span className="c">{CREW_PROJECT.watch * up.length} min</span>
+          <small>
+            {listOf(up.map(name))}: {up.length > 1 ? 'a go each' : 'a go'}, and every go shows you a way
+            through you haven’t got.
+          </small>
+        </button>
+      )}
+      <button
+        type="button"
+        className="opt"
+        id="crew-drop"
+        onClick={() => game.dispatch({ t: 'crewProject', route: null })}
+      >
+        <span>Drop it</span>
+        <small>Another line can be the project. The crew will notice.</small>
+      </button>
+    </>
   );
 }
 
@@ -2262,6 +2316,9 @@ function PeopleRows({ game, s }: { game: Game; s: GameState }) {
   if (!met.length && !s.dog) return null;
   // Phase 28.1: the crew, by name once it has one.
   const crew = crewOf(s).map((w) => PEOPLE[w]?.name ?? w);
+  // Phase 28.2: the crew's project, and the ones sent with them there.
+  const project = s.crewProject ? routeOfId(s, s.crewProject.route) : undefined;
+  const trains = s.crewSends.filter((x) => x.train.length > 0).length;
   return (
     <>
       <p className="crux">People</p>
@@ -2269,6 +2326,9 @@ function PeopleRows({ game, s }: { game: Game; s: GameState }) {
         <p className="sub" id="crew">
           The crew: <b>{s.crewName.name}</b>, named on day {s.crewName.day}.{' '}
           {crew.length ? `${listOf([...crew, 'you'])}.` : 'Just you, these days.'}
+          {project &&
+            ` The project: ${lineName(s, project)}, ${gradeLabel(project)}, at ${PLACES[project.place]?.name ?? project.place}.`}
+          {trains > 0 && ` Projects sent together: ${trains}.`}
         </p>
       )}
       {crewNameable(s) && (

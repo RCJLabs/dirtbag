@@ -31,8 +31,17 @@ import {
 import { bestPlan, guestsToday, outfitBlocked, outfitDay, planRefused, planValue } from './guiding';
 import { GUIDE_SAYS } from './content/guiding';
 import { teamBack, teamBlocked, teamCost, teamHome, teamNames, teamOdds } from './team';
-import { crewNameable, crewOf, mends } from './crew';
-import { CREW_LINES, CREW_NAME_SAYS, CREW_NAMES } from './content/crew';
+import { crewDayFor, crewDayFrom, crewHere, crewNameable, crewOf, mends } from './crew';
+import {
+  CREW_DAY_YES,
+  CREW_GO,
+  CREW_LINES,
+  CREW_NAME_SAYS,
+  CREW_NAMES,
+  CREW_TRAIN,
+  PROJECT_SAYS,
+} from './content/crew';
+import { AWAY_TEXT, SULK_TEXT } from './content/texts';
 import { TEAM_FUNDED, TEAM_NOTHING, TEAM_SUMMIT, TEAM_TURNED } from './content/team';
 import { guideBlocked, guidesOut } from './guides';
 import { bolted, boltBlocked, gymBuyBlocked, gymNight, UPGRADES, wallWord, type Upgrade } from './business';
@@ -243,6 +252,7 @@ import {
   TEAM,
   CREW,
   CREW_NAME,
+  CREW_PROJECT,
   AGE,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
@@ -294,7 +304,7 @@ import { SPOT_LINE, SPOT_NAME } from './content/spots';
 import { bodgeHolds, breakdownRoll, friendFor, gasFor, PART_NAME, repairCost, unsafePart } from './van';
 import { BODGE_FAILED, BODGE_HELD, BREAKDOWN_LINE } from './content/van';
 import { speedBlocked, speedGains, speedLoad, speedTime, runsToday } from './speed';
-import { fill, money, ordinal, skillsNote } from './format';
+import { fill, lower, money, ordinal, skillsNote } from './format';
 import { PARTNERS, tierOf, whereIs, whereNow } from './presence';
 import { hashSeed, Rng } from './rng';
 import { actEndedBy, aimMet, currentGoal } from './story';
@@ -401,6 +411,9 @@ export function newGame(seed: string): GameState {
     teams: [],
     crew: null,
     crewName: null,
+    crewProject: null,
+    crewDay: null,
+    crewSends: [],
     lifestyle: 'dirtbag',
     spot: 'lot',
     lotNights: 0,
@@ -3643,6 +3656,18 @@ export function act(s0: GameState, a: Action): Result {
             s.today.push(`cheer-${mate}`);
           }
         }
+        // The crew's project (Phase 28.2): your send starts the train, and each of the crew
+        // here follows you up it. Sent alone, it's still sent; they'll hear.
+        if (!lap && s.crewProject?.route === r.id) {
+          const train = crewHere(s);
+          s.crewSends.push({ route: r.id, day: s.day, train });
+          s.crewProject = null;
+          if (train.length) {
+            s.today.push('crew-sent');
+            for (const w of train) if (CREW_TRAIN[w]) line(CREW_TRAIN[w]);
+            line(fill(PROJECT_SAYS.train, { crew: s.crewName?.name ?? 'the crew', line: lineName(s, r) }));
+          } else line(PROJECT_SAYS.alone);
+        }
         // A send of the style you were afraid of ends the fear (Phase 22.4b).
         if (s.fear.includes(r.type)) {
           s.fear = s.fear.filter((f) => f !== r.type);
@@ -3800,6 +3825,75 @@ export function act(s0: GameState, a: Action): Result {
       if (honoree) {
         bond(honoree, s.people[honoree]!.bond + GIVE.named);
         line(NAMED_FOR[honoree]?.line ?? `${PEOPLE[honoree]!.name} hears about it.`);
+      }
+      break;
+    }
+
+    // Phase 28.2: the crew project, picked from a line that's hard enough, or dropped.
+    case 'crewProject': {
+      if (a.route === null) {
+        if (!s.crewProject) return refuse('The crew has no project.');
+        s.crewProject = null;
+        line(PROJECT_SAYS.dropped);
+        break;
+      }
+      const r = routeOfId(s, a.route);
+      if (!s.crewName) return refuse('Name the crew first.');
+      if (s.crewProject) return refuse('The crew has a project already.');
+      if (!r || !projectable(s, r))
+        return refuse('The crew wants something harder, somewhere they can come.');
+      s.crewProject = { route: r.id, day: s.day };
+      line(fill(PROJECT_SAYS.picked, { line: `${lineName(s, r)}, ${gradeLabel(r)}` }));
+      break;
+    }
+
+    // A crew day for the project (Phase 28.2): everyone who can make it, at its crag, today
+    // before the invite hour or tomorrow after it. Once a week, answered or not.
+    case 'crewDay': {
+      const r = s.crewProject ? routeOfId(s, s.crewProject.route) : undefined;
+      if (!r) return refuse('The crew has no project to call a day for.');
+      if (s.day < crewDayFrom(s))
+        return refuse(`The crew's next day can be called from day ${crewDayFrom(s)}.`);
+      const day = crewDayFor(s);
+      const place = PLACES[r.place]!.name;
+      const answers = crewDayAnswers(s, r.place, day);
+      s.crewDay = s.day;
+      for (const { who, no } of answers) {
+        const name = PEOPLE[who]?.name ?? who;
+        if (!no) {
+          meet(who).invite = { day, place: r.place, from: day === s.day ? s.min : CREW_PROJECT.from };
+          line(fill(CREW_DAY_YES[who] ?? `${name}: "{place}."`, { place }));
+        } else if (no === 'bond') line(fill(PROJECT_SAYS.bond, { name, place }));
+        else
+          line(
+            `${name}: “${walk(s.seed, `crewday-${who}`, no === 'away' ? AWAY_TEXT.away : SULK_TEXT, day)}”`,
+          );
+      }
+      if (answers.every((x) => x.no)) line(PROJECT_SAYS.nobody);
+      break;
+    }
+
+    // The crew goes first on the project (Phase 28.2): each of them here who hasn't today has
+    // a go, and shows you the next way through you didn't know.
+    case 'crewGo': {
+      const r = s.crewProject ? routeOfId(s, s.crewProject.route) : undefined;
+      if (!r) return refuse('The crew has no project.');
+      if (r.place !== s.at) return refuse("The crew's project isn't here.");
+      const up = crewHere(s).filter((w) => !s.today.includes(`crewgo-${w}`));
+      if (!up.length) return refuse('Nobody from the crew here has a go left today.');
+      for (const who of up) {
+        s.today.push(`crewgo-${who}`);
+        spend({ min: CREW_PROJECT.watch });
+        const name = PEOPLE[who]?.name ?? who;
+        const b = sprayable(s, r)[0];
+        const crux = b ? r.cruxes.find((c) => c.beta.includes(b)) : undefined;
+        if (!b || !crux || !CREW_GO[who]) {
+          line(fill(PROJECT_SAYS.nothing, { name }));
+          continue;
+        }
+        const beta = r.beta[b]!.name;
+        learn(r.id, b, 'told', '');
+        line(fill(CREW_GO[who]!, { crux: lower(crux.name), beta: lower(beta), Beta: beta }));
       }
       break;
     }
@@ -4005,6 +4099,51 @@ export function faSuggestions(s: GameState, r: RouteDef): string[] {
     `The ${season[0]!.toUpperCase()}${season.slice(1)} Project`,
     s.cash < 0 ? 'Rent’s Due' : s.routes.pump?.told.includes('B2') ? 'Hazel Was Right' : 'Coffee Money',
   ];
+}
+
+// Phase 28.2: the crew project (Evan's call: you pick it). Your hardest send of a line's kind,
+// boulders or ropes, 0 with none.
+export function hardestSend(s: GameState, rope: boolean): number {
+  let top = 0;
+  for (const [id, l] of Object.entries(s.routes)) {
+    const r = l.sent ? routeOfId(s, id) : undefined;
+    if (r && roped(r) === rope) top = Math.max(top, r.grade);
+  }
+  return top;
+}
+
+// Whether a line can be the crew's project: a named crew with none on, and an unsent line at a
+// crag they can be called to, well above anything you've sent of its kind.
+export function projectable(s: GameState, r: RouteDef): boolean {
+  if (!s.crewName || s.crewProject || r.wall || r.exped || indoor(r.place)) return false;
+  if (PLACES[r.place]?.invite === undefined || s.routes[r.id]?.sent) return false;
+  return r.grade >= hardestSend(s, roped(r)) + CREW_PROJECT.over;
+}
+
+export type CrewNo = 'away' | 'bond' | 'avoid';
+
+// How each of the crew answers a crew day at `place` on `day`, closest first: yes, or why not.
+// Away (an arc's time off, a stint, a sulk), not close enough for that crag, or keeping clear
+// of someone who's already said yes, either way round.
+export function crewDayAnswers(
+  s: GameState,
+  place: string,
+  day: number,
+): { who: string; no: CrewNo | null }[] {
+  const yes: string[] = [];
+  return crewOf(s).map((who) => {
+    const p = s.people[who]!;
+    const no: CrewNo | null =
+      (p.away !== undefined && day < p.away) || stintOn(s.seed, who, day)
+        ? 'away'
+        : p.bond < (PLACES[place]?.invite ?? Infinity)
+          ? 'bond'
+          : yes.some((y) => p.avoid === y || s.people[y]?.avoid === who)
+            ? 'avoid'
+            : null;
+    if (!no) yes.push(who);
+    return { who, no };
+  });
 }
 
 // Phase 28.1: names for the crew, from your record: where you've sent most, your dog, the

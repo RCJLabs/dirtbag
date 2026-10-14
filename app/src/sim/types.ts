@@ -135,6 +135,12 @@ export interface GameState {
   crew: { a: string; b: string; day: number; stage: 'rift' | 'mended' | 'set' } | null;
   // Phase 28.1 (save v59): the crew's name, and the day you named it. Named once, for good.
   crewName: { name: string; day: number } | null;
+  // Phase 28.2 (save v60): the crew's project and the day it was picked; the day you last
+  // called a crew day, whatever the project (so dropping one doesn't buy another); and every
+  // project sent, with who followed you up it.
+  crewProject: { route: string; day: number } | null;
+  crewDay: number | null;
+  crewSends: { route: string; day: number; train: string[] }[];
   teams: { id: string; day: number; summit: boolean; high: number }[];
   // How you live (dials.ts LIFESTYLE): paid at the van every night.
   lifestyle: 'dirtbag' | 'comfortable' | 'plush';
@@ -567,6 +573,10 @@ export type Action =
   | { t: 'name'; route: string; name: string; call: -1 | 0 | 1; for?: string }
   // Phase 28.1: naming the crew.
   | { t: 'nameCrew'; name: string }
+  // Phase 28.2: the crew project picked (or dropped, null), a crew day called, the crew's goes.
+  | { t: 'crewProject'; route: string | null }
+  | { t: 'crewDay' }
+  | { t: 'crewGo' }
   // Phase 17.6: calling home back.
   | { t: 'call' }
   // Phase 21.3: a session (a protocol's id, or 'prehab'), a phase, a taper.

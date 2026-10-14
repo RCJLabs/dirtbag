@@ -2,9 +2,9 @@
 // out with the other, and keeps away from wherever they are. Weeks later the one you picked
 // asks about it, and you can try to get them back in a room. Once a life.
 
-import { CREW, CREW_NAME } from './dials';
+import { BOND, CREW, CREW_NAME, CREW_PROJECT } from './dials';
 import { tamStops } from './lives';
-import { PARTNERS, tierOf } from './presence';
+import { PARTNERS, tierOf, whereNow } from './presence';
 import { Rng } from './rng';
 import type { GameState } from './types';
 
@@ -60,3 +60,13 @@ export const crewNameable = (s: GameState): boolean => !s.crewName && crewOf(s).
 // it waits on the People list.
 export const crewNameDue = (s: GameState, who: string): boolean =>
   crewNameable(s) && !s.seen.includes('crew-name') && crewOf(s).includes(who);
+
+// The day the next crew day can be called: once every `every` days.
+export const crewDayFrom = (s: GameState): number =>
+  s.crewDay === null ? 0 : s.crewDay + CREW_PROJECT.every;
+
+// The crew who are here now.
+export const crewHere = (s: GameState): string[] => crewOf(s).filter((w) => whereNow(s, w) === s.at);
+
+// The day a call now is for: today before the invite hour, tomorrow after it.
+export const crewDayFor = (s: GameState): number => (s.min < BOND.inviteBefore ? s.day : s.day + 1);

@@ -898,6 +898,8 @@ export const PSYCHE = {
   calledFell: 4,
   // The night you name the crew (Phase 28.1): worth a send. [proposed]
   crewNamed: 4,
+  // The crew's project sent with them there (Phase 28.2): worth a send again. [proposed]
+  train: 4,
   windows: 0.05,
   // Where the words change: under 25 low, then flat, steady, keen, and psyched from 80.
   bands: [25, 45, 60, 80],
@@ -1350,6 +1352,13 @@ export const CREW = {
 // Phase 28.1 [proposed]. The crew's name: offered once `min` partners are a Regular
 // (`CREW.tier`) or closer, v0.956's two; a name is 2 to `max` characters, as long as a line's.
 export const CREW_NAME = { min: 2, max: 28 };
+
+// Phase 28.2 [proposed]. The crew project (Evan's call: you pick it): an unsent line at a crag
+// the crew can be called to, `over` grades or more above your hardest send of its kind. A crew
+// day can be called once every `every` days, so working it takes weeks, not an afternoon;
+// each of the crew's goes takes `watch` minutes of yours. A call for today must come before
+// `BOND.inviteBefore`; later, it's for tomorrow from `from`.
+export const CREW_PROJECT = { over: 2, every: 7, watch: 10, from: 9 * 60 };
 
 // Lives that change (Phase 17.3), on the age clock (AGE.days to a year, Evan's call), all
 // [proposed]:

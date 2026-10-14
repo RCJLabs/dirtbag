@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 59;
+export const SAVE_VERSION = 60;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -454,6 +454,11 @@ export const MIGRATIONS: Record<number, Migration> = {
   58: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, crewName: null };
+  },
+  // v59 -> v60 (Phase 28.2): the crew project. Nobody had one, called a crew day, or sent one.
+  59: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, crewProject: null, crewDay: null, crewSends: [] };
   },
 };
 
@@ -1057,6 +1062,21 @@ export function validate(x: unknown): string[] {
   need(
     cn === null || (isObj(cn) && typeof cn.name === 'string' && cn.name.trim().length >= 2 && isInt(cn.day)),
     'crewName',
+  );
+  const cp = x.crewProject;
+  need(cp === null || (isObj(cp) && typeof cp.route === 'string' && isInt(cp.day)), 'crewProject');
+  need(x.crewDay === null || isInt(x.crewDay), 'crewDay');
+  need(
+    Array.isArray(x.crewSends) &&
+      x.crewSends.every(
+        (c) =>
+          isObj(c) &&
+          typeof c.route === 'string' &&
+          isInt(c.day) &&
+          Array.isArray(c.train) &&
+          c.train.every((w) => typeof w === 'string' && w in PEOPLE),
+      ),
+    'crewSends',
   );
   const tm = x.team;
   need(
