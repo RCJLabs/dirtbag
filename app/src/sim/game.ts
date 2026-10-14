@@ -15,7 +15,7 @@ import {
   SET_SAYS,
   SET_WALLS,
 } from './content/setting';
-import { COMP_SAYS, COMP_TIERS, LEAGUE_SAYS } from './content/comps';
+import { COMP_SAYS, COMP_TIERS, LEAGUE_SAYS, ROUND_SAYS } from './content/comps';
 import { GYM_UPGRADE_SAYS } from './content/business';
 import { giveBlocked } from './giving';
 import { heirStart, menteeAfter, menteeCoachBlocked, menteeName, menteeTakeBlocked } from './mentee';
@@ -70,6 +70,7 @@ import {
 import {
   compBlocked,
   compField,
+  roundName,
   compHere,
   compSet,
   goesFor,
@@ -760,7 +761,9 @@ export function goBlocked(s: GameState, r: RouteDef): string | null {
   const inside = INDOOR[r.place];
   if (inside) {
     if (s.min >= INDOOR_CLOSE) return `${inside.name} is closed`;
-    if (!s.today.includes(inside.pass)) return 'Buy a day pass at the desk first';
+    // Phase 33.1: a round you're through to is your way in, as the entry was.
+    const round = s.comps.on?.day === s.day && COMP_TIERS[s.comps.on.tier]?.venue === r.place;
+    if (!s.today.includes(inside.pass) && !round) return 'Buy a day pass at the desk first';
   } else {
     const c = conditionsAt(s.seed, s.day, r.place);
     if (c.closed) return c.closed;
@@ -899,8 +902,8 @@ export function act(s0: GameState, a: Action): Result {
     const away = where === 'away' || where === 'exped';
     // Picks left on the go at the warehouse are paid at the day's end (Phase 18.3).
     if (s.haul) bankHaul('You never clocked off; they paid you anyway.');
-    // So is a comp's scorecard (Phase 18.4).
-    if (s.comps.on) finishComp();
+    // So is a comp's scorecard (Phase 18.4): today's round, not tomorrow's (Phase 33.1).
+    if (s.comps.on && s.comps.on.day <= ended) finishComp();
     // League night's season settled on its last night (Phase 25.5), if you were in it.
     if (seasonEnds(ended)) settleSeason(yearOf(ended), ended);
     mediaNight(ended);
@@ -1806,6 +1809,20 @@ export function act(s0: GameState, a: Action): Result {
     const you = yourScore(s);
     const field = compField(s.seed, on.tier, on.day);
     const place = placing(you, field);
+    const card = `${you.tops} ${you.tops === 1 ? 'top' : 'tops'} in ${you.goes} ${you.goes === 1 ? 'go' : 'goes'}`;
+    // Phase 33.1: a round with another after it. Through the cut, it's tomorrow's; under it,
+    // your place in the round is your place in the comp.
+    const cut = t.rounds?.[on.round];
+    const called = t.rounds ? `${t.name} ${roundName(on.tier, on.round)}` : t.name;
+    if (cut !== undefined && place <= cut) {
+      s.comps = { ...s.comps, on: { tier: on.tier, day: on.day + 1, round: on.round + 1, tops: {} } };
+      line(
+        `${called}: ${card}, ${ordinal(place)} of ${field.length + 1}. ${fill(ROUND_SAYS.through, { next: roundName(on.tier, on.round + 1), of: String(cut) })}`,
+      );
+      return;
+    }
+    if (cut !== undefined)
+      line(fill(ROUND_SAYS.out, { cut: ordinal(cut), next: roundName(on.tier, on.round + 1) }));
     const pts = pointsFor(on.tier, place, t.field);
     const prize = t.purse[place - 1] ?? 0;
     s.comps = {
@@ -1823,10 +1840,10 @@ export function act(s0: GameState, a: Action): Result {
         : place <= 3
           ? COMP_SAYS.podium
           : place <= t.field / 2
-            ? COMP_SAYS.final
+            ? COMP_SAYS.mid
             : COMP_SAYS.low;
     line(
-      `${t.name}: ${you.tops} ${you.tops === 1 ? 'top' : 'tops'} in ${you.goes} ${you.goes === 1 ? 'go' : 'goes'}, ${ordinal(place)} of ${t.field}. ${says}${t.side ? (prize ? ` ${money(prize)}.` : '') : ` +${pts} ${pts === 1 ? 'point' : 'points'}${prize ? `, and ${money(prize)}` : ''}.`}`,
+      `${called}: ${card}, ${ordinal(place)} of ${t.field}. ${says}${t.side ? (prize ? ` ${money(prize)}.` : '') : ` +${pts} ${pts === 1 ? 'point' : 'points'}${prize ? `, and ${money(prize)}` : ''}.`}`,
     );
   };
   // League night's season (Phase 25.5): the year's table, if you were on it, and the prize.
@@ -2692,7 +2709,7 @@ export function act(s0: GameState, a: Action): Result {
       const t = COMP_TIERS[tier]!;
       const [lo, hi] = gradesFor(tier, s.day);
       if (t.fee) spend({ cash: -t.fee });
-      s.comps = { ...s.comps, on: { tier, day: s.day, tops: {} } };
+      s.comps = { ...s.comps, on: { tier, day: s.day, round: 0, tops: {} } };
       // The entry's the wall for the day: no pass to buy on top.
       const pass = INDOOR[s.at]?.pass;
       if (pass && !s.today.includes(pass)) s.today.push(pass);

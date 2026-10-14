@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 64;
+export const SAVE_VERSION = 65;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -484,6 +484,12 @@ export const MIGRATIONS: Record<number, Migration> = {
     const van = isObj(x.van) ? x.van : {};
     return { ...x, van: { ...van, miles: VAN_AGE.start, rebuilt: 0, verdict: null } };
   },
+  // v64 -> v65 (Phase 33.1): a comp you're in is in a round; every comp was one round till now.
+  64: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const c = isObj(x.comps) ? x.comps : {};
+    return { ...x, comps: { ...c, on: isObj(c.on) ? { ...c.on, round: 0 } : (c.on ?? null) } };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -661,6 +667,8 @@ export function validate(x: unknown): string[] {
         (isObj(c.on) &&
           isInt(c.on.tier) &&
           isInt(c.on.day) &&
+          isInt(c.on.round) &&
+          c.on.round >= 0 &&
           isObj(c.on.tops) &&
           Object.values(c.on.tops).every(isInt))) &&
       Array.isArray(c.points) &&

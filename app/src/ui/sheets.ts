@@ -217,6 +217,8 @@ import {
   compHere,
   compOn,
   goesFor,
+  roundName,
+  listOf,
   gradesFor,
   leagueTier,
   promotedIn,
@@ -610,16 +612,34 @@ function shootRows(game: Game, s: GameState): Row[] {
 
 // The comp at this wall (Phase 18.4): sign up on the day, hand in your scorecard, or when
 // the next one is.
+// Phase 33.1: a comp's rounds, in words: "the top 6 go through to a final the next day".
+function roundsNote(tier: number): string {
+  const cuts = COMP_TIERS[tier]!.rounds ?? [];
+  if (!cuts.length) return '';
+  const steps = cuts.map((c, i) => `${i ? 'then ' : 'the top '}${c} to the ${roundName(tier, i + 1)}`);
+  return ` A qualifier; ${listOf(steps)}, a round a day.`;
+}
+
 function compRow(game: Game, s: GameState): Row {
   const on = s.comps.on;
   if (on && on.day === s.day) {
     const you = yourScore(s);
+    const t = COMP_TIERS[on.tier]!;
+    const cut = t.rounds?.[on.round];
     return {
-      label: 'Hand in your scorecard',
-      note: `${you.tops} ${you.tops === 1 ? 'top' : 'tops'} in ${you.goes} ${you.goes === 1 ? 'go' : 'goes'} so far. A top counts in its first ${goesFor(on.tier)} goes.`,
+      label: t.rounds ? `Hand in your ${roundName(on.tier, on.round)} scorecard` : 'Hand in your scorecard',
+      note: `${you.tops} ${you.tops === 1 ? 'top' : 'tops'} in ${you.goes} ${you.goes === 1 ? 'go' : 'goes'} so far. A top counts in its first ${goesFor(on.tier)} goes.${cut ? ` The top ${cut} go through.` : ''}`,
       run: () => game.comp('finish'),
     };
   }
+  // Phase 33.1: through to a round that's tomorrow's.
+  if (on && on.day > s.day && COMP_TIERS[on.tier]!.venue === s.at)
+    return {
+      label: `${COMP_TIERS[on.tier]!.name} ${roundName(on.tier, on.round)}`,
+      note: 'You’re through. Tomorrow, here: be on time.',
+      off: true,
+      run: () => undefined,
+    };
   const tier = compHere(s, s.day, s.at);
   if (tier === null) {
     const next = Array.from({ length: 60 }, (_, d) => s.day + 1 + d).find((d) => compOn(d, s.at) !== null);
@@ -643,7 +663,7 @@ function compRow(game: Game, s: GameState): Row {
       ? `${why}.`
       : t.side
         ? `${t.field} climbers, ${t.side.n} throws V${lo} to V${hi}, ${t.side.goes} goes each. ${money(t.purse[0])} to the winner. Off the ladder: no points.`
-        : `${t.field} climbers, problems V${lo} to V${hi}. ${money(t.purse[0])} to the winner. You have ${ladderPoints(s)} ladder points.`,
+        : `${t.field} climbers, problems V${lo} to V${hi}.${roundsNote(tier)} ${money(t.purse[0])} to the winner. You have ${ladderPoints(s)} ladder points.`,
     off: !!why,
     run: () => game.comp('enter'),
   };

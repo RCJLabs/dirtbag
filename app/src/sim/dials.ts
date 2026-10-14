@@ -132,7 +132,9 @@ export const COACH = {
 // Phase 18.4 [proposed]. A comp: a top counts if it's in the first `goes` goes; sign-up
 // closes at `close`; the field's chance of a top rises with grade over the problem's,
 // `steep` per grade; ladder points fade by half every `half` days.
-export const COMP = { goes: 5, close: 13 * 60, steep: 1.4, half: 56 };
+// Phase 33.1 [proposed]: a round after the qualifier sets `roundProblems` problems, from the
+// middle of the comp's grades up (the final) or a quarter of the way (a semi-final).
+export const COMP = { goes: 5, close: 13 * 60, steep: 1.4, half: 56, roundProblems: 4 };
 // Phase 25.5 [proposed]. League night's season: the year's eight nights, a night's points the
 // field's size less one a place, the `best` six counting (two missed nights don't sink you).
 // Top of the table when it's settled, on the year's last League night, pays `prize`. Phase 26
