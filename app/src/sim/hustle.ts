@@ -7,12 +7,15 @@ import { worth } from './dreams';
 import type { GameState } from './types';
 import { seasonOf } from './weather';
 
-export type Hustle = 'cans' | 'bins' | 'forage';
+export type Hustle = 'cans' | 'bins' | 'forage' | 'scrap';
 
-// Dollars for the cans, food for the bins and the forage; 0 when the bins come up empty.
+// Dollars for the cans, food for the bins and the forage, parts from the scrap; 0 when the bins
+// come up empty.
 export function hustleTake(s: GameState, h: Hustle): number {
   const r = Rng.fromStream(s.seed, 'events').derive(`hustle-${h}-${s.day}`);
   if (h === 'cans') return r.int(HUSTLE.cans.cash[0], HUSTLE.cans.cash[1]);
+  // Phase 29.1: parts, not money.
+  if (h === 'scrap') return r.int(HUSTLE.scrap.parts[0], HUSTLE.scrap.parts[1]);
   if (h === 'bins') return r.next() < HUSTLE.bins.odds ? r.int(HUSTLE.bins.fed[0], HUSTLE.bins.fed[1]) : 0;
   const n = r.int(HUSTLE.forage.fed[0], HUSTLE.forage.fed[1]);
   return seasonOf(s.day) === 'winter' ? Math.round(n * HUSTLE.forage.winter) : n;

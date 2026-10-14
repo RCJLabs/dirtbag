@@ -92,6 +92,7 @@ const V57 = readFileSync(new URL('./fixtures/save-v57.json', import.meta.url), '
 const V58 = readFileSync(new URL('./fixtures/save-v58.json', import.meta.url), 'utf8');
 const V59 = readFileSync(new URL('./fixtures/save-v59.json', import.meta.url), 'utf8');
 const V60 = readFileSync(new URL('./fixtures/save-v60.json', import.meta.url), 'utf8');
+const V61 = readFileSync(new URL('./fixtures/save-v61.json', import.meta.url), 'utf8');
 // And Phase 25.5's: no League night season settled, on a save that had comps.
 const seasoned = (st: { comps: object }) => ({ ...st, comps: { ...st.comps, seasons: [] } });
 // What R2's migration adds to any older save.
@@ -178,6 +179,7 @@ const P226A = {
   crewProject: null,
   crewDay: null,
   crewSends: [],
+  parts: 0,
 };
 
 describe('saves', () => {
@@ -681,6 +683,7 @@ describe('saves', () => {
       crewProject: null,
       crewDay: null,
       crewSends: [],
+      parts: 0,
     });
   });
 
@@ -734,6 +737,7 @@ describe('saves', () => {
       crewProject: null,
       crewDay: null,
       crewSends: [],
+      parts: 0,
     });
     expect(r.state.deck.met).toEqual({ busker: 2 });
   });
@@ -786,6 +790,7 @@ describe('saves', () => {
       crewProject: null,
       crewDay: null,
       crewSends: [],
+      parts: 0,
     });
     expect(r.state.dog).toEqual({ name: 'Scout', since: 12, fed: 70, bond: 55 });
   });
@@ -837,6 +842,7 @@ describe('saves', () => {
       crewProject: null,
       crewDay: null,
       crewSends: [],
+      parts: 0,
     });
     expect(r.state.dogs).toEqual([{ name: 'Scout', years: 16, day: 301 }]);
   });
@@ -887,6 +893,7 @@ describe('saves', () => {
       crewProject: null,
       crewDay: null,
       crewSends: [],
+      parts: 0,
     });
     expect(r.state.dream).toEqual({ pick: 'rig', pot: 300, owned: [] });
   });
@@ -936,6 +943,7 @@ describe('saves', () => {
       crewProject: null,
       crewDay: null,
       crewSends: [],
+      parts: 0,
     });
     expect(r.state.table?.who).toBe('hazel');
   });
@@ -996,6 +1004,7 @@ describe('saves', () => {
       crewProject: null,
       crewDay: null,
       crewSends: [],
+      parts: 0,
     });
   });
 
@@ -1044,6 +1053,7 @@ describe('saves', () => {
       crewProject: null,
       crewDay: null,
       crewSends: [],
+      parts: 0,
     });
   });
 
@@ -1092,6 +1102,7 @@ describe('saves', () => {
       crewProject: null,
       crewDay: null,
       crewSends: [],
+      parts: 0,
     });
   });
 
@@ -1138,6 +1149,7 @@ describe('saves', () => {
       crewProject: null,
       crewDay: null,
       crewSends: [],
+      parts: 0,
     });
     const home = act(r.state, { t: 'exped', id: 'elcap', do: 'bail' }).state;
     expect(home.expedition).toBeNull();
@@ -1196,6 +1208,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     expect(rest).toEqual(old);
@@ -1247,6 +1260,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     expect(rest).toEqual(JSON.parse(V31).state);
@@ -1292,6 +1306,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     expect(rest).toEqual(JSON.parse(V32).state);
@@ -1335,6 +1350,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     expect(rest).toEqual(JSON.parse(V33).state);
@@ -1377,6 +1393,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     expect(rest).toEqual(JSON.parse(V34).state);
@@ -1415,6 +1432,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     expect(rest).toEqual(JSON.parse(V35).state);
@@ -1452,6 +1470,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     expect(rest).toEqual(JSON.parse(V36).state);
@@ -1488,6 +1507,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     expect(rest).toEqual(JSON.parse(V37).state);
@@ -1527,6 +1547,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     expect(family).toBeNull();
@@ -1567,6 +1588,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     expect(rest).toEqual(JSON.parse(V39).state);
@@ -1602,6 +1624,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     const { people: was, ...before } = old;
@@ -1641,6 +1664,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     expect(rest).toEqual(JSON.parse(V41).state);
@@ -1675,6 +1699,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     expect(rest).toEqual(JSON.parse(V42).state);
@@ -1710,6 +1735,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     expect(rest).toEqual(JSON.parse(V43).state);
@@ -1742,6 +1768,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     expect(rest).toEqual(JSON.parse(V44).state);
@@ -1775,6 +1802,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     expect(rest).toEqual(JSON.parse(V45).state);
@@ -1807,6 +1835,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     expect(rest).toEqual(JSON.parse(V46).state);
@@ -1837,6 +1866,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     expect(rest).toEqual(JSON.parse(V47).state);
@@ -1865,6 +1895,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     expect(rest).toEqual(seasoned(JSON.parse(V48).state));
@@ -1892,6 +1923,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       ...rest
     } = r.state;
     expect(rest).toEqual(seasoned(JSON.parse(V49).state));
@@ -1918,6 +1950,7 @@ describe('saves', () => {
       crewProject,
       crewDay,
       crewSends,
+      parts,
       record,
       ...rest
     } = r.state;
@@ -1936,8 +1969,20 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(51);
-    const { outfit, mentee, team, teams, crew, struck, crewName, crewProject, crewDay, crewSends, ...rest } =
-      r.state;
+    const {
+      outfit,
+      mentee,
+      team,
+      teams,
+      crew,
+      struck,
+      crewName,
+      crewProject,
+      crewDay,
+      crewSends,
+      parts,
+      ...rest
+    } = r.state;
     expect(rest).toEqual(seasoned(JSON.parse(V51).state));
     expect(outfit).toBeNull();
     expect(r.state.guides.road!.out).toBe(80);
@@ -1948,7 +1993,8 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(52);
-    const { mentee, team, teams, crew, struck, crewName, crewProject, crewDay, crewSends, ...rest } = r.state;
+    const { mentee, team, teams, crew, struck, crewName, crewProject, crewDay, crewSends, parts, ...rest } =
+      r.state;
     expect(rest).toEqual(seasoned(JSON.parse(V52).state));
     expect(mentee).toBeNull();
     expect(r.state.outfit?.guides).toBe(2);
@@ -1959,7 +2005,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(53);
-    const { team, teams, crew, struck, crewName, crewProject, crewDay, crewSends, ...rest } = r.state;
+    const { team, teams, crew, struck, crewName, crewProject, crewDay, crewSends, parts, ...rest } = r.state;
     expect(rest).toEqual(seasoned(JSON.parse(V53).state));
     expect(team).toBeNull();
     expect(teams).toEqual([]);
@@ -1972,7 +2018,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(54);
-    const { crew, struck, crewName, crewProject, crewDay, crewSends, ...rest } = r.state;
+    const { crew, struck, crewName, crewProject, crewDay, crewSends, parts, ...rest } = r.state;
     expect(rest).toEqual(seasoned(JSON.parse(V54).state));
     expect(crew).toBeNull();
     expect(r.state.team?.names).toEqual(['Ana', 'Wes']);
@@ -1984,7 +2030,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(55);
-    const { crew, struck, crewName, crewProject, crewDay, crewSends, ...rest } = r.state;
+    const { crew, struck, crewName, crewProject, crewDay, crewSends, parts, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V55).state);
     expect(crew).toBeNull();
     expect(r.state.people.mara!.bond).toBe(4);
@@ -1996,7 +2042,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(56);
-    const { struck, crewName, crewProject, crewDay, crewSends, ...rest } = r.state;
+    const { struck, crewName, crewProject, crewDay, crewSends, parts, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V56).state);
     expect(r.state.strikes).toEqual({ cafe: 2, diner: 1 });
     expect(struck).toEqual({ cafe: 131, diner: 131 });
@@ -2009,7 +2055,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(57);
-    const { crewName, crewProject, crewDay, crewSends, ...rest } = r.state;
+    const { crewName, crewProject, crewDay, crewSends, parts, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V57).state);
     expect(crewName).toBeNull();
     const sends = Object.values(r.state.routes).flatMap((l) => (l.sent ? [l.sent] : []));
@@ -2022,7 +2068,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(58);
-    const { crewName, crewProject, crewDay, crewSends, ...rest } = r.state;
+    const { crewName, crewProject, crewDay, crewSends, parts, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V58).state);
     expect(crewName).toBeNull();
     // Its social bot got close to four of them, so the crew can be named on loading.
@@ -2035,7 +2081,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(59);
-    const { crewProject, crewDay, crewSends, ...rest } = r.state;
+    const { crewProject, crewDay, crewSends, parts, ...rest } = r.state;
     expect(rest).toEqual(JSON.parse(V59).state);
     expect([crewProject, crewDay, crewSends]).toEqual([null, null, []]);
     expect(r.state.crewName?.name).toBeTruthy();
@@ -2046,9 +2092,22 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(60);
-    expect(r.state).toEqual(JSON.parse(V60).state);
+    const { parts, ...rest } = r.state;
+    expect(rest).toEqual(JSON.parse(V60).state);
+    expect(parts).toBe(0);
     expect(r.state.crewSends.filter((x) => x.train.length).length).toBeGreaterThan(0);
     expect(Object.values(r.state.people).some((p) => p.owed || p.favour || p.lent)).toBe(false);
+  });
+
+  it('load a real 0.999.45 save: its favours owed kept, no parts scavenged yet', () => {
+    const r = fromSave(V61);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(61);
+    const { parts, ...rest } = r.state;
+    expect(rest).toEqual(JSON.parse(V61).state);
+    expect(parts).toBe(0);
+    expect(Object.values(r.state.people).some((p) => (p.owed ?? 0) > 0)).toBe(true);
   });
 
   // These pretend a longer history: a v1 file that stored `money` where the state now has
@@ -2058,7 +2117,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(61);
+    expect(SAVE_VERSION).toBe(62);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

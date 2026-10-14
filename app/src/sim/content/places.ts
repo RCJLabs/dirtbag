@@ -25,6 +25,7 @@ import {
   SICK,
   SUPPLIES,
   UPGRADE,
+  BUILD,
   VAN,
   WINTER,
   type Rock,
@@ -144,7 +145,9 @@ export interface ActDef {
   supplies?: number;
   doctor?: true;
   // Phase 22.5a: a hustle, whose take is seeded by the day (hustle.ts).
-  hustle?: 'cans' | 'bins' | 'forage';
+  hustle?: 'cans' | 'bins' | 'forage' | 'scrap';
+  // Phase 29.1: scavenged parts it takes (a build-out at the van).
+  parts?: number;
   // A shift at a job (content/jobs.ts), counting this many toward promotion. Its pay is
   // `cost.cash` at the first rank, plus the rank's raise for each shift.
   job?: { id: string; shifts: number };
@@ -533,6 +536,28 @@ const upgrade = (id: keyof typeof UPGRADE, label: string, says: string): Record<
     },
   };
 };
+// Phase 29.1: a build-out at the van, from scavenged parts (BUILD in dials.ts): built once,
+// for its parts and its time.
+const buildOut = (id: keyof typeof BUILD, label: string, says: string): Record<string, ActDef> => {
+  const b = BUILD[id];
+  return {
+    [`lot.${id}`]: {
+      label,
+      cost: { min: b.min },
+      needs: [
+        { hasNot: id, why: 'Already built.' },
+        {
+          parts: b.parts,
+          why: `It takes ${b.parts} parts. The free pile by the dumpsters has them, a few at a time.`,
+        },
+      ],
+      parts: b.parts,
+      gear: { id, set: 1 },
+      says,
+    },
+  };
+};
+
 // A job's shift needs one posted today, and a job that hasn't let you go (Phase 22.1).
 const onSchedule = (job: string): Need[] => [
   { posted: job, why: 'No shift posted today. The week’s schedule is under the clock.' },
@@ -662,6 +687,31 @@ export const ACTS: Record<string, ActDef> = {
     sets: ['cans'],
     hustle: 'cans',
   },
+  // Phase 29.1: the free pile by the dumpsters. Parts for the van, not money.
+  'lot.scrap': {
+    label: 'Pick over the free pile',
+    cost: { min: HUSTLE.scrap.min, energy: HUSTLE.scrap.energy },
+    needs: [
+      { notToday: 'scrap', why: 'You’ve been through it today. Somebody will dump something tomorrow.' },
+      { night: false, why: 'Too dark to tell a bracket from a bottle.' },
+      { energy: -HUSTLE.scrap.energy, why: 'Too tired to dig.' },
+    ],
+    note: `Wood, wire, a cracked panel, the odd bracket: ${HUSTLE.scrap.parts[0]} to ${HUSTLE.scrap.parts[1]} parts for the van. No money in it.`,
+    sets: ['scrap'],
+    hustle: 'scrap',
+  },
+  ...buildOut('shelf', 'Build a shelf', 'A shelf over the sink, braced twice. The jugs stop sliding off it.'),
+  ...buildOut(
+    'solar',
+    'Mount the solar panel',
+    'A cracked panel, a salvaged controller and a lot of wire. The battery holds through the night now.',
+  ),
+  ...buildOut('seals', 'Seal the doors', 'Door seals, foam in the gaps. The wind finds less of the van.'),
+  ...buildOut(
+    'platform',
+    'Build a bed platform',
+    'A platform under the mattress, from pallet wood and stubbornness. You sleep off the cold floor.',
+  ),
   'market.bins': {
     label: 'Check the bins out back',
     cost: { min: HUSTLE.bins.min, energy: HUSTLE.bins.energy },

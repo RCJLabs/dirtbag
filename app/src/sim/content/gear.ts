@@ -1,7 +1,7 @@
 // Your kit, as data: what each thing is, and how the state keeps it. A number per item in
 // `GameState.gear`: condition 0..100 for what wears, uses left for what runs out, 1 for
 // what you just own. Nothing here decides a go; climb.ts and game.ts read the kit.
-import { HIGHBALL, KIT, UPGRADE, WINTER } from '../dials';
+import { BUILD, HIGHBALL, KIT, UPGRADE, WINTER } from '../dials';
 
 const less = (share: number) => `${Math.round((1 - share) * 100)}% less`;
 
@@ -53,6 +53,23 @@ export const GEAR: Record<string, GearDef> = {
     what: `A roadside bodge holds ${Math.round(UPGRADE.toolkit.bodge * 10)} times in 10.`,
   },
   tuneup: { name: 'A tune-up', kind: 'owned', what: `${less(UPGRADE.tuneup.gas)} gas on every drive.` },
+  // Phase 29.1: build-outs from scavenged parts.
+  shelf: {
+    name: 'A shelf',
+    kind: 'owned',
+    what: `Built from scrap: ${less(BUILD.shelf.supplies)} supplies used a night.`,
+  },
+  solar: { name: 'A solar panel', kind: 'owned', what: 'Built from scrap: the battery holds overnight.' },
+  seals: {
+    name: 'Door seals',
+    kind: 'owned',
+    what: `Built from scrap: ${less(BUILD.seals.cold)} cold on a winter night.`,
+  },
+  platform: {
+    name: 'A bed platform',
+    kind: 'owned',
+    what: `Built from scrap: +${BUILD.platform.energy} energy from a night in the van.`,
+  },
   heater: {
     name: 'A diesel heater',
     kind: 'owned',

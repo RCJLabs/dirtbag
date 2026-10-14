@@ -265,6 +265,7 @@ import {
   CREW_NAME,
   CREW_PROJECT,
   FAVOUR,
+  BUILD,
   AGE,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
@@ -427,6 +428,7 @@ export function newGame(seed: string): GameState {
     crewProject: null,
     crewDay: null,
     crewSends: [],
+    parts: 0,
     lifestyle: 'dirtbag',
     spot: 'lot',
     lotNights: 0,
@@ -976,7 +978,13 @@ export function act(s0: GameState, a: Action): Result {
       if (!isSick(s)) fell = sickRoll(s, night.heat);
       s.supplies = Math.max(
         0,
-        Math.min(100, s.supplies - SUPPLIES.night + (night.spot === 'truckstop' ? SUPPLIES.truckstop : 0)),
+        Math.min(
+          100,
+          // Phase 29.1: a shelf, and the jugs stop spilling.
+          s.supplies -
+            SUPPLIES.night * ((s.gear.shelf ?? 0) > 0 ? BUILD.shelf.supplies : 1) +
+            (night.spot === 'truckstop' ? SUPPLIES.truckstop : 0),
+        ),
       );
     }
     // Psyche (Phase 22.4d): the day that's ending settles it, then it drifts toward even.
@@ -1123,9 +1131,10 @@ export function act(s0: GameState, a: Action): Result {
       // The last day, the morning it comes, at the van.
       if (where === 'van' && now >= DOG.end) s.encounter = { kind: 'farewell', id: s.dog.name };
     }
-    // The battery loses a little every night; the morning it's flat, you know.
+    // The battery loses a little every night; the morning it's flat, you know. Phase 29.1: a
+    // solar panel keeps it up.
     const charged = s.van.battery > 0;
-    s.van.battery = round2(Math.max(0, s.van.battery - VAN.night));
+    if (!((s.gear.solar ?? 0) > 0)) s.van.battery = round2(Math.max(0, s.van.battery - VAN.night));
     if (charged && s.van.battery <= 0)
       line('The van won’t turn over. The battery’s flat. A jump gets you across town, and no further.');
     if (s.injury && s.day >= s.injury.until) heal();
@@ -1521,6 +1530,8 @@ export function act(s0: GameState, a: Action): Result {
     if (s.dog && d.dog?.fill) s.dog.fed = 100;
     if (s.dog && d.dog?.bond) dogBond(d.dog.bond);
     if (d.gear) s.gear[d.gear.id] = d.gear.set ?? (s.gear[d.gear.id] ?? 0) + (d.gear.add ?? 0);
+    // Phase 29.1: a build-out's parts.
+    if (d.parts) s.parts -= d.parts;
     if (d.van) s.van[d.van] = 100;
     // Phase 22.3: the pantry, the meals, the day's fuel, and the cups of coffee.
     if (d.buys) s.pantry[d.buys] = (s.pantry[d.buys] ?? 0) + INGREDIENTS[d.buys]!.servings;
@@ -1574,6 +1585,12 @@ export function act(s0: GameState, a: Action): Result {
     if (d.hustle === 'cans') {
       spend({ cash: take });
       line(`A bag of cans to the depot. ${money(take)}.`);
+    } else if (d.hustle === 'scrap') {
+      // Phase 29.1: parts for the van.
+      s.parts += take;
+      line(
+        `${take === 1 ? 'One part' : `${take} parts`} worth keeping from the free pile. ${s.parts} in the van.`,
+      );
     } else if (d.hustle) {
       s.fed = clamp100(s.fed + take);
       if (take) {

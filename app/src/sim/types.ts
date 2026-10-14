@@ -141,6 +141,8 @@ export interface GameState {
   crewProject: { route: string; day: number } | null;
   crewDay: number | null;
   crewSends: { route: string; day: number; train: string[] }[];
+  // Phase 29.1 (save v62): scavenged parts in hand, for the van's build-outs.
+  parts: number;
   teams: { id: string; day: number; summit: boolean; high: number }[];
   // How you live (dials.ts LIFESTYLE): paid at the van every night.
   lifestyle: 'dirtbag' | 'comfortable' | 'plush';
