@@ -4,10 +4,15 @@
 import { walk } from './ambient';
 import { holds } from './cond';
 import { CROWD, CROWD_DONE, CROWD_PER_DAY } from './content/crowd';
+import { RENOWN_CROWD } from './content/renown';
+import { fill } from './format';
 import type { GameState } from './types';
 
+// Phase 28.4: the crew's renown in it too, by name.
 export function crowdLine(s: GameState, n: number): string {
   if (n >= CROWD_PER_DAY) return CROWD_DONE;
-  const pool = CROWD.filter((l) => !l.when || holds(s, l.when)).map((l) => l.text);
-  return walk(s.seed, 'crowd', pool, s.day * CROWD_PER_DAY + n);
+  const pool = [...CROWD, ...RENOWN_CROWD].filter((l) => !l.when || holds(s, l.when)).map((l) => l.text);
+  return fill(walk(s.seed, 'crowd', pool, s.day * CROWD_PER_DAY + n), {
+    crew: s.crewName?.name ?? 'the crew',
+  });
 }

@@ -3222,6 +3222,30 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
   - **Outdoors came out 3 of 4 (✗), median day 410.** Over 16 careers each it's the same on both sides: main reached the top in 9, at a median of day 371, and 28.3 in 10, at day 371.5. The four-career target sits on a rate of about 60%, so main's 4 of 4 was luck on the seeds. No change is needed for it, but the target is unreliable [measured].
 - **The download** is 429.0 KB of 440.
 
+**Status (14 Oct 2026): 28.4 built: renown.** No save change, 0.999.45.
+- **Renown** (Evan's call: lines only, never a number) is counted from the crew's record: each project sent with the crew there, and each month it's had its name. It comes in three tiers, and the first arrives with the first send train.
+- **The threads:** once the crew's known, the threads about you name it.
+- **The old guard:** Ray on the rail and Frank by his stove each have a line per tier, said once ("Frank heard about Gorge Rats at the hardware store…").
+- **The strangers and the shops:** six crowd lines and one each at the gear shop and the diner, by tier, with the crew's name filled in.
+- **The bots:** the social bot hears the old guard out, so its sits with Ray and Frank go on.
+- **The harness:** Phase 28's criterion 1 is a target now, and passes: 8 of 8 social careers named a crew, sent a project with it and traded favours both ways.
+  - V10 on day 179; Act III ended on day 326.
+  - Outdoors came out 3 of 4 again (✗), the same four careers as 28.3. As measured there, it's the same rate as main over 16.
+- **The e2e** failed once at the horseshoes while the harness ran beside it: that step polls each animation frame, and a loaded machine skipped the band. Run alone, it passes.
+- **The download** is 430.2 KB of 440.
+
+**Phase 28 against its Done-when (14 Oct 2026):** both pass on the build.
+1. A social bot's career names a crew, sends its project and trades favours both ways: 8 of 8 in the harness, now a target.
+2. Old saves load into the new shape: real 0.999.41, 0.999.42 and 0.999.43 saves load into v59, v60 and v61, each with its test.
+
+Carried, for playtesting or a call:
+- The crew's name comes early (day 22 at the median), as v0.956's did.
+- The first project goes fast, about a crew day after the name.
+- The bots never say no to a favour.
+- Outdoors' four-career target sits on a rate of about 60%.
+
+Closing it is Evan's call.
+
 ### Phase 29 — The van, lived in
 
 *Medium. Ties the hustle, the van, food and psyche together.*
@@ -3675,3 +3699,4 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
 - 2026-10-14 — Phase 28 planned with Evan's calls (you pick the project, your send starts the train, two favours owed and no third, renown in lines only). 28.1 built: the crew's name, brought up by the crew once two are Regulars, named from your record or your own words. Save v59. 0.999.42.
 - 2026-10-14 — Phase 28.2 built: the crew project (you pick it, two grades over your best), a crew day a week by text, the crew's goes showing you the way, and the send train when your send goes (Evan's calls); Send Train in the Record Book. Save v60. 0.999.43.
 - 2026-10-14 — Phase 28.3 built: favours both ways (a shift covered, a rack, a ride; their belays, rides and loans), two owed and no third (Evan's call), and a clash of two asks as another way into crew drama. Outdoors' four-career target came out 3 of 4, the same rate as main over 16. Save v61. 0.999.44.
+- 2026-10-14 — Phase 28.4 built: renown in lines only (Evan's call): the threads, Ray and Frank, the crowd and the shops say the crew's name more the more it's done. Phase 28's two Done-when criteria pass; closing it is Evan's call. No save change. 0.999.45.

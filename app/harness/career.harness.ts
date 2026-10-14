@@ -326,7 +326,14 @@ it('the people', { timeout: 2_400_000 }, () => {
     `A crew project was sent with the crew there in ${firstTrain.length} of ${trains.length} careers${firstTrain.length ? `, the first on day ${median(firstTrain)} at the median (${Math.min(...firstTrain)}–${Math.max(...firstTrain)}), ${median(trains)} a career by day ${PEOPLE_DAYS}` : ''}.`,
   );
   out(`Favours went both ways in ${traded.filter(Boolean).length} of ${traded.length} careers.`);
+  // Phase 28's criterion 1: all three in one career.
+  const crewed = named.filter((d, i) => d !== null && trains[i]! > 0 && traded[i]).length;
   out('\n## Targets\n');
+  say(
+    crewed === named.length,
+    'A social career names a crew, sends its project, and trades favours both ways (Phase 28, criterion 1)',
+    `${crewed} of ${named.length} careers did all three.`,
+  );
   say(
     missed.every((m) => m === 0),
     'Bots see new authored social content every week through day 300 (criterion 3)',

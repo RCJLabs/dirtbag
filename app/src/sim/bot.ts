@@ -821,7 +821,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   // their arc, a moment of their life, a romance's), answered the first way, and a sit with a
   // local. The others leave the people be, so their targets measure what they always have.
   // Phase 25.6's crew drama too: its ask and its mend, answered the first way.
-  const MOMENT = /^(meet|beat-|love-|last-season|slowing|parked|crew-)/;
+  // Phase 28.4: the old guard's word on the crew, too.
+  const MOMENT = /^(meet|beat-|love-|last-season|slowing|parked|crew-|renown-)/;
   function maybePeople() {
     if (!opts.social) return;
     for (const [talk, t] of Object.entries(TALK)) {
