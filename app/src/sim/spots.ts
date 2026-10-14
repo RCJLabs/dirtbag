@@ -2,7 +2,7 @@
 // night will cost and give, and the ticket odds at the Lot. sleep() and Tonight both read
 // nightAt, so the numbers a player weighs are the ones the night uses.
 
-import { BUILD, DOG, SPOT, SPOTS, UPGRADE, WINTER, type SpotId } from './dials';
+import { BUILD, COOK, DOG, SPOT, SPOTS, UPGRADE, WINTER, type SpotId } from './dials';
 import { headroom } from './cond';
 import { PARTNERS, tierOf } from './presence';
 import { Rng } from './rng';
@@ -94,7 +94,8 @@ export function nightAt(s: GameState): Night {
     spot,
     wanted: spot === want ? null : want,
     cost: rough ? 0 : cost,
-    energy: (rough ? 0 : d.energy) + cold + bed,
+    // Phase 29.4: and a meal cooked right, wherever you sleep.
+    energy: (rough ? 0 : d.energy) + cold + bed + (s.today.includes('meal-good') ? COOK.energy : 0),
     drive: rough ? 0 : d.drive,
     rough,
     ticket: !rough && spot === 'lot' ? ticketTonight(s) : 0,

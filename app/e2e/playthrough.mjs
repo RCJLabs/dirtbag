@@ -1683,6 +1683,91 @@ console.log('Games at the fire');
   await ctx.close();
 }
 
+console.log('Cooking at the van');
+// Phase 29.4 (Phase 29's criterion 3). Seven at the Lot with a camp kitchen and pasta and
+// greens in the pantry: the recipe goes to the stove, five stirs on the beat, and it's a good
+// meal: the pantry down a serving each, and tonight's sleep and psyche the better for it.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  saved.state = {
+    ...saved.state,
+    day: 20,
+    min: 19 * 60,
+    at: 'lot',
+    x: null,
+    energy: 60,
+    today: [],
+    gear: { ...saved.state.gear, kitchen: 1 },
+    pantry: { pasta: 2, greens: 2 },
+    encounter: null,
+    table: null,
+  };
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  await ctx.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+    window.cues = [];
+    window.addEventListener('dirtbag:sound', (e) => window.cues.push(e.detail));
+  }, JSON.stringify(saved));
+  const van = await ctx.newPage();
+  van.on('pageerror', (e) => problems.push(`stove: uncaught: ${e.message}`));
+  van.on('console', (m) => m.type() === 'error' && problems.push(`stove: console.error: ${m.text()}`));
+  await van.goto(server.url, { waitUntil: 'load' });
+  await van.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Map');
+  await van.waitForTimeout(600);
+  await van.mouse.click(100, 560);
+  await van.waitForFunction(() =>
+    /Cook pasta and greens/.test(document.querySelector('#sheet')?.textContent ?? ''),
+  );
+  await van.locator('#sheet .opt', { hasText: 'Cook pasta and greens' }).first().click();
+  await van.waitForSelector('#busk');
+  await van.waitForFunction(() =>
+    /At the stove: Pasta and greens/.test(document.querySelector('#busk')?.textContent ?? ''),
+  );
+  if (!(await van.$('#b-skip'))) await fail('stove: no way to just eat it');
+  for (let k = 0; k < 5; k++) {
+    const ok = await van.evaluate(
+      () =>
+        new Promise((done) => {
+          const t0 = performance.now();
+          const look = () => {
+            const m = document.querySelector('#busk .mark');
+            const x = m ? parseFloat(getComputedStyle(m).getPropertyValue('--x')) : NaN;
+            if (x >= 46 && x <= 54) {
+              document
+                .querySelector('#b-strum')
+                .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+              done(true);
+            } else if (performance.now() - t0 > 5000) done(false);
+            else requestAnimationFrame(look);
+          };
+          look();
+        }),
+    );
+    if (!ok) await fail('stove: the stir never crossed the band');
+    await van.waitForTimeout(120);
+  }
+  await van.waitForFunction(() =>
+    /Done right for once/.test(document.querySelector('#b-status')?.textContent ?? ''),
+  );
+  const cooked = await van.evaluate(() => document.querySelector('#b-status').textContent);
+  await van.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-stove.png`) });
+  await van.click('#b-done');
+  await van.waitForFunction(() => /Your van/.test(document.querySelector('#sheet')?.textContent ?? ''));
+  const after = await van.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  const heard = await van.evaluate(() => window.cues);
+  if (
+    !after.today.includes('meal-good') ||
+    !after.meals.includes('pasta') ||
+    after.pantry.pasta !== 1 ||
+    after.pantry.greens !== 1 ||
+    !heard.includes('tap') ||
+    !heard.includes('eat')
+  )
+    await fail(`after the stove: ${JSON.stringify({ today: after.today, pantry: after.pantry, heard })}`);
+  log(`stove: ${cooked}`);
+  await ctx.close();
+}
+
 console.log('Cards at the fire');
 // Phase 22.9b. Half nine at the Lot with $100: blackjack, a hand stood on and up again; then
 // hold'em with Hazel, a hand checked and called to the end, and up again. The money in front
