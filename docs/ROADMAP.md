@@ -69,7 +69,7 @@
 | 16 The spine | Next after 21–23. |
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 | 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
-| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27 and 28 (14 Oct 2026); Phase 29 is the current milestone. |
+| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27, 28 and 29 (14 Oct 2026); Phase 33 is the current milestone. |
 
 ## The rebuild track
 
@@ -3246,7 +3246,7 @@ Carried, for playtesting or a call:
 
 **Phase 28 closed by Evan's call (14 Oct 2026),** with those four carried. The CURRENT MILESTONE moves to Phase 29. The download is 430.2 KB of 440.
 
-### Phase 29 — The van, lived in   **<<< CURRENT MILESTONE**
+### Phase 29 — The van, lived in
 
 *Medium. Ties the hustle, the van, food and psyche together.*
 
@@ -3346,6 +3346,8 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - Act II ends later since the van aged (median day 156, against 100.5), with the story finished as often (20 of 32, against 21);
 - Outdoors is 2 of 4 in the harness's four careers.
 
+**Phase 29 closed by Evan's call (14 Oct 2026),** with those three carried. The CURRENT MILESTONE moves to Phase 33. The download is 433.7 KB of 460.
+
 ### Phase 30 — Getting older
 
 *Medium. Age is only a deadline now: nothing about the body changes from 22 to 45.*
@@ -3403,7 +3405,7 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 2. The content test holds the Hollow's lines to the same rules as every other line.
 3. The download stays within its budget, raised if Evan agrees.
 
-### Phase 33 — Comps with rounds
+### Phase 33 — Comps with rounds   **<<< CURRENT MILESTONE**
 
 *Medium. Every comp is one round on one day, climbed like the gym, and there's no national team.*
 
@@ -3783,3 +3785,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-14 — 29.2 built: the Board's bounties (Evan's calls: double a job's worth, counted from when you take it, one cash, one parts and one split a week). The bots take cash only, measured on Outdoors. Save v63. 0.999.47.
 - 2026-10-14 — 29.3 built: the van ages with miles, its engine's cap falls, and Dale puts it to you (rebuild, a used van, the Rig, or limp on). Every career bot hears it by year three (criterion 2). Save v64. 0.999.48.
 - 2026-10-14 — 29.4 built: a recipe at the van plays the beat panel, and a meal cooked right adds to the night's sleep and psyche; the e2e cooks one (criterion 3). Phase 29's Done-when all pass; closing is Evan's call. 0.999.49.
+- 2026-10-14 — Phase 29 closed by Evan's call; CURRENT MILESTONE moved to Phase 33, comps with rounds.
