@@ -30,6 +30,8 @@ export {
   TIER_NAME,
   faSuggestions,
   crewSuggestions,
+  favourBlocked,
+  owedWord,
   projectable,
   hardestSend,
   crewDayAnswers,
@@ -256,6 +258,7 @@ export {
   AGE,
   CREW_NAME,
   CREW_PROJECT,
+  FAVOUR,
 } from './dials';
 export type { Plan } from './dials';
 export { weeklyBills, clinicBill, carePrice, jabbed } from './clinic';
@@ -466,3 +469,5 @@ export {
   livingTonight,
 } from './jobs';
 export { caveSet, CAVE, centerSet, CENTER, INDOOR, indoor } from './content/gym';
+export { FAVOUR_WHAT } from './content/favours';
+export type { FavourWhat } from './types';

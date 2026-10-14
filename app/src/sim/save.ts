@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 60;
+export const SAVE_VERSION = 61;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -459,6 +459,12 @@ export const MIGRATIONS: Record<number, Migration> = {
   59: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, crewProject: null, crewDay: null, crewSends: [] };
+  },
+  // v60 -> v61 (Phase 28.3): favours, owed and asked, and loans to the crew (new optional
+  // fields on a person). Nobody had asked or lent, so nothing changes.
+  60: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return x;
   },
 };
 
@@ -1203,6 +1209,9 @@ const isPerson = (x: unknown): x is PersonLog =>
   optInt(x.heard) &&
   optInt(x.ledge) &&
   (x.avoid === undefined || (typeof x.avoid === 'string' && x.avoid in PEOPLE)) &&
+  optInt(x.owed) &&
+  optInt(x.favour) &&
+  (x.lent === undefined || (isObj(x.lent) && isInt(x.lent.cash) && isInt(x.lent.due))) &&
   (x.invite === undefined ||
     (isObj(x.invite) &&
       isInt(x.invite.day) &&

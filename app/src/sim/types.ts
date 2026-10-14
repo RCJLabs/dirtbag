@@ -442,6 +442,12 @@ export interface PersonLog {
   ledge?: number;
   // Crew drama (Phase 25.6, save v56): someone they've fallen out with, and keep away from.
   avoid?: string;
+  // Phase 28.3 (save v61): favours. What's owed, plus for each one you owe them and minus for
+  // each they owe you; the day you last answered one of their asks; and a loan to them, with
+  // the night it comes back.
+  owed?: number;
+  favour?: number;
+  lent?: { cash: number; due: number };
 }
 
 // How a line's first send went, kept in its log.
@@ -577,6 +583,8 @@ export type Action =
   | { t: 'crewProject'; route: string | null }
   | { t: 'crewDay' }
   | { t: 'crewGo' }
+  // Phase 28.3: a favour asked of one of the crew.
+  | { t: 'favour'; who: string; what: FavourWhat }
   // Phase 17.6: calling home back.
   | { t: 'call' }
   // Phase 21.3: a session (a protocol's id, or 'prehab'), a phase, a taper.
@@ -704,3 +712,7 @@ export interface Result {
   state: GameState;
   events: GameEvent[];
 }
+
+// Phase 28.3: the favours you can ask, and the ones they ask back.
+export type FavourWhat = 'shift' | 'rack' | 'ride';
+export type FavourAsk = 'belay' | 'ride' | 'loan';

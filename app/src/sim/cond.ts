@@ -10,6 +10,7 @@ import { isSick } from './sick';
 import { lifeDue } from './lives';
 import { romanceDue, strained } from './romance';
 import { crewDue, crewNameDue } from './crew';
+import { clashDue, favourDue } from './favours';
 import { strayDue } from './scout';
 import { clockShort, fill } from './format';
 import { benchedUntil, isPosted } from './jobs';
@@ -38,6 +39,8 @@ export interface Cond {
   crew?: string; // "who/ask/other" or "who/mend/other": a beat of crew drama is due (crew.ts)
   giftDue?: string; // you can give them something: a week since the last (Phase 17.5)
   crewName?: string; // they bring up naming the crew (Phase 28.1, crew.ts)
+  favour?: string; // "who/kind": their ask is due (Phase 28.3, favours.ts)
+  favourClash?: string; // "who/b": their ask clashes with your yes to b today
   sky?: Sky; // today's weather
   arc?: string; // "who/n": beat n of their arc is due (bond reached, days since the last)
   bond?: string; // "who/n": your bond with them is at least n
@@ -120,6 +123,8 @@ export function holds(s: GameState, c: Cond): boolean {
   if (c.strained !== undefined && !strained(s, c.strained)) return false;
   if (c.crew !== undefined && !crewDue(s, c.crew)) return false;
   if (c.crewName !== undefined && !crewNameDue(s, c.crewName)) return false;
+  if (c.favour !== undefined && !favourDue(s, c.favour)) return false;
+  if (c.favourClash !== undefined && !clashDue(s, c.favourClash)) return false;
   if (c.giftDue !== undefined) {
     const gave = s.people[c.giftDue]?.gave;
     if (gave !== undefined && s.day - gave < GIVE.every) return false;

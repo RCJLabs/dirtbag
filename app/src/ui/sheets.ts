@@ -220,6 +220,12 @@ import {
   crewTexts,
   crewDayFor,
   crewDayFrom,
+  crewOf,
+  favourBlocked,
+  owedWord,
+  FAVOUR,
+  FAVOUR_WHAT,
+  type FavourWhat,
   crewToText,
   keeperLine,
   COMP_LADDER,
@@ -1212,8 +1218,25 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         sub: `You send the same text to ${s.crewName?.name ?? 'everyone'}: "Climbing?"`,
         close: true,
         lines: crewTexts(s),
-        rows: [...crewDayRows(game, s), { label: 'Back', run: () => game.openSheet({ k: 'van' }) }],
+        rows: [
+          ...crewDayRows(game, s),
+          // Phase 28.3: a favour from one of the crew.
+          ...(crewOf(s).length
+            ? [
+                {
+                  label: 'Ask a favour',
+                  note: 'A shift covered, a rack for the day, or a ride. They’ll want one back.',
+                  run: () => game.openSheet({ k: 'favour' }),
+                },
+              ]
+            : []),
+          { label: 'Back', run: () => game.openSheet({ k: 'van' }) },
+        ],
       };
+
+    // Phase 28.3: a favour: who to ask, then what for.
+    case 'favour':
+      return favourSheet(game, s, id.who);
 
     // League night's table (Phase 25.5).
     case 'league': {
@@ -2846,4 +2869,54 @@ function crewDayRows(game: Game, s: GameState): Row[] {
       },
     },
   ];
+}
+
+// Phase 28.3: what you owe one of the crew, or they owe you, said.
+export function owedNote(s: GameState, who: string): string {
+  const owed = s.people[who]?.owed ?? 0;
+  const name = PEOPLE[who]?.name ?? who;
+  return owed > 0
+    ? `You owe ${name} ${owedWord(owed)}.`
+    : owed < 0
+      ? `${name} owes you ${owedWord(-owed)}.`
+      : '';
+}
+
+function favourSheet(game: Game, s: GameState, who?: string): ListSpec {
+  const back = { label: 'Back', run: () => game.openSheet(who ? { k: 'favour' } : { k: 'texts' }) };
+  if (!who)
+    return {
+      title: 'Ask a favour',
+      sub: `Owe ${owedWord(FAVOUR.cap)} and they'll want one back before a third.`,
+      close: true,
+      rows: [
+        ...crewOf(s).map((w) => ({
+          label: PEOPLE[w]?.name ?? w,
+          note: owedNote(s, w) || 'Square with you.',
+          run: () => game.openSheet({ k: 'favour', who: w }),
+        })),
+        back,
+      ],
+    };
+  const name = PEOPLE[who]?.name ?? who;
+  return {
+    title: `Ask ${name}`,
+    sub: owedNote(s, who) || `You and ${name} are square.`,
+    close: true,
+    rows: [
+      ...(['shift', 'rack', 'ride'] as FavourWhat[]).map((what) => {
+        const no = favourBlocked(s, who, what);
+        return {
+          label: FAVOUR_WHAT[what].label,
+          note: no ?? FAVOUR_WHAT[what].note,
+          off: !!no,
+          run: () => {
+            game.dispatch({ t: 'favour', who, what });
+            game.openSheet({ k: 'texts' });
+          },
+        };
+      }),
+      back,
+    ],
+  };
 }

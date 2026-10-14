@@ -5,12 +5,13 @@
 // routes) with {goes|go|goes} for the plural, and {name}, your name.
 
 import type { Cond } from '../cond';
-import { ARC, BOND } from '../dials';
+import { ARC, BOND, FAVOUR } from '../dials';
 import { arcNodes, arcStarts } from './arcs';
 import { FIRE_ASK, GIFTS } from './gifts';
 import { money } from '../format';
 import { romanceNodes, romanceStarts } from './romance';
 import { crewNameNodes, crewNameStarts, crewNodes, crewStarts } from './crew';
+import { favourNodes, favourStarts } from './favours';
 import { PLACES } from './places';
 import type { Delta, Skills } from '../types';
 
@@ -45,6 +46,8 @@ export interface TalkFx {
   crew?: { do: 'pick' | 'keep' | 'mend' | 'leave'; with: string };
   // The crew's name (Phase 28.1): you'll name it now, or later from the People list.
   crewName?: 'name' | 'later';
+  // Phase 28.3: their ask answered (yes or no), or settled by the drama it started.
+  favour?: 'yes' | 'no' | 'clash';
 }
 
 export interface TalkOpt {
@@ -80,13 +83,16 @@ export interface PersonDef {
   // What they lead on an expedition (Phase 24) [proposed]: a grade over yours (or under),
   // since they've been climbing all this time too.
   grade?: number;
+  // Phase 28.3: they'd lend you a rack, or drive you, as a favour.
+  rack?: true;
+  wheels?: true;
 }
 
 export const PEOPLE: Record<string, PersonDef> = {
   // Parked next to you, with the coffee on, since before the game began.
-  hazel: { name: 'Hazel', known: true, grade: -1 },
+  hazel: { name: 'Hazel', known: true, grade: -1, rack: true, wheels: true },
   // v0.956's Sage: technical, and the partner whose perk was beta.
-  sage: { name: 'Sage', shows: ['road', 'gym'], grade: 1 },
+  sage: { name: 'Sage', shows: ['road', 'gym'], grade: 1, wheels: true },
   // v0.956's default rival.
   dex: { name: 'Dex', full: 'Dex Calloway', rival: 'A power monster, a bitter nemesis.' },
   // Phase 17.1: v0.956's people, back as one cast with no two names alike. Ray was its
@@ -94,9 +100,9 @@ export const PEOPLE: Record<string, PersonDef> = {
   // power), and Tam its elder.
   ray: { name: 'Ray' },
   frank: { name: 'Frank' },
-  mara: { name: 'Mara', grade: 2 },
+  mara: { name: 'Mara', grade: 2, rack: true, wheels: true },
   rico: { name: 'Rico', grade: -1 },
-  tam: { name: 'Tam', full: 'Tam Okonkwo', grade: -1 },
+  tam: { name: 'Tam', full: 'Tam Okonkwo', grade: -1, rack: true, wheels: true },
 };
 
 // The named people at work in town, who aren't climbers you'll get to know: here so no
@@ -182,12 +188,21 @@ const fireAsk: TalkOpt = {
   fx: { today: 'fire-frank', line: FIRE_ASK.line },
 };
 
+// Phase 28.3: what a yes to each of their asks needs: the energy for an hour's belay, the gas
+// money for a ride, the loan in hand.
+const FAVOUR_GATE = {
+  belay: { energy: FAVOUR.belay.energy },
+  ride: { pay: FAVOUR.ride.cash },
+  loan: { pay: FAVOUR.loan },
+};
+
 export const TALK: Record<string, TalkDef> = {
   'hazel-lot': {
     who: 'hazel',
     start: [
-      // Phase 28.1: the crew's name, at the fire or over the coffee.
+      // Phase 28.1: the crew's name, at the fire or over the coffee. Phase 28.3: her asks.
       ...crewNameStarts('hazel'),
+      ...favourStarts('hazel'),
       { when: { night: true, sentToday: 'pump' }, node: 'night-sent' },
       { when: { night: true, wentToday: 'pump' }, node: 'night-goes' },
       { when: { night: true }, node: 'night' },
@@ -197,6 +212,7 @@ export const TALK: Record<string, TalkDef> = {
     ],
     nodes: {
       ...crewNameNodes('hazel'),
+      ...favourNodes('hazel', FAVOUR_GATE),
       'night-sent': { text: 'You sent it. Now you need a new one.', opts: SIT },
       'night-goes': { text: "{goes} {goes|go|goes} today. How's the skin?", opts: SIT },
       night: { text: "Fire's warm. Sit.", opts: SIT },
@@ -238,6 +254,7 @@ export const TALK: Record<string, TalkDef> = {
     start: [
       ...arcStarts('hazel'),
       ...crewNameStarts('hazel'),
+      ...favourStarts('hazel'),
       { when: { sentToday: 'pump' }, node: 'sent' },
       { when: { wentToday: 'pump' }, node: 'goes' },
       { node: 'start' },
@@ -245,6 +262,7 @@ export const TALK: Record<string, TalkDef> = {
     nodes: {
       ...arcNodes('hazel'),
       ...crewNameNodes('hazel'),
+      ...favourNodes('hazel', FAVOUR_GATE),
       sent: { text: "That's the one. Lower off, I'm hungry.", opts: [{ label: 'OK' }] },
       goes: { text: 'Clean catch. Rest up, go again.', opts: [{ label: 'OK' }] },
       start: {
@@ -272,6 +290,7 @@ export const TALK: Record<string, TalkDef> = {
       // Crew drama (Phase 25.6).
       ...crewStarts('sage'),
       ...crewNameStarts('sage'),
+      ...favourStarts('sage'),
       { when: { today: 'sage' }, node: 'done' },
       { node: 'again' },
     ],
@@ -279,6 +298,7 @@ export const TALK: Record<string, TalkDef> = {
       ...romanceNodes('sage'),
       ...crewNodes('sage'),
       ...crewNameNodes('sage'),
+      ...favourNodes('sage', FAVOUR_GATE),
       meet: {
         text: "You're the one Hazel says keeps staring at The Pump. I'm Sage. I climb slow and I read everything first.",
         opts: [
@@ -540,12 +560,14 @@ export const TALK: Record<string, TalkDef> = {
       ...romanceStarts('mara'),
       ...crewStarts('mara'),
       ...crewNameStarts('mara'),
+      ...favourStarts('mara'),
       { node: 'again' },
     ],
     nodes: {
       ...romanceNodes('mara'),
       ...crewNodes('mara'),
       ...crewNameNodes('mara'),
+      ...favourNodes('mara', FAVOUR_GATE),
       ...arcNodes('mara'),
       meet: {
         text: 'A woman on the next line lowers off, looks at your chalk bag, then at you. "Mara. You’re on my warm-up." She doesn’t move you off it. "Go on, then. Don’t celebrate if you get it."',
@@ -572,12 +594,14 @@ export const TALK: Record<string, TalkDef> = {
       ...arcStarts('rico'),
       ...crewStarts('rico'),
       ...crewNameStarts('rico'),
+      ...favourStarts('rico'),
       { node: 'again' },
     ],
     nodes: {
       ...arcNodes('rico'),
       ...crewNodes('rico'),
       ...crewNameNodes('rico'),
+      ...favourNodes('rico', FAVOUR_GATE),
       meet: {
         text: 'Someone in a sleeveless tee is hanging off the steepest thing here by one heel, arguing with it. He drops, sees you watching, and grins. "Rico. You want next go? It’s horrible. You’ll love it."',
         opts: [
@@ -604,12 +628,14 @@ export const TALK: Record<string, TalkDef> = {
       ...arcStarts('tam'),
       ...crewStarts('tam'),
       ...crewNameStarts('tam'),
+      ...favourStarts('tam'),
       { node: 'again' },
     ],
     nodes: {
       ...arcNodes('tam'),
       ...crewNodes('tam'),
       ...crewNameNodes('tam'),
+      ...favourNodes('tam', FAVOUR_GATE),
       slowing: {
         calls: true,
         text: 'Tam takes the first pitch slower than you’ve seen him take anything, and doesn’t pretend otherwise. At the ledge he says, "The good seasons are getting shorter. Or I am."',

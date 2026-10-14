@@ -1360,6 +1360,22 @@ export const CREW_NAME = { min: 2, max: 28 };
 // `BOND.inviteBefore`; later, it's for tomorrow from `from`.
 export const CREW_PROJECT = { over: 2, every: 7, watch: 10, from: 9 * 60 };
 
+// Phase 28.3 [proposed]. Favours, both ways. You can owe one of the crew up to `cap` (Evan's
+// call: two owed, no third till you've done one back), and they can owe you as many. Each of
+// them asks once in every `every` days, on a day the seed picks, till it's answered; a no
+// costs `no` bond. What they ask: an hour's belay (`belay`), a ride into town (`ride`, the gas
+// and the hour), or a loan (`loan`, back `loanDays` later). Small enough that a yes is easy,
+// big enough that a no is a choice.
+export const FAVOUR = {
+  cap: 2,
+  every: 14,
+  no: 1,
+  belay: { min: 60, energy: 5 },
+  ride: { min: 60, cash: 10 },
+  loan: 40,
+  loanDays: 7,
+};
+
 // Lives that change (Phase 17.3), on the age clock (AGE.days to a year, Evan's call), all
 // [proposed]:
 //   ray     his last season from the sixth year (day 91), and he stops coming out in the

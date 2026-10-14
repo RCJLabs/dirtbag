@@ -49,6 +49,7 @@ import {
   actCost,
   faSuggestions,
   crewSuggestions,
+  favourBlocked,
   projectable,
   goBlocked,
   knowsBeta,
@@ -60,13 +61,15 @@ import {
 } from './game';
 import { whereNow } from './presence';
 import { crewDayFrom, crewOf } from './crew';
+import { riding } from './favours';
+import { has } from './kit';
 import { rankAt, signupBlocked } from './jobs';
 import { friendFor, PARTS, repairCost, unsafePart } from './van';
 import { hitchFriend } from './events';
 import { carePrice, weeklyBills } from './clinic';
 import { spotBlocked, ticketOdds } from './spots';
 import { tonight } from './tonight';
-import type { Action, GameState, GoResult, Skills, TripPlan } from './types';
+import type { Action, FavourWhat, GameState, GoResult, Skills, TripPlan } from './types';
 import type { Rng } from './rng';
 import { conditions, conditionsAt, seasonOf } from './weather';
 import { currentGoal, HEIR_LADDER, LADDER } from './story';
@@ -472,6 +475,9 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   // energy for it (the part's left shot), and the tow when all else fails.
   const travel = (to: string): boolean => {
     if (s.at === to) return true;
+    // Phase 28.3: the van can't make it; a friend can.
+    const far = (road(s.at, to)?.min ?? 0) >= VAN.from && to !== 'garage' && to !== 'lot';
+    if (far && !riding(s) && (unsafePart(s) || s.van.battery <= 0)) askFavour('ride');
     if (!go({ t: 'travel', to })) return false;
     // Someone on the road (Phase 22.6b), or a walk-out's calls (22.6c): the first answer, as
     // a bot takes things. Out of a walk-out, the drive is still to do.
@@ -614,7 +620,16 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   function vanReaches(place: string): boolean {
     const r = road('lot', place);
     if (!r || r.min < VAN.from) return true;
-    return !unsafePart(s) && s.van.battery > 0;
+    // Phase 28.3: a friend's wheels, or the social bot's ask for them.
+    return (!unsafePart(s) && s.van.battery > 0) || riding(s) || (!!opts.social && canAsk('ride'));
+  }
+
+  // Phase 28.3, the social bot only: a favour from the closest of the crew who'll do it.
+  const canAsk = (what: FavourWhat): boolean => crewOf(s).some((w) => !favourBlocked(s, w, what));
+  function askFavour(what: FavourWhat): boolean {
+    if (!opts.social) return false;
+    const who = crewOf(s).find((w) => !favourBlocked(s, w, what));
+    return !!who && go({ t: 'favour', who, what });
   }
 
   function garage() {
@@ -671,7 +686,11 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       const node = talkStart(s, 'sage');
       // The crew's name (Phase 28.1) comes up for every bot, so it can't stand in front of
       // her lessons; drama is the social bot's.
-      const crew = node === 'crew-name' || (!!opts.social && !!node?.startsWith('crew-'));
+      // Phase 28.3: her asks too, answered yes when the bot can afford it.
+      const crew =
+        node === 'crew-name' ||
+        !!node?.startsWith('crew-favour-') ||
+        (!!opts.social && !!node?.startsWith('crew-'));
       const love = !!node?.startsWith('love-');
       if (!node || !(node === 'meet' || node === 'again' || node.startsWith('beat-') || crew || love)) return;
       if (node === 'again' && s.today.includes('sage')) return;
@@ -827,6 +846,13 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       if (!opts.reckless && ratio(s.load) > LOAD.risk) return;
       maybeSage();
       maybePeople();
+      // Phase 28.3: a rack borrowed for a crag with trad on it, by a bot that's none of its own.
+      if (
+        opts.social &&
+        !has(s, 'rack') &&
+        wallAt(s, s.at).some((r) => r.disc === 'trad' && !s.routes[r.id]?.sent && !r.exped)
+      )
+        askFavour('rack');
       // Phase 28.2: at the project, the crew goes first.
       if (opts.social && s.crewProject && routeOfId(s, s.crewProject.route)?.place === s.at)
         if (act(s, { t: 'crewGo' }).events[0]?.k !== 'refused') go({ t: 'crewGo' });
@@ -1415,6 +1441,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     const trip = saving();
     const want = CUSHION.career + (billsSoon() ? weeklyBills(s) : 0) + (trip ? trip + 50 : 0) + repairs();
     const pick = pickPlace();
+    // Phase 28.3: a crew day isn't worked: the shift goes to a friend.
+    if (crewToday() && booked()) askFavour('shift');
     // A working day: ask Hazel along first, to the crag you'll reach after the shift, so
     // she's there with the rope when you are.
     if (s.cash < want || !pick || booked()) {
