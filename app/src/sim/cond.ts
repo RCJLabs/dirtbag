@@ -9,7 +9,7 @@ import { repairCost } from './van';
 import { isSick } from './sick';
 import { lifeDue } from './lives';
 import { romanceDue, strained } from './romance';
-import { crewDue } from './crew';
+import { crewDue, crewNameDue } from './crew';
 import { strayDue } from './scout';
 import { clockShort, fill } from './format';
 import { benchedUntil, isPosted } from './jobs';
@@ -37,6 +37,7 @@ export interface Cond {
   strained?: string; // you're together, and it's gone too long without a day together
   crew?: string; // "who/ask/other" or "who/mend/other": a beat of crew drama is due (crew.ts)
   giftDue?: string; // you can give them something: a week since the last (Phase 17.5)
+  crewName?: string; // they bring up naming the crew (Phase 28.1, crew.ts)
   sky?: Sky; // today's weather
   arc?: string; // "who/n": beat n of their arc is due (bond reached, days since the last)
   bond?: string; // "who/n": your bond with them is at least n
@@ -118,6 +119,7 @@ export function holds(s: GameState, c: Cond): boolean {
   if (c.romance !== undefined && !romanceDue(s, c.romance)) return false;
   if (c.strained !== undefined && !strained(s, c.strained)) return false;
   if (c.crew !== undefined && !crewDue(s, c.crew)) return false;
+  if (c.crewName !== undefined && !crewNameDue(s, c.crewName)) return false;
   if (c.giftDue !== undefined) {
     const gave = s.people[c.giftDue]?.gave;
     if (gave !== undefined && s.day - gave < GIVE.every) return false;

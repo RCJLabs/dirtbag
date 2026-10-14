@@ -896,6 +896,8 @@ export const PSYCHE = {
   // outside `cap`. [proposed]
   called: 4,
   calledFell: 4,
+  // The night you name the crew (Phase 28.1): worth a send. [proposed]
+  crewNamed: 4,
   windows: 0.05,
   // Where the words change: under 25 low, then flat, steady, keen, and psyched from 80.
   bands: [25, 45, 60, 80],
@@ -1344,6 +1346,10 @@ export const CREW = {
   perTier: 0.15,
   sulk: 7,
 };
+
+// Phase 28.1 [proposed]. The crew's name: offered once `min` partners are a Regular
+// (`CREW.tier`) or closer, v0.956's two; a name is 2 to `max` characters, as long as a line's.
+export const CREW_NAME = { min: 2, max: 28 };
 
 // Lives that change (Phase 17.3), on the age clock (AGE.days to a year, Evan's call), all
 // [proposed]:

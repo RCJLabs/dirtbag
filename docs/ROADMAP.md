@@ -69,7 +69,7 @@
 | 16 The spine | Next after 21–23. |
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 | 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
-| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026); Phase 27 is the current milestone. |
+| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phase 27 (14 Oct 2026); Phase 28 is the current milestone. |
 
 ## The rebuild track
 
@@ -2971,7 +2971,7 @@ Evan's calls: day labor, crag tourists, selling kit, plasma and a second shift a
 
 An hour of each: day labor $9 (a first-rank café shift $9, the warehouse $7), a family's rope $20 and tips, plasma $15. The last two out-earn a shift an hour but are limited: busy crag days only, and twice a week. The hustle target (cans, bins, foraging under the worst shift) is unchanged. No bot uses the new earners, so every other target measures what it did: unchanged from Phase 26. V10 on a median day 179.5, Act III on a median day 274.5, and Outdoors, the accepted shortfall, 3 of 4.
 
-### Phase 27 — The rock, by hand   **<<< CURRENT MILESTONE**
+### Phase 27 — The rock, by hand
 
 *Large. The core, deepened.*
 
@@ -3140,9 +3140,9 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
 2. A called flash or onsight plays in the tests (`call.test.ts`) and in the e2e, which calls the onsight on the Warm Boulder and sends it (27.4).
 3. The harness's targets, the grade progression among them, pass after every slice.
 
-Closing it is Evan's call.
+**Phase 27 closed by Evan's call (14 Oct 2026).** Carried: the Big Stone's four new names and grades stay [proposed] for Evan to edit; the bots don't call a go, so the call's psyche is in the tests and the e2e but not the harness. The CURRENT MILESTONE moves to Phase 28.
 
-### Phase 28 — The crew
+### Phase 28 — The crew   **<<< CURRENT MILESTONE**
 
 *Medium. New, from the audit's list of what to keep (`social.md`): the crew's name, its renown, a crew project, favours. The rebuild has none of them.*
 
@@ -3162,6 +3162,28 @@ Closing it is Evan's call.
 **Done when.**
 1. A social bot's career names a crew, sends its project, and trades favours both ways.
 2. Old saves load into the new shape.
+
+**Planned (14 Oct 2026), with Evan's calls:**
+- **The project:** you pick it: any unsent line at a crag the crew can be called to, two grades or more above your hardest send.
+- **The send train:** your send starts it. Each partner's go shows you a crux; when you send with the crew there, each of them sends after you.
+- **Owing:** a Regular you owe two won't do a third till you've done one back. It's shown on the People list, with no hidden clock.
+- **Renown:** lines only, counted from what the crew has done, never a number.
+- **Slices:** 28.1 the name (save v59); 28.2 the project, crew days and the send train; 28.3 favours; 28.4 renown and the close.
+
+**Status (14 Oct 2026): 28.1 built: the crew's name.** Save v59, 0.999.42.
+- **The crew** is the partners you're a Regular with or closer, closest first. Tam leaves it once he's stopped coming out.
+- **The beat:** with two of them, whichever you see first brings it up, once, in their own words.
+  - "Name it" opens the naming sheet.
+  - "Later" leaves a "Name the crew" button on the People list.
+- **The name:** your own words, or one of four from your record: where you send most, your dog, the crowd you're in with (or neither), the van. It's 2 to 28 characters, and it stays named.
+- **Shown:** the People list ("The crew: …, named on day N. Hazel, Sage and you.") and the crew's texts. The night lifts psyche like a send.
+- **The bots:** every bot names it with the first suggestion. Sage's beat is answered by all of them, so it can't stand in front of her lessons.
+- **Save v59:** `crewName`. A real 0.999.41 save loads, its crew close and ready to name.
+- **The harness:** every target passes.
+  - The crew was named in 8 of 8 social careers, on day 22 at the median (18 to 29).
+  - V10 on day 178 (179 after 27.6); Act III ended on day 312.5 (317; its spread is about ±40 days); Outdoors 4 of 4, on day 376.5.
+- **Early, as v0.956's was** [measured]. Two Regulars come in the first month, so the name comes before the crew has done much. The roadmap's rule says two. If it should wait, `CREW_NAME.min` or the tier is the dial.
+- **The download** is 423.6 KB of 440.
 
 ### Phase 29 — The van, lived in
 
@@ -3612,3 +3634,5 @@ Closing it is Evan's call.
 - 2026-10-13 — Phase 27's 27.4 split in two (the top-outs and the pad are now 27.5, the Big Stone and the close 27.6). 27.4 built: calling the flash or the onsight before a first go, psyche staked both ways outside the day's cap, "Called It" for ten called sends. Save v58. 0.999.39.
 - 2026-10-13 — Phase 27.5 built: every highball tops out (a second crux at the lip, 36 rock moves, its window widened so no highball moves more than 0.2 of a grade); one fall height for the roll, the sheet and the bot; the extra pads cover the fall you choose, or the worse. No save change. 0.999.40.
 - 2026-10-14 — Phase 27.6 built: four more lines at the Big Stone (Meadow Arête V8, The Erratic V11, an open V13 project by Evan's call, The Apron 5.13b), granite moves and a new top-out; Phase 27's three Done-when criteria pass; closing it is Evan's call. No save change. 0.999.41.
+- 2026-10-14 — Phase 27 closed by Evan's call; CURRENT MILESTONE moved to Phase 28, the crew.
+- 2026-10-14 — Phase 28 planned with Evan's calls (you pick the project, your send starts the train, two favours owed and no third, renown in lines only). 28.1 built: the crew's name, brought up by the crew once two are Regulars, named from your record or your own words. Save v59. 0.999.42.

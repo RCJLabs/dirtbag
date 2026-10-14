@@ -48,6 +48,7 @@ export function psycheDay(
     s.today.includes('holdem')
   )
     lift(PSYCHE.company, 'company');
+  if (s.today.includes('crew-named')) lift(PSYCHE.crewNamed, 'a name for the crew');
   // Your dog settles at the fire with the perk (Phase 22.7), and it's worth a little more.
   if (s.today.includes('fire'))
     hasPerk(s, 'settle')

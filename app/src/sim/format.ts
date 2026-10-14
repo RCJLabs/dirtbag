@@ -93,6 +93,10 @@ export function skillsNote(t: Partial<Skills>): string {
 // The day of the week a game day falls on. Day 1 is a Monday, so days 6 and 7 are the
 // weekend (cond.ts isWeekend) and the week's bills land on a Sunday night.
 const WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+// "A", "A and B", "A, B and C".
+export const listOf = (xs: string[]): string =>
+  xs.length < 2 ? (xs[0] ?? '') : `${xs.slice(0, -1).join(', ')} and ${xs.at(-1)}`;
+
 export const dayName = (day: number): string => WEEKDAY[day % 7]!;
 
 // 1st, 2nd, 3rd, 4th, 11th, 12th, 13th, 21st.

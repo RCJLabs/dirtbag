@@ -31,8 +31,8 @@ import {
 import { bestPlan, guestsToday, outfitBlocked, outfitDay, planRefused, planValue } from './guiding';
 import { GUIDE_SAYS } from './content/guiding';
 import { teamBack, teamBlocked, teamCost, teamHome, teamNames, teamOdds } from './team';
-import { mends } from './crew';
-import { CREW_LINES } from './content/crew';
+import { crewNameable, crewOf, mends } from './crew';
+import { CREW_LINES, CREW_NAME_SAYS, CREW_NAMES } from './content/crew';
 import { TEAM_FUNDED, TEAM_NOTHING, TEAM_SUMMIT, TEAM_TURNED } from './content/team';
 import { guideBlocked, guidesOut } from './guides';
 import { bolted, boltBlocked, gymBuyBlocked, gymNight, UPGRADES, wallWord, type Upgrade } from './business';
@@ -242,6 +242,7 @@ import {
   MENTEE,
   TEAM,
   CREW,
+  CREW_NAME,
   AGE,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
@@ -399,6 +400,7 @@ export function newGame(seed: string): GameState {
     team: null,
     teams: [],
     crew: null,
+    crewName: null,
     lifestyle: 'dirtbag',
     spot: 'lot',
     lotNights: 0,
@@ -740,14 +742,16 @@ export function knowsBeta(s: GameState, route: string, crux: string, beta: strin
   return c.beta[0] === beta || !!s.routes[route]?.known.includes(beta);
 }
 
-// The numbers a conversation's words can use: goes today, your name and grade, and the
-// days left in a race.
-export function talkValues(s: GameState): Record<string, string | number> {
+// The numbers a conversation's words can use: goes today, your name and grade, the days
+// left in a race, and (Phase 28.1) the next of the crew after whoever's talking.
+export function talkValues(s: GameState, who?: string): Record<string, string | number> {
+  const other = crewOf(s).find((w) => w !== who);
   return {
     goes: goesToday(s),
     name: s.climber.name,
     grade: gradeOf(s.climber.skills),
     left: s.race ? Math.max(0, s.race.until - s.day + 1) : 0,
+    other: other ? (PEOPLE[other]?.name ?? other) : 'Everyone',
   };
 }
 
@@ -2854,6 +2858,12 @@ export function act(s0: GameState, a: Action): Result {
           }
         }
       }
+      // The crew's name (Phase 28.1): brought up once. Name it now and the sheet opens;
+      // later, and it waits on the People list.
+      if (fx.crewName) {
+        if (!s.seen.includes('crew-name')) s.seen.push('crew-name');
+        if (fx.crewName === 'name') events.push({ k: 'crewName' });
+      }
       if (fx.line) {
         const said = fill(fx.line, { away: fx.away ?? 0 });
         line(fx.train ? `${said} ${skillsNote(fx.train)}.` : said);
@@ -3793,6 +3803,19 @@ export function act(s0: GameState, a: Action): Result {
       }
       break;
     }
+
+    // Phase 28.1: the crew's name, once and for good, like a first ascent's.
+    case 'nameCrew': {
+      if (s.crewName) return refuse('The crew has its name.');
+      if (!crewNameable(s)) return refuse('You need a crew before you can name one.');
+      const name = a.name.trim().slice(0, CREW_NAME.max).trim();
+      if (name.length < 2) return refuse('Give it a name.');
+      s.crewName = { name, day: s.day };
+      if (!s.seen.includes('crew-name')) s.seen.push('crew-name');
+      s.today.push('crew-named');
+      line(fill(CREW_NAME_SAYS.named, { name }));
+      break;
+    }
   }
   // Hungry and broke for the first time: where the net is (Phase 22.5a).
   if (s.climber.name && needsTeaching(s)) {
@@ -3982,6 +4005,25 @@ export function faSuggestions(s: GameState, r: RouteDef): string[] {
     `The ${season[0]!.toUpperCase()}${season.slice(1)} Project`,
     s.cash < 0 ? 'Rent’s Due' : s.routes.pump?.told.includes('B2') ? 'Hazel Was Right' : 'Coffee Money',
   ];
+}
+
+// Phase 28.1: names for the crew, from your record: where you've sent most, your dog, the
+// crowd you're in with (or neither), then the van. Four, none twice.
+export function crewSuggestions(s: GameState): string[] {
+  const at = new Map<string, number>();
+  for (const [id, l] of Object.entries(s.routes)) {
+    const place = l.sent ? routeOfId(s, id)?.place : undefined;
+    if (place && CREW_NAMES.place[place]) at.set(place, (at.get(place) ?? 0) + 1);
+  }
+  const most = [...at].sort((a, b) => b[1] - a[1])[0]?.[0];
+  const lean = s.scene.old >= s.scene.gym ? 'old' : 'gym';
+  const names = [
+    ...(most ? [CREW_NAMES.place[most]!] : []),
+    ...(s.dog ? [fill(CREW_NAMES.dog, { dog: s.dog.name })] : []),
+    s.scene[lean] >= FACTION.bands[2]! ? CREW_NAMES[lean] : CREW_NAMES.none,
+    ...CREW_NAMES.rest,
+  ];
+  return [...new Set(names)].slice(0, 4);
 }
 
 // A game that closed mid-solo: whatever happened up there, you didn't top out. Reloading

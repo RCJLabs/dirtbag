@@ -138,6 +138,8 @@ export type SheetId =
   | { k: 'outfit' }
   | { k: 'league' }
   | { k: 'texts' }
+  // Phase 28.1: naming the crew.
+  | { k: 'crew' }
   // Phase 25.7: a glossary word, tapped where it appeared; back to where that was.
   | { k: 'word'; term: string; back: SheetId }
   // A shift with a minigame to play (Phase 18.1), or just to work.
@@ -832,7 +834,16 @@ export class Game {
     const next = ev.find((e): e is Extract<GameEvent, { k: 'talk' }> => e.k === 'talk');
     if (next?.node) this.sound.play('talk');
     this.set({ talk: next?.node ? { talk: t.talk, node: next.node } : null });
+    // Phase 28.1: they've asked you to name the crew, and you said you would.
+    if (ev.some((e) => e.k === 'crewName')) this.set({ sheet: { k: 'crew' } });
     this.maybeCard();
+  }
+
+  // Name the crew (Phase 28.1). Refused, the sheet stays for another go.
+  nameCrew(name: string): void {
+    const ev = this.dispatch({ t: 'nameCrew', name });
+    if (ev.some((e) => e.k === 'refused')) return;
+    this.closeSheet();
   }
 
   // ---- places and the map ----
