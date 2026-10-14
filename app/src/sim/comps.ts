@@ -4,10 +4,20 @@
 // the grades it draws: tops first, then fewest goes. A place earns points, which fade, and
 // points let you into the next rung up. Nothing here moves to meet you.
 
-import { A_LEAGUE, COMP_LADDER, COMP_RULES, COMP_TIERS, COMPETITORS, ROUND_NAMES } from './content/comps';
+import {
+  A_LEAGUE,
+  COMP_LADDER,
+  COMP_RULES,
+  COMP_TIERS,
+  COMPETITORS,
+  FIELD_SAYS,
+  ROSTER,
+  ROUND_NAMES,
+  type Rival,
+} from './content/comps';
 import { fill } from './format';
 import { libraryBoulder, type RouteDef } from './content/routes';
-import { COMP, LEAGUE, YEAR } from './dials';
+import { COMP, LEAGUE, RIVALS, YEAR } from './dials';
 import { Rng } from './rng';
 import type { Style } from './climber';
 import type { GameState } from './types';
@@ -192,16 +202,100 @@ function draw<T>(
   });
 }
 
-// One entrant's tops at a set, from the grade they climb, problem by problem.
+// ---- Phase 33.3: the rivals ----
+
+// Whether a rung's fields have a roster: the ladder from the Circuit up.
+export const rostered = (tier: number): boolean => COMP_LADDER.includes(tier) && !isLeague(tier);
+
+// A rival's grade in a year: their own, moved by their trend while it runs, give or take the
+// year's wobble.
+export function rivalGrade(seed: string, v: Rival, year: number): number {
+  const w = Rng.fromStream(seed, 'events')
+    .derive(`rival-${v.name}-${year}`)
+    .float(-RIVALS.wobble, RIVALS.wobble);
+  return Math.round((v.grade + v.trend * Math.min(year, RIVALS.years) + w) * 100) / 100;
+}
+
+// The rung a rival climbs in, in a year: their own, and up one for good in any year their
+// grade is past the top of the rung they were in.
+export function rivalTier(seed: string, v: Rival, year: number): number {
+  let tier = v.tier;
+  for (let y = 0; y <= year; y++) {
+    const next = COMP_LADDER[COMP_LADDER.indexOf(tier) + 1];
+    if (next !== undefined && rivalGrade(seed, v, y) >= COMP_TIERS[tier]!.grades[1] + RIVALS.up) tier = next;
+  }
+  return tier;
+}
+
+export interface InField {
+  name: string;
+  grade: number;
+  // The rung they came up from this year, if they did.
+  up: number | null;
+}
+
+// The rivals in a rung's fields in a year, strongest first: its own, whoever's come up to it,
+// and anyone who enters it as well (Skye, at Nationals).
+export function rivalsIn(seed: string, tier: number, year: number): InField[] {
+  if (!rostered(tier)) return [];
+  return ROSTER.flatMap((v) => {
+    const now = rivalTier(seed, v, year);
+    if (now !== tier && !v.also?.includes(tier)) return [];
+    const was = year > 0 ? rivalTier(seed, v, year - 1) : v.tier;
+    return [
+      { name: v.name, grade: rivalGrade(seed, v, year), up: now === tier && was !== tier ? was : null },
+    ];
+  }).sort((a, b) => b.grade - a.grade);
+}
+
+export const isRival = (name: string): boolean => ROSTER.some((v) => v.name === name);
+
+// A comp's climbers: from the Circuit up, the rung's rivals that year, and fillers from the
+// pool to make up the numbers; any other comp's, all from the pool.
+function entrants(seed: string, tier: number, day: number, r: Rng): { name: string; grade: number }[] {
+  const t = COMP_TIERS[tier]!;
+  const named = rivalsIn(seed, tier, yearOf(day))
+    .slice(0, t.field - 1)
+    .map(({ name, grade }) => ({ name, grade }));
+  const rest = draw(r, t.field - named.length, gradesFor(tier, day), (name, grade) => ({ name, grade }));
+  return [...named, ...rest];
+}
+
+// What the field's line says when you're done (Phase 33.3), from the last round's field and
+// your place in it: who won (only a rival by name), or who was second when you won; and the
+// rival one place ahead of you, if that's someone else. Out before the final, only that.
+export function fieldSays(field: Score[], place: number, last: boolean): string {
+  const ranked = field
+    .map((f, i) => ({ ...f, i }))
+    .sort((a, b) => b.tops - a.tops || a.goes - b.goes || a.i - b.i);
+  const said: string[] = [];
+  const top = ranked[0];
+  if (last && top && place === 1 && isRival(top.name)) said.push(fill(FIELD_SAYS.second, { name: top.name }));
+  if (last && top && place > 1)
+    said.push(isRival(top.name) ? fill(FIELD_SAYS.won, { name: top.name }) : FIELD_SAYS.stranger);
+  const near = place > 1 ? ranked[place - 2] : undefined;
+  if (near && (near !== top || !last) && isRival(near.name))
+    said.push(fill(FIELD_SAYS.ahead, { name: near.name }));
+  return said.join(' ');
+}
+
+// One entrant's tops at a set, from the grade they climb, problem by problem. Phase 33.3:
+// rolled a go at a time, each go's chance the one that tops it in the round's goes as often
+// as before, so whoever's well over a problem tops it in a go or two, and someone at their
+// limit gets it late if at all. (A top's goes were drawn evenly from 1 to the clock's, so a
+// favourite topped as slowly as anyone and lost on goes to a flash.)
 function rollTops(r: Rng, grade: number, set: RouteDef[], goes: number): Score {
   let tops = 0;
   let n = 0;
   for (const p of set) {
     const chance = 1 / (1 + Math.exp(-COMP.steep * (grade - p.grade + 0.5)));
-    if (r.next() < chance) {
-      tops++;
-      n += r.int(1, goes);
-    }
+    const go = 1 - (1 - chance) ** (1 / goes);
+    for (let g = 1; g <= goes; g++)
+      if (r.next() < go) {
+        tops++;
+        n += g;
+        break;
+      }
   }
   return { name: '', tops, goes: n };
 }
@@ -216,7 +310,7 @@ export function compField(seed: string, tier: number, day: number): Score[] {
   if (t.rounds) return roundField(seed, tier, day);
   if (!isLeague(tier)) {
     const r = Rng.fromStream(seed, 'events').derive(`field-${tier}-${day}`);
-    return draw(r, t.field, gradesFor(tier, day), (name, g) => ({ ...rollTops(r, g, set, goes), name }));
+    return entrants(seed, tier, day, r).map((e) => ({ ...rollTops(r, e.grade, set, goes), name: e.name }));
   }
   const a = tier === 0 ? '' : 'a-';
   const year = draw(
@@ -237,12 +331,7 @@ export function roundField(seed: string, tier: number, day: number): Score[] {
   const t = COMP_TIERS[tier]!;
   const start = startOf(tier, day);
   const round = roundOf(tier, day);
-  let left = draw(
-    Rng.fromStream(seed, 'events').derive(`field-${tier}-${start}`),
-    t.field,
-    gradesFor(tier, start),
-    (name, grade) => ({ name, grade }),
-  );
+  let left = entrants(seed, tier, start, Rng.fromStream(seed, 'events').derive(`field-${tier}-${start}`));
   const roll = (k: number) => {
     const r = Rng.fromStream(seed, 'events').derive(`round-${tier}-${start}-${k}`);
     const set = compSet(seed, tier, start + k);

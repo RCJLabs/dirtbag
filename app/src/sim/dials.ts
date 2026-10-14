@@ -147,6 +147,12 @@ export const COMP = {
 // Top of the table when it's settled, on the year's last League night, pays `prize`. Phase 26
 // [proposed]: a season won moves you to the A league for good, whose top pays `prizeA`.
 export const LEAGUE = { best: 6, prize: 250, prizeA: 500 };
+// Phase 33.3 [proposed]: the rivals (content/comps.ts ROSTER). A rival's trend runs for their
+// first `years` years and then they hold, so nobody rises for ever; each year's grade is give
+// or take `wobble`, seeded: some years are better. A rival goes up a rung for good the first
+// year their grade is `up` over the top of their own rung's grades: past winning it, and
+// ready for the next.
+export const RIVALS = { wobble: 0.5, up: 1, years: 5 };
 
 // Phase 18.5 [proposed]. Followers from a post: `k` × the worth of today's best send (its
 // grade plus two, to the power `pow`; more outside, on a first go, or a first ascent) × how

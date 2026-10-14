@@ -4,8 +4,18 @@
 // podium and the win, and where you place. COMP_SEEDS widens the sample.
 import { it } from 'vitest';
 import { needFor } from '../src/sim/climber';
-import { compField, compSet, goesFor, gradesFor, placing, roundName, roundOf } from '../src/sim/comps';
-import { COMP_TIERS } from '../src/sim/content/comps';
+import {
+  compField,
+  compSet,
+  goesFor,
+  gradesFor,
+  placing,
+  rivalGrade,
+  rivalTier,
+  roundName,
+  roundOf,
+} from '../src/sim/comps';
+import { COMP_TIERS, ROSTER } from '../src/sim/content/comps';
 import { act, newGame } from '../src/sim/game';
 import { median } from '../src/sim/harness';
 import { humanHands, playGo } from '../src/sim/bot';
@@ -77,5 +87,24 @@ it('Phase 33: comps in rounds, measured', { timeout: 3_600_000 }, () => {
         `| V${g} | ${names.map((_, k) => pct(res.filter((r) => r.reached > k).length, SEEDS)).join(' | ')} | ${pct(res.filter((r) => r.reached === cuts.length && r.place <= 3).length, SEEDS)} | ${pct(res.filter((r) => r.reached === cuts.length && r.place === 1).length, SEEDS)} | ${median(res.map((r) => r.place))} |`,
       );
     }
+  }
+});
+
+// Phase 33.3: the field that comes back. Each rival's grade by year (the median across
+// careers), and in how many careers they've gone up a rung by year 3 and by year 7.
+it('Phase 33.3: the rosters, by year', () => {
+  const YEARS = 8;
+  const seeds = Array.from({ length: SEEDS }, (_, k) => `roster-${k}`);
+  out(`\n# The rosters (${SEEDS} careers)\n`);
+  out(
+    `| rival | rung | ${Array.from({ length: YEARS }, (_, y) => `y${y}`).join(' | ')} | up by y3 | up by y7 |`,
+  );
+  out(`|---|---|${Array.from({ length: YEARS }, () => '---').join('|')}|---|---|`);
+  for (const v of ROSTER) {
+    const grades = Array.from({ length: YEARS }, (_, y) => median(seeds.map((sd) => rivalGrade(sd, v, y))));
+    const up = (y: number) => seeds.filter((sd) => rivalTier(sd, v, y) !== v.tier).length;
+    out(
+      `| ${v.name} | ${COMP_TIERS[v.tier]!.name} | ${grades.map((g) => g.toFixed(1)).join(' | ')} | ${up(3)} | ${up(7)} |`,
+    );
   }
 });

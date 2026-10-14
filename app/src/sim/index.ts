@@ -68,9 +68,15 @@ export {
   compHere,
   compOn,
   compSet,
+  fieldSays,
   goesFor,
   goesLeft,
   inComp,
+  isRival,
+  rivalGrade,
+  rivalsIn,
+  rivalTier,
+  rostered,
   isCompProblem,
   roundName,
   roundOf,
@@ -87,7 +93,16 @@ export {
   yearOf,
   yourScore,
 } from './comps';
-export { A_LEAGUE, COMP_LADDER, COMP_RULES, COMP_TIERS, DYNO_COMP, GAMES_TIER } from './content/comps';
+export {
+  A_LEAGUE,
+  COMP_LADDER,
+  COMP_RULES,
+  COMP_TIERS,
+  DYNO_COMP,
+  FIELD_SAYS,
+  GAMES_TIER,
+  ROSTER,
+} from './content/comps';
 export { bolted, boltBlocked, businessRung, gymBuyBlocked, gymDay, gymTarget, wallWord } from './business';
 export { GYM_UPGRADE_NAME } from './content/business';
 export { capstone, ladderById, LADDERS, type Ladder, type LadderId } from './ladders';
