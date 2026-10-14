@@ -123,3 +123,40 @@ export const crewNameNodes = (who: string): Record<string, TalkNode> =>
         },
       }
     : {};
+
+// Phase 28.2: the crew project. Each of the crew answers a crew day, goes first on the line,
+// and follows you up it, in their own way. {place}, {crux} and {beta} are filled where said.
+export const CREW_DAY_YES: Record<string, string> = {
+  hazel: 'Hazel: "{place}. I’ll bring the coffee, you bring the psyche."',
+  sage: 'Sage: "{place}. I’ve already got notes."',
+  mara: 'Mara: "{place}. Don’t be late, and don’t be slow."',
+  rico: 'Rico: "{place}! Yes. I’ll bring snacks. Mostly for me."',
+  tam: 'Tam: "{place}. I’ll be there early. I always am."',
+};
+
+export const CREW_GO: Record<string, string> = {
+  hazel: 'Hazel goes first and comes off at {crux}, swearing. You were watching the feet: {beta}.',
+  sage: 'Sage reads it for ten minutes, climbs slow to {crux}, and steps off. “{Beta}. Try it.”',
+  mara: 'Mara climbs straight to {crux}, comes off clean, and says it like an insult: “{Beta}.”',
+  rico: 'Rico throws at {crux}, misses, and lands yelling. Somewhere in the yelling: {beta}.',
+  tam: 'Tam takes {crux} slowly and steps down off the top of it. “{Beta}. Old trick.”',
+};
+
+export const CREW_TRAIN: Record<string, string> = {
+  hazel: 'Hazel goes straight after you and gets it too, complaining the whole way.',
+  sage: 'Sage watches your beta once more, then climbs it exactly the way you did.',
+  mara: 'Mara gets on before you’ve finished celebrating and sends it without a word.',
+  rico: 'Rico sends it yelling, then sends it again because nobody filmed the first one.',
+  tam: 'Tam goes last, slow and certain, and tops out like it was always going to happen.',
+};
+
+export const PROJECT_SAYS = {
+  picked: 'The crew project: {line}. Everyone has an opinion about it already.',
+  dropped: 'You drop the crew project. Nobody says anything, which says plenty.',
+  bond: '{name}: “{place}? That’s a long way to go with you. Not yet.”',
+  nobody: 'Nobody can make it. The week’s call is spent all the same.',
+  nothing: '{name} has a go. Nothing you didn’t already know, but it’s good to watch.',
+  train: 'The send train goes: {crew}, one after another up {line}.',
+  alone:
+    'You sent the crew project with none of them there. They’ll hear about it, and they’ll have opinions.',
+};

@@ -49,6 +49,7 @@ import {
   actCost,
   faSuggestions,
   crewSuggestions,
+  projectable,
   goBlocked,
   knowsBeta,
   landingChance,
@@ -58,6 +59,7 @@ import {
   talkStart,
 } from './game';
 import { whereNow } from './presence';
+import { crewDayFrom, crewOf } from './crew';
 import { rankAt, signupBlocked } from './jobs';
 import { friendFor, PARTS, repairCost, unsafePart } from './van';
 import { hitchFriend } from './events';
@@ -722,6 +724,9 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     // Dex's dare comes first: a player racing him works the line he's after.
     const race = s.race && lines.find((l) => l.r.id === s.race!.route);
     if (race) return race.r;
+    // Phase 28.2: on a crew day, the crew's project, with them there.
+    const project = crewToday() ? lines.find((l) => l.r.id === s.crewProject!.route) : undefined;
+    if (project) return project.r;
     // Phase 18.7: with a film on, the media bot projects a line outside at the film's grade.
     const doc = opts.focus === 'media' ? s.media.doc : null;
     if (doc && 'due' in doc && !INDOOR[place]) {
@@ -822,6 +827,9 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       if (!opts.reckless && ratio(s.load) > LOAD.risk) return;
       maybeSage();
       maybePeople();
+      // Phase 28.2: at the project, the crew goes first.
+      if (opts.social && s.crewProject && routeOfId(s, s.crewProject.route)?.place === s.at)
+        if (act(s, { t: 'crewGo' }).events[0]?.k !== 'refused') go({ t: 'crewGo' });
       const next = choose();
       if (!next) return;
       const r = !opts.reckless && !s.today.includes('warm') && cold(s, next) ? (warmUp() ?? next) : next;
@@ -1339,6 +1347,32 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       go({ t: 'gym', do: 'set', set: bestSet() });
   }
 
+  // Phase 28.2, the social bot only: a crew day today, called for the project's crag.
+  function crewToday(): boolean {
+    const r = opts.social && s.crewProject ? routeOfId(s, s.crewProject.route) : undefined;
+    return (
+      !!r &&
+      crewOf(s).some((w) => s.people[w]?.invite?.day === s.day && s.people[w]?.invite?.place === r.place)
+    );
+  }
+
+  // The crew project, as a player who reads everything would run one: the easiest line hard
+  // enough, at a crag it climbs at; and a crew day called for tomorrow, once a week, when the
+  // crag's dry tomorrow and no comp's in the way.
+  function crewProject() {
+    if (!opts.social || !s.crewName) return;
+    if (!s.crewProject) {
+      const pick = CAREER_PLACES.filter((p) => !INDOOR[p] && PLACES[p]?.invite !== undefined)
+        .flatMap((p) => wallAt(s, p).filter((r) => projectable(s, r)))
+        .sort((a, b) => a.grade - b.grade)[0];
+      if (pick) go({ t: 'crewProject', route: pick.id });
+    }
+    const r = s.crewProject ? routeOfId(s, s.crewProject.route) : undefined;
+    if (!r || s.day < crewDayFrom(s) || s.min < BOND.inviteBefore || compFor(s.day + 1, false)) return;
+    const c = conditionsAt(s.seed, s.day + 1, r.place);
+    if (c.open && !c.closed) go({ t: 'crewDay' });
+  }
+
   function careerDay() {
     const morning = { ...s.climber.skills };
     workMin = 0;
@@ -1392,7 +1426,9 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     const aim = currentGoal(s)?.aim;
     const taper =
       !!aim && 'wall' in aim && gradeOf(s.climber.skills) >= WALLS[aim.wall]!.grade && !freshFor();
-    const then = taper ? null : pickPlace();
+    // Phase 28.2: a crew day goes to the project's crag, if it can be reached.
+    const crewAt = crewToday() ? routeOfId(s, s.crewProject!.route)!.place : null;
+    const then = taper ? null : crewAt && reachable(crewAt) ? { place: crewAt, partner: null } : pickPlace();
     let where = taper ? 'resting' : then ? 'tired' : CAREER_PLACES.some(fresh) ? 'resting' : 'nothing';
     if (then && s.energy >= 30 && s.skin >= 25) {
       if (then.partner) invite(then.partner, then.place);
@@ -1427,6 +1463,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     // for one who reads everything (Phase 17.7). And whoever's at the Lot with something due.
     maybePeople();
     if (s.psyche.level < BOT_FIRE || opts.social) tryAct('lot.sit');
+    crewProject();
     if (opts.focus === 'media') post();
     const next = saving();
     park();

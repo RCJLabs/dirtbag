@@ -218,6 +218,8 @@ import {
   leagueTier,
   promotedIn,
   crewTexts,
+  crewDayFor,
+  crewDayFrom,
   crewToText,
   keeperLine,
   COMP_LADDER,
@@ -1210,7 +1212,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         sub: `You send the same text to ${s.crewName?.name ?? 'everyone'}: "Climbing?"`,
         close: true,
         lines: crewTexts(s),
-        rows: [{ label: 'Back', run: () => game.openSheet({ k: 'van' }) }],
+        rows: [...crewDayRows(game, s), { label: 'Back', run: () => game.openSheet({ k: 'van' }) }],
       };
 
     // League night's table (Phase 25.5).
@@ -2821,4 +2823,27 @@ function expedSheet(game: Game, s: GameState, id: string): ListSpec {
     close: false,
     rows,
   };
+}
+
+// Phase 28.2: a crew day for the project, from the crew's texts: once a week, today before
+// the invite hour, tomorrow after it.
+function crewDayRows(game: Game, s: GameState): Row[] {
+  const r = s.crewProject ? routeOfId(s, s.crewProject.route) : undefined;
+  if (!r) return [];
+  const from = crewDayFrom(s);
+  const place = PLACES[r.place]?.name ?? r.place;
+  return [
+    {
+      label: `Call a crew day at ${place}`,
+      off: s.day < from,
+      note:
+        s.day < from
+          ? `One a week. The next can be called on day ${from}.`
+          : `For ${crewDayFor(s) === s.day ? 'today' : 'tomorrow'}, on ${lineName(s, r)}. Whoever can make it meets you there.`,
+      run: () => {
+        game.dispatch({ t: 'crewDay' });
+        game.openSheet({ k: 'texts' });
+      },
+    },
+  ];
 }

@@ -30,6 +30,9 @@ export {
   TIER_NAME,
   faSuggestions,
   crewSuggestions,
+  projectable,
+  hardestSend,
+  crewDayAnswers,
   honorees,
   FA_NAME_MAX,
   LOG_MAX,
@@ -97,7 +100,7 @@ export { menteeAfter, menteeCoachBlocked, menteeName, menteeTakeBlocked } from '
 export { crewTexts, crewToText, textBack } from './texts';
 export { keeperLine } from './keepers';
 export { crowdLine } from './crowdtalk';
-export { crewPair, crewDue, mendOdds, crewOf, crewNameable } from './crew';
+export { crewPair, crewDue, mendOdds, crewOf, crewNameable, crewHere, crewDayFor, crewDayFrom } from './crew';
 export { teamBlocked, teamCost, teamNames, teamOdds } from './team';
 export { GUIDE_CRAGS, guideBlocked, guideLeft, guideLines, guidesOut } from './guides';
 export { mediaRung, postBlocked, postGain, rivalFollowers, tierEarned } from './media';
@@ -252,6 +255,7 @@ export {
   HOME,
   AGE,
   CREW_NAME,
+  CREW_PROJECT,
 } from './dials';
 export type { Plan } from './dials';
 export { weeklyBills, clinicBill, carePrice, jabbed } from './clinic';

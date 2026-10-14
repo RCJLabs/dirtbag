@@ -268,10 +268,13 @@ it('the people', { timeout: 2_400_000 }, () => {
   const distinct: number[] = [];
   // Phase 28.1: the day the crew got its name, or null.
   const named: (number | null)[] = [];
+  // Phase 28.2: crew projects sent with the crew there, and the day of the first.
+  const trains: number[] = [];
+  const firstTrain: number[] = [];
   out(
-    '| start | weeks with something new | weeks without | ambient by day 100: shown · distinct | crew named |',
+    '| start | weeks with something new | weeks without | ambient by day 100: shown · distinct | crew named | projects sent with the crew · first |',
   );
-  out('|---|---|---|---|---|');
+  out('|---|---|---|---|---|---|');
   for (const start of Object.keys(STARTS))
     for (let k = 0; k < PEOPLE_SEEDS; k++) {
       const run = season(`p-${start}-${k}`, {
@@ -296,13 +299,19 @@ it('the people', { timeout: 2_400_000 }, () => {
       distinct.push(new Set(amb).size);
       const crew = run.state.crewName;
       named.push(crew?.day ?? null);
+      const sent = run.state.crewSends.filter((x) => x.train.length > 0);
+      trains.push(sent.length);
+      if (sent[0]) firstTrain.push(sent[0].day);
       out(
-        `| ${start} | ${weeks - without.length}/${weeks} | ${without.length ? without.map((w) => w + 1).join(', ') : '–'} | ${amb.length} · ${new Set(amb).size} | ${crew ? `day ${crew.day}, ${crew.name}` : '–'} |`,
+        `| ${start} | ${weeks - without.length}/${weeks} | ${without.length ? without.map((w) => w + 1).join(', ') : '–'} | ${amb.length} · ${new Set(amb).size} | ${crew ? `day ${crew.day}, ${crew.name}` : '–'} | ${sent.length}${sent[0] ? ` · day ${sent[0].day}` : ''} |`,
       );
     }
   const days = named.filter((d): d is number => d !== null);
   out(
     `\nThe crew was named in ${days.length} of ${named.length} careers${days.length ? `, on day ${median(days)} at the median (${Math.min(...days)}–${Math.max(...days)})` : ''}.`,
+  );
+  out(
+    `A crew project was sent with the crew there in ${firstTrain.length} of ${trains.length} careers${firstTrain.length ? `, the first on day ${median(firstTrain)} at the median (${Math.min(...firstTrain)}–${Math.max(...firstTrain)}), ${median(trains)} a career by day ${PEOPLE_DAYS}` : ''}.`,
   );
   out('\n## Targets\n');
   say(
