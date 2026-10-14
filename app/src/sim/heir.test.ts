@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { ageOf } from './age';
 import { COACH_EDGE, HEIR_OPEN } from './content/heir';
 import { ROUTES } from './content/routes';
-import { BOND, HOME, MONEY } from './dials';
+import { BOND, HOME, MONEY, VAN_AGE } from './dials';
 import { epilogue } from './epilogue';
 import { act, emptyLog, newGame } from './game';
 import { byName, kinLine } from './heir';
@@ -42,7 +42,7 @@ const retired = (over: Partial<GameState> = {}): GameState =>
       peak: 130,
       set: 0,
     },
-    van: { tires: 0.4, engine: 0.3, battery: 0.9 },
+    van: { tires: 0.4, engine: 0.3, battery: 0.9, miles: VAN_AGE.start, rebuilt: 0, verdict: null },
     record: { firstsend: 3, fa: 120 },
     people: { dex: close, hazel: close },
     cash: 4000,

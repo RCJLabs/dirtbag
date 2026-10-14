@@ -8,7 +8,8 @@ import { contentOut, firstTry, linesOf, median, season, socialLines } from '../s
 import { JOBS } from '../src/sim/content/jobs';
 import { ACTS } from '../src/sim/content/places';
 import { TALK } from '../src/sim/content/people';
-import { BUSK, PACE, PSYCHE } from '../src/sim/dials';
+import { BUSK, PACE, PSYCHE, YEAR } from '../src/sim/dials';
+import { DALE_VERDICT } from '../src/sim/content/garage';
 import { ACT_PAID } from '../src/sim/content/story';
 import { buskRate, practiceOf } from '../src/sim/busk';
 import { namedDeeds } from '../src/sim/epilogue';
@@ -122,6 +123,25 @@ it('career', { timeout: 1_800_000 }, () => {
     bad === 0,
     'A career is never refused or stuck',
     `${bad} refusals and stuck nights across ${all.length} runs.`,
+  );
+  // Phase 29's criterion 2: the van ages into Dale's verdict for every career by year three,
+  // and how each took it (the bot rebuilds when the money's there, else trades in when that
+  // is, else limps on).
+  const dayOf = (r: BotRun, text: string) => {
+    const l = r.lines.find((x) => x.includes(text));
+    return l ? Number(l.match(/^day (\d+)/)![1]) : null;
+  };
+  const verdicts = all.map((r) => ({
+    heard: dayOf(r, DALE_VERDICT.slice(0, 20)),
+    rebuilt: dayOf(r, ACTS['garage.rebuild']!.says!),
+    used: dayOf(r, ACTS['garage.used']!.says!),
+  }));
+  const by = 3 * YEAR.days;
+  const heard = verdicts.filter((v) => v.heard !== null && v.heard <= by);
+  say(
+    heard.length === all.length,
+    `The van's verdict comes to every career by year three (day ${by})`,
+    `${heard.length}/${all.length}; heard on day ${median(heard.map((v) => v.heard!))} (median), earliest ${Math.min(...heard.map((v) => v.heard!))}, latest ${Math.max(...heard.map((v) => v.heard!))}. Taken: ${verdicts.filter((v) => v.rebuilt).length} rebuilt (median day ${median(verdicts.flatMap((v) => (v.rebuilt ? [v.rebuilt] : [])))}), ${verdicts.filter((v) => v.used).length} traded in (median day ${median(verdicts.flatMap((v) => (v.used ? [v.used] : [])))}), ${verdicts.filter((v) => !v.rebuilt && !v.used).length} limping on by day ${DAYS}.`,
   );
   // Phase 16.4, criterion 2: the ending names at least five things the climber did. Read at
   // the end of the run; the career bot takes no calling and claims no path, which a player

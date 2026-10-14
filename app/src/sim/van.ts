@@ -1,7 +1,7 @@
 // The van (Phase 22.2a): its three parts, what driving and nights do to them, the odds of a
 // breakdown on a drive, and what the garage charges. The numbers are VAN's (dials.ts).
 
-import { UPGRADE, VAN, type VanPart } from './dials';
+import { BUILD, UPGRADE, VAN, VAN_AGE, type VanPart } from './dials';
 import { PARTNERS, tierOf } from './presence';
 import { edgeGas } from './paths';
 import { Rng } from './rng';
@@ -46,9 +46,34 @@ export const bodgeHolds = (s: GameState): boolean =>
 export const gasFor = (s: GameState, cash: number): number =>
   Math.round(cash * ((s.gear.tuneup ?? 0) > 0 ? UPGRADE.tuneup.gas : 1) * edgeGas(s));
 
-// What the garage charges to put a part back to new.
+// Phase 29.3: the miles that count against the engine, the clock less what rebuilds took off.
+export const vanMiles = (s: GameState): number => s.van.miles - s.van.rebuilt;
+// The miles a drive of `min` minutes puts on the clock.
+export const milesFor = (min: number): number => Math.round((min * VAN_AGE.mph) / 60);
+// The most a service brings the engine back to, falling with its miles.
+export function engineCap(s: GameState): number {
+  const over = Math.max(0, vanMiles(s) - VAN_AGE.from) / VAN_AGE.per;
+  return Math.max(0, Math.min(100, Math.round(100 - over)));
+}
+// The most a repair brings a part back to: new, but for the engine.
+export const capOf = (s: GameState, part: VanPart): number => (part === 'engine' ? engineCap(s) : 100);
+// What Dale would give you for the van: its engine's share of a sound one's worth.
+export const vanWorth = (s: GameState): number => Math.round((VAN_AGE.value * engineCap(s)) / 100);
+// When a rebuild costs more than the van's worth, the garage puts it to you.
+export const verdictDue = (s: GameState): boolean => vanWorth(s) < VAN_AGE.rebuild.price;
+// A used van off Dale's lot, yours taken in part exchange.
+export const usedPrice = (s: GameState): number => Math.max(0, VAN_AGE.used.price - vanWorth(s));
+// What stays with the old van when you replace it: everything fitted to it, Dale's upgrades
+// and the build-outs, but the toolkit, which comes with you.
+export const FITTED: string[] = [
+  ...Object.keys(UPGRADE).filter((id) => id !== 'toolkit'),
+  ...Object.keys(BUILD),
+];
+
+// What the garage charges to put a part back to as good as it'll get: its share of the part's
+// price, for the wear it takes off.
 export function repairCost(s: GameState, part: VanPart): number {
-  return Math.max(VAN.least, Math.ceil(VAN.price[part] * wornOf(s.van[part])));
+  return Math.max(VAN.least, Math.ceil((VAN.price[part] * Math.max(0, capOf(s, part) - s.van[part])) / 100));
 }
 
 // The worst road part, if it's too far gone for a drive out of town.

@@ -7,7 +7,7 @@ import { needFor } from './climber';
 import { routeById, routesAt } from './content/gym';
 import { road } from './content/places';
 import { ROUTES } from './content/routes';
-import { HIGHBALL } from './dials';
+import { HIGHBALL, VAN_AGE } from './dials';
 import {
   act,
   belayer,
@@ -36,7 +36,7 @@ const at = (grade: number, over: Partial<GameState> = {}): GameState => {
     today: ['warm'],
     cash: 100,
     // A van kept up never breaks down: these are about the crags, not the road.
-    van: { tires: 100, engine: 100, battery: 100 },
+    van: { tires: 100, engine: 100, battery: 100, miles: VAN_AGE.start, rebuilt: 0, verdict: null },
     ...over,
   };
 };

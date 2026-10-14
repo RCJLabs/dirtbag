@@ -367,6 +367,28 @@ export const VAN = {
   work: { tires: 60, engine: 120, battery: 20 } as Record<VanPart, number>,
 };
 
+// Phase 29.3 (Evan's calls, 14 Oct 2026) [proposed numbers]: the van ages with miles driven.
+// A minute of road is `mph`/60 miles. The engine's cap, the most a service brings it back to,
+// is 100 up to `from` miles and a point lower every `per` after; a new climber's van has `start`
+// on it, so its cap is 85 (VAN.start's engine). Tires and the battery still go back to new.
+// The van's worth is `value` times the engine's cap; once that's under a rebuild, Dale puts it
+// to you. Measured: the career bots drive about 78 minutes a day, so they're 6,250 miles on
+// (the cap at 60, the van worth $900) around day 110 to 125, inside year three.
+export const VAN_AGE = {
+  mph: 45,
+  start: 160000,
+  from: 156250,
+  per: 250,
+  value: 1500,
+  // An engine rebuild: a day at Dale's, and the engine runs like one with `off` fewer miles.
+  rebuild: { price: 900, min: 480, off: 8000 },
+  // A used van off Dale's lot: `price`, less what yours is worth, with `miles` on it (a cap
+  // of 90). What's fitted to the old van stays with it (Evan's call); the toolkit comes along.
+  used: { price: 1200, min: 120, miles: 158750 },
+  // The Dream Rig is new.
+  rig: { miles: 30 },
+};
+
 // Phase 22.2b: where you park for the night, a choice that stays until you change it. Each
 // spot's price on top of the gas there and back, the drive (off the evening and the
 // morning), and what the night does to your energy, more in winter where it's cold. You

@@ -154,7 +154,17 @@ export interface GameState {
   // Phase 22.2a. The van's parts, 0 to 100, and the breakdown you're sat beside, if any: the
   // part that went, where you were headed, the minutes of driving left, and whether you've
   // tried a bodge.
-  van: { tires: number; engine: number; battery: number };
+  // Phase 29.3: and the van's miles on the clock, the miles rebuilds have taken off the
+  // engine, and the day Dale first put the decision to you (null till he has, or since the
+  // last rebuild or new van).
+  van: {
+    tires: number;
+    engine: number;
+    battery: number;
+    miles: number;
+    rebuilt: number;
+    verdict: number | null;
+  };
   // Phase 22.3. Servings in the pantry, by ingredient (content/food.ts); the last few meals,
   // newest last (ramen, the special, a recipe's id); and the day a meal fueled you, if any.
   pantry: Record<string, number>;

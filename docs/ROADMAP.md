@@ -3310,6 +3310,25 @@ Carried, for playtesting or a call:
   - The hustle rule and the Board's cap hold.
 - **The download** is 431.9 KB of 460.
 
+**Status (14 Oct 2026): 29.3 built: the van ages, and the decision.** Save v64, 0.999.48. Phase 29's criterion 2 passes.
+- **Miles** (Evan's call): every drive adds its minutes at 45 mph to the clock; a friend's ride adds none. A new climber's van has 160,000 on it.
+- **The engine's cap:** a service brings the engine back only so far, a point lower every 250 miles: 85 at the start. Tires and the battery still go back to new. A repair is billed for the points it puts back, so a service costs about what it did.
+- **Dale's verdict:** the van's worth is its engine's share of $1,500. At the garage, once that's under a $900 rebuild, Dale puts it to you, once:
+  - **rebuild** ($900, a day): the engine runs like one with 8,000 fewer miles; everything fitted stays;
+  - **trade in for a used van** ($1,200 less your van's worth): fresh miles, and what's fitted stays with the old one, but the toolkit (Evan's call);
+  - **the Dream Rig**, from the jar: now a new van too, fitted and built out, and Dale pays for the old one;
+  - **limp on:** service it to a falling cap, and break down more.
+- **Save v64:** the van's miles, the miles rebuilds took off, and the day Dale said it. Old saves start the clock now (Evan's call). A real 0.999.47 save loads, its bounty kept.
+- **The bots** hear the verdict when it's due, then save for the cheaper way out. They rebuild when the cash covers it past their cushion, trade in when that covers a used van, and limp on otherwise.
+  - **Criterion 2, measured:** all 16 career bots heard Dale by year three, between days 91 and 136 (median 105). All 16 traded in (median day 115); one rebuilt its second van, on day 221.
+  - **The cost [measured]:** the trade-in lands as many careers reach the Moonstone. A bot short of the trip then gets to V8 and saves for The Big Stone and Wind River first. Over 32 careers to day 480, Act II ended on day 156 (median), against 100.5 on 29.2. 20 saw the story through, against 21.
+  - Two bot changes measured worse and were dropped. Keeping the story's trip money back from the van: 16 of 32. Making the story's crag come before saving for the next unlock: Act II on day 85.5, but 15 of 32 saw the story through.
+- **The e2e** checks the van's miles; its hand-built vans keep theirs.
+- **The harness:** every target passes but Outdoors, at 2 of 4. The new verdict target passes, 16 of 16 by day 168.
+  - V10 on day 182; Act III ended on day 339; Media 4 of 4.
+  - Over 32 careers, Outdoors is 20 against main's 21.
+- **The download** is 433.0 KB of 460.
+
 ### Phase 30 — Getting older
 
 *Medium. Age is only a deadline now: nothing about the body changes from 22 to 45.*
@@ -3745,3 +3764,4 @@ Carried, for playtesting or a call:
 - 2026-10-14 — Phase 28 closed by Evan's call; CURRENT MILESTONE moved to Phase 29, the van, lived in.
 - 2026-10-14 — Phase 29 planned with Evan's calls (the van ages with miles; a used van or the Rig to replace it; new build-outs from parts; the budget to 460 KB). 29.1 built: the free pile, parts for a shelf, a solar panel, door seals and a bed platform; the bots go to the pile only on days off the rock. Save v62. 0.999.46.
 - 2026-10-14 — 29.2 built: the Board's bounties (Evan's calls: double a job's worth, counted from when you take it, one cash, one parts and one split a week). The bots take cash only, measured on Outdoors. Save v63. 0.999.47.
+- 2026-10-14 — 29.3 built: the van ages with miles, its engine's cap falls, and Dale puts it to you (rebuild, a used van, the Rig, or limp on). Every career bot hears it by year three (criterion 2). Save v64. 0.999.48.

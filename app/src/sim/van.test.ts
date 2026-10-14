@@ -2,7 +2,7 @@
 // a drive out of town, a breakdown has its ways out, and the garage puts it all back.
 import { describe, expect, it } from 'vitest';
 import { ACTS, road } from './content/places';
-import { BODY, VAN } from './dials';
+import { BODY, VAN, VAN_AGE } from './dials';
 import { act, actCost, newGame } from './game';
 import type { Action, GameState } from './types';
 import { breakdownOdds, breakdownRoll, repairCost } from './van';
@@ -16,7 +16,14 @@ const refused = (s: GameState, a: Action) => {
   const e = act(s, a).events.find((x) => x.k === 'refused');
   return e && e.k === 'refused' ? e.why : null;
 };
-const van = (tires: number, engine = 100, battery = 100) => ({ tires, engine, battery });
+const van = (tires: number, engine = 100, battery = 100) => ({
+  tires,
+  engine,
+  battery,
+  miles: VAN_AGE.start,
+  rebuilt: 0,
+  verdict: null,
+});
 
 // A state that breaks down on the drive to Roadside: the first minute of the morning that
 // rolls one, with the tires just good enough to leave town on.
