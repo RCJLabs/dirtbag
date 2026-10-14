@@ -249,20 +249,26 @@ export const CRAGS: Record<string, CragSpec> = {
     // The wall.
     frame: 900,
   },
-  // The Big Stone: a granite big wall filling the right of the scene, its two single
-  // pitches on it, and boulders in the meadow at its foot.
+  // The Big Stone: a granite big wall filling the right of the scene, its single pitches
+  // on it, and boulders in the meadow at its foot. Phase 27.6: the Apron on the slab
+  // between the Classic and the corner, two more boulders in the meadow, and the project
+  // at the far end.
   stone: {
     width: 1400,
     wall: [560, 1400],
     lines: [
       { n: 1, x: 780, route: 'bclassic' },
+      { n: 2, x: 870, route: 'bapron' },
       // Up the corner system.
-      { n: 2, x: 966, route: 'btrad' },
+      { n: 3, x: 966, route: 'btrad' },
     ],
     boulders: [
       { x: 350, w: 90, h: 54, route: 'bbase' },
+      { x: 460, w: 82, h: 56, route: 'bmeadow' },
+      { x: 590, w: 96, h: 92, route: 'berratic' },
       { x: 1110, w: 84, h: 70, route: 'bwarm' },
       { x: 1260, w: 80, h: 96, route: 'bsplit' },
+      { x: 1350, w: 70, h: 62, route: 'bproject' },
     ],
     sign: 272,
     hint: 'Boulders in the meadow. The wall needs a belayer.',

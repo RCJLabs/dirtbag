@@ -1046,8 +1046,10 @@ const sTrad = libraryTrad('sdtrad', 'Desert Trad Line', 11, 'technical', 'mesa',
 });
 
 // ---- The Big Stone: v0.956's valley of granite big walls, four hours out ----
-// Its five single-pitch lines, names and grades as v0.956 had them. Its multi-pitch walls
-// come with Phase 21.5. It opens at V8, once you've paid for the trip, and it's shaded.
+// Its five single-pitch lines, names and grades as v0.956 had them, and four more from Phase
+// 27.6: a V8 to match the grade it opens at, a highball, an open project and a slab. Its
+// multi-pitch walls come with Phase 21.5. It opens at V8, once you've paid for the trip, and
+// it's shaded.
 
 const bBase = libraryBoulder('bbase', 'Base Camp Boulder', 6, 'power', 'stone', {
   moves: 6,
@@ -1095,6 +1097,47 @@ const bClassic = librarySport('bclassic', 'Valley Classic', 12, 'power', 'stone'
   rest: 15.4,
   a: { style: 'power', name: 'The roof', from: 9.2, to: 12.0, win: 'Over the roof.' },
   b: { style: 'crimp', name: 'The headwall', from: 22.8, to: 26.0, win: 'Chains, and a very long lower.' },
+});
+
+// Phase 27.6: the meadow's boulders and the apron below the wall.
+const bMeadow = libraryBoulder('bmeadow', 'Meadow Arête', 8, 'technical', 'stone', {
+  moves: 7,
+  from: 3.4,
+  to: 5.4,
+  cruxName: 'The blank side',
+  heightFt: 14,
+  line: 'A clean arête in the grass, where people warm up while they wait on a partner for the wall.',
+});
+const bErratic = libraryBoulder('berratic', 'The Erratic', 11, 'power', 'stone', {
+  moves: 7,
+  from: 3.8,
+  to: 5.8,
+  cruxName: 'The overhang',
+  heightFt: 18,
+  line: 'A boulder the glacier dropped at the foot of the wall, steep on the side that faces the valley.',
+});
+const bProject = libraryBoulder('bproject', 'The Big Stone project', 13, 'crimp', 'stone', {
+  moves: 7,
+  from: 3.2,
+  to: 5.6,
+  cruxName: 'The seam',
+  heightFt: 15,
+  line: 'Unclimbed. A seam up a block at the end of the valley, and edges nobody’s held for long.',
+  open: true,
+});
+const bApron = librarySport('bapron', 'The Apron', 9, 'technical', 'stone', {
+  moves: 22,
+  heightFt: 90,
+  line: 'Bolts up the low-angle slab under the big wall. Your calves give out before your fingers.',
+  rest: 11,
+  a: { style: 'technical', name: 'The polished bit', from: 6.4, to: 8.8, win: 'Off the polish.' },
+  b: {
+    style: 'crimp',
+    name: 'The water streak',
+    from: 15.6,
+    to: 18.2,
+    win: 'Chains, and the long walk off.',
+  },
 });
 
 // ---- Wind River Walls: v0.956's high alpine granite, past the Gorge ----
@@ -1688,6 +1731,10 @@ const LINES: Record<string, RouteDef> = {
   bsplit: bSplit,
   btrad: bTrad,
   bclassic: bClassic,
+  bmeadow: bMeadow,
+  berratic: bErratic,
+  bproject: bProject,
+  bapron: bApron,
   walpine: wAlpine,
   wdiamond: wDiamond,
   woffwidth: wOffwidth,

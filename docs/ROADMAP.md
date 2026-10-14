@@ -3117,6 +3117,31 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
     - Act IV finished 18 of 24 times, against 15 on main.
 - **The download** is 421.3 KB of 440.
 
+**Status (14 Oct 2026): 27.6 built: more at the Big Stone.** 0.999.41, no save change.
+- **Four new single lines**, all granite, with names and grades [proposed]:
+  - **Meadow Arête**, a V8 technical boulder in the meadow. It's the crag's first V8, the grade it opens at.
+  - **The Erratic**, a V11 power boulder the glacier left at the wall's foot. At 18 ft it's a highball, so it tops out.
+  - **The Big Stone project**, an open V13 crimp boulder at the end of the valley (Evan's call). The first to send it names it. A Big Stone guide of your own can now be written: the Big Stone had no open line before.
+  - **The Apron**, 5.13b, bolts up the slab between Valley Classic and the corner. It has a rest, a polished crux, and a water streak near the chains, drawn on the close-up.
+- **Their moves** are granite moves not yet used at the Big Stone. The Erratic's top-out is new: a polished mantel and a frost crack. The crag rule holds: no first way and no sequence repeats.
+- **Measured** with the bot's hands, each new line's half-send grade sits where its style's lines do: Meadow Arête −0.5, The Erratic −1.3, the project −0.6, The Apron −0.4.
+- **Also changed:**
+  - the Big Stone test, which listed v0.956's five lines;
+  - the layout's comment and tags: the Apron is line 2, the corner 3;
+  - the README's count, which had been stale since well before this phase: 87 crag lines.
+- **The harness:** every target passes.
+  - First V5 go on day 19; V10 on day 179 (179.5 after 27.5).
+  - Act III ended on day 317 (314 after 27.5; the 24-career median was 312 on main and 319 after 27.5).
+  - Outdoors reached the top in 4 of 4 runs, on day 376.5 (369.5 after 27.5).
+- **The download** is 421.9 KB of 440.
+
+**Phase 27 against its Done-when (14 Oct 2026):** all three pass on the build.
+1. `content.test` finds no crux sequence shared within a crag, wall pitches included, and at least three pitch kinds on every wall (since 27.2 and 27.3).
+2. A called flash or onsight plays in the tests (`call.test.ts`) and in the e2e, which calls the onsight on the Warm Boulder and sends it (27.4).
+3. The harness's targets, the grade progression among them, pass after every slice.
+
+Closing it is Evan's call.
+
 ### Phase 28 — The crew
 
 *Medium. New, from the audit's list of what to keep (`social.md`): the crew's name, its renown, a crew project, favours. The rebuild has none of them.*
@@ -3586,3 +3611,4 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
 - 2026-10-13 — Phase 27.3 built: wall pitches by kind. Seven kinds (face, crack, corner, chimney, traverse, roof, slab) set each pitch's length, crux and rest; 48 granite moves written for them; topos and the rock drawn by kind; no crux's first way or sequence repeats at a crag, its wall pitches counted. Each pitch within 0.16 of a grade of where it was. 0.999.38.
 - 2026-10-13 — Phase 27's 27.4 split in two (the top-outs and the pad are now 27.5, the Big Stone and the close 27.6). 27.4 built: calling the flash or the onsight before a first go, psyche staked both ways outside the day's cap, "Called It" for ten called sends. Save v58. 0.999.39.
 - 2026-10-13 — Phase 27.5 built: every highball tops out (a second crux at the lip, 36 rock moves, its window widened so no highball moves more than 0.2 of a grade); one fall height for the roll, the sheet and the bot; the extra pads cover the fall you choose, or the worse. No save change. 0.999.40.
+- 2026-10-14 — Phase 27.6 built: four more lines at the Big Stone (Meadow Arête V8, The Erratic V11, an open V13 project by Evan's call, The Apron 5.13b), granite moves and a new top-out; Phase 27's three Done-when criteria pass; closing it is Evan's call. No save change. 0.999.41.

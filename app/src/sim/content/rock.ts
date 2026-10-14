@@ -2276,6 +2276,27 @@ const TOP_OUTS: Record<Rock, Record<string, BetaDef>> = {
         fall: 'Your numb palms slip off the lip.',
       },
     ),
+    polishtop: first(
+      'technical',
+      'technical',
+      'Mantel the polished top',
+      'polished mantel',
+      'The glacier polished the top smooth. Palms flat, and press before they slide.',
+      {
+        fall: 'Your palms slide on the polish, and so do you.',
+      },
+    ),
+    frostcrack: earned(
+      'technical',
+      'crack',
+      'Reach for the frost crack',
+      'frost crack',
+      'A frost crack runs across the top. Get your fingers in it, and pull your hips over.',
+      'Off the top. There’s a crack across it you could pull on. New beta: reach for the frost crack.',
+      {
+        fall: 'Your fingers come out of the frost crack.',
+      },
+    ),
     lipcrystal: earned(
       'technical',
       'crimp',
@@ -3023,6 +3044,17 @@ export const ROCK_LINES: Record<string, [string, string][]> = {
   bclassic: [
     ['roof', 'roofheel'],
     ['valleyhead', 'valleystem'],
+  ],
+  // Phase 27.6: the meadow, the apron and the project at the end of the valley.
+  bmeadow: [['arete', 'edgecrystal']],
+  berratic: [
+    ['undercling', 'toehook'],
+    ['polishtop', 'frostcrack'],
+  ],
+  bproject: [['frozen', 'thumb']],
+  bapron: [
+    ['smear', 'crimpflake'],
+    ['crystals', 'footswap'],
   ],
   // Wind River: alpine granite.
   walpine: [['frozen', 'thumb']],
