@@ -3204,6 +3204,24 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
 - **The first one goes fast** [measured], about a crew day after the crew is named. Two grades over a month-one climber's best is a small step while they're improving quickly. Later projects take about two months each. `CREW_PROJECT.over` is the dial if it should feel like weeks from the start.
 - **The download** is 426.1 KB of 440.
 
+**Status (14 Oct 2026): 28.3 built: favours, both ways.** Save v61, 0.999.44.
+- **You ask,** from the crew's texts, once a day each:
+  - **cover your next shift:** off the schedule, no strike, no pay, no credit;
+  - **lend a rack** for the day: Hazel, Mara or Tam;
+  - **drive you:** Hazel, Sage, Mara or Tam. No gas, no wear, no breakdown, whatever state the van's in.
+
+  It's owed back, or it squares what they owed you. You can owe any one of them two, and no third (Evan's call).
+- **They ask,** once a fortnight each, on a day the seed picks: a belay, a ride, or a loan that comes back a week later. The Yes button shows the cost from the dials. A yes squares a debt or banks one; a no costs a point of bond.
+- **Two want your day:** while nobody's fallen out, an ask for your time after a yes to another that day is crew drama's pick or keep. Hazel stays out: her talk has no mend.
+- **Shown:** the People list and the favour sheet say who owes whom.
+- **The bots:** every bot answers the asks, yes when it can afford it, so Sage's ask can't stand in front of her lessons. The social bot also asks for rides, racks and a covered shift on a crew day.
+- **Save v61:** `owed`, `favour` and `lent` on a person. A real 0.999.43 save loads, its projects and trains kept.
+- **The harness:**
+  - Favours went both ways in 8 of 8 social careers. The crew was named and a project sent with it in 8 of 8.
+  - V10 on day 179; Act III ended on day 326 (it moves ±40 between runs).
+  - **Outdoors came out 3 of 4 (✗), median day 410.** Over 16 careers each it's the same on both sides: main reached the top in 9, at a median of day 371, and 28.3 in 10, at day 371.5. The four-career target sits on a rate of about 60%, so main's 4 of 4 was luck on the seeds. No change is needed for it, but the target is unreliable [measured].
+- **The download** is 429.0 KB of 440.
+
 ### Phase 29 — The van, lived in
 
 *Medium. Ties the hustle, the van, food and psyche together.*
@@ -3656,3 +3674,4 @@ A signature line at each crag is hand-made: The Pump, The Classic (Gorge), Moons
 - 2026-10-14 — Phase 27 closed by Evan's call; CURRENT MILESTONE moved to Phase 28, the crew.
 - 2026-10-14 — Phase 28 planned with Evan's calls (you pick the project, your send starts the train, two favours owed and no third, renown in lines only). 28.1 built: the crew's name, brought up by the crew once two are Regulars, named from your record or your own words. Save v59. 0.999.42.
 - 2026-10-14 — Phase 28.2 built: the crew project (you pick it, two grades over your best), a crew day a week by text, the crew's goes showing you the way, and the send train when your send goes (Evan's calls); Send Train in the Record Book. Save v60. 0.999.43.
+- 2026-10-14 — Phase 28.3 built: favours both ways (a shift covered, a rack, a ride; their belays, rides and loans), two owed and no third (Evan's call), and a clash of two asks as another way into crew drama. Outdoors' four-career target came out 3 of 4, the same rate as main over 16. Save v61. 0.999.44.
