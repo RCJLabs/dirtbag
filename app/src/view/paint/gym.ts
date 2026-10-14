@@ -3,7 +3,7 @@
 // at when you pick a problem. The six problems keep their places and tape colours from week
 // to week; what changes with the set is the names and the moves, which live in the sim.
 
-import { BOARD_WEEKS, SPEED, TEXT_VALUES } from '../../sim';
+import { BOARD_WEEKS, COMP, SPEED, TEXT_VALUES } from '../../sim';
 import { lin, mk, poly, rad, rr, spline, type G, type Pt } from '../kit/geom';
 import { mulberry32 } from '../kit/noise';
 import {
@@ -812,7 +812,8 @@ export function paintCenterGround(): HTMLCanvasElement {
   g.fillStyle = '#111114';
   rr(g, dx - 34, GND - 196, 68, 30, 4);
   g.fill();
-  label(g, 'poster', '4:00', dx, GND - 174, { size: 18, color: '#FF3D7F', halo: '#111114' });
+  // Phase 33.2: a qualifier's clock, full, from the dials.
+  label(g, 'poster', `${COMP.clock[0]}:00`, dx, GND - 174, { size: 18, color: '#FF3D7F', halo: '#111114' });
   // The walls: tall white panels, straight up then a steep top section, and the volumes.
   const x0 = 310;
   const x1 = 1010;

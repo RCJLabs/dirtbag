@@ -15,7 +15,7 @@ import {
   SET_SAYS,
   SET_WALLS,
 } from './content/setting';
-import { COMP_SAYS, COMP_TIERS, LEAGUE_SAYS, ROUND_SAYS } from './content/comps';
+import { COMP_RULES, COMP_SAYS, COMP_TIERS, LEAGUE_SAYS, ROUND_SAYS } from './content/comps';
 import { GYM_UPGRADE_SAYS } from './content/business';
 import { giveBlocked } from './giving';
 import { heirStart, menteeAfter, menteeCoachBlocked, menteeName, menteeTakeBlocked } from './mentee';
@@ -69,12 +69,16 @@ import {
 } from './media';
 import {
   compBlocked,
+  compClock,
   compField,
   roundName,
   compHere,
   compSet,
   goesFor,
+  goesLeft,
   gradesFor,
+  inComp,
+  isCompProblem,
   leagueTable,
   placing,
   pointsFor,
@@ -117,7 +121,7 @@ import { cold, daysOff, freshLoad, goLoad, projected, ratio, rollInjury } from '
 import { CARRIED, carried, gains, gradeOf, SKILLS, STARTS, type GoSummary } from './climber';
 import { headroom, holds, isNight, leadOver, unmet } from './cond';
 import { dexHurt, dexSeason, gradeOfPerson } from './curves';
-import { indoor, INDOOR, INDOOR_CLOSE, routeById, routesAt } from './content/gym';
+import { indoor, INDOOR, INDOOR_CLOSE, routeById, routesAt, wallAt } from './content/gym';
 import {
   CLINIC_LINE,
   FIRST_FREE_LINE,
@@ -758,6 +762,8 @@ export function goBlocked(s: GameState, r: RouteDef): string | null {
     return `You can't read this line yet. Send ${routeOfId(s, r.hiddenUntil!)?.name ?? 'the hardest line here'} first`;
   // Too far over your grade to try (Phase 16, OVER): nothing on it would hold for you.
   if (beyond(s, r)) return 'Beyond you, for now. Come back a better climber';
+  // Phase 33.2: a comp problem's clock, and the goes it buys you.
+  if (goesLeft(s, r.id) === 0) return COMP_RULES.time;
   const inside = INDOOR[r.place];
   if (inside) {
     if (s.min >= INDOOR_CLOSE) return `${inside.name} is closed`;
@@ -825,10 +831,12 @@ interface Lesson {
 }
 
 // What someone could show you here: on the line you've been working (most goes) first,
-// then the easiest one you haven't sent.
+// then the easiest one you haven't sent. Phase 33.2: on the wall as you find it, and never a
+// comp's problem (isolation): in a comp, the week's set isn't yours to be shown.
 export function lessonAt(s: GameState): Lesson | null {
   const open: Lesson[] = [];
-  for (const r of routesAt(s.seed, s.at, s.day)) {
+  for (const r of wallAt(s, s.at)) {
+    if (isCompProblem(r.id)) continue;
     const c = r.cruxes.find((x) => x.beta.slice(1).some((b) => !s.routes[r.id]?.known.includes(b)));
     const b = c?.beta.slice(1).find((x) => !s.routes[r.id]?.known.includes(x));
     if (c && b) open.push({ r, crux: c.id, beta: b });
@@ -2002,7 +2010,11 @@ export function act(s0: GameState, a: Action): Result {
     const name = PEOPLE[who]?.name ?? who;
     const lesson = lessonAt(s);
     if (!lesson) {
-      line(`${name} shrugs. "You know everything I'd tell you here."`);
+      line(
+        inComp(s)
+          ? fill(COMP_RULES.watch, { name })
+          : `${name} shrugs. "You know everything I'd tell you here."`,
+      );
       return;
     }
     const { r, crux, beta } = lesson;
@@ -2714,7 +2726,7 @@ export function act(s0: GameState, a: Action): Result {
       const pass = INDOOR[s.at]?.pass;
       if (pass && !s.today.includes(pass)) s.today.push(pass);
       line(
-        `${t.name}: you're in, number ${t.field}. ${compSet(s.seed, tier, s.day).length} ${t.side ? 'throws' : 'problems'}, V${lo} to V${hi}; a top counts in its first ${goesFor(tier)} goes.`,
+        `${t.name}: you're in, number ${t.field}. ${compSet(s.seed, tier, s.day).length} ${t.side ? 'throws' : 'problems'}, V${lo} to V${hi}; ${compClock(tier, 0)}.`,
       );
       break;
     }
@@ -3664,6 +3676,7 @@ export function act(s0: GameState, a: Action): Result {
       const r = routeOfId(s, a.route);
       if (!r || r.place !== s.at) return refuse("That line isn't here.");
       if (s.routes[r.id]?.sent) return refuse('You’ve sent it. Nobody’s telling you anything.');
+      if (isCompProblem(r.id)) return refuse(COMP_RULES.ask);
       if (!sprayable(s, r).length) return refuse('Nobody here knows more about it than you do.');
       if (!canAsk(s, r)) return refuse('Nobody here to ask.');
       const b = sprayable(s, r)[0]!;
@@ -3745,9 +3758,16 @@ export function act(s0: GameState, a: Action): Result {
           line(DOC.aired);
         }
       }
-      // A comp problem topped in its first few goes counts on your scorecard (Phase 18.4).
+      // A comp problem topped in its goes counts on your scorecard (Phase 18.4; the clock's
+      // goes, Phase 33.2).
       const on = s.comps.on;
-      if (on && res.sent && !lap && r.id.startsWith(`cp-${on.tier}-${on.day}-`) && L.goes <= goesFor(on.tier))
+      if (
+        on &&
+        res.sent &&
+        !lap &&
+        r.id.startsWith(`cp-${on.tier}-${on.day}-`) &&
+        L.goes <= goesFor(on.tier, on.round)
+      )
         s.comps = { ...s.comps, on: { ...on, tops: { ...on.tops, [r.id]: L.goes } } };
       if (res.sent) {
         // The log keeps how the first send went; any send after it is a repeat.

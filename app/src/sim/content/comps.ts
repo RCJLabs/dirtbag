@@ -202,6 +202,21 @@ export const ROUND_SAYS = {
   out: 'Not through: the cut was {cut}. You watch the {next} from the mats tomorrow, if you watch it at all.',
 };
 
+// Phase 33.2: comp rules, said. The clock's minutes and the goes they buy come from the dials.
+export const COMP_RULES = {
+  clock: '{min} minutes on each, time for {goes} goes',
+  throws: '{goes} goes at each',
+  // On a comp problem's sheet: the go you're on, of the round's.
+  go: 'Go {n} of {goes} on the clock.',
+  // A go past the clock.
+  time: 'Time’s up on this one. The judge waves you off it',
+  // Beta you haven't found yet, on a comp problem: nobody's telling.
+  hint: 'Isolation: nobody here will show you. A fall might.',
+  ask: 'Comp rules: nobody can tell you anything on it.',
+  // Asked to show you something, in your comp at its wall.
+  watch: '“Not on comp day,” {name} says. “You read them yourself, same as everyone in there.”',
+};
+
 // Phase 25.5: League night's season, the year's table settled on its last night.
 export const LEAGUE_SAYS = {
   won: 'League night’s season is yours: top of the table on the whiteboard by the desk, in somebody’s good marker. They hand you an envelope and a T-shirt in the wrong size. Next year you’re in the A league.',

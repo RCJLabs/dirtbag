@@ -216,7 +216,8 @@ import {
   compBlocked,
   compHere,
   compOn,
-  goesFor,
+  compClock,
+  compSet,
   roundName,
   listOf,
   gradesFor,
@@ -628,7 +629,7 @@ function compRow(game: Game, s: GameState): Row {
     const cut = t.rounds?.[on.round];
     return {
       label: t.rounds ? `Hand in your ${roundName(on.tier, on.round)} scorecard` : 'Hand in your scorecard',
-      note: `${you.tops} ${you.tops === 1 ? 'top' : 'tops'} in ${you.goes} ${you.goes === 1 ? 'go' : 'goes'} so far. A top counts in its first ${goesFor(on.tier)} goes.${cut ? ` The top ${cut} go through.` : ''}`,
+      note: `${you.tops} ${you.tops === 1 ? 'top' : 'tops'} in ${you.goes} ${you.goes === 1 ? 'go' : 'goes'} so far: ${compClock(on.tier, on.round)}.${cut ? ` The top ${cut} go through.` : ''}`,
       run: () => game.comp('finish'),
     };
   }
@@ -636,7 +637,7 @@ function compRow(game: Game, s: GameState): Row {
   if (on && on.day > s.day && COMP_TIERS[on.tier]!.venue === s.at)
     return {
       label: `${COMP_TIERS[on.tier]!.name} ${roundName(on.tier, on.round)}`,
-      note: 'You’re through. Tomorrow, here: be on time.',
+      note: `You’re through. Tomorrow, here: ${compSet(s.seed, on.tier, on.day).length} problems, ${compClock(on.tier, on.round)}. Be on time.`,
       off: true,
       run: () => undefined,
     };
@@ -662,8 +663,8 @@ function compRow(game: Game, s: GameState): Row {
     note: why
       ? `${why}.`
       : t.side
-        ? `${t.field} climbers, ${t.side.n} throws V${lo} to V${hi}, ${t.side.goes} goes each. ${money(t.purse[0])} to the winner. Off the ladder: no points.`
-        : `${t.field} climbers, problems V${lo} to V${hi}.${roundsNote(tier)} ${money(t.purse[0])} to the winner. You have ${ladderPoints(s)} ladder points.`,
+        ? `${t.field} climbers, ${t.side.n} throws V${lo} to V${hi}, ${compClock(tier, 0)}. ${money(t.purse[0])} to the winner. Off the ladder: no points.`
+        : `${t.field} climbers, problems V${lo} to V${hi}, ${compClock(tier, 0)}.${roundsNote(tier)} ${money(t.purse[0])} to the winner. You have ${ladderPoints(s)} ladder points.`,
     off: !!why,
     run: () => game.comp('enter'),
   };

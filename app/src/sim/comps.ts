@@ -4,7 +4,8 @@
 // the grades it draws: tops first, then fewest goes. A place earns points, which fade, and
 // points let you into the next rung up. Nothing here moves to meet you.
 
-import { A_LEAGUE, COMP_LADDER, COMP_TIERS, COMPETITORS, ROUND_NAMES } from './content/comps';
+import { A_LEAGUE, COMP_LADDER, COMP_RULES, COMP_TIERS, COMPETITORS, ROUND_NAMES } from './content/comps';
+import { fill } from './format';
 import { libraryBoulder, type RouteDef } from './content/routes';
 import { COMP, LEAGUE, YEAR } from './dials';
 import { Rng } from './rng';
@@ -138,8 +139,36 @@ export interface Score {
   goes: number;
 }
 
-// The goes a top counts in, at a comp.
-export const goesFor = (tier: number): number => COMP_TIERS[tier]!.side?.goes ?? COMP.goes;
+// Phase 33.2: the minutes a problem's on the clock in a round: the qualifier's, or a later
+// round's.
+export const clockFor = (round: number): number => COMP.clock[Math.min(round, 1)]!;
+
+// The goes you get at a problem in a round, and a top counts in any of them: what its clock
+// buys (Phase 33.2), or the dyno comp's throws.
+export const goesFor = (tier: number, round = 0): number =>
+  COMP_TIERS[tier]!.side?.goes ?? Math.floor(clockFor(round) / COMP.perGo);
+
+// The clock, in words: "5 minutes on each, time for 5 goes", or the dyno comp's throws.
+export function compClock(tier: number, round: number): string {
+  const goes = goesFor(tier, round);
+  return COMP_TIERS[tier]!.side
+    ? fill(COMP_RULES.throws, { goes })
+    : fill(COMP_RULES.clock, { min: clockFor(round), goes });
+}
+
+// Whether you're in a round of your comp at this wall today.
+export const inComp = (s: GameState): boolean =>
+  !!s.comps.on && s.comps.on.day === s.day && COMP_TIERS[s.comps.on.tier]?.venue === s.at;
+
+// Phase 33.2: the goes left on a comp problem, or null for anything else. The problem's id
+// carries its comp and day, so its goes are the round's.
+export function goesLeft(s: GameState, id: string): number | null {
+  const m = /^cp-(\d+)-(\d+)-\d+$/.exec(id);
+  if (!m || !COMP_TIERS[Number(m[1])]) return null;
+  const tier = Number(m[1]);
+  const budget = goesFor(tier, roundOf(tier, Number(m[2])));
+  return Math.max(0, budget - (s.routes[id]?.goes ?? 0));
+}
 
 // The year a day is in, from 0.
 export const yearOf = (day: number): number => Math.floor((day - 1) / YEAR.days);
@@ -183,7 +212,7 @@ function rollTops(r: Rng, grade: number, set: RouteDef[], goes: number): Score {
 export function compField(seed: string, tier: number, day: number): Score[] {
   const t = COMP_TIERS[tier]!;
   const set = compSet(seed, tier, day);
-  const goes = goesFor(tier);
+  const goes = goesFor(tier, 0);
   if (t.rounds) return roundField(seed, tier, day);
   if (!isLeague(tier)) {
     const r = Rng.fromStream(seed, 'events').derive(`field-${tier}-${day}`);
@@ -208,7 +237,6 @@ export function roundField(seed: string, tier: number, day: number): Score[] {
   const t = COMP_TIERS[tier]!;
   const start = startOf(tier, day);
   const round = roundOf(tier, day);
-  const goes = goesFor(tier);
   let left = draw(
     Rng.fromStream(seed, 'events').derive(`field-${tier}-${start}`),
     t.field,
@@ -218,7 +246,11 @@ export function roundField(seed: string, tier: number, day: number): Score[] {
   const roll = (k: number) => {
     const r = Rng.fromStream(seed, 'events').derive(`round-${tier}-${start}-${k}`);
     const set = compSet(seed, tier, start + k);
-    return left.map((e) => ({ ...rollTops(r, e.grade, set, goes), name: e.name, grade: e.grade }));
+    return left.map((e) => ({
+      ...rollTops(r, e.grade, set, goesFor(tier, k)),
+      name: e.name,
+      grade: e.grade,
+    }));
   };
   for (let k = 0; k < round; k++)
     left = roll(k)

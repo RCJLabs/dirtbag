@@ -2,6 +2,7 @@
 // day's luck. A crowd queues for the ropes and knows the beta, whether you want it or not.
 
 import { isWeekend } from './cond';
+import { isCompProblem } from './comps';
 import { PLACES } from './content/places';
 import { onWall, type RouteDef } from './content/routes';
 import { CROWD } from './dials';
@@ -42,9 +43,10 @@ export function queueMin(s: GameState, r: RouteDef): number {
 }
 
 // The beta a crowd could tell you on a line: what you haven't learned yet, in its order.
+// Phase 33.2: none on a comp's problem, whoever's asking (isolation): the crowd, the crew.
 export function sprayable(s: GameState, r: RouteDef): string[] {
   const L = s.routes[r.id];
-  if (L?.sent) return [];
+  if (L?.sent || isCompProblem(r.id)) return [];
   const known = L?.known ?? [];
   return r.cruxes.flatMap((c) => c.beta.slice(1).filter((b) => !known.includes(b)));
 }
