@@ -31,7 +31,7 @@ import {
 import { bestPlan, guestsToday, outfitBlocked, outfitDay, planRefused, planValue } from './guiding';
 import { GUIDE_SAYS } from './content/guiding';
 import { teamBack, teamBlocked, teamCost, teamHome, teamNames, teamOdds } from './team';
-import { crewDayFor, crewDayFrom, crewHere, crewNameable, crewOf, mends } from './crew';
+import { crewDayFor, crewDayFrom, crewHere, crewNameable, crewOf, mends, renownTier } from './crew';
 import {
   CREW_DAY_YES,
   CREW_GO,
@@ -56,6 +56,7 @@ import { TEAM_FUNDED, TEAM_NOTHING, TEAM_SUMMIT, TEAM_TURNED } from './content/t
 import { guideBlocked, guidesOut } from './guides';
 import { bolted, boltBlocked, gymBuyBlocked, gymNight, UPGRADES, wallWord, type Upgrade } from './business';
 import { DOC, HEAT_SAYS, MEDIA_RIVAL, POSTS, SPONSORS, TERMS } from './content/media';
+import { CREW_HEAT } from './content/renown';
 import {
   cycleTasks,
   fromAudience,
@@ -779,6 +780,8 @@ export function talkValues(s: GameState, who?: string): Record<string, string | 
     other: other ? (PEOPLE[other]?.name ?? other) : 'Everyone',
     // Phase 28.3: what they're asking for, in a clash.
     what: CLASH_WHAT[(who && favourAsk(s, who)) || ''] ?? 'a hand',
+    // Phase 28.4: the crew, by name.
+    crew: s.crewName?.name ?? 'the crew',
   };
 }
 
@@ -1701,9 +1704,10 @@ export function act(s0: GameState, a: Action): Result {
     } else if (!h && heatTonight(s)) {
       const g = Math.max(0, gradeOf(s.climber.skills));
       s.media = { ...s.media, heat: { grade: g, due: ended + MEDIA.heat.prove } };
-      line(
-        `${HEAT_SAYS[ended % HEAT_SAYS.length]} Send a V${g} by day ${ended + MEDIA.heat.prove} and it goes quiet.`,
-      );
+      // Phase 28.4: once the crew's name goes round, the threads use it too.
+      const says = renownTier(s) > 0 ? [...HEAT_SAYS, ...CREW_HEAT] : HEAT_SAYS;
+      const said = fill(says[ended % says.length]!, { crew: s.crewName?.name ?? 'the crew' });
+      line(`${said} Send a V${g} by day ${ended + MEDIA.heat.prove} and it goes quiet.`);
     }
     const d = s.media.doc;
     if (d && 'due' in d && ended >= d.due) {
@@ -2912,6 +2916,8 @@ export function act(s0: GameState, a: Action): Result {
           if (FAVOUR_NO[talk.who]) line(FAVOUR_NO[talk.who]!);
         }
       }
+      // Said once and for good (Phase 28.4: the old guard on the crew).
+      if (fx.seen && !s.seen.includes(fx.seen)) s.seen.push(fx.seen);
       // The crew's name (Phase 28.1): brought up once. Name it now and the sheet opens;
       // later, and it waits on the People list.
       if (fx.crewName) {

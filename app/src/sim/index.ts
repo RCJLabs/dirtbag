@@ -102,7 +102,17 @@ export { menteeAfter, menteeCoachBlocked, menteeName, menteeTakeBlocked } from '
 export { crewTexts, crewToText, textBack } from './texts';
 export { keeperLine } from './keepers';
 export { crowdLine } from './crowdtalk';
-export { crewPair, crewDue, mendOdds, crewOf, crewNameable, crewHere, crewDayFor, crewDayFrom } from './crew';
+export {
+  crewPair,
+  crewDue,
+  mendOdds,
+  crewOf,
+  crewNameable,
+  crewHere,
+  crewDayFor,
+  crewDayFrom,
+  renownTier,
+} from './crew';
 export { teamBlocked, teamCost, teamNames, teamOdds } from './team';
 export { GUIDE_CRAGS, guideBlocked, guideLeft, guideLines, guidesOut } from './guides';
 export { mediaRung, postBlocked, postGain, rivalFollowers, tierEarned } from './media';

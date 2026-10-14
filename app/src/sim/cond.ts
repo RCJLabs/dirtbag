@@ -9,7 +9,7 @@ import { repairCost } from './van';
 import { isSick } from './sick';
 import { lifeDue } from './lives';
 import { romanceDue, strained } from './romance';
-import { crewDue, crewNameDue } from './crew';
+import { crewDue, crewNameDue, renownBeatDue, renownTier } from './crew';
 import { clashDue, favourDue } from './favours';
 import { strayDue } from './scout';
 import { clockShort, fill } from './format';
@@ -41,6 +41,8 @@ export interface Cond {
   crewName?: string; // they bring up naming the crew (Phase 28.1, crew.ts)
   favour?: string; // "who/kind": their ask is due (Phase 28.3, favours.ts)
   favourClash?: string; // "who/b": their ask clashes with your yes to b today
+  renown?: number; // the crew's renown is at this tier or past it (Phase 28.4)
+  renownBeat?: string; // "who/n": one of the old guard has a line about the crew at tier n
   sky?: Sky; // today's weather
   arc?: string; // "who/n": beat n of their arc is due (bond reached, days since the last)
   bond?: string; // "who/n": your bond with them is at least n
@@ -125,6 +127,8 @@ export function holds(s: GameState, c: Cond): boolean {
   if (c.crewName !== undefined && !crewNameDue(s, c.crewName)) return false;
   if (c.favour !== undefined && !favourDue(s, c.favour)) return false;
   if (c.favourClash !== undefined && !clashDue(s, c.favourClash)) return false;
+  if (c.renown !== undefined && renownTier(s) < c.renown) return false;
+  if (c.renownBeat !== undefined && !renownBeatDue(s, c.renownBeat)) return false;
   if (c.giftDue !== undefined) {
     const gave = s.people[c.giftDue]?.gave;
     if (gave !== undefined && s.day - gave < GIVE.every) return false;

@@ -2,7 +2,7 @@
 // out with the other, and keeps away from wherever they are. Weeks later the one you picked
 // asks about it, and you can try to get them back in a room. Once a life.
 
-import { BOND, CREW, CREW_NAME, CREW_PROJECT } from './dials';
+import { BOND, CREW, CREW_NAME, CREW_PROJECT, RENOWN } from './dials';
 import { tamStops } from './lives';
 import { PARTNERS, tierOf, whereNow } from './presence';
 import { Rng } from './rng';
@@ -70,3 +70,20 @@ export const crewHere = (s: GameState): string[] => crewOf(s).filter((w) => wher
 
 // The day a call now is for: today before the invite hour, tomorrow after it.
 export const crewDayFor = (s: GameState): number => (s.min < BOND.inviteBefore ? s.day : s.day + 1);
+
+// Phase 28.4: the crew's renown, 0 (nobody's heard of them) to the top tier: counted from the
+// projects sent with the crew there and how long it's had its name. Lines only, never shown.
+export function renownTier(s: GameState): number {
+  if (!s.crewName) return 0;
+  const trains = s.crewSends.filter((x) => x.train.length > 0).length;
+  const months = Math.floor(Math.max(0, s.day - s.crewName.day) / 30);
+  const score = trains * RENOWN.train + months * RENOWN.month;
+  return RENOWN.tiers.filter((t) => score >= t).length;
+}
+
+// One of the old guard's lines about the crew, due once a tier: "who/n", at tier n and not yet
+// heard (a jump past a tier skips its line rather than saying something out of date).
+export const renownBeatDue = (s: GameState, ref: string): boolean => {
+  const [who, n] = ref.split('/');
+  return renownTier(s) === Number(n) && !s.seen.includes(`renown-${who}-${n}`);
+};

@@ -1366,6 +1366,12 @@ export const CREW_PROJECT = { over: 2, every: 7, watch: 10, from: 9 * 60 };
 // costs `no` bond. What they ask: an hour's belay (`belay`), a ride into town (`ride`, the gas
 // and the hour), or a loan (`loan`, back `loanDays` later). Small enough that a yes is easy,
 // big enough that a no is a choice.
+// Phase 28.4 [proposed]. Renown (Evan's call: lines only, never a number): counted from what
+// the crew has done, `train` for each project sent with the crew there and `month` for each
+// thirty days since you named it, into tiers at `tiers`. The first tier comes with the first
+// train; the top one takes a long season of them.
+export const RENOWN = { train: 3, month: 1, tiers: [3, 8, 15] };
+
 export const FAVOUR = {
   cap: 2,
   every: 14,
