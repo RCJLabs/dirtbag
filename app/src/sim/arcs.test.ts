@@ -71,7 +71,10 @@ describe('the cast’s milestones (Phase 17.2)', () => {
     const one = act(at(1, {}), { t: 'say', talk: 'mara', node: 'beat-1', opt: 1 }).state;
     expect(one.people.mara).toMatchObject({ arc: 1, beatDay: day });
     // Beat two waits for the bond, then for the spacing.
-    expect(talkStart({ ...one, people: { mara: { ...one.people.mara!, bond: 3 } } }, 'mara')).toBe('again');
+    // (At bond 3 she's one of the crew, so her favour can come first: Phase 28.3.)
+    expect(talkStart({ ...one, people: { mara: { ...one.people.mara!, bond: 3 } } }, 'mara')).not.toBe(
+      'beat-2',
+    );
     const next = Array.from({ length: 200 }, (_, i) => day + ARC.spacing + i).find(
       (d) => whereIs('arcs', 'mara', d, 12 * 60, { ...one.people.mara!, bond: 3 }) === 'gorge',
     )!;

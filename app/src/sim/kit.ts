@@ -5,7 +5,9 @@ import type { RouteDef } from './content/routes';
 import { KIT } from './dials';
 import type { GameState } from './types';
 
-export const has = (s: GameState, id: string): boolean => (s.gear[id] ?? 0) > 0;
+// A rack lent for the day counts as yours till the night (Phase 28.3).
+export const has = (s: GameState, id: string): boolean =>
+  (s.gear[id] ?? 0) > 0 || (id === 'rack' && s.today.some((f) => f.startsWith('rack-')));
 
 // How your kit scales every window on a line of this style: shoes by their rubber, twice as
 // much on technical footwork, and chalk if the bag's empty.

@@ -7,6 +7,7 @@ import { STARTS } from '../src/sim/climber';
 import { contentOut, firstTry, linesOf, median, season, socialLines } from '../src/sim/harness';
 import { JOBS } from '../src/sim/content/jobs';
 import { ACTS } from '../src/sim/content/places';
+import { TALK } from '../src/sim/content/people';
 import { BUSK, PACE, PSYCHE } from '../src/sim/dials';
 import { ACT_PAID } from '../src/sim/content/story';
 import { buskRate, practiceOf } from '../src/sim/busk';
@@ -271,10 +272,12 @@ it('the people', { timeout: 2_400_000 }, () => {
   // Phase 28.2: crew projects sent with the crew there, and the day of the first.
   const trains: number[] = [];
   const firstTrain: number[] = [];
+  // Phase 28.3: favours asked of the crew, and theirs answered yes and no.
+  const traded: boolean[] = [];
   out(
-    '| start | weeks with something new | weeks without | ambient by day 100: shown · distinct | crew named | projects sent with the crew · first |',
+    '| start | weeks with something new | weeks without | ambient by day 100: shown · distinct | crew named | projects sent with the crew · first | favours asked · theirs yes · no |',
   );
-  out('|---|---|---|---|---|---|');
+  out('|---|---|---|---|---|---|---|');
   for (const start of Object.keys(STARTS))
     for (let k = 0; k < PEOPLE_SEEDS; k++) {
       const run = season(`p-${start}-${k}`, {
@@ -302,8 +305,17 @@ it('the people', { timeout: 2_400_000 }, () => {
       const sent = run.state.crewSends.filter((x) => x.train.length > 0);
       trains.push(sent.length);
       if (sent[0]) firstTrain.push(sent[0].day);
+      const asked = run.actions.filter((a) => a.t === 'favour').length;
+      const answer = (yes: boolean) =>
+        run.actions.filter(
+          (a) =>
+            a.t === 'say' &&
+            /^crew-favour-(belay|ride|loan)$/.test(a.node) &&
+            TALK[a.talk]?.nodes[a.node]?.opts[a.opt]?.fx?.favour === (yes ? 'yes' : 'no'),
+        ).length;
+      traded.push(asked > 0 && answer(true) > 0);
       out(
-        `| ${start} | ${weeks - without.length}/${weeks} | ${without.length ? without.map((w) => w + 1).join(', ') : '–'} | ${amb.length} · ${new Set(amb).size} | ${crew ? `day ${crew.day}, ${crew.name}` : '–'} | ${sent.length}${sent[0] ? ` · day ${sent[0].day}` : ''} |`,
+        `| ${start} | ${weeks - without.length}/${weeks} | ${without.length ? without.map((w) => w + 1).join(', ') : '–'} | ${amb.length} · ${new Set(amb).size} | ${crew ? `day ${crew.day}, ${crew.name}` : '–'} | ${sent.length}${sent[0] ? ` · day ${sent[0].day}` : ''} | ${asked} · ${answer(true)} · ${answer(false)} |`,
       );
     }
   const days = named.filter((d): d is number => d !== null);
@@ -313,6 +325,7 @@ it('the people', { timeout: 2_400_000 }, () => {
   out(
     `A crew project was sent with the crew there in ${firstTrain.length} of ${trains.length} careers${firstTrain.length ? `, the first on day ${median(firstTrain)} at the median (${Math.min(...firstTrain)}–${Math.max(...firstTrain)}), ${median(trains)} a career by day ${PEOPLE_DAYS}` : ''}.`,
   );
+  out(`Favours went both ways in ${traded.filter(Boolean).length} of ${traded.length} careers.`);
   out('\n## Targets\n');
   say(
     missed.every((m) => m === 0),

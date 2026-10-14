@@ -42,6 +42,16 @@ import {
   PROJECT_SAYS,
 } from './content/crew';
 import { AWAY_TEXT, SULK_TEXT } from './content/texts';
+import {
+  CLASH_WHAT,
+  FAVOUR_DID,
+  FAVOUR_EVEN,
+  FAVOUR_NO,
+  FAVOUR_REPAID,
+  FAVOUR_WHAT,
+  FAVOUR_YES,
+} from './content/favours';
+import { favourAsk, riding } from './favours';
 import { TEAM_FUNDED, TEAM_NOTHING, TEAM_SUMMIT, TEAM_TURNED } from './content/team';
 import { guideBlocked, guidesOut } from './guides';
 import { bolted, boltBlocked, gymBuyBlocked, gymNight, UPGRADES, wallWord, type Upgrade } from './business';
@@ -253,6 +263,7 @@ import {
   CREW,
   CREW_NAME,
   CREW_PROJECT,
+  FAVOUR,
   AGE,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
@@ -348,6 +359,7 @@ import type {
   GoStyle,
   SendStyle,
   Skills,
+  FavourWhat,
 } from './types';
 import { conditionsAt, seasonOf, sunOn } from './weather';
 
@@ -765,6 +777,8 @@ export function talkValues(s: GameState, who?: string): Record<string, string | 
     grade: gradeOf(s.climber.skills),
     left: s.race ? Math.max(0, s.race.until - s.day + 1) : 0,
     other: other ? (PEOPLE[other]?.name ?? other) : 'Everyone',
+    // Phase 28.3: what they're asking for, in a clash.
+    what: CLASH_WHAT[(who && favourAsk(s, who)) || ''] ?? 'a hand',
   };
 }
 
@@ -1124,6 +1138,13 @@ export function act(s0: GameState, a: Action): Result {
     if (word !== wasWord && (word === 'low' || word === 'psyched')) line(PSYCHE_LINE[word]);
     if (night && s.supplies < SUPPLIES.low && s.supplies + SUPPLIES.night >= SUPPLIES.low)
       line('The water jugs are nearly dry and you could use a shower. The lake, the market or the gym.');
+    // Phase 28.3: a loan to one of the crew, back on the night it was due.
+    for (const [who, p] of Object.entries(s.people))
+      if (p.lent && p.lent.due <= ended) {
+        s.cash += p.lent.cash;
+        line(fill(FAVOUR_REPAID, { name: PEOPLE[who]?.name ?? who, cash: money(p.lent.cash) }));
+        delete p.lent;
+      }
     if (ended % 7 === 0) {
       const bills = weeklyBills(s);
       s.cash -= bills;
@@ -2871,6 +2892,26 @@ export function act(s0: GameState, a: Action): Result {
           }
         }
       }
+      // A favour they asked (Phase 28.3): a yes costs what they asked and squares a debt or
+      // banks one; a no costs bond; the clash is settled by the drama above.
+      if (fx.favour) {
+        const kind = favourAsk(s, talk.who);
+        p.favour = s.day;
+        const name = PEOPLE[talk.who]?.name ?? talk.who;
+        if (fx.favour === 'yes' && kind) {
+          if (kind === 'belay') spend({ min: FAVOUR.belay.min, energy: -FAVOUR.belay.energy });
+          if (kind === 'ride') spend({ min: FAVOUR.ride.min, cash: -FAVOUR.ride.cash });
+          if (kind === 'loan') {
+            spend({ cash: -FAVOUR.loan });
+            p.lent = { cash: FAVOUR.loan, due: s.day + FAVOUR.loanDays };
+          } else s.today.push(`favour-yes-${talk.who}`);
+          p.owed = Math.max(-FAVOUR.cap, (p.owed ?? 0) - 1);
+          line(fill(FAVOUR_DID[kind], { name, cash: money(FAVOUR.loan) }));
+        } else if (fx.favour === 'no') {
+          bond(talk.who, p.bond - FAVOUR.no);
+          if (FAVOUR_NO[talk.who]) line(FAVOUR_NO[talk.who]!);
+        }
+      }
       // The crew's name (Phase 28.1): brought up once. Name it now and the sheet opens;
       // later, and it waits on the People list.
       if (fx.crewName) {
@@ -2910,11 +2951,14 @@ export function act(s0: GameState, a: Action): Result {
       // shot won't take a drive out of town either, except home or to the garage. Town is
       // always in reach, so a broke climber can always get to a shift.
       const fixing = a.to === 'garage' || a.to === 'lot';
-      if (s.van.battery <= 0 && r.min >= VAN.from && !fixing)
+      // A friend driving you today (Phase 28.3): their wheels, their gas, whatever state the
+      // van's in.
+      const ride = riding(s);
+      if (!ride && s.van.battery <= 0 && r.min >= VAN.from && !fixing)
         return refuse(
           'The battery’s flat. A jump gets you across town, not out of it. The garage is in Midtown.',
         );
-      const shot = unsafePart(s);
+      const shot = ride ? null : unsafePart(s);
       if (shot && r.min >= VAN.from && !fixing)
         return refuse(
           `The ${PART_NAME[shot].toLowerCase()} won’t make it out of town. The garage is in Midtown.`,
@@ -2938,10 +2982,10 @@ export function act(s0: GameState, a: Action): Result {
         line(`You rap off ${WALLS[s.wall.id]!.name}. The wall will be there.`);
         s.wall = null;
       }
-      const gas = gasFor(s, r.cash);
+      const gas = ride ? 0 : gasFor(s, r.cash);
       const declined = gas > 0 && headroom(s) < gas;
-      const broke = breakdownRoll(s, r.min, a.to);
-      wear(broke ? Math.round(r.min / 2) : r.min);
+      const broke = ride ? null : breakdownRoll(s, r.min, a.to);
+      if (!ride) wear(broke ? Math.round(r.min / 2) : r.min);
       spend({ cash: declined ? 0 : -gas, energy: r.min >= 30 ? -BODY.driveEnergy : 0 });
       if (declined) line("The card's declined at the pump. You make it on fumes.");
       else if (gas >= 12) line(`Gas, ${money(gas)}. The van starts on the second try.`);
@@ -3898,6 +3942,27 @@ export function act(s0: GameState, a: Action): Result {
       break;
     }
 
+    // Phase 28.3: a favour from one of the crew: your shift covered, a rack for the day, or a
+    // ride. Owed back, unless they owed you.
+    case 'favour': {
+      const no = favourBlocked(s, a.who, a.what);
+      if (no) return refuse(no);
+      const p = meet(a.who);
+      s.today.push(`asked-${a.who}`);
+      if (a.what === 'shift') s.shifts.splice(coverable(s), 1);
+      if (a.what === 'rack') s.today.push(`rack-${a.who}`);
+      if (a.what === 'ride') s.today.push(`ride-${a.who}`);
+      const even = (p.owed ?? 0) < 0;
+      p.owed = (p.owed ?? 0) + 1;
+      const what = FAVOUR_WHAT[a.what].said;
+      line(
+        even
+          ? fill(FAVOUR_EVEN, { name: PEOPLE[a.who]?.name ?? a.who, what })
+          : fill(FAVOUR_YES[a.who] ?? FAVOUR_EVEN, { what, name: PEOPLE[a.who]?.name ?? a.who }),
+      );
+      break;
+    }
+
     // Phase 28.1: the crew's name, once and for good, like a first ascent's.
     case 'nameCrew': {
       if (s.crewName) return refuse('The crew has its name.');
@@ -4144,6 +4209,39 @@ export function crewDayAnswers(
     if (!no) yes.push(who);
     return { who, no };
   });
+}
+
+const offAway = (s: GameState, who: string): boolean => {
+  const p = s.people[who];
+  return (p?.away !== undefined && s.day < p.away) || !!stintOn(s.seed, who, s.day);
+};
+
+// Phase 28.3: your next shift on the schedule, today's or tomorrow's: what a friend can cover.
+export const coverable = (s: GameState): number =>
+  s.shifts.findIndex((x) => x.day === s.day || x.day === s.day + 1);
+
+// "one", "two": what's owed, said.
+export const owedWord = (n: number): string => ['', 'one', 'two', 'three'][n] ?? String(n);
+
+// Why you can't ask `who` for `what` now, or null if you can.
+export function favourBlocked(s: GameState, who: string, what: FavourWhat): string | null {
+  const name = PEOPLE[who]?.name ?? who;
+  if (!crewOf(s).includes(who)) return `${name} isn't in the crew.`;
+  if (offAway(s, who)) return `${name}'s away.`;
+  if (s.today.includes(`asked-${who}`)) return `You've asked ${name} for one today already.`;
+  const owed = s.people[who]?.owed ?? 0;
+  if (owed >= FAVOUR.cap) return `You owe ${name} ${owedWord(owed)} already.`;
+  if (what === 'shift' && coverable(s) < 0) return 'You have no shift today or tomorrow to cover.';
+  if (what === 'rack') {
+    if (!PEOPLE[who]?.rack) return `${name} hasn't got a rack to lend.`;
+    if ((s.gear.rack ?? 0) > 0) return 'You have a rack of your own.';
+    if (s.today.some((f) => f.startsWith('rack-'))) return 'You have a rack for today already.';
+  }
+  if (what === 'ride') {
+    if (!PEOPLE[who]?.wheels) return `${name} hasn't got wheels to spare.`;
+    if (s.today.some((f) => f.startsWith('ride-'))) return 'You have a ride today already.';
+  }
+  return null;
 }
 
 // Phase 28.1: names for the crew, from your record: where you've sent most, your dog, the

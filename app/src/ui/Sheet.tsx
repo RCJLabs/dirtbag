@@ -230,7 +230,7 @@ import { planLine, stepLabel, stepsAt, withStep, type PlanStep } from '../game/p
 import { CARD, cardPng } from '../view/paint/card';
 import { cardFile, cardOf, cardText, tripCardOf } from './card';
 import { glossSplit } from './gloss';
-import { buildSheet, SKILL_NAME, type ListSpec } from './sheets';
+import { buildSheet, owedNote, SKILL_NAME, type ListSpec } from './sheets';
 import { CREDITS } from './credits';
 import { kitNote, kitState } from './kit';
 import { vars } from './vars';
@@ -2344,7 +2344,10 @@ function PeopleRows({ game, s }: { game: Game; s: GameState }) {
             <span className="sky">
               {together(s, id) ? 'Together' : PEOPLE[id]!.rival ? 'Rival' : TIER_NAME[tierOf(p.bond)]}
             </span>
-            <small>{personNote(s, id, p)}</small>
+            <small>
+              {personNote(s, id, p)}
+              {owedNote(s, id) && ` ${owedNote(s, id)}`}
+            </small>
           </li>
         ))}
         {s.dog && (
