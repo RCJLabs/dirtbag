@@ -1373,6 +1373,18 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     return true;
   }
 
+  // Phase 33.1: a round it's through to, today: at the comp's wall, climbed, the card in.
+  const roundToday = (day = s.day): string | null =>
+    s.comps.on && s.comps.on.day === day ? COMP_TIERS[s.comps.on.tier]!.venue : null;
+  function roundDay(venue: string): boolean {
+    if (!travel(venue)) return false;
+    const t = s.min;
+    session();
+    climbMin += s.min - t;
+    if (s.comps.on?.day === s.day) go({ t: 'comp', do: 'finish' });
+    return true;
+  }
+
   // The media bot's morning: an offer answered (its own terms; the film, yes).
   function answerOffer() {
     const o = s.media.offer;
@@ -1459,7 +1471,14 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       if (pick) go({ t: 'crewProject', route: pick.id });
     }
     const r = s.crewProject ? routeOfId(s, s.crewProject.route) : undefined;
-    if (!r || s.day < crewDayFrom(s) || s.min < BOND.inviteBefore || compFor(s.day + 1, false)) return;
+    if (
+      !r ||
+      s.day < crewDayFrom(s) ||
+      s.min < BOND.inviteBefore ||
+      compFor(s.day + 1, false) ||
+      roundToday(s.day + 1)
+    )
+      return;
     const c = conditionsAt(s.seed, s.day + 1, r.place);
     if (c.open && !c.closed) go({ t: 'crewDay' });
   }
@@ -1493,6 +1512,12 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     if (opts.focus === 'media') {
       const at = shootPlace();
       if (at && reachable(at) && s.energy >= MEDIA.shoot.energy + 20 && travel(at)) shootHere();
+    }
+    // A round it's through to takes the day, as the comp did (Phase 33.1).
+    const round = roundToday();
+    if (round && roundDay(round)) {
+      evening(round, morning);
+      return;
     }
     // A comp it's entering takes the day (Phase 18.7).
     const venue = compFor(s.day);
@@ -1562,7 +1587,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     const next = saving();
     park();
     // Tomorrow's comp is kept free (Phase 18.7): no shift signed up over it.
-    if (!compFor(s.day + 1, false)) signUp(jobActs(), next ? next + 50 : 0);
+    if (!compFor(s.day + 1, false) && !roundToday(s.day + 1)) signUp(jobActs(), next ? next + 50 : 0);
     record(where, morning);
     bed();
   }

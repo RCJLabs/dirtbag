@@ -3423,6 +3423,25 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 1. The harness's comp table measures the rounds.
 2. The e2e plays a qualifier and a final.
 
+**Planned (14 Oct 2026), with Evan's calls:**
+- **The time limit** is a go budget per problem per round, its minutes shown from the dials.
+- **Cuts:** small finals. Nationals 16 to 6; the World Series 20 to 12 to 6; the Games 20 to 8.
+- **Selection:** the Nationals podium makes the team, and only the team enters the World Series until the next Nationals. The calendar puts Nationals first.
+- **The field:** a roster of named rivals per tier, each with a grade by year; some move up; Skye in the Nationals and World Series fields.
+- **Slices:** 33.1 rounds; 33.2 isolation and the time limit; 33.3 the field that comes back; 33.4 selection, the calendar, and the close.
+
+**Status (14 Oct 2026): 33.1 built: rounds.** Save v65, 0.999.50. Phase 33's criterion 1 passes.
+- **From Nationals up, a comp is rounds, a day apart.** Nationals: a qualifier of 16, then a final of 6. The World Series: 20, a semi-final of 12, a final of 6. The Games: 20, then a final of 8. League night, the A league, the Circuit and the dyno comp are one round, as before.
+- **A round after the qualifier** sets 4 problems: the final from the middle of the comp's grades up, a semi-final from a quarter of the way.
+- **The field is drawn once,** on the comp's first day. Each round rolls the tops of whoever's still in it, so the final's field is the one that came through the cut with you.
+- **Through the cut,** the round is tomorrow's: no fee and no day pass, and sleep doesn't hand it in. Under it, your place in that round is your place in the comp, and the points and the purse are paid then. A round not climbed hands in empty.
+- **Shown:** the desk's entry row says the rounds ("a qualifier; the top 6 to the final, a round a day"), the scorecard row names its round and the cut, and the evening after a qualifier shows the final you're through to.
+- **Save v65:** the comp you're in has its round. A real 0.999.49 save loads mid–League night and hands in as it would have.
+- **The bots** climb a round they're through to, and keep its day free of shifts and crew days.
+- **The harness:** a new comps table (`comps.harness.ts`) climbs each comp round by round with the bots' hands at every grade of its range: through each cut, the podium, the win, the median place. At Nationals, a V9 makes the final 42% of the time and a V12 wins 67%; at the World Series, a V13 makes the final 75% of the time.
+  - The main harness passes every target but Outdoors, at 2 of 4 as on main. The comp bots reach the Games by day 219.
+- **The download** is 434.5 KB of 460.
+
 ### Phase 34 — Money that means something
 
 *Medium. Followers pay nothing; a job's ranks raise its pay and nothing else; costs don't grow with ambition. The audit's economy #8, #9, #16 and #17.*
@@ -3786,3 +3805,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-14 — 29.3 built: the van ages with miles, its engine's cap falls, and Dale puts it to you (rebuild, a used van, the Rig, or limp on). Every career bot hears it by year three (criterion 2). Save v64. 0.999.48.
 - 2026-10-14 — 29.4 built: a recipe at the van plays the beat panel, and a meal cooked right adds to the night's sleep and psyche; the e2e cooks one (criterion 3). Phase 29's Done-when all pass; closing is Evan's call. 0.999.49.
 - 2026-10-14 — Phase 29 closed by Evan's call; CURRENT MILESTONE moved to Phase 33, comps with rounds.
+- 2026-10-14 — Phase 33 planned with Evan's calls (a go budget for the time limit; small finals; the Nationals podium makes the team; a roster of rivals per tier). 33.1 built: comps from Nationals up in rounds, a day apart; the comps harness measures them. Save v65. 0.999.50.

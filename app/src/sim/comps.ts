@@ -4,7 +4,7 @@
 // the grades it draws: tops first, then fewest goes. A place earns points, which fade, and
 // points let you into the next rung up. Nothing here moves to meet you.
 
-import { A_LEAGUE, COMP_LADDER, COMP_TIERS, COMPETITORS } from './content/comps';
+import { A_LEAGUE, COMP_LADDER, COMP_TIERS, COMPETITORS, ROUND_NAMES } from './content/comps';
 import { libraryBoulder, type RouteDef } from './content/routes';
 import { COMP, LEAGUE, YEAR } from './dials';
 import { Rng } from './rng';
@@ -61,24 +61,53 @@ export function gradesFor(tier: number, day: number): [number, number] {
   return [t.grades[0] + up, t.grades[1] + up];
 }
 
+// ---- Phase 33.1: rounds ----
+
+// Which round of its comp a day is: 0 on the comp's own day, then one a day after it, for as
+// many rounds as it has. A comp without rounds is all round 0.
+export function roundOf(tier: number, day: number): number {
+  const t = COMP_TIERS[tier]!;
+  if (!t.rounds) return 0;
+  const off = (((day - t.on) % t.every) + t.every) % t.every;
+  return off <= t.rounds.length ? off : 0;
+}
+
+// The comp's first day, from any of its rounds' days.
+export const startOf = (tier: number, day: number): number => day - roundOf(tier, day);
+
+// A round's name: the qualifier, a semi-final, the final.
+export function roundName(tier: number, round: number): string {
+  const n = (COMP_TIERS[tier]!.rounds?.length ?? 0) + 1;
+  return ROUND_NAMES[n]?.[round] ?? '';
+}
+
 const cache = new Map<string, RouteDef[]>();
 
 // A comp's problems: as many as its wall has slots, easiest to hardest across its grades.
+// Phase 33.1: a later round sets fewer, and harder: the final from the middle of its grades
+// up, a semi-final from a quarter of the way.
 export function compSet(seed: string, tier: number, day: number): RouteDef[] {
   const key = `${seed}#comp${tier}-${day}`;
   const hit = cache.get(key);
   if (hit) return hit;
   const t = COMP_TIERS[tier]!;
   const side = t.side;
-  const n = side?.n ?? SLOTS[t.venue] ?? 6;
+  const round = roundOf(tier, day);
+  const of = (t.rounds?.length ?? 0) + 1;
+  const n = round ? COMP.roundProblems : (side?.n ?? SLOTS[t.venue] ?? 6);
   const r = Rng.fromStream(seed, 'worldgen').derive(`comp-${tier}-${day}`);
-  const [lo, hi] = gradesFor(tier, day);
+  const [low, hi] = gradesFor(tier, startOf(tier, day));
+  const lo = round ? Math.round(low + ((hi - low) * round) / (2 * (of - 1))) : low;
+  const called = round ? `${t.name} ${roundName(tier, round)}` : t.name;
   const set = Array.from({ length: n }, (_, i) => {
     const grade = Math.round(lo + (i * (hi - lo)) / (n - 1));
     const type = side ? side.type : TYPES[r.int(0, TYPES.length - 1)]!;
     const moves = side ? r.int(...side.moves) : r.int(5, 9);
     const from = Math.round(moves * r.float(0.4, 0.65) * 100) / 100;
-    return libraryBoulder(`cp-${tier}-${day}-${i + 1}`, `${t.problem} ${i + 1}`, grade, type, t.venue, {
+    const label = round
+      ? `${t.problem} ${roundName(tier, round)[0]!.toUpperCase()}${i + 1}`
+      : `${t.problem} ${i + 1}`;
+    return libraryBoulder(`cp-${tier}-${day}-${i + 1}`, label, grade, type, t.venue, {
       moves,
       from,
       to: Math.round((from + r.float(1.3, 1.9)) * 100) / 100,
@@ -86,7 +115,7 @@ export function compSet(seed: string, tier: number, day: number): RouteDef[] {
       heightFt: 14,
       line: side
         ? `${t.name}, throw ${i + 1} of ${n}, further than the last. Tape says V${grade}.`
-        : `${t.name}, problem ${i + 1} of ${n}. Tape says V${grade}.`,
+        : `${called}, problem ${i + 1} of ${n}. Tape says V${grade}.`,
     });
   });
   cache.set(key, set);
@@ -155,6 +184,7 @@ export function compField(seed: string, tier: number, day: number): Score[] {
   const t = COMP_TIERS[tier]!;
   const set = compSet(seed, tier, day);
   const goes = goesFor(tier);
+  if (t.rounds) return roundField(seed, tier, day);
   if (!isLeague(tier)) {
     const r = Rng.fromStream(seed, 'events').derive(`field-${tier}-${day}`);
     return draw(r, t.field, gradesFor(tier, day), (name, g) => ({ ...rollTops(r, g, set, goes), name }));
@@ -168,6 +198,35 @@ export function compField(seed: string, tier: number, day: number): Score[] {
   );
   const r = Rng.fromStream(seed, 'events').derive(`night-${a}${day}`);
   return year.map((e) => ({ ...rollTops(r, e.grade, set, goes), name: e.name }));
+}
+
+// Phase 33.1: a comp with rounds draws its field once, on its first day; each round rolls
+// the tops of whoever's still in it. The field in a round you're in: the qualifier's whole
+// field, then those ranked through each cut but the place you took (so it's the field you
+// meet, whichever place you went through in).
+export function roundField(seed: string, tier: number, day: number): Score[] {
+  const t = COMP_TIERS[tier]!;
+  const start = startOf(tier, day);
+  const round = roundOf(tier, day);
+  const goes = goesFor(tier);
+  let left = draw(
+    Rng.fromStream(seed, 'events').derive(`field-${tier}-${start}`),
+    t.field,
+    gradesFor(tier, start),
+    (name, grade) => ({ name, grade }),
+  );
+  const roll = (k: number) => {
+    const r = Rng.fromStream(seed, 'events').derive(`round-${tier}-${start}-${k}`);
+    const set = compSet(seed, tier, start + k);
+    return left.map((e) => ({ ...rollTops(r, e.grade, set, goes), name: e.name, grade: e.grade }));
+  };
+  for (let k = 0; k < round; k++)
+    left = roll(k)
+      .map((x, i) => ({ ...x, i }))
+      .sort((a, b) => b.tops - a.tops || a.goes - b.goes || a.i - b.i)
+      .slice(0, t.rounds![k]! - 1)
+      .map(({ name, grade }) => ({ name, grade }));
+  return roll(round).map(({ name, tops, goes }) => ({ name, tops, goes }));
 }
 
 // Where you came: tops first, then fewest goes; a tie goes your way.

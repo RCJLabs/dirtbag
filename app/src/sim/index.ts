@@ -68,6 +68,8 @@ export {
   compOn,
   compSet,
   goesFor,
+  roundName,
+  roundOf,
   gradesFor,
   ladderPoints,
   leagueNights,

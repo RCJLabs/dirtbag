@@ -77,9 +77,10 @@ export interface GameState {
   coach: { clients: Client[]; next: number; last: number } | null;
   haul: { day: number; picks: number; fatigue: number; pay: number } | null;
   // Phase 18.4 (save v48): the comp you're in today (its rung, its day, and the goes each
-  // top took), the points you've placed for, and every result.
+  // top took), the points you've placed for, and every result. Phase 33.1 (save v65): and
+  // which round of it, the day being that round's (tomorrow's, once you're through).
   comps: {
-    on: { tier: number; day: number; tops: Record<string, number> } | null;
+    on: { tier: number; day: number; round: number; tops: Record<string, number> } | null;
     points: { day: number; pts: number }[];
     results: { tier: number; day: number; place: number; of: number }[];
     // Phase 25.5 (save v55): League night's seasons, settled: the year, your place on its

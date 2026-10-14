@@ -96,6 +96,7 @@ const V60 = readFileSync(new URL('./fixtures/save-v60.json', import.meta.url), '
 const V61 = readFileSync(new URL('./fixtures/save-v61.json', import.meta.url), 'utf8');
 const V62 = readFileSync(new URL('./fixtures/save-v62.json', import.meta.url), 'utf8');
 const V63 = readFileSync(new URL('./fixtures/save-v63.json', import.meta.url), 'utf8');
+const V64 = readFileSync(new URL('./fixtures/save-v64.json', import.meta.url), 'utf8');
 // And Phase 29.3's: the van's clock started at a new climber's.
 const revan = <T extends object>(st: T): T =>
   'van' in st
@@ -2129,6 +2130,20 @@ describe('saves', () => {
     expect(Object.values(r.state.people).some((p) => (p.owed ?? 0) > 0)).toBe(true);
   });
 
+  it('load a real 0.999.49 save mid-comp: its scorecard kept, in the comp’s one round', () => {
+    const r = fromSave(V64);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.from).toBe(64);
+    const old = JSON.parse(V64).state;
+    expect(old.comps.on).not.toBeNull();
+    expect(r.state).toEqual({ ...old, comps: { ...old.comps, on: { ...old.comps.on, round: 0 } } });
+    // It hands in as it always would have.
+    const done = act({ ...r.state, at: 'gym' }, { t: 'comp', do: 'finish' });
+    expect(done.state.comps.on).toBeNull();
+    expect(done.state.comps.results.at(-1)).toMatchObject({ tier: old.comps.on.tier, day: old.comps.on.day });
+  });
+
   it('load a real 0.999.47 save: its bounty kept, the van’s clock started at a new climber’s', () => {
     const r = fromSave(V63);
     expect(r.ok).toBe(true);
@@ -2169,7 +2184,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(64);
+    expect(SAVE_VERSION).toBe(65);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

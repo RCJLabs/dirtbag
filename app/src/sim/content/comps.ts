@@ -32,6 +32,10 @@ export interface CompTier {
   // Phase 26: League night's A league. The same nights as League night, for whoever has won
   // a season: never a comp on a day of its own, never a rung.
   division?: 'A';
+  // Phase 33.1 (Evan's call, 14 Oct 2026: small finals): rounds on the days after the first,
+  // and how many go through from each to the next. A qualifier and a final; the World Series
+  // has a semi-final between. Without it, a comp is the one round on its one day.
+  rounds?: number[];
 }
 
 export const COMP_TIERS: CompTier[] = [
@@ -73,6 +77,7 @@ export const COMP_TIERS: CompTier[] = [
     pts: 60,
     need: 60,
     problem: 'Nationals',
+    rounds: [6],
   },
   {
     name: 'The World Series',
@@ -86,6 +91,7 @@ export const COMP_TIERS: CompTier[] = [
     pts: 120,
     need: 140,
     problem: 'World Series',
+    rounds: [12, 6],
   },
   {
     name: 'The Games',
@@ -99,6 +105,7 @@ export const COMP_TIERS: CompTier[] = [
     pts: 200,
     need: 200,
     problem: 'Games',
+    rounds: [8],
   },
   // Phase 25.5 (Evan's call, 4 Oct 2026): v0.956's Fall Festival dyno comp, once a year at
   // Send City in the fall, off the ladder. Five dynos, each further than the last, climbed
@@ -178,8 +185,21 @@ export const COMPETITORS = [
 export const COMP_SAYS = {
   win: 'You top the last one with the clock running down, and the room goes up with you.',
   podium: 'On the podium, a step down from the top. You can see the top step from here.',
-  final: 'Mid-field: some tops, some falls you’ll be thinking about all week.',
+  mid: 'Mid-field: some tops, some falls you’ll be thinking about all week.',
   low: 'A rough one. The problems were harder than your nerves, and everyone saw.',
+};
+
+// Phase 33.1: a comp's rounds, by how many it has.
+export const ROUND_NAMES: Record<number, string[]> = {
+  2: ['qualifier', 'final'],
+  3: ['qualifier', 'semi-final', 'final'],
+};
+
+// Said when you go through to the next round, and when you don't.
+export const ROUND_SAYS = {
+  through:
+    'Through to the {next} tomorrow, one of {of}. Your name goes on the board in someone else’s handwriting.',
+  out: 'Not through: the cut was {cut}. You watch the {next} from the mats tomorrow, if you watch it at all.',
 };
 
 // Phase 25.5: League night's season, the year's table settled on its last night.
