@@ -236,6 +236,8 @@ const TOPO_PTS: Record<string, Pt[]> = {
   ],
   // The Big Stone: Valley Classic up the steep face through its roof, the Trad Pitch up
   // the corner. Both go most of the way up the close-up: the wall above goes on for days.
+  // The Apron (Phase 27.6) stops lower, up the slab between them and through the water
+  // streak near its top.
   bclassic: [
     [96, 540],
     [102, 470],
@@ -255,6 +257,15 @@ const TOPO_PTS: Record<string, Pt[]> = {
     [256, 190],
     [264, 120],
     [258, 70],
+  ],
+  bapron: [
+    [186, 540],
+    [180, 482],
+    [192, 424],
+    [184, 366],
+    [196, 308],
+    [190, 252],
+    [196, 204],
   ],
   // Wind River: Glacier Point up the left, Skyline Traverse out right along the band,
   // Astroman up the crack, and Alpine Trad up the corner at the right.
@@ -1339,6 +1350,18 @@ function paintStone(g: G): void {
   g.moveTo(52, 382);
   g.lineTo(150, 374);
   g.stroke();
+  // The Apron's water streak (Phase 27.6), dark down the slab where its second crux is.
+  g.fillStyle = lin(g, 0, 210, 0, 340, [
+    [0, 'rgba(58,62,70,.45)'],
+    [1, 'rgba(58,62,70,0)'],
+  ]);
+  g.beginPath();
+  g.moveTo(186, 214);
+  g.lineTo(204, 212);
+  g.lineTo(210, 340);
+  g.lineTo(184, 342);
+  g.closePath();
+  g.fill();
   g.fillStyle = 'rgba(150,172,112,.35)';
   for (let i = 0; i < 30; i++) {
     g.beginPath();

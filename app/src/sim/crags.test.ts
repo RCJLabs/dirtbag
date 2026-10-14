@@ -180,7 +180,7 @@ describe('The Big Stone (Phase 21.4)', () => {
     if (hot) expect(conditionsAt('crags', hot, 'stone').greaseFrom).toBe(24 * 60);
   });
 
-  it('keeps v0.956’s five single pitches, and takes a Ride-or-Die to come out', () => {
+  it('keeps v0.956’s five single pitches and Phase 27.6’s four, and takes a Ride-or-Die to come out', () => {
     const here = Object.values(ROUTES).filter((r) => r.place === 'stone' && !r.wall);
     expect(here.map((r) => [r.name, r.disc]).sort()).toEqual(
       [
@@ -189,8 +189,14 @@ describe('The Big Stone (Phase 21.4)', () => {
         ['The Trad Pitch', 'trad'],
         ['The Warm-Up Wall', 'boulder'],
         ['Valley Classic', 'sport'],
+        ['Meadow Arête', 'boulder'],
+        ['The Erratic', 'boulder'],
+        ['The Big Stone project', 'boulder'],
+        ['The Apron', 'sport'],
       ].sort(),
     );
+    // Phase 27.6: the Big Stone's one open project, so a guide of your own can be written here.
+    expect(here.filter((r) => r.open).map((r) => r.id)).toEqual(['bproject']);
     expect(TALK.sage!.nodes.invite!.opts.find((o) => o.fx?.invite === 'stone')?.when).toMatchObject({
       bond: 'sage/7',
       unlocked: 'stone',
