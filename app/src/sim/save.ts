@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 58;
+export const SAVE_VERSION = 59;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -449,6 +449,11 @@ export const MIGRATIONS: Record<number, Migration> = {
   57: (x) => {
     if (!isObj(x)) throw new Error('state is not an object');
     return x;
+  },
+  // v58 -> v59 (Phase 28.1): the crew's name. Nobody had named one.
+  58: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, crewName: null };
   },
 };
 
@@ -1047,6 +1052,11 @@ export function validate(x: unknown): string[] {
         isInt(cw.day) &&
         ['rift', 'mended', 'set'].includes(cw.stage as string)),
     'crew',
+  );
+  const cn = x.crewName;
+  need(
+    cn === null || (isObj(cn) && typeof cn.name === 'string' && cn.name.trim().length >= 2 && isInt(cn.day)),
+    'crewName',
   );
   const tm = x.team;
   need(

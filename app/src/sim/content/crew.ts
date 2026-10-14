@@ -65,3 +65,61 @@ export const crewNodes = (who: string): Record<string, TalkNode> =>
         }),
       )
     : {};
+
+// Phase 28.1: the crew's name. Whoever of the crew you see first, once there are enough of
+// you, brings it up in their own way. {other} is the next of the crew (talkValues).
+const NAME_ASK: Record<string, string> = {
+  hazel:
+    'Hazel gives you a long look. "{other} asked if you were coming Saturday. Not if I was. You. When did we turn into a crew?" A pause. "If we are one, it needs a name, and I’m not picking it."',
+  sage: 'Sage has a notebook open to a page headed CREW NAMES, every one of them crossed out. "{other} says we need one. I disagree on principle. I’ve also been thinking about it for a week."',
+  mara: 'Mara doesn’t look up from taping. "The kids at the Gorge call us “that lot.” {other} wants a name. I want one I won’t wince at. You pick."',
+  rico: 'Rico drops off the problem and points at you. "We need a name. Every crew has a name. {other} said no to the Send Lords, so it’s on you."',
+  tam: 'Tam coils the rope slowly. "We had a name once, back when. A terrible one. {other} keeps saying “us” like it means something now. Maybe it does. Give it a name."',
+};
+
+export const CREW_NAME_SAYS = {
+  later: 'You say you’ll think about it. The People list will hold you to that.',
+  named: 'The crew has a name: {name}. Nobody will admit how long it took.',
+};
+
+// The names on offer, from your record (crewSuggestions in game.ts): where you've sent most,
+// your dog, the crowd you're in with, or the van.
+export const CREW_NAMES = {
+  place: {
+    road: 'The Pullout Crew',
+    gorge: 'Gorge Rats',
+    moon: 'The Moonstoned',
+    mesa: 'Mesa Sandbaggers',
+    stone: 'The Meadow Crew',
+    wind: 'The Alpine Starts',
+    crucible: 'The Squeeze',
+    cove: 'Deep Water Crew',
+    bluff: 'The Hay Bale Crew',
+    cave: 'Cave People',
+    center: 'The Board Room',
+    gym: 'Send City Lifers',
+  } as Record<string, string>,
+  dog: '{dog}’s Pack',
+  old: 'The Last Ground-Uppers',
+  gym: 'The Plastic Fantastic',
+  none: 'No Fixed Abode',
+  rest: ['The Van Crew', 'Rest Day Never'],
+};
+
+// The beat on a partner's talk tree, and its node.
+export const crewNameStarts = (who: string): TalkDef['start'] =>
+  NAME_ASK[who] ? [{ when: { crewName: who }, node: 'crew-name' }] : [];
+
+export const crewNameNodes = (who: string): Record<string, TalkNode> =>
+  NAME_ASK[who]
+    ? {
+        'crew-name': {
+          calls: true,
+          text: NAME_ASK[who]!,
+          opts: [
+            { label: 'Name it', primary: true, fx: { crewName: 'name' } },
+            { label: 'Later', fx: { crewName: 'later', line: CREW_NAME_SAYS.later } },
+          ],
+        },
+      }
+    : {};

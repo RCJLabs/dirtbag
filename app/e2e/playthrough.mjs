@@ -785,9 +785,11 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 58 ||
+  saved?.v !== 59 ||
   // Phase 27.4: the onsight was called, and it went.
   st.routes.warm?.sent?.called !== true ||
+  // Phase 28.1: no crew to name yet, a few days in.
+  st.crewName !== null ||
   // Phase 26: no warnings, so nothing to lapse.
   JSON.stringify(st.struck) !== '{}' ||
   st.romance !== null ||

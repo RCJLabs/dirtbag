@@ -1206,7 +1206,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     case 'texts':
       return {
         title: 'Text the crew',
-        sub: 'You send the same text to everyone: "Climbing?"',
+        // Phase 28.1: to the crew, by its name once it has one.
+        sub: `You send the same text to ${s.crewName?.name ?? 'everyone'}: "Climbing?"`,
         close: true,
         lines: crewTexts(s),
         rows: [{ label: 'Back', run: () => game.openSheet({ k: 'van' }) }],

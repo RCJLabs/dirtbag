@@ -50,6 +50,10 @@ import {
   DOG_TIER_NAME,
   dogTier,
   FA_NAME_MAX,
+  CREW_NAME,
+  crewNameable,
+  crewOf,
+  crewSuggestions,
   GEAR,
   KIT,
   faSuggestions,
@@ -213,6 +217,7 @@ import {
   type Guest,
   CALL_SAYS,
   fill,
+  listOf,
 } from '../sim';
 import type { Game, JournalPage, SheetId, Ui } from '../game/game';
 import { legacyFile, saveLegacyFile } from '../game/legacy';
@@ -286,6 +291,8 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
       <BetaBody key={id.route} game={game} route={id.route} s={state} />
     ) : id.k === 'fa' ? (
       <FaBody game={game} route={id.route} s={state} />
+    ) : id.k === 'crew' ? (
+      <CrewBody game={game} s={state} />
     ) : id.k === 'journal' ? (
       <JournalBody game={game} page={id.page} s={state} />
     ) : id.k === 'week' ? (
@@ -1491,6 +1498,52 @@ function FaBody({ game, route, s }: { game: Game; route: string; s: GameState })
   );
 }
 
+// Phase 28.1: naming the crew. Names from your record, or your own; once, for good.
+function CrewBody({ game, s }: { game: Game; s: GameState }) {
+  const [names] = useState(() => crewSuggestions(s));
+  const [name, setName] = useState(names[0] ?? '');
+  if (s.crewName || !crewNameable(s)) return null;
+  const ok = name.trim().length >= 2;
+  const who = crewOf(s).map((w) => PEOPLE[w]?.name ?? w);
+  return (
+    <form
+      className="fa"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (ok) game.nameCrew(name);
+      }}
+    >
+      <h3 id="sheet-title">The crew</h3>
+      <p className="sub">
+        {listOf([...who, 'you'])}. Every crew gets a name sooner or later, and this one is waiting on yours.
+        Once it sticks, it’s stuck.
+      </p>
+      <label className="field">
+        <span>The name</span>
+        <input
+          id="crew-name"
+          value={name}
+          maxLength={CREW_NAME.max}
+          autoComplete="off"
+          spellCheck={false}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </label>
+      <div className="chips">
+        {names.map((n) => (
+          <button type="button" key={n} className="chip" aria-pressed={name === n} onClick={() => setName(n)}>
+            {n}
+          </button>
+        ))}
+      </div>
+      <button type="submit" className="go" disabled={!ok}>
+        That’s the name
+        <small>{name.trim() || 'No name yet'}</small>
+      </button>
+    </form>
+  );
+}
+
 // Bills land on the night of every seventh day.
 // Tonight, from the van: what bed costs, what's left in the morning, how you'll feel and
 // what the sky will do. Every number is the one sleep will use (sim/tonight.ts).
@@ -2089,7 +2142,7 @@ function YouBody({ game, s }: { game: Game; s: GameState }) {
         </p>
       )}
       <KitRows s={s} />
-      <PeopleRows s={s} />
+      <PeopleRows game={game} s={s} />
       <p className="crux">Money</p>
       <p className="sub">
         {s.cash >= 0 ? `${money(s.cash)} cash.` : `${money(-s.cash)} on the card.`}{' '}
@@ -2204,12 +2257,26 @@ function ActRow({ s }: { s: GameState }) {
 }
 
 // The people you've met: how close you are, in v0.956's tiers, and where things stand.
-function PeopleRows({ s }: { s: GameState }) {
+function PeopleRows({ game, s }: { game: Game; s: GameState }) {
   const met = Object.entries(s.people).filter(([id]) => PEOPLE[id]);
   if (!met.length && !s.dog) return null;
+  // Phase 28.1: the crew, by name once it has one.
+  const crew = crewOf(s).map((w) => PEOPLE[w]?.name ?? w);
   return (
     <>
       <p className="crux">People</p>
+      {s.crewName && (
+        <p className="sub" id="crew">
+          The crew: <b>{s.crewName.name}</b>, named on day {s.crewName.day}.{' '}
+          {crew.length ? `${listOf([...crew, 'you'])}.` : 'Just you, these days.'}
+        </p>
+      )}
+      {crewNameable(s) && (
+        <button type="button" className="opt" id="name-crew" onClick={() => game.openSheet({ k: 'crew' })}>
+          <span>Name the crew</span>
+          <small>{listOf([...crew, 'you'])}. It’s waiting on you.</small>
+        </button>
+      )}
       <ul className="days people">
         {met.map(([id, p]) => (
           <li key={id}>

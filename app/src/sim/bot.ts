@@ -48,6 +48,7 @@ import {
   act,
   actCost,
   faSuggestions,
+  crewSuggestions,
   goBlocked,
   knowsBeta,
   landingChance,
@@ -451,6 +452,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
         const line = routesAt(s.seed, s.at, s.day).find((x) => x.id === e.route);
         if (line) go({ t: 'name', route: e.route, name: faSuggestions(s, line)[0]!, call: 0 });
       }
+      // The crew gets the first name on offer too (Phase 28.1).
+      if (e.k === 'crewName') go({ t: 'nameCrew', name: crewSuggestions(s)[0]! });
     }
     // A call at the crag after a go (Phase 23.5), answered there and then.
     if (a.t === 'done' && (s.encounter?.kind === 'stance' || s.encounter?.kind === 'echo'))
@@ -664,7 +667,9 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       // A beat can send her off mid-conversation.
       if (whereNow(s, 'sage') !== s.at) return;
       const node = talkStart(s, 'sage');
-      const crew = !!opts.social && node?.startsWith('crew-');
+      // The crew's name (Phase 28.1) comes up for every bot, so it can't stand in front of
+      // her lessons; drama is the social bot's.
+      const crew = node === 'crew-name' || (!!opts.social && !!node?.startsWith('crew-'));
       const love = !!node?.startsWith('love-');
       if (!node || !(node === 'meet' || node === 'again' || node.startsWith('beat-') || crew || love)) return;
       if (node === 'again' && s.today.includes('sage')) return;

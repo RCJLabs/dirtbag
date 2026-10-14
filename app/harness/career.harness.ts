@@ -266,8 +266,12 @@ it('the people', { timeout: 2_400_000 }, () => {
   const missed: number[] = [];
   const shows: number[] = [];
   const distinct: number[] = [];
-  out('| start | weeks with something new | weeks without | ambient by day 100: shown · distinct |');
-  out('|---|---|---|---|');
+  // Phase 28.1: the day the crew got its name, or null.
+  const named: (number | null)[] = [];
+  out(
+    '| start | weeks with something new | weeks without | ambient by day 100: shown · distinct | crew named |',
+  );
+  out('|---|---|---|---|---|');
   for (const start of Object.keys(STARTS))
     for (let k = 0; k < PEOPLE_SEEDS; k++) {
       const run = season(`p-${start}-${k}`, {
@@ -290,10 +294,16 @@ it('the people', { timeout: 2_400_000 }, () => {
       const amb = ls.filter((l) => l.day <= 100 && ambient.has(l.text)).map((l) => l.text);
       shows.push(amb.length);
       distinct.push(new Set(amb).size);
+      const crew = run.state.crewName;
+      named.push(crew?.day ?? null);
       out(
-        `| ${start} | ${weeks - without.length}/${weeks} | ${without.length ? without.map((w) => w + 1).join(', ') : '–'} | ${amb.length} · ${new Set(amb).size} |`,
+        `| ${start} | ${weeks - without.length}/${weeks} | ${without.length ? without.map((w) => w + 1).join(', ') : '–'} | ${amb.length} · ${new Set(amb).size} | ${crew ? `day ${crew.day}, ${crew.name}` : '–'} |`,
       );
     }
+  const days = named.filter((d): d is number => d !== null);
+  out(
+    `\nThe crew was named in ${days.length} of ${named.length} careers${days.length ? `, on day ${median(days)} at the median (${Math.min(...days)}–${Math.max(...days)})` : ''}.`,
+  );
   out('\n## Targets\n');
   say(
     missed.every((m) => m === 0),

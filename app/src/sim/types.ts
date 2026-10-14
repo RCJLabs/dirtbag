@@ -133,6 +133,8 @@ export interface GameState {
   // Phase 25.6 (save v56): crew drama, once it's happened: the one you picked, the one you
   // let down, the day it happened (or was last left alone), and where it stands.
   crew: { a: string; b: string; day: number; stage: 'rift' | 'mended' | 'set' } | null;
+  // Phase 28.1 (save v59): the crew's name, and the day you named it. Named once, for good.
+  crewName: { name: string; day: number } | null;
   teams: { id: string; day: number; summit: boolean; high: number }[];
   // How you live (dials.ts LIFESTYLE): paid at the van every night.
   lifestyle: 'dirtbag' | 'comfortable' | 'plush';
@@ -563,6 +565,8 @@ export type Action =
   | { t: 'rest'; route: string }
   | { t: 'done'; route: string; result: GoResult }
   | { t: 'name'; route: string; name: string; call: -1 | 0 | 1; for?: string }
+  // Phase 28.1: naming the crew.
+  | { t: 'nameCrew'; name: string }
   // Phase 17.6: calling home back.
   | { t: 'call' }
   // Phase 21.3: a session (a protocol's id, or 'prehab'), a phase, a taper.
@@ -654,6 +658,8 @@ export type GameEvent =
   | { k: 'skills'; gains: Partial<Skills>; grade: number | null }
   // The first ascent of an open line: it's yours to name.
   | { k: 'fa'; route: string }
+  // The crew wants a name, and you said you'd give it one (Phase 28.1).
+  | { k: 'crewName' }
   // A goal of the act done, or the whole act.
   | { k: 'goal'; id: string }
   | { k: 'act'; n: number }

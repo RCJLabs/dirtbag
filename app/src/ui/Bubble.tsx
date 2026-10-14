@@ -36,7 +36,7 @@ export function Bubble({ game, talk, node }: { game: Game; talk: string; node: s
   return (
     <div className="bubble" id="bubble" role="dialog" aria-live="polite" ref={ref}>
       <p className="who">{PEOPLE[def.who]?.name}</p>
-      <p>{fill(n.text, talkValues(ui.state))}</p>
+      <p>{fill(n.text, talkValues(ui.state, def.who))}</p>
       {opts.length > 0 && (
         <div className="acts">
           {opts.map(({ o, i }) => (

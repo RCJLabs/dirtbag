@@ -10,7 +10,7 @@ import { arcNodes, arcStarts } from './arcs';
 import { FIRE_ASK, GIFTS } from './gifts';
 import { money } from '../format';
 import { romanceNodes, romanceStarts } from './romance';
-import { crewNodes, crewStarts } from './crew';
+import { crewNameNodes, crewNameStarts, crewNodes, crewStarts } from './crew';
 import { PLACES } from './places';
 import type { Delta, Skills } from '../types';
 
@@ -43,6 +43,8 @@ export interface TalkFx {
   invite?: string;
   // Crew drama (Phase 25.6): you go with them, keep your word to `with`, try to mend it, or leave it.
   crew?: { do: 'pick' | 'keep' | 'mend' | 'leave'; with: string };
+  // The crew's name (Phase 28.1): you'll name it now, or later from the People list.
+  crewName?: 'name' | 'later';
 }
 
 export interface TalkOpt {
@@ -184,6 +186,8 @@ export const TALK: Record<string, TalkDef> = {
   'hazel-lot': {
     who: 'hazel',
     start: [
+      // Phase 28.1: the crew's name, at the fire or over the coffee.
+      ...crewNameStarts('hazel'),
       { when: { night: true, sentToday: 'pump' }, node: 'night-sent' },
       { when: { night: true, wentToday: 'pump' }, node: 'night-goes' },
       { when: { night: true }, node: 'night' },
@@ -192,6 +196,7 @@ export const TALK: Record<string, TalkDef> = {
       { node: 'morning' },
     ],
     nodes: {
+      ...crewNameNodes('hazel'),
       'night-sent': { text: 'You sent it. Now you need a new one.', opts: SIT },
       'night-goes': { text: "{goes} {goes|go|goes} today. How's the skin?", opts: SIT },
       night: { text: "Fire's warm. Sit.", opts: SIT },
@@ -232,12 +237,14 @@ export const TALK: Record<string, TalkDef> = {
     // Her arc plays here, at the crag (Phase 17.2): the Lot's mornings are the tip and the coffee.
     start: [
       ...arcStarts('hazel'),
+      ...crewNameStarts('hazel'),
       { when: { sentToday: 'pump' }, node: 'sent' },
       { when: { wentToday: 'pump' }, node: 'goes' },
       { node: 'start' },
     ],
     nodes: {
       ...arcNodes('hazel'),
+      ...crewNameNodes('hazel'),
       sent: { text: "That's the one. Lower off, I'm hungry.", opts: [{ label: 'OK' }] },
       goes: { text: 'Clean catch. Rest up, go again.', opts: [{ label: 'OK' }] },
       start: {
@@ -264,12 +271,14 @@ export const TALK: Record<string, TalkDef> = {
       ...romanceStarts('sage'),
       // Crew drama (Phase 25.6).
       ...crewStarts('sage'),
+      ...crewNameStarts('sage'),
       { when: { today: 'sage' }, node: 'done' },
       { node: 'again' },
     ],
     nodes: {
       ...romanceNodes('sage'),
       ...crewNodes('sage'),
+      ...crewNameNodes('sage'),
       meet: {
         text: "You're the one Hazel says keeps staring at The Pump. I'm Sage. I climb slow and I read everything first.",
         opts: [
@@ -530,11 +539,13 @@ export const TALK: Record<string, TalkDef> = {
       ...arcStarts('mara'),
       ...romanceStarts('mara'),
       ...crewStarts('mara'),
+      ...crewNameStarts('mara'),
       { node: 'again' },
     ],
     nodes: {
       ...romanceNodes('mara'),
       ...crewNodes('mara'),
+      ...crewNameNodes('mara'),
       ...arcNodes('mara'),
       meet: {
         text: 'A woman on the next line lowers off, looks at your chalk bag, then at you. "Mara. You’re on my warm-up." She doesn’t move you off it. "Go on, then. Don’t celebrate if you get it."',
@@ -560,11 +571,13 @@ export const TALK: Record<string, TalkDef> = {
       { when: { notMet: 'rico' }, node: 'meet' },
       ...arcStarts('rico'),
       ...crewStarts('rico'),
+      ...crewNameStarts('rico'),
       { node: 'again' },
     ],
     nodes: {
       ...arcNodes('rico'),
       ...crewNodes('rico'),
+      ...crewNameNodes('rico'),
       meet: {
         text: 'Someone in a sleeveless tee is hanging off the steepest thing here by one heel, arguing with it. He drops, sees you watching, and grins. "Rico. You want next go? It’s horrible. You’ll love it."',
         opts: [
@@ -590,11 +603,13 @@ export const TALK: Record<string, TalkDef> = {
       { when: { life: 'tam/1' }, node: 'slowing' },
       ...arcStarts('tam'),
       ...crewStarts('tam'),
+      ...crewNameStarts('tam'),
       { node: 'again' },
     ],
     nodes: {
       ...arcNodes('tam'),
       ...crewNodes('tam'),
+      ...crewNameNodes('tam'),
       slowing: {
         calls: true,
         text: 'Tam takes the first pitch slower than you’ve seen him take anything, and doesn’t pretend otherwise. At the ledge he says, "The good seasons are getting shorter. Or I am."',
