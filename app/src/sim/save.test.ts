@@ -111,7 +111,7 @@ const pics = <T extends object>(st: T): T =>
     ? { ...st, media: { ...(st.media as object), photos: [], piece: null, film: null } }
     : st;
 // And Phase 32.2's: no clues to the Hollow, and no walks in.
-const P342 = { retainers: { physio: null, coach: null }, hollow: { clues: [], tries: 0 } };
+const P342 = { retainers: { physio: null, coach: null }, hollow: { clues: [], tries: 0 }, boltedCracks: [] };
 // And Phase 29.2's: the week's board taken down, to go up again as bounties.
 const reboard = <T extends object>(st: T) =>
   revan({
@@ -2156,6 +2156,7 @@ describe('saves', () => {
       retainers: { physio: null, coach: null },
       media: { ...old.media, photos: [], piece: null, film: null },
       hollow: { clues: [], tries: 0 },
+      boltedCracks: [],
     });
     // It hands in as it always would have.
     const done = act({ ...r.state, at: 'gym' }, { t: 'comp', do: 'finish' });
@@ -2203,7 +2204,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(71);
+    expect(SAVE_VERSION).toBe(72);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

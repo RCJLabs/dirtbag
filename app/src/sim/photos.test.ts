@@ -93,6 +93,7 @@ describe('a save from before the photos', () => {
       ...old,
       media: { ...old.media, photos: [], piece: null, film: null },
       hollow: { clues: [], tries: 0 },
+      boltedCracks: [],
     });
     expect(old.retainers.physio).not.toBeNull();
     expect(photoBlocked(r.state, HARD)).toBe('No photo of that');

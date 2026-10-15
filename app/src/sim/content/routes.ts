@@ -419,6 +419,12 @@ export function librarySport(
   };
 }
 
+// Phase 32.3: a crack you bolted in a wild place: its shape, with bolts in place of the gear.
+export const asSport = (r: RouteDef): RouteDef => {
+  const { stances: _, ...rest } = r;
+  return { ...rest, disc: 'sport', bolts: boltsFor(r.moves) };
+};
+
 // A trad line: a library sport route's shape, with stances in place of bolts. What protects
 // you is what you stopped to place.
 export function libraryTrad(...args: Parameters<typeof librarySport>): RouteDef {

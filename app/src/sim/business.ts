@@ -61,14 +61,16 @@ export function businessRung(s: GameState): number {
 
 // ---- the bluff ----
 
-// Whether a line is climbable: anything but the bluff's, or one of those you've bolted.
+// Whether a line is climbable: anything but the bluff's (and, Phase 32.3, the Hollow's), or
+// one of those you've bolted or cleaned.
 export const bolted = (s: GameState, r: RouteDef): boolean =>
-  !PLACES[r.place]?.land || s.bolted.includes(r.id);
+  !(PLACES[r.place]?.land || PLACES[r.place]?.wild) || s.bolted.includes(r.id);
 
 // Why you can't bolt a line, or null when you can.
 export function boltBlocked(s: GameState, r: RouteDef): string | null {
-  if (!PLACES[r.place]?.land) return 'It’s bolted already';
-  if (!s.unlocked.includes(r.place)) return `It isn’t yours to bolt. ${PLACES[r.place]!.name} is for sale`;
+  const p = PLACES[r.place];
+  if (!p?.land && !p?.wild) return 'It’s bolted already';
+  if (p.land && !s.unlocked.includes(r.place)) return `It isn’t yours to bolt. ${p.name} is for sale`;
   if (s.bolted.includes(r.id)) return 'It’s done already';
   if (s.at !== r.place) return `You bolt it at ${PLACES[r.place]!.name}`;
   return null;

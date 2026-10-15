@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 71;
+export const SAVE_VERSION = 72;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -534,6 +534,11 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, hollow: { clues: [], tries: 0 } };
   },
+  // v71 -> v72 (Phase 32.3): cracks bolted in a wild place; nobody had found one to bolt.
+  71: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, boltedCracks: [] };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -802,10 +807,22 @@ export function validate(x: unknown): string[] {
         gy.upgrades.every((u) => typeof u === 'string' && u in OWN_GYM.upgrades)),
     'gym',
   );
+  // Phase 32.3: a wild place's lines too; and its bolted cracks, among them and cracks.
+  const wildOrLand = (id: unknown) =>
+    typeof id === 'string' &&
+    (!!PLACES[ROUTES[id]?.place ?? '']?.land || !!PLACES[ROUTES[id]?.place ?? '']?.wild);
+  need(Array.isArray(x.bolted) && x.bolted.every(wildOrLand), 'bolted');
   need(
-    Array.isArray(x.bolted) &&
-      x.bolted.every((id) => typeof id === 'string' && !!PLACES[ROUTES[id]?.place ?? '']?.land),
-    'bolted',
+    Array.isArray(x.boltedCracks) &&
+      x.boltedCracks.every(
+        (id) =>
+          typeof id === 'string' &&
+          Array.isArray(x.bolted) &&
+          x.bolted.includes(id) &&
+          ROUTES[id]?.disc === 'trad' &&
+          !!PLACES[ROUTES[id]!.place]?.wild,
+      ),
+    'boltedCracks',
   );
   const gv = x.giving;
   need(isObj(gv) && [gv.total, gv.food, gv.access].every((n) => isInt(n) && n >= 0), 'giving');

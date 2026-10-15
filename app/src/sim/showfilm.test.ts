@@ -50,7 +50,12 @@ describe('a save from before the stand and the film', () => {
     expect(r.from).toBe(67);
     const old = JSON.parse(V67).state;
     // Phase 32.2: and no clues to the Hollow.
-    expect(r.state).toEqual({ ...old, media: { ...old.media, film: null }, hollow: { clues: [], tries: 0 } });
+    expect(r.state).toEqual({
+      ...old,
+      media: { ...old.media, film: null },
+      hollow: { clues: [], tries: 0 },
+      boltedCracks: [],
+    });
     expect(old.media.sponsor.tier).toBeGreaterThanOrEqual(SHOW.tier);
     expect(cycleTasks(r.state, old.media.sponsor.tier, 'real', D).some((t) => t.kind === 'show')).toBe(true);
   });

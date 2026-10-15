@@ -338,6 +338,9 @@ export interface GameState {
   // receipt, the old guidebook), and the walks in that came back without it. Found is
   // `unlocked` holding it.
   hollow: { clues: HollowClue[]; tries: number };
+  // Phase 32.3 (save v72): the cracks you bolted in a wild place, where a crack could go on gear.
+  // They climb as sport lines now (routeOfId); `bolted` holds them too.
+  boltedCracks: string[];
   family: {
     gen: number;
     forebear: string;
@@ -613,7 +616,8 @@ export type Action =
       what?: string;
       set?: string[];
     }
-  | { t: 'bolt'; route: string }
+  // Phase 32.3: a crack in a wild place takes gear (cleaned) or bolts; anything else, its kind.
+  | { t: 'bolt'; route: string; how?: 'gear' | 'bolts' }
   // Phase 25.1: a gift to the food bank or the access fund; an evening on a crag's guide.
   | { t: 'give'; to: 'food' | 'access' }
   // Phase 25.2: your own guiding outfit: started, a guide hired or let go, the till, sold.

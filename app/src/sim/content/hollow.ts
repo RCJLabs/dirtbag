@@ -52,3 +52,7 @@ export const WALK_READY =
 // Found, after the walk in's last line; and not, with the clues still good.
 export const FOUND = 'You’re standing in the Hollow. Nobody has a topo for this. You could make one.';
 export const NOT_FOUND = 'The directions still hold. The canyon’s still up there.';
+
+// Phase 32.3: a crack in the Hollow, cleaned to climb on gear the way it was always going to be.
+export const GEAR_CLEANED =
+  'You rap {line} with a brush and a nut tool, pull the loose flakes and the dirt out of the crack, and leave it as you found it, only cleaner. It takes gear all the way. Nobody’s ever been up it.';

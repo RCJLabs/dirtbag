@@ -66,6 +66,9 @@ export interface PlaceDef {
   // Phase 32.1: on no map and no topo. You can't drive there till you've found it (32.2);
   // finding it puts it in `unlocked`, as a paid trip is.
   hidden?: true;
+  // Phase 32.3: nobody's ever climbed here. Its lines are there to climb once you've cleaned
+  // or bolted them (business.ts), as the Bluff's are, though nobody owns it.
+  wild?: true;
   // Land you buy (Phase 18.6), not a trip you pay for: `unlock` is its price, and its lines
   // are there to climb once you've bolted them (land.ts). The bots don't buy land.
   land?: true;
@@ -384,6 +387,7 @@ export const PLACES: Record<string, PlaceDef> = {
     crag: true,
     rock: 'sandstone',
     hidden: true,
+    wild: true,
     scene: 'hollow',
     ambience: { wind: 0.5, hawk: 0.15 },
     away: 'The slot canyon past the Gorge that nobody puts on a map. Headstones, and rock nobody has touched.',

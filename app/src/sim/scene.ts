@@ -61,14 +61,20 @@ export function stanceDue(s: GameState, place: string): string | null {
   if (indoor(place) || !PLACES[place]?.crag) return null;
   if (s.scene.stances.length && s.day - s.scene.last < FACTION.gap) return null;
   const mine = Object.values(s.firsts).some((f) => !f.by);
+  // Phase 32.3: a bolted crack in the Hollow is what the scene wants to talk about first.
+  const crack = (s.boltedCracks ?? []).length > 0;
   const left = Object.keys(STANCES).filter(
     (id) =>
-      !s.scene.stances.some((x) => x.id === id) && s.day >= STANCES[id]!.after && (!STANCES[id]!.fa || mine),
+      !s.scene.stances.some((x) => x.id === id) &&
+      s.day >= STANCES[id]!.after &&
+      (!STANCES[id]!.fa || mine) &&
+      (!STANCES[id]!.crack || crack),
   );
   if (!left.length) return null;
   const r = Rng.fromStream(s.seed, 'events').derive(`stance-${s.day}-${place}`);
   if (r.next() >= FACTION.chance) return null;
-  return left[Math.floor(r.next() * left.length)]!;
+  const first = left.find((id) => STANCES[id]!.crack);
+  return first ?? left[Math.floor(r.next() * left.length)]!;
 }
 
 // An echo of a call, once it's had time to come back.

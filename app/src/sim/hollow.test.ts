@@ -7,14 +7,18 @@ import { ROCK_LINES } from './content/rock';
 import { ROUTES } from './content/routes';
 import { routeById } from './content/gym';
 import { readFileSync } from 'node:fs';
-import { FOUND, HITCH_ASK, NOT_FOUND, OLD_WORD, WALK_READY, BOOK_ROW } from './content/hollow';
-import { HOLLOW } from './dials';
+import { FOUND, GEAR_CLEANED, HITCH_ASK, NOT_FOUND, OLD_WORD, WALK_READY, BOOK_ROW } from './content/hollow';
+import { STANCES } from './content/scene';
+import { wallAt } from './content/gym';
+import { boltBlocked, bolted } from './business';
+import { HOLLOW, LAND } from './dials';
 import { hitcherById, hitchOpts } from './events';
-import { act, emptyLog, newGame, talkStart } from './game';
+import { act, emptyLog, goBlocked, newGame, routeOfId, talkStart } from './game';
 import { asking, bookBlocked, hardestOutside, hitchDue, known, oldWordDue, walkBlocked } from './hollow';
 import { RAY_GONE } from './lives';
 import { whereNow } from './presence';
-import { fromSave } from './save';
+import { fromSave, validate } from './save';
+import { stanceDue } from './scene';
 import { aimEarned } from './record';
 import type { GameState } from './types';
 
@@ -188,6 +192,116 @@ describe('the walk in', () => {
     if (!r.ok) throw new Error(r.why);
     expect(r.from).toBe(70);
     expect(r.state.hollow).toEqual({ clues: [], tries: 0 });
-    expect(r.state).toEqual({ ...JSON.parse(V70).state, hollow: { clues: [], tries: 0 } });
+    expect(r.state).toEqual({ ...JSON.parse(V70).state, hollow: { clues: [], tries: 0 }, boltedCracks: [] });
+  });
+});
+
+// Phase 32.3: first ascents there. A boulder's cleaned and a face bolted; a crack's cleaned for
+// gear or bolted, your call (Evan's), and the scene hears about it.
+const V71 = readFileSync(new URL('./fixtures/save-v71.json', import.meta.url), 'utf8');
+const there = (over: Partial<GameState> = {}) =>
+  strong({ unlocked: ['hollow'], at: 'hollow', cash: 500, ...over });
+const prep = (s: GameState, route: string, how?: 'gear' | 'bolts') =>
+  act(s, { t: 'bolt', route, ...(how ? { how } : {}) });
+const RACK = 'You need a rack to lead this. The gear shop sells them';
+
+describe('first ascents in the Hollow', () => {
+  it('can’t be climbed till somebody’s been up there with a brush, a rack or a drill', () => {
+    const s = there();
+    for (const r of lines) expect(bolted(s, r)).toBe(false);
+    expect(goBlocked(s, ROUTES.hsplit!)).toBe('Nobody’s been up it. Clean it for gear or bolt it first');
+    expect(goBlocked(s, ROUTES.hwall!)).toMatch(/^Nobody’s bolted it/);
+    expect(goBlocked(s, ROUTES.hcrow!)).toMatch(/^Nobody’s cleaned it/);
+    // Nobody owns it: there's no land to buy, only the way in to find.
+    expect(boltBlocked(s, ROUTES.hsplit!)).toBeNull();
+    expect(boltBlocked({ ...s, at: 'gorge' }, ROUTES.hsplit!)).toMatch(/Hollow/);
+  });
+
+  it('cleans a boulder quietly, and bolts a face, which the gym crowd likes', () => {
+    const s = there();
+    const b = prep(s, 'hcrow');
+    expect(refused(b)).toBe(false);
+    expect(b.state.cash).toBe(s.cash - LAND.clean.cash);
+    expect(b.state.min).toBe(s.min + LAND.clean.min);
+    expect(b.state.scene).toEqual(s.scene);
+    expect(bolted(b.state, ROUTES.hcrow!)).toBe(true);
+    const f = prep(s, 'hwall');
+    expect(f.state.cash).toBe(s.cash - LAND.bolt.cash);
+    expect(f.state.scene).toMatchObject({ old: s.scene.old, gym: s.scene.gym + HOLLOW.scene.bolt.gym });
+    expect(f.state.boltedCracks).toEqual([]);
+    // A face takes bolts, whatever you'd rather.
+    expect(prep(s, 'hwall', 'gear').state.cash).toBe(s.cash - LAND.bolt.cash);
+  });
+
+  it('cleans a crack for gear unless you say otherwise, and the old guard nods; it wants a rack', () => {
+    const s = there();
+    const g = prep(s, 'hsplit');
+    expect(refused(g)).toBe(false);
+    expect(said(g)).toContain(GEAR_CLEANED.replace('{line}', ROUTES.hsplit!.name));
+    expect(g.state.cash).toBe(s.cash - LAND.clean.cash);
+    expect(g.state.scene).toMatchObject({ old: s.scene.old + HOLLOW.scene.gear.old, gym: s.scene.gym });
+    expect(g.state.boltedCracks).toEqual([]);
+    expect(routeOfId(g.state, 'hsplit')?.disc).toBe('trad');
+    expect(wallAt(g.state, 'hollow').find((r) => r.id === 'hsplit')?.disc).toBe('trad');
+    expect(refused(prep({ ...g.state, energy: 100 }, 'hsplit', 'bolts'))).toBe(true);
+  });
+
+  it('bolts a crack if you’d rather: the gym crowd’s pleased, the old guard isn’t, and it climbs as sport', () => {
+    const s = there();
+    const b = prep(s, 'hcorner', 'bolts');
+    expect(refused(b)).toBe(false);
+    expect(b.state.cash).toBe(s.cash - LAND.bolt.cash);
+    expect(b.state.scene).toMatchObject({
+      old: s.scene.old + HOLLOW.scene.crack.old,
+      gym: s.scene.gym + HOLLOW.scene.crack.gym,
+    });
+    expect(b.state.boltedCracks).toEqual(['hcorner']);
+    const r = routeOfId(b.state, 'hcorner')!;
+    expect(r).toMatchObject({ disc: 'sport', grade: ROUTES.hcorner!.grade, moves: ROUTES.hcorner!.moves });
+    expect(r.bolts.length).toBeGreaterThan(0);
+    expect(r.stances).toBeUndefined();
+    expect(wallAt(b.state, 'hollow').find((x) => x.id === 'hcorner')).toEqual(r);
+    // The topo still calls it a crack.
+    expect(ROUTES.hcorner!.disc).toBe('trad');
+    // On a dry day, the crack left for gear wants a rack; the bolted one doesn't.
+    const both = prep({ ...b.state, energy: 100, min: 9 * 60 }, 'hsplit').state;
+    let d = both.day;
+    while (goBlocked({ ...both, day: d }, routeOfId(both, 'hsplit')!) !== RACK) d++;
+    expect(goBlocked({ ...both, day: d }, routeOfId(both, 'hcorner')!)).not.toBe(RACK);
+  });
+
+  it('has the fire argue a bolted crack before anything else, and only then', () => {
+    const b = prep(there(), 'hcorner', 'bolts').state;
+    let d = b.day;
+    while (!stanceDue({ ...b, day: d }, 'hollow')) d++;
+    expect(stanceDue({ ...b, day: d }, 'hollow')).toBe('hollowbolts');
+    const none = { ...b, boltedCracks: [] };
+    for (let i = 0; i < 300; i++) expect(stanceDue({ ...none, day: d + i }, 'gorge')).not.toBe('hollowbolts');
+    // Keep them, and they stay; pull them, and it goes on gear, still yours to climb.
+    const asked = { ...b, day: d, encounter: { kind: 'stance' as const, id: 'hollowbolts' } };
+    expect(act(asked, { t: 'answer', opt: 0 }).state.boltedCracks).toEqual(['hcorner']);
+    const pulled = act(asked, { t: 'answer', opt: 1 });
+    expect(pulled.state.boltedCracks).toEqual([]);
+    expect(pulled.state.bolted).toContain('hcorner');
+    expect(routeOfId(pulled.state, 'hcorner')?.disc).toBe('trad');
+    expect(pulled.state.scene.old).toBe(b.scene.old + STANCES.hollowbolts!.opts[1]!.fx.old!);
+    for (const t of [GEAR_CLEANED, STANCES.hollowbolts!.sit, ...STANCES.hollowbolts!.opts.map((o) => o.out)])
+      expect(t).not.toMatch(/\d/);
+  });
+
+  it('won’t load bolts in a crack nobody prepared, or a face counted as a crack', () => {
+    const s = prep(there(), 'hcorner', 'bolts').state;
+    expect(validate(s)).toEqual([]);
+    expect(validate({ ...s, boltedCracks: ['hsplit'] })).toContain('boltedCracks');
+    expect(validate({ ...s, bolted: [...s.bolted, 'hwall'], boltedCracks: ['hcorner', 'hwall'] })).toContain(
+      'boltedCracks',
+    );
+  });
+
+  it('loads a real 0.999.67 save from before, with nothing bolted in the Hollow', () => {
+    const r = fromSave(V71);
+    if (!r.ok) throw new Error(r.why);
+    expect(r.from).toBe(71);
+    expect(r.state).toEqual({ ...JSON.parse(V71).state, boltedCracks: [] });
   });
 });

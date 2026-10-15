@@ -1110,34 +1110,66 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
   // A line on your land nobody's bolted yet (Phase 18.6): bolt it, or clean it.
   if (!bolted(s, r)) {
     const boulder = r.disc === 'boulder';
-    const c = boulder ? LAND.clean : LAND.bolt;
+    // Phase 32.3: a crack in a wild place takes gear or bolts, your call; the scene will hear.
+    const crack = r.disc === 'trad' && !!PLACES[r.place]?.wild;
     const no = boltBlocked(s, r);
+    const prep = (id: string, label: string, c: typeof LAND.bolt, note: string, how?: 'gear' | 'bolts') => (
+      <button
+        type="button"
+        className="opt"
+        id={id}
+        disabled={!!no || s.cash < c.cash || s.energy < c.energy}
+        onClick={() => game.bolt(r.id, how)}
+      >
+        <span>{label}</span>
+        <span className="c">{costLabel({ cash: -c.cash, min: c.min, energy: -c.energy })}</span>
+        <small>{no ? `${no}.` : note}</small>
+      </button>
+    );
     return (
       <>
         <h3 id="sheet-title">
           {r.name} · {gradeLabel(r)}
         </h3>
         <p className="sub">
-          {r.line} Nobody’s ever been up it: {boulder ? 'it wants cleaning' : 'it wants bolting'} before
-          anyone can climb it, and then it’s yours to name.
+          {r.line} Nobody’s ever been up it:{' '}
+          {boulder
+            ? 'it wants cleaning'
+            : crack
+              ? 'it wants cleaning for gear, or bolting'
+              : 'it wants bolting'}{' '}
+          before anyone can climb it, and then it’s yours to name.
         </p>
-        <button
-          type="button"
-          className="opt"
-          id="bolt-it"
-          disabled={!!no || s.cash < c.cash || s.energy < c.energy}
-          onClick={() => game.bolt(r.id)}
-        >
-          <span>{boulder ? 'Clean it' : 'Bolt it'}</span>
-          <span className="c">{costLabel({ cash: -c.cash, min: c.min, energy: -c.energy })}</span>
-          <small>
-            {no
-              ? `${no}.`
-              : boulder
-                ? 'Brush the holds, pull the moss off the top, clear the landing.'
-                : 'A day on a rope with a drill: glue-in bolts and a set of chains.'}
-          </small>
-        </button>
+        {boulder
+          ? prep(
+              'bolt-it',
+              'Clean it',
+              LAND.clean,
+              'Brush the holds, pull the moss off the top, clear the landing.',
+            )
+          : crack
+            ? [
+                prep(
+                  'gear-it',
+                  'Clean it for gear',
+                  LAND.clean,
+                  'Pull the loose flakes and the dirt out of the crack, and climb it on a rack. The old guard will approve.',
+                  'gear',
+                ),
+                prep(
+                  'bolt-it',
+                  'Bolt it',
+                  LAND.bolt,
+                  'Bolts beside a crack that would take gear. The gym crowd won’t mind; the old guard will.',
+                  'bolts',
+                ),
+              ]
+            : prep(
+                'bolt-it',
+                'Bolt it',
+                LAND.bolt,
+                'A day on a rope with a drill: glue-in bolts and a set of chains.',
+              )}
       </>
     );
   }
