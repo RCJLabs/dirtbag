@@ -3493,7 +3493,7 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 
 **Phase 31 closed by Evan's call (15 Oct 2026).** Both criteria pass. Carried: the old climber isn't drawn at the Lot (the fire's card names them; a drawn figure is Evan's call); Ray's word on the family never comes up in the harness (weekend mornings at Roadside, gone after year six); the money, standing and fire dials are proposals, and the harness's forebears all stood well with the old guard, so every kid started past the local-knowledge perk; an heir's book gets what comes with the keys on the first morning (the dog, a dream owned, land, a guide in print). The CURRENT MILESTONE moves to Phase 32. The download is 446.5 KB of 460.
 
-### Phase 32 — The Hollow   **<<< CURRENT MILESTONE**
+### Phase 32 — The Hollow
 
 *Large. The Hollow waits for "the quest that finds it" (Phase 21). Phase 5 kept "projects and FAs" to deepen. The Bluff's bolting covers lines already drawn.*
 
@@ -3575,6 +3575,8 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 1. **A bot finds the Hollow and names a first ascent:** passes. The harness's Hollow run: 2 of 4 careers, eight first ascents between them (the table above).
 2. **The content test holds the Hollow's lines to the same rules as every other line:** passes since 32.1 (`content.test.ts` and `hollow.test.ts`: every line open, in its rock, its moves a line's).
 3. **The download stays within its budget:** passes. 452.8 KB of 460, without raising it.
+
+**Phase 32 closed by Evan's call (15 Oct 2026).** All three criteria pass. Carried: the old hand's clue is luck (he's a weighted hitchhiker, and one of the harness's four careers never met him in 420 days), and a surer trigger is Evan's call, one that belongs with Phase 35's road; the scene's shifts for preparing a line, the repeats' timing, the royalty per first ascent and the cap's five shifts are proposals; the cap binds on a full shelf before any first ascent (ten guides' $150 to $140); settling a grade is words only (the call carries no standing, as v0.956's did); no bot writes a guide, so the cap is held by tests alone. The CURRENT MILESTONE moves to Phase 35. The download is 452.8 KB of 460.
 - **The harness:** 30 of 31 targets pass, as for 31.4 (Outdoors 1 of 4, as since 30.1); the ladders' tables are unchanged. The one number that moved: the median career's ending names 10 things where it named 11 (the fewest is still 7), from the old hand's odds moving which hitchhikers a bot meets.
 - **The download** is 450.5 KB of 460 (+2.3 KB).
 
@@ -3740,7 +3742,7 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 
 **Phase 34 closed by Evan's call (15 Oct 2026).** Both criteria pass. Carried: the money criterion is read on a career's totals (a sponsor's cycle lands in one night, so a week of media came within $2 of the best week of shifts); the bots keep it real and work shifts, so a brand-terms player who works less isn't measured; most photos sell at the cap by mid-career; the piece, the stand's and the film's numbers are proposals. The CURRENT MILESTONE moves to Phase 30. The download is 440.5 KB of 460.
 
-### Phase 35 — The road and the year
+### Phase 35 — The road and the year   **<<< CURRENT MILESTONE**
 
 *Small. The knocks have no follow-up. There are eight hitchhikers, and no pull toward the ones you haven't met (the audit's social #9). The roadside stops are one-line lifts. Holidays are fire cards (the audit's social #16).*
 
@@ -3756,6 +3758,16 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 **Done when.**
 1. The content tests cover the new pools.
 2. In a two-year bot career, no hitchhiker comes a third time before every one has come once.
+
+**The survey (15 Oct 2026).** Ten knocks (`content/knocks.ts`), three answers each, picked by spot with the last three skipped; nothing remembers your answer or who you helped. Eight hitchhikers (`content/road.ts`), each with a second-meeting card; a met one is 2.6 times *likelier* (`EVENTS.hitch.again`), the opposite of what this phase wants, and `deck.met` records only your first answer, so every meeting after the second replays it. Nine roadside stops, pull over or drive on, no choice inside one. The four holidays (Phase 17.6: Harvest, Longest Night, First Dry Rock, Midsummer, days 7, 21, 35 and 49 of the year) are a psyche morning card at the Lot. The music is synthesized (Phase 25, `src/audio/moods.ts`), heard by nobody yet. Save v73.
+
+**Evan's calls (15 Oct 2026), all as recommended:**
+- **Knocks:** the ones you helped come back, once, weeks later at the Lot, with a thank-you in their own voice (a gift, a favour, beta); turning one away is remembered with a line, not a punishment.
+- **Hitchhikers:** four more (twelve in all); the ones you haven't met come first, and none comes a third time before everyone has come once (a meeting count). While his clue is due, the old hand stands at a pull-off on the Gorge road, so the Hollow's third clue isn't luck.
+- **Stops:** every one gets two or three ways to spend the pull-over, each a trade, formatted from the dials.
+- **Holidays:** a scene each for the same four: Harvest a Sendsgiving potluck (a dish from the pantry), Longest Night a headlamp session on the Lot's boulders, First Dry Rock the season's opener at Roadside, Midsummer the solstice fire; your people there, a choice or two and their lines.
+
+**Slices:** 35.1 hitchhikers: the rotation, four more, the old hand at the pull-off; 35.2 stops with a choice; 35.3 knocks that come back; 35.4 holiday nights; 35.5 the music's second pass (on Evan's ear), the harness, the e2e and the close.
 
 ## Stage D — Get it in front of people
 
@@ -4107,3 +4119,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-15 — 32.3 built: first ascents in the Hollow: boulders cleaned, faces bolted, cracks cleaned for gear or bolted, your call; the old guard and the gym crowd hear about it, and the fire argues a bolted crack. Save v72. 0.999.68.
 - 2026-10-15 — 32.4 built: your first ascents get repeated, and after a few the grade is the line's, not your call; you hear about it. A guide pays a little more for each line of yours in it, all of them under the poorest job's week. Save v73. 0.999.69.
 - 2026-10-15 — 32.5 built: a bot looks for the Hollow, finds it and puts up lines there (the harness: 2 of 4, criterion 1); cleaning a line in debt no longer refused; the e2e walks in and cleans the split for gear. Phase 32's Done-when all pass. 0.999.70.
+- 2026-10-15 — Phase 32 closed by Evan's call; CURRENT MILESTONE moved to Phase 35, the road and the year.
