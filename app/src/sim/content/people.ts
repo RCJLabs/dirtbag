@@ -151,7 +151,7 @@ function inviteOpts(who: string, say: string): TalkOpt[] {
         bond: `${who}/${p.invite}`,
         open: id,
         ...(p.minGrade !== undefined ? { grade: p.minGrade } : {}),
-        ...(p.unlock !== undefined ? { unlocked: id } : {}),
+        ...(p.unlock !== undefined || p.hidden ? { unlocked: id } : {}),
       },
       fx: { invite: id, today: 'invite', line: say.replace('{place}', p.name) },
     });

@@ -18,6 +18,7 @@ import {
   newGame,
   PEOPLE,
   PLACES,
+  known,
   routeOfId,
   indoor,
   routesAt,
@@ -790,6 +791,7 @@ export class Game {
     // The valley sits in the middle of a wide screen, fitted under the HUD.
     const [sx, sy] = screenToMap(x - mapLeft(this.ui.get().w), y);
     const near = Object.entries(MAP_PINS)
+      .filter(([id]) => known(this.state, id))
       .map(([id, p]) => ({ id, d: Math.hypot(p.x - sx, p.y - sy) }))
       .sort((a, b) => a.d - b.d)[0];
     if (near && near.d < 30) {

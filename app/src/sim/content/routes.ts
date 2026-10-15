@@ -1683,6 +1683,78 @@ const bSilo = libraryBoulder('bsilo', 'The silo stone', 12, 'dyno', 'bluff', {
   open: true,
 });
 
+// Phase 32.1: the Hollow, a slot canyon nobody has a topo for. Every line is an open project:
+// the first to send it names it. Until then they're only what you'd call them to someone who'd
+// never been. Three boulders on the canyon floor, two cracks, and two faces.
+const hollowOpen = (r: RouteDef): RouteDef => ({ ...r, open: true });
+const hCrow = libraryBoulder('hcrow', 'The crow traverse', 9, 'technical', 'hollow', {
+  moves: 9,
+  from: 3.6,
+  to: 5.4,
+  cruxName: 'The blank bit',
+  heightFt: 8,
+  line: 'A low traverse along the canyon floor, under the ledge the crows use.',
+  open: true,
+});
+const hStone = libraryBoulder('hstone', 'The headstone boulder', 10, 'crimp', 'hollow', {
+  moves: 7,
+  from: 3.2,
+  to: 4.8,
+  cruxName: 'The edges',
+  heightFt: 12,
+  line: 'A leaning block behind the headstones. Whoever was here climbed around them, never on them.',
+  open: true,
+});
+const hGap = libraryBoulder('hgap', 'The gap', 12, 'dyno', 'hollow', {
+  moves: 6,
+  from: 3.0,
+  to: 4.4,
+  cruxName: 'The jump',
+  heightFt: 14,
+  line: 'Two good holds either side of the slot, and nothing between them but air.',
+  open: true,
+});
+const hSplit = hollowOpen(
+  libraryTrad('hsplit', 'The split', 8, 'crack', 'hollow', {
+    moves: 22,
+    heightFt: 70,
+    line: 'A crack that splits the canyon wall top to bottom, hands all the way.',
+    rest: 11,
+    a: { style: 'crack', name: 'The flare', from: 6.4, to: 8.6, win: 'Locked in.' },
+    b: { style: 'endurance', name: 'The long hands', from: 15.0, to: 18.0, win: 'The rim.' },
+  }),
+);
+const hCorner = hollowOpen(
+  libraryTrad('hcorner', 'The black corner', 10, 'crack', 'hollow', {
+    moves: 24,
+    heightFt: 80,
+    line: 'A corner streaked black where the water runs, with a seam in the back of it.',
+    rest: 12,
+    a: { style: 'crack', name: 'The seam', from: 7.0, to: 9.4, win: 'Out of the seam.' },
+    b: { style: 'power', name: 'The roof', from: 17.0, to: 19.6, win: 'Over it.' },
+  }),
+);
+const hWall = hollowOpen(
+  librarySport('hwall', 'The sunless wall', 9, 'crimp', 'hollow', {
+    moves: 22,
+    heightFt: 70,
+    line: 'A smooth wall the sun never reaches, small edges all the way up.',
+    rest: 11,
+    a: { style: 'crimp', name: 'The edges', from: 6.2, to: 8.4, win: 'On the ledge.' },
+    b: { style: 'technical', name: 'The slab above', from: 15.6, to: 17.8, win: 'The rim.' },
+  }),
+);
+const hLean = hollowOpen(
+  librarySport('hlean', 'The leaning wall', 11, 'power', 'hollow', {
+    moves: 24,
+    heightFt: 70,
+    line: 'Where the canyon narrows, one wall leans out over the other.',
+    rest: 12,
+    a: { style: 'power', name: 'The lean', from: 7.4, to: 9.8, win: 'Through it.' },
+    b: { style: 'endurance', name: 'The pump', from: 17.2, to: 20.2, win: 'Top.' },
+  }),
+);
+
 const LINES: Record<string, RouteDef> = {
   warm: warmBoulder,
   dyno,
@@ -1771,6 +1843,13 @@ const LINES: Record<string, RouteDef> = {
   bhay: bHay,
   btrough: bTrough,
   bsilo: bSilo,
+  hcrow: hCrow,
+  hstone: hStone,
+  hgap: hGap,
+  hsplit: hSplit,
+  hcorner: hCorner,
+  hwall: hWall,
+  hlean: hLean,
   ...Object.fromEntries(PITCHES.map((r) => [r.id, r])),
 };
 

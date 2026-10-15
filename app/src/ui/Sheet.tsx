@@ -125,6 +125,7 @@ import {
   picks,
   overhead,
   PLACES,
+  known,
   routeOfId,
   seasonOf,
   SKILLS,
@@ -864,7 +865,9 @@ function PlanBody({ game, ui }: { game: Game; ui: Ui }) {
       <>
         <h3 id="sheet-title">Where?</h3>
         <ul>
-          {Object.entries(PLACES).map(([id, p]) => opt(p.name, () => setAdding(id)))}
+          {Object.entries(PLACES)
+            .filter(([id]) => known(ui.state, id))
+            .map(([id, p]) => opt(p.name, () => setAdding(id)))}
           {opt('Back', () => setAdding(null))}
         </ul>
       </>

@@ -1,7 +1,7 @@
 // The valley map in the park-poster style: flat elevation bands, hillshade, lollipop
 // forests, cream roads with dark edges, town blocks. Painted once; pins go on top live.
 
-import { mk, rgb, trace, type G } from '../kit/geom';
+import { mk, rgb, trace, type G, type Pt } from '../kit/geom';
 import { fbm, grain, mulberry32 } from '../kit/noise';
 import { H, W } from '../layout';
 import { lpTree } from '../shapes';
@@ -31,6 +31,20 @@ const PO = {
   wall: '#EFE0C2',
   ink: '#1E2B2B',
 };
+
+// A dirt road drawn over the painted valley (Phase 32.1: one to a place you've found).
+export function dirtRoad(g: G, pts: Pt[]): void {
+  for (const [w, col] of [
+    [4, PO.edge],
+    [2, PO.dirt],
+  ] as const) {
+    g.strokeStyle = col;
+    g.lineWidth = w;
+    g.beginPath();
+    trace(g, pts, false);
+    g.stroke();
+  }
+}
 
 function houses(g: G): void {
   for (const b of BLOCKS) {
@@ -97,8 +111,9 @@ function paintMap(g: G, pad: number): void {
       forest(g, u < pad ? u - pad : W + u - pad, 70 + rs() * 620, rs);
     }
   }
-  // Dirt side roads, like the Gorge's: narrower, and the colour of dirt.
-  const sides = Object.values(SIDE_ROADS);
+  // Dirt side roads, like the Gorge's: narrower, and the colour of dirt. Not one to a place
+  // nobody's found (Phase 32.1): render.ts draws that once you have.
+  const sides = Object.values(SIDE_ROADS).filter((r) => !r.hidden);
   for (const [w, col] of [
     [4, PO.edge],
     [2, PO.dirt],

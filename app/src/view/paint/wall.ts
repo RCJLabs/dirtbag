@@ -306,6 +306,45 @@ const TOPO_PTS: Record<string, Pt[]> = {
     [308, 190],
     [314, 122],
   ],
+  // Phase 32.1: the Hollow's wall: the split up its crack on the left, the sunless wall's
+  // edges, the black corner up its seam to the roof, and the leaning wall on the right.
+  hsplit: [
+    [62, 540],
+    [58, 470],
+    [64, 400],
+    [56, 330],
+    [62, 262],
+    [58, 190],
+    [62, 128],
+  ],
+  hwall: [
+    [142, 540],
+    [148, 470],
+    [138, 400],
+    [150, 330],
+    [140, 260],
+    [148, 190],
+    [142, 128],
+  ],
+  hcorner: [
+    [222, 540],
+    [218, 470],
+    [224, 400],
+    [216, 330],
+    [222, 262],
+    [214, 214],
+    [232, 196],
+    [228, 128],
+  ],
+  hlean: [
+    [302, 540],
+    [306, 470],
+    [296, 404],
+    [310, 340],
+    [300, 270],
+    [308, 200],
+    [302, 124],
+  ],
   // The Crucible: Crucible Crux on the left, The Lifeline up its seam, Threshold up the
   // middle, and the myth up the right, where nobody has chalked anything.
   ccrux: [
@@ -835,6 +874,90 @@ const M_WALL: Pt[] = [
   [320, 440],
   [338, BASE_Y],
 ];
+
+// Phase 32.1: the Hollow, red sandstone in a slot canyon: a strip of sky between the rims,
+// the wall in shade all day, old water streaks, the split and the black corner's seam.
+const H_WALL: Pt[] = [
+  [-4, BASE_Y],
+  [-4, 84],
+  [70, 92],
+  [150, 78],
+  [230, 90],
+  [300, 74],
+  [364, 86],
+  [364, BASE_Y],
+];
+
+function paintHollow(g: G): void {
+  g.fillStyle = lin(g, 0, 0, 0, 100, [
+    [0, '#B8C9CF'],
+    [1, '#E6D7C2'],
+  ]);
+  g.fillRect(0, 0, W, H);
+  const r = mulberry32(173);
+  g.save();
+  g.beginPath();
+  poly(g, H_WALL, true);
+  g.clip();
+  g.fillStyle = lin(g, 0, 80, 0, BASE_Y, [
+    [0, '#9A5A44'],
+    [1, '#6E3C30'],
+  ]);
+  g.fillRect(0, 0, W, H);
+  // Bedding, and the water's streaks down it from the rim.
+  g.strokeStyle = 'rgba(50,24,18,.3)';
+  g.lineWidth = 1.2;
+  for (let y = 130; y < BASE_Y; y += 34 + r() * 26) {
+    g.beginPath();
+    g.moveTo(-4, y);
+    for (let x = 0; x <= W + 8; x += 24) g.lineTo(x, y + Math.sin(x * 0.02 + y) * 6);
+    g.stroke();
+  }
+  for (let i = 0; i < 12; i++) {
+    g.fillStyle = lin(g, 0, 88, 0, 400, [
+      [0, 'rgba(30,16,14,.5)'],
+      [1, 'rgba(30,16,14,0)'],
+    ]);
+    g.fillRect(r() * W, 88, 4 + r() * 12, 160 + r() * 240);
+  }
+  // The split, and the black corner's seam with its pale side and the roof above it.
+  g.strokeStyle = 'rgba(24,12,10,.8)';
+  g.lineWidth = 2.6;
+  for (const pts of [TOPO_PTS.hsplit!, TOPO_PTS.hcorner!.slice(0, 5)]) {
+    g.beginPath();
+    trace(
+      g,
+      pts.map(([x, y]) => [x + 6, y]),
+      false,
+    );
+    g.stroke();
+  }
+  g.fillStyle = 'rgba(255,214,190,.12)';
+  g.fillRect(234, 214, 60, BASE_Y - 214);
+  g.fillStyle = 'rgba(30,14,12,.55)';
+  g.fillRect(200, 196, 70, 14);
+  // The rim, where the light gets in.
+  g.fillStyle = '#B87458';
+  g.fillRect(-4, 76, W + 8, 14);
+  g.restore();
+  g.fillStyle = '#5E4A3C';
+  g.fillRect(-4, BASE_Y, W + 8, H - BASE_Y);
+  g.fillStyle = '#4C3A2E';
+  for (let i = 0; i < 12; i++) {
+    g.beginPath();
+    rock(g, r() * W, BASE_Y + 20 + r() * 160, 10 + r() * 18, 5 + r() * 7);
+    g.fill();
+  }
+  // A headstone at the foot of the wall, the name worn off.
+  g.fillStyle = '#9A9A92';
+  g.beginPath();
+  g.moveTo(330, BASE_Y + 6);
+  g.lineTo(330, BASE_Y - 22);
+  g.quadraticCurveTo(342, BASE_Y - 34, 354, BASE_Y - 22);
+  g.lineTo(354, BASE_Y + 6);
+  g.closePath();
+  g.fill();
+}
 
 // Psicobloc Cove: a limestone sea cliff, tufas hanging down it, orange and grey streaks,
 // scrub along its top, and the sea at its foot.
@@ -1759,6 +1882,7 @@ function paintWall(g: G, place: string, selected: string): void {
   else if (place === 'crucible') paintCrucible(g);
   else if (place === 'cove') paintCove(g);
   else if (place === 'bluff') paintBluff(g);
+  else if (place === 'hollow') paintHollow(g);
   else if (SCENED.includes(place)) paintExpedWall(g, place);
   else paintRoadside(g);
   paintLines(g, place, selected);
@@ -1782,6 +1906,7 @@ const FACE: Record<string, Pt[]> = {
   crucible: C_WALL,
   cove: P_WALL,
   bluff: BL_WALL,
+  hollow: H_WALL,
   elcap: EXPED_FACE,
   cerrotorre: EXPED_FACE,
   trango: EXPED_FACE,

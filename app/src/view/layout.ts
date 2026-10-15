@@ -204,6 +204,27 @@ export const CRAGS: Record<string, CragSpec> = {
     hint: 'Nobody’s ever climbed here. Pick a line and bolt it.',
     frame: 880,
   },
+  // Phase 32.1: the Hollow, a slot canyon: four roped lines up the red wall, two cracks and
+  // two faces, the crow traverse along the floor before it, and two boulders past it. The
+  // headstones stand between the traverse and the wall (paint/scenes.ts).
+  hollow: {
+    width: 1500,
+    wall: [560, 1160],
+    lines: [
+      { n: 1, x: 640, route: 'hsplit' },
+      { n: 2, x: 760, route: 'hwall' },
+      { n: 3, x: 880, route: 'hcorner' },
+      { n: 4, x: 1000, route: 'hlean' },
+    ],
+    boulders: [
+      { x: 360, w: 96, h: 40, route: 'hcrow' },
+      { x: 1270, w: 72, h: 56, route: 'hstone' },
+      { x: 1400, w: 80, h: 64, route: 'hgap' },
+    ],
+    sign: 272,
+    hint: 'No topo, and no chalk. Every line here is yours to name.',
+    frame: 860,
+  },
   // The Crucible: a black gneiss wall with four roped lines, the myth the last of them, and
   // boulders on the frozen ground either side; the boulder myth out past Event Horizon.
   crucible: {
@@ -396,6 +417,7 @@ export const SCENES: Record<string, SceneLayout> = {
   stone: cragScene('stone', CRAGS.stone!),
   wind: cragScene('wind', CRAGS.wind!),
   crucible: cragScene('crucible', CRAGS.crucible!),
+  hollow: cragScene('hollow', CRAGS.hollow!),
   cove: cragScene('cove', CRAGS.cove!),
   bluff: cragScene('bluff', CRAGS.bluff!),
   cave: {
@@ -528,6 +550,8 @@ export const SPOTS: Record<string, Spot[]> = {
   stone: [{ who: 'dex', x: 1180, face: -1, pose: 'stand', talk: 'dex' }],
   wind: [{ who: 'dex', x: 1350, face: -1, pose: 'stand', talk: 'dex' }],
   crucible: [{ who: 'dex', x: 1340, face: -1, pose: 'stand', talk: 'dex' }],
+  // Nobody's day brings them to a canyon nobody knows (Phase 32.1).
+  hollow: [],
   cove: [{ who: 'dex', x: 420, face: 1, pose: 'stand', talk: 'dex' }],
   // Nobody's day brings them to private land (Phase 18.6).
   bluff: [],
@@ -607,6 +631,8 @@ export const MAP_PINS: Record<string, Pin> = {
   wind: { x: 40, y: 108, side: 1, kind: 'crag' },
   // East out of the valley, over the pass above Midtown.
   crucible: { x: 338, y: 372, side: -1, kind: 'crag', dy: 16 },
+  // Phase 32.1: south off the Gorge's road, down a wash into the slot. On the map once found.
+  hollow: { x: 56, y: 196, side: 1, kind: 'crag' },
   // West past Old Town, down to the coast.
   cove: { x: 24, y: 506, side: 1, kind: 'crag', dy: 14 },
   // Miller's Bluff (Phase 18.6): east of the Lot, down a farm track.

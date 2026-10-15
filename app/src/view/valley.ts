@@ -70,7 +70,9 @@ export const TRAILS: Pt[][] = [
 ];
 // The side roads: how a place off the highway reaches it, from where it leaves the
 // highway. A place beside the highway has none: it joins the highway level with its pin.
-export const SIDE_ROADS: Record<string, { pts: Pt[]; dirt?: true }> = {
+// Phase 32.1: a `hidden` one is to a place nobody's found yet: it's drawn on the map (by
+// render.ts, over the painted valley) once you have.
+export const SIDE_ROADS: Record<string, { pts: Pt[]; dirt?: true; hidden?: true }> = {
   // The Old Town spur.
   diner: {
     pts: [
@@ -106,6 +108,22 @@ export const SIDE_ROADS: Record<string, { pts: Pt[]; dirt?: true }> = {
       [40, 108],
     ],
     dirt: true,
+  },
+  // The Hollow (Phase 32.1): the Gorge's dirt road, then a wash south off it into the slot.
+  hollow: {
+    pts: [
+      [274, 168],
+      [236, 172],
+      [198, 168],
+      [160, 162],
+      [122, 156],
+      [96, 152],
+      [84, 166],
+      [70, 180],
+      [56, 194],
+    ],
+    dirt: true,
+    hidden: true,
   },
   // East to Miller's Bluff (Phase 18.6): a farm track off the highway above the Lot.
   bluff: {
