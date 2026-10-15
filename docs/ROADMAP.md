@@ -3404,6 +3404,25 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - **The harness** passes every target it passed on 30.2; Outdoors stays 1 of 4, and the money target holds (media at most 80% of a media career's shifts; 105% before the half stipend). The bots used the runway: the media bots ran 9 to 17 clinics a career and were dropped by a sponsor 0 to 2 times; the business bots set 31 to 38 League nights from 35.
 - **The download** is 442.0 KB of 460.
 
+**Status (15 Oct 2026): 30.4 built: the epilogue at 30 and at 45, and the age table.** No save change, 0.999.61.
+- **The epilogue says when it ended and how** (`STOP_END`): one line, after the people, where going home's sits for a career that went home.
+  - Chosen before the years started on your strength (33): "You hung it up at 30, with the grades still coming. People said you’d be back. You came back to watch."
+  - Chosen after: "You hung it up at 38 on a good day, before the years could make the call for you."
+  - The body's call: "At 45 your body made the call you kept putting off. The power went first, the way everyone says it does; the feet and the head stayed to the end."
+- **A late bloomer who chose the day** no longer "ran out of time first": "You started late and stopped on your own terms, and you climbed like someone who could hear the clock." The old line stays for one the body ended.
+- **Read through:** bot careers stopped at 30 (one with no origin, one a Late Bloomer) and one the body ended at 45. The other lines come from what the career did (sends, people, the record), so a short career's epilogue is shorter, not wrong. A test holds the stop line to the age and the cause.
+- **The age table** (criterion 1, in the ending harness): at 40, each career's level as a go has it, all round and on power lines, against the best before then; the grade shown beside it.
+- **The harness:** 29 of 30 targets pass. Outdoors is 1 of 4, as since 30.1 (2 on main before Phase 30). The ladders' tables are unchanged from 30.3.
+- **The download** is 442.2 KB of 460.
+
+**Phase 30's Done-when, checked (15 Oct 2026):**
+1. **A 40-year-old bot climbs within a set number of grades of its peak:** passes. The number is `PEAK_GAP`, 1 grade; all 16 careers are within it at 40, the most below their best 0.09 of a grade all round and 0.35 on power lines.
+   - Why so close: the bots train every week to 40, so their gains still outrun a 7% loss on power and fingers, and technique and head are 6% up by then. A climber who stops training meets the whole curve; no bot does, so the harness doesn't show it.
+   - A power line reads power and fingers, the two skills age takes, so the gap shows most there. On that blend the bots sit at 17.1 to 25.6, near or past the top of the scale (V18).
+2. **Careers retired at 30 and at 45 both read well in the epilogue:** passes on the read-through above, held by `stopend.test.ts`; "read well" is a judgement, and the samples are in the PR for Evan's.
+
+Closing the phase is Evan's call.
+
 ### Phase 31 — After you
 
 *Medium. The heir has a five-goal act and a coarse head start. The audit (`meta.md` #11) asked for the family name in the scene, a share of the money and a first quest of the heir's own. An inherited gym stays out.*
@@ -3960,3 +3979,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-15 — Phase 30 planned with Evan's calls (a gentle curve with skill offsets, halved after measuring; slower recovery and healing; the runway from 35; insurance by age). 30.1 built: a go uses your skills as your years have them, said on the You page. No save change. 0.999.58.
 - 2026-10-15 — 30.2 built: a night gives back less from 30, an injury lasts longer from 35, insurance costs more from 30; the odds of getting hurt don't move. No save change. 0.999.59.
 - 2026-10-15 — 30.3 built: the runway from 35: a clinic at the Cave, a comp's problems set the day before, and a sponsor's ambassador terms (a clinic where it asked for a send); paid like work, under a job's. Save v69. 0.999.60.
+- 2026-10-15 — 30.4 built: the epilogue says when a career ended and how, and a late bloomer who chose the day didn't run out of time; the ending harness's age table (criterion 1). No save change. 0.999.61.

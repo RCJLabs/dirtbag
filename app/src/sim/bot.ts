@@ -47,7 +47,7 @@ import {
   type VanPart,
 } from './dials';
 import { cold, freshLoad, ratio } from './body';
-import { gradeOf, average, margin, MIX, type Style } from './climber';
+import { gradeOf, average, levelOf, margin, mix, MIX, type Style } from './climber';
 import {
   act,
   actCost,
@@ -122,6 +122,10 @@ export interface DaySummary {
   grade: number;
   // The five skills' average: the grade's finer grain.
   avg: number;
+  // Phase 30.4: the level a go climbs at, your skills as your years have them: all round, and
+  // on power lines, where the years take most.
+  aged: number;
+  agedPower: number;
   energy: number;
   skin: number;
   fed: number;
@@ -978,6 +982,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       cash: s.cash,
       grade: gradeOf(s.climber.skills),
       avg: average(s.climber.skills),
+      aged: Math.round(levelOf(average(agedSkills(s))) * 100) / 100,
+      agedPower: Math.round(levelOf(mix(agedSkills(s), 'power')) * 100) / 100,
       energy: s.energy,
       skin: s.skin,
       fed: s.fed,

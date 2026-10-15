@@ -94,6 +94,18 @@ export const PEOPLE_END: Record<string, { close: string; far?: string }> = {
 };
 
 // Home for good (Phase 17.6): how it ended, said first.
+// Phase 30.4: when it ended and how, said once: before the years started on you, on a day you
+// chose after they had, or when your body chose it. `{age}` comes from the rules. And the late
+// bloomer who chose the day, not the body.
+export const STOP_END = {
+  early:
+    'You hung it up at {age}, with the grades still coming. People said you’d be back. You came back to watch.',
+  chose: 'You hung it up at {age} on a good day, before the years could make the call for you.',
+  body: 'At {age} your body made the call you kept putting off. The power went first, the way everyone says it does; the feet and the head stayed to the end.',
+};
+export const LATE_CHOSE =
+  'You started late and stopped on your own terms, and you climbed like someone who could hear the clock.';
+
 export const HOME_FOR_GOOD =
   'You went home for good. There’s a crag an hour from your folks’ place, and you know every line on it.';
 
