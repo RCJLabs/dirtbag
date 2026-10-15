@@ -45,6 +45,8 @@ export type RecordAim =
   | { followers: number }
   | { sponsor: number }
   | { film: true }
+  // Phase 34.4: a film of one of your lines, paid for.
+  | { commissioned: true }
   // Phase 18.6: a gym of your own, and land.
   | { gym: true }
   | { land: true };
@@ -424,6 +426,16 @@ export const RECORD: RecordEntry[] = [
       'The film goes out, and strangers write to you about their own projects. You answer every one, slowly, from the van.',
     from: [],
     aim: { film: true },
+  },
+  // Phase 34.4: the film you paid for, against Ines's, which came to you.
+  {
+    id: 'commissioned',
+    title: 'Paid for the Light',
+    desc: 'Pay for a film of one of your lines.',
+    story:
+      'You paid a crew to follow you up a line you had already climbed, and it was harder the second time with a lens on it. You watch the film once. After that you watch the people watching it.',
+    from: [],
+    aim: { commissioned: true },
   },
   {
     id: 'gymowner',

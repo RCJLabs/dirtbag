@@ -71,7 +71,7 @@ import { hitchFriend } from './events';
 import { carePrice, weeklyBills } from './clinic';
 import { spotBlocked, ticketOdds } from './spots';
 import { tonight } from './tonight';
-import type { Action, FavourWhat, GameState, GoResult, Skills, TripPlan } from './types';
+import type { Action, FavourWhat, GameState, GoResult, PaySource, Skills, TripPlan } from './types';
 import type { Rng } from './rng';
 import { conditions, conditionsAt, seasonOf } from './weather';
 import { currentGoal, HEIR_LADDER, LADDER } from './story';
@@ -80,7 +80,15 @@ import { defaultPlan, planBlocked, planCost, stormOn, summitOdds, yourPitch } fr
 import { WALLS } from './content/routes';
 import { COMP_TIERS } from './content/comps';
 import { compBlocked, compCost, compHere, gradesFor, picksFor } from './comps';
-import { photoBlocked, pieceBlocked, postBlocked, unsoldPhotos } from './media';
+import {
+  filmBlocked,
+  photoBlocked,
+  pieceBlocked,
+  postBlocked,
+  showBlocked,
+  showToday,
+  unsoldPhotos,
+} from './media';
 import { gymBuyBlocked, UPGRADES, type Upgrade } from './business';
 import { scoreSet, setBrief } from './work';
 import { LADDERS } from './ladders';
@@ -100,6 +108,8 @@ export interface BotRun {
   lines: string[];
   // One line per day, taken at bedtime.
   days: DaySummary[];
+  // Phase 34.4: every payment, its day and where it came from, for the money table.
+  paid: { day: number; from: PaySource; cash: number }[];
 }
 
 export interface DaySummary {
@@ -309,6 +319,9 @@ export interface WeekOpts {
 
 // The cash each strategy tries to keep before it'll spend a day climbing.
 const CUSHION: Record<Strategy, number> = { climber: 15, balanced: 60, worker: Infinity, career: 60 };
+// What the media bot keeps over its cushion before it pays for a film (Phase 34.4): a film is a
+// late goal, bought with money nothing else wants.
+const FILM_OVER = 500;
 // How far ahead the comp bot saves for a comp's fee and travel: a fortnight, so the World
 // Series, a week after Nationals, is saved for before Nationals is paid (Phase 34.2).
 const COMP_AHEAD = 14;
@@ -428,7 +441,16 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   const hands = opts.hands ?? carefulHands;
   const strategy = opts.strategy ?? 'balanced';
   let s = newGame(seed);
-  const run: BotRun = { state: s, actions: [], refused: [], sends: [], injuries: [], lines: [], days: [] };
+  const run: BotRun = {
+    state: s,
+    actions: [],
+    refused: [],
+    sends: [],
+    injuries: [],
+    lines: [],
+    days: [],
+    paid: [],
+  };
   let workMin = 0;
   let hardest = -1;
   let climbMin = 0;
@@ -480,6 +502,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       if (e.k === 'line') run.lines.push(`day ${s.day}: ${e.text}`);
       if (e.k === 'sent') run.sends.push(`day ${s.day}: ${e.route} (${e.style})`);
       if (e.k === 'injured') run.injuries.push(`day ${s.day}: ${e.kind} (tier ${e.tier})`);
+      if (e.k === 'paid') run.paid.push({ day: s.day, from: e.from, cash: e.cash });
       if (e.k === 'skills' && a.t === 'done') climbGain += Object.values(e.gains).reduce((n, g) => n + g, 0);
       // A first ascent gets the first name on offer, called true.
       if (e.k === 'fa') {
@@ -1532,6 +1555,10 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     if (opts.focus === 'media') answerOffer();
     // Phase 34.3: the year's piece, written at the van first thing, while there's energy for it.
     if (opts.focus === 'media' && !pieceBlocked(s)) go({ t: 'piece' });
+    // Phase 34.4: the sponsor's stand takes the day it's on; a film, once it's flush for one.
+    if (s.media.sponsor && !showBlocked(s)) go({ t: 'show' });
+    if (opts.focus === 'media' && !filmBlocked({ ...s, cash: s.cash - CUSHION.career - FILM_OVER }))
+      go({ t: 'film' });
     if (s.fed < 70) eat();
     buyTrips();
     kit();
@@ -1626,7 +1653,9 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     const next = saving();
     park();
     // Tomorrow's comp is kept free (Phase 18.7): no shift signed up over it.
-    if (!compFor(s.day + 1, false) && !roundToday(s.day + 1)) signUp(jobActs(), next ? next + 50 : 0);
+    // Nor over the sponsor's stand (Phase 34.4).
+    if (!compFor(s.day + 1, false) && !roundToday(s.day + 1) && !showToday(s, s.day + 1))
+      signUp(jobActs(), next ? next + 50 : 0);
     record(where, morning);
     bed();
   }

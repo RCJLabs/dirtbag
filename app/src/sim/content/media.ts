@@ -94,3 +94,19 @@ export const PIECE_SAYS = {
   paid: 'The magazine pays {cash} for the piece.',
   lapsed: 'The magazine runs somebody else’s page on the season. The editor says next year, and means it.',
 };
+
+// Phase 34.4: a day on the sponsor's stand at the trade show. `{sponsor}`, `{day}` and `{cash}`
+// come from the rules.
+export const SHOW_SAYS = {
+  task: 'A day on {sponsor}’s stand at the trade show, day {day}',
+  row: 'Work the stand',
+  note: 'A day in a convention hall in {sponsor}’s shirt, shaking hands under a photo of yourself.',
+  done: 'A day on {sponsor}’s stand: hands shaken, posters signed, the same question about the same send asked forty ways. {cash} for it, and some of the people who stopped by follow you now.',
+};
+
+// Phase 34.4: a film of your hardest line, paid for. `{line}` comes from the rules.
+export const FILM_SAYS = {
+  row: 'Pay for a film of {line}',
+  note: 'A small crew from the city, some days at the crag and in the van, and the line climbed again for the lens.',
+  made: 'The film of {line} goes out. It’s short, the light is better than you remember, and people you’ve never met watch it twice.',
+};

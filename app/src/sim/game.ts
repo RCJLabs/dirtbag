@@ -55,11 +55,24 @@ import { favourAsk, riding } from './favours';
 import { TEAM_FUNDED, TEAM_NOTHING, TEAM_SUMMIT, TEAM_TURNED } from './content/team';
 import { guideBlocked, guidesOut } from './guides';
 import { bolted, boltBlocked, gymBuyBlocked, gymNight, UPGRADES, wallWord, type Upgrade } from './business';
-import { DOC, HEAT_SAYS, MEDIA_RIVAL, PHOTO_SAYS, PIECE_SAYS, POSTS, SPONSORS, TERMS } from './content/media';
+import {
+  DOC,
+  FILM_SAYS,
+  HEAT_SAYS,
+  MEDIA_RIVAL,
+  PHOTO_SAYS,
+  PIECE_SAYS,
+  POSTS,
+  SHOW_SAYS,
+  SPONSORS,
+  TERMS,
+} from './content/media';
 import { CREW_HEAT } from './content/renown';
 import {
   cycleTasks,
   fromAudience,
+  filmBlocked,
+  filmLine,
   heatTonight,
   photoBlocked,
   photoPrice,
@@ -69,6 +82,7 @@ import {
   postBlocked,
   postGain,
   rivalFollowers,
+  showBlocked,
   tierEarned,
   todaysBest,
 } from './media';
@@ -288,6 +302,8 @@ import {
   AGE,
   RETAINER,
   PIECE,
+  SHOW,
+  FILM,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
 import { WALL_EVENTS, wallEventById } from './content/wallevents';
@@ -402,6 +418,7 @@ import type {
   SendStyle,
   Skills,
   FavourWhat,
+  PaySource,
 } from './types';
 import { conditionsAt, seasonOf, sunOn } from './weather';
 
@@ -456,6 +473,7 @@ export function newGame(seed: string): GameState {
       lost: null,
       photos: [],
       piece: null,
+      film: null,
     },
     gym: null,
     bolted: [],
@@ -888,6 +906,7 @@ export function act(s0: GameState, a: Action): Result {
     s.log.push({ day: s.day, min: s.min, text });
     if (s.log.length > LOG_MAX) s.log.splice(0, s.log.length - LOG_MAX);
   };
+  const paid = (from: PaySource, cash: number) => events.push({ k: 'paid', from, cash });
   const line = (text: string) => {
     events.push({ k: 'line', text });
     note(text);
@@ -1712,6 +1731,7 @@ export function act(s0: GameState, a: Action): Result {
     // Tips, where a job has them, on top of the shift's pay.
     const tips = d.job ? tipsFor(s, d.job.id) : 0;
     if (tips) spend({ cash: tips });
+    if (d.job && (cost.cash ?? 0) + tips > 0) paid('job', (cost.cash ?? 0) + tips);
     // A night at the fire (Phase 17.7) is said by whoever's there.
     const fire = id === 'lot.sit' ? fireLine(s) : null;
     const said = fire?.text ?? d.says;
@@ -1790,9 +1810,15 @@ export function act(s0: GameState, a: Action): Result {
       if (sp.tasks.every((t) => t.done)) {
         const pay = Math.round(S.stipend * (sp.terms === 'brand' ? MEDIA.brand : 1));
         spend({ cash: pay });
+        paid('sponsor', pay);
         s.media = {
           ...s.media,
-          sponsor: { ...sp, due: ended + MEDIA.cycle, tasks: cycleTasks(s, sp.tier, sp.terms), strikes: 0 },
+          sponsor: {
+            ...sp,
+            due: ended + MEDIA.cycle,
+            tasks: cycleTasks(s, sp.tier, sp.terms, ended + MEDIA.cycle),
+            strikes: 0,
+          },
         };
         line(`${S.name} pays the cycle: ${money(pay)}. A new list of asks lands the same hour.`);
       } else if (sp.strikes + 1 >= MEDIA.strikes) {
@@ -1805,7 +1831,7 @@ export function act(s0: GameState, a: Action): Result {
           sponsor: {
             ...sp,
             due: ended + MEDIA.cycle,
-            tasks: cycleTasks(s, sp.tier, sp.terms),
+            tasks: cycleTasks(s, sp.tier, sp.terms, ended + MEDIA.cycle),
             strikes: sp.strikes + 1,
           },
         };
@@ -2411,6 +2437,7 @@ export function act(s0: GameState, a: Action): Result {
         const sp = s.media.sponsor!;
         const pay = SPONSORS[sp.tier]!.ad;
         spend({ cash: pay });
+        paid('ad', pay);
         markTask((t) => t.kind === 'ad');
         line(`${POSTS.ad.says} +${money(pay)}.`);
       } else {
@@ -2826,6 +2853,7 @@ export function act(s0: GameState, a: Action): Result {
         photos: s.media.photos.map((x) => (x.route === a.route ? { ...x, sold: s.day } : x)),
       };
       spend({ cash });
+      paid('photo', cash);
       const r = routeById(s.seed, a.route);
       line(fill(PHOTO_SAYS.sold, { line: r ? lineName(s, r) : a.route, cash: money(cash) }));
       break;
@@ -2834,6 +2862,7 @@ export function act(s0: GameState, a: Action): Result {
       const why = pieceBlocked(s);
       if (why) return refuse(`${why}.`);
       spend({ min: PIECE.min, energy: -PIECE.energy, cash: PIECE.pay });
+      paid('piece', PIECE.pay);
       const gain = fromAudience(s, PIECE.followers);
       s.media = {
         ...s.media,
@@ -2842,6 +2871,32 @@ export function act(s0: GameState, a: Action): Result {
       };
       line(PIECE_SAYS.wrote);
       line(fill(PIECE_SAYS.paid, { cash: money(PIECE.pay) }));
+      break;
+    }
+
+    // Phase 34.4: a day on the sponsor's stand, an ask of the cycle; and a film of your hardest
+    // line, paid for, once a life.
+    case 'show': {
+      const why = showBlocked(s);
+      if (why) return refuse(`${why}.`);
+      const sp = s.media.sponsor!;
+      const fee = SHOW.fee[sp.tier] ?? 0;
+      spend({ min: SHOW.min, energy: -SHOW.energy, cash: fee });
+      if (fee) paid('show', fee);
+      addFollowers(fromAudience(s, SHOW.followers));
+      markTask((t) => t.kind === 'show' && t.day === s.day);
+      line(fill(SHOW_SAYS.done, { sponsor: SPONSORS[sp.tier]!.name, cash: money(fee) }));
+      break;
+    }
+    case 'film': {
+      const why = filmBlocked(s);
+      if (why) return refuse(`${why}.`);
+      const route = filmLine(s)!;
+      spend({ cash: -FILM.price });
+      addFollowers(fromAudience(s, FILM.followers));
+      s.media = { ...s.media, film: { route, day: s.day } };
+      const r = routeById(s.seed, route);
+      line(fill(FILM_SAYS.made, { line: r ? lineName(s, r) : route }));
       break;
     }
 

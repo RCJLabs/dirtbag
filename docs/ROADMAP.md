@@ -3548,6 +3548,25 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - **The harness** passes every target but Outdoors, at 2 of 4 as on main. The media bots reach the film at median day 159.5 (161.5 on main), three of the four sooner with the photo money; every other ladder as on main.
 - **The download** is 439.5 KB of 460.
 
+**Status (15 Oct 2026): 34.4 built: trade shows, a film you pay for, and the money table.** Save v68, 0.999.57.
+- **The stand** (Evan's call: trade shows, light; `SHOW` in the dials): from Apex up, each sponsor cycle asks for a day on its stand at the trade show, four days before the cycle ends, said with the cycle's other asks.
+  - Worked from the feed on the day, by 10:00: the day goes on it, for about a shift's pay ($60 at Apex, $120 at Meridian) and the followers a stand brings.
+  - Missed, it's an ask not done, so the cycle ends on a warning, unpaid. It clashes with climbing, and with a shift booked that day.
+- **A film you pay for** (`FILM`): once a life, of your hardest first send outside at V10 or harder, for $2,500 to a crew from the city; it brings followers and the Record Book's "Paid for the Light". Ines's film stays the media ladder's top, and comes to you.
+- **Money says where it came from:** a shift, a sponsor's cycle, an ad, a photo, a piece and a stand each pay with a tag the harness reads.
+- **The money table** (criterion 1, in the ladders harness): each media career's pay by where it came from, against its shifts'. Over the four careers media paid 38% to 68% of what the shifts did: sponsors $3,860 to $6,060, photos $1,300 to $4,200, pieces $750 to $1,200, stands $1,980 to $2,700, no ads (the bot keeps it real), against shifts of $18,260 to $24,399. Its best week of media never beat its best week of shifts ($520 to $670, against $672). At $100 and $200 a stand, media reached 90% of the shifts in one career and a best week of $870, so the stand pays about a shift.
+- **Every word** of the stand and the film is formatted from the rules, held by a test.
+- **Save v68:** no film, and a sponsor's stand from its next cycle. A real 0.999.56 save, a Meridian career with photos sold and a piece asked for, loads and plays on.
+- **The bots:** a sponsored bot works the stand and books no shift over it: 18 to 25 stands a media career, and its sponsor's warnings as on main (5 to 9, against 4 to 10). The media bot pays for the film once it's $500 past its cushion: three of the four did, on days 247 to 306.
+- **The harness** passes every target but Outdoors, at 2 of 4 as on main. The media bots reach the film at median day 149.5 (159.5 before the stand); every other ladder's rows as on main.
+- **The download** is 440.5 KB of 460.
+
+**Phase 34's Done-when, checked (15 Oct 2026):**
+1. **The harness's money table shows media income in a media career, never more than a job's:** passes. Media pays every media career less than its shifts do: 38% to 68%, 4 of 4.
+2. **Every perk's text is formatted from its dial:** passes since 34.1, held by `perks.test.ts`; the retainers', the photos', the piece's, the stand's and the film's words are held the same way.
+
+Closing the phase is Evan's call.
+
 ### Phase 35 — The road and the year
 
 *Small. The knocks have no follow-up. There are eight hitchhikers, and no pull toward the ones you haven't met (the audit's social #9). The roadside stops are one-line lifts. Holidays are fire cards (the audit's social #16).*
@@ -3898,3 +3917,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-15 — Phase 34 planned with Evan's calls (perks on the jobs there are; your sends' photos sell; opt-in retainers and comp travel; trade shows and a film, light). 34.1 built: rank perks for the setter, the guide, the warehouse, the coach, the café and the diner, each said from its dial (criterion 2); the business bot minds its gym till it peaks. No save change. 0.999.54.
 - 2026-10-15 — 34.2 built: the costs of ambition: a physio on retainer and a coach of your own, each weekly and opt-in, and travel to Nationals, the World Series and the Games. Save v66. 0.999.55.
 - 2026-10-15 — 34.3 built: photos that sell (a camera, or one of the crew shooting; one a week to a magazine, capped under the poorest job's week) and a magazine piece once a year; the media bot uses both. Save v67. 0.999.56.
+- 2026-10-15 — 34.4 built: a day on the sponsor's stand each cycle from Apex up; a film of your hardest line, paid for once; money tagged by where it came from, and the harness's money table (criterion 1). Phase 34's Done-when both pass. Save v68. 0.999.57.
