@@ -13,6 +13,7 @@ import {
   AGE,
   ageOf,
   daysLeft,
+  ageingNote,
   retireBlocked,
   guitarRank,
   RANK_NAME,
@@ -1970,6 +1971,8 @@ function AgeRow({ game, s }: { game: Game; s: GameState }) {
           : age >= AGE.from
             ? `Hanging it up is yours whenever you want it; your body calls it at ${AGE.forced}.`
             : `Hanging it up is yours from ${AGE.from}; your body calls it at ${AGE.forced}.`}
+        {/* Phase 30.1: what the years have done, as a go has it. */}
+        {ageingNote(s) ? ` ${ageingNote(s)}` : ''}
       </p>
       {can && (
         <button type="button" className="opt" id="hangup" onClick={() => game.openSheet({ k: 'hangup' })}>

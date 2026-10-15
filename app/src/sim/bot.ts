@@ -3,6 +3,7 @@
 // the same door a tap does, so a bot's week is a real week. With careful hands it reads the
 // meter exactly, so what it reaches is an upper bound; human hands scatter.
 
+import { agedSkills } from './ageing';
 import { folksDue } from './folks';
 import {
   attemptInput,
@@ -1282,7 +1283,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     let worst: { m: number; style: Style } | null = null;
     for (const id of w.pitches) {
       const p = ROUTES[id]!;
-      const m = margin(s.climber.skills, p.type, p.grade);
+      const m = margin(agedSkills(s), p.type, p.grade);
       if (!worst || m < worst.m) worst = { m, style: p.type };
     }
     return worst && worst.m < 1 ? MIX[worst.style][0] : null;

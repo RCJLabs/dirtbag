@@ -395,6 +395,7 @@ import { echoDue, echoOpts, permitFor, shift, stanceDue, stanceOpts } from './sc
 import { boardWeek, bountyProgress, jobProgress, jobText, payWords, postBoard } from './board';
 import { homeCrowd, homeReady, yearsDone } from './year';
 import { ageOf, birthdayLine, bodyWaits, retireBlocked } from './age';
+import { agedSkills } from './ageing';
 import { familyFill, heirOf } from './heir';
 import { COACH_LINE, HEIR_OPEN } from './content/heir';
 import { BOARD_JOBS } from './content/board';
@@ -3433,7 +3434,7 @@ export function act(s0: GameState, a: Action): Result {
         line('False start. The lights hadn’t gone green.');
         break;
       }
-      const time = speedTime(s.climber.skills, a.real);
+      const time = speedTime(agedSkills(s), a.real);
       train(got);
       if (was === null || time < was) {
         s.speed.pb = time;
