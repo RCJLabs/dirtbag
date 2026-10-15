@@ -401,7 +401,7 @@ import { ageCost, agedSkills, healDays } from './ageing';
 import { clinicBlocked, clinicHeads, clinicPay, compTomorrow, setCompBlocked } from './runway';
 import { RUNWAY_SAYS } from './content/runway';
 import { familyFill, heirOf } from './heir';
-import { COACH_LINE, HEIR_OPEN } from './content/heir';
+import { COACH_LINE, HEIR_MONEY, HEIR_OPEN } from './content/heir';
 import { BOARD_JOBS } from './content/board';
 import { DALE_VERDICT, RIG_TRADE } from './content/garage';
 import { CALLINGS, OPEN_CALLINGS } from './content/callings';
@@ -3077,6 +3077,8 @@ export function act(s0: GameState, a: Action): Result {
       s.talents = { ids: origin ? dealTalents(deal) : [], known: [], from: { ...skills } };
       if (s.family) {
         line(familyFill(s, HEIR_OPEN));
+        const left = s.family.career?.money ?? 0;
+        if (left > 0) line(fill(HEIR_MONEY, { cash: money(left), forebear: s.family.forebear }));
         if (s.family.coach) line(familyFill(s, COACH_LINE));
         // The kid your forebear coached, grown, coaching you (Phase 25.3): a head start.
         const mt = s.family.mentee;

@@ -3440,6 +3440,23 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 1. An heir's career meets the old climber and takes beta from them on a line they sent.
 2. A save from before the phase, with an heir, loads.
 
+**The survey (15 Oct 2026).** The handover (`heirOf`) keeps the first ascents (re-tagged `kin:`), the whole Record Book, the van, what was owned, the trips, bolts, guides in print, the dogs and the mode, and `family {gen, forebear, lines, coach, mentee?}`. It drops the sends and their beta, the crew, scars, expeditions, the money, the age and the old guard's regard. No fixture holds an heir and no bot plays one. Nobody else can join the fire (`atFire` hard-codes Hazel, Frank and Sage), and no line knows a family name. Nothing in the game is a one-off quest from a person.
+
+**Evan's calls (15 Oct 2026), all as recommended:**
+- **Money:** a share, capped: a quarter of the money at the end (cash and the dream's pot), at most two weeks of the café's shifts.
+- **The old guard:** lines plus standing. Ray, Frank and the crowd know whose kid you are, and the kid's standing starts part of the way to the forebear's.
+- **The quest:** the line they never sent (their most-tried unsent line), with their beta. It falls back to their hardest send, and for an heir from before the phase, to their first ascent.
+- **The family book:** a fresh book for the kid, the forebear's beside it. Old heir saves split by the retirement day.
+
+**Slices:** 31.1 what they leave (save v70); 31.2 the old climber at the fire; 31.3 the name and the quest; 31.4 the heir in the harness and the e2e, and the close.
+
+**Status (15 Oct 2026): 31.1 built: what they leave.** Save v70, 0.999.62.
+- **What the family keeps** (`family.career`, `careerOf` in `heir.ts`): the lines they sent outside (the gym's sets come down; a wall's pitches are kept), the one they tried most and never sent (the harder of two tried as often), their age and how it ended, scars, summits, the crew's name, where they stood with the old guard, and the money they left.
+- **The money** (`FAMILY.share` 0.25 of cash and the pot, at most `FAMILY.shifts` (10) of the café's shifts' pay, `leaveCap`): a debt isn't passed on, and the cap is under the cheapest dream (a test holds it). Create's Start button shows the kid's cash. The first morning says it once: "There’s an envelope in the glovebox with $70 in it and Robin’s handwriting on the front: “Gas first.”"
+- **The old guard:** the kid's standing starts `FAMILY.old` (half) of the way from 50 to the forebear's, either way.
+- **The family book:** the forebear's Record Book goes to `family.books` and the kid's starts empty. The Record page lists each earlier generation's entries by title under the kid's own. Entries for what comes with the keys (the dog, a dream owned, land, a guide in print) go in the kid's book on the first morning. Days on the road count from the kid's first morning (`day` aims read `day − life.held` for a family).
+- **Save v70:** migration 69 splits an heir's book at `life.held` (the forebear's last day): entries to that day go to the forebear's page, any generation before lumped in with them. No `career` for them, so the old climber will know only their first ascents. Fixture `save-v69.json`: a career bot with a first ascent hangs it up at 31, and Jo climbs on (written from main's code).
+
 ### Phase 32 — The Hollow
 
 *Large. The Hollow waits for "the quest that finds it" (Phase 21). Phase 5 kept "projects and FAs" to deepen. The Bluff's bolting covers lines already drawn.*
@@ -3981,3 +3998,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-15 — 30.3 built: the runway from 35: a clinic at the Cave, a comp's problems set the day before, and a sponsor's ambassador terms (a clinic where it asked for a send); paid like work, under a job's. Save v69. 0.999.60.
 - 2026-10-15 — 30.4 built: the epilogue says when a career ended and how, and a late bloomer who chose the day didn't run out of time; the ending harness's age table (criterion 1). No save change. 0.999.61.
 - 2026-10-15 — Phase 30 closed by Evan's call; CURRENT MILESTONE moved to Phase 31, after you.
+- 2026-10-15 — 31.1 built: what the old climber leaves: a share of the money, capped; half their standing with the old guard; what they did, kept for the family; their Record Book beside the kid's fresh one. Save v70. 0.999.62.

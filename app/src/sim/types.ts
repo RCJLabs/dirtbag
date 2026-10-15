@@ -340,6 +340,14 @@ export interface GameState {
     lines: string[];
     coach: boolean;
     mentee?: { name: string; grade: number };
+    // Phase 31.1 (save v70): what the forebear did, kept at the handover (an heir from before
+    // it has none): the lines they sent outside, the one they tried most and never sent,
+    // their age and how it ended, their scars, the summits, the crew's name, where they stood
+    // with the old guard, and the money they left you.
+    career?: Career;
+    // Each earlier generation's Record Book, oldest first (Evan's call: a fresh book for the
+    // kid, the old one beside it).
+    books: { name: string; record: Record<string, number> }[];
   } | null;
   // Phase 17.4 (save v42): who you're with, how far along, since when, the day of the last
   // beat, and the day it ended if it did. One a life.
@@ -395,6 +403,19 @@ export interface Injury {
   tier: 1 | 2 | 3;
   // The day you can climb again.
   until: number;
+}
+
+// Phase 31.1: a forebear's climbing life, as the family keeps it.
+export interface Career {
+  sent: string[];
+  project: string | null;
+  age: number;
+  how: 'chose' | 'body' | 'home';
+  scars: string[];
+  summits: string[];
+  crew: string | null;
+  old: number;
+  money: number;
 }
 
 export interface RouteLog {

@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 69;
+export const SAVE_VERSION = 70;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -514,6 +514,21 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     return x;
   },
+  // v69 -> v70 (Phase 31.1): a family's Record Books, apart. A kid's book held their
+  // forebear's entries as well as their own; the ones up to the day the forebear hung it up
+  // (where the kid's clock starts) go to the forebear's page, any generation before lumped in
+  // with them. What the forebear did beyond their first ascents wasn't kept: no career.
+  69: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const f = x.family;
+    if (!isObj(f)) return x;
+    const held = isObj(x.life) && typeof x.life.held === 'number' ? x.life.held : 0;
+    const theirs: Record<string, unknown> = {};
+    const mine: Record<string, unknown> = {};
+    for (const [id, d] of Object.entries(isObj(x.record) ? x.record : {}))
+      (typeof d === 'number' && d <= held ? theirs : mine)[id] = d;
+    return { ...x, record: mine, family: { ...f, books: [{ name: f.forebear, record: theirs }] } };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -562,6 +577,19 @@ const isObj = (x: unknown): x is Obj => typeof x === 'object' && x !== null && !
 const isNum = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
 const isInt = (x: unknown): x is number => isNum(x) && Number.isInteger(x);
 const isStrs = (x: unknown): x is string[] => Array.isArray(x) && x.every((e) => typeof e === 'string');
+// Phase 31.1: a forebear's life, as the family keeps it.
+const isCareer = (c: unknown): boolean =>
+  isObj(c) &&
+  isStrs(c.sent) &&
+  (c.project === null || typeof c.project === 'string') &&
+  isInt(c.age) &&
+  (c.how === 'chose' || c.how === 'body' || c.how === 'home') &&
+  isStrs(c.scars) &&
+  isStrs(c.summits) &&
+  (c.crew === null || typeof c.crew === 'string') &&
+  isNum(c.old) &&
+  isInt(c.money) &&
+  c.money >= 0;
 
 export function validate(x: unknown): string[] {
   const err: string[] = [];
@@ -1129,7 +1157,16 @@ export function validate(x: unknown): string[] {
         fm.lines.every((l) => typeof l === 'string') &&
         typeof fm.coach === 'boolean' &&
         (fm.mentee === undefined ||
-          (isObj(fm.mentee) && typeof fm.mentee.name === 'string' && isInt(fm.mentee.grade)))),
+          (isObj(fm.mentee) && typeof fm.mentee.name === 'string' && isInt(fm.mentee.grade))) &&
+        (fm.career === undefined || isCareer(fm.career)) &&
+        Array.isArray(fm.books) &&
+        fm.books.every(
+          (b) =>
+            isObj(b) &&
+            typeof b.name === 'string' &&
+            isObj(b.record) &&
+            Object.values(b.record).every((d) => isInt(d)),
+        )),
     'family',
   );
   const mt = x.mentee;

@@ -45,7 +45,9 @@ export function aimEarned(s: GameState, aim: RecordAim, sent = sends(s)): boolea
     return open.length > 0 && open.every(([id]) => at.has(id));
   }
   if ('hurt' in aim) return !!s.injury || s.scars.length > 0;
-  if ('day' in aim) return s.day > aim.day;
+  // Days on the road are your own (Phase 31.1): a family's kid counts from the morning they
+  // got the keys. (Migration 30 asks this of states from before families.)
+  if ('day' in aim) return s.day - (s.family ? s.life.held : 0) > aim.day;
   if ('summit' in aim) return s.book.some((t) => t.end === 'summit');
   if ('dog' in aim) return !!s.dog || s.dogs.length > 0;
   if ('rival' in aim)

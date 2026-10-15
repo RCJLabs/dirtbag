@@ -180,6 +180,7 @@ import {
   SUPPLIES,
   WORDS,
   OPEN_RECORD,
+  RECORD,
   originOf,
   originTerms,
   callingOf,
@@ -1832,12 +1833,14 @@ function BoardBody({ game, s }: { game: Game; s: GameState }) {
   );
 }
 
-// Phase 23.1: the Record Book, newest first, each entry with its story.
+// Phase 23.1: the Record Book, newest first, each entry with its story. Phase 31.1: a
+// family's earlier books beside it, the last generation first, by title.
 function BookBody({ s }: { s: GameState }) {
   const got = OPEN_RECORD.filter((r) => s.record[r.id] !== undefined).sort(
     (a, b) => s.record[b.id]! - s.record[a.id]!,
   );
   const left = OPEN_RECORD.length - got.length;
+  const books = [...(s.family?.books ?? [])].reverse();
   return (
     <div id="book">
       <p className="sub">
@@ -1853,6 +1856,19 @@ function BookBody({ s }: { s: GameState }) {
           <p className="sub">{r.story}</p>
         </Fragment>
       ))}
+      {books.map((b, i) => {
+        const theirs = RECORD.filter((r) => b.record[r.id] !== undefined).sort(
+          (x, y) => b.record[x.id]! - b.record[y.id]!,
+        );
+        return (
+          <Fragment key={i}>
+            <p className="crux family-book">
+              {b.name}’s book · {theirs.length}
+            </p>
+            <p className="sub">{theirs.length ? theirs.map((r) => r.title).join(' · ') : 'Nothing in it.'}</p>
+          </Fragment>
+        );
+      })}
     </div>
   );
 }

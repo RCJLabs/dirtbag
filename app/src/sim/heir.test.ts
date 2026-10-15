@@ -7,7 +7,7 @@ import { ROUTES } from './content/routes';
 import { BOND, HOME, MONEY, VAN_AGE } from './dials';
 import { epilogue } from './epilogue';
 import { act, emptyLog, newGame } from './game';
-import { byName, kinLine } from './heir';
+import { byName, kinLine, leaveCap } from './heir';
 import { dealTalents } from './identity';
 import { edgeTrain } from './paths';
 import { actOf, currentGoal, goalDesc, progress, storyOf } from './story';
@@ -63,7 +63,8 @@ describe('the next generation', () => {
     expect(h.seed).toBe(s.seed);
     expect(h.day).toBe(301);
     expect(h.climber.name).toBe('');
-    expect(h.family).toEqual({ gen: 2, forebear: 'Robin', lines: [open.id], coach: true });
+    expect(h.family).toMatchObject({ gen: 2, forebear: 'Robin', lines: [open.id], coach: true });
+    expect(h.family?.books).toEqual([{ name: 'Robin', record: s.record }]);
     // Your first ascents stay on the topos, under your name; Dex's stay his.
     expect(h.firsts[open.id]).toEqual({ name: 'Second Wind', call: 0, day: 120, by: 'kin:Robin' });
     expect(h.firsts.cmyth!.by).toBe('dex');
@@ -76,9 +77,11 @@ describe('the next generation', () => {
     expect(h.bolted).toEqual(['bbarn']);
     expect(h.gym).toBeNull();
     expect(h.dog?.name).toBe('Scout');
-    expect(h.record).toEqual(s.record);
-    // Not the money, the people or the sends: those are theirs to earn.
-    expect(h.cash).toBe(MONEY.start);
+    // Phase 31.1: their book goes beside the kid's, which starts empty; a share of the money,
+    // capped (inherit.test.ts has the sums).
+    expect(h.record).toEqual({});
+    expect(h.cash).toBe(MONEY.start + leaveCap());
+    // Not the people or the sends: those are theirs to earn.
     expect(h.people).toEqual({});
     expect(h.routes).toEqual({});
     expect(h.goals).toBe(0);

@@ -3,7 +3,6 @@ import {
   CARRIED,
   carried,
   gradeOf,
-  MONEY,
   NAME_MAX,
   ORIGINS,
   originTerms,
@@ -161,7 +160,7 @@ export function Create({ game }: { game: Game }) {
       <button type="submit" className="go" id="c-go" disabled={!ok}>
         Start
         <small>
-          ${MONEY.start + (across ? 0 : (ORIGINS[origin]?.fx.cash ?? 0))},{' '}
+          ${game.state.cash + (across ? 0 : (ORIGINS[origin]?.fx.cash ?? 0))},{' '}
           {family ? `${family.forebear}’s van` : 'a van'}, and Hazel at the fire.
           {(family ? game.state.mode === 'solo' : solo) ? ' No rope.' : ''}
         </small>
