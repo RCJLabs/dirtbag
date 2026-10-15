@@ -59,6 +59,10 @@ export const HEIR_END: ActEnd = {
 export const HEIR_OPEN =
   '{forebear} hung it up, and the kid they spent all those seasons coaching has the keys now. That’s you.';
 
+// The money they left (Phase 31.1), said once, at the start. {cash} is filled from the share.
+export const HEIR_MONEY =
+  'There’s an envelope in the glovebox with {cash} in it and {forebear}’s handwriting on the front: “Gas first.”';
+
 // Dex coaches the kid of someone he climbed with (Evan's call 4) [proposed].
 export const COACH_EDGE: Edge = { train: 1.15 };
 export const COACH_LINE = 'Dex turns up at the gym and says he owes {forebear} one. He coaches you.';

@@ -1570,4 +1570,12 @@ export const LIFE = {
   stint: { chance: 0.35, min: 4, max: 12, who: ['sage', 'mara', 'rico', 'tam'] },
 };
 export const HOME = { people: 2, tier: 2, cash: 200, psyche: 20 };
+
+// Phase 31.1: what the old climber leaves the kid. `share` of their money at the end (cash
+// and the dream's pot; a debt isn't passed on), at most `shifts` of the café's shifts' pay
+// (ten is two working weeks of the first job there is), so a rich career's kid gets a grace
+// month, not a way round being broke (Evan's call: a share, capped). `old`: how much of the
+// old guard's regard for them carries, as a share of the way from where everyone starts to
+// where they left it, either way (Evan's call: lines plus standing) [proposed numbers].
+export const FAMILY = { share: 0.25, shifts: 10, old: 0.5 };
 export const QUIRK = { after: 30, fresh: 70, tired: 35, evening: 17 * 60, dawn: 9 * 60, easy: 2 };

@@ -785,7 +785,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 69 ||
+  saved?.v !== 70 ||
   // Phase 29.1: nothing scavenged, a few days in.
   st.parts !== 0 ||
   // Phase 29.3: miles on the clock past a new climber's, and nothing for Dale to say yet.
@@ -2597,20 +2597,28 @@ console.log('Hanging it up');
   await old.fill('#c-name', 'Jo');
   await old.click('#c-boulderer');
   await old.click('#o-desert');
+  const startsWith = await old.evaluate(() => document.querySelector('#c-go small')?.textContent ?? '');
   await old.click('#c-go');
   await old.waitForSelector('#create', { state: 'detached' });
   const kid = await old.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  // Phase 31.1: Robin's book beside Jo's, which starts empty of Robin's entries; what Robin
+  // did, kept; a share of the money, and the Start button said what Jo would have.
   if (
     kid.climber.name !== 'Jo' ||
     kid.day !== 381 ||
     kid.family?.forebear !== 'Robin' ||
     kid.family.gen !== 2 ||
     kid.firsts.rsopen?.by !== 'kin:Robin' ||
-    kid.record.retired !== 380 ||
+    kid.family.books?.[0]?.name !== 'Robin' ||
+    kid.family.books[0].record.retired !== 380 ||
+    kid.record.retired !== undefined ||
+    kid.family.career?.how !== 'chose' ||
+    kid.family.career.age !== 43 ||
+    !startsWith.startsWith(`$${kid.cash},`) ||
     kid.life.retired !== null
   )
     await fail(
-      `old: the kid's save: ${JSON.stringify({ name: kid.climber.name, day: kid.day, family: kid.family })}`,
+      `old: the kid's save: ${JSON.stringify({ name: kid.climber.name, day: kid.day, cash: kid.cash, startsWith, family: kid.family })}`,
     );
   // Desert Locals start at Roadside: wait for the scene, then the You page.
   await old.waitForSelector('#h-you');
