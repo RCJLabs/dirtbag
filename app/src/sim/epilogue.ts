@@ -17,7 +17,9 @@ import {
   FAMILY_END,
   PEOPLE_END,
   HOME_FOR_GOOD,
+  LATE_CHOSE,
   NAMED_END,
+  STOP_END,
   ROMANCE_END,
   QUIRK_END,
   STANCE_END,
@@ -28,7 +30,8 @@ import { PATHS, QUIRKS } from './content/paths';
 import { masteryOf } from './paths';
 import { PLACES } from './content/places';
 import { recordById } from './content/record';
-import { HOME } from './dials';
+import { ageOf } from './ageing';
+import { AGEING, HOME } from './dials';
 import { fill } from './format';
 import { tierOf } from './presence';
 import { kinLine } from './heir';
@@ -51,8 +54,9 @@ export function epilogue(s: GameState): EpilogueLine[] {
     if (text) out.push({ text, did });
   };
 
-  // Who you were.
-  if (s.origin) put(ORIGIN_END[s.origin], false);
+  // Who you were. Phase 30.4: a late bloomer who chose the day didn't run out of time.
+  const r = s.life.retired;
+  if (s.origin) put(s.origin === 'late' && r && !r.forced ? LATE_CHOSE : ORIGIN_END[s.origin], false);
 
   // The family you climbed on after, and their line, if you sent it.
   if (s.family) {
@@ -124,8 +128,14 @@ export function epilogue(s: GameState): EpilogueLine[] {
     else put(l.far, false);
   }
 
-  // Home for good (Phase 17.6).
-  if (s.life.retired?.home) put(HOME_FOR_GOOD);
+  // Home for good (Phase 17.6); else when it ended and how (Phase 30.4): before the years
+  // started on your strength, on a day you chose after, or when your body chose it.
+  if (r?.home) put(HOME_FOR_GOOD);
+  else if (r) {
+    const age = ageOf(s, r.day);
+    const how = r.forced ? 'body' : age < AGEING.power.from ? 'early' : 'chose';
+    put(fill(STOP_END[how], { age }), false);
+  }
 
   // The lines you named for someone (Phase 17.5).
   for (const f of Object.values(s.firsts))

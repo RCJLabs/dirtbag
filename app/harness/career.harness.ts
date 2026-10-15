@@ -13,6 +13,10 @@ import { DALE_VERDICT } from '../src/sim/content/garage';
 import { ACT_PAID } from '../src/sim/content/story';
 import { buskRate, practiceOf } from '../src/sim/busk';
 import { namedDeeds } from '../src/sim/epilogue';
+import { dayAtAge } from '../src/sim/ageing';
+
+// Phase 30's criterion 1: how far under their best a 40-year-old may climb, in grades.
+const PEAK_GAP = 1;
 
 const SEEDS = Number(process.env.CAREER_SEEDS ?? 4);
 const DAYS = Number(process.env.CAREER_DAYS ?? 224);
@@ -199,6 +203,9 @@ it('the ending', { timeout: 2_400_000 }, () => {
     hours: number;
     daily: boolean;
     bad: number;
+    // Phase 30.4: at 40, your level as a go has it, all round and on power lines, against the
+    // best it had been; and the grade shown.
+    at40: { grade: number; aged: number; peak: number; power: number; peakPower: number } | null;
   };
   const rows: Row[] = [];
   for (const origin of [undefined, 'late'])
@@ -221,7 +228,20 @@ it('the ending', { timeout: 2_400_000 }, () => {
         const goes = days.reduce((n, d) => n + d.goes, 0);
         const hours = (taps * PACE.tapSec + goes * PACE.goSec) / 3600;
         const bad = r.refused.length + r.days.filter((d) => d.stuck).length;
+        const d40 = dayAtAge(r.state, 40);
+        const then = r.days.find((d) => d.day === d40);
+        const before = r.days.filter((d) => d.day <= d40);
+        const at40 = then
+          ? {
+              grade: then.grade,
+              aged: then.aged,
+              peak: Math.max(...before.map((d) => d.aged)),
+              power: then.agedPower,
+              peakPower: Math.max(...before.map((d) => d.agedPower)),
+            }
+          : null;
         rows.push({
+          at40,
           origin: origin ?? 'none',
           acts,
           ended: ret?.day ?? null,
@@ -258,6 +278,25 @@ it('the ending', { timeout: 2_400_000 }, () => {
     third * 4 >= plain.length * 3,
     'Most careers see the story to the end of Act III',
     `${third}/${plain.length}; median day ${median(plain.filter((r) => r.acts[2] !== null).map((r) => r.acts[2]!))}.`,
+  );
+  // Phase 30's criterion 1: at 40, a climber is within a grade of the best they'd been, all
+  // round, as a go has their skills (the bar set before it was measured).
+  out('\n## The body at 40 (Phase 30)\n');
+  out('| origin | grade shown | all round: at 40 · best before | power lines: at 40 · best before |');
+  out('|---|---|---|---|');
+  for (const r of rows.filter((x) => x.at40)) {
+    const a = r.at40!;
+    out(
+      `| ${r.origin === 'none' ? '–' : r.origin} | V${a.grade} | ${a.aged.toFixed(2)} · ${a.peak.toFixed(2)} | ${a.power.toFixed(2)} · ${a.peakPower.toFixed(2)} |`,
+    );
+  }
+  out('');
+  const forty = rows.filter((x) => x.at40);
+  const near = forty.filter((x) => x.at40!.peak - x.at40!.aged <= PEAK_GAP);
+  say(
+    forty.length > 0 && near.length === forty.length,
+    `A 40-year-old climbs within ${PEAK_GAP} grade of their best, all round (Phase 30, criterion 1)`,
+    `${near.length}/${forty.length}; the most below their best ${Math.max(...forty.map((x) => x.at40!.peak - x.at40!.aged)).toFixed(2)} all round, ${Math.max(...forty.map((x) => x.at40!.peakPower - x.at40!.power)).toFixed(2)} on power lines.`,
   );
   // Reported, not held: the acts past the window, and the Late Bloomer's speed run.
   const fourth = plain.filter((r) => r.acts[3] !== null).length;
