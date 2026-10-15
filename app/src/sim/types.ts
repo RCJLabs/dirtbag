@@ -645,6 +645,8 @@ export type Action =
   | { t: 'crewProject'; route: string | null }
   | { t: 'crewDay' }
   | { t: 'crewGo' }
+  // Phase 31.2: the old climber at the fire: sit with them, or ask about a line they sent.
+  | { t: 'forebear'; do: 'talk' | 'beta' }
   // Phase 29.2: take one of this week's bounties off the Board.
   | { t: 'bounty'; i: number }
   // Phase 28.3: a favour asked of one of the crew.

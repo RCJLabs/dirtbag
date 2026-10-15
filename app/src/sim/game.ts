@@ -306,6 +306,7 @@ import {
   SHOW,
   FILM,
   RUNWAY,
+  FAMILY,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
 import { WALL_EVENTS, wallEventById } from './content/wallevents';
@@ -402,6 +403,8 @@ import { clinicBlocked, clinicHeads, clinicPay, compTomorrow, setCompBlocked } f
 import { RUNWAY_SAYS } from './content/runway';
 import { familyFill, heirOf } from './heir';
 import { COACH_LINE, HEIR_MONEY, HEIR_OPEN } from './content/heir';
+import { FOREBEAR_BETA, FOREBEAR_MEET, FOREBEAR_NO_BETA } from './content/forebear';
+import { betaLine, forebearBlocked, forebearSays, forebearWords, MET as FOREBEAR_MET } from './forebear';
 import { BOARD_JOBS } from './content/board';
 import { DALE_VERDICT, RIG_TRADE } from './content/garage';
 import { CALLINGS, OPEN_CALLINGS } from './content/callings';
@@ -4281,6 +4284,48 @@ export function act(s0: GameState, a: Action): Result {
         learn(r.id, b, 'told', '');
         line(fill(CREW_GO[who]!, { crux: lower(crux.name), beta: lower(beta), Beta: beta }));
       }
+      break;
+    }
+
+    // Phase 31.2: the old climber at the fire. Sitting with them is a story from their life
+    // (the first night, how they came to be in the chair); asking is the next thing you don't
+    // know on a line of theirs, told, so a first go after it is a flash.
+    case 'forebear': {
+      const no = forebearBlocked(s, a.do);
+      if (no) return refuse(no);
+      s.today.push(`forebear-${a.do}`);
+      const w = forebearWords(s);
+      if (a.do === 'talk') {
+        spend({ min: FAMILY.talk });
+        if (!s.seen.includes(FOREBEAR_MET)) {
+          s.seen.push(FOREBEAR_MET);
+          line(fill(FOREBEAR_MEET, w));
+        }
+        const said = forebearSays(s);
+        if (said.fresh) s.seen.push(said.id);
+        line(said.text);
+        if (!s.today.includes('fire')) s.today.push('fire');
+        break;
+      }
+      spend({ min: FAMILY.beta });
+      const r = betaLine(s);
+      const b = r ? sprayable(s, r)[0] : undefined;
+      const crux = r && b ? r.cruxes.find((c) => c.beta.includes(b)) : undefined;
+      if (!r || !b || !crux) {
+        line(fill(FOREBEAR_NO_BETA, w));
+        break;
+      }
+      const beta = r.beta[b]!.name;
+      learn(r.id, b, 'told', '');
+      line(
+        fill(FOREBEAR_BETA, {
+          ...w,
+          line: s.firsts[r.id]?.name ?? r.name,
+          crux: lower(crux.name),
+          beta: lower(beta),
+          Beta: beta,
+        }),
+      );
       break;
     }
 
