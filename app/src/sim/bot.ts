@@ -65,6 +65,7 @@ import {
 } from './game';
 import { whereNow } from './presence';
 import { crewDayFrom, crewOf } from './crew';
+import { betaLine, forebearAtFire, forebearBlocked, theirLines } from './forebear';
 import { riding } from './favours';
 import { has } from './kit';
 import { rankAt, signupBlocked } from './jobs';
@@ -112,6 +113,9 @@ export interface BotRun {
   days: DaySummary[];
   // Phase 34.4: every payment, its day and where it came from, for the money table.
   paid: { day: number; from: PaySource; cash: number }[];
+  // Phase 31.4: a family's kid's asks of the old climber: the day, the line, and whether it
+  // was one they sent (the quest they gave needn't be).
+  forebear: { day: number; route: string; theirs: boolean }[];
 }
 
 export interface DaySummary {
@@ -321,6 +325,8 @@ export interface WeekOpts {
   // it can, posts every day and does its sponsors' asks, or works the setting job up to a
   // gym of its own and runs it. None by default, so the other targets don't move.
   focus?: 'comp' | 'media' | 'business';
+  // Phase 31.4: a family's kid, from the state their forebear handed over (heirOf), made here.
+  from?: GameState;
 }
 
 // The cash each strategy tries to keep before it'll spend a day climbing.
@@ -446,7 +452,7 @@ export function expedLoop(
 export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   const hands = opts.hands ?? carefulHands;
   const strategy = opts.strategy ?? 'balanced';
-  let s = newGame(seed);
+  let s = opts.from ?? newGame(seed);
   const run: BotRun = {
     state: s,
     actions: [],
@@ -456,6 +462,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     lines: [],
     days: [],
     paid: [],
+    forebear: [],
   };
   let workMin = 0;
   let hardest = -1;
@@ -924,7 +931,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   // local. The others leave the people be, so their targets measure what they always have.
   // Phase 25.6's crew drama too: its ask and its mend, answered the first way.
   // Phase 28.4: the old guard's word on the crew, too.
-  const MOMENT = /^(meet|beat-|love-|last-season|slowing|parked|crew-|renown-)/;
+  const MOMENT = /^(meet|beat-|love-|last-season|slowing|parked|crew-|renown-|kin-)/;
   function maybePeople() {
     if (!opts.social) return;
     for (const [talk, t] of Object.entries(TALK)) {
@@ -1067,6 +1074,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     // The fire when the days have gone flat (Phase 22.4d), as a player would; every night,
     // for one who reads everything (Phase 17.7). And whoever's at the Lot with something due.
     maybePeople();
+    forebearNight();
     if (s.psyche.level < BOT_FIRE || opts.social) tryAct('lot.sit');
     park();
     signUp(['cafe.shift']);
@@ -1646,6 +1654,16 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     evening(where, morning);
   }
 
+  // Phase 31.4: a family's kid sits with the old climber when they're at the fire, and asks
+  // about a line of theirs, as a player would: it's twenty minutes for a flash.
+  function forebearNight() {
+    if (!forebearAtFire(s)) return;
+    if (!forebearBlocked(s, 'talk')) go({ t: 'forebear', do: 'talk' });
+    const r = betaLine(s);
+    if (r && !forebearBlocked(s, 'beta') && go({ t: 'forebear', do: 'beta' }))
+      run.forebear.push({ day: s.day, route: r.id, theirs: theirLines(s).includes(r.id) });
+  }
+
   // The evening at the Lot, whatever the day was: food, the dog, the fire, the night's post,
   // tomorrow's shift, and bed.
   function evening(where: string, morning: Skills) {
@@ -1662,6 +1680,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     // The fire when the days have gone flat (Phase 22.4d), as a player would; every night,
     // for one who reads everything (Phase 17.7). And whoever's at the Lot with something due.
     maybePeople();
+    forebearNight();
     if (s.psyche.level < BOT_FIRE || opts.social) tryAct('lot.sit');
     crewProject();
     if (opts.focus === 'media') post();
@@ -1675,7 +1694,12 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     bed();
   }
 
-  go({ t: 'create', name: 'Bot', start: opts.start ?? 'allrounder', origin: opts.origin });
+  go({
+    t: 'create',
+    name: opts.from ? 'Kid' : 'Bot',
+    start: opts.start ?? 'allrounder',
+    origin: opts.origin,
+  });
   if (opts.calling) go({ t: 'calling', id: opts.calling });
   const end = s.day + (opts.days ?? 7);
   // A climber who's hung it up (Phase 16.1) has no more days to play.

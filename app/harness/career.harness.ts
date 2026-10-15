@@ -14,6 +14,8 @@ import { ACT_PAID } from '../src/sim/content/story';
 import { buskRate, practiceOf } from '../src/sim/busk';
 import { namedDeeds } from '../src/sim/epilogue';
 import { dayAtAge } from '../src/sim/ageing';
+import { act } from '../src/sim/game';
+import { oldStart, questDone, questOf } from '../src/sim/heir';
 
 // Phase 30's criterion 1: how far under their best a 40-year-old may climb, in grades.
 const PEAK_GAP = 1;
@@ -303,6 +305,66 @@ it('the ending', { timeout: 2_400_000 }, () => {
   const late = rows.filter((r) => r.origin === 'late');
   out(
     `- (reported) Act IV finished: ${fourth}/${plain.length} of no origin, ${plain.filter((r) => r.acts[4] !== null).length} of them The Line too; Act V reached by a Late Bloomer before its body calls it: ${late.filter((r) => r.acts[3] !== null).length}/${late.length}.`,
+  );
+});
+
+// Phase 31.4: the family (Phase 31's criterion 1). A career bot hangs it up once it's past
+// 30, as a player might choose to, and the kid it coached climbs on as the career bot for two
+// years, reading everything (the social bot): does the kid meet the old climber at the fire,
+// and take beta on a line they sent?
+const FAMILY_SEEDS = Number(process.env.FAMILY_SEEDS ?? 4);
+const FAMILY_BEFORE = 200;
+const FAMILY_DAYS = 112;
+
+it('the family', { timeout: 2_400_000 }, () => {
+  const say = (ok: boolean, what: string, how: string) => out(`- ${ok ? '✓' : '✗'} ${what}: ${how}`);
+  out(
+    `\n# The family: ${FAMILY_SEEDS} careers hung up after ${FAMILY_BEFORE} days, and the kid's first ${FAMILY_DAYS}\n`,
+  );
+  out(
+    '| start | hung up | left | old guard: theirs → the kid’s | lines kept | the quest | met | asks: theirs · the quest | old guard’s word | quest sent |',
+  );
+  out('|---|---|---|---|---|---|---|---|---|---|');
+  const rows: { met: boolean; theirs: number }[] = [];
+  const starts = Object.keys(STARTS);
+  for (let k = 0; k < FAMILY_SEEDS; k++) {
+    const start = starts[k % starts.length]!;
+    const f = season(`fam-${start}-${k}`, { start, strategy: 'career', days: FAMILY_BEFORE, human: true });
+    const off = act(f.state, { t: 'retire' });
+    const no = off.events.find((e) => e.k === 'refused');
+    if (no && no.k === 'refused') {
+      out(`| ${start} | couldn’t: ${no.why} | | | | | | | | |`);
+      rows.push({ met: false, theirs: 0 });
+      continue;
+    }
+    const handed = act(off.state, { t: 'heir' }).state;
+    const kid = season(`fam-kid-${k}`, {
+      start: starts[(k + 1) % starts.length]!,
+      strategy: 'career',
+      days: FAMILY_DAYS,
+      human: true,
+      // A player who reads everything (Phase 17.7), so the old guard's word is heard.
+      social: true,
+      from: handed,
+    });
+    const s = kid.state;
+    const c = s.family!.career!;
+    const met = kid.lines.find((l) => l.includes('has a camp chair at the fire now'));
+    const metDay = met ? Number(met.match(/^day (\d+)/)?.[1]) - handed.day + 1 : null;
+    const theirs = kid.forebear.filter((x) => x.theirs);
+    const q = questOf(s);
+    const word = ['ray', 'frank'].filter((w) => s.seen.includes(`kin-${w}`)).join(', ') || '–';
+    out(
+      `| ${start} | ${c.age}, ${c.how} | $${c.money} | ${c.old} → ${oldStart(c.old)} | ${c.sent.length} | ${q ? `${q.kind}: ${q.r.name}, V${q.r.grade}` : '–'} | ${metDay ? `day ${metDay}` : 'no'} | ${theirs.length} · ${kid.forebear.length - theirs.length} | ${word} | ${questDone(s) ? 'yes' : 'no'} |`,
+    );
+    rows.push({ met: !!metDay, theirs: theirs.length });
+  }
+  out('');
+  const ok = rows.filter((r) => r.met && r.theirs > 0).length;
+  say(
+    rows.length > 0 && ok === rows.length,
+    'An heir meets the old climber and takes beta on a line they sent (Phase 31, criterion 1)',
+    `${ok}/${rows.length}.`,
   );
 });
 

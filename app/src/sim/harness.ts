@@ -39,6 +39,8 @@ export interface SeasonOpts {
   social?: boolean;
   // A ladder the career bot climbs besides the story (Phase 18.7).
   focus?: 'comp' | 'media' | 'business';
+  // Phase 31.4: a family's kid, from the handover.
+  from?: GameState;
 }
 
 export function season(seed: string, o: SeasonOpts): BotRun {
@@ -51,6 +53,7 @@ export function season(seed: string, o: SeasonOpts): BotRun {
     origin: o.origin,
     social: o.social,
     focus: o.focus,
+    from: o.from,
     hands: o.human ? () => humanHands(Rng.fromStream(seed, 'session').derive(`bot-go-${n++}`)) : undefined,
   });
 }
