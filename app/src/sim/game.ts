@@ -402,6 +402,7 @@ import { ageCost, agedSkills, healDays } from './ageing';
 import { clinicBlocked, clinicHeads, clinicPay, compTomorrow, setCompBlocked } from './runway';
 import { RUNWAY_SAYS } from './content/runway';
 import { familyFill, FOREBEAR_MET, heirOf, questDone, questOf } from './heir';
+import { known } from './hollow';
 import { COACH_LINE, HEIR_MONEY, HEIR_OPEN } from './content/heir';
 import {
   FOREBEAR_BETA,
@@ -3240,6 +3241,8 @@ export function act(s0: GameState, a: Action): Result {
       const r = road(s.at, a.to);
       const to = PLACES[a.to];
       if (!r || !to) return refuse("There's no road there.");
+      // Phase 32.1: a place nobody's told you how to find.
+      if (!known(s, a.to)) return refuse('There’s no road there you know of.');
       if (to.minGrade !== undefined && gradeOf(s.climber.skills) < to.minGrade)
         return refuse(`${to.name}: ${to.locked ?? 'not yet.'}`);
       if (to.unlock && !s.unlocked.includes(a.to))

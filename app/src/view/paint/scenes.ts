@@ -317,6 +317,34 @@ const MESA: Palette = {
   talus: '#C49A72',
 };
 
+// Phase 32.1: the Hollow, a slot canyon in shade all day: a pale strip of sky, canyon walls
+// gone purple-brown with distance, dark sand, and red sandstone that never sees the sun.
+const HOLLOW: Palette = {
+  sky: [
+    [0, '#AFC2CA'],
+    [0.6, '#D8D2C4'],
+    [1, '#E2CDB2'],
+  ],
+  orb: '#FFF3DE',
+  orbX: 300,
+  orbY: 60,
+  far2: '#8E6A62',
+  far: '#74504A',
+  mid: '#6A4A3E',
+  midTree: '#3E4A36',
+  trees: '#36422E',
+  ground: '#6A5444',
+  ground2: '#5C483A',
+  track: '#76604E',
+  van: '#E6DCC4',
+  trim: '#2F6F73',
+  glass: '#6F8C98',
+  wall: '#94543E',
+  wallShade: '#764232',
+  wallDark: '#3C2420',
+  talus: '#7A5E4C',
+};
+
 // The poster never outlines anything: shapes are fills, lines are plain strokes.
 function fill(g: G, draw: (g: G) => void, col: string): void {
   g.beginPath();
@@ -1017,6 +1045,10 @@ const TREES: Record<string, [number, number][]> = {
     [1230, 1],
     [1540, 1.2],
   ],
+  hollow: [
+    [24, 0.9],
+    [250, 0.7],
+  ],
   moon: [
     [16, 1.2],
     [262, 0.9],
@@ -1057,6 +1089,11 @@ const TALUS: Record<string, [number, number, number][]> = {
     [660, 30, 12],
     [1110, 26, 12],
     [1420, 24, 10],
+  ],
+  hollow: [
+    [540, 26, 12],
+    [1130, 30, 14],
+    [1210, 22, 10],
   ],
   moon: [
     [446, 24, 10],
@@ -1141,6 +1178,7 @@ function paintCragGround(P: Palette, id: string, kind: Rock): HTMLCanvasElement 
     fill(g, (gg) => rr(gg, x0, GND - 8, w - x0 + 10, 14, 4), P.wallShade!);
     fill(g, (gg) => gg.rect(x0, GND - 8, w - x0 + 10, 3), 'rgba(255,255,255,.35)');
   }
+  if (id === 'hollow') headstones(g);
   for (const b of spec.boulders) paintBoulder(g, b, kind);
   const cv = CRAG_VAN;
   drawVan(g, cv.x, GND - cv.h - cv.h * 0.19, cv.w, cv.h, { body: P.van, trim: P.trim, glass: P.glass });
@@ -1149,6 +1187,35 @@ function paintCragGround(P: Palette, id: string, kind: Rock): HTMLCanvasElement 
   fill(g, (gg) => gg.rect(spec.sign - 20, GND - 58, 40, 16), '#7A5A3A');
   if (id === 'crag') fill(g, (gg) => rr(gg, 718, GND - 15, 20, 15, 5), '#C8553F');
   return c;
+}
+
+// Phase 32.1: the Hollow's headstones, between the traverse and the wall: worn grey stones,
+// two leaning, and a cross. Whoever climbed here climbed around them.
+function headstones(g: G): void {
+  for (const [x, h, lean] of [
+    [436, 26, 0],
+    [462, 20, -0.12],
+    [488, 24, 0.08],
+    [516, 18, 0],
+  ] as const) {
+    g.save();
+    g.translate(x, GND + 2);
+    g.rotate(lean);
+    fill(
+      g,
+      (gg) => {
+        gg.moveTo(-7, 0);
+        gg.lineTo(-7, -h);
+        gg.quadraticCurveTo(0, -h - 9, 7, -h);
+        gg.lineTo(7, 0);
+        gg.closePath();
+      },
+      '#9C9A92',
+    );
+    g.restore();
+  }
+  fill(g, (gg) => gg.rect(530, GND - 30, 4, 32), '#8A877F');
+  fill(g, (gg) => gg.rect(524, GND - 22, 16, 4), '#8A877F');
 }
 
 // Boulder colours by rock: lit face and shaded side.
@@ -1284,6 +1351,8 @@ const LOOK: Record<string, { P: Palette; seed: number; rock: Rock; sea?: true; b
   cove: { P: COAST, seed: 43, rock: 'limestone', sea: true },
   // Phase 18.6: never climbed, so never chalked.
   bluff: { P: VALLEY, seed: 47, rock: 'limestone', bare: true },
+  // Phase 32.1: nobody's climbed here either.
+  hollow: { P: HOLLOW, seed: 53, rock: 'redrock', bare: true },
 };
 
 // The painted layers for a scene at a time of day. Two are kept: the one you're in and the
@@ -1319,7 +1388,8 @@ function paintArt(id: string, tod: Tod): SceneArt {
       layers: [{ p: 1, w: GYM_W, c: paintGymGround() }],
     };
   const crag = CRAGS[id];
-  const gorge = id === 'gorge';
+  // A canyon: the Gorge, and the Hollow's slot (Phase 32.1).
+  const gorge = id === 'gorge' || id === 'hollow';
   const look = LOOK[id];
   const P = look?.P ?? SP[crag ? 'day' : tod];
   const w = crag?.width ?? WW;

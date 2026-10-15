@@ -303,6 +303,7 @@ import {
   menteeName,
   menteeTakeBlocked,
   CALL_SAYS,
+  known,
   betaLine,
   FAMILY,
   forebearAtFire,
@@ -522,7 +523,9 @@ function giveRow(game: Game, s: GameState, to: Gift): Row {
 
 // Your guides (Phase 25.1): where each crag stands, and tonight's pages where you can write.
 function guideRows(game: Game, s: GameState): Row[] {
-  return GUIDE_CRAGS.filter((id) => !PLACES[id]!.unlock || s.unlocked.includes(id)).map((id) => {
+  return GUIDE_CRAGS.filter(
+    (id) => (!PLACES[id]!.unlock && !PLACES[id]!.hidden) || s.unlocked.includes(id),
+  ).map((id) => {
     const g = s.guides[id];
     const why = guideBlocked(s, id);
     const left = guideLeft(s, id);
@@ -1895,7 +1898,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       }
       // A card-only place: you're here until you drive somewhere, but the card still closes
       // onto the map, as every other card does (Evan, 0.975.0: a card with no ✕ read as stuck).
-      const onward = Object.keys(PLACES).filter((o) => o !== id.id && road(id.id, o));
+      const onward = Object.keys(PLACES).filter((o) => o !== id.id && road(id.id, o) && known(s, o));
       return {
         title: p.name,
         sub,

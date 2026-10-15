@@ -63,6 +63,9 @@ export interface PlaceDef {
   rock?: Rock;
   // The haul you paid for includes crash pads: every highball here lands softer (HIGHBALL.pads).
   pads?: true;
+  // Phase 32.1: on no map and no topo. You can't drive there till you've found it (32.2);
+  // finding it puts it in `unlocked`, as a paid trip is.
+  hidden?: true;
   // Land you buy (Phase 18.6), not a trip you pay for: `unlock` is its price, and its lines
   // are there to climb once you've bolted them (land.ts). The bots don't buy land.
   land?: true;
@@ -371,6 +374,25 @@ export const PLACES: Record<string, PlaceDef> = {
     acts: [],
     // The sun comes over the farm from the east end: the boulders in the field first.
     sun: ['bsilo', 'btrough', 'blong', 'broof', 'bpillar', 'bcow', 'btufa', 'bbarn', 'bhay'],
+  },
+  // Phase 32.1: v0.956's hidden crag, "an unmapped slot canyon nobody talks about,
+  // headstones nobody visits and rock nobody's touched in years", past the Gorge. Found by
+  // the quest (32.2), not bought. Shaded all day, and nobody comes: no crowd. Its lines are
+  // every one an open project. The crew can be talked into it, by a Partner.
+  hollow: {
+    name: 'The Hollow',
+    crag: true,
+    rock: 'sandstone',
+    hidden: true,
+    scene: 'hollow',
+    ambience: { wind: 0.5, hawk: 0.15 },
+    away: 'The slot canyon past the Gorge that nobody puts on a map. Headstones, and rock nobody has touched.',
+    here: 'Cool red sandstone, old headstones, and not one tick mark.',
+    acts: [],
+    minGrade: 8,
+    invite: 5,
+    locked: 'Hard lines, and nobody to ask. Come back when you’re climbing V8.',
+    shaded: true,
   },
   // v0.956's second gym: "a steep bouldering cave, no ropes, just hard plastic", V5 to V12
   // here (v0.956's V3 to V10, raised), at the trailhead below Roadside. A day pass, and coaching for work once you can climb.
@@ -1267,6 +1289,8 @@ export const ROADS: RoadDef[] = [
   { a: 'wind', b: 'gorge', min: 120, cash: 14 },
   // The Crucible: v0.956's four hours and 45% of a tank from the Lot, east over the pass.
   { a: 'crucible', b: 'lot', min: 240, cash: 26 },
+  // Phase 32.1: the Hollow, on past the Gorge, up a wash with no sign on it.
+  { a: 'gorge', b: 'hollow', min: 45, cash: 6 },
   // Psicobloc Cove: v0.956's two hours and 26% of a tank from the Lot, west past Old Town
   // to the coast.
   { a: 'cove', b: 'diner', min: 110, cash: 14 },

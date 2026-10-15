@@ -94,7 +94,7 @@ export function cycleTasks(
   ];
   if (sp.shoot) {
     const crags = Object.entries(PLACES)
-      .filter(([id, p]) => p.crag && (!p.unlock || s.unlocked.includes(id)))
+      .filter(([id, p]) => p.crag && ((!p.unlock && !p.hidden) || s.unlocked.includes(id)))
       .map(([id]) => id);
     const r = Rng.fromStream(s.seed, 'events').derive(`shoot-${s.day}`);
     tasks.push({ kind: 'shoot', place: crags[r.int(0, crags.length - 1)] ?? 'road', done: false });

@@ -41,7 +41,10 @@ export function aimEarned(s: GameState, aim: RecordAim, sent = sends(s)): boolea
   if ('brokeDown' in aim) return !!s.breakdown;
   if ('bond' in aim) return Object.values(s.people).some((p) => tierOf(p.bond) >= aim.bond);
   if ('circuit' in aim) {
-    const open = Object.entries(PLACES).filter(([id, p]) => p.crag && (!p.unlock || s.unlocked.includes(id)));
+    // Phase 32.1: not a hidden crag you haven't found.
+    const open = Object.entries(PLACES).filter(
+      ([id, p]) => p.crag && ((!p.unlock && !p.hidden) || s.unlocked.includes(id)),
+    );
     const at = new Set(sent.map(({ r }) => r?.place));
     return open.length > 0 && open.every(([id]) => at.has(id));
   }

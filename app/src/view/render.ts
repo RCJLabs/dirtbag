@@ -12,6 +12,7 @@ import {
   gradeLabel,
   gradeName,
   isNight,
+  known,
   lineGrade,
   picks,
   PLACES,
@@ -69,7 +70,8 @@ import {
   vanIcon,
 } from './paint/fx';
 import { CAVE_TAPE, CENTER_TAPE, speedHold, TAPE } from './paint/gym';
-import { mapArt } from './paint/map';
+import { dirtRoad, mapArt } from './paint/map';
+import { SIDE_ROADS } from './valley';
 import { drawBelayerBack, drawClimber, drawDog, drawPerson, INK, LOOK, STRANGERS } from './paint/people';
 import { BIG } from './paint/scale';
 import { drawSkyMarks, FIRE_X, LIGHTS, sceneArt, SKY_W, type SceneArt, type Tod } from './paint/scenes';
@@ -403,7 +405,10 @@ function renderMap(g: G, f: Frame): void {
     g.stroke();
     g.restore();
   }
+  // Phase 32.1: the road to a place nobody else knows, once you've found it.
+  for (const [id, rd] of Object.entries(SIDE_ROADS)) if (rd.hidden && known(f.state, id)) dirtRoad(g, rd.pts);
   for (const [id, p] of Object.entries(MAP_PINS)) {
+    if (!known(f.state, id)) continue;
     if (f.state.at === id && !f.trip && !f.still) {
       const k = (f.t % 1.6) / 1.6;
       g.strokeStyle = ACC.comic;

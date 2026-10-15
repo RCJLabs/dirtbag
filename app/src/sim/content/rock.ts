@@ -3156,6 +3156,26 @@ export const ROCK_LINES: Record<string, [string, string][]> = {
     ['silojump', 'bumptufa'],
     ['grasstop', 'dirtpocket'],
   ],
+  // Phase 32.1: the Hollow, sandstone in a slot canyon.
+  hcrow: [['smearred', 'ironstone']],
+  hstone: [['roundedges', 'smearstep']],
+  hgap: [['launch', 'bumphueco']],
+  hsplit: [
+    ['redsplitter', 'laybacksplitter'],
+    ['jughaul', 'stemshake'],
+  ],
+  hcorner: [
+    ['softcrack', 'laybacksplitter'],
+    ['throwlip', 'toehooklip'],
+  ],
+  hwall: [
+    ['crimpvarnish', 'rockscoop'],
+    ['padup', 'edgevarnish'],
+  ],
+  hlean: [
+    ['slapsloper', 'heelsloper'],
+    ['keepslap', 'shakevarnish'],
+  ],
   // The walls' pitches (Phase 27.3): granite, by kind.
   'prow-1': [['padslab', 'dishslab']],
   'prow-2': [['ladder', 'ladderfeet']],

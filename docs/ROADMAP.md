@@ -3515,6 +3515,23 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 2. The content test holds the Hollow's lines to the same rules as every other line.
 3. The download stays within its budget, raised if Evan agrees.
 
+**The survey (15 Oct 2026).** Nothing of the Hollow is built, and nothing can be hidden: every place has a pin and a road. v0.956's Hollow was a hidden slot canyon past the Gorge, "headstones nobody visits and rock nobody's touched in years": V8 to get in, five boulders V8–V12. Its quest's last stage completed itself (bug B23). First ascents are `open` lines named on the first send; grades never settle (your call only changes what's shown). Bolting is the Bluff's alone (land you own); guides pay a flat weekly royalty; the scene's stances never touch a line. The hooks there are: Ray's unsent line (arc beat 3, text only), the old-hand hitchhiker's second meeting, the epics' wrong gully, the shop's guidebook. 446.5 KB of 460.
+
+**Evan's calls (15 Oct 2026), all as recommended:**
+- **The quest:** from V9 outside, three clues in any order: Ray's unsent line (Frank's word, if Ray's gone), the old-hand hitchhiker, and an old guidebook at the shop. With all three, the walk-in epic past the Gorge: a clean ending finds it, a bad one sends you back to try again.
+- **Bolts:** your choice, and the scene reacts. Crack lines go on gear or get bolted; face lines need bolts; boulders get cleaned. Bolting costs cash and a day. The old guard takes a bolted crack badly, the gym crowd likes bolts, and a stance at the fire argues it out.
+- **Grades:** repeats settle every first ascent of yours: in the weeks after, others repeat it (seeded), and after a few the shown grade moves to what the line really is; you hear about it.
+- **Royalties:** a guide pays its weekly royalty plus a little for each first ascent of yours in it, under the poorest job's week.
+
+**Slices:** 32.1 the Hollow, the place; 32.2 the quest and the walk-in; 32.3 first ascents there (clean, bolt or gear; the scene reacts); 32.4 grades settle, royalties rise; 32.5 the bot, the harness, the e2e and the close.
+
+**Status (15 Oct 2026): 32.1 built: the Hollow, the place.** No save change, 0.999.66.
+- **The place** (`PLACES.hollow`): a slot canyon of red sandstone past the Gorge (45 minutes on, up a wash: 165 from the Lot), shaded all day, V8 to get in, no crowd ever, and the crew can be talked into it by a Partner (`invite` 5). It's `hidden`: on no map and no road you know of (`known` in `hollow.ts`) till it's found, when it goes in `unlocked`, as a paid trip does. There's nothing to buy and, until 32.2, no way to find it.
+- **Hidden means hidden:** the travel refusal says only "There’s no road there you know of." Its pin, its dirt road and its tap on the map come once it's found (the road is drawn over the painted valley, so the map's art doesn't give it away); the day planner's places, the guides, the circuit in the Record Book, a sponsor's shoot and the invite list leave it out till then.
+- **Seven lines, every one an open project** (the first to send it names it): three boulders on the floor (the crow traverse, V9; the headstone boulder, V10; the gap, V12), two cracks (the split and the black corner, trad) and two faces (the sunless wall and the leaning wall, sport). They're in the canyon's own sandstone moves, eleven first ways with none repeated, and the content test holds them to every line's rules (criterion 2).
+- **The painter:** a canyon palette, the far walls close, the headstones between the traverse and the wall (four stones and a cross), the close-up wall (the strip of sky between the rims, water streaks, the split, the corner's seam and roof), the boulder look and the topos. +1.7 KB: the download is 448.2 KB of 460.
+- **Tests:** `hollow.test.ts` (no road you know of however hard you climb; a drive like any other once found; shaded sandstone, nothing to buy; the lines open and in their rock).
+
 ### Phase 33 — Comps with rounds
 
 *Medium. Every comp is one round on one day, climbed like the gym, and there's no national team.*
@@ -4039,3 +4056,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-15 — 31.3 built: the old guard knows whose kid you are (Ray, Frank, the crowd, the shops); the line the old climber never sent, given at the fire, sent, and in the book. No save change. 0.999.64.
 - 2026-10-15 — 31.4 built: the bot plays a family; the family harness (criterion 1, 4 of 4); the e2e's night at the fire with Robin. Phase 31's Done-when both pass. 0.999.65.
 - 2026-10-15 — Phase 31 closed by Evan's call; CURRENT MILESTONE moved to Phase 32, the Hollow.
+- 2026-10-15 — 32.1 built: the Hollow, a hidden slot canyon past the Gorge: seven open lines in its own sandstone, its painter, and no road you know of till it's found. 0.999.66.

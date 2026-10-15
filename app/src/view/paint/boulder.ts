@@ -145,6 +145,21 @@ const LOOKS: Record<string, Look> = {
     side: '#969BA1',
     speckle: true,
   },
+  // Phase 32.1: the Hollow's floor, in shade between the canyon walls.
+  hollow: {
+    sky: ['#AFC2CA', '#E2CDB2'],
+    sun: '#FFF3DE',
+    back: '#7A5248',
+    haze: 'rgba(90,60,50,.25)',
+    trees: '#36422E',
+    talus: '#7A5E4C',
+    ground: '#6A5444',
+    stones: '#5C483A',
+    face: '#A0604A',
+    side: '#6E3C30',
+    speckle: false,
+    scrub: true,
+  },
   moon: {
     sky: ['#9CC3D9', '#F3DDB8'],
     sun: '#FFF4DA',

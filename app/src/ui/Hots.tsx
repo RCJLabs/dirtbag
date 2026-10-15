@@ -1,4 +1,4 @@
-import { PLACES } from '../sim';
+import { known, PLACES } from '../sim';
 import type { Game, Ui } from '../game/game';
 import { useStore } from '../game/store';
 import { MAP_PINS, mapToScreen, OY, Z } from '../view/layout';
@@ -40,22 +40,24 @@ export function Hots({ game, ui }: { game: Game; ui: Ui }) {
     const left = mapLeft(ui.w);
     return (
       <>
-        {Object.entries(MAP_PINS).map(([id, p]) => (
-          <button
-            type="button"
-            key={id}
-            className="hot pin"
-            id={`pin-${id}`}
-            aria-label={`${PLACES[id]?.name ?? id}${ui.state.at === id ? ', where you are' : ''}`}
-            style={box(
-              left + mapToScreen(p.x, p.y)[0] - PIN / 2,
-              mapToScreen(p.x, p.y)[1] - PIN / 2,
-              PIN,
-              PIN,
-            )}
-            onClick={() => game.openPin(id)}
-          />
-        ))}
+        {Object.entries(MAP_PINS)
+          .filter(([id]) => known(ui.state, id))
+          .map(([id, p]) => (
+            <button
+              type="button"
+              key={id}
+              className="hot pin"
+              id={`pin-${id}`}
+              aria-label={`${PLACES[id]?.name ?? id}${ui.state.at === id ? ', where you are' : ''}`}
+              style={box(
+                left + mapToScreen(p.x, p.y)[0] - PIN / 2,
+                mapToScreen(p.x, p.y)[1] - PIN / 2,
+                PIN,
+                PIN,
+              )}
+              onClick={() => game.openPin(id)}
+            />
+          ))}
       </>
     );
   }
