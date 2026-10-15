@@ -511,3 +511,13 @@ export {
 export { caveSet, CAVE, centerSet, CENTER, INDOOR, indoor } from './content/gym';
 export { FAVOUR_WHAT } from './content/favours';
 export type { FavourWhat } from './types';
+export {
+  hasJobPerk,
+  offWords,
+  perkMult,
+  perkPasses,
+  perkSays,
+  perksNote,
+  jobPerks,
+  type PerkId,
+} from './perks';

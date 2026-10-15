@@ -111,3 +111,15 @@ export const JOBS: Record<string, JobDef> = {
     leave: [0, 2, 3],
   },
 };
+
+// Phase 34.1: a rank's perk, said. {off} is its share off the price, from the dials (PERKS):
+// "20% off", or "on the house".
+export const PERK_SAYS: Record<string, string> = {
+  sendCity: 'you climb free at Send City',
+  everyGym: 'you climb free at every gym',
+  staff: 'the staff price at the gear shop, {off}',
+  fuel: 'the fuel card: gas {off}',
+  physio: 'the Cave’s physio, {off}',
+  coffee: 'Wren’s coffee {off}',
+  special: 'the special {off}',
+};

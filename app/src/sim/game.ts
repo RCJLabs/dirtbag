@@ -346,6 +346,7 @@ import {
 import { BODGE_FAILED, BODGE_HELD, BREAKDOWN_LINE } from './content/van';
 import { speedBlocked, speedGains, speedLoad, speedTime, runsToday } from './speed';
 import { dayName, fill, lower, money, ordinal, skillsNote } from './format';
+import { perkMult, perkPasses } from './perks';
 import { PARTNERS, tierOf, whereIs, whereNow } from './presence';
 import { hashSeed, Rng } from './rng';
 import { actEndedBy, aimMet, currentGoal } from './story';
@@ -569,6 +570,9 @@ export const restCost = (r: RouteDef): number => CLIMB.restMin[r.disc];
 
 // What an act costs you now. One that runs till a time of day costs its hourly rate for
 // every hour it takes.
+// The gear shop's acts, by identity: its staff price is the guide's perk (Phase 34.1).
+const GEAR_SHOP = new Set(Object.entries(ACTS).flatMap(([id, d]) => (id.startsWith('shop.') ? [d] : [])));
+
 export function actCost(s: GameState, d: ActDef): Delta {
   // A shift pays its rank's raise on top.
   // Where you came from moves it (Phase 23.2).
@@ -577,9 +581,13 @@ export function actCost(s: GameState, d: ActDef): Delta {
       ...d.cost,
       cash: Math.round(((d.cost.cash ?? 0) + raiseAt(s, d.job.id) * d.job.shifts) * payMult(s)),
     };
-  // What you buy, kit or food, at what your origin pays for it (Phase 23.2).
+  // What you buy, kit or food, at what your origin pays for it (Phase 23.2), and the gear
+  // shop's staff price for its guides (Phase 34.1).
   if ((d.gear || d.buys) && (d.cost.cash ?? 0) < 0)
-    return { ...d.cost, cash: Math.round((d.cost.cash ?? 0) * shopMult(s)) };
+    return {
+      ...d.cost,
+      cash: Math.round((d.cost.cash ?? 0) * shopMult(s) * (GEAR_SHOP.has(d) ? perkMult(s, 'staff') : 1)),
+    };
   // A repair costs its share of the part's price, by wear.
   if (d.van) return { ...d.cost, cash: -repairCost(s, d.van) };
   // Phase 29.3: a used van, yours taken in part exchange.
@@ -589,9 +597,13 @@ export function actCost(s: GameState, d: ActDef): Delta {
   if (d.doctor) return { ...d.cost, cash: -Math.round(SICK.doctor.price * PLANS[s.insurance].care) };
   // Bed costs wherever you're parked tonight (Phase 22.2b).
   if (d.sleep) return { ...d.cost, cash: -nightAt(s).cost };
+  // Phase 34.1: the café's coffee for its staff, the diner's special for its.
+  const staff = d === ACTS['cafe.coffee'] ? 'coffee' : d === ACTS['diner.meal'] ? 'special' : null;
+  const priced = (c: Delta): Delta =>
+    staff ? { ...c, cash: Math.round((c.cash ?? 0) * perkMult(s, staff)) || 0 } : c;
   // Past a couple of cups a day, coffee is jitters, not energy (Phase 22.3).
-  if (d.coffee && coffeesToday(s) >= FOOD.coffees) return { ...d.cost, energy: FOOD.crash };
-  if (d.until === undefined) return d.cost;
+  if (d.coffee && coffeesToday(s) >= FOOD.coffees) return priced({ ...d.cost, energy: FOOD.crash });
+  if (d.until === undefined) return priced(d.cost);
   const min = Math.max(0, d.until - s.min);
   const out: Delta = { min };
   for (const k of ['cash', 'energy', 'skin', 'fed'] as const)
@@ -1056,6 +1068,8 @@ export function act(s0: GameState, a: Action): Result {
     }
     // An owner's pass is the keys (Phase 18.6): the wall and the shower, every day.
     s.today = s.gym ? ['pass'] : [];
+    // Phase 34.1: a setter's rank is their way in, at Send City and then every gym.
+    for (const pass of perkPasses(s)) if (!s.today.includes(pass)) s.today.push(pass);
     // Phase 33.4: a round you're through to is your way in at its wall, as the entry was.
     const round = s.comps.on?.day === s.day ? INDOOR[COMP_TIERS[s.comps.on.tier]!.venue]?.pass : undefined;
     if (round && !s.today.includes(round)) s.today.push(round);

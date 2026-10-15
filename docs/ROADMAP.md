@@ -3502,6 +3502,26 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 1. The harness's money table shows media income in a media career, never more than a job's.
 2. Every perk's text is formatted from its dial.
 
+**Planned (15 Oct 2026), with Evan's calls:**
+- **Rank perks on the jobs there are** (the clerk and the courier stay cut): the setter climbs free at Send City, then at every gym; the guide, who works out of the gear shop, pays its staff price; the warehouse has a fuel card; the Cave's coaches see its physio at a discount; the café's staff drink free and the diner's eat the special at the staff price. Each from a rank, each a dial.
+- **Photos:** your sends sell. With a camera (new gear) or a partner shooting, a first send outside at or above a grade makes a photo that sells once to a magazine, priced from the grade and your followers, capped so it never out-earns a job.
+- **Costs of ambition, opt-in:** a physio on retainer and a coach for your own training, each weekly and worth it only if used; and travel for Nationals, the World Series and the Games.
+- **Trade shows and a film, both light:** a sponsor (Apex and up) asks for a trade show once a season (days away, a fee and followers, clashing with climbing); a film you commission of a send, a late money goal (followers and a Record Book entry).
+- **Slices:** 34.1 rank perks; 34.2 the costs of ambition; 34.3 photos that sell and a magazine piece; 34.4 trade shows, the film, the money table and the close.
+
+**Status (15 Oct 2026): 34.1 built: rank perks.** No save change, 0.999.54. Phase 34's criterion 2 passes.
+- **The perks** (`PERKS` in the dials, `perks.ts`), each from a rank and read off it, never kept:
+  - **Setting:** a Setter climbs free at Send City and a Senior setter at every gym: the day passes are in your day each morning, as the owner's is.
+  - **Guiding:** a Guide pays the gear shop's staff price, 20% off; not the market's food or Dale's garage.
+  - **The warehouse:** a Forklift driver has the fuel card, gas 25% off.
+  - **Coaching:** a Coach sees the Cave's physio 50% off; nothing else at the clinic.
+  - **The café:** a Regular drinks Wren's coffee on the house. **The diner:** a Server eats the special 50% off.
+- **Shown:** a shift's row says the perks you have at that job and the next one, with the rank it takes ("At Guide, the staff price at the gear shop, 20% off"); prices on the shop, the clinic, the drives and the menus are the perk's. Every perk's words are formatted from its dial, and a test holds them to having no number of their own (criterion 2).
+- **Caveat:** an act's "can the card take it" check still asks for the full price, so a staff-priced buy can be declined when the card is nearly maxed and the full price wouldn't fit.
+- **A bot rule, from the perks:** the business bot, its passes now free and its savings sooner, bought Send City 49 days earlier and then, flush, booked one story expedition after another: 110 of 155 days away in one career, its wall stale, 199 members at a forced retirement. It now minds its gym till it's the busiest in the valley before it takes a story trip away, as the media bot does the film. With that, every business career makes 200 members (median day 273.5, from 340 on main) with four acts of the story.
+- **The harness** passes every target but Outdoors, at 2 of 4 as on main.
+- **The download** is 437.0 KB of 460.
+
 ### Phase 35 — The road and the year
 
 *Small. The knocks have no follow-up. There are eight hitchhikers, and no pull toward the ones you haven't met (the audit's social #9). The roadside stops are one-line lifts. Holidays are fire cards (the audit's social #16).*
