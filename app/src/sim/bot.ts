@@ -79,7 +79,7 @@ import { EXPEDITIONS, expedPitches } from './content/expeditions';
 import { defaultPlan, planBlocked, planCost, stormOn, summitOdds, yourPitch } from './expeditions';
 import { WALLS } from './content/routes';
 import { COMP_TIERS } from './content/comps';
-import { compBlocked, compHere, gradesFor } from './comps';
+import { compBlocked, compCost, compHere, gradesFor, picksFor } from './comps';
 import { postBlocked } from './media';
 import { gymBuyBlocked, UPGRADES, type Upgrade } from './business';
 import { scoreSet, setBrief } from './work';
@@ -309,6 +309,9 @@ export interface WeekOpts {
 
 // The cash each strategy tries to keep before it'll spend a day climbing.
 const CUSHION: Record<Strategy, number> = { climber: 15, balanced: 60, worker: Infinity, career: 60 };
+// How far ahead the comp bot saves for a comp's fee and travel: a fortnight, so the World
+// Series, a week after Nationals, is saved for before Nationals is paid (Phase 34.2).
+const COMP_AHEAD = 14;
 
 // Where a career goes: every crag and both gyms.
 const CAREER_PLACES = [
@@ -694,7 +697,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     const due = PARTS.filter(needs);
     // Phase 22.2c: before and through winter, the heater and a tank of propane come first,
     // as soon as the cash covers them with a little over (Evan's call: a heater a player can
-    // afford before winter). Otherwise one upgrade a day, with money past the cushion.
+    // afford before winter). Otherwise one upgrade a day, with money past the cushion and the
+    // next comp's (Phase 34.2: the comp bot bought a mattress on Nationals morning).
     const cold = seasonOf(s.day) === 'winter' || seasonOf(s.day + WINTER.warnDays) === 'winter';
     const warm =
       cold &&
@@ -706,7 +710,9 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       ? 'heater'
       : strategy === 'career' && (storyTripCost() > 0 || storyUnlock() > 0)
         ? undefined
-        : BOT_UPGRADES.find((id) => !s.gear[id] && s.cash >= UPGRADE[id].price + CUSHION[strategy] + SPARE);
+        : BOT_UPGRADES.find(
+            (id) => !s.gear[id] && s.cash >= UPGRADE[id].price + CUSHION[strategy] + SPARE + compAhead(),
+          );
     // Phase 29.3: Dale's verdict, heard when it's due, and taken by a rule: a rebuild when the
     // money's there past the cushion (it keeps what's fitted), a used van when that is, and
     // limping on otherwise; it saves for the cheaper (`repairs`). Measured over 32 careers to
@@ -728,7 +734,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
         fit &&
         (fit === 'heater'
           ? s.cash >= UPGRADE.heater.price
-          : s.cash >= UPGRADE[fit].price + CUSHION[strategy] + SPARE)
+          : s.cash >= UPGRADE[fit].price + CUSHION[strategy] + SPARE + compAhead())
       )
         tryAct(`garage.${fit}`);
     }
@@ -1172,7 +1178,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     for (const id of CAREER_PLACES) {
       const p = PLACES[id]!;
       if (!p.unlock || s.unlocked.includes(id) || (p.minGrade ?? 0) > grade) continue;
-      if (s.cash >= p.unlock + CUSHION.career) go({ t: 'unlock', place: id });
+      if (s.cash >= p.unlock + CUSHION.career + compAhead()) go({ t: 'unlock', place: id });
     }
   }
 
@@ -1351,8 +1357,12 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   // and climbs the bottom grade of. The comp bot enters every one; the media bot when a
   // sponsor asks for a comp.
   function compFor(day: number, money = true): string | null {
+    const i = compTierOn(day, money);
+    return i < 0 ? null : COMP_TIERS[i]!.venue;
+  }
+  function compTierOn(day: number, money: boolean): number {
     const asked = s.media.sponsor?.tasks.some((x) => x.kind === 'comp' && !x.done);
-    if (opts.focus !== 'comp' && !(opts.focus === 'media' && asked)) return null;
+    if (opts.focus !== 'comp' && !(opts.focus === 'media' && asked)) return -1;
     const grade = gradeOf(s.climber.skills);
     for (let i = COMP_TIERS.length - 1; i >= 0; i--) {
       const t = COMP_TIERS[i]!;
@@ -1360,10 +1370,25 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       const at = { ...s, day, at: t.venue, min: 9 * 60, cash: money ? s.cash : Infinity };
       if (compBlocked({ ...at, comps: { ...s.comps, on: null } })) continue;
       // A comp's worth a thin day for it: the fee and a night's food over.
-      if (money && s.cash < t.fee + CUSHION.climber) continue;
-      return t.venue;
+      if (money && s.cash < compCost(i) + CUSHION.climber) continue;
+      return i;
     }
-    return null;
+    return -1;
+  }
+  // Phase 34.2: the dearest comp it would enter in the fortnight ahead, the fee and the travel,
+  // saved for as a trip is. Without it the comp bot came to Nationals short most months. A
+  // comp that picks a team it's strong enough for is saved for with the team's comp too: a
+  // week from the podium isn't long enough to find the World Series' travel.
+  function compAhead(): number {
+    const grade = gradeOf(s.climber.skills);
+    let most = 0;
+    for (let d = s.day + 1; d <= s.day + COMP_AHEAD; d++) {
+      const i = compTierOn(d, false);
+      if (i < 0) continue;
+      const team = picksFor(i).filter((j) => grade >= gradesFor(j, d)[0]);
+      most = Math.max(most, compCost(i) + team.reduce((a, j) => a + compCost(j), 0));
+    }
+    return most;
   }
 
   // A comp day: there before sign-up closes, in, the problems climbed easiest first as the
@@ -1529,11 +1554,12 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       evening(venue, morning);
       return;
     }
-    // Money first: the cushion, the week's bills, and the next trip if there's one to save
-    // for. A working morning, then a crag near enough to reach after it.
+    // Money first: the cushion, the week's bills, the next trip if there's one to save for, and
+    // the next comp's fee and travel. A working morning, then a crag near enough to reach after it.
     // A trip's saved for with a night's costs over, so it's still there in the morning.
     const trip = saving();
-    const want = CUSHION.career + (billsSoon() ? weeklyBills(s) : 0) + (trip ? trip + 50 : 0) + repairs();
+    const want =
+      CUSHION.career + (billsSoon() ? weeklyBills(s) : 0) + (trip ? trip + 50 : 0) + repairs() + compAhead();
     const pick = pickPlace();
     // Phase 28.3: a crew day isn't worked: the shift goes to a friend.
     if (crewToday() && booked()) askFavour('shift');

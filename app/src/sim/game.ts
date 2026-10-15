@@ -70,6 +70,7 @@ import {
 import {
   compBlocked,
   compClock,
+  compCost,
   compField,
   roundName,
   compHere,
@@ -280,6 +281,7 @@ import {
   FAVOUR,
   BUILD,
   AGE,
+  RETAINER,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
 import { WALL_EVENTS, wallEventById } from './content/wallevents';
@@ -347,6 +349,8 @@ import { BODGE_FAILED, BODGE_HELD, BREAKDOWN_LINE } from './content/van';
 import { speedBlocked, speedGains, speedLoad, speedTime, runsToday } from './speed';
 import { dayName, fill, lower, money, ordinal, skillsNote } from './format';
 import { perkMult, perkPasses } from './perks';
+import { dueTonight, retained, retainerBlocked, RETAINERS } from './retainers';
+import { RETAINER_SAYS } from './content/retainers';
 import { PARTNERS, tierOf, whereIs, whereNow } from './presence';
 import { hashSeed, Rng } from './rng';
 import { actEndedBy, aimMet, currentGoal } from './story';
@@ -455,6 +459,7 @@ export function newGame(seed: string): GameState {
     teams: [],
     crew: null,
     crewName: null,
+    retainers: { physio: null, coach: null },
     crewProject: null,
     crewDay: null,
     crewSends: [],
@@ -1211,6 +1216,12 @@ export function act(s0: GameState, a: Action): Result {
         line(fill(FAVOUR_REPAID, { name: PEOPLE[who]?.name ?? who, cash: money(p.lent.cash) }));
         delete p.lent;
       }
+    // Phase 34.2: a retainer's next week, a week from the day it was taken on.
+    for (const id of RETAINERS)
+      if (dueTonight(s, id, ended)) {
+        spend({ cash: -RETAINER[id].weekly });
+        line(fill(RETAINER_SAYS[id].bill, { cash: money(RETAINER[id].weekly) }));
+      }
     if (ended % 7 === 0) {
       const bills = weeklyBills(s);
       s.cash -= bills;
@@ -1629,7 +1640,9 @@ export function act(s0: GameState, a: Action): Result {
     // The clinic (Phase 22.4a): physio takes a day off, cortisone half of what's left.
     if (d.clinic && s.injury) {
       const left = s.injury.until - s.day;
-      const cut = d.clinic === 'physio' ? CLINIC.physio.days : Math.floor(left / 2);
+      // Phase 34.2: a physio on retainer takes more off a session.
+      const physio = retained(s, 'physio') ? RETAINER.physio.days : CLINIC.physio.days;
+      const cut = d.clinic === 'physio' ? physio : Math.floor(left / 2);
       s.injury = { ...s.injury, until: s.injury.until - cut };
       if (d.clinic === 'cortisone') s.jab = s.day;
       if (s.injury.until <= s.day) heal();
@@ -2755,7 +2768,8 @@ export function act(s0: GameState, a: Action): Result {
       const tier = compHere(s, s.day, s.at)!;
       const t = COMP_TIERS[tier]!;
       const [lo, hi] = gradesFor(tier, s.day);
-      if (t.fee) spend({ cash: -t.fee });
+      // Phase 34.2: the travel goes with the fee.
+      if (compCost(tier)) spend({ cash: -compCost(tier) });
       s.comps = { ...s.comps, on: { tier, day: s.day, round: 0, tops: {} } };
       // The entry's the wall for the day: no pass to buy on top.
       const pass = INDOOR[s.at]?.pass;
@@ -2763,6 +2777,22 @@ export function act(s0: GameState, a: Action): Result {
       line(
         `${t.name}: you're in, number ${t.field}. ${compSet(s.seed, tier, s.day).length} ${t.side ? 'throws' : 'problems'}, V${lo} to V${hi}; ${compClock(tier, 0)}.`,
       );
+      break;
+    }
+
+    // Phase 34.2: a physio or a coach taken on, the first week paid up front, or let go.
+    case 'retainer': {
+      const why = retainerBlocked(s, a.what, a.on);
+      if (why) return refuse(`${why}.`);
+      const say = RETAINER_SAYS[a.what];
+      if (a.on) {
+        spend({ cash: -RETAINER[a.what].weekly });
+        s.retainers = { ...s.retainers, [a.what]: s.day };
+        line(say.taken);
+      } else {
+        s.retainers = { ...s.retainers, [a.what]: null };
+        line(say.dropped);
+      }
       break;
     }
 

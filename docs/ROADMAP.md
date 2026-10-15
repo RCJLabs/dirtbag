@@ -3522,6 +3522,18 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - **The harness** passes every target but Outdoors, at 2 of 4 as on main.
 - **The download** is 437.0 KB of 460.
 
+**Status (15 Oct 2026): 34.2 built: the costs of ambition.** Save v66, 0.999.55.
+- **Opt-in retainers** (Evan's call; `RETAINER` in the dials, `retainers.ts`), each paid a week at a time from the day it's taken on, the first week up front, and stopped when it's let go (nothing back):
+  - **A physio on retainer,** at the clinic, $35 a week: physio free, and each session takes 2 days off an injury (1 paid by the visit).
+  - **A coach of your own,** one of the Cave's, $45 a week: 25% more from every training session. Training still teaches less than climbing an hour at every grade the bots reach (61% at the most, before the coach).
+  - Both rows say the week's price and what it does, formatted from the dials; the payments come with their own line on the night they're due.
+- **Travel to the big comps,** paid with the fee: Nationals $100, the World Series $250, the Games $500 (the Games are still by invitation). The desk's row says the fee and the travel; a climber short of both is told what they come to. The comp bots count it before they enter.
+- **Save v66:** the retainers, none. A real 0.999.54 save loads with neither and takes a physio on.
+- **The bots** don't take retainers, which are a player's choice; they pay the travel.
+- **A bot rule, from the travel:** the comp bot, entering on what it had in its pocket, came to Nationals short most months, and to the Games' 200 points never (1 of 4 reached the top, from 4 of 4). It now saves for the fortnight's dearest comp as it saves for a trip, with the World Series' cost on top before a Nationals it's strong enough for, and keeps it back from trips and the garage's upgrades (one bought a mattress on Nationals morning).
+- **The harness** passes every target but Outdoors, at 2 of 4 as on main. The comp bots reach the Games 4 of 4, median day 219 as on main; the boulderer's and the ropegun's first Games on main's day, the technician's sooner (219, from 330), the allrounder's later (387, from 219).
+- **The download** is 438.0 KB of 460.
+
 ### Phase 35 — The road and the year
 
 *Small. The knocks have no follow-up. There are eight hitchhikers, and no pull toward the ones you haven't met (the audit's social #9). The roadside stops are one-line lifts. Holidays are fire cards (the audit's social #16).*
@@ -3869,3 +3881,5 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-14 — 33.3 built: the field that comes back. Named rivals on each rung from the Circuit up, with grades by year, some going up a rung; Skye at the World Series and Nationals; the desk names the favourites and a comp names its winner. The field's tops roll go by go, so the top grade no longer wins every time. No save change. 0.999.52.
 - 2026-10-14 — 33.4 built: Nationals first on the calendar and nothing on the same day; the Nationals podium makes the team, and only the team climbs the World Series; a finalist's morning has the pass. The e2e plays a qualifier and a final (criterion 2). Phase 33's Done-when both pass; closing is Evan's call. No save change. 0.999.53.
 - 2026-10-15 — Phase 33 closed by Evan's call; CURRENT MILESTONE moved to Phase 34, money that means something.
+- 2026-10-15 — Phase 34 planned with Evan's calls (perks on the jobs there are; your sends' photos sell; opt-in retainers and comp travel; trade shows and a film, light). 34.1 built: rank perks for the setter, the guide, the warehouse, the coach, the café and the diner, each said from its dial (criterion 2); the business bot minds its gym till it peaks. No save change. 0.999.54.
+- 2026-10-15 — 34.2 built: the costs of ambition: a physio on retainer and a coach of your own, each weekly and opt-in, and travel to Nationals, the World Series and the Games. Save v66. 0.999.55.

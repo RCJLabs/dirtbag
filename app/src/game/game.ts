@@ -963,6 +963,11 @@ export class Game {
     this.dispatch({ t: 'tourists' });
   }
 
+  // Phase 34.2: a physio or a coach taken on, or let go.
+  retainer(what: 'physio' | 'coach', on: boolean): void {
+    this.dispatch({ t: 'retainer', what, on });
+  }
+
   // A comp (Phase 18.4): signed up for, or the scorecard in; back to the desk.
   comp(what: 'enter' | 'finish'): void {
     this.dispatch({ t: 'comp', do: what });
