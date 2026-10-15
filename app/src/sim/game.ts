@@ -395,7 +395,7 @@ import { echoDue, echoOpts, permitFor, shift, stanceDue, stanceOpts } from './sc
 import { boardWeek, bountyProgress, jobProgress, jobText, payWords, postBoard } from './board';
 import { homeCrowd, homeReady, yearsDone } from './year';
 import { ageOf, birthdayLine, bodyWaits, retireBlocked } from './age';
-import { agedSkills } from './ageing';
+import { ageCost, agedSkills, healDays } from './ageing';
 import { familyFill, heirOf } from './heir';
 import { COACH_LINE, HEIR_OPEN } from './content/heir';
 import { BOARD_JOBS } from './content/board';
@@ -729,7 +729,7 @@ export function rollLanding(
   const over = fallFt(r, moves) - HIGHBALL.safeFt;
   const tier: 1 | 2 | 3 = over >= HIGHBALL.tier3 ? 3 : over >= HIGHBALL.tier2 ? 2 : 1;
   const [lo, hi] = INJURY.days[tier - 1]!;
-  return { kind: LANDING_NAME[tier - 1]!, tier, until: s.day + 1 + rng.int(lo, hi) };
+  return { kind: LANDING_NAME[tier - 1]!, tier, until: s.day + 1 + healDays(s, rng.int(lo, hi)) };
 }
 
 // ---- decking off trad [proposed] ----
@@ -750,7 +750,7 @@ export function rollDeck(s: GameState, ft: number, n: number): Injury | null {
   const over = ft - TRAD.deck.safeFt;
   const tier: 1 | 2 | 3 = over >= TRAD.deck.tier3 ? 3 : over >= TRAD.deck.tier2 ? 2 : 1;
   const [lo, hi] = INJURY.days[tier - 1]!;
-  return { kind: LANDING_NAME[tier - 1]!, tier, until: s.day + 1 + rng.int(lo, hi) };
+  return { kind: LANDING_NAME[tier - 1]!, tier, until: s.day + 1 + healDays(s, rng.int(lo, hi)) };
 }
 
 // A pick from a list that holds for the day: the same line if you ask twice.
@@ -1086,8 +1086,10 @@ export function act(s0: GameState, a: Action): Result {
             (night?.energy ?? 0);
     if (fell) s.sick = { kind: fell.kind, until: s.day + fell.days };
     // Sick, you get less back from a night.
-    s.energy = clamp100(s.energy + rest + (isSick(s) ? SICK.energy : 0));
-    s.skin = clamp100(s.skin + BODY.sleepSkin + life.skin);
+    // Phase 30.2: a night gives back less with your years.
+    const older = ageCost(s, 'recover');
+    s.energy = clamp100(s.energy + Math.round(rest * older) + (isSick(s) ? SICK.energy : 0));
+    s.skin = clamp100(s.skin + Math.round((BODY.sleepSkin + life.skin) * older));
     if (!away) s.fed = clamp100(s.fed - (where === 'ledge' ? WALL.bivy.fed : BODY.nightFed));
     // The day's load folds into the averages; a deload sheds some of the acute.
     const p = projected(s.load);
@@ -2221,7 +2223,7 @@ export function act(s0: GameState, a: Action): Result {
       const tier = (r.next() < 0.5 ? 1 : 2) as 1 | 2;
       const [lo, hi] = INJURY.days[tier - 1]!;
       injure(
-        { kind: LANDING_NAME[tier - 1]!, tier, until: s.day + 1 + r.int(lo, hi) },
+        { kind: LANDING_NAME[tier - 1]!, tier, until: s.day + 1 + healDays(s, r.int(lo, hi)) },
         `Somewhere on the way out: a ${LANDING_NAME[tier - 1]}.`,
       );
     }

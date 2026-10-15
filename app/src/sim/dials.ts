@@ -1438,6 +1438,15 @@ export const AGEING = {
   technique: { from: 28, a: 0.005, limit: 1.08 },
   head: { from: 28, a: 0.005, limit: 1.08 },
 } as const;
+// Phase 30.2 [proposed] (Evan's calls, 15 Oct 2026: slower to recover and heal, not likelier
+// to get hurt; insurance priced by age). From `from` years old, `a` a year: a night gives back
+// less energy and skin (15% less by 45); an injury lasts longer (30% longer at 45); a plan's
+// premium costs more (45% more at 45). The odds of an injury don't read age.
+export const AGE_COST = {
+  recover: { from: 30, a: -0.01 },
+  heal: { from: 35, a: 0.03 },
+  premium: { from: 30, a: 0.03 },
+} as const;
 // How long a day takes a player (Phase 16.6), for criterion 1's hours: seconds a tap (the
 // e2e's count, reading included) and seconds a go (holding to climb, and the stamp). Not
 // measured: stated, so the hours the harness reports can be checked against testers' and
