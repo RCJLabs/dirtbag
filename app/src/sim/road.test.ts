@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { HITCHERS, STOPS } from './content/road';
 import { EVENTS } from './dials';
-import { driveEncounter, hitchFriend, hitchOpts, roadTrip } from './events';
+import { driveEncounter, hitchFriend, hitchOpts, roadPsyche, roadTrip, stopNote } from './events';
 import { act, newGame } from './game';
 import type { GameState } from './types';
 
@@ -85,17 +85,65 @@ describe('on the road', () => {
 
   it('pulls over for a stop: the detour, the find, and less of it the second time', () => {
     const x = STOPS.find((y) => y.id === 'hotspring')!;
+    const soak = x.opts[0]!;
     const s = withEncounter({ kind: 'stop', id: 'hotspring' }, { energy: 40, skin: 40 });
     const r = act(s, { t: 'answer', opt: 0 });
-    expect(r.state.min).toBe(s.min + EVENTS.stop.min);
-    expect(r.state.energy).toBe(40 + x.fx.energy!);
+    expect(r.state.min).toBe(s.min + soak.min);
+    expect(r.state.energy).toBe(40 + soak.fx.energy!);
     expect(r.state.deck.stops).toEqual(['hotspring']);
     const back = act({ ...r.state, encounter: { kind: 'stop', id: 'hotspring' } }, { t: 'answer', opt: 0 });
-    expect(back.state.energy - r.state.energy).toBe(Math.round(x.fx.energy! * EVENTS.stop.again));
+    expect(back.state.energy - r.state.energy).toBe(Math.round(soak.fx.energy! * EVENTS.stop.again));
     // Or keep driving, and nothing.
-    const on = act(s, { t: 'answer', opt: 1 });
+    const on = act(s, { t: 'answer', opt: x.opts.length });
     expect(on.state.min).toBe(s.min);
     expect(on.state.deck.stops).toEqual([]);
+  });
+
+  // Phase 35.2 (Evan's call): every stop has ways to spend it, each a trade.
+  it('offers two ways to spend every stop, each trading minutes for what it gives', () => {
+    expect(STOPS).toHaveLength(9);
+    for (const x of STOPS) {
+      expect(x.opts.length, x.id).toBeGreaterThanOrEqual(2);
+      expect(new Set(x.opts.map((o) => o.label)).size).toBe(x.opts.length);
+      for (const o of x.opts) {
+        expect(o.min).toBeGreaterThan(0);
+        expect(Object.keys(o.fx).length).toBeGreaterThan(0);
+        for (const t of [o.label, o.out]) {
+          expect(t, t).not.toMatch(/\d/);
+          expect(t, t).not.toMatch(/'/);
+        }
+      }
+      // Each line short enough for a toast (the game's TOAST_WORDS, 30), not a card to dismiss.
+      const words = (t: string) => t.split(/\s+/).length;
+      expect(words(`${x.name}. ${x.blurb}`)).toBeLessThanOrEqual(30);
+      for (const o of x.opts) expect(words(`${x.name} again. ${o.out}`)).toBeLessThanOrEqual(30);
+      // No two ways the same deal: something given or taken differs.
+      const deals = x.opts.map((o) => JSON.stringify([o.min, o.fx]));
+      expect(new Set(deals).size).toBe(deals.length);
+    }
+  });
+
+  it('spends a stop the way you choose: the quick dip, the slice or the photo for the feed', () => {
+    const s = withEncounter({ kind: 'stop', id: 'hotspring' }, { energy: 40, skin: 40 });
+    const dip = STOPS.find((y) => y.id === 'hotspring')!.opts[1]!;
+    const r = act(s, { t: 'answer', opt: 1 });
+    expect(r.state.min).toBe(s.min + dip.min);
+    expect(r.state.energy).toBe(40 + dip.fx.energy!);
+    expect(lines(r)).toContain(dip.out);
+    // A photo brings followers; the view on its own doesn't.
+    const look = withEncounter({ kind: 'stop', id: 'overlook' });
+    const sat = act(look, { t: 'answer', opt: 0 });
+    const shot = act(look, { t: 'answer', opt: 1 });
+    expect(sat.state.media.followers).toBe(look.media.followers);
+    expect(shot.state.media.followers).toBeGreaterThan(look.media.followers);
+    // The card says what each gives, from its numbers.
+    expect(
+      stopNote(
+        s,
+        STOPS.find((y) => y.id === 'hotspring')!,
+        dip,
+      ),
+    ).toBe(`+${roadPsyche(dip.fx.psyche)} psyche · +${dip.fx.energy} energy · +${dip.fx.skin} skin`);
   });
 
   it('sends a hitchhiker you were good to to your breakdown, never the two who took from you', () => {

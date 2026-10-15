@@ -180,7 +180,7 @@ import {
   hitchOpts,
   hitchFriend,
   stopById,
-  EVENTS,
+  stopNote,
   epicByKind,
   DOG_FAREWELL,
   dogAge,
@@ -2436,13 +2436,15 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             ? `The turnoff for ${x.name}. You know the way.`
             : `A turnoff you haven’t taken, for ${x.name}.`,
           close: false,
+          // Phase 35.2: the ways to spend the stop, each a trade, and driving on.
           rows: [
-            {
-              label: 'Pull over',
-              cost: costLabel({ min: EVENTS.stop.min, cash: x.fx.cash }),
-              run: () => game.answer(0),
-            },
-            { label: 'Keep driving', run: () => game.answer(1) },
+            ...x.opts.map((o, i) => ({
+              label: o.label,
+              cost: costLabel({ min: o.min, cash: o.fx.cash }),
+              note: stopNote(s, x, o),
+              run: () => game.answer(i),
+            })),
+            { label: 'Keep driving', run: () => game.answer(x.opts.length) },
           ],
         };
       }

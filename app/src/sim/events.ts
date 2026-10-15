@@ -7,7 +7,15 @@ import { KNOCKS, type Knock, type KnockFx } from './content/knocks';
 import { PLACES } from './content/places';
 import { EPICS, type Epic, type EpicEnd, type EpicKind } from './content/epics';
 import { conditionsAt, seasonOf } from './weather';
-import { HITCHERS, PASS_BY, STOPS, type Hitcher, type RoadFx, type RoadStop } from './content/road';
+import {
+  HITCHERS,
+  PASS_BY,
+  STOPS,
+  type Hitcher,
+  type RoadFx,
+  type RoadStop,
+  type StopOpt,
+} from './content/road';
 import { HITCH_ASK } from './content/hollow';
 import { EVENTS, HOLLOW } from './dials';
 import { hitchDue } from './hollow';
@@ -118,6 +126,20 @@ export function hitchFriend(s: GameState): Hitcher | null {
 
 // A road event's psyche, on the rebuild's scale.
 export const roadPsyche = (p: number | undefined): number => Math.round((p ?? 0) * EVENTS.psyche);
+
+// Phase 35.2: what a way to spend a stop gives, in words from its numbers, as it would land:
+// "+6 psyche · +9 energy · +7 skin", a smaller share once you've been, and the feed's take.
+export function stopNote(s: GameState, x: RoadStop, o: StopOpt): string {
+  const k = s.deck.stops.includes(x.id) ? EVENTS.stop.again : 1;
+  const parts: string[] = [];
+  const add = (n: number, unit: string) => n && parts.push(`${n > 0 ? '+' : '−'}${Math.abs(n)} ${unit}`);
+  add(roadPsyche((o.fx.psyche ?? 0) * k), 'psyche');
+  add(Math.round((o.fx.energy ?? 0) * k), 'energy');
+  add(Math.round((o.fx.skin ?? 0) * k), 'skin');
+  add(Math.round((o.fx.fed ?? 0) * k), 'food');
+  if (o.fx.followers) parts.push('followers');
+  return parts.join(' · ');
+}
 
 // ---- walk-outs (Phase 22.6c) ----
 

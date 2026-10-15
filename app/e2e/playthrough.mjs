@@ -1389,7 +1389,8 @@ console.log('A hitchhiker on the way to Roadside');
 
 console.log('A roadside stop on the way to Roadside');
 // Phase 22.6b. Day eight's morning drive to Roadside passes this seed's Balanced Rock: the
-// tires onto gravel (heard), its card, pulling over, and the find kept.
+// tires onto gravel (heard), its card, pulling over, and the find kept. Phase 35.2: the card
+// offers ways to spend it, each saying what it gives; the photo for the feed brings followers.
 {
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
   saved.state = {
@@ -1433,12 +1434,34 @@ console.log('A roadside stop on the way to Roadside');
   if (await pull.$('#sheet .x')) await fail('a stop can be closed without an answer');
   if (!(await pull.evaluate(() => window.cues.includes('pullover'))))
     await fail('the pull-off was never heard');
-  await pull.locator('#sheet .opt', { hasText: 'Pull over' }).first().click();
-  await pull.waitForFunction(() => !document.querySelector('#sheet'), null, { timeout: 10_000 });
+  const card = await pull.evaluate(() => document.querySelector('#sheet')?.textContent ?? '');
+  if (!/Stand under it a while/.test(card) || !/followers/.test(card) || !/Keep driving/.test(card))
+    await fail(`the stop's ways: ${card.slice(0, 200)}`);
+  await pull.locator('#sheet .opt', { hasText: 'The photo of you holding it up' }).first().click();
+  await pull.waitForFunction(
+    () => !/Keep driving/.test(document.querySelector('#sheet')?.textContent ?? ''),
+    null,
+    { timeout: 10_000 },
+  );
+  // A first photo can put something in the Record Book: taken as any card is.
+  for (let i = 0; i < 4; i++) {
+    await pull.waitForTimeout(300);
+    const t = await pull.evaluate(() => document.querySelector('#sheet')?.textContent ?? '');
+    if (/In the Record Book/.test(t)) {
+      log(`record book: ${await pull.evaluate(() => document.querySelector('#sheet-title')?.textContent)}`);
+      await pull.locator('#sheet .opt', { hasText: 'Right' }).first().click();
+    } else if (!t) break;
+    else await fail(`after the photo, a sheet: ${t.slice(0, 200)}`);
+  }
   const after = await pull.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
-  if (after.at !== 'road' || !after.deck.stops.includes('balanced') || after.encounter !== null)
-    await fail(`after the stop: at ${after.at}, ${JSON.stringify(after.deck)}`);
-  log('stop: Balanced Rock, pulled over, and kept');
+  if (
+    after.at !== 'road' ||
+    !after.deck.stops.includes('balanced') ||
+    after.encounter !== null ||
+    after.media.followers <= saved.state.media.followers
+  )
+    await fail(`after the stop: at ${after.at}, ${JSON.stringify(after.deck)}, ${after.media.followers}`);
+  log('stop: Balanced Rock, the photo taken, the find kept');
   await ctx.close();
 }
 
