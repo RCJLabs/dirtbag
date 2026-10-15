@@ -3805,6 +3805,16 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - **The e2e:** the knock night (day seven, Harvest) now pins the climber's people below the holiday's tier, so it stays the knock it tests; a new Harvest section sleeps the same night with Hazel close and beans in the pantry: the potluck's card (Hazel's line, the dish's two servings), the dish, and morning.
 - **Tests:** `holidays.test.ts`: the four scenes and none alone, elsewhere or on another night; three ways each, the first always open, words with no number or straight quote; a way spent with everyone there and no morning card; the dish from the pantry, and the dish and the cider shut without; the v75 save. `folks.test.ts`'s holiday night: its scene with people there, its card alone.
 
+**Status (15 Oct 2026): 35.5 built: the content sweep and the Done-when.** No save change, 0.999.75. The music's second pass waits on Evan's ear (`/sounds.html`), so it is carried, not done.
+- **The sweep** (`content.test.ts`): every line of the four pools (knocks and their returns, the twelve hitchhikers with their breakdown friends, the stops and driving past, the holidays with their scenes and who's there; 406 lines, old and new), held to the same rules: no number typed in, no straight quote, no doubled space, and no blank but the one the game fills (a friend's driveway names its host; the potluck names your dish). The references resolve too: one id each, a helped or turned-away answer that exists and isn't both, a return for every knock that helps and a knock for every return, the people at the fire in the cast. It caught one line, from before the phase: the headlights' "at 2 a.m." is "at two in the morning", as the rest of the pool spells it.
+- **The harness** wasn't run again: nothing here moves a rule (one line of words), so 35.4's run on the same rules stands (31 of 33).
+
+**Phase 35 against its Done-when (15 Oct 2026):** both pass.
+1. The content tests cover the new pools: each slice's own (`hitchers.test.ts`, `road.test.ts`, `knockback.test.ts`, `holidays.test.ts`), and the sweep over the whole of every pool.
+2. No hitchhiker comes a third time before every one has come once: the rule (`hitchersDue`), the unit test's two years of daily crag drives (more than twelve meetings), and the career harness's sixteen four-year careers all hold it. The harness's hold is weak: a career bot meets few hitchhikers (median 3 in four years), so none comes near the twelve.
+
+Closing is Evan's call. Carried: the music's second pass (on his ear); the media target's margin (the boulderer's media 101% of its shifts in 35.1's run, 81% since); Outdoors 0 to 2 of 4 across the phase's runs, as since 30.1. After Phase 35 the deepening run (26–35) is done; Phase 14 waits until Evan asks for it, so the next milestone is his call.
+
 ## Stage D — Get it in front of people
 
 *Moved here by Evan's call (29 Sep 2026): the whole game gets built first, and the Steam build, the demo and the store page come after it. The phase numbers stay as they were, so older references still find them.*
@@ -4160,3 +4170,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-15 — 35.2 built: every roadside stop has two ways to spend it, each a trade of minutes for what it gives, the card saying which from the numbers; a photo for the feed brings followers. No save change. 0.999.72.
 - 2026-10-15 — 35.3 built: the people you help at the van door come back once, weeks later, with a thank-you; the ones you turn away are remembered in a line. Save v75. The download budget to 470 KB (Evan's call). 0.999.73.
 - 2026-10-15 — 35.4 built: the four holidays are a scene at the fire when your people are about: the Sendsgiving potluck, headlamps on the boulders, the opener's eve, the solstice fire; three ways to spend each night. Save v76. 0.999.74.
+- 2026-10-15 — 35.5 built: the content tests hold every line of the road and the year to one set of rules, old lines and new; one old knock line spelled out. Phase 35's Done-when both pass; the music's second pass waits on Evan's ear. 0.999.75.

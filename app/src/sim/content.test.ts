@@ -19,6 +19,9 @@ import { LIBRARY, PITCH_KINDS, ROUTES, WALLS, type RouteDef } from './content/ro
 import { ROCK_LINES, ROCK_MOVES } from './content/rock';
 import { HIGHBALL } from './dials';
 import { GEAR } from './content/gear';
+import { HOLIDAY_SCENES, HOLIDAY_WITH, HOLIDAYS } from './content/folks';
+import { KNOCKS } from './content/knocks';
+import { HITCHERS, PASS_BY, STOPS } from './content/road';
 
 const STYLES = Object.keys(MIX);
 // The fixed lines, and the gym's first two months (the wall and the board) for two seeds.
@@ -267,5 +270,66 @@ describe('content', () => {
 describe('the kit the acts give you', () => {
   it('is all kit the save knows', () => {
     for (const [id, a] of Object.entries(ACTS)) if (a.gear) expect(GEAR, id).toHaveProperty([a.gear.id]);
+  });
+});
+
+// Phase 35: the road and the year. Each pool's own test checks what it added; this holds the
+// whole of every pool, old lines and new, to the same rules, so a line added later can't slip by.
+describe('the road and the year', () => {
+  const knocks = KNOCKS.flatMap((k) => [
+    k.title,
+    k.sit,
+    ...k.opts.flatMap((o) => [o.label, o.out]),
+    ...(k.away ? [k.away.line] : []),
+  ]);
+  const hitchers = HITCHERS.flatMap((h) => [
+    h.who,
+    h.sign,
+    h.look,
+    h.pitch,
+    h.again.open,
+    ...[...h.opts, ...h.again.opts].flatMap((o) => [o.label, o.out]),
+    ...(h.friend ? [h.friend] : []),
+  ]);
+  const stops = STOPS.flatMap((x) => [x.name, x.blurb, ...x.opts.flatMap((o) => [o.label, o.out])]);
+  const holidays = [
+    ...Object.values(HOLIDAYS).flatMap((h) => [h.name, h.text, h.alone]),
+    ...Object.values(HOLIDAY_SCENES).flatMap((h) => [h.scene, ...h.opts.flatMap((o) => [o.label, o.out])]),
+    ...Object.values(HOLIDAY_WITH),
+  ];
+
+  it('words every line with no number typed in, no straight quote, and only the blanks the game fills', () => {
+    // The blanks: a knock at a friend's driveway names its host; the potluck names your dish.
+    for (const [ts, blank] of [
+      [knocks, '{who}'],
+      [[...hitchers, PASS_BY.label, PASS_BY.out, ...stops], ''],
+      [holidays, '{dish}'],
+    ] as const)
+      for (const t of ts) {
+        expect(t.trim(), t).toBe(t);
+        expect(t.length, t).toBeGreaterThan(0);
+        expect(t, t).not.toMatch(/\d|['"]|\s{2}/);
+        expect(blank ? t.replaceAll(blank, '') : t, t).not.toMatch(/[{}]/);
+      }
+  });
+
+  it('resolves: one id each, answers that exist, a return for every knock that helps, people the cast knows', () => {
+    for (const ids of [KNOCKS, HITCHERS, STOPS].map((xs) => xs.map((x) => x.id)))
+      expect(new Set(ids).size).toBe(ids.length);
+    for (const k of KNOCKS) {
+      for (const i of k.helped ?? []) expect(k.opts[i], k.id).toBeTruthy();
+      if (k.away) {
+        expect(k.opts[k.away.opt], k.id).toBeTruthy();
+        expect(k.helped ?? [], k.id).not.toContain(k.away.opt);
+      }
+      const back = k.id.match(/^back-(.+)$/)?.[1];
+      if (back) expect(KNOCKS.find((x) => x.id === back)?.helped, k.id).toBeTruthy();
+      else if (k.helped)
+        expect(
+          KNOCKS.some((x) => x.id === `back-${k.id}`),
+          k.id,
+        ).toBe(true);
+    }
+    for (const who of Object.keys(HOLIDAY_WITH)) expect(PEOPLE, who).toHaveProperty([who]);
   });
 });
