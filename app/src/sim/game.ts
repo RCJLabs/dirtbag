@@ -2202,6 +2202,7 @@ export function act(s0: GameState, a: Action): Result {
     if (p) s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + p) };
     if (fx.guitar) s.guitar = round2(s.guitar + fx.guitar);
     if (fx.clue) addClue(fx.clue);
+    if (fx.followers) addFollowers(fromAudience(s, fx.followers * k));
     if (fx.beta) {
       const l = lessonAt(s);
       if (l) {
@@ -2235,17 +2236,21 @@ export function act(s0: GameState, a: Action): Result {
       return true;
     }
     const x = stopById(e.id);
-    if (!x || i > 1) return false;
+    if (!x || i > x.opts.length) return false;
     s.encounter = null;
-    if (i === 1) {
+    // Phase 35.2: the last answer drives on; the others are the ways to spend the stop.
+    if (i === x.opts.length) {
       line('You keep driving. It’ll be there next time.');
       return true;
     }
+    const o = x.opts[i]!;
     const first = !s.deck.stops.includes(x.id);
-    spend({ min: EVENTS.stop.min });
+    spend({ min: o.min });
     if (first) s.deck = { ...s.deck, stops: [...s.deck.stops, x.id] };
-    line(first ? `${x.name}. ${x.blurb}` : `${x.name} again. Still good, if not quite like the first time.`);
-    roadFx(x.fx, first ? 1 : EVENTS.stop.again);
+    // Two lines the first time, each short enough for a toast, not a card to dismiss.
+    if (first) line(`${x.name}. ${x.blurb}`);
+    line(first ? o.out : `${x.name} again. ${o.out}`);
+    roadFx(o.fx, first ? 1 : EVENTS.stop.again);
     return true;
   };
 

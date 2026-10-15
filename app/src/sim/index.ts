@@ -358,6 +358,7 @@ export {
   knockOdds,
   knockPsyche,
   stopById,
+  stopNote,
   epicByKind,
   epicOdds,
   epicRisk,

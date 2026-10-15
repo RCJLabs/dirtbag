@@ -18,6 +18,8 @@ export interface RoadFx {
   guitar?: number;
   // Phase 32.2: the old hand's receipt, a clue to the Hollow.
   clue?: 'hitch';
+  // Phase 35.2: a photo for the feed: followers, as many as your audience brings.
+  followers?: number;
 }
 
 export interface RoadOpt {
@@ -542,73 +544,199 @@ export const PASS_BY = {
   out: 'You keep your foot down. In the mirror, the sign goes down.',
 };
 
+// Phase 35.2 (Evan's call): a stop's ways to spend the pull-over, each a trade of minutes
+// (and now and then money) for what it gives. The first is the stop as it always was.
+export interface StopOpt {
+  label: string;
+  out: string;
+  min: number;
+  fx: RoadFx;
+}
+
 export interface RoadStop {
   id: string;
   name: string;
   blurb: string;
-  // What pulling over does, the first time; after that, a smaller share (EVENTS.stop.again).
-  fx: RoadFx;
+  // What each way does, the first time; after that, a smaller share (EVENTS.stop.again).
+  opts: StopOpt[];
 }
 
 // v0.956's roadside finds. It paid some in flat skill (head, power) and reputation; here
-// they're psyche, as the rest of the stop is.
+// they're psyche, as the rest of the stop is. Phase 35.2: a second way to spend each one.
 export const STOPS: RoadStop[] = [
   {
     id: 'overlook',
     name: 'Scenic Overlook',
     blurb: 'A pull-off with a hundred-mile view. Worth every minute of the detour.',
-    fx: { psyche: 12 },
+    opts: [
+      {
+        label: 'Sit with the view',
+        out: 'You sit on the guardrail until the light changes, and then it changes again.',
+        min: 40,
+        fx: { psyche: 12 },
+      },
+      {
+        label: 'Shoot it for the feed',
+        out: 'Three photos, one of them good. The view does not care which.',
+        min: 15,
+        fx: { psyche: 4, followers: 150 },
+      },
+    ],
   },
   {
     id: 'bigrock',
     name: 'World’s Largest Boulder',
     blurb: 'A house-sized erratic a glacier left behind. Naturally, you had to top it out.',
-    fx: { psyche: 14, energy: -4 },
+    opts: [
+      {
+        label: 'Top it out',
+        out: 'The tourist path goes round the back. You do not take the tourist path.',
+        min: 40,
+        fx: { psyche: 14, energy: -4 },
+      },
+      {
+        label: 'Walk round it',
+        out: 'It is bigger from the other side, which should not be possible.',
+        min: 15,
+        fx: { psyche: 6 },
+      },
+    ],
   },
   {
     id: 'balanced',
     name: 'Balanced Rock',
     blurb: 'A boulder perched on a slender spire like it is about to topple. It is not. Probably.',
-    fx: { psyche: 14 },
+    opts: [
+      {
+        label: 'Stand under it a while',
+        out: 'It has been about to fall for ten thousand years. You give it a few more minutes.',
+        min: 40,
+        fx: { psyche: 14 },
+      },
+      {
+        label: 'The photo of you holding it up',
+        out: 'Everybody takes it. Yours is no better than theirs, and it does fine anyway.',
+        min: 15,
+        fx: { psyche: 5, followers: 200 },
+      },
+    ],
   },
   {
     id: 'lonetree',
     name: 'The Lone Sentinel',
     blurb: 'A wind-twisted pine alone on a bald ridge. A good place to just stop and breathe.',
-    fx: { psyche: 12, energy: 8 },
+    opts: [
+      {
+        label: 'Sit and breathe',
+        out: 'The wind does all the talking. You let it.',
+        min: 40,
+        fx: { psyche: 12, energy: 8 },
+      },
+      {
+        label: 'Sleep in its shade',
+        out: 'Flat on the needles until the shade moves off you. You wake with bark printed on your cheek and no regrets.',
+        min: 90,
+        fx: { psyche: 6, energy: 20 },
+      },
+    ],
   },
   {
     id: 'piediner',
     name: 'Ma’s Pie Stop',
     blurb: 'A chrome-trimmed diner famous three counties over for one perfect slice of pie.',
-    fx: { psyche: 12, fed: 30, cash: -6 },
+    opts: [
+      {
+        label: 'The famous slice',
+        out: 'It is as good as three counties say. You do not tell anyone at the Lot, in case they come.',
+        min: 40,
+        fx: { psyche: 12, fed: 30, cash: -6 },
+      },
+      {
+        label: 'Just coffee at the counter',
+        out: 'Bottomless and burnt, and the waitress calls you hon. It is enough.',
+        min: 15,
+        fx: { psyche: 4, energy: 6, cash: -2 },
+      },
+    ],
   },
   {
     id: 'hotspring',
     name: 'Backcountry Hot Spring',
     blurb:
       'A steaming rock pool a short scramble off the road. Locals keep it clean and mostly keep it quiet.',
-    fx: { psyche: 12, energy: 18, skin: 14 },
+    opts: [
+      {
+        label: 'A proper soak',
+        out: 'Until your forearms forget the week. Nobody else comes, and you do not hurry.',
+        min: 40,
+        fx: { psyche: 12, energy: 18, skin: 14 },
+      },
+      {
+        label: 'A quick dip',
+        out: 'In, out, steaming beside the van, and back on the road before the windows clear.',
+        min: 15,
+        fx: { psyche: 4, energy: 6, skin: 4 },
+      },
+    ],
   },
   {
     id: 'ghosttown',
     name: 'The Ghost Town',
     blurb:
       'A silver-boom town the mountain outlived. Sagging timber, a leaning church, and wind through the empty doorways.',
-    fx: { psyche: 10 },
+    opts: [
+      {
+        label: 'Walk the main street',
+        out: 'Every doorway has a story and none of them is telling it. The church bell has no clapper.',
+        min: 40,
+        fx: { psyche: 10 },
+      },
+      {
+        label: 'Scramble up the mine tailings',
+        out: 'Loose, steep and pointless, and from the top you can see the whole dead town at once.',
+        min: 30,
+        fx: { psyche: 12, energy: -6 },
+      },
+    ],
   },
   {
     id: 'shrine',
     name: 'The Roadside Shrine',
     blurb:
       'A weathered cross and a jar of fresh flowers at a bend that has claimed more than one driver. People still stop.',
-    fx: { psyche: 12 },
+    opts: [
+      {
+        label: 'Stop a minute',
+        out: 'You straighten the jar. Somebody has left a chalk bag at the foot of the cross, and you understand why.',
+        min: 40,
+        fx: { psyche: 12 },
+      },
+      {
+        label: 'Leave a sling on the cross',
+        out: 'An old one, faded and retired. It belongs here more than in your van.',
+        min: 15,
+        fx: { psyche: 14, cash: -4 },
+      },
+    ],
   },
   {
     id: 'firelookout',
     name: 'The Fire Lookout',
     blurb:
       'An old ranger tower on the high point for miles. Climb the stairs and the whole range opens under you.',
-    fx: { psyche: 14 },
+    opts: [
+      {
+        label: 'Climb the tower',
+        out: 'Stairs, and then more stairs, and at the top every crag you know and three you do not.',
+        min: 40,
+        fx: { psyche: 14 },
+      },
+      {
+        label: 'A photo from the bottom',
+        out: 'Shot from below, the tower looks taller and you look braver. Nobody needs to know.',
+        min: 15,
+        fx: { psyche: 4, followers: 150 },
+      },
+    ],
   },
 ];

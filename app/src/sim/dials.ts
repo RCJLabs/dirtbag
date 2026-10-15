@@ -895,13 +895,14 @@ export const EVENTS = {
   },
   // Phase 22.6b, on a drive to or from a crag that doesn't break down. A hitchhiker [v0.956's:
   // 14%, five days apart]; else a roadside stop [proposed: v0.956 offered one on three drives
-  // in four], a detour of `min`, worth `again` of itself after the first time. At a breakdown,
+  // in four], worth `again` of itself after the first time (Phase 35.2: each way to spend a
+  // stop says its own minutes, in content/road.ts). At a breakdown,
   // a hitchhiker you were good to pulls up behind you `friend` of the time, if nobody you'd
   // call can. Phase 35.1 (Evan's call): the ones who've come least are `fresh` times likelier,
   // and nobody comes twice more than the least-met has (so no third time before everyone's
   // first) [proposed]. (Phase 22.6b's `again`, a met one 2.6 times likelier, ran the other way.)
   hitch: { odds: 0.14, every: 5, fresh: 3 },
-  stop: { odds: 0.2, every: 3, min: 40, again: 0.4 },
+  stop: { odds: 0.2, every: 3, again: 0.4 },
   friend: 0.5,
   // Phase 22.6c: a walk-out from a crag, ten days apart and never hurt [v0.956's]. Risk adds
   // up from the day: late (`late`, and more from `later`), late with no headlamp, rain, winter,
