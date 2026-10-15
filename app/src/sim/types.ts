@@ -334,6 +334,10 @@ export interface GameState {
   // Phase 16.5: the family you climb on after. Your generation (2 for the kid of the first),
   // who coached you, the lines they put up, and whether Dex coaches you for their sake.
   // `mentee` (Phase 25.3): the kid the forebear coached, and the grade they'd reached.
+  // Phase 32.2 (save v71): the Hollow's clues you hold (an old-timer's word, the old hand's
+  // receipt, the old guidebook), and the walks in that came back without it. Found is
+  // `unlocked` holding it.
+  hollow: { clues: HollowClue[]; tries: number };
   family: {
     gen: number;
     forebear: string;
@@ -404,6 +408,8 @@ export interface Injury {
   // The day you can climb again.
   until: number;
 }
+
+export type HollowClue = 'old' | 'hitch' | 'book';
 
 // Phase 31.1: a forebear's climbing life, as the family keeps it.
 export interface Career {
@@ -647,6 +653,8 @@ export type Action =
   | { t: 'crewGo' }
   // Phase 31.2: the old climber at the fire: sit with them, or ask about a line they sent.
   | { t: 'forebear'; do: 'talk' | 'beta' }
+  // Phase 32.2: the Hollow's quest: the old guidebook at the shop, and the walk in from the Gorge.
+  | { t: 'hollow'; do: 'book' | 'walk' }
   // Phase 29.2: take one of this week's bounties off the Board.
   | { t: 'bounty'; i: number }
   // Phase 28.3: a favour asked of one of the crew.

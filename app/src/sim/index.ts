@@ -332,6 +332,7 @@ export {
   CREW_PROJECT,
   FAVOUR,
   FAMILY,
+  HOLLOW,
 } from './dials';
 export type { Plan } from './dials';
 export { weeklyBills, clinicBill, carePrice, jabbed, premiumOf } from './clinic';
@@ -483,7 +484,8 @@ export { agedSkills, ageCost, ageingNote, ageMult, healDays } from './ageing';
 export { clinicBlocked, clinicHeads, clinicPay, compTomorrow, setCompBlocked } from './runway';
 export { RUNWAY_SAYS } from './content/runway';
 export { byName, familyFill, familyWords, FOREBEAR_MET, kinLine, questOf } from './heir';
-export { known } from './hollow';
+export { bookBlocked, found, known, walkBlocked } from './hollow';
+export { BOOK_ROW, CLUE_NAME, WALK_ROW } from './content/hollow';
 export { betaLine, forebearAtFire, forebearBlocked } from './forebear';
 export { COACH_EDGE, HEIR_ACT } from './content/heir';
 export { epilogue, namedDeeds, type EpilogueLine } from './epilogue';

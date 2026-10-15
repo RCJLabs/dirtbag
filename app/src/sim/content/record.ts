@@ -51,7 +51,9 @@ export type RecordAim =
   | { gym: true }
   | { land: true }
   // Phase 31.3: the line the old climber gave you at the fire, sent.
-  | { quest: true };
+  | { quest: true }
+  // Phase 32.2: the Hollow, found.
+  | { hollow: true };
 
 export interface RecordEntry {
   id: string;
@@ -511,6 +513,16 @@ export const RECORD: RecordEntry[] = [
       'You stopped. Not because you ran out of lines: there were always more. You stopped because a life is a length, and you used all of yours on rock.',
     from: ['f1:retired'],
     aim: { retired: true },
+  },
+  // Phase 32.2: the Hollow found, up the wash with three people's directions.
+  {
+    id: 'hollow',
+    title: 'Off the Map',
+    desc: 'Find the Hollow.',
+    story:
+      'Three people each knew a piece of the way, and you were the one who put it together and walked in. There is a canyon past the Gorge that isn’t on any map, and you know where it is.',
+    from: [],
+    aim: { hollow: true },
   },
   // Phase 31.3: a family's kid sends the line the old climber gave them at the fire.
   {

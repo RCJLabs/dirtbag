@@ -16,7 +16,8 @@ export interface EpicOpt {
   hours?: number;
 }
 
-export type EpicKind = 'dark' | 'storm' | 'lost' | 'cold' | 'stuck';
+// Phase 32.2: `hollow` is the walk in to the Hollow, started on purpose, never rolled.
+export type EpicKind = 'dark' | 'storm' | 'lost' | 'cold' | 'stuck' | 'hollow';
 export type EpicEnd = 'clean' | 'rough' | 'bad';
 
 export interface Epic {
@@ -434,6 +435,65 @@ export const EPICS: Epic[] = [
       clean: 'the night the rope stuck on the last rappel and you got it back anyway',
       rough: 'the stuck rope, the ledge, and the improvised rappels that got you off it in the dark',
       bad: 'the stuck rope that turned into the whole night, the one that actually scared you',
+    },
+  },
+  // Phase 32.2: the walk in to the Hollow, with all three clues. Each stage has the way the
+  // clues point (the old hand's left fork, waiting in the slot, the margin's headstones), and
+  // a way that doesn't. A clean or rough ending finds it; a bad one walks you back out.
+  {
+    kind: 'hollow',
+    title: 'The Wash',
+    open: 'You leave the van at the Gorge and walk up the wash with no sign on it, three sets of directions in your head and none of them quite agreeing.',
+    stages: [
+      {
+        sit: 'The wash forks at a dead juniper. The left looks like nothing. The right looks like a trail.',
+        opts: [
+          { label: 'Take the left', sub: 'what the old hand drew', risk: 0, energy: -6 },
+          { label: 'Take the right', sub: 'everybody takes the right', risk: 3, energy: -6 },
+          {
+            label: 'Climb the rise and look',
+            sub: 'slow, and you’ll see more',
+            risk: -1,
+            energy: -10,
+            hours: 2,
+          },
+        ],
+      },
+      {
+        sit: 'The walls close in. The wash turns to a slot a shoulder wide, and the light goes grey.',
+        opts: [
+          { label: 'Squeeze on', sub: 'fast, and it takes skin', risk: 3, skin: -8, energy: -6 },
+          {
+            label: 'Go round over the rim',
+            sub: 'long, and hot up there',
+            risk: 1,
+            energy: -14,
+            fed: -6,
+            hours: 2,
+          },
+          { label: 'Wait for your eyes', sub: 'Ray’s way: he was never in a hurry', risk: 0, energy: -4 },
+        ],
+      },
+      {
+        sit: 'A bend that doubles back on itself, then another. Somewhere ahead, crows.',
+        opts: [
+          { label: 'Look for the headstones', sub: 'the cross in the margin', risk: -1, energy: -6 },
+          { label: 'Follow the crows', sub: 'they know something', risk: 1, energy: -6 },
+          { label: 'Keep to the left wall', sub: 'a rule, at least', risk: 2, energy: -8 },
+        ],
+      },
+    ],
+    ends: {
+      clean:
+        'The slot opens out into a canyon nobody has put on a map. Headstones under the far wall, red rock nobody has touched, and not one tick mark.',
+      rough:
+        'You find it late, scraped and out of water, but you find it: a canyon of red rock, headstones under the far wall, and not one tick mark.',
+      bad: 'The light goes before the canyon shows. You walk back down the wash in the dark with three sets of directions, none of them wrong yet.',
+    },
+    story: {
+      clean: 'up the wash with no sign on it, and into a canyon nobody has put on a map',
+      rough: 'a long day up the wash, and a canyon at the end of it',
+      bad: 'up the wash and back down it in the dark, without the canyon',
     },
   },
 ];

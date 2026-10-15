@@ -14,8 +14,9 @@ import { crewNameNodes, crewNameStarts, crewNodes, crewStarts } from './crew';
 import { favourNodes, favourStarts } from './favours';
 import { renownNodes, renownStarts } from './renown';
 import { kinNodes, kinStarts } from './kin';
+import { OLD_WORD } from './hollow';
 import { PLACES } from './places';
-import type { Delta, Skills } from '../types';
+import type { Delta, HollowClue, Skills } from '../types';
 
 export interface TalkFx {
   cost?: Delta;
@@ -52,6 +53,8 @@ export interface TalkFx {
   favour?: 'yes' | 'no' | 'clash';
   // Something said once and for good (Phase 28.4): kept in `seen`.
   seen?: string;
+  // Phase 32.2: a clue to the Hollow you now hold.
+  clue?: HollowClue;
 }
 
 export interface TalkOpt {
@@ -454,6 +457,8 @@ export const TALK: Record<string, TalkDef> = {
       { when: { notMet: 'ray' }, node: 'meet' },
       // Phase 31.3: whose kid you are, said once.
       ...kinStarts('ray'),
+      // Phase 32.2: the way to the Hollow.
+      { when: { oldWord: 'ray' }, node: 'hollow' },
       // Phase 28.4: what the old guard make of the crew.
       ...renownStarts('ray'),
       { when: { life: 'ray/1' }, node: 'last-season' },
@@ -465,6 +470,7 @@ export const TALK: Record<string, TalkDef> = {
       ...arcNodes('ray'),
       ...renownNodes('ray'),
       ...kinNodes('ray'),
+      hollow: OLD_WORD.ray!,
       'last-season': {
         calls: true,
         text: '"Last season," Ray says, to the wall more than to you. "Knees, mostly. The wall won’t notice." He pours you a lid of coffee. "You will. That’s enough."',
@@ -513,6 +519,8 @@ export const TALK: Record<string, TalkDef> = {
       { when: { notMet: 'frank' }, node: 'meet' },
       // Phase 31.3: whose kid you are, said once.
       ...kinStarts('frank'),
+      // Phase 32.2: the way to the Hollow.
+      { when: { oldWord: 'frank' }, node: 'hollow' },
       // Phase 28.4: what the old guard make of the crew.
       ...renownStarts('frank'),
       { when: { life: 'frank/1' }, node: 'parked' },
@@ -524,6 +532,7 @@ export const TALK: Record<string, TalkDef> = {
       ...arcNodes('frank'),
       ...renownNodes('frank'),
       ...kinNodes('frank'),
+      hollow: OLD_WORD.frank!,
       parked: {
         calls: true,
         text: 'Frank’s truck is up on blocks next to your van, its wheels in a neat stack. "Nine years passing through," he says, "and it was the truck that decided." He seems fine about it. Better than fine.',

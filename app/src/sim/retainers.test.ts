@@ -40,6 +40,7 @@ describe('a save from before the retainers', () => {
       ...old,
       retainers: { physio: null, coach: null },
       media: { ...old.media, photos: [], piece: null, film: null },
+      hollow: { clues: [], tries: 0 },
     });
     const took = act(r.state, { t: 'retainer', what: 'physio', on: true });
     expect(refused(took)).toBeUndefined();

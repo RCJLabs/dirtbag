@@ -11,6 +11,7 @@ import { lifeDue } from './lives';
 import { romanceDue, strained } from './romance';
 import { crewDue, crewNameDue, renownBeatDue, renownTier } from './crew';
 import { kinBeatDue } from './kin';
+import { oldWordDue } from './hollow';
 import { clashDue, favourDue } from './favours';
 import { strayDue } from './scout';
 import { clockShort, fill } from './format';
@@ -47,6 +48,7 @@ export interface Cond {
   renownBeat?: string; // "who/n": one of the old guard has a line about the crew at tier n
   kin?: boolean; // true: you're a family's kid (Phase 31.3); false: you're not
   kinBeat?: string; // "who/band": one of the old guard has their word on whose kid you are due
+  oldWord?: string; // "ray" or "frank": their word on the way to the Hollow is due (Phase 32.2)
   sky?: Sky; // today's weather
   arc?: string; // "who/n": beat n of their arc is due (bond reached, days since the last)
   bond?: string; // "who/n": your bond with them is at least n
@@ -138,6 +140,7 @@ export function holds(s: GameState, c: Cond): boolean {
   if (c.renownBeat !== undefined && !renownBeatDue(s, c.renownBeat)) return false;
   if (c.kin !== undefined && !!s.family !== c.kin) return false;
   if (c.kinBeat !== undefined && !kinBeatDue(s, c.kinBeat)) return false;
+  if (c.oldWord !== undefined && !oldWordDue(s, c.oldWord)) return false;
   if (c.giftDue !== undefined) {
     const gave = s.people[c.giftDue]?.gave;
     if (gave !== undefined && s.day - gave < GIVE.every) return false;

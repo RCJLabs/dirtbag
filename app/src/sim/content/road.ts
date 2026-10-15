@@ -16,6 +16,8 @@ export interface RoadFx {
   beta?: true;
   // Sets toward your guitar playing.
   guitar?: number;
+  // Phase 32.2: the old hand's receipt, a clue to the Hollow.
+  clue?: 'hitch';
 }
 
 export interface RoadOpt {

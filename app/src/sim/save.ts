@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 70;
+export const SAVE_VERSION = 71;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -528,6 +528,11 @@ export const MIGRATIONS: Record<number, Migration> = {
     for (const [id, d] of Object.entries(isObj(x.record) ? x.record : {}))
       (typeof d === 'number' && d <= held ? theirs : mine)[id] = d;
     return { ...x, record: mine, family: { ...f, books: [{ name: f.forebear, record: theirs }] } };
+  },
+  // v70 -> v71 (Phase 32.2): the Hollow's clues; nobody had any, or had looked.
+  70: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, hollow: { clues: [], tries: 0 } };
   },
 };
 
@@ -1168,6 +1173,16 @@ export function validate(x: unknown): string[] {
             Object.values(b.record).every((d) => isInt(d)),
         )),
     'family',
+  );
+  const hw = x.hollow;
+  need(
+    isObj(hw) &&
+      Array.isArray(hw.clues) &&
+      hw.clues.every((c) => c === 'old' || c === 'hitch' || c === 'book') &&
+      new Set(hw.clues).size === hw.clues.length &&
+      isInt(hw.tries) &&
+      hw.tries >= 0,
+    'hollow',
   );
   const mt = x.mentee;
   need(
