@@ -973,6 +973,11 @@ export class Game {
     this.dispatch({ t: 'retainer', what, on });
   }
 
+  // Phase 30.3: the runway, a clinic or tomorrow's comp set.
+  runway(what: 'clinic' | 'setComp'): void {
+    this.dispatch({ t: what });
+  }
+
   // A comp (Phase 18.4): signed up for, or the scorecard in; back to the desk.
   comp(what: 'enter' | 'finish'): void {
     this.dispatch({ t: 'comp', do: what });

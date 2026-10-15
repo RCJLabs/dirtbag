@@ -1447,6 +1447,22 @@ export const AGE_COST = {
   heal: { from: 35, a: 0.03 },
   premium: { from: 30, a: 0.03 },
 } as const;
+// Phase 30.3 [proposed] (Evan's call, 15 Oct 2026: all three, from 35). A late career's runway,
+// paid like work and never more than a job's (runway.test.ts holds both):
+// - a clinic: a weekend morning at the Cave for a Coach or better, or a sponsored climber, before
+//   noon: `base` climbers and one more for each `per` grades of your hardest send, up to `most`,
+//   at `fee` each (66 at the most, under a Head coach's shift);
+// - setting a comp: the day before one, at its venue, for a Senior setter or better: a long day
+//   for `pay` (about a Head setter's hour);
+// - ambassador terms: from `from`, a sponsor's cycle asks for a clinic where it asked for a send,
+//   and pays `ambassador` of an athlete's stipend: the send was what dropped an older climber, so
+//   at the full stipend a media career's media came to 105% of its shifts.
+export const RUNWAY = {
+  from: 35,
+  ambassador: 0.5,
+  clinic: { coach: 1, by: 12 * 60, min: 240, energy: 15, fee: 11, base: 2, per: 3, most: 6 },
+  setComp: { rank: 2, min: 360, energy: 20, pay: 85 },
+} as const;
 // How long a day takes a player (Phase 16.6), for criterion 1's hours: seconds a tap (the
 // e2e's count, reading included) and seconds a go (holding to climb, and the stamp). Not
 // measured: stated, so the hours the harness reports can be checked against testers' and

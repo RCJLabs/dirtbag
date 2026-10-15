@@ -7,7 +7,8 @@ import { gradeOf } from './climber';
 import { SPONSORS } from './content/media';
 import { indoor, routeById } from './content/gym';
 import { PLACES } from './content/places';
-import { FILM, MEDIA, PHOTO, PIECE, SHOW } from './dials';
+import { ageOf } from './ageing';
+import { FILM, MEDIA, PHOTO, PIECE, RUNWAY, SHOW } from './dials';
 import { money } from './format';
 import { Rng } from './rng';
 import type { GameState, MediaTask } from './types';
@@ -64,6 +65,14 @@ export function postBlocked(s: GameState, style: Style): string | null {
 export const rivalFollowers = (day: number): number =>
   Math.round(MEDIA.rival.top / (1 + Math.exp(-(day - MEDIA.rival.mid) / MEDIA.rival.width)));
 
+// What a sponsor's cycle pays when its asks are done: the stipend, more on brand terms, half on
+// an ambassador's (Phase 30.3: a cycle that asks for a clinic).
+export function cyclePay(sp: { tier: number; terms: 'real' | 'brand'; tasks: MediaTask[] }): number {
+  const S = SPONSORS[sp.tier]!;
+  const amb = sp.tasks.some((t) => t.kind === 'clinic') ? RUNWAY.ambassador : 1;
+  return Math.round(S.stipend * (sp.terms === 'brand' ? MEDIA.brand : 1) * amb);
+}
+
 // The sponsor tier your followers have earned, or -1.
 export const tierEarned = (s: GameState): number =>
   SPONSORS.reduce((t, x, i) => (s.media.followers >= x.followers ? i : t), -1);
@@ -77,8 +86,11 @@ export function cycleTasks(
   due = s.day + MEDIA.cycle,
 ): MediaTask[] {
   const sp = SPONSORS[tier]!;
+  // Phase 30.3: from 35, ambassador terms: a clinic where it asked for a send.
   const tasks: MediaTask[] = [
-    { kind: 'send', grade: Math.max(0, gradeOf(s.climber.skills) - 1), done: false },
+    ageOf(s) >= RUNWAY.from
+      ? { kind: 'clinic', done: false }
+      : { kind: 'send', grade: Math.max(0, gradeOf(s.climber.skills) - 1), done: false },
   ];
   if (sp.shoot) {
     const crags = Object.entries(PLACES)

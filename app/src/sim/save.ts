@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 68;
+export const SAVE_VERSION = 69;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -508,6 +508,12 @@ export const MIGRATIONS: Record<number, Migration> = {
     const m = isObj(x.media) ? x.media : {};
     return { ...x, media: { ...m, film: null } };
   },
+  // v68 -> v69 (Phase 30.3): an ambassador's clinic is a sponsor's ask from 35, from the next
+  // cycle on; nothing to change in a save.
+  68: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return x;
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -710,6 +716,7 @@ export function validate(x: unknown): string[] {
       (t.kind === 'shoot' && typeof t.place === 'string' && t.place in PLACES) ||
       t.kind === 'comp' ||
       t.kind === 'ad' ||
+      t.kind === 'clinic' ||
       (t.kind === 'show' && isInt(t.day)));
   need(
     isObj(md) &&

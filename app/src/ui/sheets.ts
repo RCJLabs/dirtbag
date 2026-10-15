@@ -202,6 +202,14 @@ import {
   gymDay,
   wallWord,
   rankAt,
+  RUNWAY,
+  RUNWAY_SAYS,
+  cyclePay,
+  clinicBlocked,
+  clinicHeads,
+  clinicPay,
+  compTomorrow,
+  setCompBlocked,
   MEDIA,
   MEDIA_RIVAL,
   SPONSORS,
@@ -615,6 +623,8 @@ function taskText(t: MediaTask, sponsor = 'the sponsor'): string {
   if (t.kind === 'comp') return 'Compete in a comp';
   // Phase 34.4: a day on the stand.
   if (t.kind === 'show') return fill(SHOW_SAYS.task, { sponsor, day: t.day });
+  // Phase 30.3: an ambassador's clinic.
+  if (t.kind === 'clinic') return fill(RUNWAY_SAYS.clinic.task, { sponsor });
   return 'Post their ad';
 }
 
@@ -684,6 +694,37 @@ function retainerRow(game: Game, s: GameState, id: RetainerId): Row {
     off: !!why,
     run: () => game.retainer(id, !on),
   };
+}
+
+// Phase 30.3: the runway at a desk, once you're old enough and qualified for it: a clinic at the
+// Cave, and setting tomorrow's comp wherever one's on.
+function runwayRows(game: Game, s: GameState): Row[] {
+  if (ageOf(s) < RUNWAY.from) return [];
+  const rows: Row[] = [];
+  if (s.at === 'cave' && (rankAt(s, 'coach') >= RUNWAY.clinic.coach || s.media.sponsor)) {
+    const why = clinicBlocked(s);
+    rows.push({
+      label: RUNWAY_SAYS.clinic.row,
+      cost: `+${money(clinicPay(s))}`,
+      note: why
+        ? `${why}.`
+        : fill(RUNWAY_SAYS.clinic.note, { heads: `${clinicHeads(s)} climbers`, cash: money(clinicPay(s)) }),
+      off: !!why,
+      run: () => game.runway('clinic'),
+    });
+  }
+  const tier = compTomorrow(s);
+  if (tier !== null && rankAt(s, 'set') >= RUNWAY.setComp.rank) {
+    const why = setCompBlocked(s);
+    rows.push({
+      label: RUNWAY_SAYS.setComp.row,
+      cost: `+${money(RUNWAY.setComp.pay)}`,
+      note: why ? `${why}.` : fill(RUNWAY_SAYS.setComp.note, { comp: COMP_TIERS[tier]!.name }),
+      off: !!why,
+      run: () => game.runway('setComp'),
+    });
+  }
+  return rows;
 }
 
 function compRow(game: Game, s: GameState): Row {
@@ -1548,7 +1589,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       if (sp) {
         const S = SPONSORS[sp.tier]!;
         lines.push(
-          `${S.name}, ${TERMS[sp.terms].name.toLowerCase()}: ${money(Math.round(S.stipend * (sp.terms === 'brand' ? MEDIA.brand : 1)))} on day ${sp.due} if this cycle's asks are done${sp.strikes ? ' (one warning already)' : ''}.`,
+          `${S.name}, ${TERMS[sp.terms].name.toLowerCase()}${sp.tasks.some((t) => t.kind === 'clinic') ? ', as an ambassador' : ''}: ${money(cyclePay(sp))} on day ${sp.due} if this cycle's asks are done${sp.strikes ? ' (one warning already)' : ''}.`,
           ...sp.tasks.map((t) => `${t.done ? '✓' : '·'} ${taskText(t, S.name)}`),
         );
       } else {
@@ -1700,7 +1741,13 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             ? 'Wristband on. The comp wall is yours till ten.'
             : 'The comp team is warming up on problems you’d project. The set changes every seven days.',
           close: true,
-          rows: [actRow(game, s, 'center.pass'), compRow(game, s), trainRow(game, s), mapRow(game)],
+          rows: [
+            actRow(game, s, 'center.pass'),
+            compRow(game, s),
+            ...runwayRows(game, s),
+            trainRow(game, s),
+            mapRow(game),
+          ],
         };
       if (s.at === 'cave')
         return {
@@ -1715,6 +1762,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             // Phase 34.2: one of the coaches, for your own training.
             retainerRow(game, s, 'coach'),
             compRow(game, s),
+            ...runwayRows(game, s),
             trainRow(game, s),
             mapRow(game),
           ],
@@ -1733,6 +1781,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             ? [ownGymRow(game, s), ...ownWallRows(game, s)]
             : [actRow(game, s, 'gym.pass'), ...actRows(game, s, 'gym.set'), ...buyGymRows(game, s)]),
           compRow(game, s),
+          ...runwayRows(game, s),
           leagueRow(game, s),
           // Phase 25.3: the kid you coach.
           ...menteeRows(game, s),

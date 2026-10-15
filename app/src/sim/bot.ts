@@ -4,6 +4,7 @@
 // meter exactly, so what it reaches is an upper bound; human hands scatter.
 
 import { agedSkills } from './ageing';
+import { clinicBlocked, setCompBlocked } from './runway';
 import { folksDue } from './folks';
 import {
   attemptInput,
@@ -1558,6 +1559,13 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     if (opts.focus === 'media' && !pieceBlocked(s)) go({ t: 'piece' });
     // Phase 34.4: the sponsor's stand takes the day it's on; a film, once it's flush for one.
     if (s.media.sponsor && !showBlocked(s)) go({ t: 'show' });
+    // Phase 30.3: an ambassador's clinic, the first weekend morning it's asked; and the business
+    // bot, a senior setter past 35, sets League night the day before at its gym.
+    const ask = s.media.sponsor?.tasks.some((t) => t.kind === 'clinic' && !t.done);
+    if (ask && !clinicBlocked({ ...s, at: 'cave' }) && reachable('cave') && travel('cave'))
+      go({ t: 'clinic' });
+    if (opts.focus === 'business' && !setCompBlocked({ ...s, at: 'gym' }) && travel('gym'))
+      go({ t: 'setComp' });
     if (opts.focus === 'media' && !filmBlocked({ ...s, cash: s.cash - CUSHION.career - FILM_OVER }))
       go({ t: 'film' });
     if (s.fed < 70) eat();
