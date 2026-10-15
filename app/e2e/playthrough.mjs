@@ -1768,6 +1768,110 @@ console.log('Cooking at the van');
   await ctx.close();
 }
 
+console.log('The Hollow: the walk in, and a crack cleaned for gear');
+// Phase 32.5. The day-five climber at the Gorge on a fine morning, holding all three clues to
+// the Hollow: the van's row, the walk up the wash the way the clues point (the old hand's
+// fork, Ray's patience, the margin's headstones), standing in the Hollow and in the Record
+// Book, then along the canyon floor to the split, whose sheet offers gear or bolts. Cleaned
+// for gear, it's a line, and the old guard approves.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  saved.state = {
+    ...saved.state,
+    day: 30,
+    min: 9 * 60,
+    at: 'gorge',
+    x: null,
+    energy: 90,
+    fed: 80,
+    cash: 300,
+    injury: null,
+    encounter: null,
+    table: null,
+    hollow: { clues: ['old', 'hitch', 'book'], tries: 0 },
+  };
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  await ctx.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+  }, JSON.stringify(saved));
+  const hol = await ctx.newPage();
+  hol.on('pageerror', (e) => problems.push(`hollow: uncaught: ${e.message}`));
+  hol.on('console', (m) => m.type() === 'error' && problems.push(`hollow: console.error: ${m.text()}`));
+  await hol.goto(server.url, { waitUntil: 'load' });
+  const sheetOf = () => hol.evaluate(() => document.querySelector('#sheet')?.textContent ?? '');
+  await hol.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Map');
+  await hol.waitForTimeout(600);
+  // The van, on the left of the Gorge as of every crag.
+  await hol.mouse.click(100, 560);
+  await hol.waitForFunction(() =>
+    /Look for the canyon/.test(document.querySelector('#sheet')?.textContent ?? ''),
+  );
+  await hol.locator('#sheet .opt', { hasText: 'Look for the canyon' }).first().click();
+  for (const call of ['Take the left', 'Wait for your eyes', 'Look for the headstones']) {
+    await hol.waitForFunction((c) => (document.querySelector('#sheet')?.textContent ?? '').includes(c), call);
+    await hol.locator('#sheet .opt', { hasText: call }).first().click();
+  }
+  await hol.waitForFunction(
+    () => !/Look for the headstones/.test(document.querySelector('#sheet')?.textContent ?? ''),
+    null,
+    { timeout: 10_000 },
+  );
+  // Off the Map, in the Record Book, comes up as the Hollow does: taken as any card is.
+  for (let i = 0; i < 8; i++) {
+    await hol.waitForTimeout(300);
+    const t = await sheetOf();
+    if (/In the Record Book/.test(t)) {
+      log(`record book: ${await hol.evaluate(() => document.querySelector('#sheet-title')?.textContent)}`);
+      await hol.locator('#sheet .opt', { hasText: 'Right' }).first().click();
+    } else if (!t) break;
+  }
+  const there = await hol.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  if (
+    there.at !== 'hollow' ||
+    !there.unlocked.includes('hollow') ||
+    there.record.hollow !== 30 ||
+    !there.log.some((l) => /You’re standing in the Hollow/.test(l.text))
+  )
+    await fail(`after the walk in: at ${there.at}, ${JSON.stringify(there.hollow)}, ${there.record.hollow}`);
+  await hol
+    .waitForFunction(() => /yours to name/.test(document.querySelector('#hint')?.textContent ?? ''), null, {
+      timeout: 10_000,
+    })
+    .catch(async () =>
+      fail(
+        `the Hollow's hint never showed: hint ${await hol.evaluate(() => document.querySelector('#hint')?.textContent ?? '–')}, sheet ${(await sheetOf()).slice(0, 160)}`,
+      ),
+    );
+  await hol.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-hollow.png`) });
+  // Along the floor to the split, 460 px on at 118 a second, and Enter for what's nearest.
+  await hol.keyboard.down('ArrowRight');
+  await hol.waitForTimeout(3900);
+  await hol.keyboard.up('ArrowRight');
+  await hol.waitForTimeout(300);
+  await hol.keyboard.press('Enter');
+  await hol.waitForFunction(
+    () => /^The split/.test(document.querySelector('#sheet-title')?.textContent ?? ''),
+    null,
+    {
+      timeout: 10_000,
+    },
+  );
+  if (!(await hol.$('#gear-it')) || !(await hol.$('#bolt-it')))
+    await fail(`the split's sheet: no choice of gear or bolts: ${(await sheetOf()).slice(0, 160)}`);
+  await hol.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-hollow-crack.png`) });
+  await hol.click('#gear-it');
+  await hol.waitForFunction(() =>
+    JSON.parse(localStorage.getItem('dirtbag.save')).state.bolted.includes('hsplit'),
+  );
+  const after = await hol.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  if (after.boltedCracks.length || after.scene.old <= there.scene.old || after.scene.gym !== there.scene.gym)
+    await fail(
+      `after cleaning the split: ${JSON.stringify({ cracks: after.boltedCracks, scene: after.scene })}`,
+    );
+  log('hollow: walked in the way the clues point, found it, and cleaned the split for gear');
+  await ctx.close();
+}
+
 console.log('Nationals: a qualifier and a final');
 // Phase 33.4 (Phase 33's criterion 2). Nationals morning at the Training Center (its second
 // edition, day 36), for a climber well over its grades with the points to enter: signed up at

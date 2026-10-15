@@ -235,6 +235,9 @@ describe('first ascents in the Hollow', () => {
     expect(f.state.cash).toBe(s.cash - LAND.bolt.cash);
     expect(f.state.scene).toMatchObject({ old: s.scene.old, gym: s.scene.gym + HOLLOW.scene.bolt.gym });
     expect(f.state.boltedCracks).toEqual([]);
+    // Cleaning's free: in debt, you can still do it; bolts you can't.
+    expect(refused(prep({ ...s, cash: -20 }, 'hcrow'))).toBe(false);
+    expect(refused(prep({ ...s, cash: -20 }, 'hwall'))).toBe(true);
     // A face takes bolts, whatever you'd rather.
     expect(prep(s, 'hwall', 'gear').state.cash).toBe(s.cash - LAND.bolt.cash);
   });

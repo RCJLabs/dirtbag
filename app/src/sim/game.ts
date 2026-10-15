@@ -2733,7 +2733,8 @@ export function act(s0: GameState, a: Action): Result {
       const wild = !!PLACES[r.place]?.wild;
       const how = r.disc === 'boulder' ? 'clean' : r.disc === 'trad' && wild ? (a.how ?? 'gear') : 'bolts';
       const c = how === 'bolts' ? LAND.bolt : LAND.clean;
-      if (s.cash < c.cash) return refuse(`The hardware's ${money(c.cash)}.`);
+      // Cleaning costs nothing, so being in debt doesn't stop it (Phase 32.5).
+      if (c.cash > 0 && s.cash < c.cash) return refuse(`The hardware's ${money(c.cash)}.`);
       if (s.energy < c.energy) return refuse('Too tired to hang on a rope with a drill all day.');
       spend({ cash: -c.cash, min: c.min, energy: -c.energy });
       s.bolted = [...s.bolted, r.id];

@@ -6,7 +6,7 @@ import type { BotRun } from '../src/sim/bot';
 import { STARTS } from '../src/sim/climber';
 import { contentOut, firstTry, linesOf, median, season, socialLines } from '../src/sim/harness';
 import { JOBS } from '../src/sim/content/jobs';
-import { ACTS } from '../src/sim/content/places';
+import { ACTS, PLACES } from '../src/sim/content/places';
 import { TALK } from '../src/sim/content/people';
 import { BUSK, PACE, PSYCHE, YEAR } from '../src/sim/dials';
 import { DALE_VERDICT } from '../src/sim/content/garage';
@@ -16,6 +16,9 @@ import { namedDeeds } from '../src/sim/epilogue';
 import { dayAtAge } from '../src/sim/ageing';
 import { act } from '../src/sim/game';
 import { oldStart, questDone, questOf } from '../src/sim/heir';
+import { found } from '../src/sim/hollow';
+import { settled } from '../src/sim/settle';
+import { ROUTES } from '../src/sim/content/routes';
 
 // Phase 30's criterion 1: how far under their best a 40-year-old may climb, in grades.
 const PEAK_GAP = 1;
@@ -365,6 +368,48 @@ it('the family', { timeout: 2_400_000 }, () => {
     rows.length > 0 && ok === rows.length,
     'An heir meets the old climber and takes beta on a line they sent (Phase 31, criterion 1)',
     `${ok}/${rows.length}.`,
+  );
+});
+
+// Phase 32.5: the Hollow (Phase 32's criterion 1). A career bot that reads everything (so Ray's
+// word is heard) and looks for the Hollow once it's asking: Ray on a weekend morning, the old
+// hand asked on the road, the old guidebook at the shop, then the walk in from the Gorge; once
+// it's found, a line there prepared and put up. Does it find the place and name a first ascent?
+const HOLLOW_SEEDS = Number(process.env.HOLLOW_SEEDS ?? 4);
+const HOLLOW_DAYS = 420;
+
+it('the Hollow', { timeout: 2_400_000 }, () => {
+  const say = (ok: boolean, what: string, how: string) => out(`- ${ok ? '✓' : '✗'} ${what}: ${how}`);
+  out(`\n# The Hollow: ${HOLLOW_SEEDS} careers looking for it, ${HOLLOW_DAYS} days\n`);
+  out('| start | old word | old hand | guidebook | walks | found | prepared | first ascents | settled |');
+  out('|---|---|---|---|---|---|---|---|---|');
+  const starts = Object.keys(STARTS);
+  let ok = 0;
+  for (let k = 0; k < HOLLOW_SEEDS; k++) {
+    const start = starts[k % starts.length]!;
+    const run = season(`hollow-${start}-${k}`, {
+      start,
+      strategy: 'career',
+      days: HOLLOW_DAYS,
+      human: true,
+      social: true,
+      hollow: true,
+    });
+    const s = run.state;
+    const when = (what: string) => run.hollow.find((h) => h.what === what)?.day ?? '–';
+    const walks = run.hollow.filter((h) => h.what === 'walk').length;
+    const preps = run.hollow.filter((h) => h.what.startsWith('prep ')).map((h) => h.what.slice(5));
+    const fas = Object.entries(s.firsts).filter(([id, f]) => !f.by && PLACES[ROUTES[id]?.place ?? '']?.wild);
+    if (found(s) && fas.length) ok++;
+    out(
+      `| ${start} | ${when('old')} | ${when('hitch')} | ${when('book')} | ${walks} | ${when('found')} | ${preps.join(', ') || '–'} | ${fas.map(([id, f]) => `${f.name} (${id}, V${ROUTES[id]!.grade}, day ${f.day})`).join('; ') || '–'} | ${fas.filter(([id]) => settled(s, id)).length}/${fas.length} |`,
+    );
+  }
+  out('');
+  say(
+    ok > 0,
+    'A bot finds the Hollow and names a first ascent (Phase 32, criterion 1)',
+    `${ok}/${HOLLOW_SEEDS}.`,
   );
 });
 

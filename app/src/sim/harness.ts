@@ -41,6 +41,8 @@ export interface SeasonOpts {
   focus?: 'comp' | 'media' | 'business';
   // Phase 31.4: a family's kid, from the handover.
   from?: GameState;
+  // Phase 32.5: a career that looks for the Hollow.
+  hollow?: boolean;
 }
 
 export function season(seed: string, o: SeasonOpts): BotRun {
@@ -54,6 +56,7 @@ export function season(seed: string, o: SeasonOpts): BotRun {
     social: o.social,
     focus: o.focus,
     from: o.from,
+    hollow: o.hollow,
     hands: o.human ? () => humanHands(Rng.fromStream(seed, 'session').derive(`bot-go-${n++}`)) : undefined,
   });
 }

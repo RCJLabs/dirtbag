@@ -32,6 +32,7 @@ import {
   BOND,
   CLIMB,
   KIT,
+  LAND,
   LOAD,
   MONEY,
   SICK,
@@ -70,7 +71,11 @@ import { riding } from './favours';
 import { has } from './kit';
 import { rankAt, signupBlocked } from './jobs';
 import { friendFor, PARTS, repairCost, unsafePart, usedPrice, verdictDue } from './van';
-import { hitchFriend } from './events';
+import { hitchFriend, hitcherById, hitchOpts } from './events';
+import { bookBlocked, found, oldWordDue, walkBlocked } from './hollow';
+import { HITCH_ASK } from './content/hollow';
+import { EPICS } from './content/epics';
+import { beyond } from './reach';
 import { carePrice, weeklyBills } from './clinic';
 import { spotBlocked, ticketOdds } from './spots';
 import { tonight } from './tonight';
@@ -92,7 +97,7 @@ import {
   showToday,
   unsoldPhotos,
 } from './media';
-import { gymBuyBlocked, UPGRADES, type Upgrade } from './business';
+import { boltBlocked, bolted, gymBuyBlocked, UPGRADES, type Upgrade } from './business';
 import { scoreSet, setBrief } from './work';
 import { LADDERS } from './ladders';
 import { MEDIA, OWN_GYM, SETTING } from './dials';
@@ -116,6 +121,9 @@ export interface BotRun {
   // Phase 31.4: a family's kid's asks of the old climber: the day, the line, and whether it
   // was one they sent (the quest they gave needn't be).
   forebear: { day: number; route: string; theirs: boolean }[];
+  // Phase 32.5: the way to the Hollow and what it did there: each clue, each walk in, each line
+  // prepared and each first ascent, by day.
+  hollow: { day: number; what: string }[];
 }
 
 export interface DaySummary {
@@ -327,6 +335,10 @@ export interface WeekOpts {
   focus?: 'comp' | 'media' | 'business';
   // Phase 31.4: a family's kid, from the state their forebear handed over (heirOf), made here.
   from?: GameState;
+  // Phase 32.5: a career that looks for the Hollow once it's asking (Ray on a weekend morning,
+  // the old hand asked, the old guidebook read, the walk in from the Gorge), and puts up lines
+  // there once it's found. Off by default, so the other targets don't move.
+  hollow?: boolean;
 }
 
 // The cash each strategy tries to keep before it'll spend a day climbing.
@@ -463,6 +475,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     days: [],
     paid: [],
     forebear: [],
+    hollow: [],
   };
   let workMin = 0;
   let hardest = -1;
@@ -497,7 +510,21 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     if (best) go({ t: 'train', protocol: best.id });
   }
   // The answer it gives an encounter: the one it's told for a call, else the first.
-  const answer = (): number => (s.encounter ? (opts.answers?.[s.encounter.id] ?? 0) : 0);
+  const answer = (): number => {
+    const e = s.encounter;
+    if (!e) return 0;
+    // Phase 32.5: the old hand asked about the canyon on his sign; and the walk in, the least
+    // risky way at every fork, as a player reading the clues would go (they point the same way).
+    if (opts.hollow && e.kind === 'hitch') {
+      const i = hitchOpts(s, hitcherById(e.id)!).findIndex((o) => o.label === HITCH_ASK.label);
+      if (i >= 0) return i;
+    }
+    if (opts.hollow && e.kind === 'epic' && e.id === 'hollow') {
+      const opts_ = EPICS.find((x) => x.kind === 'hollow')!.stages[e.stage ?? 0]!.opts;
+      return opts_.reduce((b, o, i) => (o.risk < opts_[b]!.risk ? i : b), 0);
+    }
+    return opts.answers?.[e.id] ?? 0;
+  };
   // The state the last week's board went out on, for judging the next (Phase 29.2).
   let lastBoard: GameState | null = null;
   const go = (a: Action): boolean => {
@@ -510,6 +537,16 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     }
     s = r.state;
     run.actions.push(a);
+    if (opts.hollow) {
+      for (const c of s.hollow.clues)
+        if (!was.hollow.clues.includes(c)) run.hollow.push({ day: s.day, what: c });
+      if (a.t === 'hollow' && a.do === 'walk') run.hollow.push({ day: s.day, what: 'walk' });
+      if (found(s) && !found(was)) run.hollow.push({ day: s.day, what: 'found' });
+      if (a.t === 'bolt' && PLACES[ROUTES[a.route]?.place ?? '']?.wild)
+        run.hollow.push({ day: s.day, what: `prep ${a.route}${a.how ? ` ${a.how}` : ''}` });
+      if (a.t === 'name' && PLACES[ROUTES[a.route]?.place ?? '']?.wild)
+        run.hollow.push({ day: s.day, what: `fa ${a.route} ${a.name}` });
+    }
     taps += a.t === 'travel' || a.t === 'go' ? 3 : a.t === 'done' ? 0 : 1;
     for (const e of r.events) {
       if (e.k === 'line') run.lines.push(`day ${s.day}: ${e.text}`);
@@ -1115,10 +1152,12 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   // driving; with a partner asked along where that opens roped lines.
   function pickPlace(): { place: string; partner: string | null } | null {
     let best: { place: string; partner: string | null; score: number } | null = null;
-    for (const place of CAREER_PLACES) {
+    // Phase 32.5: the Hollow too, once found: its prepared line, or the next to prepare there.
+    const places = opts.hollow && found(s) ? [...CAREER_PLACES, 'hollow'] : CAREER_PLACES;
+    for (const place of places) {
       if (!reachable(place)) continue;
       const partner = askable(place);
-      const r = choose(place, partner ?? undefined);
+      const r = choose(place, partner ?? undefined) ?? (place === 'hollow' ? prepLine() : null);
       if (!r) continue;
       const drive = place === s.at ? 0 : (road(s.at, place)?.min ?? 0);
       // Short of money, the gas counts too: a dollar is worth a few minutes of driving.
@@ -1130,7 +1169,9 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       // A film on: the crag with its line outside comes first (Phase 18.7).
       const f = filmOn();
       const film = f !== null && !INDOOR[place] && r.grade >= f ? 2 * STORY_PULL : 0;
-      const score = r.grade - drive / 120 - (broke ? gas / 8 : 0) + story + film;
+      // Phase 32.5: a line of its own to put up pulls like the story's crag.
+      const fa = place === 'hollow' ? STORY_PULL : 0;
+      const score = r.grade - drive / 120 - (broke ? gas / 8 : 0) + story + film + fa;
       if (!best || score > best.score) best = { place, partner, score };
     }
     return best;
@@ -1589,6 +1630,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     physio();
     garage();
     runGym();
+    // Phase 32.5: the next clue to the Hollow, or the walk in, before the day's plan.
+    if (hollowMorning(morning)) return;
     // The story's wall finds a skill short: a session for it first (Phase 18.7).
     const weak = wallWeakness();
     if (weak) {
@@ -1645,6 +1688,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       const inside = INDOOR[then.place];
       if (!inside || s.today.includes(inside.pass)) {
         if (opts.focus === 'media') shootHere();
+        prepHollow();
         const t = s.min;
         session();
         climbMin += s.min - t;
@@ -1652,6 +1696,63 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       }
     }
     evening(where, morning);
+  }
+
+  // Phase 32.5: the Hollow. While it's asking, the morning goes to the next clue: Ray, if he's
+  // at Roadside this morning; the old guidebook at the shop. With all three, the walk in from
+  // the Gorge, and if it finds the place, the day there. True when that took the day.
+  function hollowMorning(morning: Skills): boolean {
+    if (!opts.hollow || s.energy < 50) return false;
+    if (oldWordDue(s, 'ray') && reachable('road')) {
+      const min = s.min + (road(s.at, 'road')?.min ?? 0);
+      if (whereNow({ ...s, at: 'road', min }, 'ray') === 'road' && travel('road')) {
+        // Met first if they never have; then his word.
+        maybePeople();
+        maybePeople();
+      }
+    }
+    if (!bookBlocked({ ...s, at: 'shop' }) && headroom(s) > MONEY.vanSpot + 5 && travel('shop'))
+      go({ t: 'hollow', do: 'book' });
+    const min = s.min + (s.at === 'gorge' ? 0 : (road(s.at, 'gorge')?.min ?? 0));
+    if (walkBlocked({ ...s, at: 'gorge', min }) || !reachable('gorge') || !travel('gorge')) return false;
+    if (!go({ t: 'hollow', do: 'walk' })) return false;
+    while (s.encounter) if (!go({ t: 'answer', opt: answer() })) break;
+    const where = s.at;
+    if (where === 'hollow') {
+      prepHollow();
+      session();
+    }
+    evening(where, morning);
+    return true;
+  }
+
+  // Phase 32.5: the next line to put up in a wild place: the easiest one nobody's prepared that
+  // it could try, and could pay for (a boulder's cleaned, a crack on gear wants a rack, a face
+  // wants bolts). One at a time: none while one it's prepared is still unsent.
+  function prepLine(): RouteDef | null {
+    if (!opts.hollow || !found(s)) return null;
+    const wild = Object.values(ROUTES).filter((r) => PLACES[r.place]?.wild);
+    if (wild.some((r) => bolted(s, r) && !s.routes[r.id]?.sent)) return null;
+    return (
+      wild
+        .filter((r) => !bolted(s, r))
+        .filter((r) =>
+          r.disc === 'boulder'
+            ? true
+            : r.disc === 'trad'
+              ? has(s, 'rack')
+              : s.cash >= LAND.bolt.cash + CUSHION.career,
+        )
+        .filter((r) => !beyond({ ...s, bolted: [...s.bolted, r.id] }, r))
+        .sort((a, b) => a.grade - b.grade)[0] ?? null
+    );
+  }
+
+  // At the Hollow, the line prepared, before the session: a crack on gear, the old guard's way.
+  function prepHollow() {
+    const r = PLACES[s.at]?.wild ? prepLine() : null;
+    if (r && r.place === s.at && !boltBlocked(s, r))
+      go({ t: 'bolt', route: r.id, ...(r.disc === 'trad' ? { how: 'gear' as const } : {}) });
   }
 
   // Phase 31.4: a family's kid sits with the old climber when they're at the fire, and asks

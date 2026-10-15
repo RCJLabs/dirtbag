@@ -1119,7 +1119,7 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
         type="button"
         className="opt"
         id={id}
-        disabled={!!no || s.cash < c.cash || s.energy < c.energy}
+        disabled={!!no || (c.cash > 0 && s.cash < c.cash) || s.energy < c.energy}
         onClick={() => game.bolt(r.id, how)}
       >
         <span>{label}</span>
