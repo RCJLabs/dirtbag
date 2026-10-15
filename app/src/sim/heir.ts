@@ -13,6 +13,7 @@ import { indoor, routeById } from './content/gym';
 import { HOME, DAY, FACTION, FAMILY } from './dials';
 import { fill } from './format';
 import { tierOf } from './presence';
+import type { RouteDef } from './content/routes';
 import type { Career, GameEvent, GameState } from './types';
 import { yearsDone } from './year';
 
@@ -47,6 +48,40 @@ export const familyWords = (s: GameState): Record<string, string> => ({
 });
 export const familyFill = (s: GameState, text: string): string =>
   s.family ? fill(text, familyWords(s)) : text;
+
+// Phase 31.2: the night the kid first sits with them at the fire (in `seen`).
+export const FOREBEAR_MET = 'forebear-met';
+
+// Their hardest send outside, of the lines the family kept.
+export function hardestOf(s: GameState): RouteDef | null {
+  const sent = (s.family?.career?.sent ?? [])
+    .map((id) => routeById(s.seed, id))
+    .filter((r): r is RouteDef => !!r)
+    .sort((a, b) => b.grade - a.grade);
+  return sent[0] ?? null;
+}
+
+// Phase 31.3: the line they give the kid at the fire (Evan's call): the one they never sent;
+// without one, their hardest send; for an heir from before Phase 31, their first ascent.
+export type QuestKind = 'project' | 'hardest' | 'fa';
+export function questOf(s: GameState): { r: RouteDef; kind: QuestKind } | null {
+  const c = s.family?.career;
+  const p = c?.project ? routeById(s.seed, c.project) : undefined;
+  if (p) return { r: p, kind: 'project' };
+  const h = hardestOf(s);
+  if (h) return { r: h, kind: 'hardest' };
+  const k = kinLine(s);
+  const kr = k ? routeById(s.seed, k.id) : undefined;
+  return kr ? { r: kr, kind: 'fa' } : null;
+}
+
+// Given at the fire, and sent.
+// (The Record Book asks this of states from before families, and before `seen`.)
+export const questDone = (s: GameState): boolean => {
+  if (!s.family || !(s.seen ?? []).includes(FOREBEAR_MET)) return false;
+  const q = questOf(s);
+  return !!q && !!s.routes[q.r.id]?.sent;
+};
 
 // The most a climber leaves the kid (Phase 31.1): the café's pay for FAMILY.shifts shifts.
 export const leaveCap = (): number => (ACTS['cafe.shift']?.cost.cash ?? 0) * FAMILY.shifts;

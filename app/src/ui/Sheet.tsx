@@ -5,6 +5,8 @@ import {
   byName,
   familyFill,
   kinLine,
+  FOREBEAR_MET,
+  questOf,
   storyOf,
   LINE_SCENE,
   ROMAN,
@@ -1959,6 +1961,8 @@ function FamilyRow({ s }: { s: GameState }) {
     })
     .filter((x): x is string => !!x);
   const l = kinLine(s);
+  // Phase 31.3: the line they gave you at the fire.
+  const q = s.seen.includes(FOREBEAR_MET) ? questOf(s) : null;
   return (
     <>
       <p className="crux">The family</p>
@@ -1966,6 +1970,9 @@ function FamilyRow({ s }: { s: GameState }) {
         Generation {f.gen}, after {f.forebear}.{' '}
         {lines.length ? `Their lines: ${lines.join(', ')}.` : 'They left no lines with their name on.'}
         {l && s.routes[l.id]?.sent ? ` You’ve repeated ${l.name}.` : ''}
+        {q
+          ? ` The line they gave you: ${s.firsts[q.r.id]?.name ?? q.r.name} (${lineGrade(s, q.r)}, ${PLACES[q.r.place]?.name ?? q.r.place})${s.routes[q.r.id]?.sent ? ', sent.' : '.'}`
+          : ''}
         {f.coach ? ` Dex coaches you, for their sake: ${edgeText(COACH_EDGE)}` : ''}
       </p>
     </>

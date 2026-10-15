@@ -3463,6 +3463,12 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - **Ask about a line** (`FAMILY.beta`, 20 min, once a night): on the line of theirs you've had most goes on (or the easiest, with none), the next beta you don't know, told, so a first go after it is a flash: "Robin draws The Pump in the dirt with a stick and taps the crimp rail. “High-step and rock over. I fell off there for a month before anyone told me.”" Their lines are the outdoor sends the family kept, first ascents among them; an heir from before the phase has the first ascents only.
 - **Tests:** `forebear.test.ts` (presence, the first night, the stories against what was kept, beta on the most-worked line and none on your sends, the v69 heir).
 
+**Status (15 Oct 2026): 31.3 built: the name and the quest.** No save change, 0.999.64.
+- **The old guard's word** (`content/kin.ts`, Evan's call: lines plus standing): Ray and Frank each say whose kid you are, once (a talk beat after their first meeting, `kinBeat`), as the old guard had the forebear (`kinBand`: at or past 56 well, under 45 not, otherwise neither way; an heir from before the phase, neither way). "“You’re Robin’s kid.” Ray looks you over like a topo he doesn’t trust yet. “They never chipped a hold in their life. See you don’t either.”" Strangers at a crag and the diner, the gear shop and the garage say it too (`KIN_CROWD`, `KIN_KEEPERS`, `when: { kin: true }`). The standing itself carries from 31.1.
+- **The quest** (`questOf` in `heir.ts`, Evan's call): the line they never sent; without one, their hardest send; for an heir from before the phase, their first ascent. Given the first night you sit with them: "“One thing.” Robin looks off toward Roadside Crag in the dark. “The Project. I had all the moves. I never had them all on the same day. You might.”" They give beta on it too. The You page's family row names it, and says when it's sent.
+- **Its send:** a line at the send, their word at the fire the next time you sit with them ("“You sent it.” Robin doesn’t say anything else for a while. Then: “How was the top?”"), a Record Book entry ("Unfinished Business", `kinquest`), and an epilogue line (`QUEST_END`; a first ascent's is the repeat line the family already had).
+- **Tests:** `kin.test.ts` (the old guard's word by band and once; the crowd and the shops; the quest's three kinds; given, sent, heard, the book and the epilogue; not a quest till given).
+
 ### Phase 32 — The Hollow
 
 *Large. The Hollow waits for "the quest that finds it" (Phase 21). Phase 5 kept "projects and FAs" to deepen. The Bluff's bolting covers lines already drawn.*
@@ -4006,3 +4012,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-15 — Phase 30 closed by Evan's call; CURRENT MILESTONE moved to Phase 31, after you.
 - 2026-10-15 — 31.1 built: what the old climber leaves: a share of the money, capped; half their standing with the old guard; what they did, kept for the family; their Record Book beside the kid's fresh one. Save v70. 0.999.62.
 - 2026-10-15 — 31.2 built: the old climber at the fire: there the first night after dark and some nights after; a story from what the family kept; beta on a line they sent. No save change. 0.999.63.
+- 2026-10-15 — 31.3 built: the old guard knows whose kid you are (Ray, Frank, the crowd, the shops); the line the old climber never sent, given at the fire, sent, and in the book. No save change. 0.999.64.

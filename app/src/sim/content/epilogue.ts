@@ -141,3 +141,11 @@ export const FAMILY_END = {
   after: 'You climbed on after {forebear}, and in the end people stopped calling you their kid.',
   repeat: 'You repeated {line}, the line {forebear} named. It took you longer than you said it would.',
 };
+
+// Phase 31.3: the line they gave you at the fire, sent. (Their first ascent's is the repeat.)
+export const QUEST_END = {
+  project:
+    'You sent {quest}, the line {forebear} never did. You told them at the fire, and they asked how the top was.',
+  hardest:
+    'You repeated {quest}, the best thing {forebear} ever did. You never said whether you did it better.',
+};

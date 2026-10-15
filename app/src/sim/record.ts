@@ -9,6 +9,7 @@ import { DYNO_COMP, GAMES_TIER } from './content/comps';
 import { EXPEDITIONS } from './content/expeditions';
 import { PLACES } from './content/places';
 import { RECORD, type RecordAim, type RecordEntry } from './content/record';
+import { questDone } from './heir';
 import { rankAt } from './jobs';
 import { tierOf } from './presence';
 import type { GameState } from './types';
@@ -54,6 +55,7 @@ export function aimEarned(s: GameState, aim: RecordAim, sent = sends(s)): boolea
     return !!s.people.dex && gradeOf(s.climber.skills) > (gradeOfPerson(s.seed, 'dex', s.day) ?? 99);
   // An old save filling the book on loading has no life yet.
   if ('retired' in aim) return !!s.life?.retired;
+  if ('quest' in aim) return questDone(s);
   if ('followers' in aim) return (s.media?.followers ?? 0) >= aim.followers;
   if ('sponsor' in aim) return (s.media?.sponsor?.tier ?? -1) >= aim.sponsor;
   if ('film' in aim) return !!s.media?.doc && 'aired' in s.media.doc;
