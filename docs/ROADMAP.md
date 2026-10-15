@@ -3849,6 +3849,25 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 **Depends on:** Phase 12. **Effort:** ~2–3 weeks. **Main risk:** input edge cases in minigames. Test each verb on each device.
 
+**The survey (15 Oct 2026).** The scope above was written against v0.956; the rebuild has moved under it.
+- **Input:** one window key handler (`ui/App.tsx`): Space/Enter to climb, use, strum; F/J or the arrows on the speed wall; the arrows walk a scene; M the map; Escape closes the talk, the sheet, the map. Every crux verb is one `press(bool)`. Pointer events throughout (the mouse already works). No gamepad, no focus movement beyond Tab (a sheet focuses its first button), no hotkeys for the HUD, no rebinding, no Back. Scene things and map pins are invisible labelled buttons over the canvas (`ui/Hots.tsx`), so nearly everything is already a button; the name on the first screen is the one thing that needs typing.
+- **Layout:** the wide screen exists (360 wide in portrait, up to 1248 in landscape, sheets docked from 1080), but both manifests lock portrait. There's no free walking, so "WASD to move" is the arrows that walk a scene.
+- **Glyphs:** no emoji left; the fonts are bundled (latin subset). ✓ ✕ ← and the card suits fall outside it and likely draw from a system font [INFERRED].
+- **Saves:** `dirtbag.save` (and `.prev`, quarantined copies, settings, the plan) in localStorage, each module with its own `store()`; synchronous callers; no export or import of the current save.
+- **The Record Book:** 51 entries, ids stable "for Steam" (`content/record.ts`), earned in `act()`; an heir's book starts empty, the old one kept in `family.books`.
+- **Build flags:** only the version. No demo, no Act I-only build, no paid gating; content is imported statically everywhere. The demo is defined in Phase 5: Act I, Roadside and the Gorge, the Lot.
+- **The browser's assumptions:** the service worker (skipped unless the manifest is there), share and vibrate (feature-detected), `<a download>`. No fullscreen, no quit.
+- **Packaging:** no Electron, Tauri or Steamworks anywhere. Electron 44 and steamworks.js 0.4 are on the registry, and Electron's release downloads reach this container.
+- **Frames:** one `requestAnimationFrame` loop (`App.tsx`), dt capped; nothing measures frame time.
+
+**Evan's calls (15 Oct 2026), all as recommended:**
+- **A controller moves focus:** the D-pad or stick moves to the nearest button that way (scene things, pins, sheet rows), A presses, B is back, A or a trigger the climb's hold. The keyboard's arrows get it too.
+- **Saves:** on the desktop, a save file in the user-data folder (Steam Auto-Cloud syncs it), behind one storage seam; every build, the web's too, gets Export and Import save (the demo's carry-over needs it in Phase 15).
+- **Steamworks behind a stub:** wired through steamworks.js against Valve's public test app (480), the Record Book's ids mapped to achievements; the real app ID drops in when Evan has one, and criterion 3's check in the Steam dev branch is his.
+- **The demo:** a build flag here makes the Act I demo from the same code, with a content diff in CI (criterion 4). Whether paid content leaves this public repo stays the call before Phase 19.
+
+**Slices:** 14.1 focus moves: keys and a controller; 14.2 saves: one seam, export and import; 14.3 the desktop build (Electron, the save file, window modes, quit, a smoke test); 14.4 Steamworks behind a stub (achievements, Cloud's file); 14.5 the demo flag and the content diff; 14.6 the Deck pass (its screen, the glyphs, a frame meter, rebinding) and the close. Criteria 2 (60 fps on a Deck) and 3 (achievements and Cloud in the Steam dev branch) need Evan's hardware and account; the slices build to them and hand him the check.
+
 ---
 
 ### Phase 15 — The demo, the store page and Next Fest
