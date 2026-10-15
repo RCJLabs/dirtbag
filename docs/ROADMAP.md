@@ -69,7 +69,7 @@
 | 16 The spine | Next after 21–23. |
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 | 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
-| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27, 28 and 29 (14 Oct 2026); Phase 33 is the current milestone. |
+| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27, 28 and 29 (14 Oct 2026), Phase 33 (15 Oct 2026); Phase 34 is the current milestone. |
 
 ## The rebuild track
 
@@ -3405,7 +3405,7 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 2. The content test holds the Hollow's lines to the same rules as every other line.
 3. The download stays within its budget, raised if Evan agrees.
 
-### Phase 33 — Comps with rounds   **<<< CURRENT MILESTONE**
+### Phase 33 — Comps with rounds
 
 *Medium. Every comp is one round on one day, climbed like the gym, and there's no national team.*
 
@@ -3479,7 +3479,9 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - **Caveat:** a save made mid-comp on the old calendar (through to a round on day 25 or 18) climbs that round's day as a one-round set and is placed among the whole field: it hands in, and nothing breaks.
 - **The download** is 436.5 KB of 460.
 
-### Phase 34 — Money that means something
+**Phase 33 closed by Evan's call (15 Oct 2026).** Both criteria pass. Carried: the comp bots end fewer of the story's acts since the calendar moved (not selection; why isn't established); the national team is a V12–V13 climber's; a favourite still loses a final on the field's dice now and then. The CURRENT MILESTONE moves to Phase 34. The download is 436.5 KB of 460.
+
+### Phase 34 — Money that means something   **<<< CURRENT MILESTONE**
 
 *Medium. Followers pay nothing; a job's ranks raise its pay and nothing else; costs don't grow with ambition. The audit's economy #8, #9, #16 and #17.*
 
@@ -3846,3 +3848,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-14 — 33.2 built: comp rules. A clock on each problem (5 minutes in a qualifier, 4 after, a go a minute) caps its goes; isolation keeps everyone's beta off comp problems, and Sage no longer teaches the week's set mid-comp. No save change. 0.999.51.
 - 2026-10-14 — 33.3 built: the field that comes back. Named rivals on each rung from the Circuit up, with grades by year, some going up a rung; Skye at the World Series and Nationals; the desk names the favourites and a comp names its winner. The field's tops roll go by go, so the top grade no longer wins every time. No save change. 0.999.52.
 - 2026-10-14 — 33.4 built: Nationals first on the calendar and nothing on the same day; the Nationals podium makes the team, and only the team climbs the World Series; a finalist's morning has the pass. The e2e plays a qualifier and a final (criterion 2). Phase 33's Done-when both pass; closing is Evan's call. No save change. 0.999.53.
+- 2026-10-15 — Phase 33 closed by Evan's call; CURRENT MILESTONE moved to Phase 34, money that means something.
