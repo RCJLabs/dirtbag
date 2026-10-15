@@ -897,13 +897,15 @@ export class Game {
   }
 
   // Media (Phase 18.5): a post, an offer answered, a shoot; Phase 34.3: a photo pitched, the
-  // year's piece written. The sheet stays up.
+  // year's piece written; Phase 34.4: a day on the stand, a film paid for. The sheet stays up.
   media(
     a:
       | { t: 'post'; style: 'straight' | 'story' | 'bait' | 'ad' }
       | { t: 'offer'; take: 'real' | 'brand' | 'yes' | 'no' }
       | { t: 'photo'; route: string }
-      | { t: 'piece' },
+      | { t: 'piece' }
+      | { t: 'show' }
+      | { t: 'film' },
   ): void {
     this.dispatch(a);
     this.openSheet({ k: 'media' });

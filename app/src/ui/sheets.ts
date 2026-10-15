@@ -211,6 +211,14 @@ import {
   postBlocked,
   postGain,
   PHOTO_SAYS,
+  SHOW,
+  SHOW_SAYS,
+  FILM,
+  FILM_SAYS,
+  filmBlocked,
+  filmLine,
+  showBlocked,
+  showToday,
   PIECE,
   PIECE_SAYS,
   photoBlocked,
@@ -601,10 +609,12 @@ function feedRow(game: Game, s: GameState): Row {
 }
 
 // A sponsor's ask, in words.
-function taskText(t: MediaTask): string {
+function taskText(t: MediaTask, sponsor = 'the sponsor'): string {
   if (t.kind === 'send') return `Post a send at V${t.grade} or harder`;
   if (t.kind === 'shoot') return `A shoot day at ${PLACES[t.place]?.name ?? t.place}`;
   if (t.kind === 'comp') return 'Compete in a comp';
+  // Phase 34.4: a day on the stand.
+  if (t.kind === 'show') return fill(SHOW_SAYS.task, { sponsor, day: t.day });
   return 'Post their ad';
 }
 
@@ -1539,7 +1549,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         const S = SPONSORS[sp.tier]!;
         lines.push(
           `${S.name}, ${TERMS[sp.terms].name.toLowerCase()}: ${money(Math.round(S.stipend * (sp.terms === 'brand' ? MEDIA.brand : 1)))} on day ${sp.due} if this cycle's asks are done${sp.strikes ? ' (one warning already)' : ''}.`,
-          ...sp.tasks.map((t) => `${t.done ? '✓' : '·'} ${taskText(t)}`),
+          ...sp.tasks.map((t) => `${t.done ? '✓' : '·'} ${taskText(t, S.name)}`),
         );
       } else {
         const next = SPONSORS.find((x) => x.followers > m.followers);
@@ -1626,12 +1636,42 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           run: () => game.media({ t: 'photo', route: p.route }),
         };
       });
+      // Phase 34.4: today's stand, while the sponsor wants it; and a film, once there's a line
+      // worth one.
+      const showWhy = showBlocked(s);
+      const showRows: Row[] =
+        sp && showToday(s)
+          ? [
+              {
+                label: SHOW_SAYS.row,
+                cost: `+${money(SHOW.fee[sp.tier] ?? 0)}`,
+                note: showWhy ? `${showWhy}.` : fill(SHOW_SAYS.note, { sponsor: SPONSORS[sp.tier]!.name }),
+                off: !!showWhy,
+                run: () => game.media({ t: 'show' }),
+              },
+            ]
+          : [];
+      const filmOf = filmLine(s);
+      const filmWhy = filmBlocked(s);
+      const filmR = filmOf ? routeOfId(s, filmOf) : undefined;
+      const filmRows: Row[] =
+        filmR && !m.film
+          ? [
+              {
+                label: fill(FILM_SAYS.row, { line: lineName(s, filmR) }),
+                cost: money(FILM.price),
+                note: filmWhy ? `${filmWhy}.` : FILM_SAYS.note,
+                off: !!filmWhy,
+                run: () => game.media({ t: 'film' }),
+              },
+            ]
+          : [];
       return {
         title: 'Your feed',
         sub: `${m.followers.toLocaleString('en-US')} followers, ${engageWord(m.engagement)}. Followers don't pay; sponsors and magazines do.`,
         lines,
         close: true,
-        rows: [...offerRows, ...pieceRows, ...postRows, ...photoRows],
+        rows: [...offerRows, ...showRows, ...pieceRows, ...postRows, ...photoRows, ...filmRows],
       };
     }
 

@@ -1400,6 +1400,25 @@ export const PIECE = {
   pay: 150,
   followers: 1000,
 };
+// Phase 34.4 [proposed] (Evan's call: trade shows and a film, both light). A sponsor from
+// `tier` up (Apex) wants you on its stand once a cycle, `before` days ahead of the cycle's
+// end: a day of it, started by `by` and `min` long, for `fee` by the sponsor's tier (about a
+// shift's pay, and a double's at Meridian: at $100 and $200 a media career's media came to 90%
+// of its shifts') and the followers a stand brings. Missed, it's an ask not done, and a booked
+// shift that day is too.
+export const SHOW = {
+  tier: 1,
+  before: 4,
+  by: 10 * 60,
+  min: 600,
+  energy: 30,
+  fee: [0, 60, 120],
+  followers: 600,
+};
+// A film you pay for (Phase 34.4) [proposed]: of your hardest line outside once it's V`from` or
+// harder, `price` to a crew from the city, for the followers a film brings. Once a life: a late
+// money goal, against Ines's, which the media ladder earns.
+export const FILM = { from: 10, price: 2500, followers: 8000 };
 // Age (Phase 16.1, Evan's call 2): v0.956's clock, a year of age every `days` days (about
 // three to the 56-day year; called age, never a year). You start at `start`, an origin can
 // add to it; hanging it up is yours from `from`; your body calls it at `forced`, and from

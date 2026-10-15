@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 67;
+export const SAVE_VERSION = 68;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -501,6 +501,13 @@ export const MIGRATIONS: Record<number, Migration> = {
     const m = isObj(x.media) ? x.media : {};
     return { ...x, media: { ...m, photos: [], piece: null } };
   },
+  // v67 -> v68 (Phase 34.4): a film you paid for; nobody had one. (A sponsor's stand is a new
+  // ask, from the next cycle on.)
+  67: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const m = isObj(x.media) ? x.media : {};
+    return { ...x, media: { ...m, film: null } };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -702,7 +709,8 @@ export function validate(x: unknown): string[] {
     ((t.kind === 'send' && isInt(t.grade)) ||
       (t.kind === 'shoot' && typeof t.place === 'string' && t.place in PLACES) ||
       t.kind === 'comp' ||
-      t.kind === 'ad');
+      t.kind === 'ad' ||
+      (t.kind === 'show' && isInt(t.day)));
   need(
     isObj(md) &&
       isInt(md.followers) &&
@@ -739,7 +747,8 @@ export function validate(x: unknown): string[] {
         (isObj(md.piece) &&
           isInt(md.piece.asked) &&
           isInt(md.piece.due) &&
-          (md.piece.wrote === undefined || isInt(md.piece.wrote)))),
+          (md.piece.wrote === undefined || isInt(md.piece.wrote)))) &&
+      (md.film === null || (isObj(md.film) && typeof md.film.route === 'string' && isInt(md.film.day))),
     'media',
   );
   const gy = x.gym;

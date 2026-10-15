@@ -111,6 +111,8 @@ export interface GameState {
     // year's piece: the day an editor asked, the day it's due, and the day you wrote it.
     photos: { route: string; day: number; by: string; sold?: number }[];
     piece: { asked: number; due: number; wrote?: number } | null;
+    // Phase 34.4 (save v68): the film you paid for, of which line and when; once a life.
+    film: { route: string; day: number } | null;
   };
   // Phase 18.6 (save v50): your own gym, once you've bought it, and the bluff's lines you've
   // bolted (or cleaned) so far.
@@ -521,7 +523,9 @@ export type MediaTask =
   | { kind: 'send'; grade: number; done: boolean }
   | { kind: 'shoot'; place: string; done: boolean }
   | { kind: 'comp'; done: boolean }
-  | { kind: 'ad'; done: boolean };
+  | { kind: 'ad'; done: boolean }
+  // Phase 34.4: a day on the sponsor's stand at the trade show.
+  | { kind: 'show'; day: number; done: boolean };
 
 // Someone you coach (Phase 18.3): their project (a style, how many grades over them), how
 // near it they are (0 to 100), how worn out, and whether they're scared of it.
@@ -562,6 +566,9 @@ export type Action =
   // Phase 34.3: a photo pitched to a magazine, and the year's piece written.
   | { t: 'photo'; route: string }
   | { t: 'piece' }
+  // Phase 34.4: a day on the sponsor's stand, and a film of your hardest line paid for.
+  | { t: 'show' }
+  | { t: 'film' }
   // Phase 26b: the day's day labor at the market, and a family's rope hung at a busy crag.
   | { t: 'gig' }
   | { t: 'tourists' }
@@ -736,8 +743,13 @@ export type GameEvent =
   // Phase 23.7: a year done, its recap; the Homecoming, had.
   | { k: 'year'; n: number }
   | { k: 'homecoming'; route: string; who: string[] }
+  // Phase 34.4: money in, and where from: a shift, or the media's (a sponsor's cycle, an ad, a
+  // photo, a piece, a day on a stand). The harness's money table reads it.
+  | { k: 'paid'; from: PaySource; cash: number }
   // The action wasn't allowed; `why` says so in the game's voice.
   | { k: 'refused'; why: string };
+
+export type PaySource = 'job' | 'sponsor' | 'ad' | 'photo' | 'piece' | 'show';
 
 export interface Result {
   state: GameState;

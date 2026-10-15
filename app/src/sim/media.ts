@@ -7,7 +7,8 @@ import { gradeOf } from './climber';
 import { SPONSORS } from './content/media';
 import { indoor, routeById } from './content/gym';
 import { PLACES } from './content/places';
-import { MEDIA, PHOTO, PIECE } from './dials';
+import { FILM, MEDIA, PHOTO, PIECE, SHOW } from './dials';
+import { money } from './format';
 import { Rng } from './rng';
 import type { GameState, MediaTask } from './types';
 
@@ -67,8 +68,14 @@ export const rivalFollowers = (day: number): number =>
 export const tierEarned = (s: GameState): number =>
   SPONSORS.reduce((t, x, i) => (s.media.followers >= x.followers ? i : t), -1);
 
-// A cycle's asks for a tier, on its terms: where the shoot is, by the day.
-export function cycleTasks(s: GameState, tier: number, terms: 'real' | 'brand'): MediaTask[] {
+// A cycle's asks for a tier, on its terms: where the shoot is, by the day; from Apex up, a day
+// on the stand, `SHOW.before` days ahead of the cycle's end (Phase 34.4).
+export function cycleTasks(
+  s: GameState,
+  tier: number,
+  terms: 'real' | 'brand',
+  due = s.day + MEDIA.cycle,
+): MediaTask[] {
   const sp = SPONSORS[tier]!;
   const tasks: MediaTask[] = [
     { kind: 'send', grade: Math.max(0, gradeOf(s.climber.skills) - 1), done: false },
@@ -81,6 +88,7 @@ export function cycleTasks(s: GameState, tier: number, terms: 'real' | 'brand'):
     tasks.push({ kind: 'shoot', place: crags[r.int(0, crags.length - 1)] ?? 'road', done: false });
   }
   if (sp.comp) tasks.push({ kind: 'comp', done: false });
+  if (tier >= SHOW.tier) tasks.push({ kind: 'show', day: due - SHOW.before, done: false });
   if (terms === 'brand') tasks.push({ kind: 'ad', done: false });
   return tasks;
 }
@@ -172,5 +180,40 @@ export function pieceBlocked(s: GameState): string | null {
   if (!pieceOpen(s)) return 'No piece to write';
   if (s.at !== 'lot') return 'You write it at the van';
   if (s.energy < PIECE.energy) return 'Too tired to write';
+  return null;
+}
+
+// ---- Phase 34.4: a day on the stand, and a film you pay for ----
+
+// Today's stand, still to do, if the sponsor has one.
+export const showToday = (s: GameState, day = s.day): boolean =>
+  !!s.media.sponsor?.tasks.some((t) => t.kind === 'show' && !t.done && t.day === day);
+
+// Why you can't work the stand now, or null.
+export function showBlocked(s: GameState): string | null {
+  if (!showToday(s)) return 'No stand to work today';
+  if (s.min > SHOW.by) return 'The doors opened without you';
+  if (s.energy < SHOW.energy) return 'Too tired for a day of handshakes';
+  return null;
+}
+
+// The line a film would be of: your hardest first sent outside, not a wall's pitch or an
+// expedition's, at V`from` or harder; null if there's none yet.
+export function filmLine(s: GameState): string | null {
+  let best: { id: string; grade: number } | null = null;
+  for (const [id, l] of Object.entries(s.routes)) {
+    if (!l.sent) continue;
+    const r = routeById(s.seed, id);
+    if (!r || indoor(r.place) || r.wall || r.exped || r.grade < FILM.from) continue;
+    if (!best || r.grade > best.grade) best = { id, grade: r.grade };
+  }
+  return best?.id ?? null;
+}
+
+// Why you can't pay for a film now, or null.
+export function filmBlocked(s: GameState): string | null {
+  if (s.media.film) return 'There’s a film of you already';
+  if (!filmLine(s)) return `Send a V${FILM.from} outside first`;
+  if (s.cash < FILM.price) return `A film costs ${money(FILM.price)}`;
   return null;
 }

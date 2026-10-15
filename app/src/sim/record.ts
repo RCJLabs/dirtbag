@@ -55,6 +55,7 @@ export function aimEarned(s: GameState, aim: RecordAim, sent = sends(s)): boolea
   if ('followers' in aim) return (s.media?.followers ?? 0) >= aim.followers;
   if ('sponsor' in aim) return (s.media?.sponsor?.tier ?? -1) >= aim.sponsor;
   if ('film' in aim) return !!s.media?.doc && 'aired' in s.media.doc;
+  if ('commissioned' in aim) return !!s.media?.film;
   if ('gym' in aim) return !!s.gym;
   if ('land' in aim) return s.unlocked.some((id) => PLACES[id]?.land);
   if ('outfit' in aim) return !!s.outfit;

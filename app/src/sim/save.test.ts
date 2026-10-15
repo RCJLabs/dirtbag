@@ -98,7 +98,7 @@ const V62 = readFileSync(new URL('./fixtures/save-v62.json', import.meta.url), '
 const V63 = readFileSync(new URL('./fixtures/save-v63.json', import.meta.url), 'utf8');
 const V64 = readFileSync(new URL('./fixtures/save-v64.json', import.meta.url), 'utf8');
 // And Phase 29.3's: the van's clock started at a new climber's. And Phase 34.2's: no retainers.
-// And Phase 34.3's: no photos, and no piece asked for.
+// And Phase 34.3's: no photos, and no piece asked for; and Phase 34.4's: no film.
 const revan = <T extends object>(st: T): T =>
   pics({
     ...('van' in st
@@ -108,7 +108,7 @@ const revan = <T extends object>(st: T): T =>
   });
 const pics = <T extends object>(st: T): T =>
   'media' in st && st.media && typeof st.media === 'object' && !('asymmetricMatch' in st.media)
-    ? { ...st, media: { ...(st.media as object), photos: [], piece: null } }
+    ? { ...st, media: { ...(st.media as object), photos: [], piece: null, film: null } }
     : st;
 const P342 = { retainers: { physio: null, coach: null } };
 // And Phase 29.2's: the week's board taken down, to go up again as bounties.
@@ -2153,7 +2153,7 @@ describe('saves', () => {
       ...old,
       comps: { ...old.comps, on: { ...old.comps.on, round: 0 } },
       retainers: { physio: null, coach: null },
-      media: { ...old.media, photos: [], piece: null },
+      media: { ...old.media, photos: [], piece: null, film: null },
     });
     // It hands in as it always would have.
     const done = act({ ...r.state, at: 'gym' }, { t: 'comp', do: 'finish' });
@@ -2201,7 +2201,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(67);
+    expect(SAVE_VERSION).toBe(68);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;
