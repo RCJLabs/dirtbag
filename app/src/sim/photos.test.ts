@@ -14,7 +14,7 @@ import { PHOTO, PIECE } from './dials';
 import { fill, money } from './format';
 import { act, newGame } from './game';
 import { fromAudience, photoBlocked, photoPrice, photoWorthy, pieceBlocked } from './media';
-import { fromSave, toSave } from './save';
+import { fromSave, MIGRATIONS, toSave } from './save';
 import type { Action, GameState, GoResult, PersonLog } from './types';
 import { conditionsAt } from './weather';
 
@@ -94,6 +94,9 @@ describe('a save from before the photos', () => {
       media: { ...old.media, photos: [], piece: null, film: null },
       hollow: { clues: [], tries: 0 },
       boltedCracks: [],
+      // Phase 32.4 and 35.1: repeats heard of quietly, hitchhikers met counted as come once.
+      firsts: (MIGRATIONS[72]!(old) as GameState).firsts,
+      deck: (MIGRATIONS[73]!(old) as GameState).deck,
     });
     expect(old.retainers.physio).not.toBeNull();
     expect(photoBlocked(r.state, HARD)).toBe('No photo of that');

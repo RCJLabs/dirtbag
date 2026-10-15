@@ -32,7 +32,7 @@ import { repeatsOf } from './settle';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 73;
+export const SAVE_VERSION = 74;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -553,6 +553,15 @@ export const MIGRATIONS: Record<number, Migration> = {
     );
     return { ...x, firsts };
   },
+  // v73 -> v74 (Phase 35.1): how often each hitchhiker has come. Those you'd met came at least
+  // once; nobody counted the rest, so once it is.
+  73: (x) => {
+    if (!isObj(x) || !isObj(x.deck) || !isObj(x.deck.met)) throw new Error('state is not an object');
+    return {
+      ...x,
+      deck: { ...x.deck, meets: Object.fromEntries(Object.keys(x.deck.met).map((id) => [id, 1])) },
+    };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -903,7 +912,10 @@ export function validate(x: unknown): string[] {
       isStrs(dk.stops) &&
       isObj(dk.met) &&
       isInt(dk.epic) &&
-      Object.entries(dk.met).every(([id, i]) => HITCHERS.some((h) => h.id === id) && isInt(i)),
+      Object.entries(dk.met).every(([id, i]) => HITCHERS.some((h) => h.id === id) && isInt(i)) &&
+      // Phase 35.1: how often each has come.
+      isObj(dk.meets) &&
+      Object.entries(dk.meets).every(([id, n]) => HITCHERS.some((h) => h.id === id) && isInt(n) && n >= 1),
     'deck',
   );
   const en = x.encounter;

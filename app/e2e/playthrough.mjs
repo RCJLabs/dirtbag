@@ -785,7 +785,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 73 ||
+  saved?.v !== 74 ||
   // Phase 29.1: nothing scavenged, a few days in.
   st.parts !== 0 ||
   // Phase 29.3: miles on the clock past a new climber's, and nothing for Dale to say yet.
@@ -1297,10 +1297,25 @@ console.log('A knock on the van');
 
 console.log('A hitchhiker on the way to Roadside');
 // Phase 22.6b. The day-five climber on the morning of day four, whose drive to Roadside this
-// seed's deck puts a busker beside: the map, the drive, the door (heard), their card with
-// no ✕, three chords, and the crag. The busker remembers what you asked for.
+// seed's deck puts a hitchhiker beside: the map, the drive, the door (heard), their card with
+// no ✕, three chords, and the crag. The busker remembers what you asked for. Phase 35.1:
+// everyone else on the road has come by twice already, so it's the busker's turn (the
+// rotation, in the browser).
 {
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  const others = [
+    'kid',
+    'oldhand',
+    'nurse',
+    'photog',
+    'runaway',
+    'grifter',
+    'thief',
+    'guide',
+    'setter',
+    'stranded',
+    'ranger',
+  ];
   saved.state = {
     ...saved.state,
     day: 4,
@@ -1311,7 +1326,17 @@ console.log('A hitchhiker on the way to Roadside');
     energy: 80,
     guitar: 0,
     van: { ...saved.state.van, tires: 100, engine: 100, battery: 100 },
-    deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0 },
+    deck: {
+      last: 0,
+      knock: 0,
+      seen: [],
+      hitch: 0,
+      stop: 0,
+      stops: [],
+      met: {},
+      epic: 0,
+      meets: Object.fromEntries(others.map((id) => [id, 2])),
+    },
     encounter: null,
   };
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
@@ -1349,7 +1374,14 @@ console.log('A hitchhiker on the way to Roadside');
   await trip.locator('#sheet .opt', { hasText: 'Ask them to teach you three chords' }).first().click();
   await trip.waitForFunction(() => !document.querySelector('#sheet'), null, { timeout: 10_000 });
   const after = await trip.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
-  if (after.at !== 'road' || after.guitar !== 3 || after.deck.met.busker !== 2 || after.encounter !== null)
+  // Phase 35.1: and counted as come once.
+  if (
+    after.at !== 'road' ||
+    after.guitar !== 3 ||
+    after.deck.met.busker !== 2 ||
+    after.deck.meets.busker !== 1 ||
+    after.encounter !== null
+  )
     await fail(`after the ride: at ${after.at}, guitar ${after.guitar}, ${JSON.stringify(after.deck)}`);
   log('hitchhiker: three chords, and Roadside');
   await ctx.close();
@@ -1369,7 +1401,7 @@ console.log('A roadside stop on the way to Roadside');
     cash: 150,
     energy: 80,
     van: { ...saved.state.van, tires: 100, engine: 100, battery: 100 },
-    deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0 },
+    deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0, meets: {} },
     encounter: null,
   };
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
@@ -1429,7 +1461,7 @@ console.log('A walk-out from Roadside');
     people: {},
     injury: null,
     van: { ...saved.state.van, tires: 100, engine: 100, battery: 100 },
-    deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0 },
+    deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0, meets: {} },
     encounter: null,
   };
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
@@ -1502,7 +1534,7 @@ console.log('Scout’s last day');
     trips: 20,
     dog: { name: 'Scout', since: day + 1 - 16 * 18, fed: 80, bond: 85 },
     dogs: [],
-    deck: { last: 0, knock: day, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0 },
+    deck: { last: 0, knock: day, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0, meets: {} },
     encounter: null,
   };
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });

@@ -11,7 +11,7 @@ import { CLINIC, RETAINER } from './dials';
 import { fill, money } from './format';
 import { act, newGame } from './game';
 import { retainerNote } from './retainers';
-import { fromSave } from './save';
+import { fromSave, MIGRATIONS } from './save';
 import { protocolOf, sessionGains } from './sessions';
 import type { GameState } from './types';
 
@@ -42,6 +42,9 @@ describe('a save from before the retainers', () => {
       media: { ...old.media, photos: [], piece: null, film: null },
       hollow: { clues: [], tries: 0 },
       boltedCracks: [],
+      // Phase 32.4 and 35.1: repeats heard of quietly, hitchhikers met counted as come once.
+      firsts: (MIGRATIONS[72]!(old) as GameState).firsts,
+      deck: (MIGRATIONS[73]!(old) as GameState).deck,
     });
     const took = act(r.state, { t: 'retainer', what: 'physio', on: true });
     expect(refused(took)).toBeUndefined();

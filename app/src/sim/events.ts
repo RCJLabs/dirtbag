@@ -47,6 +47,15 @@ export const roadTrip = (from: string, to: string): boolean => !!PLACES[from]?.c
 export const hitcherById = (id: string): Hitcher | undefined => HITCHERS.find((h) => h.id === id);
 export const stopById = (id: string): RoadStop | undefined => STOPS.find((x) => x.id === id);
 
+// Phase 35.1: how often a hitchhiker has come your way (picked up or driven past), and those
+// whose turn it can be: nobody twice more than whoever's come least, so none a third time
+// before everyone's come once.
+export const meets = (s: GameState, id: string): number => s.deck.meets?.[id] ?? 0;
+export function hitchersDue(s: GameState): Hitcher[] {
+  const least = Math.min(...HITCHERS.map((h) => meets(s, h.id)));
+  return HITCHERS.filter((h) => meets(s, h.id) <= least + 1);
+}
+
 // What this drive brings, if anything: a hitchhiker, else a stop, seeded by the day and the
 // minute you set off. Nothing on a day that's had its encounter, or too soon after the last.
 export function driveEncounter(
@@ -55,18 +64,24 @@ export function driveEncounter(
   to: string,
 ): NonNullable<GameState['encounter']> | null {
   if (s.day < EVENTS.from || !roadTrip(from, to) || s.deck.last === s.day) return null;
+  const H = EVENTS.hitch;
+  const fair = hitchersDue(s);
+  // Phase 35.1 (Evan's call): while his clue to the Hollow is due, the old hand waits at the
+  // pull-off on the Gorge road, whenever it's his turn: the third clue isn't luck.
+  if (hitchDue(s) && (from === 'gorge' || to === 'gorge') && fair.some((h) => h.id === 'oldhand'))
+    return { kind: 'hitch', id: 'oldhand' };
   const r = Rng.fromStream(s.seed, 'events').derive(`drive-${s.day}-${s.min}`);
   const roll = r.next();
-  const H = EVENTS.hitch;
   if (!(s.deck.hitch && s.day - s.deck.hitch < H.every) && roll < H.odds) {
-    // Phase 32.2: the old hand's about more, while his clue to the Hollow is due.
-    const w = HITCHERS.map(
+    // Phase 32.2: the old hand's about more, while his clue to the Hollow is due. Phase 35.1:
+    // the ones who've come least, first.
+    const least = Math.min(...HITCHERS.map((h) => meets(s, h.id)));
+    const w = fair.map(
       (h) =>
-        (s.deck.met[h.id] !== undefined ? H.again : 1) *
-        (h.id === 'oldhand' && hitchDue(s) ? HOLLOW.hitch : 1),
+        (meets(s, h.id) === least ? H.fresh : 1) * (h.id === 'oldhand' && hitchDue(s) ? HOLLOW.hitch : 1),
     );
     let x = r.next() * w.reduce((a, b) => a + b, 0);
-    const h = HITCHERS.find((_, i) => (x -= w[i]!) < 0) ?? HITCHERS[HITCHERS.length - 1]!;
+    const h = fair.find((_, i) => (x -= w[i]!) < 0) ?? fair[fair.length - 1]!;
     return { kind: 'hitch', id: h.id };
   }
   const S = EVENTS.stop;

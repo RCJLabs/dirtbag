@@ -198,6 +198,7 @@ describe('the walk in', () => {
       hollow: { clues: [], tries: 0 },
       boltedCracks: [],
       firsts: (MIGRATIONS[72]!(old) as GameState).firsts,
+      deck: (MIGRATIONS[73]!(old) as GameState).deck,
     });
   });
 });
@@ -312,6 +313,11 @@ describe('first ascents in the Hollow', () => {
     if (!r.ok) throw new Error(r.why);
     expect(r.from).toBe(71);
     const old = JSON.parse(V71).state;
-    expect(r.state).toEqual({ ...old, boltedCracks: [], firsts: (MIGRATIONS[72]!(old) as GameState).firsts });
+    expect(r.state).toEqual({
+      ...old,
+      boltedCracks: [],
+      firsts: (MIGRATIONS[72]!(old) as GameState).firsts,
+      deck: (MIGRATIONS[73]!(old) as GameState).deck,
+    });
   });
 });

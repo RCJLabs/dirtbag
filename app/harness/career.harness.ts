@@ -7,6 +7,7 @@ import { STARTS } from '../src/sim/climber';
 import { contentOut, firstTry, linesOf, median, season, socialLines } from '../src/sim/harness';
 import { JOBS } from '../src/sim/content/jobs';
 import { ACTS, PLACES } from '../src/sim/content/places';
+import { HITCHERS } from '../src/sim/content/road';
 import { TALK } from '../src/sim/content/people';
 import { BUSK, PACE, PSYCHE, YEAR } from '../src/sim/dials';
 import { DALE_VERDICT } from '../src/sim/content/garage';
@@ -132,6 +133,22 @@ it('career', { timeout: 1_800_000 }, () => {
     bad === 0,
     'A career is never refused or stuck',
     `${bad} refusals and stuck nights across ${all.length} runs.`,
+  );
+  // Phase 35.1 (Phase 35's criterion 2): over two years and more of drives, no hitchhiker comes
+  // a third time before every one has come once.
+  const early = all.filter((r) => {
+    const n: Record<string, number> = {};
+    return r.hitchers.some((id) => {
+      n[id] = (n[id] ?? 0) + 1;
+      return n[id] === 3 && HITCHERS.some((h) => !n[h.id]);
+    });
+  }).length;
+  const came = all.map((r) => r.hitchers.length);
+  const everyone = all.filter((r) => HITCHERS.every((h) => r.hitchers.includes(h.id))).length;
+  say(
+    early === 0,
+    'No hitchhiker comes a third time before every one has come once (Phase 35, criterion 2)',
+    `${early} of ${all.length} runs over ${DAYS} days (${(DAYS / YEAR.days).toFixed(0)} years); hitchhikers a run: median ${median(came)}, fewest ${Math.min(...came)}, most ${Math.max(...came)}; all ${HITCHERS.length} met in ${everyone}.`,
   );
   // Phase 29's criterion 2: the van ages into Dale's verdict for every career by year three,
   // and how each took it (the bot rebuilds when the money's there, else trades in when that

@@ -215,6 +215,8 @@ export interface GameState {
     met: Record<string, number>;
     // Phase 22.6c: the day of the last walk-out.
     epic: number;
+    // Phase 35.1 (save v74): how often each hitchhiker has come your way.
+    meets: Record<string, number>;
   };
   // Phase 22.9a. A hand of liar's dice you're in: who with, the dice, and the bid on it.
   table: { who: string; mine: number[]; theirs: number[]; bid: { n: number; face: number } } | null;

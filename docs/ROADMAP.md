@@ -3769,6 +3769,15 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 
 **Slices:** 35.1 hitchhikers: the rotation, four more, the old hand at the pull-off; 35.2 stops with a choice; 35.3 knocks that come back; 35.4 holiday nights; 35.5 the music's second pass (on Evan's ear), the harness, the e2e and the close.
 
+**Status (15 Oct 2026): 35.1 built: the hitchhikers' rotation, four more, and the old hand at the pull-off.** Save v74, 0.999.71.
+- **The rotation** (`events.ts`, Evan's call): `deck.meets` counts every time a hitchhiker comes your way, picked up or driven past. Nobody comes twice more than whoever's come least (`hitchersDue`), so none a third time before everyone's first (criterion 2), and the ones who've come least are `EVENTS.hitch.fresh` (three) times likelier. Phase 22.6b's `again` (a met one 2.6 times likelier) is gone: it ran the other way.
+- **Four more** (`content/road.ts`), each with a first meeting, a second and a friend at a breakdown: a mountain guide off six weeks in the big range (TOWN (SHOWER)), a gym setter on their first trip outside (ANYWHERE WITH ROCK), two people and a dog beside a van with its hood up (GARAGE?), and an off-duty ranger (TRAILHEAD). Twelve in all.
+- **The old hand at the pull-off:** while his clue to the Hollow is due, he's on the Gorge road every drive to or from the Gorge whose day hasn't had its encounter, whenever the rotation lets him: the third clue isn't luck any more (Phase 32's carried call).
+- **Save v74:** `deck.meets`; migration 73 counts each hitchhiker you'd met as come once. Fixture `save-v73.json` (a career bot at day 204, two hitchhikers met, from main's code).
+- **The bots** record who came (`run.hitchers`); the career harness checks criterion 2 over its sixteen runs (four years each): it holds, but weakly: a career bot meets few hitchhikers (median 3 in four years, at most 6; it drives to a crag less than a player would), so no run gets near twelve. The unit test's two years of daily crag drives meets more than twelve and holds it too.
+- **The harness:** 31 of 33. The Hollow is 4 of 4 now (it was 2 of 4): the old hand at the pull-off gave every career its third clue, on days 78 to 169. Outdoors is 0 of 4 (1 of 4 since 30.1). The media target is 3 of 4: the boulderer media career's media came to 101% of its shifts (80% in 32.5's run); nothing here touches media money, the career's path shifted (fewer shifts worked, more photos sold), and the margin was thin before. A call for Evan.
+- **Tests:** `hitchers.test.ts`: twelve, each with both meetings and no number or straight quote in the words; none a third time before all once, by the rule and over two years of drives; the least-met first; every meeting counted, driven past or not; the old hand on every Gorge drive while due and his turn, and not otherwise; the v73 save.
+
 ## Stage D — Get it in front of people
 
 *Moved here by Evan's call (29 Sep 2026): the whole game gets built first, and the Steam build, the demo and the store page come after it. The phase numbers stay as they were, so older references still find them.*
@@ -4120,3 +4129,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-15 — 32.4 built: your first ascents get repeated, and after a few the grade is the line's, not your call; you hear about it. A guide pays a little more for each line of yours in it, all of them under the poorest job's week. Save v73. 0.999.69.
 - 2026-10-15 — 32.5 built: a bot looks for the Hollow, finds it and puts up lines there (the harness: 2 of 4, criterion 1); cleaning a line in debt no longer refused; the e2e walks in and cleans the split for gear. Phase 32's Done-when all pass. 0.999.70.
 - 2026-10-15 — Phase 32 closed by Evan's call; CURRENT MILESTONE moved to Phase 35, the road and the year.
+- 2026-10-15 — 35.1 built: the hitchhikers you haven't met come first, and none a third time before everyone's come once; four more on the road; the old hand waits at the Gorge pull-off while his clue to the Hollow is due. Save v74. 0.999.71.
