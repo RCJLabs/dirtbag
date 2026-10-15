@@ -36,7 +36,11 @@ describe('a save from before the retainers', () => {
     if (!r.ok) return;
     expect(r.from).toBe(65);
     const old = JSON.parse(V65).state;
-    expect(r.state).toEqual({ ...old, retainers: { physio: null, coach: null } });
+    expect(r.state).toEqual({
+      ...old,
+      retainers: { physio: null, coach: null },
+      media: { ...old.media, photos: [], piece: null },
+    });
     const took = act(r.state, { t: 'retainer', what: 'physio', on: true });
     expect(refused(took)).toBeUndefined();
     expect(took.state.retainers.physio).toBe(r.state.day);

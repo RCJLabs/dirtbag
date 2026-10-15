@@ -429,6 +429,7 @@ export const PLACES: Record<string, PlaceDef> = {
       'shop.headlamp',
       'shop.hangboard',
       'shop.rope',
+      'shop.camera',
       'shop.usedShoes',
       'shop.usedPad',
       'shop.usedRack',
@@ -437,6 +438,7 @@ export const PLACES: Record<string, PlaceDef> = {
       'shop.sellPad',
       'shop.sellHangboard',
       'shop.sellHeadlamp',
+      'shop.sellCamera',
       'shop.guide',
     ],
   },
@@ -1034,6 +1036,15 @@ export const ACTS: Record<string, ActDef> = {
     gear: { id: 'pad', set: 1 },
     says: 'A second pad on the roof rack. Highballs look shorter already.',
   },
+  // Phase 34.3: a camera, and your sends sell (media.ts).
+  'shop.camera': {
+    label: 'A camera',
+    note: 'Propped on the pad, it shoots your sends outside. Magazines buy the good ones.',
+    cost: { min: 10, cash: -KIT.camera.price },
+    needs: [{ hasNot: 'camera', why: 'One camera is plenty to drop.' }, { pay: KIT.camera.price }],
+    gear: { id: 'camera', set: 1 },
+    says: 'A used body and a lens with chalk in the focus ring. It goes in the lid of the pack, on top.',
+  },
   'shop.usedShoes': {
     label: 'Used shoes, from the swap meet',
     cost: { min: 20, cash: -Math.round(KIT.used.share * KIT.shoes.price) },
@@ -1104,6 +1115,13 @@ export const ACTS: Record<string, ActDef> = {
     needs: [{ has: 'rope', why: 'You’ve no rope to sell.' }],
     gear: { id: 'rope', set: 0 },
     says: 'The rope goes on the used rack with a tag on it. You feel lighter, and not in the good way.',
+  },
+  'shop.sellCamera': {
+    label: 'Sell your camera',
+    cost: { min: 10, cash: Math.round(KIT.sell * KIT.camera.price) },
+    needs: [{ has: 'camera', why: 'You’ve no camera to sell.' }],
+    gear: { id: 'camera', set: 0 },
+    says: 'The camera goes in the glass case by the register, with a card that says it’s been places.',
   },
   'shop.sellPad': {
     label: 'Sell your second pad',

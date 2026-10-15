@@ -210,6 +210,14 @@ import {
   DOC,
   postBlocked,
   postGain,
+  PHOTO_SAYS,
+  PIECE,
+  PIECE_SAYS,
+  photoBlocked,
+  photoPrice,
+  pieceBlocked,
+  pieceOpen,
+  unsoldPhotos,
   rivalFollowers,
   type MediaTask,
   COMP_TIERS,
@@ -948,6 +956,9 @@ function buskRow(game: Game, s: GameState): Row {
 }
 
 const cap = (x: string) => `${x[0]!.toUpperCase()}${x.slice(1)}`;
+// Phase 34.3: the feed offers your best few photos to pitch, and counts the rest.
+const PHOTO_ROWS = 3;
+
 // Phase 22.7: how old your dog is, in a few words (v0.956's).
 const DOG_STAGE = {
   pup: 'still a pup',
@@ -1580,12 +1591,47 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             run: () => game.media({ t: 'post', style: st }),
           };
         });
+      // Phase 34.3: the year's piece, while it's open, and the best of your photos to pitch.
+      const pieceWhy = pieceBlocked(s);
+      const pieceRows: Row[] = pieceOpen(s)
+        ? [
+            {
+              label: 'Write the piece',
+              cost: `+${money(PIECE.pay)}`,
+              note:
+                pieceWhy && pieceWhy !== 'No piece to write'
+                  ? `${pieceWhy}.`
+                  : fill(PIECE_SAYS.note, { due: m.piece!.due }),
+              off: !!pieceWhy,
+              run: () => game.media({ t: 'piece' }),
+            },
+          ]
+        : [];
+      const unsold = unsoldPhotos(s);
+      if (unsold.length > PHOTO_ROWS)
+        lines.push(`${unsold.length - PHOTO_ROWS} more photos nobody’s bought yet.`);
+      // The weekly limit's said on the first row; the rest wait on it too.
+      const photoRows: Row[] = unsold.slice(0, PHOTO_ROWS).map((p, i) => {
+        const r = routeOfId(s, p.route);
+        const why = photoBlocked(s, p.route);
+        const by =
+          p.by === 'camera'
+            ? fill(PHOTO_SAYS.byCamera, { day: p.day })
+            : fill(PHOTO_SAYS.byCrew, { who: PEOPLE[p.by]?.name ?? p.by, day: p.day });
+        return {
+          label: r ? `Pitch ${lineName(s, r)}, ${lineGrade(s, r)}` : 'Pitch a photo',
+          cost: money(photoPrice(s, p)),
+          note: why && i === 0 ? `${by}. ${why}.` : `${by}.`,
+          off: !!why,
+          run: () => game.media({ t: 'photo', route: p.route }),
+        };
+      });
       return {
         title: 'Your feed',
-        sub: `${m.followers.toLocaleString('en-US')} followers, ${engageWord(m.engagement)}. Followers don't pay; sponsors do.`,
+        sub: `${m.followers.toLocaleString('en-US')} followers, ${engageWord(m.engagement)}. Followers don't pay; sponsors and magazines do.`,
         lines,
         close: true,
-        rows: [...offerRows, ...postRows],
+        rows: [...offerRows, ...pieceRows, ...postRows, ...photoRows],
       };
     }
 

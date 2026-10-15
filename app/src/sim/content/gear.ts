@@ -1,7 +1,7 @@
 // Your kit, as data: what each thing is, and how the state keeps it. A number per item in
 // `GameState.gear`: condition 0..100 for what wears, uses left for what runs out, 1 for
 // what you just own. Nothing here decides a go; climb.ts and game.ts read the kit.
-import { BUILD, HIGHBALL, KIT, UPGRADE, WINTER } from '../dials';
+import { BUILD, HIGHBALL, KIT, PHOTO, UPGRADE, WINTER } from '../dials';
 
 const less = (share: number) => `${Math.round((1 - share) * 100)}% less`;
 
@@ -35,6 +35,12 @@ export const GEAR: Record<string, GearDef> = {
     name: 'A headlamp',
     kind: 'owned',
     what: 'The walk out after dark, with the trail in front of you.',
+  },
+  // Phase 34.3.
+  camera: {
+    name: 'A camera',
+    kind: 'owned',
+    what: `Your sends outside from V${PHOTO.from} up, for the magazines: one sold every ${PHOTO.every} days.`,
   },
   // Phase 22.2c: the van's upgrades, fitted at the garage, and the heater's propane.
   bed: {

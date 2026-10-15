@@ -7,7 +7,7 @@ import { gradeOf } from './climber';
 import { SPONSORS } from './content/media';
 import { indoor, routeById } from './content/gym';
 import { PLACES } from './content/places';
-import { MEDIA } from './dials';
+import { MEDIA, PHOTO, PIECE } from './dials';
 import { Rng } from './rng';
 import type { GameState, MediaTask } from './types';
 
@@ -108,3 +108,69 @@ export const mediaRung = (s: GameState): number => {
   if (m.sponsor) return 2 + m.sponsor.tier;
   return m.followers >= MEDIA.known ? 1 : 0;
 };
+
+// ---- Phase 34.3: photos that sell, and the year's piece ----
+
+type Photo = GameState['media']['photos'][number];
+
+// Whether a first send makes a photo a magazine would look at: outside, at V`from` or harder,
+// and not a wall's pitch or an expedition's, whose summits sell already.
+export function photoWorthy(s: GameState, id: string): boolean {
+  const r = routeById(s.seed, id);
+  return !!r && !indoor(r.place) && !r.wall && !r.exped && r.grade >= PHOTO.from;
+}
+
+// A photo's price now: a grade's worth from `from` up, more with followers, less on a
+// partner's phone, and never over the cap.
+export function photoPrice(s: GameState, p: Pick<Photo, 'route' | 'by'>): number {
+  const g = routeById(s.seed, p.route)?.grade ?? -1;
+  if (g < PHOTO.from) return 0;
+  const v =
+    PHOTO.base *
+    (g - PHOTO.from + 1) *
+    (1 + s.media.followers / PHOTO.fans) *
+    (p.by === 'camera' ? 1 : PHOTO.phone);
+  return Math.min(PHOTO.cap, Math.round(v));
+}
+
+// The day a magazine last bought one of yours, or null.
+export const lastSold = (s: GameState): number | null =>
+  s.media.photos.reduce<number | null>(
+    (d, p) => (p.sold !== undefined && (d === null || p.sold > d) ? p.sold : d),
+    null,
+  );
+
+// The photos nobody's bought yet, the best-paying first.
+export const unsoldPhotos = (s: GameState): Photo[] =>
+  s.media.photos.filter((p) => p.sold === undefined).sort((a, b) => photoPrice(s, b) - photoPrice(s, a));
+
+// Why this photo won't sell today, or null.
+export function photoBlocked(s: GameState, route: string): string | null {
+  const p = s.media.photos.find((x) => x.route === route);
+  if (!p) return 'No photo of that';
+  if (p.sold !== undefined) return 'A magazine has that one';
+  const last = lastSold(s);
+  if (last !== null && s.day - last < PHOTO.every)
+    return `Magazines take one every ${PHOTO.every} days: the next on day ${last + PHOTO.every}`;
+  return null;
+}
+
+// Sold to a magazine so far.
+export const photosSold = (s: GameState): number => s.media.photos.filter((p) => p.sold !== undefined).length;
+
+// Whether an editor asks for this year's piece tonight: enough of your photos run, and a
+// year since the last ask.
+export const pieceAsks = (s: GameState, day: number): boolean =>
+  photosSold(s) >= PIECE.after && (!s.media.piece || day - s.media.piece.asked >= PIECE.every);
+
+// The piece you've been asked for and haven't written, while there's time.
+export const pieceOpen = (s: GameState): boolean =>
+  !!s.media.piece && s.media.piece.wrote === undefined && s.day <= s.media.piece.due;
+
+// Why you can't write the piece now, or null.
+export function pieceBlocked(s: GameState): string | null {
+  if (!pieceOpen(s)) return 'No piece to write';
+  if (s.at !== 'lot') return 'You write it at the van';
+  if (s.energy < PIECE.energy) return 'Too tired to write';
+  return null;
+}

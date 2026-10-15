@@ -106,6 +106,11 @@ export interface GameState {
     heat: { grade: number; due: number } | null;
     doc: { grade: number; due: number } | { aired: number } | { shelved: number } | null;
     lost: number | null;
+    // Phase 34.3 (save v67): the photos of your sends, each line's once: the day, who shot it
+    // ('camera' for yours, or the one of the crew), and the day a magazine bought it. And the
+    // year's piece: the day an editor asked, the day it's due, and the day you wrote it.
+    photos: { route: string; day: number; by: string; sold?: number }[];
+    piece: { asked: number; due: number; wrote?: number } | null;
   };
   // Phase 18.6 (save v50): your own gym, once you've bought it, and the bluff's lines you've
   // bolted (or cleaned) so far.
@@ -554,6 +559,9 @@ export type Action =
   | { t: 'post'; style: 'straight' | 'story' | 'bait' | 'ad' }
   | { t: 'offer'; take: 'real' | 'brand' | 'yes' | 'no' }
   | { t: 'shoot' }
+  // Phase 34.3: a photo pitched to a magazine, and the year's piece written.
+  | { t: 'photo'; route: string }
+  | { t: 'piece' }
   // Phase 26b: the day's day labor at the market, and a family's rope hung at a busy crag.
   | { t: 'gig' }
   | { t: 'tourists' }

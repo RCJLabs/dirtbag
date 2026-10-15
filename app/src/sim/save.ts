@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 66;
+export const SAVE_VERSION = 67;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -495,6 +495,12 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, retainers: { physio: null, coach: null } };
   },
+  // v66 -> v67 (Phase 34.3): photos of your sends, and the year's piece; nobody had either.
+  66: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const m = isObj(x.media) ? x.media : {};
+    return { ...x, media: { ...m, photos: [], piece: null } };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -719,7 +725,21 @@ export function validate(x: unknown): string[] {
       (md.doc === null ||
         (isObj(md.doc) &&
           ((isInt(md.doc.grade) && isInt(md.doc.due)) || isInt(md.doc.aired) || isInt(md.doc.shelved)))) &&
-      (md.lost === null || isInt(md.lost)),
+      (md.lost === null || isInt(md.lost)) &&
+      Array.isArray(md.photos) &&
+      md.photos.every(
+        (p) =>
+          isObj(p) &&
+          typeof p.route === 'string' &&
+          isInt(p.day) &&
+          typeof p.by === 'string' &&
+          (p.sold === undefined || isInt(p.sold)),
+      ) &&
+      (md.piece === null ||
+        (isObj(md.piece) &&
+          isInt(md.piece.asked) &&
+          isInt(md.piece.due) &&
+          (md.piece.wrote === undefined || isInt(md.piece.wrote)))),
     'media',
   );
   const gy = x.gym;

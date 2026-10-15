@@ -124,7 +124,7 @@ describe('selling kit (Phase 26b)', () => {
     const s = base({
       at: 'shop',
       min: 10 * 60,
-      gear: { ...base().gear, rack: 1, rope: 1, pad: 1, hangboard: 1, headlamp: 1 },
+      gear: { ...base().gear, rack: 1, rope: 1, pad: 1, hangboard: 1, headlamp: 1, camera: 1 },
     });
     for (const [act_, id] of [
       ['shop.sellRack', 'rack'],
@@ -132,6 +132,7 @@ describe('selling kit (Phase 26b)', () => {
       ['shop.sellPad', 'pad'],
       ['shop.sellHangboard', 'hangboard'],
       ['shop.sellHeadlamp', 'headlamp'],
+      ['shop.sellCamera', 'camera'],
     ] as const) {
       const r = act(s, { t: 'act', act: act_ });
       expect(r.events[0]?.k, act_).not.toBe('refused');

@@ -1175,6 +1175,9 @@ export const KIT = {
   // A rope of your own (Phase 21.5), for walls, where the belayer's won't reach: v0.956
   // sold rope and harness; one price here [proposed].
   rope: { price: 150 },
+  // A camera (Phase 34.3) [proposed]: v0.956's middle one was $320; a used body and a lens
+  // that's seen some chalk. Propped on the pad, it shoots your sends for the magazines.
+  camera: { price: 220 },
   // A hangboard screwed over the van's back doors (Phase 21.3) [proposed price]. v0.956
   // sold a pull-up bar as a van upgrade at $90; a board alone is cheaper.
   hangboard: { price: 60 },
@@ -1379,6 +1382,24 @@ export const BOARD = { jobs: 3, capDays: 2, pay: 2, split: 0.5 };
 // closer (the audit's fix: v0.956 counted diary entries as "lives shaped"). Two, of the
 // game's three: Hazel and Sage, or one of them and the rival you've made a friend of.
 export const YEAR = { days: 56 };
+// Phase 34.3 [proposed] (Evan's call, 15 Oct 2026: your sends sell). A first send outside at
+// V`from` or harder, on your camera or shot by one of the crew there, makes a photo. A magazine
+// buys one a week (`every` days), once each: `base` a grade from `from` up, doubled at `fans`
+// followers, `phone` of that on a partner's phone, and never over `cap`, which is under the
+// poorest week a job pays (Setting's first rank, four shifts of $30; photos.test.ts holds it).
+export const PHOTO = { from: 5, base: 15, fans: 20000, phone: 0.5, cap: 100, every: 7 };
+// Phase 34.3 [proposed]: once a magazine has bought `after` of your photos, an editor asks for a
+// piece to go with the next, once a year, `days` to write it: an evening at the van, as a
+// guide's pages are (`min`, `energy`), for `pay` and the followers a page brings.
+export const PIECE = {
+  after: 2,
+  every: YEAR.days,
+  days: 14,
+  min: 180,
+  energy: 15,
+  pay: 150,
+  followers: 1000,
+};
 // Age (Phase 16.1, Evan's call 2): v0.956's clock, a year of age every `days` days (about
 // three to the 56-day year; called age, never a year). You start at `start`, an origin can
 // add to it; hanging it up is yours from `from`; your body calls it at `forced`, and from

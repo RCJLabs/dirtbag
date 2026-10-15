@@ -75,3 +75,22 @@ export const DOC = {
   shelved:
     'The season runs out before the line goes. Ines shelves the film, kindly. The footage is beautiful.',
 };
+
+// Phase 34.3 (Evan's call: your sends sell): a photo of a send, and a magazine buying it.
+// `{who}` is the one of the crew who shot it; `{line}`, `{cash}` and `{day}` come from the rules.
+export const PHOTO_SAYS = {
+  camera: 'The camera on the pad got the top move. That one could sell.',
+  crew: '{who} got the shot. That one could sell.',
+  sold: 'A magazine buys your photo of {line} for {cash}.',
+  byCamera: 'On your camera, day {day}',
+  byCrew: 'Shot by {who}, day {day}',
+};
+
+// Phase 34.3: the piece, once a year, for the magazine that runs your photos.
+export const PIECE_SAYS = {
+  ask: 'An editor who’s run your photos wants words to go with the next: a page on the season, by day {due}. You write it at the van.',
+  note: 'An evening at the van: a page on the season, for the magazine that runs your photos. By day {due}.',
+  wrote: 'You write it in one sitting at the table in the van, then again, shorter. It reads like you talk.',
+  paid: 'The magazine pays {cash} for the piece.',
+  lapsed: 'The magazine runs somebody else’s page on the season. The editor says next year, and means it.',
+};
