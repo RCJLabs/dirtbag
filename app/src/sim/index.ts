@@ -143,6 +143,7 @@ export {
 export { teamBlocked, teamCost, teamNames, teamOdds } from './team';
 export { GUIDE_CRAGS, guideBlocked, guideLeft, guideLines, guidesOut } from './guides';
 export {
+  cyclePay,
   filmBlocked,
   filmLine,
   lastSold,
@@ -257,6 +258,7 @@ export {
   PIECE,
   SHOW,
   FILM,
+  RUNWAY,
   LEAGUE,
   FLOOR,
   GIVING,
@@ -477,6 +479,8 @@ export {
   type Tally,
 } from './age';
 export { agedSkills, ageCost, ageingNote, ageMult, healDays } from './ageing';
+export { clinicBlocked, clinicHeads, clinicPay, compTomorrow, setCompBlocked } from './runway';
+export { RUNWAY_SAYS } from './content/runway';
 export { byName, familyFill, familyWords, kinLine } from './heir';
 export { COACH_EDGE, HEIR_ACT } from './content/heir';
 export { epilogue, namedDeeds, type EpilogueLine } from './epilogue';

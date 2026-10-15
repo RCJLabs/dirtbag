@@ -3392,6 +3392,18 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - **The harness** passes every target it passed on 30.1; Outdoors stays 1 of 4. The cost lands on Late Bloomers, who start at 26 and so live most of a career past 30: 1 of 8 finish Act III (3 on 30.1, 4 on main). Careers of no origin finish Act IV 4 of 8 (5 on 30.1, 4 on main) and Act III by median day 334.5 (320.5, 339). The first month's injuries are as on main (2% warmed up, 6% cold and reckless), as the odds don't read age.
 - **The download** is 441.0 KB of 460.
 
+**Status (15 Oct 2026): 30.3 built: the runway.** Save v69, 0.999.60.
+- **A clinic** (Evan's call: from 35; `RUNWAY` in the dials, `runway.ts`): a weekend morning at the Cave, before noon, for a Coach or better or a climber with a sponsor. It fills from what you've climbed (two, and one more for every three grades of your hardest send, up to six) at $11 a head: $66 at the most, under a Head coach's shift.
+- **Setting a comp:** the day before one, at its venue, for a Senior setter or better: a long day up a ladder for $85, about a Head setter's hour, and tomorrow's comp climbs on your problems.
+- **Ambassador terms:** from 35 a sponsor's cycle asks for a clinic where it asked for a send; the clinic answers it, and the cycle pays half an athlete's stipend. The feed says so ("Apex Climbing, keep it real, as an ambassador: $80 on day 64 if this cycle's asks are done").
+- **Why half:** the send at your grade less one was what dropped an older climber's sponsor. With a clinic in its place at the full stipend, the media bots kept their sponsors to the end, and one media career's media came to 105% of its shifts (Phase 34's criterion 1 failed, 3 of 4).
+- **Paid like work, never more than a job's:** both pay as a shift does (the money table counts them as shifts), and a test holds them under the jobs' own pay.
+- **Shown:** the rows are on the desks (the Cave's for a clinic, wherever a comp's on tomorrow for its set), from 35 and once you could, with why not when you can't.
+- **Save v69:** the clinic as a sponsor's ask. A real 0.999.59 save, a sponsored career at 35, loads as it was, and its next cycle asks for a clinic.
+- **The bots:** a sponsored bot runs the clinic its sponsor asks for the first weekend morning it can; the business bot, a senior setter past 35, sets League night the day before at its gym.
+- **The harness** passes every target it passed on 30.2; Outdoors stays 1 of 4, and the money target holds (media at most 80% of a media career's shifts; 105% before the half stipend). The bots used the runway: the media bots ran 9 to 17 clinics a career and were dropped by a sponsor 0 to 2 times; the business bots set 31 to 38 League nights from 35.
+- **The download** is 442.0 KB of 460.
+
 ### Phase 31 — After you
 
 *Medium. The heir has a five-goal act and a coarse head start. The audit (`meta.md` #11) asked for the family name in the scene, a share of the money and a first quest of the heir's own. An inherited gym stays out.*
@@ -3947,3 +3959,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-15 — Phase 34 closed by Evan's call; CURRENT MILESTONE moved to Phase 30, getting older.
 - 2026-10-15 — Phase 30 planned with Evan's calls (a gentle curve with skill offsets, halved after measuring; slower recovery and healing; the runway from 35; insurance by age). 30.1 built: a go uses your skills as your years have them, said on the You page. No save change. 0.999.58.
 - 2026-10-15 — 30.2 built: a night gives back less from 30, an injury lasts longer from 35, insurance costs more from 30; the odds of getting hurt don't move. No save change. 0.999.59.
+- 2026-10-15 — 30.3 built: the runway from 35: a clinic at the Cave, a comp's problems set the day before, and a sponsor's ambassador terms (a clinic where it asked for a send); paid like work, under a job's. Save v69. 0.999.60.

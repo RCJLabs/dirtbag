@@ -69,6 +69,7 @@ import {
 } from './content/media';
 import { CREW_HEAT } from './content/renown';
 import {
+  cyclePay,
   cycleTasks,
   fromAudience,
   filmBlocked,
@@ -304,6 +305,7 @@ import {
   PIECE,
   SHOW,
   FILM,
+  RUNWAY,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
 import { WALL_EVENTS, wallEventById } from './content/wallevents';
@@ -396,6 +398,8 @@ import { boardWeek, bountyProgress, jobProgress, jobText, payWords, postBoard } 
 import { homeCrowd, homeReady, yearsDone } from './year';
 import { ageOf, birthdayLine, bodyWaits, retireBlocked } from './age';
 import { ageCost, agedSkills, healDays } from './ageing';
+import { clinicBlocked, clinicHeads, clinicPay, compTomorrow, setCompBlocked } from './runway';
+import { RUNWAY_SAYS } from './content/runway';
 import { familyFill, heirOf } from './heir';
 import { COACH_LINE, HEIR_OPEN } from './content/heir';
 import { BOARD_JOBS } from './content/board';
@@ -1811,7 +1815,7 @@ export function act(s0: GameState, a: Action): Result {
     if (sp && ended >= sp.due) {
       const S = SPONSORS[sp.tier]!;
       if (sp.tasks.every((t) => t.done)) {
-        const pay = Math.round(S.stipend * (sp.terms === 'brand' ? MEDIA.brand : 1));
+        const pay = cyclePay(sp);
         spend({ cash: pay });
         paid('sponsor', pay);
         s.media = {
@@ -2900,6 +2904,31 @@ export function act(s0: GameState, a: Action): Result {
       s.media = { ...s.media, film: { route, day: s.day } };
       const r = routeById(s.seed, route);
       line(fill(FILM_SAYS.made, { line: r ? lineName(s, r) : route }));
+      break;
+    }
+
+    // Phase 30.3: the runway. A clinic at the Cave on a weekend morning, which is an
+    // ambassador's ask too; and tomorrow's comp set, at its venue. Both paid as work.
+    case 'clinic': {
+      const why = clinicBlocked(s);
+      if (why) return refuse(`${why}.`);
+      const heads = clinicHeads(s);
+      const pay = clinicPay(s);
+      spend({ min: RUNWAY.clinic.min, energy: -RUNWAY.clinic.energy, cash: pay });
+      paid('job', pay);
+      s.today.push('clinic');
+      markTask((t) => t.kind === 'clinic');
+      line(fill(RUNWAY_SAYS.clinic.done, { heads: `${heads} climbers` }) + ` +${money(pay)}.`);
+      break;
+    }
+    case 'setComp': {
+      const why = setCompBlocked(s);
+      if (why) return refuse(`${why}.`);
+      const comp = COMP_TIERS[compTomorrow(s)!]!.name;
+      spend({ min: RUNWAY.setComp.min, energy: -RUNWAY.setComp.energy, cash: RUNWAY.setComp.pay });
+      paid('job', RUNWAY.setComp.pay);
+      s.today.push('setcomp');
+      line(fill(RUNWAY_SAYS.setComp.done, { comp }) + ` +${money(RUNWAY.setComp.pay)}.`);
       break;
     }
 

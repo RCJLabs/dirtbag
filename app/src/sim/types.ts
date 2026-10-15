@@ -525,7 +525,9 @@ export type MediaTask =
   | { kind: 'comp'; done: boolean }
   | { kind: 'ad'; done: boolean }
   // Phase 34.4: a day on the sponsor's stand at the trade show.
-  | { kind: 'show'; day: number; done: boolean };
+  | { kind: 'show'; day: number; done: boolean }
+  // Phase 30.3: an ambassador's clinic, where a younger climber's cycle asks for a send.
+  | { kind: 'clinic'; done: boolean };
 
 // Someone you coach (Phase 18.3): their project (a style, how many grades over them), how
 // near it they are (0 to 100), how worn out, and whether they're scared of it.
@@ -569,6 +571,9 @@ export type Action =
   // Phase 34.4: a day on the sponsor's stand, and a film of your hardest line paid for.
   | { t: 'show' }
   | { t: 'film' }
+  // Phase 30.3: the runway: a clinic at the Cave, and tomorrow's comp set.
+  | { t: 'clinic' }
+  | { t: 'setComp' }
   // Phase 26b: the day's day labor at the market, and a family's rope hung at a busy crag.
   | { t: 'gig' }
   | { t: 'tourists' }
