@@ -49,7 +49,9 @@ export type RecordAim =
   | { commissioned: true }
   // Phase 18.6: a gym of your own, and land.
   | { gym: true }
-  | { land: true };
+  | { land: true }
+  // Phase 31.3: the line the old climber gave you at the fire, sent.
+  | { quest: true };
 
 export interface RecordEntry {
   id: string;
@@ -509,6 +511,16 @@ export const RECORD: RecordEntry[] = [
       'You stopped. Not because you ran out of lines: there were always more. You stopped because a life is a length, and you used all of yours on rock.',
     from: ['f1:retired'],
     aim: { retired: true },
+  },
+  // Phase 31.3: a family's kid sends the line the old climber gave them at the fire.
+  {
+    id: 'kinquest',
+    title: 'Unfinished Business',
+    desc: 'Send the line the old climber gave you at the fire.',
+    story:
+      'One line, named at the fire by someone who had all the moves once. You did it on your own day, with their beta in your head and nobody else’s.',
+    from: [],
+    aim: { quest: true },
   },
 ];
 

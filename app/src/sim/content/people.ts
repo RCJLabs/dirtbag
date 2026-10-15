@@ -13,6 +13,7 @@ import { romanceNodes, romanceStarts } from './romance';
 import { crewNameNodes, crewNameStarts, crewNodes, crewStarts } from './crew';
 import { favourNodes, favourStarts } from './favours';
 import { renownNodes, renownStarts } from './renown';
+import { kinNodes, kinStarts } from './kin';
 import { PLACES } from './places';
 import type { Delta, Skills } from '../types';
 
@@ -451,6 +452,8 @@ export const TALK: Record<string, TalkDef> = {
     who: 'ray',
     start: [
       { when: { notMet: 'ray' }, node: 'meet' },
+      // Phase 31.3: whose kid you are, said once.
+      ...kinStarts('ray'),
       // Phase 28.4: what the old guard make of the crew.
       ...renownStarts('ray'),
       { when: { life: 'ray/1' }, node: 'last-season' },
@@ -461,6 +464,7 @@ export const TALK: Record<string, TalkDef> = {
     nodes: {
       ...arcNodes('ray'),
       ...renownNodes('ray'),
+      ...kinNodes('ray'),
       'last-season': {
         calls: true,
         text: '"Last season," Ray says, to the wall more than to you. "Knees, mostly. The wall won’t notice." He pours you a lid of coffee. "You will. That’s enough."',
@@ -507,6 +511,8 @@ export const TALK: Record<string, TalkDef> = {
     who: 'frank',
     start: [
       { when: { notMet: 'frank' }, node: 'meet' },
+      // Phase 31.3: whose kid you are, said once.
+      ...kinStarts('frank'),
       // Phase 28.4: what the old guard make of the crew.
       ...renownStarts('frank'),
       { when: { life: 'frank/1' }, node: 'parked' },
@@ -517,6 +523,7 @@ export const TALK: Record<string, TalkDef> = {
     nodes: {
       ...arcNodes('frank'),
       ...renownNodes('frank'),
+      ...kinNodes('frank'),
       parked: {
         calls: true,
         text: 'Frank’s truck is up on blocks next to your van, its wheels in a neat stack. "Nine years passing through," he says, "and it was the truck that decided." He seems fine about it. Better than fine.',

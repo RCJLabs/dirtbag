@@ -7,22 +7,23 @@ import { walk } from './ambient';
 import { isNight } from './cond';
 import { FOREBEAR_LINES, type ForebearNeed } from './content/forebear';
 import { routeById } from './content/gym';
+import { PLACES } from './content/places';
 import { MARK_NAME, type Mark } from './content/injuries';
 import type { RouteDef } from './content/routes';
 import { sprayable } from './crowds';
 import { FACTION, FAMILY } from './dials';
 import { fill } from './format';
-import { kinLine } from './heir';
+import { FOREBEAR_MET, hardestOf, kinLine, questOf } from './heir';
 import { Rng } from './rng';
 import type { GameState } from './types';
 
-export const MET = 'forebear-met';
+export { FOREBEAR_MET as MET } from './heir';
 const heardId = (i: number) => `forebear-line-${i}`;
 
 // Whether they're at the fire tonight: always, till you've sat with them once.
 export function forebearAtFire(s: GameState): boolean {
   if (!s.family || s.at !== 'lot' || !isNight(s.min)) return false;
-  if (!s.seen.includes(MET)) return true;
+  if (!s.seen.includes(FOREBEAR_MET)) return true;
   return Rng.fromStream(s.seed, 'events').derive(`forebear-fire-${s.day}`).next() < FAMILY.fire;
 }
 
@@ -37,39 +38,43 @@ export function theirLines(s: GameState): string[] {
 const nameOf = (s: GameState, r: RouteDef): string => s.firsts[r.id]?.name ?? r.name;
 
 // The line of theirs they'd tell you about tonight: one you haven't sent with something left
-// to tell; the one you've had most goes on, then the easiest.
+// to tell; the one you've had most goes on, then the easiest. Phase 31.3: the line they gave
+// you too, sent or not by them (they had the moves).
 export function betaLine(s: GameState): RouteDef | null {
-  const lines = theirLines(s)
+  const q = s.seen.includes(FOREBEAR_MET) ? questOf(s)?.r.id : undefined;
+  const lines = [...new Set([...theirLines(s), ...(q ? [q] : [])])]
     .map((id) => routeById(s.seed, id))
     .filter((r): r is RouteDef => !!r && sprayable(s, r).length > 0)
     .sort((a, b) => (s.routes[b.id]?.goes ?? 0) - (s.routes[a.id]?.goes ?? 0) || a.grade - b.grade);
   return lines[0] ?? null;
 }
 
-// Their hardest send outside, by name.
-function hardest(s: GameState): RouteDef | null {
-  const sent = (s.family?.career?.sent ?? [])
-    .map((id) => routeById(s.seed, id))
-    .filter((r): r is RouteDef => !!r)
-    .sort((a, b) => b.grade - a.grade);
-  return sent[0] ?? null;
-}
-
 // What fills their lines.
 export function forebearWords(s: GameState): Record<string, string> {
   const c = s.family?.career;
-  const h = hardest(s);
-  const p = c?.project ? routeById(s.seed, c.project) : undefined;
+  const h = hardestOf(s);
   const scar = c?.scars[0];
   return {
     forebear: s.family?.forebear ?? '',
     you: s.climber.name,
     hardest: h ? nameOf(s, h) : '',
     fa: kinLine(s)?.name ?? '',
-    project: p ? nameOf(s, p) : '',
     scar: scar ? (MARK_NAME[scar as Mark] ?? scar) : '',
     summit: c?.summits[0] ?? '',
     crew: c?.crew ?? '',
+  };
+}
+
+// Phase 31.3: the line they gave you, heard about at the fire once it's sent (in `seen`).
+export const QUEST_HEARD = 'forebear-quest';
+
+// The quest's words: their line by name, and where.
+export function questWords(s: GameState): Record<string, string> {
+  const q = questOf(s);
+  return {
+    ...forebearWords(s),
+    quest: q ? nameOf(s, q.r) : '',
+    crag: q ? (PLACES[q.r.place]?.name ?? q.r.place) : '',
   };
 }
 

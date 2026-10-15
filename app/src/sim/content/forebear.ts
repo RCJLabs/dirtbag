@@ -2,20 +2,12 @@
 // their life (Career, Phase 31.1); a line is only said when the family kept what it names. An
 // heir from before Phase 31 has only first ascents, so the lines without a need carry them.
 // Filled: {forebear}, {you}, {hardest} (their hardest send outside), {fa} (a first ascent of
-// theirs), {scar}, {summit}, {crew}, {project} (the line they never sent).
+// theirs), {scar}, {summit} and {crew}.
+
+import type { QuestKind } from '../heir';
 
 export type ForebearNeed =
-  | 'hardest'
-  | 'fa'
-  | 'scar'
-  | 'summit'
-  | 'crew'
-  | 'project'
-  | 'body'
-  | 'chose'
-  | 'home'
-  | 'oldHigh'
-  | 'oldLow';
+  'hardest' | 'fa' | 'scar' | 'summit' | 'crew' | 'body' | 'chose' | 'home' | 'oldHigh' | 'oldLow';
 
 export interface ForebearLine {
   text: string;
@@ -38,10 +30,6 @@ export const FOREBEAR_LINES: ForebearLine[] = [
   {
     text: '“I didn’t tell anyone about {fa} for a week. I wanted it to be mine a bit longer before it was everyone’s.”',
     needs: 'fa',
-  },
-  {
-    text: '{forebear} looks up toward the crag in the dark. “{project}. I had all the moves. I never had them all on the same day.”',
-    needs: 'project',
   },
   {
     text: '{forebear} works the stiffness out of their {scar} without seeming to notice. “Tape it before you need to. Not after. Nobody listens to that one.”',
@@ -88,6 +76,22 @@ export const FOREBEAR_LINES: ForebearLine[] = [
     text: '“Eat something green this week. I didn’t, for years, and my knees are still sending me the bill.”',
   },
 ];
+
+// Phase 31.3: the line they give you the first night (Evan's call: the one they never sent;
+// without one, their hardest send; for an heir from before Phase 31, their first ascent).
+// {quest} and {crag} are filled from it.
+export const QUEST_GIVE: Record<QuestKind, string> = {
+  project:
+    '“One thing.” {forebear} looks off toward {crag} in the dark. “{quest}. I had all the moves. I never had them all on the same day. You might.”',
+  hardest: '“One thing. {quest}, at {crag}. Best thing I ever did. Go and do it better.”',
+  fa: '“One thing. {quest}, at {crag}. I put it up. Go and find out if I sandbagged it.”',
+};
+
+// Its send, said then; and at the fire, the next time you sit with them.
+export const QUEST_SENT =
+  'You sent {quest}. Somewhere down at the Lot, {forebear} is going to hear about it before you can say.';
+export const QUEST_TOLD =
+  '“You sent it.” {forebear} doesn’t say anything else for a while. Then: “How was the top?”';
 
 // Beta on a line they sent: {line}, its {crux}, and the way through ({beta}, {Beta}).
 export const FOREBEAR_BETA =

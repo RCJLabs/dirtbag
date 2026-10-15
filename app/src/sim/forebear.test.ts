@@ -2,7 +2,14 @@
 // some nights after; a story from their life; beta on the lines they sent.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { FOREBEAR_BETA, FOREBEAR_LINES, FOREBEAR_MEET, FOREBEAR_NO_BETA } from './content/forebear';
+import {
+  FOREBEAR_BETA,
+  FOREBEAR_LINES,
+  FOREBEAR_MEET,
+  FOREBEAR_NO_BETA,
+  QUEST_GIVE,
+} from './content/forebear';
+import { PLACES } from './content/places';
 import { ROUTES } from './content/routes';
 import { FAMILY } from './dials';
 import { act, emptyLog, newGame } from './game';
@@ -59,7 +66,13 @@ describe('the old climber at the fire', () => {
     expect(refused(r)).toBe(false);
     const said = lines(r);
     expect(said[0]).toBe(FOREBEAR_MEET.replace('{forebear}', 'Robin'));
-    expect(said[1]).toBe(FOREBEAR_LINES[0]!.text);
+    // Phase 31.3: and the line they never sent, for you.
+    expect(said[1]).toBe(
+      QUEST_GIVE.project
+        .replace('{forebear}', 'Robin')
+        .replace('{crag}', PLACES[ROUTES.project!.place]!.name)
+        .replace('{quest}', ROUTES.project!.name),
+    );
     expect(r.state.seen).toContain(MET);
     expect(r.state.min).toBe(k.min + FAMILY.talk);
     expect(r.state.today).toContain('fire');
@@ -77,11 +90,10 @@ describe('the old climber at the fire', () => {
     }
     expect(new Set(heard).size).toBe(heard.length);
     const all = heard.join(' ');
-    // From the career: the hardest send (Second Wind, their V7), the first ascent, the project,
-    // the scar, the crew, how it ended.
+    // From the career: the hardest send (Second Wind, their V7), the first ascent, the scar,
+    // the crew, how it ended. (The project is the quest's: kin.test.ts.)
     expect(all).toContain('Second Wind took me a season');
     expect(all).toContain('about Second Wind for a week');
-    expect(all).toContain(`“${ROUTES.project!.name}. I had all the moves.`);
     expect(all).toContain('The Gorge Rats');
     expect(all).toContain('their shoulder');
     expect(all).toContain('I stopped on a good day');
@@ -119,7 +131,8 @@ describe('the old climber at the fire', () => {
 
   it('has nothing to tell on lines you’ve sent, or once you know everything they do', () => {
     const k = { ...night(kidOf(robin())), seen: [MET] };
-    const done = { ...k, routes: { pump: sent, testpiece: sent, rsopen: sent } };
+    // Theirs sent, and the line they gave you (the Project) too.
+    const done = { ...k, routes: { pump: sent, testpiece: sent, rsopen: sent, project: sent } };
     expect(betaLine(done)).toBeNull();
     const r = act(done, { t: 'forebear', do: 'beta' });
     expect(lines(r)[0]).toBe(FOREBEAR_NO_BETA.replace('{forebear}', 'Robin'));

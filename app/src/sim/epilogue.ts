@@ -15,6 +15,7 @@ import {
   ORIGIN_END,
   PATH_END,
   FAMILY_END,
+  QUEST_END,
   PEOPLE_END,
   HOME_FOR_GOOD,
   LATE_CHOSE,
@@ -34,7 +35,7 @@ import { ageOf } from './ageing';
 import { AGEING, HOME } from './dials';
 import { fill } from './format';
 import { tierOf } from './presence';
-import { kinLine } from './heir';
+import { kinLine, questDone, questOf } from './heir';
 import { stanceAnswer, standingWord } from './scene';
 import type { GameState } from './types';
 
@@ -64,6 +65,12 @@ export function epilogue(s: GameState): EpilogueLine[] {
     const l = kinLine(s);
     if (l && s.routes[l.id]?.sent)
       put(fill(FAMILY_END.repeat, { forebear: s.family.forebear, line: l.name }));
+    // Phase 31.3: the line they gave you at the fire.
+    const q = questDone(s) ? questOf(s) : null;
+    if (q && q.kind !== 'fa')
+      put(
+        fill(QUEST_END[q.kind], { forebear: s.family.forebear, quest: s.firsts[q.r.id]?.name ?? q.r.name }),
+      );
   }
 
   // Your hardest first ascent, by its name, and where.

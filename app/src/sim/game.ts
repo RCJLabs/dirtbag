@@ -401,10 +401,17 @@ import { ageOf, birthdayLine, bodyWaits, retireBlocked } from './age';
 import { ageCost, agedSkills, healDays } from './ageing';
 import { clinicBlocked, clinicHeads, clinicPay, compTomorrow, setCompBlocked } from './runway';
 import { RUNWAY_SAYS } from './content/runway';
-import { familyFill, heirOf } from './heir';
+import { familyFill, FOREBEAR_MET, heirOf, questDone, questOf } from './heir';
 import { COACH_LINE, HEIR_MONEY, HEIR_OPEN } from './content/heir';
-import { FOREBEAR_BETA, FOREBEAR_MEET, FOREBEAR_NO_BETA } from './content/forebear';
-import { betaLine, forebearBlocked, forebearSays, forebearWords, MET as FOREBEAR_MET } from './forebear';
+import {
+  FOREBEAR_BETA,
+  FOREBEAR_MEET,
+  FOREBEAR_NO_BETA,
+  QUEST_GIVE,
+  QUEST_SENT,
+  QUEST_TOLD,
+} from './content/forebear';
+import { betaLine, forebearBlocked, forebearSays, forebearWords, QUEST_HEARD, questWords } from './forebear';
 import { BOARD_JOBS } from './content/board';
 import { DALE_VERDICT, RIG_TRADE } from './content/garage';
 import { CALLINGS, OPEN_CALLINGS } from './content/callings';
@@ -870,6 +877,8 @@ export function talkValues(s: GameState, who?: string): Record<string, string | 
     what: CLASH_WHAT[(who && favourAsk(s, who)) || ''] ?? 'a hand',
     // Phase 28.4: the crew, by name.
     crew: s.crewName?.name ?? 'the crew',
+    // Phase 31.3: whose kid you are.
+    forebear: s.family?.forebear ?? '',
   };
 }
 
@@ -3999,6 +4008,9 @@ export function act(s0: GameState, a: Action): Result {
           s.race = null;
           line(`You sent it before Dex could. That one's yours.`);
         }
+        // Phase 31.3: the line the old climber gave you, sent.
+        const q = !lap && s.seen.includes(FOREBEAR_MET) ? questOf(s) : null;
+        if (q && q.r.id === r.id) line(fill(QUEST_SENT, questWords(s)));
         // Your first V4 gets noticed: Dex is here for the rest of the day, and he'll say so.
         if (r.grade >= 4 && !s.people.dex) {
           s.people.dex = { bond: 0, last: 0, since: s.day, invite: { day: s.day, place: s.at, from: s.min } };
@@ -4297,14 +4309,26 @@ export function act(s0: GameState, a: Action): Result {
       const w = forebearWords(s);
       if (a.do === 'talk') {
         spend({ min: FAMILY.talk });
-        if (!s.seen.includes(FOREBEAR_MET)) {
+        if (!s.today.includes('fire')) s.today.push('fire');
+        const q = questOf(s);
+        const first = !s.seen.includes(FOREBEAR_MET);
+        if (first) {
           s.seen.push(FOREBEAR_MET);
           line(fill(FOREBEAR_MEET, w));
+        }
+        // Phase 31.3: the line they give you, the first night; its send, the next time you sit.
+        if (questDone(s) && !s.seen.includes(QUEST_HEARD)) {
+          s.seen.push(QUEST_HEARD);
+          line(fill(QUEST_TOLD, questWords(s)));
+          break;
+        }
+        if (first && q) {
+          line(fill(QUEST_GIVE[q.kind], questWords(s)));
+          break;
         }
         const said = forebearSays(s);
         if (said.fresh) s.seen.push(said.id);
         line(said.text);
-        if (!s.today.includes('fire')) s.today.push('fire');
         break;
       }
       spend({ min: FAMILY.beta });
