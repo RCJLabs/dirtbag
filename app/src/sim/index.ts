@@ -222,8 +222,8 @@ export {
   SET_WALLS,
 } from './content/setting';
 export { GIFTS, NAMED_FOR } from './content/gifts';
-export { crew, folksDue, holidayOn } from './folks';
-export { FOLKS_CALLS, HOLIDAYS, HOLIDAY_WITH } from './content/folks';
+export { crew, folksDue, holidayBlocked, holidayNote, holidayOn } from './folks';
+export { FOLKS_CALLS, HOLIDAYS, HOLIDAY_SCENES, HOLIDAY_WITH } from './content/folks';
 export {
   SKILLS,
   MIX,

@@ -257,7 +257,7 @@ export interface GameState {
   dogs: { name: string; years: number; day: number }[];
   // A walk-out (Phase 22.6c) has stages: the one you're on, and what the calls so far add up to.
   encounter: {
-    kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell' | 'wall' | 'stance' | 'echo' | 'folks';
+    kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell' | 'wall' | 'stance' | 'echo' | 'folks' | 'holiday';
     id: string;
     stage?: number;
     tally?: { risk: number; energy: number; fed: number; skin: number; psyche: number; hours: number };
@@ -775,7 +775,8 @@ export type GameEvent =
   // An encounter begins (Phase 22.6): it waits for an answer.
   | {
       k: 'encounter';
-      kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell' | 'wall' | 'stance' | 'echo' | 'folks';
+      kind:
+        'knock' | 'hitch' | 'stop' | 'epic' | 'farewell' | 'wall' | 'stance' | 'echo' | 'folks' | 'holiday';
       id: string;
     }
   // Back from an expedition (Phase 24.5): its card, from the newest entry in the book.

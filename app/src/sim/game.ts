@@ -138,7 +138,16 @@ import {
   setBrief,
   setRefused,
 } from './work';
-import { crew, folksDue, holidayOn } from './folks';
+import {
+  crew,
+  DISH,
+  folksDue,
+  holidayBlocked,
+  holidayDish,
+  holidayOn,
+  holidayOpts,
+  holidayScene,
+} from './folks';
 import { FOLKS_CALLS } from './content/folks';
 import { NAMED_FOR } from './content/gifts';
 import { together } from './romance';
@@ -955,6 +964,8 @@ export function act(s0: GameState, a: Action): Result {
     if (s.log.length > LOG_MAX) s.log.splice(0, s.log.length - LOG_MAX);
   };
   const paid = (from: PaySource, cash: number) => events.push({ k: 'paid', from, cash });
+  // Phase 35.4: tonight's holiday was spent in its scene, so the night needn't hold it again.
+  let festive = false;
   const line = (text: string) => {
     events.push({ k: 'line', text });
     note(text);
@@ -1597,7 +1608,7 @@ export function act(s0: GameState, a: Action): Result {
     // A holiday (Phase 17.6): the night at the fire, if you were at the Lot for it, with
     // whoever's close and around. It's a day together with each, and a lift.
     const hol = holidayOn(ended);
-    if (hol && s.at === 'lot') {
+    if (hol && s.at === 'lot' && !festive) {
       const here = crew({ ...s, day: ended });
       for (const w of here) climbedWith(w);
       s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + HOLIDAY.psyche) };
@@ -1627,6 +1638,13 @@ export function act(s0: GameState, a: Action): Result {
     if (d.sleep) {
       // A knock on the van (Phase 22.6a): the night waits for your answer.
       const night = nightAt(s);
+      // Phase 35.4: a holiday at the Lot with your people about: its scene at the fire first.
+      const fest = night.rough ? null : holidayScene(s);
+      if (fest) {
+        s.encounter = { kind: 'holiday', id: fest };
+        events.push({ k: 'encounter', kind: 'holiday', id: fest });
+        return null;
+      }
       // Phase 35.3: someone you answered at the door weeks ago: back, or remembered.
       const back = night.rough ? null : knockBackDue(s);
       if (back) {
@@ -3957,6 +3975,31 @@ export function act(s0: GameState, a: Action): Result {
         if (o.psyche) s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + o.psyche) };
         line(o.out);
         if (o.home) retire(false, true);
+        break;
+      }
+      // Phase 35.4: a holiday's scene: the night at the fire with your people, as you spend it.
+      if (e?.kind === 'holiday') {
+        const o = holidayOpts(e.id)[a.opt];
+        if (!o) return refuse('Nobody’s asking.');
+        const why = holidayBlocked(s, o.fx);
+        if (why) return refuse(`${why}.`);
+        const fx = o.fx;
+        s.encounter = null;
+        const here = crew(s);
+        for (const w of here) {
+          climbedWith(w);
+          if (fx.bond) bond(w, meet(w).bond + fx.bond);
+        }
+        const dish = fx.dish ? holidayDish(s) : null;
+        if (dish) s.pantry = { ...s.pantry, [dish.id]: s.pantry[dish.id]! - DISH };
+        if (fx.cash) spend({ cash: fx.cash });
+        if (fx.energy) s.energy = clamp100(s.energy + fx.energy);
+        if (fx.skin) s.skin = clamp100(s.skin + fx.skin);
+        if (fx.fed) s.fed = clamp100(s.fed + fx.fed);
+        if (fx.psyche) s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + fx.psyche) };
+        line(fill(o.out, { dish: dish?.name.toLowerCase() ?? 'dish' }));
+        festive = true;
+        sleep();
         break;
       }
       const k = e ? knockById(e.id) : undefined;

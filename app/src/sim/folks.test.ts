@@ -30,17 +30,26 @@ describe('holidays (Phase 17.6)', () => {
     expect(holidayOn(HOLIDAY.on[0]!)).toBe(HOLIDAYS[seasonOf(HOLIDAY.on[0]!)]);
   });
 
-  it('make a night at the fire with whoever’s close and around: a lift, and a day together each', () => {
+  it('make a night at the fire with whoever’s close and around: its scene, and a day together each', () => {
     const night = HOLIDAY.on[1]!;
     const s = made({
       people: { hazel: friend(3), rico: friend(1), mara: { ...friend(5), away: night + 5 } },
     });
     expect(crew({ ...s, day: night })).toEqual(['hazel']);
-    const r = bed(s, night);
-    const card = r.events.find((e) => e.k === 'holiday');
-    expect(card).toEqual({ k: 'holiday', id: seasonOf(night), who: ['hazel'] });
-    expect(r.state.people.hazel!.bond).toBe(4);
-    expect(r.state.people.rico!.bond).toBe(1);
+    // Phase 35.4: the scene at the fire, before bed; the night is however you spend it.
+    const r = act({ ...s, day: night, at: 'lot', min: 18 * 60, energy: 50 }, { t: 'act', act: 'lot.sleep' });
+    expect(r.state.encounter).toEqual({ kind: 'holiday', id: seasonOf(night) });
+    const a = act(r.state, { t: 'answer', opt: 0 });
+    expect(a.state.people.hazel!.bond).toBe(4);
+    expect(a.state.people.rico!.bond).toBe(1);
+    expect(a.events.some((e) => e.k === 'holiday')).toBe(false);
+    // Alone, it's the night it always was, and its card in the morning.
+    const alone = bed(made(), night);
+    expect(alone.events.find((e) => e.k === 'holiday')).toEqual({
+      k: 'holiday',
+      id: seasonOf(night),
+      who: [],
+    });
     // Not on an ordinary night.
     expect(bed(s, night + 1).events.some((e) => e.k === 'holiday')).toBe(false);
   });

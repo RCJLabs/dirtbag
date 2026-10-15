@@ -16,6 +16,7 @@ import { PEOPLE } from './content/people';
 import { WALL_EVENTS } from './content/wallevents';
 import { INGREDIENTS, MEAL_NAME } from './content/food';
 import { KNOCKS } from './content/knocks';
+import { HOLIDAYS } from './content/folks';
 import { HITCHERS, STOPS } from './content/road';
 import { EPICS } from './content/epics';
 import { recordById } from './content/record';
@@ -32,7 +33,7 @@ import { repeatsOf } from './settle';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 75;
+export const SAVE_VERSION = 76;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -566,6 +567,12 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x) || !isObj(x.deck)) throw new Error('state is not an object');
     return { ...x, deck: { ...x.deck, back: [] } };
   },
+  // v75 -> v76 (Phase 35.4): an encounter can be a holiday's scene at the fire. Nobody was
+  // in one before; nothing to change.
+  75: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return x;
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -941,6 +948,8 @@ export function validate(x: unknown): string[] {
     wall: WALL_EVENTS,
     stance: Object.keys(STANCES).map((id) => ({ id })),
     echo: Object.keys(ECHOES).map((id) => ({ id })),
+    // Phase 35.4: a holiday's scene at the fire, by its season.
+    holiday: Object.keys(HOLIDAYS).map((id) => ({ id })),
   } as Record<string, { id: string }[]>;
   const tb = x.table;
   const dice = (d: unknown) => Array.isArray(d) && d.every((v) => isInt(v) && v >= 1 && v <= 6);
