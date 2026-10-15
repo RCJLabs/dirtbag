@@ -124,6 +124,8 @@ export interface BotRun {
   // Phase 32.5: the way to the Hollow and what it did there: each clue, each walk in, each line
   // prepared and each first ascent, by day.
   hollow: { day: number; what: string }[];
+  // Phase 35.1: every hitchhiker who came its way, in order.
+  hitchers: string[];
 }
 
 export interface DaySummary {
@@ -476,6 +478,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     paid: [],
     forebear: [],
     hollow: [],
+    hitchers: [],
   };
   let workMin = 0;
   let hardest = -1;
@@ -553,6 +556,7 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
       if (e.k === 'sent') run.sends.push(`day ${s.day}: ${e.route} (${e.style})`);
       if (e.k === 'injured') run.injuries.push(`day ${s.day}: ${e.kind} (tier ${e.tier})`);
       if (e.k === 'paid') run.paid.push({ day: s.day, from: e.from, cash: e.cash });
+      if (e.k === 'encounter' && e.kind === 'hitch') run.hitchers.push(e.id);
       if (e.k === 'skills' && a.t === 'done') climbGain += Object.values(e.gains).reduce((n, g) => n + g, 0);
       // A first ascent gets the first name on offer, called true.
       if (e.k === 'fa') {

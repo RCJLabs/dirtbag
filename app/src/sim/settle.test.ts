@@ -9,7 +9,7 @@ import { GUIDE, SETTLE } from './dials';
 import { fill, money } from './format';
 import { act, lineGrade, newGame } from './game';
 import { fasIn, GUIDE_CRAGS, poorestWeek, royalties, royaltyOf } from './guides';
-import { fromSave, validate } from './save';
+import { fromSave, MIGRATIONS, validate } from './save';
 import { faNote, repeatDays, repeatsOf, settled } from './settle';
 import type { FirstAscent, GameState } from './types';
 
@@ -201,6 +201,8 @@ describe('a save from before', () => {
     expect(r.state).toEqual({
       ...old,
       firsts: { ...old.firsts, mopen: { ...old.firsts.mopen, heard: SETTLE.repeats } },
+      // Phase 35.1: its hitchhikers met, counted as come once.
+      deck: (MIGRATIONS[73]!(old) as GameState).deck,
     });
     // The first night says nothing of the Moon's line.
     const t = lines(sleep(r.state)).join(' ');

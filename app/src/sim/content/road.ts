@@ -1,4 +1,4 @@
-// On the road (Phase 22.6b), as data: v0.956's eight hitchhikers, each with a second meeting,
+// On the road (Phase 22.6b), as data: v0.956's eight hitchhikers (and, Phase 35.1, four more), each with a second meeting,
 // and its nine roadside stops, in its words. Its British turns are American here, as the
 // valley is. v0.956 paid some of these in flat skill, which the rebuild doesn't (Phase 22's
 // "no farms"): the old hand's line on the back of a receipt is a piece of real beta at the
@@ -368,6 +368,171 @@ export const HITCHERS: Hitcher[] = [
         },
       ],
     },
+  },
+  // Phase 35.1 (Evan's call): four more, in the same voice.
+  {
+    id: 'guide',
+    who: 'A mountain guide, sunburnt to the collar',
+    sign: 'TOWN (SHOWER)',
+    look: 'Glacier glasses pushed up into hair that has not met a mirror in a month, and a duffel that smells faintly of other people’s fear.',
+    pitch:
+      'Six weeks in the big range with clients: two of them summited, one of them carried down. They are going to sleep for a day and then go climbing on something that does not need crampons.',
+    opts: [
+      {
+        label: 'Ask them about the big range',
+        out: 'They describe a ridge at four in the morning in a way that makes your whole crag feel like a sandpit, and then say they would trade all of it for a week of dry rock and nobody to look after.',
+        fx: { psyche: 6 },
+      },
+      {
+        label: 'Ask how you look after somebody',
+        out: 'Mostly by noticing things before they do: the water bottle nobody is drinking, the joke that stops halfway. They say a climbing partner is a client you do not invoice.',
+        fx: { psyche: 5 },
+      },
+      {
+        label: 'Let them sleep',
+        out: 'They are gone before the first bend and do not stir until the drop-off, where they thank you as if you had carried them down something.',
+        fx: { psyche: 3 },
+      },
+    ],
+    again: {
+      open: 'The same glasses, a fresh sunburn over the old one. They went back up, came down again, and this time they want to hear about you.',
+      opts: [
+        {
+          label: 'Tell them about your project',
+          out: 'They ask the right questions, the ones about the rest before the crux and not the crux itself, and by the drop-off you have a plan you did not have at the pickup.',
+          fx: { psyche: 6 },
+        },
+        {
+          label: 'Ask when they will stop guiding',
+          out: '“When people stop wanting to stand on top of things.” They say it like a weather forecast, and then fall asleep again.',
+          fx: { psyche: 4 },
+        },
+      ],
+    },
+    friend: 'the guide you drove to a shower',
+  },
+  {
+    id: 'setter',
+    who: 'A route setter from a city gym',
+    sign: 'ANYWHERE WITH ROCK',
+    look: 'Chalk ground into the knees, a drill burn on one forearm, and no idea which way up a guidebook goes.',
+    pitch:
+      'First trip outside. They have set a thousand problems and never climbed one that somebody had not already decided for them, and they keep asking where the tape goes.',
+    opts: [
+      {
+        label: 'Show them how to read the rock',
+        out: 'You point out the chalk, the polish, the one foothold darker than the rest. They go quiet, then say it is setting where the setter was a glacier and did not care how anybody felt.',
+        fx: { psyche: 6 },
+      },
+      {
+        label: 'Talk shop about setting',
+        out: 'Forerunning, grading by committee, the regular who complains about every problem and climbs all of them. It turns out every gym in the country has the same regular.',
+        fx: { psyche: 4 },
+      },
+      {
+        label: 'Tell them to pick a line and find out',
+        out: 'They look at you as though you have suggested driving with their eyes shut, and then, slowly, as though you might be right.',
+        fx: { psyche: 3 },
+      },
+    ],
+    again: {
+      open: 'The same drill burn, new scabs on the backs of their hands. They have been outside every weekend since, and they need you to know they flashed something nobody told them how to do.',
+      opts: [
+        {
+          label: 'Ask them what it was',
+          out: 'They describe every hold. It takes most of the drive. You do not mind at all, because you remember the first one you read for yourself.',
+          fx: { psyche: 7 },
+        },
+        {
+          label: 'Tell them it ruins the gym',
+          out: 'They say it already has. Last week they set a problem with no feet marked, and the regulars complained for a fortnight and then climbed it every night.',
+          fx: { psyche: 5 },
+        },
+      ],
+    },
+    friend: 'the setter who learned to read rock',
+  },
+  {
+    id: 'stranded',
+    who: 'Two people and a dog, beside a van with its hood up',
+    sign: 'GARAGE?',
+    look: 'The van is older than yours and has more stickers. The dog has already decided you are friends.',
+    pitch:
+      'They need a ride to the garage for a part, and they are trying very hard not to look as though that is a big thing to ask.',
+    opts: [
+      {
+        label: 'Take them to the garage and back',
+        out: 'It eats the best part of the morning. On the way back they press a bag of their good coffee on you, and will not take it back however you ask.',
+        fx: { psyche: 6, fed: 6 },
+      },
+      {
+        label: 'Drop them at the garage',
+        out: 'They will find a ride back from there. The dog watches you all the way to the corner, which is more goodbye than most people manage.',
+        fx: { psyche: 3 },
+      },
+      {
+        label: 'Ask where they are headed',
+        out: 'Everywhere, slowly. They have a map with the crags circled and the roads that eat vans crossed out, and they let you add two of each.',
+        fx: { psyche: 4 },
+      },
+    ],
+    again: {
+      open: 'A different van this time, or the same one rebuilt from what sounds like three others. The dog remembers you first and the people a second later.',
+      opts: [
+        {
+          label: 'Ask what happened to the old one',
+          out: 'It died on a pass in the rain and they spent two nights in it waiting for a tow, and they tell it as the best two nights of the trip. You believe them.',
+          fx: { psyche: 6 },
+        },
+        {
+          label: 'Ask about the dog',
+          out: 'The dog has been up three summits and refused a fourth. The dog, they say, has better judgement than either of them.',
+          fx: { psyche: 5 },
+        },
+      ],
+    },
+    friend: 'the pair with the van and the dog',
+  },
+  {
+    id: 'ranger',
+    who: 'An off-duty ranger, in half a uniform',
+    sign: 'TRAILHEAD',
+    look: 'Hat clipped to the pack, radio switched off and turned face down, as though it might start talking anyway.',
+    pitch:
+      'Their truck is in the shop and their day off is in the hills. They know every closure in the valley and are, for once, not going to tell anybody about any of them.',
+    opts: [
+      {
+        label: 'Ask them about the closures',
+        out: 'Falcons, two pairs, and a long story about a climber who argued with a falcon over a ledge and lost. They are on the falcon’s side and say so.',
+        fx: { psyche: 5 },
+      },
+      {
+        label: 'Ask what the job is really like',
+        out: 'Parking, mostly, and people who want to pet things that bite. Then once a year somebody does not come back from a walk, and it is not about parking at all.',
+        fx: { psyche: 6 },
+      },
+      {
+        label: 'Ask about the climbers before you',
+        out: 'They remember the old ones by their vans and the young ones by their dogs, and they say the valley has been somebody’s whole life a hundred times over and never once minded.',
+        fx: { psyche: 4 },
+      },
+    ],
+    again: {
+      open: 'The same half a uniform. The first thing they say is that you parked well last time, which may be the kindest thing a ranger has ever said to anybody.',
+      opts: [
+        {
+          label: 'Ask if anything is opening early',
+          out: 'They are not supposed to say. They say the falcons fledged early this year, and then watch the road for a long time.',
+          fx: { psyche: 6 },
+        },
+        {
+          label: 'Tell them about the trash you packed out',
+          out: 'They nod, the way people nod at a thing they have heard a lot and mean every time, and write your plate down on the back of their hand for no reason they will explain.',
+          fx: { psyche: 5 },
+        },
+      ],
+    },
+    friend: 'the ranger, off duty again',
   },
 ];
 

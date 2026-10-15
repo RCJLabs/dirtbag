@@ -345,6 +345,7 @@ import {
   knockById,
   knockPsyche,
   knockTonight,
+  meets,
   roadPsyche,
   stopById,
 } from './events';
@@ -535,7 +536,7 @@ export function newGame(seed: string): GameState {
     crags: [],
     seen: [],
     guitar: 0,
-    deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0 },
+    deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0, meets: {} },
     encounter: null,
     dogs: [],
     dream: { pick: null, pot: 0, owned: [] },
@@ -2227,6 +2228,8 @@ export function act(s0: GameState, a: Action): Result {
       // don't know you yet.
       if (s.deck.met[h.id] === undefined && i < h.opts.length)
         s.deck = { ...s.deck, met: { ...s.deck.met, [h.id]: i } };
+      // Phase 35.1: and how often they've come, picked up or not.
+      s.deck = { ...s.deck, meets: { ...s.deck.meets, [h.id]: meets(s, h.id) + 1 } };
       line(o.out);
       roadFx(o.fx);
       return true;

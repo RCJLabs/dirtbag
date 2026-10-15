@@ -65,6 +65,7 @@ describe('a save from before the runway', () => {
       hollow: { clues: [], tries: 0 },
       boltedCracks: [],
       firsts: (MIGRATIONS[72]!(old) as GameState).firsts,
+      deck: (MIGRATIONS[73]!(old) as GameState).deck,
     });
     const sp = r.state.media.sponsor!;
     const next = cycleTasks(r.state, sp.tier, sp.terms);

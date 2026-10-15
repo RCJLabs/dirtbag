@@ -57,6 +57,7 @@ describe('a save from before the stand and the film', () => {
       boltedCracks: [],
       // Phase 32.4: its first ascents' repeats so far, heard of quietly.
       firsts: (MIGRATIONS[72]!(old) as GameState).firsts,
+      deck: (MIGRATIONS[73]!(old) as GameState).deck,
     });
     expect(old.media.sponsor.tier).toBeGreaterThanOrEqual(SHOW.tier);
     expect(cycleTasks(r.state, old.media.sponsor.tier, 'real', D).some((t) => t.kind === 'show')).toBe(true);
