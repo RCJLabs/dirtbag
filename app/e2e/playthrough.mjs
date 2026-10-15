@@ -1768,6 +1768,136 @@ console.log('Cooking at the van');
   await ctx.close();
 }
 
+console.log('Nationals: a qualifier and a final');
+// Phase 33.4 (Phase 33's criterion 2). Nationals morning at the Training Center (its second
+// edition, day 36), for a climber well over its grades with the points to enter: signed up at
+// the desk, the qualifier's eight problems climbed, the card handed in and through; the next
+// evening, the final's four climbed and its card handed in, placed in the comp, and the team
+// picked.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  const strong = 760;
+  saved.state = {
+    ...saved.state,
+    day: 36,
+    min: 9 * 60,
+    at: 'center',
+    x: null,
+    energy: 100,
+    skin: 100,
+    fed: 100,
+    cash: 500,
+    // Warm, and well within their load: a dozen goes on comp day can't tweak anything, so the
+    // rounds are all that's being played.
+    today: ['warm'],
+    load: { acute: 10, chronic: 200, today: 0 },
+    injury: null,
+    climber: {
+      ...saved.state.climber,
+      skills: { power: strong, fingers: strong, endurance: strong, technique: strong, head: strong },
+    },
+    comps: { ...saved.state.comps, on: null, points: [{ day: 35, pts: 300 }] },
+    encounter: null,
+    table: null,
+  };
+  const main = page;
+  page = await playPage({ width: 390, height: 844 }, 2, 'nationals: ');
+  await page.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+  }, JSON.stringify(saved));
+  const state = () => page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  // A thing on the wall or at the desk, by its label: walked to till it's on screen, past
+  // any Record Book card a send turned up (a strong climber's first sends at a grade).
+  const open = async (label, key = 'ArrowRight') => {
+    const hot = page.locator(`button.hot[aria-label^="${label}"]`);
+    const other = key === 'ArrowRight' ? 'ArrowLeft' : 'ArrowRight';
+    walk: for (const [k, most] of [
+      [key, 30],
+      [other, 60],
+    ])
+      for (let i = 0; i < most; i++) {
+        await bookCards();
+        if (await hot.count()) break walk;
+        await page.keyboard.down(k);
+        await wait(200);
+        await page.keyboard.up(k);
+        await wait(150);
+      }
+    if (!(await hot.count())) await fail(`nationals: never found ${label}`);
+    await hot.first().evaluate((el) => el.click());
+    taps++;
+  };
+  const climbAll = async (prefix, n) => {
+    for (let i = 1; i <= n; i++) {
+      await open(`Nationals ${prefix}${i},`);
+      await expectText('#sheet', new RegExp(`Nationals ${prefix}${i} · V`), `Nationals ${prefix}${i}`);
+      await sendIt(`Nationals ${prefix}${i}`);
+      await click('#sheet .opt', 'Drop onto the mats');
+      await until('the wall again', async () => (await text('#b-nav')) === 'Map');
+      await wait(500);
+    }
+  };
+  await page.goto(server.url, { waitUntil: 'load' });
+  await until('the Training Center', async () => (await text('#b-nav')) === 'Map');
+  await wait(600);
+  await open('The desk', 'ArrowLeft');
+  await expectText('#sheet', /Enter Nationals.*5 minutes on each.*The favourites:/, 'the entry row');
+  await shot('nationals-desk');
+  await click('#sheet .opt', 'Enter Nationals');
+  await until('signed up', async () => (await state()).comps.on?.round === 0);
+  await click('#sheet .x');
+  await wait(300);
+  await climbAll('', 8);
+  await open('The desk', 'ArrowLeft');
+  await click('#sheet .opt', 'Hand in your qualifier scorecard');
+  const through = await until('through to the final', async () => {
+    const st = await state();
+    return st.comps.on?.round === 1 ? st : null;
+  });
+  if (through.comps.on.day !== 37 || !through.log.some((l) => /Through to the final tomorrow/.test(l.text)))
+    await fail(`nationals: after the qualifier: ${JSON.stringify(through.comps.on)}`);
+  log(`nationals: ${through.log.at(-1).text}`);
+  // The next evening, at the comp's wall, no pass bought.
+  const evening = {
+    ...through,
+    day: 37,
+    min: 17 * 60,
+    today: ['warm'],
+    load: { acute: 10, chronic: 200, today: 0 },
+    energy: 100,
+    skin: 100,
+    fed: 100,
+    x: null,
+  };
+  await page.evaluate((s) => {
+    const save = JSON.parse(localStorage.getItem('dirtbag.save'));
+    localStorage.setItem('dirtbag.save', JSON.stringify({ ...save, state: s }));
+  }, evening);
+  await page.reload({ waitUntil: 'load' });
+  await until('the final', async () => (await text('#b-nav')) === 'Map');
+  await wait(600);
+  await climbAll('F', 4);
+  await open('The desk', 'ArrowLeft');
+  await expectText('#sheet', /Hand in your final scorecard/, 'the final’s card');
+  await click('#sheet .opt', 'Hand in your final scorecard');
+  const done = await until('the result', async () => {
+    const st = await state();
+    return st.comps.on === null ? st : null;
+  });
+  const result = done.comps.results.at(-1);
+  if (result?.tier !== 2 || result.day !== 37 || result.of !== 16 || result.place > 6)
+    await fail(`nationals: the result: ${JSON.stringify(result)}`);
+  const said = done.log.slice(-4).map((l) => l.text);
+  if (!said.some((t) => /^Nationals final: /.test(t)))
+    await fail(`nationals: the final's line: ${said.join(' | ')}`);
+  if (result.place <= 3 && !said.some((t) => /on the national team/.test(t)))
+    await fail(`nationals: a podium and no team: ${said.join(' | ')}`);
+  log(`nationals: place ${result.place} of ${result.of}: ${said.join(' | ')}`);
+  await shot('nationals-final');
+  await page.close();
+  page = main;
+}
+
 console.log('Cards at the fire');
 // Phase 22.9b. Half nine at the Lot with $100: blackjack, a hand stood on and up again; then
 // hold'em with Hazel, a hand checked and called to the end, and up again. The money in front

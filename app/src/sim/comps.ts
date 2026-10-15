@@ -13,6 +13,7 @@ import {
   FIELD_SAYS,
   ROSTER,
   ROUND_NAMES,
+  TEAM_SAYS,
   type Rival,
 } from './content/comps';
 import { fill } from './format';
@@ -363,9 +364,44 @@ export const pointsFor = (tier: number, place: number, of: number): number =>
 export const ladderPoints = (s: GameState): number =>
   Math.round(s.comps.points.reduce((a, p) => a + p.pts * 0.5 ** ((s.day - p.day) / COMP.half), 0));
 
-// The highest rung your points let you into.
+// The highest rung your points let you into: not one that picks its team (Phase 33.4).
 export const rungOpen = (s: GameState): number =>
-  COMP_LADDER.reduce((top, i) => (ladderPoints(s) >= COMP_TIERS[i]!.need ? i : top), 0);
+  COMP_LADDER.reduce(
+    (top, i) => (!COMP_TIERS[i]!.team && ladderPoints(s) >= COMP_TIERS[i]!.need ? i : top),
+    0,
+  );
+
+// ---- Phase 33.4: the national team ----
+
+// A comp's last edition to have started on or before a day, or null before its first.
+export function lastEdition(tier: number, day: number): number | null {
+  const t = COMP_TIERS[tier]!;
+  const d = day - ((((day - t.on) % t.every) + t.every) % t.every);
+  return d >= 1 ? d : null;
+}
+
+// Whether you're on the team for a comp that picks one, on a day: a podium at the last
+// edition of the comp that picks it, held before that day. Any other comp, you're in.
+export function onTeam(s: GameState, tier: number, day = s.day): boolean {
+  const team = COMP_TIERS[tier]!.team;
+  if (!team) return true;
+  const last = lastEdition(team.from, day - 1);
+  if (last === null) return false;
+  const end = last + (COMP_TIERS[team.from]!.rounds?.length ?? 0);
+  return s.comps.results.some(
+    (r) => r.tier === team.from && r.place <= team.top && r.day >= last && r.day <= end,
+  );
+}
+
+// The comps a rung picks the team for.
+export const picksFor = (tier: number): number[] =>
+  COMP_TIERS.flatMap((t, i) => (t.team?.from === tier ? [i] : []));
+
+// A comp's next first day after a day.
+export function nextEdition(tier: number, day: number): number {
+  const t = COMP_TIERS[tier]!;
+  return day + 1 + ((((t.on - day - 1) % t.every) + t.every) % t.every);
+}
 
 // Why you can't sign up for today's comp here, or null when you can.
 export function compBlocked(s: GameState): string | null {
@@ -375,6 +411,8 @@ export function compBlocked(s: GameState): string | null {
   if (s.comps.on) return 'You’re signed up already';
   if (s.comps.results.some((x) => x.day === s.day)) return 'You’ve competed today';
   if (s.min >= COMP.close) return 'Sign-up’s closed';
+  if (t.team && !onTeam(s, tier))
+    return fill(TEAM_SAYS.blocked, { name: t.name, from: COMP_TIERS[t.team.from]!.name });
   if (ladderPoints(s) < t.need)
     return `${t.name} wants ${t.need} points on the ladder; you’ve ${ladderPoints(s)}`;
   if (s.cash < t.fee) return `The fee’s $${t.fee}`;

@@ -37,6 +37,9 @@ export interface CompTier {
   // and how many go through from each to the next. A qualifier and a final; the World Series
   // has a semi-final between. Without it, a comp is the one round on its one day.
   rounds?: number[];
+  // Phase 33.4 (Evan's call, 14 Oct 2026): picked, not let in by points. A podium (the top
+  // `top`) at rung `from`'s last edition makes the team, till its next.
+  team?: { from: number; top: number };
 }
 
 export const COMP_TIERS: CompTier[] = [
@@ -70,7 +73,9 @@ export const COMP_TIERS: CompTier[] = [
     name: 'Nationals',
     venue: 'center',
     every: 28,
-    on: 24,
+    // Phase 33.4: a week before the World Series, which it picks the team for; clear of
+    // League nights, the Circuit and the Games.
+    on: 8,
     grades: [7, 13],
     field: 16,
     fee: 40,
@@ -84,15 +89,16 @@ export const COMP_TIERS: CompTier[] = [
     name: 'The World Series',
     venue: 'center',
     every: 28,
-    on: 17,
+    on: 15,
     grades: [10, 15],
     field: 20,
     fee: 60,
     purse: [1000, 600, 300],
     pts: 120,
-    need: 140,
+    need: 0,
     problem: 'World Series',
     rounds: [12, 6],
+    team: { from: 2, top: 3 },
   },
   {
     name: 'The Games',
@@ -228,6 +234,15 @@ export const ROSTER: Rival[] = [
   { name: 'Clara Moreau', tier: 4, grade: 15, trend: 0.2 },
   { name: 'Owen Byrne', tier: 4, grade: 14, trend: 0 },
 ];
+
+// Phase 33.4: the national team, said. {name} is the comp it's for, {from} the one that picks it.
+export const TEAM_SAYS = {
+  blocked: '{name} is for the national team, and a podium at {from} is what makes it',
+  pick: 'The podium makes the team for {name}.',
+  made: 'That podium puts you on the national team: {name}, {when}.',
+  dropped: 'Off the podium, and off the team. {name} goes on without you.',
+  ladder: '{name}, for the national team: a podium at {from} makes it.',
+};
 
 // Phase 33.3: the field, said. Only rivals are named; a filler who wins is a stranger.
 export const FIELD_SAYS = {

@@ -13,6 +13,8 @@ import { act, lessonAt, newGame } from './game';
 import type { GameState, GoResult } from './types';
 
 const NAT = 2;
+// Nationals' first day, from the calendar.
+const N = COMP_TIERS[NAT]!.on;
 const refused = (r: ReturnType<typeof act>) => r.events.some((e) => e.k === 'refused');
 const why = (r: ReturnType<typeof act>) => r.events.find((e) => e.k === 'refused');
 const lines = (r: ReturnType<typeof act>): string[] =>
@@ -22,7 +24,7 @@ const base = (over: Partial<GameState> = {}): GameState => {
   const s = newGame('rules');
   return {
     ...s,
-    day: 24,
+    day: N,
     at: 'center',
     min: 9 * 60,
     cash: 500,
@@ -33,7 +35,7 @@ const base = (over: Partial<GameState> = {}): GameState => {
       start: 'allrounder',
       skills: { power: k, fingers: k, endurance: k, technique: k, head: k },
     },
-    comps: { ...s.comps, points: [{ day: 23, pts: 200 }] },
+    comps: { ...s.comps, points: [{ day: N - 1, pts: 200 }] },
     ...over,
   };
 };
@@ -67,7 +69,7 @@ describe('the clock', () => {
 
   it('runs out: the goes it buys and no more, and a top in the last of them counts', () => {
     const s = enter();
-    const p = compSet(s.seed, NAT, 24)[0]!;
+    const p = compSet(s.seed, NAT, N)[0]!;
     expect(goesLeft(s, p.id)).toBe(5);
     const four = falls(s, p.id, 4);
     expect(goesLeft(four, p.id)).toBe(1);
@@ -78,9 +80,9 @@ describe('the clock', () => {
     const over = act({ ...last.state, energy: 100, skin: 100 }, { t: 'go', route: p.id });
     expect(why(over)).toEqual({ k: 'refused', why: `${COMP_RULES.time}.` });
     // Another problem has its own clock.
-    expect(goesLeft(last.state, compSet(s.seed, NAT, 24)[1]!.id)).toBe(5);
+    expect(goesLeft(last.state, compSet(s.seed, NAT, N)[1]!.id)).toBe(5);
     // Nothing else is on one.
-    expect(goesLeft(last.state, centerSet(s.seed, weekOf(24))[0]!.id)).toBeNull();
+    expect(goesLeft(last.state, centerSet(s.seed, weekOf(N))[0]!.id)).toBeNull();
   });
 
   it('is shorter in the final', () => {
@@ -91,24 +93,24 @@ describe('the clock', () => {
           ...enter().comps,
           on: {
             tier: NAT,
-            day: 24,
+            day: N,
             round: 0,
-            tops: Object.fromEntries(compSet('rules', NAT, 24).map((p) => [p.id, 1])),
+            tops: Object.fromEntries(compSet('rules', NAT, N).map((p) => [p.id, 1])),
           },
         },
       },
       { t: 'comp', do: 'finish' },
     ).state;
-    const day = { ...through, day: 25, min: 18 * 60, today: [] };
-    const p = compSet(day.seed, NAT, 25)[0]!;
+    const day = { ...through, day: N + 1, min: 18 * 60, today: [] };
+    const p = compSet(day.seed, NAT, N + 1)[0]!;
     const out = falls(day, p.id, goesFor(NAT, 1));
     expect(goesLeft(out, p.id)).toBe(0);
     expect(refused(act(out, { t: 'go', route: p.id }))).toBe(true);
   });
 
   it('holds the field to it too: no round’s goes past its clock’s', () => {
-    for (const day of [24, 25]) {
-      const goes = goesFor(NAT, day - 24);
+    for (const day of [N, N + 1]) {
+      const goes = goesFor(NAT, day - N);
       for (const f of compField('rules', NAT, day)) expect(f.goes).toBeLessThanOrEqual(f.tops * goes);
     }
   });
@@ -117,7 +119,7 @@ describe('the clock', () => {
 describe('isolation', () => {
   it('nobody tells you the beta on a comp’s problem, packed or not', () => {
     const s = enter();
-    const p = compSet(s.seed, NAT, 24)[0]!;
+    const p = compSet(s.seed, NAT, N)[0]!;
     expect(p.cruxes[0]!.beta.length).toBeGreaterThan(1);
     expect(sprayable(s, p)).toEqual([]);
     expect(canAsk(s, p)).toBe(false);
@@ -126,7 +128,7 @@ describe('isolation', () => {
 
   it('nobody shows you anything at the comp’s wall, not even the week’s set', () => {
     const outside = base({ comps: { ...base().comps, on: null } });
-    const week = centerSet('rules', weekOf(24)).map((r) => r.id);
+    const week = centerSet('rules', weekOf(N)).map((r) => r.id);
     expect(week).toContain(lessonAt(outside)?.r.id);
     expect(lessonAt(enter())).toBeNull();
     // Sage, asked there, says so.
@@ -141,7 +143,7 @@ describe('isolation', () => {
             last: 1,
             since: 1,
             talked: true,
-            invite: { day: 24, place: 'center', from: 9 * 60 },
+            invite: { day: N, place: 'center', from: 9 * 60 },
           },
         },
       },
@@ -154,7 +156,7 @@ describe('isolation', () => {
 
   it('your own fall still shows you another way', () => {
     const s = enter();
-    const p = compSet(s.seed, NAT, 24)[0]!;
+    const p = compSet(s.seed, NAT, N)[0]!;
     const r = goAt(s, p.id, fell(Math.floor(p.cruxes[0]!.from) + 1));
     const need = p.beta.A2!.unlock?.falls ?? 1;
     const after =

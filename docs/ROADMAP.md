@@ -3469,6 +3469,16 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - **Caveat:** a filler's grade is drawn as before, so most of a field's strength change is the named favourites; how a field feels from the floor is a playtest question.
 - **The download** is 436.0 KB of 460.
 
+**Status (14 Oct 2026): 33.4 built: selection and the calendar.** No save change, 0.999.53. Phase 33's two Done-when criteria pass; closing it is Evan's call.
+- **The calendar** (Evan's call: Nationals first). Nationals moves to day 8 of every four weeks (rounds 8 and 9) and the World Series to day 15 (15 to 17), a week after the Nationals that picks its team. No two comps share a day: League nights, the Circuit, the Games and the dyno comp all fall clear (a test walks four years of days).
+- **Selection** (Evan's call). The World Series is for the national team, not let in by points: a podium at the last Nationals makes it, till the next. Making it says so with the World Series' day ("That podium puts you on the national team: The World Series, Mon, day 43."); off the podium while on the team, you're told you're off it. The Nationals entry row says the podium picks the team, and the ladders page says the World Series is for the team. The Games still wants 200 ladder points.
+- **A round's morning** has its wall's pass in your day, as the entry did, so the desk no longer offers a finalist a pass they don't need (33.1's leftover).
+- **The e2e plays a qualifier and a final** (Phase 33's criterion 2): a climber well over Nationals' grades enters at the desk on its morning, climbs the qualifier's eight problems on the climb panel, hands in and goes through; the next evening climbs the final's four, hands in, and is placed, with the team picked on a podium.
+- **The comps table** on the new calendar moved with the days alone (12 comps a grade is a small sample): at Nationals a V11 makes the final 50% of the time and a V12 podiums 33%, so the team is a V12–V13 climber's; a V13 wins 83%.
+- **The harness** passes every target but Outdoors, at 2 of 4 as on main. The comp bots still reach the Games by day 219 (one by day 330). The comp bots end fewer of the story's acts (median 3, from 5 in 33.3), and three of four hang it up by day 419. A run with the old points gate on the new calendar gives the same acts and days, so it's the calendar's new days, not selection, that moved them; why the days do it isn't established. Selection's own cost: one comp bot reaches the Games on day 330 rather than 218.
+- **Caveat:** a save made mid-comp on the old calendar (through to a round on day 25 or 18) climbs that round's day as a one-round set and is placed among the whole field: it hands in, and nothing breaks.
+- **The download** is 436.5 KB of 460.
+
 ### Phase 34 — Money that means something
 
 *Medium. Followers pay nothing; a job's ranks raise its pay and nothing else; costs don't grow with ambition. The audit's economy #8, #9, #16 and #17.*
@@ -3835,3 +3845,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-14 — Phase 33 planned with Evan's calls (a go budget for the time limit; small finals; the Nationals podium makes the team; a roster of rivals per tier). 33.1 built: comps from Nationals up in rounds, a day apart; the comps harness measures them. Save v65. 0.999.50.
 - 2026-10-14 — 33.2 built: comp rules. A clock on each problem (5 minutes in a qualifier, 4 after, a go a minute) caps its goes; isolation keeps everyone's beta off comp problems, and Sage no longer teaches the week's set mid-comp. No save change. 0.999.51.
 - 2026-10-14 — 33.3 built: the field that comes back. Named rivals on each rung from the Circuit up, with grades by year, some going up a rung; Skye at the World Series and Nationals; the desk names the favourites and a comp names its winner. The field's tops roll go by go, so the top grade no longer wins every time. No save change. 0.999.52.
+- 2026-10-14 — 33.4 built: Nationals first on the calendar and nothing on the same day; the Nationals podium makes the team, and only the team climbs the World Series; a finalist's morning has the pass. The e2e plays a qualifier and a final (criterion 2). Phase 33's Done-when both pass; closing is Evan's call. No save change. 0.999.53.
