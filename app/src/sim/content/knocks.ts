@@ -126,7 +126,7 @@ export const KNOCKS: Knock[] = [
       },
       {
         label: 'Start the van and find somewhere else',
-        out: 'You give up the spot at 2 a.m. and take the first flat pull-off you find, which turns out to be on a slope.',
+        out: 'You give up the spot at two in the morning and take the first flat pull-off you find, which turns out to be on a slope.',
         fx: { energy: -10, psyche: -2 },
       },
     ],
