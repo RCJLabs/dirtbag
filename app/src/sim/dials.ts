@@ -1425,6 +1425,19 @@ export const FILM = { from: 10, price: 2500, followers: 8000 };
 // `warn` the You page counts the days down. 22 to 45 is day 415, about V14 for the career
 // bot: inside Phase 16's 15–25 hours, where V18 (day ~900) isn't. No decline with age.
 export const AGE = { start: 22, days: 18, from: 30, warn: 43, forced: 45 };
+// Phase 30.1 [proposed] (Evan's call, 15 Oct 2026: gentle, with skill offsets). A go uses your
+// skills as the years have them: from `from` years old, `a` a year of the skill, never past
+// `limit`. Power and fingers go first, endurance later and slower; head and technique grow
+// with years climbed. The grade you see is your skills as trained. Above V10 a share of a
+// skill is a lot of grade, so at 40 a V13 climber's power lines are about a grade harder and
+// technical ones about 0.9 easier (at −1.5% and +1%, first proposed, 1.6 and 1.5).
+export const AGEING = {
+  power: { from: 33, a: -0.01, limit: 0.85 },
+  fingers: { from: 33, a: -0.01, limit: 0.85 },
+  endurance: { from: 35, a: -0.007, limit: 0.85 },
+  technique: { from: 28, a: 0.005, limit: 1.08 },
+  head: { from: 28, a: 0.005, limit: 1.08 },
+} as const;
 // How long a day takes a player (Phase 16.6), for criterion 1's hours: seconds a tap (the
 // e2e's count, reading included) and seconds a go (holding to climb, and the stamp). Not
 // measured: stated, so the hours the harness reports can be checked against testers' and

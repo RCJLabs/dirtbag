@@ -476,6 +476,7 @@ export {
   tallyOf,
   type Tally,
 } from './age';
+export { agedSkills, ageingNote, ageMult } from './ageing';
 export { byName, familyFill, familyWords, kinLine } from './heir';
 export { COACH_EDGE, HEIR_ACT } from './content/heir';
 export { epilogue, namedDeeds, type EpilogueLine } from './epilogue';

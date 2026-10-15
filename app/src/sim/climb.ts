@@ -13,6 +13,7 @@
 // where hanging would pay it back; climb through and you've run it out. A fall catches on
 // the last piece you placed, and with nothing low enough to hold it, you hit the ground.
 
+import { agedSkills } from './ageing';
 import { margin, pumpFactor, windowFactor } from './climber';
 import { overhead, reachMargin } from './reach';
 import { effGrade, PUMPED, type BetaDef, type CruxDef, type RouteDef, type Verb } from './content/routes';
@@ -188,7 +189,7 @@ export function betaScale(s: GameState, r: RouteDef, beta: string, started = fal
 // How fast you move through a line: your level in its style against its grade.
 export function paceFor(s: GameState, r: RouteDef): number {
   const P = CLIMB.pace;
-  return clamp(1 + P.perGrade * margin(s.climber.skills, r.type, effGrade(r)), P.min, P.max);
+  return clamp(1 + P.perGrade * margin(agedSkills(s), r.type, effGrade(r)), P.min, P.max);
 }
 
 // Called after the 'go' action has charged the go's costs.
@@ -205,7 +206,8 @@ export function startAttempt(s: GameState, line: RouteDef): Attempt {
     route: r.id,
     def: r,
     pick,
-    mods: { crux, pump: pumpFactor(s.climber.skills, effGrade(r)), speed: paceFor(s, r) },
+    // Phase 30.1: the body your years have left you.
+    mods: { crux, pump: pumpFactor(agedSkills(s), effGrade(r)), speed: paceFor(s, r) },
     pos: 0,
     pump: 0,
     hold: false,

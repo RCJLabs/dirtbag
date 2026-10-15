@@ -7,22 +7,15 @@ import { indoor, routeById } from './content/gym';
 import { OPEN_PATHS, PATHS } from './content/paths';
 import { PEOPLE } from './content/people';
 import { PLACES } from './content/places';
+import { ageOf, dayAtAge, startAge } from './ageing';
 import { AGE, HOME } from './dials';
-import { originOf } from './identity';
 import { actOf } from './story';
 import { STORY } from './content/story';
 import { tierOf } from './presence';
 import type { GameState } from './types';
 
-export const startAge = (s: GameState): number => AGE.start + (originOf(s)?.fx.age ?? 0);
-
-// Your age today: a year of it every AGE.days days, less any clock an old save held back.
-export const ageOf = (s: GameState, day = s.day): number =>
-  startAge(s) + Math.floor(Math.max(0, day - 1 - s.life.held) / AGE.days);
-
-// The first day you're `age`.
-export const dayAtAge = (s: GameState, age: number): number =>
-  Math.max(1, (age - startAge(s)) * AGE.days + 1 + s.life.held);
+// Phase 30.1: the clock lives in ageing.ts, with what the years do to the body.
+export { ageOf, dayAtAge, startAge };
 
 // Why you can't hang it up now, or null when you can.
 export function retireBlocked(s: GameState): string | null {

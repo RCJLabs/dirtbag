@@ -3348,7 +3348,7 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 
 **Phase 29 closed by Evan's call (14 Oct 2026),** with those three carried. The CURRENT MILESTONE moves to Phase 33. The download is 433.7 KB of 460.
 
-### Phase 30 — Getting older
+### Phase 30 — Getting older   **<<< CURRENT MILESTONE**
 
 *Medium. Age is only a deadline now: nothing about the body changes from 22 to 45.*
 
@@ -3365,6 +3365,23 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 **Done when.**
 1. A 40-year-old bot climbs within a set number of grades of its peak.
 2. Careers retired at 30 and at 45 both read well in the epilogue.
+
+**Planned (15 Oct 2026), with Evan's calls:**
+- **From the survey:** age is a deadline and nothing else. No skill, recovery, injury or price reads it; the epilogue never reads the age you stopped at, and some of its lines assume a long career that ran out ("ran out of time first" for a Late Bloomer who chose 30). A 40-year-old career bot is about V13 (day 325). v0.956 aged the skills a go used, not the grade it showed: head and technique +1% a year from 28, power and fingers −2.5% a year from 32 (floor 60%), endurance −2% from 34; injuries +3% likelier and 2.5% longer a year from 28; insurance flat.
+- **The body's curve (Evan's call: gentle, with skill offsets, at half the sizes first proposed):** a go uses your skills as your age has them: power and fingers −1% a year from 33, never below 85%; endurance −0.7% a year from 35; head and technique +0.5% a year from 28, up to +8%. Above V10 a share of a skill is a lot of grade (the curve's top is linear, 26 points a grade), so the first proposal, −1.5% and +1%, came to 1.6 grades harder on power lines at 40 and 1.5 easier on technical ones; these come to about one harder and 0.9 easier, for a V13 climber. The odds a go shows are those odds; the grade shown is your skills as trained; the You page says what the years have done.
+- **Recovery (Evan's call: slower, not likelier):** a night gives back 1% less energy and skin a year from 30 (15% less by 45); injuries last 3% longer a year from 35. The odds of getting hurt don't change.
+- **The runway (Evan's call: all three, from 35):** clinics at the Cave for a Coach or better; setting a comp's problems for a Senior setter or better; ambassador terms for a sponsored climber, the send ask becoming a clinic or a stand. Paid like work, never more than a job's.
+- **Insurance (Evan's call):** catastrophic and full cost 3% more a year from 30 (about +45% at 45); the cover's the same.
+- **Slices:** 30.1 the body's curve; 30.2 recovery, healing and insurance; 30.3 the runway; 30.4 the epilogue at 30 and at 45, the harness's age table, and the close.
+
+**Status (15 Oct 2026): 30.1 built: the body's curve.** No save change (your age is read off the day), 0.999.58.
+- **A go uses your skills as your years have them** (`AGEING` in the dials, `ageing.ts`): power and fingers 1% less a year from 33, never below 85%; endurance 0.7% less a year from 35; head and technique 0.5% more a year from 28, up to 8%. It reaches the crux windows, the pump, the pace, the cruxes a line gains over your grade, the speed wall's time, and through the go itself the odds a summit's shown.
+- **The grade you see** is your skills as trained, so it doesn't drop: the years show on the lines, not the number.
+- **What it comes to,** for a V13 climber against the same climber at 25: at 35, power lines 0.31 grades harder and technical 0.54 easier; at 40, power 1.07 harder, crimps and dynos 0.38, endurance lines even, cracks 0.22 easier, technical 0.92 easier; at 45, power 1.84 harder, technical 1.04 easier. For a V10 climber about half that.
+- **The You page** says what the years have done, from the dials ("At 40, the years have your power and fingers 7% down, endurance 3.5% down and head and technique 6% up").
+- **The first proposal was halved** (Evan's call): at −1.5% and +1% a year it came to 1.6 grades harder on power lines at 40 and 1.5 easier on technical, because above V10 a share of a skill is a lot of grade.
+- **The harness** passes every target it passed on main; Outdoors, already short, falls to 1 of 4 (2 on main): the ropegun finished Act III on day 397 (365) and ran out of clock. Across the endings, careers of no origin finish Act IV 5 of 8 (4 on main) and Act III by median day 320.5 (339); Late Bloomers, who start at 26 and so meet the curve sooner, reach Act V 0 of 8 (1) and finish Act III 3 of 8 (4).
+- **The download** is 440.8 KB of 460.
 
 ### Phase 31 — After you
 
@@ -3481,7 +3498,7 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 
 **Phase 33 closed by Evan's call (15 Oct 2026).** Both criteria pass. Carried: the comp bots end fewer of the story's acts since the calendar moved (not selection; why isn't established); the national team is a V12–V13 climber's; a favourite still loses a final on the field's dice now and then. The CURRENT MILESTONE moves to Phase 34. The download is 436.5 KB of 460.
 
-### Phase 34 — Money that means something   **<<< CURRENT MILESTONE**
+### Phase 34 — Money that means something
 
 *Medium. Followers pay nothing; a job's ranks raise its pay and nothing else; costs don't grow with ambition. The audit's economy #8, #9, #16 and #17.*
 
@@ -3565,7 +3582,7 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 1. **The harness's money table shows media income in a media career, never more than a job's:** passes. Media pays every media career less than its shifts do: 38% to 68%, 4 of 4.
 2. **Every perk's text is formatted from its dial:** passes since 34.1, held by `perks.test.ts`; the retainers', the photos', the piece's, the stand's and the film's words are held the same way.
 
-Closing the phase is Evan's call.
+**Phase 34 closed by Evan's call (15 Oct 2026).** Both criteria pass. Carried: the money criterion is read on a career's totals (a sponsor's cycle lands in one night, so a week of media came within $2 of the best week of shifts); the bots keep it real and work shifts, so a brand-terms player who works less isn't measured; most photos sell at the cap by mid-career; the piece, the stand's and the film's numbers are proposals. The CURRENT MILESTONE moves to Phase 30. The download is 440.5 KB of 460.
 
 ### Phase 35 — The road and the year
 
@@ -3918,3 +3935,5 @@ Closing the phase is Evan's call.
 - 2026-10-15 — 34.2 built: the costs of ambition: a physio on retainer and a coach of your own, each weekly and opt-in, and travel to Nationals, the World Series and the Games. Save v66. 0.999.55.
 - 2026-10-15 — 34.3 built: photos that sell (a camera, or one of the crew shooting; one a week to a magazine, capped under the poorest job's week) and a magazine piece once a year; the media bot uses both. Save v67. 0.999.56.
 - 2026-10-15 — 34.4 built: a day on the sponsor's stand each cycle from Apex up; a film of your hardest line, paid for once; money tagged by where it came from, and the harness's money table (criterion 1). Phase 34's Done-when both pass. Save v68. 0.999.57.
+- 2026-10-15 — Phase 34 closed by Evan's call; CURRENT MILESTONE moved to Phase 30, getting older.
+- 2026-10-15 — Phase 30 planned with Evan's calls (a gentle curve with skill offsets, halved after measuring; slower recovery and healing; the runway from 35; insurance by age). 30.1 built: a go uses your skills as your years have them, said on the You page. No save change. 0.999.58.

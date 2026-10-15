@@ -4,14 +4,18 @@
 // moves for someone who climbs the grade. The added cruxes are yours alone: the topo shows
 // the line's own.
 
+import { agedSkills } from './ageing';
 import { average, levelOf, mix, type Style } from './climber';
 import { effGrade, type CruxDef, type RouteDef } from './content/routes';
 import { OVER } from './dials';
 import type { GameState } from './types';
 
-// Your level in a style, as far as your grade lets it count.
-export const reachOf = (s: GameState, style: Style): number =>
-  Math.min(levelOf(mix(s.climber.skills, style)), levelOf(average(s.climber.skills)) + OVER.specialist);
+// Your level in a style, as far as your grade lets it count; your skills as your years have
+// them (Phase 30.1).
+export const reachOf = (s: GameState, style: Style): number => {
+  const k = agedSkills(s);
+  return Math.min(levelOf(mix(k, style)), levelOf(average(k)) + OVER.specialist);
+};
 
 // How far above (−) or below (+) a grade you climb in a style, in grades, with that cap.
 export const reachMargin = (s: GameState, style: Style, grade: number): number => reachOf(s, style) - grade;
