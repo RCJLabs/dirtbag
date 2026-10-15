@@ -1588,5 +1588,15 @@ export const FAMILY = { share: 0.25, shifts: 10, old: 0.5, fire: 0.5, talk: 30, 
 // start at V9). `hitch`: how much likelier the old hand is to be on the road, among the
 // hitchhikers, while his clue is due. `book`: minutes with the old guidebook at the shop.
 // `walk`: the walk in, by `by` with `energy` to start it [proposed numbers].
-export const HOLLOW = { from: 9, hitch: 4, book: 20, walk: { by: 12 * 60, energy: 30 } };
+export const HOLLOW = {
+  from: 9,
+  hitch: 4,
+  book: 20,
+  walk: { by: 12 * 60, energy: 30 },
+  // Phase 32.3 (Evan's call: your choice, and the scene reacts): what preparing a line moves.
+  // Bolting anything there pleases the gym crowd a little; bolting a crack that would take gear
+  // costs you with the old guard; cleaning a crack to climb on gear earns their nod. Set
+  // against the stances' sizes (content/scene.ts, 4 to 18) [proposed].
+  scene: { bolt: { gym: 2 }, crack: { old: -8, gym: 4 }, gear: { old: 2 } },
+};
 export const QUIRK = { after: 30, fresh: 70, tired: 35, evening: 17 * 60, dawn: 9 * 60, easy: 2 };

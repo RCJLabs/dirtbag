@@ -45,6 +45,8 @@ export interface Stance {
   after: number;
   // Only once you've a first ascent of your own.
   fa?: true;
+  // Phase 32.3: only once you've bolted a crack that would have taken gear; the first call due.
+  crack?: true;
   title: string;
   sit: string;
   opts: StanceOpt[];
@@ -145,6 +147,40 @@ export const STANCES: Record<string, Stance> = {
       stance: 'Settled the bolting argument. It stayed as it was, because I said so.',
       out: 'You tell the room what the man who put it up would have said, and the room goes quiet, and that is the end of it: not because you were right, but because of who you are now. Nobody drills anything. You sit in the van for a while after, because you’ve become the person who decides, and the person who decides is never the person on the sharp end.',
       fx: { old: 10, gym: -12, psyche: -6 },
+    },
+  },
+  // Phase 32.3 (Evan's call: a stance at the fire argues it out): you bolted a crack in the
+  // Hollow. Pulling the bolts puts it back on gear (game.ts).
+  hollowbolts: {
+    after: 0,
+    crack: true,
+    title: 'You bolted a crack',
+    sit: 'Word gets round that there’s a canyon past the Gorge, and that whoever found it put bolts beside a crack that would have taken gear all the way. Nobody says who out loud. Everybody at the fire looks at you anyway.',
+    opts: [
+      {
+        label: 'My lines, my call.',
+        stance: 'Bolted a crack in the Hollow and said so.',
+        out: 'You say you found it, you cleaned it, you put up the line, and you’ll protect it how you like. The gym crowd likes that a lot. The old guard goes very quiet, which is worse than anything they could say.',
+        fx: { old: -6, gym: 6 },
+      },
+      {
+        label: 'Pull the bolts. It goes on gear.',
+        stance: 'Pulled my own bolts out of a crack in the Hollow. It goes on gear now.',
+        out: 'You go back up with a crowbar and a bag of epoxy and take them out, and patch the holes so nobody will ever find them. It goes on gear now, the way it was always going to. It costs you a day and the gym crowd’s good opinion, and Ray buys you a coffee for the first time.',
+        fx: { old: 12, gym: -4, psyche: -2, energy: -20 },
+      },
+      {
+        label: 'Nobody else was going to climb it.',
+        stance: 'Bolted a crack because nobody else was ever going to climb it.',
+        out: 'It’s true, and everybody knows it’s true, and it doesn’t help. People climb it, though. That’s something.',
+        fx: { gym: 4, psyche: 2 },
+      },
+    ],
+    elder: {
+      label: 'Leave them, and say why.',
+      stance: 'Kept the bolts in a crack in the Hollow, and told the old guard why.',
+      out: 'You tell the fire about the flake you pulled off it with your hands, the one that would have taken any gear with it, and nobody argues. They don’t agree, either. But they listen, which they wouldn’t have done five years ago.',
+      fx: { old: -2, gym: 4 },
     },
   },
   fa: {

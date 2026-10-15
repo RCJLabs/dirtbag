@@ -149,6 +149,7 @@ import { CARRIED, carried, gains, gradeOf, SKILLS, STARTS, type GoSummary } from
 import { headroom, holds, isNight, leadOver, unmet } from './cond';
 import { dexHurt, dexSeason, gradeOfPerson } from './curves';
 import { indoor, INDOOR, INDOOR_CLOSE, routeById, routesAt, wallAt } from './content/gym';
+import { asSport } from './content/routes';
 import {
   CLINIC_LINE,
   FIRST_FREE_LINE,
@@ -404,7 +405,7 @@ import { clinicBlocked, clinicHeads, clinicPay, compTomorrow, setCompBlocked } f
 import { RUNWAY_SAYS } from './content/runway';
 import { familyFill, FOREBEAR_MET, heirOf, questDone, questOf } from './heir';
 import { bookBlocked, known, walkBlocked } from './hollow';
-import { BOOK_ROW, FOUND, NOT_FOUND, WALK_READY } from './content/hollow';
+import { BOOK_ROW, FOUND, GEAR_CLEANED, NOT_FOUND, WALK_READY } from './content/hollow';
 import { COACH_LINE, HEIR_MONEY, HEIR_OPEN } from './content/heir';
 import {
   FOREBEAR_BETA,
@@ -470,6 +471,7 @@ export function newGame(seed: string): GameState {
     goals: 0,
     unlocked: [],
     hollow: { clues: [], tries: 0 },
+    boltedCracks: [],
     gear: { ...START_KIT },
     training: freshTraining(1),
     jobs: {},
@@ -601,7 +603,11 @@ function logOf(s: GameState, route: string): RouteLog {
   return (s.routes[route] ??= emptyLog());
 }
 
-export const routeOfId = (s: GameState, id: string): RouteDef | undefined => routeById(s.seed, id);
+// Phase 32.3: a crack you bolted in a wild place is the sport line it is now.
+export const routeOfId = (s: GameState, id: string): RouteDef | undefined => {
+  const r = routeById(s.seed, id);
+  return r && (s.boltedCracks ?? []).includes(id) ? asSport(r) : r;
+};
 
 // ---- queries the UI shares with the rules, so a button never offers what act() refuses ----
 
@@ -826,7 +832,11 @@ export function goBlocked(s: GameState, r: RouteDef): string | null {
   if (r.exped) return expedBlocked(s, r);
   // The bluff's lines (Phase 18.6): nobody's been up them, so there's nothing to clip.
   if (!bolted(s, r))
-    return r.disc === 'boulder' ? 'Nobody’s cleaned it. Clean it first' : 'Nobody’s bolted it. Bolt it first';
+    return r.disc === 'boulder'
+      ? 'Nobody’s cleaned it. Clean it first'
+      : r.disc === 'trad' && PLACES[r.place]?.wild
+        ? 'Nobody’s been up it. Clean it for gear or bolt it first'
+        : 'Nobody’s bolted it. Bolt it first';
   if (!revealed(s, r))
     return `You can't read this line yet. Send ${routeOfId(s, r.hiddenUntil!)?.name ?? 'the hardest line here'} first`;
   // Too far over your grade to try (Phase 16, OVER): nothing on it would hold for you.
@@ -2685,16 +2695,29 @@ export function act(s0: GameState, a: Action): Result {
       if (!r) return refuse('Not a line.');
       const why = boltBlocked(s, r);
       if (why) return refuse(`${why}.`);
-      const c = r.disc === 'boulder' ? LAND.clean : LAND.bolt;
+      // Phase 32.3: a crack in a wild place goes on gear (cleaned) or gets bolted: your call.
+      const wild = !!PLACES[r.place]?.wild;
+      const how = r.disc === 'boulder' ? 'clean' : r.disc === 'trad' && wild ? (a.how ?? 'gear') : 'bolts';
+      const c = how === 'bolts' ? LAND.bolt : LAND.clean;
       if (s.cash < c.cash) return refuse(`The hardware's ${money(c.cash)}.`);
       if (s.energy < c.energy) return refuse('Too tired to hang on a rope with a drill all day.');
       spend({ cash: -c.cash, min: c.min, energy: -c.energy });
       s.bolted = [...s.bolted, r.id];
+      if (how === 'bolts' && r.disc === 'trad') s.boltedCracks = [...s.boltedCracks, r.id];
       line(
-        r.disc === 'boulder'
+        how === 'clean'
           ? `You brush ${r.name} clean, pull the moss off the top and kick the stones out of the landing. Nobody's ever been up it.`
-          : `A day on a rope with a drill, ${money(c.cash)} of glue-ins and chains, and ${r.name} is a line. Nobody's ever been up it.`,
+          : how === 'gear'
+            ? GEAR_CLEANED.replace('{line}', r.name)
+            : `A day on a rope with a drill, ${money(c.cash)} of glue-ins and chains, and ${r.name} is a line. Nobody's ever been up it.`,
       );
+      // The scene hears about it (Evan's call): bolts in the Hollow please the gym crowd; a
+      // bolted crack costs you with the old guard; a crack left for gear earns their nod.
+      if (wild && how !== 'clean') {
+        const fx =
+          how === 'gear' ? HOLLOW.scene.gear : r.disc === 'trad' ? HOLLOW.scene.crack : HOLLOW.scene.bolt;
+        s.scene = shift(s.scene, fx);
+      }
       break;
     }
 
@@ -3850,6 +3873,8 @@ export function act(s0: GameState, a: Action): Result {
         s.scene = shift(s.scene, o.fx);
         if (echo) s.scene.echoes = [...s.scene.echoes, { id: e.id, turned: a.opt === 1, day: s.day }];
         else s.scene.stances = [...s.scene.stances, { id: e.id, opt: a.opt, day: s.day }];
+        // Phase 32.3: the bolts pulled out of your cracks: they go on gear, cleaned as they are.
+        if (e.id === 'hollowbolts' && a.opt === 1) s.boltedCracks = [];
         if (o.fx.energy) s.energy = clamp100(s.energy + o.fx.energy);
         if (o.fx.psyche) s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + o.fx.psyche) };
         note(o.out);

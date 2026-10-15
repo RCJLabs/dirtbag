@@ -952,8 +952,9 @@ export class Game {
   }
 
   // A line on your land, bolted; back to its sheet.
-  bolt(route: string): void {
-    this.dispatch({ t: 'bolt', route });
+  // Phase 32.3: a crack in a wild place, on gear or bolted.
+  bolt(route: string, how?: 'gear' | 'bolts'): void {
+    this.dispatch({ t: 'bolt', route, ...(how ? { how } : {}) });
     this.openSheet({ k: 'beta', route });
   }
 

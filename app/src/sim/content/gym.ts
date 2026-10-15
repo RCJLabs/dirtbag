@@ -13,7 +13,7 @@ import { Rng } from '../rng';
 import type { Style } from '../climber';
 import type { GameState, SkillId } from '../types';
 import { EXPED_ROUTES } from './expeditions';
-import { libraryBoulder, ROUTES, type RouteDef } from './routes';
+import { asSport, libraryBoulder, ROUTES, type RouteDef } from './routes';
 
 export const GYM = 'gym';
 export const WEEK_DAYS = 7;
@@ -292,9 +292,13 @@ export function routesAt(seed: string, place: string, day: number): RouteDef[] {
 // The wall as you find it (Phase 18.4): signed up for today's comp here, its problems stand
 // in for the week's set (Send City's board stays up); anyone else climbs the week's set.
 // Phase 33.1: on a round's day, its set, at the comp's wall.
+// Phase 32.3: a crack you bolted in a wild place climbs as the sport line it is now.
 export function wallAt(s: GameState, place: string): RouteDef[] {
   const on = s.comps.on;
-  if (!on || on.day !== s.day || COMP_TIERS[on.tier]?.venue !== place) return routesAt(s.seed, place, s.day);
+  if (!on || on.day !== s.day || COMP_TIERS[on.tier]?.venue !== place)
+    return routesAt(s.seed, place, s.day).map((r) =>
+      (s.boltedCracks ?? []).includes(r.id) ? asSport(r) : r,
+    );
   const set = compSet(s.seed, on.tier, s.day);
   return place === GYM ? [...set, ...boardSet(s.seed, blockOf(s.day))] : set;
 }
