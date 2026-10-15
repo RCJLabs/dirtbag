@@ -805,7 +805,7 @@ export class Game {
     if (PLACES[this.state.at]?.scene) this.closeSheet();
   }
 
-  // Keyboard: arrows walk, Enter uses what's nearest, M opens the map.
+  // Keyboard and controller: the arrows or the stick walk, Enter or A uses what's nearest.
   walkKey(dir: -1 | 1 | 0): void {
     if (this.ui.get().view !== 'scene' || !this.state.climber.name) return;
     if (dir === 0) {

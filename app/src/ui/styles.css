@@ -1169,10 +1169,14 @@ button.pill:disabled {
   background-image: repeating-linear-gradient(-45deg, transparent 0 2px, rgba(255, 253, 245, 0.55) 2px 3.5px);
 }
 
-/* ---- keyboard ----
-   Everything you can press shows where the keyboard is: the same ring on every control. */
+/* ---- keyboard and controller ----
+   Everything you can press shows where the keyboard is: the same ring on every control.
+   A controller's moves aren't keys, so the browser can't tell to show it: the screen says
+   when the controller's the one in use (Phase 14.1). */
 .screen button:focus-visible,
-.screen input:focus-visible {
+.screen input:focus-visible,
+.screen[data-input='pad'] button:focus,
+.screen[data-input='pad'] input:focus {
   outline: 3px solid var(--u-focus);
   outline-offset: 2px;
 }

@@ -131,3 +131,24 @@ export const ORIGINS: Record<string, Origin> = {
 // nothing; and one from before origins existed has none.
 export const CAME_ACROSS = 'across';
 export const CAME_ACROSS_NAME = 'Came Across';
+
+// Phase 14.1: names to offer on the first screen, for a controller that can't type one. None
+// is anyone you'll meet in the valley or across a comp.
+export const NAME_IDEAS = [
+  'Robin',
+  'Kit',
+  'Jules',
+  'Rae',
+  'Wren',
+  'Ash',
+  'Sam',
+  'Jo',
+  'Charlie',
+  'Sasha',
+  'Lou',
+  'Jamie',
+  'Quinn',
+  'Ari',
+  'Bo',
+  'Remy',
+];

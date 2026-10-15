@@ -3,6 +3,7 @@ import {
   CARRIED,
   carried,
   gradeOf,
+  NAME_IDEAS,
   NAME_MAX,
   ORIGINS,
   originTerms,
@@ -81,6 +82,17 @@ export function Create({ game }: { game: Game }) {
           onChange={(e) => setName(e.target.value)}
         />
       </label>
+      {/* Phase 14.1: a controller can't type, so a name is offered, and the next one after it. */}
+      <div className="chips">
+        <button
+          type="button"
+          className="chip"
+          id="c-pick"
+          onClick={() => setName(NAME_IDEAS[(NAME_IDEAS.indexOf(name) + 1) % NAME_IDEAS.length]!)}
+        >
+          {NAME_IDEAS.includes(name) ? 'Another' : 'Pick one for me'}
+        </button>
+      </div>
       <p className="crux">How you climb</p>
       <div role="radiogroup" aria-label="How you climb" className="starts">
         {carry && old?.grade != null && (
