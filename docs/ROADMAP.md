@@ -3348,7 +3348,7 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 
 **Phase 29 closed by Evan's call (14 Oct 2026),** with those three carried. The CURRENT MILESTONE moves to Phase 33. The download is 433.7 KB of 460.
 
-### Phase 30 — Getting older
+### Phase 30 — Getting older   **<<< CURRENT MILESTONE**
 
 *Medium. Age is only a deadline now: nothing about the body changes from 22 to 45.*
 
@@ -3481,7 +3481,7 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 
 **Phase 33 closed by Evan's call (15 Oct 2026).** Both criteria pass. Carried: the comp bots end fewer of the story's acts since the calendar moved (not selection; why isn't established); the national team is a V12–V13 climber's; a favourite still loses a final on the field's dice now and then. The CURRENT MILESTONE moves to Phase 34. The download is 436.5 KB of 460.
 
-### Phase 34 — Money that means something   **<<< CURRENT MILESTONE**
+### Phase 34 — Money that means something
 
 *Medium. Followers pay nothing; a job's ranks raise its pay and nothing else; costs don't grow with ambition. The audit's economy #8, #9, #16 and #17.*
 
@@ -3565,7 +3565,7 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 1. **The harness's money table shows media income in a media career, never more than a job's:** passes. Media pays every media career less than its shifts do: 38% to 68%, 4 of 4.
 2. **Every perk's text is formatted from its dial:** passes since 34.1, held by `perks.test.ts`; the retainers', the photos', the piece's, the stand's and the film's words are held the same way.
 
-Closing the phase is Evan's call.
+**Phase 34 closed by Evan's call (15 Oct 2026).** Both criteria pass. Carried: the money criterion is read on a career's totals (a sponsor's cycle lands in one night, so a week of media came within $2 of the best week of shifts); the bots keep it real and work shifts, so a brand-terms player who works less isn't measured; most photos sell at the cap by mid-career; the piece, the stand's and the film's numbers are proposals. The CURRENT MILESTONE moves to Phase 30. The download is 440.5 KB of 460.
 
 ### Phase 35 — The road and the year
 
@@ -3918,3 +3918,4 @@ Closing the phase is Evan's call.
 - 2026-10-15 — 34.2 built: the costs of ambition: a physio on retainer and a coach of your own, each weekly and opt-in, and travel to Nationals, the World Series and the Games. Save v66. 0.999.55.
 - 2026-10-15 — 34.3 built: photos that sell (a camera, or one of the crew shooting; one a week to a magazine, capped under the poorest job's week) and a magazine piece once a year; the media bot uses both. Save v67. 0.999.56.
 - 2026-10-15 — 34.4 built: a day on the sponsor's stand each cycle from Apex up; a film of your hardest line, paid for once; money tagged by where it came from, and the harness's money table (criterion 1). Phase 34's Done-when both pass. Save v68. 0.999.57.
+- 2026-10-15 — Phase 34 closed by Evan's call; CURRENT MILESTONE moved to Phase 30, getting older.
