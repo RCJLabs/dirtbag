@@ -871,6 +871,11 @@ export class Game {
           this.set({ sheet: { k: 'encounter' } });
           return;
         }
+        // Phase 35.4: a holiday, and your people at the fire before bed.
+        if (this.state.encounter?.kind === 'holiday') {
+          this.set({ sheet: { k: 'encounter' } });
+          return;
+        }
         this.dayDone();
         this.enter('lot', WAKE_X);
         // His last day (Phase 22.7), the morning it comes.
@@ -1135,7 +1140,8 @@ export class Game {
       if (this.state.at !== was && scene) this.enterScene(scene);
       return;
     }
-    if (this.state.encounter?.kind !== 'knock') {
+    // Phase 35.4: a holiday's scene is answered as a knock is: the night goes on to morning.
+    if (this.state.encounter?.kind !== 'knock' && this.state.encounter?.kind !== 'holiday') {
       const ev = this.dispatch({ t: 'answer', opt });
       if (ev.some((e) => e.k === 'refused')) return;
       const here = PLACES[this.state.at];

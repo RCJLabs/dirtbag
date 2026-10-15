@@ -785,7 +785,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 75 ||
+  saved?.v !== 76 ||
   // Phase 29.1: nothing scavenged, a few days in.
   st.parts !== 0 ||
   // Phase 29.3: miles on the clock past a new climber's, and nothing for Dale to say yet.
@@ -1238,7 +1238,8 @@ console.log('Broken down on the road');
 console.log('A knock on the van');
 // Phase 22.6a. The day-five climber on the night of day seven at the Lot, which this seed's
 // deck knocks on: bed, the knock (heard), its card with three answers and no ✕, an answer,
-// and the morning.
+// and the morning. Phase 35.4: day seven is Harvest, so nobody's close enough yet to make a
+// scene of it, and the night is the knock's.
 {
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
   saved.state = {
@@ -1250,6 +1251,9 @@ console.log('A knock on the van');
     cash: 150,
     spot: 'lot',
     encounter: null,
+    people: Object.fromEntries(
+      Object.entries(saved.state.people).map(([w, p]) => [w, { ...p, bond: Math.min(p.bond, 2) }]),
+    ),
   };
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
   await ctx.addInitScript((s) => {
@@ -1292,6 +1296,73 @@ console.log('A knock on the van');
   if (after.encounter !== null || after.deck.knock !== 7)
     await fail(`after the knock: ${JSON.stringify(after.deck)}`);
   log('knock: answered, and morning');
+  await ctx.close();
+}
+
+console.log('Harvest at the Lot');
+// Phase 35.4. The same night, Harvest, with Hazel close enough to be there and beans in the
+// pantry: bed, the potluck's scene at the fire (Hazel's line, three ways to spend it), a dish
+// from the pantry, and the morning, two servings lighter.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  const hazel = saved.state.people.hazel ?? { bond: 0, last: 0, talked: true };
+  saved.state = {
+    ...saved.state,
+    day: 7,
+    min: 21 * 60,
+    at: 'lot',
+    x: null,
+    cash: 150,
+    spot: 'lot',
+    encounter: null,
+    pantry: { beans: 3 },
+    people: { ...saved.state.people, hazel: { ...hazel, bond: Math.max(hazel.bond, 3) } },
+  };
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  await ctx.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+  }, JSON.stringify(saved));
+  const fest = await ctx.newPage();
+  fest.on('pageerror', (e) => problems.push(`harvest: uncaught: ${e.message}`));
+  fest.on('console', (m) => m.type() === 'error' && problems.push(`harvest: console.error: ${m.text()}`));
+  await fest.goto(server.url, { waitUntil: 'load' });
+  const sheetOf = () => fest.evaluate(() => document.querySelector('#sheet')?.textContent ?? '');
+  await fest.waitForFunction(() =>
+    /Tap anywhere to walk/.test(document.querySelector('#hint')?.textContent ?? ''),
+  );
+  await fest.mouse.click(100, 560);
+  await fest.waitForFunction(() => /Your van/.test(document.querySelector('#sheet')?.textContent ?? ''));
+  await fest.locator('#sheet .opt', { hasText: 'Sleep' }).first().click();
+  await fest.waitForFunction(
+    () => /Sendsgiving/.test(document.querySelector('#sheet')?.textContent ?? ''),
+    null,
+    {
+      timeout: 10_000,
+    },
+  );
+  const card = await sheetOf();
+  log(`harvest: ${card.slice(0, 120)}`);
+  if (
+    !/Harvest/.test(card) ||
+    !/Hazel/.test(card) ||
+    !/Bring a dish from the pantry/.test(card) ||
+    !/beans from the pantry/.test(card)
+  )
+    await fail(`the harvest scene: ${card.slice(0, 300)}`);
+  if (await fest.$('#sheet .x')) await fail('a holiday scene can be closed without an answer');
+  await fest.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-harvest.png`) });
+  await fest.locator('#sheet .opt', { hasText: 'Bring a dish from the pantry' }).first().click();
+  await fest.waitForFunction(
+    () => /^Day 8 · /.test(document.querySelector('#h-time')?.textContent ?? ''),
+    null,
+    {
+      timeout: 10_000,
+    },
+  );
+  const after = await fest.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  if (after.encounter !== null || !((after.pantry.beans ?? 0) <= 1))
+    await fail(`after harvest: ${JSON.stringify({ e: after.encounter, pantry: after.pantry })}`);
+  log('harvest: a dish of beans at the potluck, and morning');
   await ctx.close();
 }
 

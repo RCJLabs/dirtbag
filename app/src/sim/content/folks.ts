@@ -36,6 +36,113 @@ export const HOLIDAYS: Record<Season, Holiday> = {
   },
 };
 
+// Phase 35.4 (Evan's call): a scene each, with your people there: a choice or two, and what
+// each does. The first never needs anything (a dish in the pantry, the money for cider), so
+// it's always there to take. {dish}: the ingredient you bring.
+export interface HolidayFx {
+  psyche?: number;
+  energy?: number;
+  skin?: number;
+  fed?: number;
+  cash?: number;
+  // With each of your people who's there.
+  bond?: number;
+  // Two servings of what the pantry holds most of.
+  dish?: true;
+}
+export interface HolidayOpt {
+  label: string;
+  out: string;
+  fx: HolidayFx;
+}
+
+export const HOLIDAY_SCENES: Record<Season, { scene: string; opts: HolidayOpt[] }> = {
+  fall: {
+    scene:
+      'Sendsgiving: a potluck on the picnic table, every dish a guess at what everyone else is bringing.',
+    opts: [
+      {
+        label: 'Bring a fork and an appetite',
+        out: 'You eat like it is your job. Somebody sends you back to the van with leftovers, which is the highest honor the Lot has.',
+        fx: { psyche: 8, fed: 25 },
+      },
+      {
+        label: 'Bring a dish from the pantry',
+        out: 'Your dish of {dish} goes first, which is either a compliment or a warning. Everyone has seconds anyway.',
+        fx: { psyche: 14, fed: 20, bond: 1, dish: true },
+      },
+      {
+        label: 'Bring the cider nobody asks about',
+        out: 'Nobody asks where it came from. Everybody has a cup, and then another.',
+        fx: { psyche: 12, fed: 15, cash: -8 },
+      },
+    ],
+  },
+  winter: {
+    scene:
+      'Somebody has strung headlamps along the boulders behind the Lot, and the problems everyone knows by heart look new in the dark.',
+    opts: [
+      {
+        label: 'Stay by the fire',
+        out: 'Somebody else can climb in the dark. You hold your mug in both hands and watch the lamps bob on the boulders like slow fireflies.',
+        fx: { psyche: 8, energy: 6 },
+      },
+      {
+        label: 'Climb by headlamp',
+        out: 'The holds look like nothing in the lamplight and feel like everything. You top out the warm-up in the dark and the whole Lot cheers as if it were a first ascent.',
+        fx: { psyche: 14, energy: -10, skin: -6 },
+      },
+      {
+        label: 'Hold the lamps for everyone else',
+        out: 'You spot, you shine, you shout. By midnight everyone has sent something, and you are hoarse and happier than any of them.',
+        fx: { psyche: 10, energy: -4, bond: 1 },
+      },
+    ],
+  },
+  spring: {
+    scene:
+      'Tomorrow the whole valley will be at Roadside for the opener. Tonight it is at the fire, arguing about whether the rock is really dry.',
+    opts: [
+      {
+        label: 'Toast the season',
+        out: 'Somebody makes a speech about friction. It is not a good speech. Everyone cheers it anyway.',
+        fx: { psyche: 10 },
+      },
+      {
+        label: 'Write the season’s tick list on the cake board',
+        out: 'Everybody adds a line. Yours goes in the middle, small, where nobody will read it out loud. Somebody reads it out loud.',
+        fx: { psyche: 12, bond: 1 },
+      },
+      {
+        label: 'Turn in early for the opener',
+        out: 'You are asleep before the cake is cut, and first at Roadside in the morning, and the rock is exactly as dry as everyone said.',
+        fx: { psyche: 6, energy: 12 },
+      },
+    ],
+  },
+  summer: {
+    scene:
+      'The solstice fire: nobody is going to bed while it is still light, and it is going to be light for a long time.',
+    opts: [
+      {
+        label: 'Stay up for the sunrise',
+        out: 'Light till ten, dark for a blink, light again before four. You are still at the fire when it comes up, and so are the people who matter.',
+        fx: { psyche: 12, energy: -12 },
+      },
+      {
+        label: 'Walk up the hill for the last light',
+        out: 'The light goes the color of a peach and stays that way for an hour. Nobody says anything, and nobody needs to.',
+        fx: { psyche: 10, energy: -6, bond: 1 },
+      },
+      {
+        label: 'Turn in at a sensible hour',
+        out: 'You hear them till three. You sleep anyway, which is its own kind of celebration.',
+        fx: { psyche: 4, energy: 10 },
+      },
+    ],
+  },
+};
+
 // Who's there, a line each.
 export const HOLIDAY_WITH: Record<string, string> = {
   hazel: 'Hazel’s on coffee duty, as ever, and has made it worse than usual on purpose.',

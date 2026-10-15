@@ -192,7 +192,11 @@ import {
   folksDue,
   FOLKS_CALLS,
   HOLIDAYS,
+  HOLIDAY_SCENES,
   HOLIDAY_WITH,
+  crew,
+  holidayBlocked,
+  holidayNote,
   PLAY,
   COMP,
   OWN_GYM,
@@ -2424,6 +2428,28 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           sub: e.stage ? st.sit : `${ep.open} ${st.sit}`,
           close: false,
           rows: st.opts.map((o, i) => ({ label: o.label, note: o.sub, run: () => game.answer(i) })),
+        };
+      }
+      // Phase 35.4: a holiday's scene at the fire: who's there, and the ways to spend the night.
+      if (e?.kind === 'holiday') {
+        const h = HOLIDAYS[e.id as Season];
+        const scene = HOLIDAY_SCENES[e.id as Season];
+        if (!h || !scene) return null;
+        const here = crew(s).flatMap((w) => (HOLIDAY_WITH[w] ? [HOLIDAY_WITH[w]!] : []));
+        return {
+          title: h.name,
+          sub: [h.text, scene.scene, ...here].join(' '),
+          close: false,
+          rows: scene.opts.map((o, i) => {
+            const why = holidayBlocked(s, o.fx);
+            return {
+              label: o.label,
+              cost: costLabel({ cash: o.fx.cash }),
+              note: why ? `${why}.` : holidayNote(s, o.fx),
+              off: !!why,
+              run: () => game.answer(i),
+            };
+          }),
         };
       }
       if (e?.kind === 'stop') {
