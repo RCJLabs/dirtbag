@@ -4,7 +4,7 @@
 
 import { bolted } from './business';
 import { GUIDE } from './dials';
-import { PLACES } from './content/places';
+import { ACTS, PLACES } from './content/places';
 import { ROUTES, type RouteDef } from './content/routes';
 import type { GameState } from './types';
 
@@ -51,3 +51,31 @@ export const guidesOut = (s: GameState): string[] =>
   Object.entries(s.guides)
     .filter(([, g]) => g.out !== null)
     .map(([id]) => id);
+
+// Phase 32.4 (Evan's call): what a guide pays a week. Its royalty, and a little for each first
+// ascent of yours in it: those you'd put up by the day it came out (later ones aren't in it).
+export const fasIn = (s: GameState, place: string): number => {
+  const out = s.guides[place]?.out;
+  if (out === null || out === undefined) return 0;
+  return guideLines(s, place).filter((r) => {
+    const f = s.firsts[r.id];
+    return !!f && !f.by && f.day <= out;
+  }).length;
+};
+export const royaltyOf = (s: GameState, place: string): number =>
+  GUIDE.royalty + GUIDE.perFa * fasIn(s, place);
+
+// The poorest job's week: the least a first-rank shift pays, `GUIDE.week` times. Every guide's
+// royalties together never come to more: a guide's a bonus, never a living.
+export const poorestWeek = (): number =>
+  Math.min(
+    ...Object.values(ACTS)
+      .filter((a) => a.job?.shifts === 1 && (a.cost.cash ?? 0) > 0)
+      .map((a) => a.cost.cash!),
+  ) * GUIDE.week;
+
+export const royalties = (s: GameState): number =>
+  Math.min(
+    poorestWeek(),
+    guidesOut(s).reduce((t, id) => t + royaltyOf(s, id), 0),
+  );

@@ -462,6 +462,8 @@ export interface FirstAscent {
   day: number;
   // Who you named it for (Phase 17.5, save v43).
   for?: string;
+  // Phase 32.4 (save v73): how many of its repeats you've heard about (settle.ts).
+  heard?: number;
 }
 
 export interface PersonLog {

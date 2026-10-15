@@ -141,7 +141,18 @@ export {
   renownTier,
 } from './crew';
 export { teamBlocked, teamCost, teamNames, teamOdds } from './team';
-export { GUIDE_CRAGS, guideBlocked, guideLeft, guideLines, guidesOut } from './guides';
+export {
+  GUIDE_CRAGS,
+  fasIn,
+  guideBlocked,
+  guideLeft,
+  guideLines,
+  guidesOut,
+  poorestWeek,
+  royalties,
+  royaltyOf,
+} from './guides';
+export { faNote, repeatDays, repeatsOf, settled } from './settle';
 export {
   cyclePay,
   filmBlocked,

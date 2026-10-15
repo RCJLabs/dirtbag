@@ -325,7 +325,17 @@ export const GIVING = {
 // Phase 25.1 [proposed]. A crag's guide, written at the van once you've sent every line there
 // and put up one of your own: `pages` evenings of `min` minutes, then royalties every week.
 // v0.956 paid up to $18 a day for its guide; a dirtbag's guide pays for gas.
-export const GUIDE = { pages: 5, min: 180, energy: 10, royalty: 15 };
+// Phase 32.4 (Evan's call): `perFa` more a week for each first ascent of yours in it (those you'd
+// put up by the day it came out), and every guide's royalties together never more than the
+// poorest job's week: its first-rank shift, `week` times [proposed].
+export const GUIDE = { pages: 5, min: 180, energy: 10, royalty: 15, perFa: 3, week: 5 };
+
+// Phase 32.4 (Evan's call): repeats settle every first ascent of yours. Others repeat it, the
+// first `gap` days after (seeded, inclusive), each next as long again; after `repeats` of them
+// the grade is the line's, not your call. In a wild place (the Hollow), fewer people know the
+// way: the gaps are `wild` times as long. So a line settles in one to two months, and a Hollow
+// line in two to four [proposed].
+export const SETTLE = { repeats: 3, gap: [7, 21] as const, wild: 2 };
 
 // Phase 18.6 [proposed]. Miller's Bluff: the land's price, and what a line costs to make
 // climbable: a sport line bolted (hardware and a day on a rope), a boulder cleaned. The

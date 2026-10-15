@@ -8,7 +8,7 @@
 import { CARRIED, SKILLS, STARTS } from './climber';
 import { GEAR } from './content/gear';
 import { PLACES } from './content/places';
-import { AGE, FACTION, OWN_GYM, LIFESTYLE, PLANS, SPOTS, TRAIN, VAN_AGE, YEAR } from './dials';
+import { AGE, FACTION, OWN_GYM, LIFESTYLE, PLANS, SETTLE, SPOTS, TRAIN, VAN_AGE, YEAR } from './dials';
 import { JOBS } from './content/jobs';
 import { ROUTES, WALLS } from './content/routes';
 import { EXPEDITIONS } from './content/expeditions';
@@ -28,10 +28,11 @@ import { BOARD_JOBS } from './content/board';
 import { newMastery } from './paths';
 import { newlyEarned } from './record';
 import { aimMet, currentGoal } from './story';
+import { repeatsOf } from './settle';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 72;
+export const SAVE_VERSION = 73;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -539,6 +540,19 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, boltedCracks: [] };
   },
+  // v72 -> v73 (Phase 32.4): repeats settle your first ascents. Those already repeated are
+  // heard of, quietly, so a loaded career isn't told a season's word in one night.
+  72: (x) => {
+    if (!isObj(x) || !isObj(x.firsts)) throw new Error('state is not an object');
+    const s = x as unknown as GameState;
+    const firsts = Object.fromEntries(
+      Object.entries(s.firsts).map(([id, f]) => {
+        const n = f.by ? 0 : repeatsOf(s, id);
+        return [id, n ? { ...f, heard: n } : f];
+      }),
+    );
+    return { ...x, firsts };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -648,7 +662,8 @@ export function validate(x: unknown): string[] {
           (f.call === -1 || f.call === 0 || f.call === 1) &&
           isInt(f.day) &&
           (f.by === undefined || typeof f.by === 'string') &&
-          (f.for === undefined || (typeof f.for === 'string' && f.for in PEOPLE)),
+          (f.for === undefined || (typeof f.for === 'string' && f.for in PEOPLE)) &&
+          (f.heard === undefined || (isInt(f.heard) && f.heard >= 0 && f.heard <= SETTLE.repeats)),
       ),
     'firsts',
   );

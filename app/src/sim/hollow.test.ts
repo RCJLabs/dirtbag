@@ -17,7 +17,7 @@ import { act, emptyLog, goBlocked, newGame, routeOfId, talkStart } from './game'
 import { asking, bookBlocked, hardestOutside, hitchDue, known, oldWordDue, walkBlocked } from './hollow';
 import { RAY_GONE } from './lives';
 import { whereNow } from './presence';
-import { fromSave, validate } from './save';
+import { fromSave, MIGRATIONS, validate } from './save';
 import { stanceDue } from './scene';
 import { aimEarned } from './record';
 import type { GameState } from './types';
@@ -192,7 +192,13 @@ describe('the walk in', () => {
     if (!r.ok) throw new Error(r.why);
     expect(r.from).toBe(70);
     expect(r.state.hollow).toEqual({ clues: [], tries: 0 });
-    expect(r.state).toEqual({ ...JSON.parse(V70).state, hollow: { clues: [], tries: 0 }, boltedCracks: [] });
+    const old = JSON.parse(V70).state;
+    expect(r.state).toEqual({
+      ...old,
+      hollow: { clues: [], tries: 0 },
+      boltedCracks: [],
+      firsts: (MIGRATIONS[72]!(old) as GameState).firsts,
+    });
   });
 });
 
@@ -302,6 +308,7 @@ describe('first ascents in the Hollow', () => {
     const r = fromSave(V71);
     if (!r.ok) throw new Error(r.why);
     expect(r.from).toBe(71);
-    expect(r.state).toEqual({ ...JSON.parse(V71).state, boltedCracks: [] });
+    const old = JSON.parse(V71).state;
+    expect(r.state).toEqual({ ...old, boltedCracks: [], firsts: (MIGRATIONS[72]!(old) as GameState).firsts });
   });
 });

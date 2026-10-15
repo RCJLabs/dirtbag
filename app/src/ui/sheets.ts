@@ -291,6 +291,8 @@ import {
   giveBlocked,
   guideBlocked,
   guideLeft,
+  fasIn,
+  royaltyOf,
   type Gift,
   GUIDING,
   outfitBlocked,
@@ -537,7 +539,7 @@ function guideRows(game: Game, s: GameState): Row[] {
     const why = guideBlocked(s, id);
     const left = guideLeft(s, id);
     const note = g?.out
-      ? `Out since day ${g.out}: ${money(GUIDE.royalty)} a week.`
+      ? `Out since day ${g.out}: ${money(royaltyOf(s, id))} a week${fasIn(s, id) ? `, ${fasIn(s, id)} of your lines in it` : ''}.`
       : left.unsent || !left.fa
         ? `${why}.`
         : `${g?.pages ?? 0} of ${GUIDE.pages} evenings written.${why ? ` ${why}.` : ''}`;

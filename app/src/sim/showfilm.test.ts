@@ -10,7 +10,7 @@ import { fill, money } from './format';
 import { act, emptyLog, newGame } from './game';
 import { cycleTasks, filmBlocked, filmLine, fromAudience, showBlocked } from './media';
 import { aimEarned } from './record';
-import { fromSave } from './save';
+import { fromSave, MIGRATIONS } from './save';
 import type { GameState } from './types';
 
 const V67 = readFileSync(new URL('./fixtures/save-v67.json', import.meta.url), 'utf8');
@@ -55,6 +55,8 @@ describe('a save from before the stand and the film', () => {
       media: { ...old.media, film: null },
       hollow: { clues: [], tries: 0 },
       boltedCracks: [],
+      // Phase 32.4: its first ascents' repeats so far, heard of quietly.
+      firsts: (MIGRATIONS[72]!(old) as GameState).firsts,
     });
     expect(old.media.sponsor.tier).toBeGreaterThanOrEqual(SHOW.tier);
     expect(cycleTasks(r.state, old.media.sponsor.tier, 'real', D).some((t) => t.kind === 'show')).toBe(true);

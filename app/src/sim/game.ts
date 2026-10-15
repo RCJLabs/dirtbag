@@ -53,7 +53,7 @@ import {
 } from './content/favours';
 import { favourAsk, riding } from './favours';
 import { TEAM_FUNDED, TEAM_NOTHING, TEAM_SUMMIT, TEAM_TURNED } from './content/team';
-import { guideBlocked, guidesOut } from './guides';
+import { fasIn, guideBlocked, guidesOut, royalties, royaltyOf } from './guides';
 import { bolted, boltBlocked, gymBuyBlocked, gymNight, UPGRADES, wallWord, type Upgrade } from './business';
 import {
   DOC,
@@ -309,6 +309,7 @@ import {
   RUNWAY,
   FAMILY,
   HOLLOW,
+  SETTLE,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
 import { WALL_EVENTS, wallEventById } from './content/wallevents';
@@ -380,6 +381,8 @@ import { dueTonight, retained, retainerBlocked, RETAINERS } from './retainers';
 import { RETAINER_SAYS } from './content/retainers';
 import { PARTNERS, tierOf, whereIs, whereNow } from './presence';
 import { hashSeed, Rng } from './rng';
+import { repeatsOf, settled } from './settle';
+import { REPEAT_FIRST, REPEAT_WILD, REPEATERS, SETTLED } from './content/settle';
 import { actEndedBy, aimMet, currentGoal } from './story';
 import { newlyEarned } from './record';
 import { callingOf, dealTalents, gainMult, payMult, shopMult, talentsShowing } from './identity';
@@ -1307,7 +1310,8 @@ export function act(s0: GameState, a: Action): Result {
       // Your guides' royalties (Phase 25.1), with the week's bills.
       const out = guidesOut(s);
       if (out.length) {
-        const pay = out.length * GUIDE.royalty;
+        // Phase 32.4: and a little for each line of yours in them, capped.
+        const pay = royalties(s);
         spend({ cash: pay });
         line(
           out.length === 1
@@ -1317,6 +1321,7 @@ export function act(s0: GameState, a: Action): Result {
       }
     }
     rivalNight(ended);
+    settleNight();
     livesNight(ended);
     // Phase 16.1: the birthdays that change something, and the night in the van your body
     // calls it. Never on a wall or away: it waits for you to get down.
@@ -1461,6 +1466,35 @@ export function act(s0: GameState, a: Action): Result {
   };
   // Overnight news about the people you know: Dex's race, his season, and who's climbing
   // harder than whom.
+  // Phase 32.4: word of the repeats of a line you put up: the first, and the one that settles
+  // its grade. Each said once (`heard`), however long you were away.
+  const settleNight = () => {
+    for (const [id, f] of Object.entries(s.firsts)) {
+      if (f.by) continue;
+      const n = repeatsOf(s, id);
+      const heard = f.heard ?? 0;
+      const r = routeOfId(s, id);
+      if (n <= heard || !r) continue;
+      s.firsts[id] = { ...f, heard: n };
+      if (n >= SETTLE.repeats)
+        line(
+          fill(SETTLED[f.call], {
+            line: f.name,
+            grade: gradeName(r.disc, r.grade),
+            called: gradeName(r.disc, r.grade + f.call),
+          }),
+        );
+      else if (!heard) {
+        const who =
+          REPEATERS[
+            Rng.fromStream(s.seed, 'events')
+              .derive(`repeater-${id}`)
+              .int(0, REPEATERS.length - 1)
+          ]!;
+        line(fill(PLACES[r.place]?.wild ? REPEAT_WILD : REPEAT_FIRST, { line: f.name, who }));
+      }
+    }
+  };
   const rivalNight = (ended: number) => {
     const dex = s.people.dex;
     const race = s.race;
@@ -2854,8 +2888,10 @@ export function act(s0: GameState, a: Action): Result {
       const name = PLACES[a.place]!.name;
       if (pages >= GUIDE.pages) {
         s.guides = { ...s.guides, [a.place]: { pages, out: s.day } };
+        // Phase 32.4: the lines you put up there in it, and a little for each.
+        const yours = fasIn(s, a.place);
         line(
-          `The last page of ${name}'s guide: every line, its grade, who put it up, and where the water comes off the top. The shop takes a box of them. ${money(GUIDE.royalty)} a week, give or take.`,
+          `The last page of ${name}'s guide: every line, its grade, who put it up, and where the water comes off the top. The shop takes a box of them. ${money(royaltyOf(s, a.place))} a week, give or take${yours > 1 ? `, with ${yours} lines of yours in it` : ''}.`,
         );
       } else {
         s.guides = { ...s.guides, [a.place]: { pages, out: null } };
@@ -4617,7 +4653,8 @@ export const lineName = (s: GameState, r: RouteDef): string => s.firsts[r.id]?.n
 // open line nobody's done, the way guidebooks mark a grade no one has confirmed.
 export function lineGrade(s: GameState, r: RouteDef): string {
   const fa = s.firsts[r.id];
-  if (fa) return gradeName(r.disc, r.grade + fa.call);
+  // Phase 32.4: once its repeats have settled it, the grade is the line's, not your call.
+  if (fa) return gradeName(r.disc, r.grade + (settled(s, r.id) ? 0 : fa.call));
   return r.open && !s.routes[r.id]?.sent ? `${gradeLabel(r)}?` : gradeLabel(r);
 }
 
