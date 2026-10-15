@@ -15,7 +15,7 @@ import {
   SET_SAYS,
   SET_WALLS,
 } from './content/setting';
-import { COMP_RULES, COMP_SAYS, COMP_TIERS, LEAGUE_SAYS, ROUND_SAYS } from './content/comps';
+import { COMP_RULES, COMP_SAYS, COMP_TIERS, LEAGUE_SAYS, ROUND_SAYS, TEAM_SAYS } from './content/comps';
 import { GYM_UPGRADE_SAYS } from './content/business';
 import { giveBlocked } from './giving';
 import { heirStart, menteeAfter, menteeCoachBlocked, menteeName, menteeTakeBlocked } from './mentee';
@@ -77,6 +77,10 @@ import {
   fieldSays,
   goesFor,
   goesLeft,
+  nextEdition,
+  onTeam,
+  picksFor,
+  startOf,
   gradesFor,
   inComp,
   isCompProblem,
@@ -341,7 +345,7 @@ import {
 } from './van';
 import { BODGE_FAILED, BODGE_HELD, BREAKDOWN_LINE } from './content/van';
 import { speedBlocked, speedGains, speedLoad, speedTime, runsToday } from './speed';
-import { fill, lower, money, ordinal, skillsNote } from './format';
+import { dayName, fill, lower, money, ordinal, skillsNote } from './format';
 import { PARTNERS, tierOf, whereIs, whereNow } from './presence';
 import { hashSeed, Rng } from './rng';
 import { actEndedBy, aimMet, currentGoal } from './story';
@@ -1052,6 +1056,9 @@ export function act(s0: GameState, a: Action): Result {
     }
     // An owner's pass is the keys (Phase 18.6): the wall and the shower, every day.
     s.today = s.gym ? ['pass'] : [];
+    // Phase 33.4: a round you're through to is your way in at its wall, as the entry was.
+    const round = s.comps.on?.day === s.day ? INDOOR[COMP_TIERS[s.comps.on.tier]!.venue]?.pass : undefined;
+    if (round && !s.today.includes(round)) s.today.push(round);
     // A flight you didn't take (Phase 24.2): the booking's gone, and the money with it.
     if (s.booked && s.booked.day < s.day && !s.expedition) {
       line(`The flight to ${EXPEDITIONS[s.booked.id]!.name} left without you. The money went with it.`);
@@ -1858,6 +1865,15 @@ export function act(s0: GameState, a: Action): Result {
     // Phase 33.3: the rivals, by name: who won it, and who was a place ahead of you.
     const named = rostered(on.tier) ? fieldSays(field, place, cut === undefined) : '';
     if (named) line(named);
+    // Phase 33.4: the team it picks. A podium makes it, till its next; off it, you're off.
+    for (const ws of picksFor(on.tier)) {
+      const w = COMP_TIERS[ws]!;
+      const was = onTeam(s, ws, startOf(on.tier, on.day));
+      if (place <= w.team!.top) {
+        const d = nextEdition(ws, s.day);
+        line(fill(TEAM_SAYS.made, { name: w.name, when: `${dayName(d)}, day ${d}` }));
+      } else if (was) line(fill(TEAM_SAYS.dropped, { name: w.name }));
+    }
   };
   // League night's season (Phase 25.5): the year's table, if you were on it, and the prize.
   // Phase 26: in the A league once you've won one; its season pays more.

@@ -219,8 +219,10 @@ import {
   compClock,
   compSet,
   FIELD_SAYS,
+  picksFor,
   rivalsIn,
   roundName,
+  TEAM_SAYS,
   listOf,
   gradesFor,
   leagueTier,
@@ -440,6 +442,8 @@ function ladderNext(s: GameState, id: LadderId, at: number): string {
   if (id === 'comp') {
     const t = COMP_TIERS[COMP_LADDER[at] ?? -1];
     if (!t) return 'The Games.';
+    // Phase 33.4: the World Series picks its team.
+    if (t.team) return fill(TEAM_SAYS.ladder, { name: t.name, from: COMP_TIERS[t.team.from]!.name });
     return t.need
       ? `${t.name}, at ${t.need} points on the ladder; you’ve ${ladderPoints(s)}.`
       : `${t.name}, open to anyone with the fee.`;
@@ -623,6 +627,12 @@ function roundsNote(tier: number): string {
   return ` A qualifier; ${listOf(steps)}, a round a day.`;
 }
 
+// Phase 33.4: a comp that picks a team for another says so.
+const picksNote = (tier: number): string =>
+  picksFor(tier)
+    .map((w) => ` ${fill(TEAM_SAYS.pick, { name: COMP_TIERS[w]!.name })}`)
+    .join('');
+
 // Phase 33.3: the rivals in a comp you could enter: its favourites, and who's come up to it
 // this year.
 function rivalsNote(s: GameState, tier: number): string {
@@ -677,7 +687,7 @@ function compRow(game: Game, s: GameState): Row {
       ? `${why}.`
       : t.side
         ? `${t.field} climbers, ${t.side.n} throws V${lo} to V${hi}, ${compClock(tier, 0)}. ${money(t.purse[0])} to the winner. Off the ladder: no points.`
-        : `${t.field} climbers, problems V${lo} to V${hi}, ${compClock(tier, 0)}.${roundsNote(tier)} ${money(t.purse[0])} to the winner.${rivalsNote(s, tier)} You have ${ladderPoints(s)} ladder points.`,
+        : `${t.field} climbers, problems V${lo} to V${hi}, ${compClock(tier, 0)}.${roundsNote(tier)}${picksNote(tier)} ${money(t.purse[0])} to the winner.${rivalsNote(s, tier)} You have ${ladderPoints(s)} ladder points.`,
     off: !!why,
     run: () => game.comp('enter'),
   };

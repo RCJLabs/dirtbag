@@ -73,6 +73,10 @@ export {
   goesLeft,
   inComp,
   isRival,
+  lastEdition,
+  nextEdition,
+  onTeam,
+  picksFor,
   rivalGrade,
   rivalsIn,
   rivalTier,
@@ -102,6 +106,7 @@ export {
   FIELD_SAYS,
   GAMES_TIER,
   ROSTER,
+  TEAM_SAYS,
 } from './content/comps';
 export { bolted, boltBlocked, businessRung, gymBuyBlocked, gymDay, gymTarget, wallWord } from './business';
 export { GYM_UPGRADE_NAME } from './content/business';
