@@ -69,7 +69,7 @@
 | 16 The spine | Next after 21–23. |
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 | 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
-| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27, 28 and 29 (14 Oct 2026), Phase 33 (15 Oct 2026); Phase 34 is the current milestone. |
+| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27, 28 and 29 (14 Oct 2026), and Phases 33, 34, 30, 31, 32 and 35 (15 Oct 2026). Phase 14 is the current milestone. |
 
 ## The rebuild track
 
@@ -3742,7 +3742,7 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 
 **Phase 34 closed by Evan's call (15 Oct 2026).** Both criteria pass. Carried: the money criterion is read on a career's totals (a sponsor's cycle lands in one night, so a week of media came within $2 of the best week of shifts); the bots keep it real and work shifts, so a brand-terms player who works less isn't measured; most photos sell at the cap by mid-career; the piece, the stand's and the film's numbers are proposals. The CURRENT MILESTONE moves to Phase 30. The download is 440.5 KB of 460.
 
-### Phase 35 — The road and the year   **<<< CURRENT MILESTONE**
+### Phase 35 — The road and the year   ✅ Closed
 
 *Small. The knocks have no follow-up. There are eight hitchhikers, and no pull toward the ones you haven't met (the audit's social #9). The roadside stops are one-line lifts. Holidays are fire cards (the audit's social #16).*
 
@@ -3815,13 +3815,15 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 
 Closing is Evan's call. Carried: the music's second pass (on his ear); the media target's margin (the boulderer's media 101% of its shifts in 35.1's run, 81% since); Outdoors 0 to 2 of 4 across the phase's runs, as since 30.1. After Phase 35 the deepening run (26–35) is done; Phase 14 waits until Evan asks for it, so the next milestone is his call.
 
+**Phase 35 closed by Evan's call (15 Oct 2026).** Both criteria pass. Carried: the music's second pass (Phase 25's synthesized score, still unheard; `/sounds.html` is where to listen, and Phase 13's criteria 1 and 2 wait on the same ear); the hitchhikers' rotation holds only weakly in the bots (a median of three meetings in four years), so the unit test carries it; the bots take every knock's, stop's and scene's first way, so the returns they don't help, the stops' second ways, the dish and the cider are held by the unit tests and the e2e, not measured; the media target's margin (101% in 35.1's run, 81% since); Outdoors 0 to 2 of 4 across the phase's runs, as since 30.1. The deepening run (Phases 26–35) is done. The CURRENT MILESTONE moves to Phase 14, the desktop and Steam build. The download is 459.3 KB of 470.
+
 ## Stage D — Get it in front of people
 
 *Moved here by Evan's call (29 Sep 2026): the whole game gets built first, and the Steam build, the demo and the store page come after it. The phase numbers stay as they were, so older references still find them.*
 
-### Phase 14 — Desktop and Steam build
+### Phase 14 — Desktop and Steam build   **<<< CURRENT MILESTONE**
 
-*Waits until Evan asks for it (8 Oct 2026). Phases 26–35 come first.*
+*Waited until Evan asked for it (8 Oct 2026) while Phases 26–35 came first. Started by his call after Phase 35 (15 Oct 2026).*
 
 **Goal.** A Steam build that plays well with mouse, keyboard or gamepad on Windows, macOS, Linux and Steam Deck.
 
@@ -4171,3 +4173,4 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 - 2026-10-15 — 35.3 built: the people you help at the van door come back once, weeks later, with a thank-you; the ones you turn away are remembered in a line. Save v75. The download budget to 470 KB (Evan's call). 0.999.73.
 - 2026-10-15 — 35.4 built: the four holidays are a scene at the fire when your people are about: the Sendsgiving potluck, headlamps on the boulders, the opener's eve, the solstice fire; three ways to spend each night. Save v76. 0.999.74.
 - 2026-10-15 — 35.5 built: the content tests hold every line of the road and the year to one set of rules, old lines and new; one old knock line spelled out. Phase 35's Done-when both pass; the music's second pass waits on Evan's ear. 0.999.75.
+- 2026-10-15 — Phase 35 closed by Evan's call; the deepening run (Phases 26–35) is done. CURRENT MILESTONE moved to Phase 14, the desktop and Steam build.
