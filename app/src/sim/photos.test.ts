@@ -88,7 +88,12 @@ describe('a save from before the photos', () => {
     if (!r.ok) return;
     expect(r.from).toBe(66);
     const old = JSON.parse(V66).state;
-    expect(r.state).toEqual({ ...old, media: { ...old.media, photos: [], piece: null, film: null } });
+    // Phase 32.2: no clues to the Hollow, either.
+    expect(r.state).toEqual({
+      ...old,
+      media: { ...old.media, photos: [], piece: null, film: null },
+      hollow: { clues: [], tries: 0 },
+    });
     expect(old.retainers.physio).not.toBeNull();
     expect(photoBlocked(r.state, HARD)).toBe('No photo of that');
   });

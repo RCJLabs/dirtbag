@@ -3532,6 +3532,20 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - **The painter:** a canyon palette, the far walls close, the headstones between the traverse and the wall (four stones and a cross), the close-up wall (the strip of sky between the rims, water streaks, the split, the corner's seam and roof), the boulder look and the topos. +1.7 KB: the download is 448.2 KB of 460.
 - **Tests:** `hollow.test.ts` (no road you know of however hard you climb; a drive like any other once found; shaded sandstone, nothing to buy; the lines open and in their rock).
 
+**Status (15 Oct 2026): 32.2 built: the quest and the walk-in.** Save v71, 0.999.67.
+- **Who'll tell you, and when** (`hollow.ts`, Evan's call): nobody, till you've sent a line outside at `HOLLOW.from` (V9, v0.956's; a gym's doesn't count). Then three people each know a piece, in any order:
+  - **An old-timer's word:** Ray (his unsent line, from Phase 17's arc, was never at Roadside): "“That line I never sent,” Ray says, and stops. “It isn’t here. Past the Gorge there’s a wash with no sign on it. Follow it till the walls close in. Take your time in there.”" Once Ray's gone, Frank has it from him. A talk beat (`oldWord`).
+  - **The old hand's receipt:** the hitchhiker whose sign has always said THE CANYON: "Ask about the canyon on his sign" draws the Gorge road, a wash, and the dead juniper where it forks: “Take the left. Everybody takes the right.” While it's due he's `HOLLOW.hitch` (four) times likelier on the road.
+  - **The old guidebook** at the gear shop, a row there while it has something for you (20 minutes): a wash, a slot, a small cross, and NO in capitals in the margin, twice.
+  - The third says it's enough: "Three people, three pieces: a wash past the Gorge, a left fork at a dead juniper, a cross in a margin. Enough to go and look."
+- **The walk in** (Evan's call): from the van at the Gorge, with all three, by noon and with energy for a day of looking: a walk-out of its own (`epics.ts`, `hollow`), three stages, each with the way a clue points (the left fork, waiting in the slot as Ray said, the margin's headstones) and ways that don't. Clean or rough, you're standing in the Hollow, and it's on your map ("You’re standing in the Hollow. Nobody has a topo for this. You could make one."); bad, you walk back down in the dark, unhurt, the clues good for another try (`hollow.tries`). The van's row says which clues you hold from the first one.
+- **Off the Map**, a Record Book entry for finding it.
+- **Save v71:** `hollow: { clues, tries }`; migration 70 starts everyone with none. Fixture `save-v70.json` (a career bot at day 220, from main's code).
+- **The bots:** the social bot answers the old-timer's word as it does the other moments (else Ray's later beats would wait behind it); the old hand's odds move once a bot climbs V9 outside. The career bot doesn't look for the Hollow yet (32.5).
+- **Tests:** in `hollow.test.ts`: nobody tells you till V9 outside, Ray's word once and Frank's after him, the old hand's ask, the book and the third clue, the walk in's needs, found the way the clues point, walked out unhurt on a bad day, the v70 save.
+- **The harness:** 30 of 31 targets pass, as for 31.4 (Outdoors 1 of 4, as since 30.1); the ladders' tables are unchanged. The one number that moved: the median career's ending names 10 things where it named 11 (the fewest is still 7), from the old hand's odds moving which hitchhikers a bot meets.
+- **The download** is 450.5 KB of 460 (+2.3 KB).
+
 ### Phase 33 — Comps with rounds
 
 *Medium. Every comp is one round on one day, climbed like the gym, and there's no national team.*
@@ -4057,3 +4071,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-15 — 31.4 built: the bot plays a family; the family harness (criterion 1, 4 of 4); the e2e's night at the fire with Robin. Phase 31's Done-when both pass. 0.999.65.
 - 2026-10-15 — Phase 31 closed by Evan's call; CURRENT MILESTONE moved to Phase 32, the Hollow.
 - 2026-10-15 — 32.1 built: the Hollow, a hidden slot canyon past the Gorge: seven open lines in its own sandstone, its painter, and no road you know of till it's found. 0.999.66.
+- 2026-10-15 — 32.2 built: the Hollow's quest: an old-timer's word, the old hand's receipt and the old guidebook, from V9 outside; with all three, the walk in up the wash from the Gorge. Save v71. 0.999.67.

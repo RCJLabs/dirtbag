@@ -8,7 +8,9 @@ import { PLACES } from './content/places';
 import { EPICS, type Epic, type EpicEnd, type EpicKind } from './content/epics';
 import { conditionsAt, seasonOf } from './weather';
 import { HITCHERS, PASS_BY, STOPS, type Hitcher, type RoadFx, type RoadStop } from './content/road';
-import { EVENTS } from './dials';
+import { HITCH_ASK } from './content/hollow';
+import { EVENTS, HOLLOW } from './dials';
+import { hitchDue } from './hollow';
 import { Rng } from './rng';
 import type { GameState } from './types';
 
@@ -57,7 +59,12 @@ export function driveEncounter(
   const roll = r.next();
   const H = EVENTS.hitch;
   if (!(s.deck.hitch && s.day - s.deck.hitch < H.every) && roll < H.odds) {
-    const w = HITCHERS.map((h) => (s.deck.met[h.id] !== undefined ? H.again : 1));
+    // Phase 32.2: the old hand's about more, while his clue to the Hollow is due.
+    const w = HITCHERS.map(
+      (h) =>
+        (s.deck.met[h.id] !== undefined ? H.again : 1) *
+        (h.id === 'oldhand' && hitchDue(s) ? HOLLOW.hitch : 1),
+    );
     let x = r.next() * w.reduce((a, b) => a + b, 0);
     const h = HITCHERS.find((_, i) => (x -= w[i]!) < 0) ?? HITCHERS[HITCHERS.length - 1]!;
     return { kind: 'hitch', id: h.id };
@@ -74,10 +81,14 @@ export function driveEncounter(
 
 // A hitchhiker's answers: the first time, theirs and driving past; after that, the second
 // meeting's, less any that needs something you didn't do the first time.
+// Phase 32.2: and the old hand, asked about the canyon on his sign, while his clue is due. It
+// comes after the first meeting's answers, so it never stands for one in `deck.met`.
 export function hitchOpts(s: GameState, h: Hitcher): { label: string; out: string; fx: RoadFx }[] {
   const first = s.deck.met[h.id];
-  if (first === undefined) return [...h.opts, { ...PASS_BY, fx: {} }];
-  return h.again.opts.filter((o) => o.when === undefined || o.when === first);
+  const ask =
+    h.id === 'oldhand' && hitchDue(s) ? [{ ...HITCH_ASK, fx: { psyche: 4, clue: 'hitch' as const } }] : [];
+  if (first === undefined) return [...h.opts, ...ask, { ...PASS_BY, fx: {} }];
+  return [...h.again.opts.filter((o) => o.when === undefined || o.when === first), ...ask];
 }
 
 // A hitchhiker you were good to, at a breakdown: seeded by the day, and never the two who

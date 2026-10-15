@@ -1582,4 +1582,11 @@ export const HOME = { people: 2, tier: 2, cash: 200, psyche: 20 };
 // a someone you look for, not furniture. `talk` and `beta`: minutes, as long as an evening
 // story and a line drawn in the dirt take; a crew go on the project is ten [proposed].
 export const FAMILY = { share: 0.25, shifts: 10, old: 0.5, fire: 0.5, talk: 30, beta: 20 };
+
+// Phase 32.2: the Hollow's quest (Evan's call: three clues, then the walk-in). `from`: the
+// hardest line you've sent outside before anyone tells you, v0.956's V9 (the canyon's lines
+// start at V9). `hitch`: how much likelier the old hand is to be on the road, among the
+// hitchhikers, while his clue is due. `book`: minutes with the old guidebook at the shop.
+// `walk`: the walk in, by `by` with `energy` to start it [proposed numbers].
+export const HOLLOW = { from: 9, hitch: 4, book: 20, walk: { by: 12 * 60, energy: 30 } };
 export const QUIRK = { after: 30, fresh: 70, tired: 35, evening: 17 * 60, dawn: 9 * 60, easy: 2 };

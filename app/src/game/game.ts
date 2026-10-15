@@ -980,6 +980,13 @@ export class Game {
     this.dispatch({ t: what });
   }
 
+  // Phase 32.2: the Hollow's quest: the old guidebook (the shop's card again), or the walk in.
+  hollow(what: 'book' | 'walk'): void {
+    this.dispatch({ t: 'hollow', do: what });
+    if (what === 'book') this.openSheet({ k: 'place', id: 'shop' });
+    else if (this.state.encounter?.kind === 'epic') this.set({ sheet: { k: 'encounter' } });
+  }
+
   // Phase 31.2: the old climber at the fire, sat with or asked; the fire's card again.
   forebear(what: 'talk' | 'beta'): void {
     this.dispatch({ t: 'forebear', do: what });
@@ -1118,9 +1125,13 @@ export class Game {
     }
     // A walk-out's calls, one stage at a time; out, and you're back at the van.
     if (this.state.encounter?.kind === 'epic') {
+      const was = this.state.at;
       const ev = this.dispatch({ t: 'answer', opt });
       if (ev.some((e) => e.k === 'refused')) return;
       if (!this.state.encounter) this.set({ sheet: null });
+      // Phase 32.2: the walk in that found the Hollow ends there.
+      const scene = PLACES[this.state.at]?.scene;
+      if (this.state.at !== was && scene) this.enterScene(scene);
       return;
     }
     if (this.state.encounter?.kind !== 'knock') {

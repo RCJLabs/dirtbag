@@ -304,6 +304,13 @@ import {
   menteeTakeBlocked,
   CALL_SAYS,
   known,
+  bookBlocked,
+  walkBlocked,
+  found,
+  HOLLOW,
+  BOOK_ROW,
+  WALK_ROW,
+  CLUE_NAME,
   betaLine,
   FAMILY,
   forebearAtFire,
@@ -1182,6 +1189,18 @@ const storyRow = (game: Game, s: GameState): Row[] => {
   ];
 };
 
+// Phase 32.2: the walk in to the Hollow: the clues you hold, and what stops you going.
+const walkRow = (game: Game, s: GameState): Row => {
+  const why = walkBlocked(s);
+  const held = s.hollow.clues.map((c) => CLUE_NAME[c]);
+  return {
+    label: WALK_ROW.label,
+    note: `You have ${held.join(', ')}.${why ? ` ${why}.` : ` ${WALK_ROW.note}`}`,
+    off: !!why,
+    run: () => game.hollow('walk'),
+  };
+};
+
 // Phase 31.2: the old climber in their chair: a story, and beta on a line of theirs.
 const forebearRows = (game: Game, s: GameState, name: string): Row[] => {
   const talk = forebearBlocked(s, 'talk');
@@ -1375,6 +1394,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           ...(isNight(s.min)
             ? [{ label: 'The fire', note: fireNote(s), run: () => game.openSheet({ k: 'fire' }) }]
             : []),
+          // Phase 32.2: the Hollow, once you hold a clue to it and till you've found it.
+          ...(!found(s) && s.hollow.clues.length ? [walkRow(game, s)] : []),
           actRow(game, s, 'lot.sleep'),
           ...(plan.length
             ? [{ label: 'Run the plan', note: `${planLine(plan)}.`, run: () => game.runPlan(plan) }]
@@ -1761,6 +1782,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           : 'Parked on the shoulder.',
         close: true,
         rows: [
+          // Phase 32.2: the walk in to the Hollow starts from the van at the Gorge.
+          ...(s.at === 'gorge' && !found(s) && s.hollow.clues.length ? [walkRow(game, s)] : []),
           ...shootRows(game, s),
           ...touristRows(game, s),
           ...(back ? [driveRow(game, s, 'lot', 'Drive back to the Lot')] : []),
@@ -1918,6 +1941,17 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           ...(id.id === 'market' ? [gigRow(game, s)].filter((r): r is Row => !!r) : []),
           // Phase 25.2: an outfit of your own.
           ...(id.id === 'shop' ? outfitRows(game, s) : []),
+          // Phase 32.2: the old guidebook, once there's something in it for you.
+          ...(id.id === 'shop' && !bookBlocked(s)
+            ? [
+                {
+                  label: BOOK_ROW.label,
+                  cost: costLabel({ min: HOLLOW.book }),
+                  note: BOOK_ROW.note,
+                  run: () => game.hollow('book'),
+                },
+              ]
+            : []),
           // Phase 25.1: giving.
           ...(Object.keys(GIFT_AT) as Gift[])
             .filter((g) => GIFT_AT[g] === id.id)

@@ -307,6 +307,7 @@ import {
   FILM,
   RUNWAY,
   FAMILY,
+  HOLLOW,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
 import { WALL_EVENTS, wallEventById } from './content/wallevents';
@@ -402,7 +403,8 @@ import { ageCost, agedSkills, healDays } from './ageing';
 import { clinicBlocked, clinicHeads, clinicPay, compTomorrow, setCompBlocked } from './runway';
 import { RUNWAY_SAYS } from './content/runway';
 import { familyFill, FOREBEAR_MET, heirOf, questDone, questOf } from './heir';
-import { known } from './hollow';
+import { bookBlocked, known, walkBlocked } from './hollow';
+import { BOOK_ROW, FOUND, NOT_FOUND, WALK_READY } from './content/hollow';
 import { COACH_LINE, HEIR_MONEY, HEIR_OPEN } from './content/heir';
 import {
   FOREBEAR_BETA,
@@ -434,6 +436,7 @@ import type {
   SendStyle,
   Skills,
   FavourWhat,
+  HollowClue,
   PaySource,
 } from './types';
 import { conditionsAt, seasonOf, sunOn } from './weather';
@@ -466,6 +469,7 @@ export function newGame(seed: string): GameState {
     dog: null,
     goals: 0,
     unlocked: [],
+    hollow: { clues: [], tries: 0 },
     gear: { ...START_KIT },
     training: freshTraining(1),
     jobs: {},
@@ -2152,6 +2156,7 @@ export function act(s0: GameState, a: Action): Result {
     const p = roadPsyche((fx.psyche ?? 0) * k);
     if (p) s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + p) };
     if (fx.guitar) s.guitar = round2(s.guitar + fx.guitar);
+    if (fx.clue) addClue(fx.clue);
     if (fx.beta) {
       const l = lessonAt(s);
       if (l) {
@@ -2206,6 +2211,13 @@ export function act(s0: GameState, a: Action): Result {
       if (was < at && d.bond >= at) line(fill(DOG_PERK_LINE[p], { name: d.name }));
   };
 
+  // Phase 32.2: a clue to the Hollow, held for good; the third says so.
+  const addClue = (c: HollowClue) => {
+    if (s.hollow.clues.includes(c)) return;
+    s.hollow = { ...s.hollow, clues: [...s.hollow.clues, c] };
+    if (s.hollow.clues.length === 3) line(WALK_READY);
+  };
+
   // A call on the walk out (Phase 22.6c): it adds up, and the last stage's call gets you
   // out, clean, rough or hurt, and says so, in the journal too.
   const walkOut = (e: NonNullable<GameState['encounter']>, i: number): boolean => {
@@ -2234,6 +2246,20 @@ export function act(s0: GameState, a: Action): Result {
     s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + roadPsyche(t.psyche + EVENTS.epic.psyche)) };
     line(ep.ends[end]);
     note(`${ep.title} at ${PLACES[s.at]!.name}: ${ep.story[end]}.`);
+    // Phase 32.2: the walk in to the Hollow. Found, clean or rough: you're there. A bad day
+    // walks you back to the van, unhurt, the clues still good for another try.
+    if (ep.kind === 'hollow') {
+      if (end === 'bad') {
+        s.hollow = { ...s.hollow, tries: s.hollow.tries + 1 };
+        line(NOT_FOUND);
+      } else {
+        s.unlocked = [...s.unlocked, 'hollow'];
+        s.at = 'hollow';
+        s.x = null;
+        line(FOUND);
+      }
+      return true;
+    }
     if (end === 'bad') {
       // Hurt on the way out: an ankle, a tier 1 or 2, seeded by the day.
       const r = Rng.fromStream(s.seed, 'events').derive(`epic-hurt-${s.day}`);
@@ -3220,6 +3246,7 @@ export function act(s0: GameState, a: Action): Result {
       }
       // Said once and for good (Phase 28.4: the old guard on the crew).
       if (fx.seen && !s.seen.includes(fx.seen)) s.seen.push(fx.seen);
+      if (fx.clue) addClue(fx.clue);
       // The crew's name (Phase 28.1): brought up once. Name it now and the sheet opens;
       // later, and it waits on the People list.
       if (fx.crewName) {
@@ -4299,6 +4326,29 @@ export function act(s0: GameState, a: Action): Result {
         learn(r.id, b, 'told', '');
         line(fill(CREW_GO[who]!, { crux: lower(crux.name), beta: lower(beta), Beta: beta }));
       }
+      break;
+    }
+
+    // Phase 32.2: the Hollow's quest: the old guidebook at the shop; the walk in from the Gorge,
+    // a walk-out of its own (content/epics.ts, `hollow`).
+    case 'hollow': {
+      if (a.do === 'book') {
+        const no = bookBlocked(s);
+        if (no) return refuse(`${no}.`);
+        spend({ min: HOLLOW.book });
+        line(BOOK_ROW.says);
+        addClue('book');
+        break;
+      }
+      const no = walkBlocked(s);
+      if (no) return refuse(`${no}.`);
+      s.encounter = {
+        kind: 'epic',
+        id: 'hollow',
+        stage: 0,
+        tally: { risk: 0, energy: 0, fed: 0, skin: 0, psyche: 0, hours: 0 },
+      };
+      events.push({ k: 'encounter', kind: 'epic', id: 'hollow' });
       break;
     }
 

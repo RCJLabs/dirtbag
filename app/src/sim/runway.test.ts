@@ -57,7 +57,8 @@ describe('a save from before the runway', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(68);
-    expect(r.state).toEqual(JSON.parse(V68).state);
+    // Phase 32.2: and no clues to the Hollow.
+    expect(r.state).toEqual({ ...JSON.parse(V68).state, hollow: { clues: [], tries: 0 } });
     const sp = r.state.media.sponsor!;
     const next = cycleTasks(r.state, sp.tier, sp.terms);
     expect(next[0]).toEqual({ kind: 'clinic', done: false });
