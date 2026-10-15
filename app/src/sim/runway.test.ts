@@ -16,7 +16,7 @@ import { act, emptyLog, newGame } from './game';
 import { cyclePay, cycleTasks } from './media';
 import { SPONSORS } from './content/media';
 import { clinicBlocked, clinicHeads, clinicPay, setCompBlocked } from './runway';
-import { fromSave } from './save';
+import { fromSave, MIGRATIONS } from './save';
 import type { GameState } from './types';
 
 const V68 = readFileSync(new URL('./fixtures/save-v68.json', import.meta.url), 'utf8');
@@ -58,7 +58,14 @@ describe('a save from before the runway', () => {
     if (!r.ok) return;
     expect(r.from).toBe(68);
     // Phase 32.2: and no clues to the Hollow.
-    expect(r.state).toEqual({ ...JSON.parse(V68).state, hollow: { clues: [], tries: 0 }, boltedCracks: [] });
+    const old = JSON.parse(V68).state;
+    // Phase 32.4: its first ascents' repeats so far, heard of quietly.
+    expect(r.state).toEqual({
+      ...old,
+      hollow: { clues: [], tries: 0 },
+      boltedCracks: [],
+      firsts: (MIGRATIONS[72]!(old) as GameState).firsts,
+    });
     const sp = r.state.media.sponsor!;
     const next = cycleTasks(r.state, sp.tier, sp.terms);
     expect(next[0]).toEqual({ kind: 'clinic', done: false });

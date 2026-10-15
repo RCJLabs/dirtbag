@@ -3,6 +3,7 @@ import {
   actOf,
   COACH_EDGE,
   byName,
+  faNote,
   familyFill,
   kinLine,
   FOREBEAR_MET,
@@ -1249,6 +1250,11 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
       )}
       {s.firsts[route]?.by && (
         <p className="sub">First ascent: {byName(s.firsts[route]!.by!)}. The second’s still going.</p>
+      )}
+      {s.firsts[route] && !s.firsts[route]!.by && (
+        <p className="sub" id="fa-note">
+          {faNote(s, route, lineGrade(s, r))}
+        </p>
       )}
       {unnamed && log.sent && (
         <button

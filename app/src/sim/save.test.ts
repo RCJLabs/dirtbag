@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { act, newGame, talkStart } from './game';
 import { crewNameable, crewOf } from './crew';
 import { fromSave, MIGRATIONS, SAVE_VERSION, toSave, validate, type Migration } from './save';
-import type { Action } from './types';
+import type { Action, GameState } from './types';
 import { ageOf, daysLeft } from './age';
 import { currentGoal } from './story';
 import { AGE, BOARD, VAN_AGE } from './dials';
@@ -100,12 +100,20 @@ const V64 = readFileSync(new URL('./fixtures/save-v64.json', import.meta.url), '
 // And Phase 29.3's: the van's clock started at a new climber's. And Phase 34.2's: no retainers.
 // And Phase 34.3's: no photos, and no piece asked for; and Phase 34.4's: no film.
 const revan = <T extends object>(st: T): T =>
-  pics({
-    ...('van' in st
-      ? { ...st, van: { ...(st as { van: object }).van, miles: VAN_AGE.start, rebuilt: 0, verdict: null } }
-      : st),
-    ...P342,
-  });
+  heardOf(
+    pics({
+      ...('van' in st
+        ? { ...st, van: { ...(st as { van: object }).van, miles: VAN_AGE.start, rebuilt: 0, verdict: null } }
+        : st),
+      ...P342,
+    }),
+  );
+// And Phase 32.4's: the repeats of its first ascents so far, heard of quietly (settle.test.ts
+// holds the rule to its numbers).
+const heardOf = <T extends object>(st: T): T =>
+  'firsts' in st && st.firsts && typeof st.firsts === 'object' && !('asymmetricMatch' in st.firsts)
+    ? { ...st, firsts: (MIGRATIONS[72]!(st) as GameState).firsts }
+    : st;
 const pics = <T extends object>(st: T): T =>
   'media' in st && st.media && typeof st.media === 'object' && !('asymmetricMatch' in st.media)
     ? { ...st, media: { ...(st.media as object), photos: [], piece: null, film: null } }
@@ -2150,14 +2158,16 @@ describe('saves', () => {
     expect(r.from).toBe(64);
     const old = JSON.parse(V64).state;
     expect(old.comps.on).not.toBeNull();
-    expect(r.state).toEqual({
-      ...old,
-      comps: { ...old.comps, on: { ...old.comps.on, round: 0 } },
-      retainers: { physio: null, coach: null },
-      media: { ...old.media, photos: [], piece: null, film: null },
-      hollow: { clues: [], tries: 0 },
-      boltedCracks: [],
-    });
+    expect(r.state).toEqual(
+      heardOf({
+        ...old,
+        comps: { ...old.comps, on: { ...old.comps.on, round: 0 } },
+        retainers: { physio: null, coach: null },
+        media: { ...old.media, photos: [], piece: null, film: null },
+        hollow: { clues: [], tries: 0 },
+        boltedCracks: [],
+      }),
+    );
     // It hands in as it always would have.
     const done = act({ ...r.state, at: 'gym' }, { t: 'comp', do: 'finish' });
     expect(done.state.comps.on).toBeNull();
@@ -2204,7 +2214,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(72);
+    expect(SAVE_VERSION).toBe(73);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;
