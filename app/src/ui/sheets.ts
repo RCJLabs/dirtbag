@@ -303,6 +303,10 @@ import {
   menteeName,
   menteeTakeBlocked,
   CALL_SAYS,
+  betaLine,
+  FAMILY,
+  forebearAtFire,
+  forebearBlocked,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import { bestTrip } from './card';
@@ -1146,9 +1150,10 @@ function cardsSheet(game: Game, s: GameState, c: NonNullable<GameState['cards']>
   };
 }
 
-// Phase 22.9a: who's at the fire, for the van.
+// Phase 22.9a: who's at the fire, for the van. Phase 31.2: the old climber too.
 function fireNote(s: GameState): string {
   const here = atFire(s).map((w) => PEOPLE[w]?.name ?? w);
+  if (forebearAtFire(s)) here.push(s.family!.forebear);
   return here.length
     ? `${here.join(' and ')} ${here.length > 1 ? 'are' : 'is'} up. Horseshoes, or dice.`
     : 'Just the coals.';
@@ -1170,6 +1175,34 @@ const storyRow = (game: Game, s: GameState): Row[] => {
         : `+${t.end === 'summit' ? ps.summit : ps.short} psyche, and a night with ${here.join(' and ')} that counts as a day together.`,
       off: !!why,
       run: () => game.story(),
+    },
+  ];
+};
+
+// Phase 31.2: the old climber in their chair: a story, and beta on a line of theirs.
+const forebearRows = (game: Game, s: GameState, name: string): Row[] => {
+  const talk = forebearBlocked(s, 'talk');
+  const ask = forebearBlocked(s, 'beta');
+  const r = betaLine(s);
+  const line = r ? (s.firsts[r.id]?.name ?? r.name) : null;
+  return [
+    {
+      label: `Sit with ${name}`,
+      cost: costLabel({ min: FAMILY.talk }),
+      note: talk ? `${talk}` : 'A story from their years out here, and a night at the fire.',
+      off: !!talk,
+      run: () => game.forebear('talk'),
+    },
+    {
+      label: line ? `Ask ${name} about ${line}` : `Ask ${name} about a line`,
+      cost: costLabel({ min: FAMILY.beta }),
+      note: ask
+        ? `${ask}`
+        : line
+          ? `They sent it. The next thing they know about it that you don’t, and a first go after it is a flash.`
+          : 'Nothing of theirs you’re on that they could tell you more about.',
+      off: !!ask || !line,
+      run: () => game.forebear('beta'),
     },
   ];
 };
@@ -2411,6 +2444,9 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         };
       }
       const here = atFire(s).map((w) => PEOPLE[w]?.name ?? w);
+      // Phase 31.2: the old climber, in their chair.
+      const old_ = forebearAtFire(s) ? s.family!.forebear : null;
+      const company = old_ ? [...here, old_] : here;
       const game_ = (label: string, g: 'shoes' | 'dice', note: string, run: () => void): Row => {
         const why = gameBlocked(s, g);
         return {
@@ -2425,13 +2461,14 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         title: 'The fire',
         sub: !isNight(s.min)
           ? 'Coals and a coffee pot. It’s lit again after dark.'
-          : here.length
-            ? `${here.join(' and ')}, and a camp chair with your name on it.`
+          : company.length
+            ? `${company.join(' and ')}, and a camp chair with your name on it.`
             : 'Just you and the coals tonight.',
         close: true,
         rows: [
           actRow(game, s, 'lot.sit'),
           ...storyRow(game, s),
+          ...(old_ ? forebearRows(game, s, old_) : []),
           game_(
             'Horseshoes',
             'shoes',

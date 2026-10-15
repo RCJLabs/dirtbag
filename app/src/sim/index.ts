@@ -331,6 +331,7 @@ export {
   CREW_NAME,
   CREW_PROJECT,
   FAVOUR,
+  FAMILY,
 } from './dials';
 export type { Plan } from './dials';
 export { weeklyBills, clinicBill, carePrice, jabbed, premiumOf } from './clinic';
@@ -482,6 +483,7 @@ export { agedSkills, ageCost, ageingNote, ageMult, healDays } from './ageing';
 export { clinicBlocked, clinicHeads, clinicPay, compTomorrow, setCompBlocked } from './runway';
 export { RUNWAY_SAYS } from './content/runway';
 export { byName, familyFill, familyWords, kinLine } from './heir';
+export { betaLine, forebearAtFire, forebearBlocked } from './forebear';
 export { COACH_EDGE, HEIR_ACT } from './content/heir';
 export { epilogue, namedDeeds, type EpilogueLine } from './epilogue';
 export {

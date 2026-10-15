@@ -1577,5 +1577,9 @@ export const HOME = { people: 2, tier: 2, cash: 200, psyche: 20 };
 // month, not a way round being broke (Evan's call: a share, capped). `old`: how much of the
 // old guard's regard for them carries, as a share of the way from where everyone starts to
 // where they left it, either way (Evan's call: lines plus standing) [proposed numbers].
-export const FAMILY = { share: 0.25, shifts: 10, old: 0.5 };
+// Phase 31.2: the old climber at the fire. `fire`: the nights they're there once you've sat
+// with them (the first night after dark, they always are): every other night, about, so it's
+// a someone you look for, not furniture. `talk` and `beta`: minutes, as long as an evening
+// story and a line drawn in the dirt take; a crew go on the project is ten [proposed].
+export const FAMILY = { share: 0.25, shifts: 10, old: 0.5, fire: 0.5, talk: 30, beta: 20 };
 export const QUIRK = { after: 30, fresh: 70, tired: 35, evening: 17 * 60, dawn: 9 * 60, easy: 2 };

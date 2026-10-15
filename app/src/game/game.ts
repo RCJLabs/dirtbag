@@ -978,6 +978,12 @@ export class Game {
     this.dispatch({ t: what });
   }
 
+  // Phase 31.2: the old climber at the fire, sat with or asked; the fire's card again.
+  forebear(what: 'talk' | 'beta'): void {
+    this.dispatch({ t: 'forebear', do: what });
+    this.openSheet({ k: 'fire' });
+  }
+
   // A comp (Phase 18.4): signed up for, or the scorecard in; back to the desk.
   comp(what: 'enter' | 'finish'): void {
     this.dispatch({ t: 'comp', do: what });
