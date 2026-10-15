@@ -3469,6 +3469,30 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - **Its send:** a line at the send, their word at the fire the next time you sit with them ("“You sent it.” Robin doesn’t say anything else for a while. Then: “How was the top?”"), a Record Book entry ("Unfinished Business", `kinquest`), and an epilogue line (`QUEST_END`; a first ascent's is the repeat line the family already had).
 - **Tests:** `kin.test.ts` (the old guard's word by band and once; the crowd and the shops; the quest's three kinds; given, sent, heard, the book and the epilogue; not a quest till given).
 
+**Status (15 Oct 2026): 31.4 built: the heir in the harness and the e2e.** No save change, 0.999.65.
+- **The bot plays a family:** `playDays` takes `from` (the handover's state; the kid is made there), and every evening at the Lot a family's kid sits with the old climber when they're at the fire and asks about a line (`forebearNight`; the run keeps each ask, and whether the line was one they sent). The social bot answers the old guard's word (`kin-` beats) as it does the other moments.
+- **The family harness** (in `career.harness.ts`, criterion 1): four career bots, one from each start, play 200 days and hang it up (all at 33, by choice); the kid each one coached climbs on for 112 days as the social career bot.
+
+| start | hung up | left | old guard: theirs → the kid’s | lines kept | the quest | met | asks: theirs · the quest | old guard’s word | quest sent |
+|---|---|---|---|---|---|---|---|---|---|
+| boulderer | 33, chose | $9 | 84 → 67 | 15 | project: The open project, V7 | day 1 | 19 · 1 | frank | no |
+| ropegun | 33, chose | $37 | 78 → 64 | 21 | project: Lunar Roof, V11 | day 1 | 24 · 1 | frank | no |
+| technician | 33, chose | $12 | 84 → 67 | 26 | hardest: Lunar Roof, V11 | day 1 | 30 · 0 | frank | yes |
+| allrounder | 33, chose | $213 | 90 → 70 | 22 | project: The open project, V7 | day 1 | 26 · 1 | frank | no |
+
+  - Every kid meets them the first night it's at the Lot after dark, and asks about one of their lines 19 to 30 times in two years; the quest is the kid's ask once or never (the bot asks on the line of theirs it has worked most, else the easiest).
+  - Frank's word comes to every kid; Ray's to none: he's at Roadside on weekend mornings and the bots aren't, and he's gone after year six.
+  - The forebears left $9 to $213: a career bot at 33 doesn't hold much cash. All four stood well with the old guard (78 to 90), so every kid starts past the local-knowledge perk (56).
+  - One kid sent the quest, the forebear's hardest (Lunar Roof, V11), on its fifth go at V8 all round: a power line for a power climber, with the forebear's beta.
+- **The e2e:** the hanging-it-up section now plays Jo's first night: Robin at the fire, the chair and the line they give, and an ask that teaches the next beta on one of Robin's lines (Warm Boulder), as told.
+- **The harness:** 30 of 31 targets pass, the family's among them. Outdoors is 1 of 4, as since 30.1. The ladders' tables are unchanged from 30.4: the bot's change reaches only a family's kid.
+
+**Phase 31's Done-when, checked (15 Oct 2026):**
+1. **An heir's career meets the old climber and takes beta from them on a line they sent:** passes. The family harness: 4 of 4 kids meet them and ask about lines they sent (the table above); the e2e plays it.
+2. **A save from before the phase, with an heir, loads:** passes since 31.1. The fixture `save-v69.json` (a real heir save from 0.999.61) loads, its Record Book split, plays on, and its old climber is at the fire with their first ascents (`inherit.test.ts`, `forebear.test.ts`, `kin.test.ts`).
+
+Closing the phase is Evan's call.
+
 ### Phase 32 — The Hollow
 
 *Large. The Hollow waits for "the quest that finds it" (Phase 21). Phase 5 kept "projects and FAs" to deepen. The Bluff's bolting covers lines already drawn.*
@@ -4013,3 +4037,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-15 — 31.1 built: what the old climber leaves: a share of the money, capped; half their standing with the old guard; what they did, kept for the family; their Record Book beside the kid's fresh one. Save v70. 0.999.62.
 - 2026-10-15 — 31.2 built: the old climber at the fire: there the first night after dark and some nights after; a story from what the family kept; beta on a line they sent. No save change. 0.999.63.
 - 2026-10-15 — 31.3 built: the old guard knows whose kid you are (Ray, Frank, the crowd, the shops); the line the old climber never sent, given at the fire, sent, and in the book. No save change. 0.999.64.
+- 2026-10-15 — 31.4 built: the bot plays a family; the family harness (criterion 1, 4 of 4); the e2e's night at the fire with Robin. Phase 31's Done-when both pass. 0.999.65.

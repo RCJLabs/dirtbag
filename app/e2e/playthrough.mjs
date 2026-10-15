@@ -2631,6 +2631,40 @@ console.log('Hanging it up');
   if (!/^Act I, Their Shadow · 1 of 5 · The keys$/.test(actRow)) await fail(`old: the kid's act: ${actRow}`);
   log(`old: Jo climbs on: ${fam.slice(0, 70)} · ${actRow}`);
   await old.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-heir-you.png`) });
+  // Phase 31.2-31.3 (criterion 1): that night Robin's at the fire. Jo sits with them, is given
+  // a line, and asks about one of Robin's, learning its next beta as told.
+  const night = await old.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  night.state = { ...night.state, at: 'lot', x: null, min: 20 * 60, encounter: null };
+  await old.evaluate((v) => localStorage.setItem('dirtbag.save', JSON.stringify(v)), night);
+  await old.reload({ waitUntil: 'load' });
+  await old
+    .locator('button.hot[aria-label="Your van"]')
+    .first()
+    .evaluate((el) => el.click());
+  await old.waitForFunction(() => document.querySelector('#sheet-title')?.textContent === 'Your van');
+  await old.locator('#sheet .opt', { hasText: 'The fire' }).first().click();
+  await old.waitForFunction(() => document.querySelector('#sheet-title')?.textContent === 'The fire');
+  const fire = await sheet();
+  if (!/Robin, and a camp chair with your name on it/.test(fire))
+    await fail(`old: Robin at the fire: ${fire.slice(0, 200)}`);
+  const told = (st) => Object.values(st.routes).reduce((t, l) => t + l.told.length, 0);
+  const before = told(night.state);
+  await old.locator('#sheet .opt', { hasText: 'Sit with Robin' }).first().click();
+  await old.waitForFunction(() => document.querySelector('#sheet-title')?.textContent === 'The fire');
+  await old.locator('#sheet .opt', { hasText: 'Ask Robin about' }).first().click();
+  await old.waitForFunction(() => document.querySelector('#sheet-title')?.textContent === 'The fire');
+  const lit = await old.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  const said = lit.log.slice(-4).map((l) => l.text);
+  if (
+    !said.some((t) => t.startsWith('Robin has a camp chair at the fire now')) ||
+    !said.some((t) => t.includes('“One thing.')) ||
+    !said.some((t) => t.startsWith('Robin draws ')) ||
+    told(lit) !== before + 1 ||
+    !lit.seen.includes('forebear-met')
+  )
+    await fail(`old: the night with Robin: ${JSON.stringify(said)}`);
+  log(`old: ${said.find((t) => t.startsWith('Robin draws '))?.slice(0, 120)}`);
+  await old.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-heir-fire.png`) });
   await ctx.close();
 }
 
