@@ -4,6 +4,7 @@
 import { BUILD, UPGRADE, VAN, VAN_AGE, type VanPart } from './dials';
 import { PARTNERS, tierOf } from './presence';
 import { edgeGas } from './paths';
+import { perkMult } from './perks';
 import { Rng } from './rng';
 import type { GameState } from './types';
 
@@ -42,9 +43,9 @@ export const bodgeHolds = (s: GameState): boolean =>
   Rng.fromStream(s.seed, 'events').derive(`bodge-${s.day}-${s.min}`).next() < bodgeOdds(s);
 
 // What a drive's gas comes to, with the tune-up (Phase 22.2c).
-// And the Dirtbag path's (Phase 23.4).
+// And the Dirtbag path's (Phase 23.4), and the warehouse's fuel card (Phase 34.1).
 export const gasFor = (s: GameState, cash: number): number =>
-  Math.round(cash * ((s.gear.tuneup ?? 0) > 0 ? UPGRADE.tuneup.gas : 1) * edgeGas(s));
+  Math.round(cash * ((s.gear.tuneup ?? 0) > 0 ? UPGRADE.tuneup.gas : 1) * edgeGas(s) * perkMult(s, 'fuel'));
 
 // Phase 29.3: the miles that count against the engine, the clock less what rebuilds took off.
 export const vanMiles = (s: GameState): number => s.van.miles - s.van.rebuilt;

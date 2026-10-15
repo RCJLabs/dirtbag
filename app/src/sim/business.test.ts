@@ -8,6 +8,7 @@ import { JOBS } from './content/jobs';
 import { ROUTES } from './content/routes';
 import { OWN_GYM, GYM_SET, LAND } from './dials';
 import { act, goBlocked, newGame } from './game';
+import { hasJobPerk } from './perks';
 import type { GameState, OwnGym } from './types';
 
 const strong = { power: 400, fingers: 400, endurance: 400, technique: 400, head: 400 };
@@ -122,9 +123,11 @@ describe('your own gym', () => {
     expect(goBlocked({ ...s, today: [] }, problem)).toMatch(/day pass/);
     expect(goBlocked(s, problem)).toBeNull();
     expect(act(s, { t: 'act', act: 'gym.shower' }).events[0]?.k).not.toBe('refused');
-    // Sold, the keys go with it: tomorrow's pass is bought like anyone's.
+    // Sold, the keys go with it. A head setter still climbs free, on the setter's perk
+    // (Phase 34.1), so tomorrow's pass is the perk's, not the keys'.
     const sold = act(s, { t: 'gym', do: 'sell' }).state;
-    expect(sleep(sold).state.today).not.toContain('pass');
+    expect(sleep(sold).state.today.includes('pass')).toBe(hasJobPerk(sold, 'sendCity'));
+    expect(sleep({ ...sold, jobs: { ...sold.jobs, set: 0 } }).state.today).not.toContain('pass');
   });
 });
 

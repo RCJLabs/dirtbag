@@ -147,6 +147,21 @@ export const COMP = {
 // Top of the table when it's settled, on the year's last League night, pays `prize`. Phase 26
 // [proposed]: a season won moves you to the A league for good, whose top pays `prizeA`.
 export const LEAGUE = { best: 6, prize: 250, prizeA: 500 };
+// Phase 34.1 [proposed] (Evan's call, 15 Oct 2026: perks on the jobs there are). From a job's
+// rank `from` up, a perk that matters to a climber, a share `off` the price where it's money:
+// the setter climbs free at Send City, and at every gym once senior; the guide, who works out
+// of the gear shop, pays its staff price; the warehouse's fuel card takes a share off gas; the
+// Cave's coaches see its physio at a discount; the café's staff drink free and the diner's eat
+// the special at the staff price.
+export const PERKS = {
+  sendCity: { job: 'set', from: 1, off: 1 },
+  everyGym: { job: 'set', from: 2, off: 1 },
+  staff: { job: 'guide', from: 1, off: 0.2 },
+  fuel: { job: 'warehouse', from: 2, off: 0.25 },
+  physio: { job: 'coach', from: 1, off: 0.5 },
+  coffee: { job: 'cafe', from: 1, off: 1 },
+  special: { job: 'diner', from: 1, off: 0.5 },
+} as const;
 // Phase 33.3 [proposed]: the rivals (content/comps.ts ROSTER). A rival's trend runs for their
 // first `years` years and then they hold, so nobody rises for ever; each year's grade is give
 // or take `wobble`, seeded: some years are better. A rival goes up a rung for good the first

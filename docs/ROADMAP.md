@@ -69,7 +69,7 @@
 | 16 The spine | Next after 21–23. |
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 | 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
-| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27, 28 and 29 (14 Oct 2026); Phase 33 is the current milestone. |
+| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27, 28 and 29 (14 Oct 2026), Phase 33 (15 Oct 2026); Phase 34 is the current milestone. |
 
 ## The rebuild track
 
@@ -3405,7 +3405,7 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 2. The content test holds the Hollow's lines to the same rules as every other line.
 3. The download stays within its budget, raised if Evan agrees.
 
-### Phase 33 — Comps with rounds   **<<< CURRENT MILESTONE**
+### Phase 33 — Comps with rounds
 
 *Medium. Every comp is one round on one day, climbed like the gym, and there's no national team.*
 
@@ -3479,7 +3479,9 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - **Caveat:** a save made mid-comp on the old calendar (through to a round on day 25 or 18) climbs that round's day as a one-round set and is placed among the whole field: it hands in, and nothing breaks.
 - **The download** is 436.5 KB of 460.
 
-### Phase 34 — Money that means something
+**Phase 33 closed by Evan's call (15 Oct 2026).** Both criteria pass. Carried: the comp bots end fewer of the story's acts since the calendar moved (not selection; why isn't established); the national team is a V12–V13 climber's; a favourite still loses a final on the field's dice now and then. The CURRENT MILESTONE moves to Phase 34. The download is 436.5 KB of 460.
+
+### Phase 34 — Money that means something   **<<< CURRENT MILESTONE**
 
 *Medium. Followers pay nothing; a job's ranks raise its pay and nothing else; costs don't grow with ambition. The audit's economy #8, #9, #16 and #17.*
 
@@ -3499,6 +3501,26 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 **Done when.**
 1. The harness's money table shows media income in a media career, never more than a job's.
 2. Every perk's text is formatted from its dial.
+
+**Planned (15 Oct 2026), with Evan's calls:**
+- **Rank perks on the jobs there are** (the clerk and the courier stay cut): the setter climbs free at Send City, then at every gym; the guide, who works out of the gear shop, pays its staff price; the warehouse has a fuel card; the Cave's coaches see its physio at a discount; the café's staff drink free and the diner's eat the special at the staff price. Each from a rank, each a dial.
+- **Photos:** your sends sell. With a camera (new gear) or a partner shooting, a first send outside at or above a grade makes a photo that sells once to a magazine, priced from the grade and your followers, capped so it never out-earns a job.
+- **Costs of ambition, opt-in:** a physio on retainer and a coach for your own training, each weekly and worth it only if used; and travel for Nationals, the World Series and the Games.
+- **Trade shows and a film, both light:** a sponsor (Apex and up) asks for a trade show once a season (days away, a fee and followers, clashing with climbing); a film you commission of a send, a late money goal (followers and a Record Book entry).
+- **Slices:** 34.1 rank perks; 34.2 the costs of ambition; 34.3 photos that sell and a magazine piece; 34.4 trade shows, the film, the money table and the close.
+
+**Status (15 Oct 2026): 34.1 built: rank perks.** No save change, 0.999.54. Phase 34's criterion 2 passes.
+- **The perks** (`PERKS` in the dials, `perks.ts`), each from a rank and read off it, never kept:
+  - **Setting:** a Setter climbs free at Send City and a Senior setter at every gym: the day passes are in your day each morning, as the owner's is.
+  - **Guiding:** a Guide pays the gear shop's staff price, 20% off; not the market's food or Dale's garage.
+  - **The warehouse:** a Forklift driver has the fuel card, gas 25% off.
+  - **Coaching:** a Coach sees the Cave's physio 50% off; nothing else at the clinic.
+  - **The café:** a Regular drinks Wren's coffee on the house. **The diner:** a Server eats the special 50% off.
+- **Shown:** a shift's row says the perks you have at that job and the next one, with the rank it takes ("At Guide, the staff price at the gear shop, 20% off"); prices on the shop, the clinic, the drives and the menus are the perk's. Every perk's words are formatted from its dial, and a test holds them to having no number of their own (criterion 2).
+- **Caveat:** an act's "can the card take it" check still asks for the full price, so a staff-priced buy can be declined when the card is nearly maxed and the full price wouldn't fit.
+- **A bot rule, from the perks:** the business bot, its passes now free and its savings sooner, bought Send City 49 days earlier and then, flush, booked one story expedition after another: 110 of 155 days away in one career, its wall stale, 199 members at a forced retirement. It now minds its gym till it's the busiest in the valley before it takes a story trip away, as the media bot does the film. With that, every business career makes 200 members (median day 273.5, from 340 on main) with four acts of the story.
+- **The harness** passes every target but Outdoors, at 2 of 4 as on main.
+- **The download** is 437.0 KB of 460.
 
 ### Phase 35 — The road and the year
 
@@ -3846,3 +3868,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-14 — 33.2 built: comp rules. A clock on each problem (5 minutes in a qualifier, 4 after, a go a minute) caps its goes; isolation keeps everyone's beta off comp problems, and Sage no longer teaches the week's set mid-comp. No save change. 0.999.51.
 - 2026-10-14 — 33.3 built: the field that comes back. Named rivals on each rung from the Circuit up, with grades by year, some going up a rung; Skye at the World Series and Nationals; the desk names the favourites and a comp names its winner. The field's tops roll go by go, so the top grade no longer wins every time. No save change. 0.999.52.
 - 2026-10-14 — 33.4 built: Nationals first on the calendar and nothing on the same day; the Nationals podium makes the team, and only the team climbs the World Series; a finalist's morning has the pass. The e2e plays a qualifier and a final (criterion 2). Phase 33's Done-when both pass; closing is Evan's call. No save change. 0.999.53.
+- 2026-10-15 — Phase 33 closed by Evan's call; CURRENT MILESTONE moved to Phase 34, money that means something.

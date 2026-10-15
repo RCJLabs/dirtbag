@@ -219,6 +219,7 @@ import {
   compClock,
   compSet,
   FIELD_SAYS,
+  perksNote,
   picksFor,
   rivalsIn,
   roundName,
@@ -345,6 +346,8 @@ function actRow(game: Game, s: GameState, id: string): Row {
     bodyNote(cost),
     a.note && fill(a.note, TEXT_VALUES),
     a.job && jobNote(s, a.job.id),
+    // Phase 34.1: what the job's ranks bring.
+    a.job && perksNote(s, a.job.id),
     walkIn,
     stove,
   ]

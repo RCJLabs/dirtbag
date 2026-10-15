@@ -1205,8 +1205,12 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   let nextTrip = 0;
   function storyTrip(morning: Skills): boolean {
     const aim = currentGoal(s)?.aim;
-    // The film's season comes first for the media bot: no trips away while it's on.
-    if (!aim || s.injury || s.booked || s.expedition || s.day < nextTrip || filmOn() !== null) return false;
+    // The film's season comes first for the media bot: no trips away while it's on. Phase
+    // 34.1: the gym comes first for the business bot, till it's the busiest in the valley; with
+    // the perks' savings it could afford a trip a month, and its wall went stale while it was away.
+    const minding = opts.focus === 'business' && !!s.gym && s.gym.peak < OWN_GYM.members.top;
+    if (!aim || s.injury || s.booked || s.expedition || s.day < nextTrip || filmOn() !== null || minding)
+      return false;
     const from = s.day;
     const did = 'summit' in aim ? expedition(aim.summit) : 'wall' in aim ? wall(aim.wall) : false;
     if (!did) return false;
