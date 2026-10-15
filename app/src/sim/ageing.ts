@@ -3,7 +3,7 @@
 // see is your skills as trained. Kept apart from age.ts, which reads the story and the cast,
 // so the climbing code can ask without them.
 
-import { AGE, AGEING } from './dials';
+import { AGE, AGE_COST, AGEING } from './dials';
 import { originOf } from './identity';
 import type { GameState, SkillId, Skills } from './types';
 
@@ -35,6 +35,13 @@ export function agedSkills(s: GameState): Skills {
 }
 
 // A share as a percentage: whole where it is, a tenth where it isn't (half a percent a year).
+// Phase 30.2: what the years cost the body and the plan, as a share: whole before `from`.
+export const ageCost = (s: GameState, what: keyof typeof AGE_COST): number =>
+  1 + AGE_COST[what].a * Math.max(0, ageOf(s) - AGE_COST[what].from);
+
+// An injury's days, as long as your years make it.
+export const healDays = (s: GameState, days: number): number => Math.round(days * ageCost(s, 'heal'));
+
 const pct = (m: number) => `${Number((Math.abs(m - 1) * 100).toFixed(1))}%`;
 
 // The You page's line on what the years have done, or null while they've done nothing.
@@ -50,5 +57,13 @@ export function ageingNote(s: GameState): string | null {
     .filter((g) => g.m !== 1)
     .map((g) => `${g.words} ${pct(g.m)} ${g.m < 1 ? 'down' : 'up'}`);
   if (!said.length) return null;
-  return `At ${age}, the years have your ${said.join(', ').replace(/, ([^,]*)$/, ' and $1')}.`;
+  // Phase 30.2: what a night gives back, and how long a hurt lasts.
+  const body = [
+    ageCost(s, 'recover') < 1 ? `a night gives back ${pct(ageCost(s, 'recover'))} less` : '',
+    ageCost(s, 'heal') > 1 ? `an injury lasts ${pct(ageCost(s, 'heal'))} longer` : '',
+  ].filter(Boolean);
+  const more = body.length ? ` ${cap(body.join(', and '))}.` : '';
+  return `At ${age}, the years have your ${said.join(', ').replace(/, ([^,]*)$/, ' and $1')}.${more}`;
 }
+
+const cap = (x: string) => `${x[0]!.toUpperCase()}${x.slice(1)}`;

@@ -8,9 +8,9 @@ import { CAME_ACROSS, ORIGINS } from './content/origins';
 import { STARTS } from './climber';
 import { TALENTS } from './content/talents';
 import { LIFESTYLE, LOAD, MONEY, PLANS, TALENT } from './dials';
-import { weeklyBills } from './clinic';
+import { premiumOf, weeklyBills } from './clinic';
 import { act, actCost, newGame } from './game';
-import { dealTalents, gainMult, originTerms, premiumOf, talentsShowing } from './identity';
+import { dealTalents, gainMult, originTerms, talentsShowing } from './identity';
 import { livingTonight } from './jobs';
 import type { GameState } from './types';
 

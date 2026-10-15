@@ -55,8 +55,8 @@ export const livingMult = (s: GameState): number =>
   (fx(s).living ?? 1) * (cfx(s).living ?? 1) * edgeLiving(s);
 export const shopMult = (s: GameState): number => fx(s).shop ?? 1;
 export const originBill = (s: GameState): number => fx(s).bill ?? 0;
-export const premiumOf = (s: GameState, plan: keyof typeof PLANS): number =>
-  Math.round(PLANS[plan].premium * (fx(s).premium ?? 1));
+// Your origin's terms on a plan's premium; clinic.ts adds your age (Phase 30.2).
+export const premiumMult = (s: GameState): number => fx(s).premium ?? 1;
 
 // One good and one bad, dealt on the seed when you're made.
 export function dealTalents(seed: string): string[] {

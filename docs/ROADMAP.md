@@ -3383,6 +3383,15 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - **The harness** passes every target it passed on main; Outdoors, already short, falls to 1 of 4 (2 on main): the ropegun finished Act III on day 397 (365) and ran out of clock. Across the endings, careers of no origin finish Act IV 5 of 8 (4 on main) and Act III by median day 320.5 (339); Late Bloomers, who start at 26 and so meet the curve sooner, reach Act V 0 of 8 (1) and finish Act III 3 of 8 (4).
 - **The download** is 440.8 KB of 460.
 
+**Status (15 Oct 2026): 30.2 built: recovery, healing and insurance by age.** No save change, 0.999.59.
+- **A night gives back less** (Evan's call; `AGE_COST` in the dials): energy and skin 1% less a year from 30, 15% less by 45, on every night (the van, the ledge, an expedition's tent). The evening's Tonight sheet says the same number the night gives.
+- **An injury lasts longer:** 3% a year from 35, 30% longer at 45, on every roll that hurts you (a go, a landing, a deck, the walk out of an epic). The odds of getting hurt don't read your age.
+- **Insurance by age:** catastrophic and full cost 3% more a year from 30, 45% more at 45; the cover's the same. The insurance sheet and the week's bills show the price your age pays.
+- **The You page** adds what a night and an injury cost ("A night gives back 15% less, and an injury lasts 30% longer").
+- **Shape:** the premium moved from `identity.ts` to `clinic.ts`, next to the bills, so it can read your age without a loop of imports; `identity.ts` keeps your origin's share of it.
+- **The harness** passes every target it passed on 30.1; Outdoors stays 1 of 4. The cost lands on Late Bloomers, who start at 26 and so live most of a career past 30: 1 of 8 finish Act III (3 on 30.1, 4 on main). Careers of no origin finish Act IV 4 of 8 (5 on 30.1, 4 on main) and Act III by median day 334.5 (320.5, 339). The first month's injuries are as on main (2% warmed up, 6% cold and reckless), as the odds don't read age.
+- **The download** is 441.0 KB of 460.
+
 ### Phase 31 — After you
 
 *Medium. The heir has a five-goal act and a coarse head start. The audit (`meta.md` #11) asked for the family name in the scene, a share of the money and a first quest of the heir's own. An inherited gym stays out.*
@@ -3937,3 +3946,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-15 — 34.4 built: a day on the sponsor's stand each cycle from Apex up; a film of your hardest line, paid for once; money tagged by where it came from, and the harness's money table (criterion 1). Phase 34's Done-when both pass. Save v68. 0.999.57.
 - 2026-10-15 — Phase 34 closed by Evan's call; CURRENT MILESTONE moved to Phase 30, getting older.
 - 2026-10-15 — Phase 30 planned with Evan's calls (a gentle curve with skill offsets, halved after measuring; slower recovery and healing; the runway from 35; insurance by age). 30.1 built: a go uses your skills as your years have them, said on the You page. No save change. 0.999.58.
+- 2026-10-15 — 30.2 built: a night gives back less from 30, an injury lasts longer from 35, insurance costs more from 30; the odds of getting hurt don't move. No save change. 0.999.59.

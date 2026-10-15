@@ -11,6 +11,7 @@ import { scarred } from './scars';
 import { Rng } from './rng';
 import { riskFactor } from './training';
 import { injuryMult } from './identity';
+import { healDays } from './ageing';
 import type { GameState, Injury, Load } from './types';
 
 const round2 = (v: number) => Math.round(v * 100) / 100;
@@ -87,7 +88,12 @@ export function rollInjury(
   const sev = Math.max(0, ratio(s.load) - LOAD.risk) * LOAD.typeRisk[r.type] * 2 + rng.next() * 0.4;
   const tier = sev < 0.5 ? 1 : sev < 1.3 ? 2 : 3;
   const [lo, hi] = INJURY.days[tier - 1]!;
-  return { kind: INJURY_NAME[AREA[r.type]][tier - 1]!, tier, until: s.day + 1 + rng.int(lo, hi) };
+  // Phase 30.2: longer with your years.
+  return {
+    kind: INJURY_NAME[AREA[r.type]][tier - 1]!,
+    tier,
+    until: s.day + 1 + healDays(s, rng.int(lo, hi)),
+  };
 }
 
 // Days still off, counting today.

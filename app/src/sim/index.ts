@@ -331,7 +331,7 @@ export {
   FAVOUR,
 } from './dials';
 export type { Plan } from './dials';
-export { weeklyBills, clinicBill, carePrice, jabbed } from './clinic';
+export { weeklyBills, clinicBill, carePrice, jabbed, premiumOf } from './clinic';
 export { flaring, scarred, historyWindows } from './scars';
 export { isSick, sickOdds, SICK_NAME } from './sick';
 export { psycheBy, psycheDay, psycheWord } from './psyche';
@@ -449,7 +449,7 @@ export { OPEN_RECORD, aimEarned } from './record';
 export {
   originOf,
   originTerms,
-  premiumOf,
+  premiumMult,
   livingMult,
   payMult,
   shopMult,
@@ -476,7 +476,7 @@ export {
   tallyOf,
   type Tally,
 } from './age';
-export { agedSkills, ageingNote, ageMult } from './ageing';
+export { agedSkills, ageCost, ageingNote, ageMult, healDays } from './ageing';
 export { byName, familyFill, familyWords, kinLine } from './heir';
 export { COACH_EDGE, HEIR_ACT } from './content/heir';
 export { epilogue, namedDeeds, type EpilogueLine } from './epilogue';

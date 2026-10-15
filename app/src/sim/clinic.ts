@@ -3,9 +3,15 @@
 
 import { CLINIC, INJURY, MONEY, PLANS } from './dials';
 import type { GameState, Injury } from './types';
-import { originBill, premiumOf } from './identity';
+import { ageCost } from './ageing';
+import { originBill, premiumMult } from './identity';
 import { perkMult } from './perks';
 import { retained } from './retainers';
+
+// A plan's premium a week: on your origin's terms (Phase 23.2), and dearer with your years
+// (Phase 30.2).
+export const premiumOf = (s: GameState, plan: keyof typeof PLANS): number =>
+  Math.round(PLANS[plan].premium * premiumMult(s) * ageCost(s, 'premium'));
 
 // Registration and your plan's premium, due on the week's last night.
 // Phase 23.2: the premium on your origin's terms, and its own bill (a storage unit).

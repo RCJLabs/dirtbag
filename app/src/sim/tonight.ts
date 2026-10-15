@@ -9,6 +9,7 @@ import { psycheBy, psycheDay, psycheWord, type PsycheWord } from './psyche';
 import { MEAL_NAME } from './content/food';
 import { livingTonight, skimps } from './jobs';
 import { weeklyBills } from './clinic';
+import { ageCost } from './ageing';
 import { nightAt, type Night } from './spots';
 import { conditions, type Sky } from './weather';
 import type { GameState } from './types';
@@ -77,14 +78,17 @@ export function tonight(s: GameState): Tonight {
     psyche: { word: psycheWord(psycheBy(s).level), up: psycheDay(s).up, down: psycheDay(s).down },
     same:
       s.meals.length >= FOOD.same && s.meals.every((m) => m === s.meals[0]) ? MEAL_NAME[s.meals[0]!]! : null,
-    energy:
-      (rough ? BODY.roughEnergy : BODY.sleepEnergy) -
-      (hungry ? BODY.hungryNight : 0) +
-      life.energy +
-      night.energy,
+    // Phase 30.2: as much as your years give back, tomorrow's age as the night has it.
+    energy: Math.round(
+      ((rough ? BODY.roughEnergy : BODY.sleepEnergy) -
+        (hungry ? BODY.hungryNight : 0) +
+        life.energy +
+        night.energy) *
+        ageCost({ ...s, day: s.day + 1 }, 'recover'),
+    ),
     hungry,
     living: { tier: s.lifestyle, ...life, skimped: !rough && s.lifestyle !== 'dirtbag' && skimps(s, spot) },
-    skin: BODY.sleepSkin + life.skin,
+    skin: Math.round((BODY.sleepSkin + life.skin) * ageCost({ ...s, day: s.day + 1 }, 'recover')),
     bills,
     billsIn,
     cash,
