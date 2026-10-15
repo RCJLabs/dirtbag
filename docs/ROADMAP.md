@@ -3534,6 +3534,20 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - **The harness** passes every target but Outdoors, at 2 of 4 as on main. The comp bots reach the Games 4 of 4, median day 219 as on main; the boulderer's and the ropegun's first Games on main's day, the technician's sooner (219, from 330), the allrounder's later (387, from 219).
 - **The download** is 438.0 KB of 460.
 
+**Status (15 Oct 2026): 34.3 built: photos that sell, and a magazine piece.** Save v67, 0.999.56.
+- **A camera** at the gear shop, $220 (and sold back like the rest of your kit).
+- **Photos** (Evan's call: your sends sell; `PHOTO` in the dials, `media.ts`): a first send outside at V5 or harder, on your camera or shot by one of the crew there, is a photo; not a wall's pitch or an expedition's, whose summits sell already, nor a gym's.
+  - **Sold** from your feed, one a week, each photo once: $15 a grade from V5, doubled at 20,000 followers, half on a partner's phone, and never over $100.
+  - **The cap** is under the poorest week any job pays (Setting's first rank: four shifts of $30), and a test holds it there.
+  - The feed offers the best three to pitch, with who shot them and when, and counts the rest.
+- **The piece** (`PIECE`): once a magazine has bought two of your photos, an editor asks for a page on the season, once a year, with two weeks to write it. An evening at the van, as a guide's pages are, for $150 and the followers a page brings; unwritten, it lapses with a line.
+- **Every word** of it is formatted from the rules, and a test holds the templates to having no numbers.
+- **Save v67:** no photos and no piece asked for. A real 0.999.55 save, a physio on retainer, loads with neither.
+- **The bots:** the media bot buys the camera when the money's past its cushion, pitches its best photo whenever a magazine will take one, and writes the piece first thing at the van. Measured over its four careers: camera by day 73 to 94; 14 to 61 photos, 14 to 46 sold for $1,388 to $4,232 a career; five to eight pieces. Its shifts paid $17,267 to $26,867 over the same careers.
+- **Caveat:** followers pass 100,000 in a media career, so most photos sell at the cap by mid-career: the grade and the followers set the price early, and the cap after.
+- **The harness** passes every target but Outdoors, at 2 of 4 as on main. The media bots reach the film at median day 159.5 (161.5 on main), three of the four sooner with the photo money; every other ladder as on main.
+- **The download** is 439.5 KB of 460.
+
 ### Phase 35 — The road and the year
 
 *Small. The knocks have no follow-up. There are eight hitchhikers, and no pull toward the ones you haven't met (the audit's social #9). The roadside stops are one-line lifts. Holidays are fire cards (the audit's social #16).*
@@ -3883,3 +3897,4 @@ All three pass. Closing the phase is Evan's call. Carried caveats:
 - 2026-10-15 — Phase 33 closed by Evan's call; CURRENT MILESTONE moved to Phase 34, money that means something.
 - 2026-10-15 — Phase 34 planned with Evan's calls (perks on the jobs there are; your sends' photos sell; opt-in retainers and comp travel; trade shows and a film, light). 34.1 built: rank perks for the setter, the guide, the warehouse, the coach, the café and the diner, each said from its dial (criterion 2); the business bot minds its gym till it peaks. No save change. 0.999.54.
 - 2026-10-15 — 34.2 built: the costs of ambition: a physio on retainer and a coach of your own, each weekly and opt-in, and travel to Nationals, the World Series and the Games. Save v66. 0.999.55.
+- 2026-10-15 — 34.3 built: photos that sell (a camera, or one of the crew shooting; one a week to a magazine, capped under the poorest job's week) and a magazine piece once a year; the media bot uses both. Save v67. 0.999.56.

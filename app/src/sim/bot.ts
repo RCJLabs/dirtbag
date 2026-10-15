@@ -80,7 +80,7 @@ import { defaultPlan, planBlocked, planCost, stormOn, summitOdds, yourPitch } fr
 import { WALLS } from './content/routes';
 import { COMP_TIERS } from './content/comps';
 import { compBlocked, compCost, compHere, gradesFor, picksFor } from './comps';
-import { postBlocked } from './media';
+import { photoBlocked, pieceBlocked, postBlocked, unsoldPhotos } from './media';
 import { gymBuyBlocked, UPGRADES, type Upgrade } from './business';
 import { scoreSet, setBrief } from './work';
 import { LADDERS } from './ladders';
@@ -598,10 +598,14 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   function kit() {
     const resole = (s.gear.shoes ?? 0) < KIT.shoes.worn + 5 && s.cash >= KIT.shoes.resole + CUSHION[strategy];
     const chalk = (s.gear.chalk ?? 0) < 5 && s.cash >= KIT.chalk.price;
-    if (!resole && !chalk) return;
+    // Phase 34.3: the media bot's camera, with money past the cushion for it.
+    const camera =
+      opts.focus === 'media' && !has(s, 'camera') && s.cash >= KIT.camera.price + CUSHION[strategy];
+    if (!resole && !chalk && !camera) return;
     travel('shop');
     if (resole) tryAct('shop.resole');
     if (chalk) tryAct('shop.chalk');
+    if (camera) tryAct('shop.camera');
   }
 
   // Phase 22.4a: physio when hurt, with money past the cushion for it and days to save.
@@ -1433,6 +1437,9 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     const ad = s.media.sponsor?.tasks.some((x) => x.kind === 'ad' && !x.done);
     const style = ad && !postBlocked(s, 'ad') ? 'ad' : 'straight';
     if (!postBlocked(s, style)) go({ t: 'post', style });
+    // Phase 34.3: the best photo to a magazine, whenever one will take it.
+    const best = unsoldPhotos(s)[0];
+    if (best && !photoBlocked(s, best.route)) go({ t: 'photo', route: best.route });
   }
 
   // The film's grade while one's on, for the media bot; else null.
@@ -1523,6 +1530,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
     while (s.encounter) if (!go({ t: 'answer', opt: answer() })) break;
     if (storyTrip(morning)) return;
     if (opts.focus === 'media') answerOffer();
+    // Phase 34.3: the year's piece, written at the van first thing, while there's energy for it.
+    if (opts.focus === 'media' && !pieceBlocked(s)) go({ t: 'piece' });
     if (s.fed < 70) eat();
     buyTrips();
     kit();

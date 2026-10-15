@@ -142,8 +142,21 @@ export {
 } from './crew';
 export { teamBlocked, teamCost, teamNames, teamOdds } from './team';
 export { GUIDE_CRAGS, guideBlocked, guideLeft, guideLines, guidesOut } from './guides';
-export { mediaRung, postBlocked, postGain, rivalFollowers, tierEarned } from './media';
-export { DOC, MEDIA_RIVAL, POSTS, SPONSORS, TERMS } from './content/media';
+export {
+  lastSold,
+  mediaRung,
+  photoBlocked,
+  photoPrice,
+  photosSold,
+  pieceBlocked,
+  pieceOpen,
+  postBlocked,
+  postGain,
+  rivalFollowers,
+  tierEarned,
+  unsoldPhotos,
+} from './media';
+export { DOC, MEDIA_RIVAL, PHOTO_SAYS, PIECE_SAYS, POSTS, SPONSORS, TERMS } from './content/media';
 export {
   coached,
   dropChance,
@@ -226,6 +239,8 @@ export {
   COACH,
   COMP,
   RETAINER,
+  PHOTO,
+  PIECE,
   LEAGUE,
   FLOOR,
   GIVING,

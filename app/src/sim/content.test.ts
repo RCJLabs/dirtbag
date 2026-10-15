@@ -18,6 +18,7 @@ import { PEOPLE, TALK, THINGS } from './content/people';
 import { LIBRARY, PITCH_KINDS, ROUTES, WALLS, type RouteDef } from './content/routes';
 import { ROCK_LINES, ROCK_MOVES } from './content/rock';
 import { HIGHBALL } from './dials';
+import { GEAR } from './content/gear';
 
 const STYLES = Object.keys(MIX);
 // The fixed lines, and the gym's first two months (the wall and the board) for two seeds.
@@ -258,5 +259,13 @@ describe('content', () => {
     }
     for (const p of Object.values(PEOPLE))
       for (const at of p.shows ?? []) expect(PLACES).toHaveProperty([at]);
+  });
+});
+
+// Phase 34.3: the save checks gear against GEAR, so a piece of kit an act sells and GEAR doesn't
+// know would quarantine the next save (the camera nearly did).
+describe('the kit the acts give you', () => {
+  it('is all kit the save knows', () => {
+    for (const [id, a] of Object.entries(ACTS)) if (a.gear) expect(GEAR, id).toHaveProperty([a.gear.id]);
   });
 });

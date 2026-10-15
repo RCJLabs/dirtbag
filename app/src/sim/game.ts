@@ -55,12 +55,17 @@ import { favourAsk, riding } from './favours';
 import { TEAM_FUNDED, TEAM_NOTHING, TEAM_SUMMIT, TEAM_TURNED } from './content/team';
 import { guideBlocked, guidesOut } from './guides';
 import { bolted, boltBlocked, gymBuyBlocked, gymNight, UPGRADES, wallWord, type Upgrade } from './business';
-import { DOC, HEAT_SAYS, MEDIA_RIVAL, POSTS, SPONSORS, TERMS } from './content/media';
+import { DOC, HEAT_SAYS, MEDIA_RIVAL, PHOTO_SAYS, PIECE_SAYS, POSTS, SPONSORS, TERMS } from './content/media';
 import { CREW_HEAT } from './content/renown';
 import {
   cycleTasks,
   fromAudience,
   heatTonight,
+  photoBlocked,
+  photoPrice,
+  photoWorthy,
+  pieceAsks,
+  pieceBlocked,
   postBlocked,
   postGain,
   rivalFollowers,
@@ -282,6 +287,7 @@ import {
   BUILD,
   AGE,
   RETAINER,
+  PIECE,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
 import { WALL_EVENTS, wallEventById } from './content/wallevents';
@@ -448,6 +454,8 @@ export function newGame(seed: string): GameState {
       heat: null,
       doc: null,
       lost: null,
+      photos: [],
+      piece: null,
     },
     gym: null,
     bolted: [],
@@ -1222,6 +1230,14 @@ export function act(s0: GameState, a: Action): Result {
         spend({ cash: -RETAINER[id].weekly });
         line(fill(RETAINER_SAYS[id].bill, { cash: money(RETAINER[id].weekly) }));
       }
+    // Phase 34.3: the year's piece, lapsed unwritten, or asked for.
+    const piece = s.media.piece;
+    if (piece && piece.wrote === undefined && piece.due === ended) line(PIECE_SAYS.lapsed);
+    if (pieceAsks(s, ended + 1)) {
+      const due = ended + PIECE.days;
+      s.media = { ...s.media, piece: { asked: ended + 1, due } };
+      line(fill(PIECE_SAYS.ask, { due }));
+    }
     if (ended % 7 === 0) {
       const bills = weeklyBills(s);
       s.cash -= bills;
@@ -2796,6 +2812,39 @@ export function act(s0: GameState, a: Action): Result {
       break;
     }
 
+    // Phase 34.3: a photo pitched to a magazine, once a week; and the year's piece, written in
+    // an evening at the van.
+    case 'photo': {
+      const why = photoBlocked(s, a.route);
+      if (why) return refuse(`${why}.`);
+      const cash = photoPrice(
+        s,
+        s.media.photos.find((x) => x.route === a.route)!,
+      );
+      s.media = {
+        ...s.media,
+        photos: s.media.photos.map((x) => (x.route === a.route ? { ...x, sold: s.day } : x)),
+      };
+      spend({ cash });
+      const r = routeById(s.seed, a.route);
+      line(fill(PHOTO_SAYS.sold, { line: r ? lineName(s, r) : a.route, cash: money(cash) }));
+      break;
+    }
+    case 'piece': {
+      const why = pieceBlocked(s);
+      if (why) return refuse(`${why}.`);
+      spend({ min: PIECE.min, energy: -PIECE.energy, cash: PIECE.pay });
+      const gain = fromAudience(s, PIECE.followers);
+      s.media = {
+        ...s.media,
+        followers: s.media.followers + gain,
+        piece: { ...s.media.piece!, wrote: s.day },
+      };
+      line(PIECE_SAYS.wrote);
+      line(fill(PIECE_SAYS.paid, { cash: money(PIECE.pay) }));
+      break;
+    }
+
     // The warehouse's picks (Phase 18.3): one more from the offer, or stop and bank it.
     case 'haul': {
       const h = s.haul;
@@ -3890,6 +3939,17 @@ export function act(s0: GameState, a: Action): Result {
             for (const w of train) if (CREW_TRAIN[w]) line(CREW_TRAIN[w]);
             line(fill(PROJECT_SAYS.train, { crew: s.crewName?.name ?? 'the crew', line: lineName(s, r) }));
           } else line(PROJECT_SAYS.alone);
+        }
+        // Phase 34.3: a send a magazine would look at, on your camera or shot by one of the
+        // crew here.
+        if (!lap && photoWorthy(s, r.id)) {
+          const by = has(s, 'camera') ? 'camera' : crewHere(s)[0];
+          if (by) {
+            s.media = { ...s.media, photos: [...s.media.photos, { route: r.id, day: s.day, by }] };
+            line(
+              by === 'camera' ? PHOTO_SAYS.camera : fill(PHOTO_SAYS.crew, { who: PEOPLE[by]?.name ?? by }),
+            );
+          }
         }
         // A send of the style you were afraid of ends the fear (Phase 22.4b).
         if (s.fear.includes(r.type)) {
