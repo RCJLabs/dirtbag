@@ -198,7 +198,7 @@ describe('the walk in', () => {
       hollow: { clues: [], tries: 0 },
       boltedCracks: [],
       firsts: (MIGRATIONS[72]!(old) as GameState).firsts,
-      deck: (MIGRATIONS[73]!(old) as GameState).deck,
+      deck: { ...(MIGRATIONS[73]!(old) as GameState).deck, back: [] },
     });
   });
 });
@@ -317,7 +317,7 @@ describe('first ascents in the Hollow', () => {
       ...old,
       boltedCracks: [],
       firsts: (MIGRATIONS[72]!(old) as GameState).firsts,
-      deck: (MIGRATIONS[73]!(old) as GameState).deck,
+      deck: { ...(MIGRATIONS[73]!(old) as GameState).deck, back: [] },
     });
   });
 });

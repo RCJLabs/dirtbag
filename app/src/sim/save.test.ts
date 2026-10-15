@@ -119,7 +119,7 @@ const heardOf = <T extends object>(st: T): T =>
 // And Phase 35.1's: each hitchhiker met counted as come once (road.test.ts holds the rotation).
 const metOf = <T extends object>(st: T): T =>
   'deck' in st && st.deck && typeof st.deck === 'object' && 'met' in st.deck
-    ? { ...st, deck: (MIGRATIONS[73]!(st) as GameState).deck }
+    ? { ...st, deck: { ...(MIGRATIONS[73]!(st) as GameState).deck, back: [] } }
     : st;
 const pics = <T extends object>(st: T): T =>
   'media' in st && st.media && typeof st.media === 'object' && !('asymmetricMatch' in st.media)
@@ -179,7 +179,7 @@ const P224D = { psyche: { level: 50, stale: 0 }, crags: [] };
 const P225A = { seen: [] };
 const P225B = { guitar: 0 };
 const P226A = {
-  deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0, meets: {} },
+  deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0, meets: {}, back: [] },
   encounter: null,
   dogs: [],
   dream: { pick: null, pot: 0, owned: [] },
@@ -687,6 +687,7 @@ describe('saves', () => {
       met: {},
       epic: 0,
       meets: {},
+      back: [],
     });
     expect(r.state).toEqual({
       ...revan(spoken(JSON.parse(V20).state)),
@@ -749,6 +750,7 @@ describe('saves', () => {
         ...old.deck,
         epic: 0,
         meets: Object.fromEntries(Object.keys(old.deck.met).map((id) => [id, 1])),
+        back: [],
       },
       dogs: [],
       dream: { pick: null, pot: 0, owned: [] },
@@ -2227,7 +2229,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(74);
+    expect(SAVE_VERSION).toBe(75);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

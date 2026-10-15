@@ -96,7 +96,7 @@ describe('a save from before the photos', () => {
       boltedCracks: [],
       // Phase 32.4 and 35.1: repeats heard of quietly, hitchhikers met counted as come once.
       firsts: (MIGRATIONS[72]!(old) as GameState).firsts,
-      deck: (MIGRATIONS[73]!(old) as GameState).deck,
+      deck: { ...(MIGRATIONS[73]!(old) as GameState).deck, back: [] },
     });
     expect(old.retainers.physio).not.toBeNull();
     expect(photoBlocked(r.state, HARD)).toBe('No photo of that');

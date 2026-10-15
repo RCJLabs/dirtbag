@@ -785,7 +785,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 74 ||
+  saved?.v !== 75 ||
   // Phase 29.1: nothing scavenged, a few days in.
   st.parts !== 0 ||
   // Phase 29.3: miles on the clock past a new climber's, and nothing for Dale to say yet.
@@ -1336,6 +1336,7 @@ console.log('A hitchhiker on the way to Roadside');
       met: {},
       epic: 0,
       meets: Object.fromEntries(others.map((id) => [id, 2])),
+      back: [],
     },
     encounter: null,
   };
@@ -1402,7 +1403,18 @@ console.log('A roadside stop on the way to Roadside');
     cash: 150,
     energy: 80,
     van: { ...saved.state.van, tires: 100, engine: 100, battery: 100 },
-    deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0, meets: {} },
+    deck: {
+      last: 0,
+      knock: 0,
+      seen: [],
+      hitch: 0,
+      stop: 0,
+      stops: [],
+      met: {},
+      epic: 0,
+      meets: {},
+      back: [],
+    },
     encounter: null,
   };
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
@@ -1484,7 +1496,18 @@ console.log('A walk-out from Roadside');
     people: {},
     injury: null,
     van: { ...saved.state.van, tires: 100, engine: 100, battery: 100 },
-    deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0, meets: {} },
+    deck: {
+      last: 0,
+      knock: 0,
+      seen: [],
+      hitch: 0,
+      stop: 0,
+      stops: [],
+      met: {},
+      epic: 0,
+      meets: {},
+      back: [],
+    },
     encounter: null,
   };
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
@@ -1557,7 +1580,18 @@ console.log('Scout’s last day');
     trips: 20,
     dog: { name: 'Scout', since: day + 1 - 16 * 18, fed: 80, bond: 85 },
     dogs: [],
-    deck: { last: 0, knock: day, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0, meets: {} },
+    deck: {
+      last: 0,
+      knock: day,
+      seen: [],
+      hitch: 0,
+      stop: 0,
+      stops: [],
+      met: {},
+      epic: 0,
+      meets: {},
+      back: [],
+    },
     encounter: null,
   };
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });

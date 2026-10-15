@@ -342,6 +342,7 @@ import {
   hitchFriend,
   hitcherById,
   hitchOpts,
+  knockBackDue,
   knockById,
   knockPsyche,
   knockTonight,
@@ -536,7 +537,18 @@ export function newGame(seed: string): GameState {
     crags: [],
     seen: [],
     guitar: 0,
-    deck: { last: 0, knock: 0, seen: [], hitch: 0, stop: 0, stops: [], met: {}, epic: 0, meets: {} },
+    deck: {
+      last: 0,
+      knock: 0,
+      seen: [],
+      hitch: 0,
+      stop: 0,
+      stops: [],
+      met: {},
+      epic: 0,
+      meets: {},
+      back: [],
+    },
     encounter: null,
     dogs: [],
     dream: { pick: null, pot: 0, owned: [] },
@@ -1615,7 +1627,13 @@ export function act(s0: GameState, a: Action): Result {
     if (d.sleep) {
       // A knock on the van (Phase 22.6a): the night waits for your answer.
       const night = nightAt(s);
-      const k = night.rough ? null : knockTonight(s, night.spot);
+      // Phase 35.3: someone you answered at the door weeks ago: back, or remembered.
+      const back = night.rough ? null : knockBackDue(s);
+      if (back) {
+        s.deck = { ...s.deck, back: s.deck.back.map((b, i) => (i === back.i ? { ...b, done: true } : b)) };
+        if (back.line) line(back.line);
+      }
+      const k = back?.knock ?? (night.rough ? null : knockTonight(s, night.spot));
       if (k) {
         s.encounter = { kind: 'knock', id: k.id };
         s.deck = { ...s.deck, last: s.day, knock: s.day, seen: [...s.deck.seen, k.id].slice(-10) };
@@ -3951,8 +3969,13 @@ export function act(s0: GameState, a: Action): Result {
       if (fx.supplies) s.supplies = Math.max(0, Math.min(100, s.supplies + fx.supplies));
       const p = knockPsyche(fx);
       if (p) s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + p) };
+      if (fx.fed) s.fed = clamp100(s.fed + fx.fed);
       const host = drivewayHost(s);
       if (fx.bond && host) bond(host, meet(host).bond + fx.bond);
+      // Phase 35.3: whoever you helped, or turned away, waits to come back (once a knock, ever).
+      const owed = k.helped?.includes(a.opt) || k.away?.opt === a.opt;
+      if (owed && !s.deck.back.some((b) => b.id === k.id))
+        s.deck = { ...s.deck, back: [...s.deck.back, { id: k.id, opt: a.opt, day: s.day }] };
       line(o.out);
       sleep();
       break;

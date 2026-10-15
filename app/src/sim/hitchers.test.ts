@@ -172,7 +172,12 @@ describe('a save from before', () => {
     expect(Object.keys(old.deck.met).length).toBeGreaterThan(0);
     expect(r.state).toEqual({
       ...old,
-      deck: { ...old.deck, meets: Object.fromEntries(Object.keys(old.deck.met).map((id) => [id, 1])) },
+      // And Phase 35.3's: no knocks owed a return.
+      deck: {
+        ...old.deck,
+        meets: Object.fromEntries(Object.keys(old.deck.met).map((id) => [id, 1])),
+        back: [],
+      },
     });
   });
 });

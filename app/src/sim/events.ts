@@ -25,9 +25,31 @@ import type { GameState } from './types';
 // Tonight's odds of a knock where the van's parked, or 0 when one's too recent, or there's
 // been an encounter today already.
 export function knockOdds(s: GameState, spot: GameState['spot']): number {
-  if (s.day < EVENTS.from || s.deck.last === s.day) return 0;
-  if (s.deck.knock && s.day - s.deck.knock < EVENTS.knock.every) return 0;
-  return EVENTS.knock.odds * EVENTS.knock.spot[spot];
+  return knockOpen(s) ? EVENTS.knock.odds * EVENTS.knock.spot[spot] : 0;
+}
+// Whether a knock could come tonight at all.
+const knockOpen = (s: GameState): boolean =>
+  s.day >= EVENTS.from &&
+  s.deck.last !== s.day &&
+  !(s.deck.knock && s.day - s.deck.knock < EVENTS.knock.every);
+
+// Phase 35.3: someone you answered at the door, due back tonight: the one you helped, at the
+// door again (on a night a knock could come), or the one you turned away, remembered in a
+// line. The first due, by the night it was answered.
+export function knockBackDue(s: GameState): { i: number; knock: Knock | null; line: string | null } | null {
+  const back = s.deck.back ?? [];
+  for (let i = 0; i < back.length; i++) {
+    const b = back[i]!;
+    if (b.done) continue;
+    const k = knockById(b.id);
+    if (!k) continue;
+    const r = Rng.fromStream(s.seed, 'events').derive(`back-${b.id}-${b.day}`);
+    if (s.day < b.day + r.int(EVENTS.knock.back[0], EVENTS.knock.back[1])) continue;
+    if (k.away?.opt === b.opt) return { i, knock: null, line: k.away.line };
+    const again = knockById(`back-${b.id}`);
+    if (again && knockOpen(s)) return { i, knock: again, line: null };
+  }
+  return null;
 }
 
 // Whether someone knocks tonight, and who: seeded by the night. The deck passes over the

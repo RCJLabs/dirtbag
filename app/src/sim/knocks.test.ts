@@ -32,7 +32,8 @@ describe('knocks on the van', () => {
         KNOCKS.some((k) => k.spots.includes(spot)),
         spot,
       ).toBe(true);
-    for (const k of KNOCKS) expect(k.opts, k.id).toHaveLength(3);
+    // Phase 35.3: those that come by chance, three answers; the returns (no spot), two.
+    for (const k of KNOCKS) expect(k.opts, k.id).toHaveLength(k.spots.length ? 3 : 2);
     const s = base({ day: 9 });
     expect(knockOdds(s, 'lot')).toBeCloseTo(EVENTS.knock.odds * EVENTS.knock.spot.lot);
     expect(knockOdds(s, 'driveway')).toBeLessThan(knockOdds(s, 'lot'));

@@ -202,7 +202,7 @@ describe('a save from before', () => {
       ...old,
       firsts: { ...old.firsts, mopen: { ...old.firsts.mopen, heard: SETTLE.repeats } },
       // Phase 35.1: its hitchhikers met, counted as come once.
-      deck: (MIGRATIONS[73]!(old) as GameState).deck,
+      deck: { ...(MIGRATIONS[73]!(old) as GameState).deck, back: [] },
     });
     // The first night says nothing of the Moon's line.
     const t = lines(sleep(r.state)).join(' ');
