@@ -15,6 +15,8 @@ export interface KnockFx {
   // With the friend whose driveway it is.
   bond?: number;
   supplies?: number;
+  // Phase 35.3: food someone brings.
+  fed?: number;
 }
 
 export interface Knock {
@@ -23,6 +25,11 @@ export interface Knock {
   title: string;
   sit: string;
   opts: { label: string; out: string; fx: KnockFx }[];
+  // Phase 35.3 (Evan's call): the answers that helped whoever knocked, who come back once,
+  // weeks later (the knock `back-<id>`); and the one that turned them away, remembered with a
+  // line, not a punishment.
+  helped?: number[];
+  away?: { opt: number; line: string };
 }
 
 export const KNOCKS: Knock[] = [
@@ -71,6 +78,7 @@ export const KNOCKS: Knock[] = [
         fx: { psyche: -3, energy: -5 },
       },
     ],
+    helped: [1],
   },
   {
     id: 'jump',
@@ -94,6 +102,11 @@ export const KNOCKS: Knock[] = [
         fx: { psyche: -6 },
       },
     ],
+    helped: [0, 1],
+    away: {
+      opt: 2,
+      line: 'At the gas station you see the car you said you had no cables for, running. Somebody else had cables. They do not wave, and you do not blame them.',
+    },
   },
   {
     id: 'headlights',
@@ -117,6 +130,7 @@ export const KNOCKS: Knock[] = [
         fx: { energy: -10, psyche: -2 },
       },
     ],
+    helped: [0],
   },
   {
     id: 'critter',
@@ -186,6 +200,11 @@ export const KNOCKS: Knock[] = [
         fx: { psyche: -3 },
       },
     ],
+    helped: [0],
+    away: {
+      opt: 2,
+      line: 'The van you pretended not to hear is parked at the crag today. They give you the nod people give a stranger, which is what you made yourself.',
+    },
   },
   {
     id: 'guard',
@@ -232,6 +251,7 @@ export const KNOCKS: Knock[] = [
         fx: { psyche: -1 },
       },
     ],
+    helped: [1],
   },
   {
     id: 'friend',
@@ -253,6 +273,97 @@ export const KNOCKS: Knock[] = [
         label: 'Say you have an early start',
         out: 'They take the second mug back inside without a word about it. The porch light goes off.',
         fx: { psyche: -5, bond: -1 },
+      },
+    ],
+  },
+  // Phase 35.3: the ones you helped, back once, weeks later; never by chance (no spots).
+  {
+    id: 'back-jump',
+    spots: [],
+    title: 'The Car You Jumped',
+    sit: 'A knock you nearly recognize, and behind it the car you jumped a few weeks back, running sweetly. Its owner has a thermos of coffee and a bag of oranges, “for the cables.”',
+    opts: [
+      {
+        label: 'Take the oranges and the thanks',
+        out: 'You keep the oranges in the door pocket and eat one every morning for a week, and think of the cables every time.',
+        fx: { supplies: 12, psyche: 5 },
+      },
+      {
+        label: 'Share the coffee there and then',
+        out: 'Two cups in the dark beside the van, about nothing much. They drive off flashing their lights twice.',
+        fx: { energy: 6, psyche: 7 },
+      },
+    ],
+  },
+  {
+    id: 'back-drunk',
+    spots: [],
+    title: 'One of the Two from That Night',
+    sit: 'Sober, appalled, and holding a box of pastries out in front of them like a shield. They have rehearsed this. You let them get through all of it.',
+    opts: [
+      {
+        label: 'Tell them it happens',
+        out: 'It does, you say, and they look as though somebody has taken a rock out of their pack. The pastries are from the good bakery.',
+        fx: { fed: 8, psyche: 6 },
+      },
+      {
+        label: 'Tell them about your own worst night',
+        out: 'It is a long story and a worse one, and by the end of it you are both laughing in the dark and nobody owes anybody anything.',
+        fx: { psyche: 9, energy: -4 },
+      },
+    ],
+  },
+  {
+    id: 'back-headlights',
+    spots: [],
+    title: 'Headlights, Earlier This Time',
+    sit: 'The road-trippers from the night you went and said hello, back through the valley on their way home. They have a crag map from three states over, marked up in pen, and they want you to have it.',
+    opts: [
+      {
+        label: 'Mark up the valley for them',
+        out: 'The good rests, the bad landings, the diner. Two maps, each better than it was, traded across a camp stove.',
+        fx: { psyche: 8, energy: -3 },
+      },
+      {
+        label: 'Ask about the drive',
+        out: 'A thousand miles of it, told in the order it went wrong. You go to sleep wanting to be somewhere you have never been.',
+        fx: { psyche: 6 },
+      },
+    ],
+  },
+  {
+    id: 'back-sharedspot',
+    spots: [],
+    title: 'The Van You Waved In',
+    sit: 'Back again, and this time they have brought the dinner: a pot of chili big enough for both vans, and a second spoon.',
+    opts: [
+      {
+        label: 'Eat with them',
+        out: 'Chili, stories, and their dog asleep on your feet. It is the best meal you have had all month and you did not cook it.',
+        fx: { fed: 20, psyche: 6 },
+      },
+      {
+        label: 'Take a bowl back to bed',
+        out: 'You thank them properly and eat it in your sleeping bag, which is a kind of luxury nobody tells you about.',
+        fx: { fed: 12, energy: 4 },
+      },
+    ],
+  },
+  {
+    id: 'back-scavenge',
+    spots: [],
+    title: 'The Dumpster Diver',
+    sit: 'The person from behind the building, holding up a pair of approach shoes from the same dumpster: a size too small for them, and exactly right for you.',
+    opts: [
+      {
+        label: 'Sell them at the shop',
+        out: 'The shop gives you more for them than you expected, and you put half of it in the jar on the counter for the next one who needs it.',
+        fx: { cash: 18, psyche: 3 },
+      },
+      {
+        label: 'Give them to the next kid at the crag',
+        out: 'There is always a kid at the crag in shoes that are going to hurt them. Tomorrow there is one fewer.',
+        fx: { psyche: 9 },
       },
     ],
   },

@@ -217,6 +217,9 @@ export interface GameState {
     epic: number;
     // Phase 35.1 (save v74): how often each hitchhiker has come your way.
     meets: Record<string, number>;
+    // Phase 35.3 (save v75): knocks you helped or turned away, waiting to come back (or be
+    // remembered), the answer and the night; `done` once they have. Once a knock, ever.
+    back: { id: string; opt: number; day: number; done?: true }[];
   };
   // Phase 22.9a. A hand of liar's dice you're in: who with, the dice, and the bid on it.
   table: { who: string; mine: number[]; theirs: number[]; bid: { n: number; face: number } } | null;

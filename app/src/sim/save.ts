@@ -32,7 +32,7 @@ import { repeatsOf } from './settle';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 74;
+export const SAVE_VERSION = 75;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -561,6 +561,10 @@ export const MIGRATIONS: Record<number, Migration> = {
       ...x,
       deck: { ...x.deck, meets: Object.fromEntries(Object.keys(x.deck.met).map((id) => [id, 1])) },
     };
+  }, // v74 -> v75 (Phase 35.3): knocks that come back. Nobody you helped before was counted.
+  74: (x) => {
+    if (!isObj(x) || !isObj(x.deck)) throw new Error('state is not an object');
+    return { ...x, deck: { ...x.deck, back: [] } };
   },
 };
 
@@ -915,7 +919,17 @@ export function validate(x: unknown): string[] {
       Object.entries(dk.met).every(([id, i]) => HITCHERS.some((h) => h.id === id) && isInt(i)) &&
       // Phase 35.1: how often each has come.
       isObj(dk.meets) &&
-      Object.entries(dk.meets).every(([id, n]) => HITCHERS.some((h) => h.id === id) && isInt(n) && n >= 1),
+      Object.entries(dk.meets).every(([id, n]) => HITCHERS.some((h) => h.id === id) && isInt(n) && n >= 1) &&
+      // Phase 35.3: the knocks owed a return, each one a knock that can have one.
+      Array.isArray(dk.back) &&
+      dk.back.every(
+        (b) =>
+          isObj(b) &&
+          isInt(b.opt) &&
+          isInt(b.day) &&
+          (b.done === undefined || b.done === true) &&
+          KNOCKS.some((k) => k.id === b.id && (k.helped?.includes(b.opt as number) || k.away?.opt === b.opt)),
+      ),
     'deck',
   );
   const en = x.encounter;

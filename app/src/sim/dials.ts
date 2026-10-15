@@ -892,6 +892,9 @@ export const EVENTS = {
     odds: 0.11,
     every: 4,
     spot: { lot: 1.4, truckstop: 1.2, trailhead: 0.9, ridge: 0.6, driveway: 0.5 },
+    // Phase 35.3 (Evan's call): someone you helped comes back once, `back` days on (seeded,
+    // inclusive): weeks later [proposed].
+    back: [14, 28] as const,
   },
   // Phase 22.6b, on a drive to or from a crag that doesn't break down. A hitchhiker [v0.956's:
   // 14%, five days apart]; else a roadside stop [proposed: v0.956 offered one on three drives

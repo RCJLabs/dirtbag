@@ -44,7 +44,7 @@ describe('a save from before the retainers', () => {
       boltedCracks: [],
       // Phase 32.4 and 35.1: repeats heard of quietly, hitchhikers met counted as come once.
       firsts: (MIGRATIONS[72]!(old) as GameState).firsts,
-      deck: (MIGRATIONS[73]!(old) as GameState).deck,
+      deck: { ...(MIGRATIONS[73]!(old) as GameState).deck, back: [] },
     });
     const took = act(r.state, { t: 'retainer', what: 'physio', on: true });
     expect(refused(took)).toBeUndefined();
