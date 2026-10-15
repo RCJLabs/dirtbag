@@ -5,6 +5,7 @@ import { CLINIC, INJURY, MONEY, PLANS } from './dials';
 import type { GameState, Injury } from './types';
 import { originBill, premiumOf } from './identity';
 import { perkMult } from './perks';
+import { retained } from './retainers';
 
 // Registration and your plan's premium, due on the week's last night.
 // Phase 23.2: the premium on your origin's terms, and its own bill (a storage unit).
@@ -20,9 +21,14 @@ export function clinicBill(s: GameState, tier: 1 | 2 | 3): number {
   return p.copay !== undefined ? p.copay : Math.round(base * p.bill);
 }
 
-// Phase 34.1: the Cave's coaches see its physio at a discount.
+// Phase 34.1: the Cave's coaches see its physio at a discount. Phase 34.2: on retainer, it's
+// paid for already.
 export const carePrice = (s: GameState, what: keyof typeof CLINIC): number =>
-  Math.round(CLINIC[what].price * PLANS[s.insurance].care * (what === 'physio' ? perkMult(s, 'physio') : 1));
+  what === 'physio' && retained(s, 'physio')
+    ? 0
+    : Math.round(
+        CLINIC[what].price * PLANS[s.insurance].care * (what === 'physio' ? perkMult(s, 'physio') : 1),
+      );
 
 // Whether cortisone is still hiding something: the next injury lands a tier worse.
 export const jabbed = (s: GameState): boolean => s.jab > 0 && s.day - s.jab <= CLINIC.cortisone.jabDays;

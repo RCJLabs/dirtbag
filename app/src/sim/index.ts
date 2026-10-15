@@ -64,6 +64,7 @@ export { together } from './romance';
 export {
   compBlocked,
   compClock,
+  compCost,
   compField,
   compHere,
   compOn,
@@ -224,6 +225,7 @@ export { tonight, runway } from './tonight';
 export {
   COACH,
   COMP,
+  RETAINER,
   LEAGUE,
   FLOOR,
   GIVING,
@@ -521,3 +523,12 @@ export {
   jobPerks,
   type PerkId,
 } from './perks';
+export {
+  retained,
+  retainerBlocked,
+  retainerNote,
+  RETAINERS,
+  RETAINER_AT,
+  type RetainerId,
+} from './retainers';
+export { RETAINER_SAYS } from './content/retainers';

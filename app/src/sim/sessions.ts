@@ -6,7 +6,8 @@ import { daysOff, goLoad, ratio } from './body';
 import { gradeOf, hi, SKILLS } from './climber';
 import { has } from './kit';
 import { PREHAB, PROTOCOLS, type ProtocolDef } from './content/training';
-import { CLIMB, LOAD, TRAIN } from './dials';
+import { CLIMB, LOAD, RETAINER, TRAIN } from './dials';
+import { retained } from './retainers';
 import { taperDay } from './training';
 import { INDOOR, INDOOR_CLOSE } from './content/gym';
 import type { Delta, GameState, Skills } from './types';
@@ -37,10 +38,12 @@ export function sessionGains(s: GameState, p: ProtocolDef): Partial<Skills> {
     (TRAIN.base + TRAIN.perGrade * gradeOf(k)) *
     TRAIN.phases[s.training.phase].train *
     (ratio(s.load) > LOAD.slow ? LOAD.slowGains : 1);
+  // Phase 34.2: a coach of your own puts more on every session.
+  const coached = retained(s, 'coach') ? 1 + RETAINER.coach.gain : 1;
   const out: Partial<Skills> = {};
   for (const id of SKILLS) {
     const w = p.trains[id];
-    if (w) out[id] = round2(total * w * hi(k[id]) * gainMult(s, id, 'train'));
+    if (w) out[id] = round2(total * w * hi(k[id]) * gainMult(s, id, 'train') * coached);
   }
   return out;
 }

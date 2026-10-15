@@ -31,7 +31,7 @@ import { aimMet, currentGoal } from './story';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 65;
+export const SAVE_VERSION = 66;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -490,6 +490,11 @@ export const MIGRATIONS: Record<number, Migration> = {
     const c = isObj(x.comps) ? x.comps : {};
     return { ...x, comps: { ...c, on: isObj(c.on) ? { ...c.on, round: 0 } : (c.on ?? null) } };
   },
+  // v65 -> v66 (Phase 34.2): a physio and a coach on retainer; nobody had either.
+  65: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, retainers: { physio: null, coach: null } };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -659,6 +664,11 @@ export function validate(x: unknown): string[] {
         isInt(x.haul.fatigue) &&
         isInt(x.haul.pay)),
     'haul',
+  );
+  const rt = x.retainers;
+  need(
+    isObj(rt) && (rt.physio === null || isInt(rt.physio)) && (rt.coach === null || isInt(rt.coach)),
+    'retainers',
   );
   const c = x.comps;
   need(

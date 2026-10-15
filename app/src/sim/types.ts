@@ -136,6 +136,8 @@ export interface GameState {
   crew: { a: string; b: string; day: number; stage: 'rift' | 'mended' | 'set' } | null;
   // Phase 28.1 (save v59): the crew's name, and the day you named it. Named once, for good.
   crewName: { name: string; day: number } | null;
+  // Phase 34.2: a physio and a coach on retainer, each the day it was taken on, or null.
+  retainers: { physio: number | null; coach: number | null };
   // Phase 28.2 (save v60): the crew's project and the day it was picked; the day you last
   // called a crew day, whatever the project (so dropping one doesn't buy another); and every
   // project sent, with who followed you up it.
@@ -546,6 +548,8 @@ export type Action =
   | { t: 'haul'; pick?: number }
   // A comp (Phase 18.4): sign up at the desk on the day, or hand in your scorecard.
   | { t: 'comp'; do: 'enter' | 'finish' }
+  // Phase 34.2: a retainer taken on, or let go.
+  | { t: 'retainer'; what: 'physio' | 'coach'; on: boolean }
   // Media (Phase 18.5): a post, an offer answered (a sponsor's terms, or the film), a shoot.
   | { t: 'post'; style: 'straight' | 'story' | 'bait' | 'ad' }
   | { t: 'offer'; take: 'real' | 'brand' | 'yes' | 'no' }

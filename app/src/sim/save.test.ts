@@ -97,11 +97,14 @@ const V61 = readFileSync(new URL('./fixtures/save-v61.json', import.meta.url), '
 const V62 = readFileSync(new URL('./fixtures/save-v62.json', import.meta.url), 'utf8');
 const V63 = readFileSync(new URL('./fixtures/save-v63.json', import.meta.url), 'utf8');
 const V64 = readFileSync(new URL('./fixtures/save-v64.json', import.meta.url), 'utf8');
-// And Phase 29.3's: the van's clock started at a new climber's.
-const revan = <T extends object>(st: T): T =>
-  'van' in st
+// And Phase 29.3's: the van's clock started at a new climber's. And Phase 34.2's: no retainers.
+const revan = <T extends object>(st: T): T => ({
+  ...('van' in st
     ? { ...st, van: { ...(st as { van: object }).van, miles: VAN_AGE.start, rebuilt: 0, verdict: null } }
-    : st;
+    : st),
+  ...P342,
+});
+const P342 = { retainers: { physio: null, coach: null } };
 // And Phase 29.2's: the week's board taken down, to go up again as bounties.
 const reboard = <T extends object>(st: T) =>
   revan({
@@ -269,6 +272,7 @@ describe('saves', () => {
       ...P225A,
       ...P225B,
       ...P226A,
+      ...P342,
     });
     // And it plays on: the new rules accept it.
     const made = act(r.state, { t: 'create', name: 'Sam', start: 'boulderer' });
@@ -383,6 +387,7 @@ describe('saves', () => {
       ...P225A,
       ...P225B,
       ...P226A,
+      ...P342,
     });
     expect(r.state.gear.rack).toBe(1);
     expect(act(r.state, { t: 'travel', to: 'lot' }).events.some((e) => e.k === 'refused')).toBe(false);
@@ -410,6 +415,7 @@ describe('saves', () => {
       ...P225A,
       ...P225B,
       ...P226A,
+      ...P342,
     });
     expect(r.state.training.prehab).toBeGreaterThan(0);
     expect(act(r.state, { t: 'travel', to: 'cafe' }).events.some((e) => e.k === 'refused')).toBe(false);
@@ -2137,7 +2143,11 @@ describe('saves', () => {
     expect(r.from).toBe(64);
     const old = JSON.parse(V64).state;
     expect(old.comps.on).not.toBeNull();
-    expect(r.state).toEqual({ ...old, comps: { ...old.comps, on: { ...old.comps.on, round: 0 } } });
+    expect(r.state).toEqual({
+      ...old,
+      comps: { ...old.comps, on: { ...old.comps.on, round: 0 } },
+      retainers: { physio: null, coach: null },
+    });
     // It hands in as it always would have.
     const done = act({ ...r.state, at: 'gym' }, { t: 'comp', do: 'finish' });
     expect(done.state.comps.on).toBeNull();
@@ -2184,7 +2194,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(65);
+    expect(SAVE_VERSION).toBe(66);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

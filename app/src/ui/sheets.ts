@@ -220,6 +220,12 @@ import {
   compSet,
   FIELD_SAYS,
   perksNote,
+  RETAINER,
+  RETAINER_SAYS,
+  retained,
+  retainerBlocked,
+  retainerNote,
+  type RetainerId,
   picksFor,
   rivalsIn,
   roundName,
@@ -647,6 +653,21 @@ function rivalsNote(s: GameState, tier: number): string {
   return ` ${fav}${ups.length ? ` ${fill(FIELD_SAYS.up, { from, names: listOf(ups.map((r) => r.name)) })}` : ''}`;
 }
 
+// Phase 34.2: a physio or a coach on retainer, taken on or let go: the week's price, and what
+// it does, from the dials.
+function retainerRow(game: Game, s: GameState, id: RetainerId): Row {
+  const on = retained(s, id);
+  const say = RETAINER_SAYS[id];
+  const why = retainerBlocked(s, id, !on);
+  return {
+    label: on ? say.drop : say.take,
+    cost: on ? undefined : `${money(RETAINER[id].weekly)} a week`,
+    note: why ? `${why}.` : retainerNote(id, on),
+    off: !!why,
+    run: () => game.retainer(id, !on),
+  };
+}
+
 function compRow(game: Game, s: GameState): Row {
   const on = s.comps.on;
   if (on && on.day === s.day) {
@@ -685,7 +706,10 @@ function compRow(game: Game, s: GameState): Row {
   const why = compBlocked(s);
   return {
     label: `Enter ${t.name}`,
-    cost: t.fee ? `$${t.fee}` : 'invitation',
+    // Phase 34.2: and the travel, from Nationals up.
+    cost: [t.fee ? `$${t.fee}` : 'invitation', t.travel ? `${money(t.travel)} travel` : '']
+      .filter(Boolean)
+      .join(' + '),
     note: why
       ? `${why}.`
       : t.side
@@ -1602,6 +1626,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           rows: [
             actRow(game, s, 'cave.pass'),
             ...actRows(game, s, 'cave.coach'),
+            // Phase 34.2: one of the coaches, for your own training.
+            retainerRow(game, s, 'coach'),
             compRow(game, s),
             trainRow(game, s),
             mapRow(game),
@@ -1715,6 +1741,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             : []),
           // Phase 22.5b: a set out front.
           ...(id.id === 'cafe' ? [buskRow(game, s)] : []),
+          // Phase 34.2: a physio on retainer.
+          ...(id.id === 'clinic' ? [retainerRow(game, s, 'physio')] : []),
           // Phase 26b: the day labor posted at the market.
           ...(id.id === 'market' ? [gigRow(game, s)].filter((r): r is Row => !!r) : []),
           // Phase 25.2: an outfit of your own.

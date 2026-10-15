@@ -153,6 +153,16 @@ export const LEAGUE = { best: 6, prize: 250, prizeA: 500 };
 // of the gear shop, pays its staff price; the warehouse's fuel card takes a share off gas; the
 // Cave's coaches see its physio at a discount; the café's staff drink free and the diner's eat
 // the special at the staff price.
+// Phase 34.2 [proposed] (Evan's call, 15 Oct 2026: opt-in retainers). The costs of ambition,
+// each paid `weekly` from the day you sign up, the first week up front, and worth it only if
+// you use it: a physio on retainer makes physio free, and each session takes `days` off an
+// injury (one, paid by the visit); one of the Cave's coaches for your own training puts `gain`
+// on what a session teaches.
+export const RETAINER = {
+  physio: { weekly: 35, days: 2 },
+  coach: { weekly: 45, gain: 0.25 },
+} as const;
+
 export const PERKS = {
   sendCity: { job: 'set', from: 1, off: 1 },
   everyGym: { job: 'set', from: 2, off: 1 },

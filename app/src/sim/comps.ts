@@ -16,7 +16,7 @@ import {
   TEAM_SAYS,
   type Rival,
 } from './content/comps';
-import { fill } from './format';
+import { fill, money } from './format';
 import { libraryBoulder, type RouteDef } from './content/routes';
 import { COMP, LEAGUE, RIVALS, YEAR } from './dials';
 import { Rng } from './rng';
@@ -403,6 +403,9 @@ export function nextEdition(tier: number, day: number): number {
   return day + 1 + ((((t.on - day - 1) % t.every) + t.every) % t.every);
 }
 
+// What signing up costs: the fee, and the travel from Nationals up (Phase 34.2).
+export const compCost = (tier: number): number => COMP_TIERS[tier]!.fee + (COMP_TIERS[tier]!.travel ?? 0);
+
 // Why you can't sign up for today's comp here, or null when you can.
 export function compBlocked(s: GameState): string | null {
   const tier = compHere(s, s.day, s.at);
@@ -415,7 +418,9 @@ export function compBlocked(s: GameState): string | null {
     return fill(TEAM_SAYS.blocked, { name: t.name, from: COMP_TIERS[t.team.from]!.name });
   if (ladderPoints(s) < t.need)
     return `${t.name} wants ${t.need} points on the ladder; you’ve ${ladderPoints(s)}`;
-  if (s.cash < t.fee) return `The fee’s $${t.fee}`;
+  // Phase 34.2: and the travel, from Nationals up.
+  if (s.cash < compCost(tier))
+    return t.travel ? `The fee and travel come to ${money(compCost(tier))}` : `The fee’s $${t.fee}`;
   return null;
 }
 

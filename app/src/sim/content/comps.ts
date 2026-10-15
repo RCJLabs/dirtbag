@@ -40,6 +40,9 @@ export interface CompTier {
   // Phase 33.4 (Evan's call, 14 Oct 2026): picked, not let in by points. A podium (the top
   // `top`) at rung `from`'s last edition makes the team, till its next.
   team?: { from: number; top: number };
+  // Phase 34.2 (Evan's call, 15 Oct 2026: the costs of ambition): what getting to it and
+  // staying for its rounds costs on top of the fee: gas, a motel, the athlete's kit.
+  travel?: number;
 }
 
 export const COMP_TIERS: CompTier[] = [
@@ -84,6 +87,7 @@ export const COMP_TIERS: CompTier[] = [
     need: 60,
     problem: 'Nationals',
     rounds: [6],
+    travel: 100,
   },
   {
     name: 'The World Series',
@@ -99,6 +103,7 @@ export const COMP_TIERS: CompTier[] = [
     problem: 'World Series',
     rounds: [12, 6],
     team: { from: 2, top: 3 },
+    travel: 250,
   },
   {
     name: 'The Games',
@@ -113,6 +118,7 @@ export const COMP_TIERS: CompTier[] = [
     need: 200,
     problem: 'Games',
     rounds: [8],
+    travel: 500,
   },
   // Phase 25.5 (Evan's call, 4 Oct 2026): v0.956's Fall Festival dyno comp, once a year at
   // Send City in the fall, off the ladder. Five dynos, each further than the last, climbed
