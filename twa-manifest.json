@@ -12,7 +12,7 @@
   "navigationDividerColor": "#15161a",
   "navigationDividerColorDark": "#15161a",
   "backgroundColor": "#15161a",
-  "enableNotifications": false,
+  "enableNotifications": true,
   "startUrl": "/index.html",
   "iconUrl": "https://dirtbag.rcjlabs.com/icons/icon-512.png",
   "maskableIconUrl": "https://dirtbag.rcjlabs.com/icons/icon-512-maskable.png",

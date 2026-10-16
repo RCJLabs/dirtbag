@@ -199,6 +199,9 @@ check('TWA host matches CNAME and assetlinks.json names the app', () => {
 check('the Play app acknowledges its purchases', () => {
   const twa = json('twa-manifest.json');
   if (!twa.features?.playBilling?.enabled) return 'Play Billing off';
+  // Bubblewrap exports the delegation service the Digital Goods API comes through only with
+  // notifications on; `bubblewrap update` refuses Play Billing without them.
+  if (twa.enableNotifications !== true) fail('twa-manifest.json has Play Billing without enableNotifications');
   const wf = read('.github/workflows/build-twa.yml');
   const at = (s) => wf.indexOf(s);
   const [gen, ack, build] = [at('bubblewrap update'), at('node twa/acknowledge.mjs'), at('gradlew bundleRelease')];

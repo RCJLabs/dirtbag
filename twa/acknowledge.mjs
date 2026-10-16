@@ -30,6 +30,10 @@ export function hook(root) {
   const manifest = JSON.parse(readFileSync(join(root, 'twa-manifest.json'), 'utf8'));
   if (!manifest.features?.playBilling?.enabled)
     throw new Error('twa-manifest.json: Play Billing is off, so there is nothing to acknowledge');
+  // Bubblewrap exports the delegation service, which Chrome reaches the app through (the Digital
+  // Goods API included), only with notifications on, and refuses Play Billing without them.
+  if (manifest.enableNotifications !== true)
+    throw new Error('twa-manifest.json: Play Billing needs enableNotifications, or Chrome can’t reach the app');
   const java = join(root, 'app/src/main/java', ...manifest.packageId.split('.'));
   const source = readFileSync(join(HERE, 'PlayAcknowledger.java'), 'utf8');
   if (!source.includes(`package ${manifest.packageId};`))

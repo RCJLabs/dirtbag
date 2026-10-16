@@ -37,9 +37,13 @@ async function generated() {
   return { root, java: join(root, 'app/src/main/java', ...manifest.packageId.split('.')) };
 }
 
-test('Bubblewrap’s project, as generated, has Play Billing', async () => {
+test('Bubblewrap’s project, as generated, has Play Billing, and Chrome can reach it', async () => {
   const { root, java } = await generated();
-  assert.match(readFileSync(join(root, 'app/build.gradle'), 'utf8'), /androidbrowserhelper:billing:/);
+  const gradle = readFileSync(join(root, 'app/build.gradle'), 'utf8');
+  assert.match(gradle, /androidbrowserhelper:billing:/);
+  // The delegation service is exported as this flag says (AndroidManifest.xml's
+  // android:exported="@bool/enableNotification"), and the Digital Goods API comes through it.
+  assert.match(gradle, /enableNotifications: true,/);
   assert.match(readFileSync(join(java, 'DelegationService.java'), 'utf8'), /DigitalGoodsRequestHandler/);
 });
 
@@ -72,6 +76,13 @@ test('a template that has moved on stops the build', async () => {
   const { root, java } = await generated();
   writeFileSync(join(java, 'Application.java'), 'public class Application {}\n');
   assert.throws(() => hook(root), /Application\.java: no "super\.onCreate\(\);"/);
+});
+
+test('Play Billing without notifications is refused, as Bubblewrap refuses it', async () => {
+  const { root } = await generated();
+  const m = JSON.parse(readFileSync(join(root, 'twa-manifest.json'), 'utf8'));
+  writeFileSync(join(root, 'twa-manifest.json'), JSON.stringify({ ...m, enableNotifications: false }));
+  assert.throws(() => hook(root), /needs enableNotifications/);
 });
 
 test('without Play Billing on, there is nothing to hook', async () => {
