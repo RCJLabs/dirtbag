@@ -3948,6 +3948,12 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 Phase 14's two criteria that can pass here pass; the other two are Evan's hardware and account. Closing the phase is his call.
 
+**Status (16 Oct 2026): 14.5c built: the demo's own keys, and carrying on from it.** Evan's call (16 Oct 2026, as recommended): separate keys as the guarantee, separate homes as the practice. No save change, 0.999.84.
+- **The demo's keys** (`game/storage.ts`, `ours()`): the demo keeps its save, its fallback, its quarantine, its plan and its settings under `dirtbag.demo.`; the full game keeps `dirtbag.`. They can share a site or a desktop folder and never meet: the demo can't set a full game's climber aside as a save it can't play (14.5b's flag), and it never sees one but by Import, which turns it away. v0.956's `dirtbag-` keys stay apart from both.
+- **Carrying on from the demo:** where the full game finds a demo climber beside it (the two shared a store), its first screen offers "Carry on from the demo" (who, from the save, and "the full game picks up from that morning"); the demo's copy stays where it is. Export and Import stay the way across from anywhere else.
+- **Separate homes, as practice** (for Phase 15): the web demo at its own address (a subdomain is a separate origin; a path on dirtbag.rcjlabs.com isn't), and a desktop demo packed under its own name (its own user-data folder), so the carry-over above is a bonus where they meet, not the plan.
+- **Checks:** `persist.test.ts` (the demo boots past a full game's climber without touching it, writes only `dirtbag.demo.` keys, and finds no demo climber of its own; the full game finds its climber and the demo's beside it; nothing that isn't a demo climber is offered); the demo e2e checks the demo's keys are all `dirtbag.demo.`; the full e2e plants a demo climber beside the game and carries on with it from the first screen.
+
 ---
 
 ### Phase 15 — The demo, the store page and Next Fest
@@ -4283,3 +4289,4 @@ Phase 14's two criteria that can pass here pass; the other two are Evan's hardwa
 - 2026-10-16 — 14.6a built: the marks the fonts lack (✓ ✕ ○ ← and the suits) drawn, and a test against the fonts' own character maps; B skips the stove, focus waits on the way out of every minigame, and a pad's button shows beside a minigame's controls; a frame meter in Settings; the controller day plays the stove and the speed wall. No save change. 0.999.82.
 - 2026-10-16 — 14.6b built: rebinding the pad's buttons and the keys in Settings, a role going down only with its button; on the desktop, a Deck's button names and Steam's floating keyboard for text fields. Done-when 1 and 4 pass; 2 and 3 are Evan's (a Deck, the Steam app). No save change. 0.999.83.
 - 2026-10-16 — The download budget to 490 KB (Evan's call), for Phase 15's demo; 466.3 KB after Phase 14.
+- 2026-10-16 — 14.5c built: the demo keeps its keys under `dirtbag.demo.`, so it never meets the full game's save; the full game offers to carry on with a demo climber it finds beside it. No save change. 0.999.84.

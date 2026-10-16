@@ -3047,6 +3047,33 @@ console.log('A save, as a file');
   );
   if (back !== 'Robin') await fail(`the save brought back: ${back}`);
   log('Robin out as a file, the game over, a notes file turned away, Robin back from the first screen');
+
+  // Phase 14.5c: a climber the demo left beside the game (they shared a site), offered on the
+  // first screen and carried on with; the demo keeps its own copy.
+  const demoSave = await page.evaluate(() => {
+    const f = JSON.parse(localStorage.getItem('dirtbag.save'));
+    f.state = { ...f.state, day: 20, climber: { ...f.state.climber, name: 'Kit' } };
+    return JSON.stringify(f);
+  });
+  await page.addInitScript((raw) => {
+    if (sessionStorage.getItem('e2e-demo') !== '1') return;
+    sessionStorage.removeItem('e2e-demo');
+    localStorage.removeItem('dirtbag.save');
+    localStorage.removeItem('dirtbag.save.prev');
+    localStorage.setItem('dirtbag.demo.save', raw);
+  }, demoSave);
+  await page.evaluate(() => sessionStorage.setItem('e2e-demo', '1'));
+  await page.reload({ waitUntil: 'load' });
+  await until('the climber screen, with a demo climber beside it', () => page.locator('#create').count());
+  await expectText('#s-save-demo', /Carry on from the demo.*Kit, day 20/, 'a climber from the demo');
+  await Promise.all([page.waitForEvent('load'), click('#s-save-demo', 'Carry on from the demo')]);
+  await until('the game to start from the demo', async () => !(await page.locator('#create').count()));
+  const kit = await page.evaluate(() => [
+    JSON.parse(localStorage.getItem('dirtbag.save') ?? 'null')?.state?.climber?.name,
+    !!localStorage.getItem('dirtbag.demo.save'),
+  ]);
+  if (kit[0] !== 'Kit' || !kit[1]) await fail(`carried on from the demo: ${kit}`);
+  log('and Kit, from the demo, carried on with from the first screen');
   await page.close();
   page = portrait;
 }

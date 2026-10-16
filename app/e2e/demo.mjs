@@ -61,7 +61,12 @@ if (!pins.includes('road') || !pins.includes('gorge') || pins.some((p) => full.i
 ok(`the map: ${pins.join(', ')}`);
 
 // The morning after Dex's race: Act I done, the open line his the day before.
-const raw = await page.evaluate(() => localStorage.getItem('dirtbag.save'));
+// Phase 14.5c: the demo keeps its own keys, and none of the full game's.
+const keys = await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('dirtbag.')));
+if (!keys.includes('dirtbag.demo.save') || keys.some((k) => !k.startsWith('dirtbag.demo.')))
+  await fail(`the demo's keys: ${keys.join(', ')}`);
+ok(`its own keys: ${keys.join(', ')}`);
+const raw = await page.evaluate(() => localStorage.getItem('dirtbag.demo.save'));
 const file = JSON.parse(raw);
 const day = file.state.day + 6;
 file.state = {
@@ -70,7 +75,7 @@ file.state = {
   goals: 5,
   firsts: { ...file.state.firsts, rsopen: { name: 'Hers Now', call: 0, day: day - 1, by: 'dex' } },
 };
-await page.evaluate((s) => localStorage.setItem('dirtbag.save', s), JSON.stringify(file));
+await page.evaluate((s) => localStorage.setItem('dirtbag.demo.save', s), JSON.stringify(file));
 await page.reload({ waitUntil: 'load' });
 await page.waitForFunction(() => document.querySelector('#sheet-title')?.textContent === 'That’s the season');
 const card = (await text('#sheet')) ?? '';

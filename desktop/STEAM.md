@@ -37,6 +37,10 @@ Unsigned for now: SmartScreen and Gatekeeper warn until the builds are signed (a
 
 Phase 14.6b: the game asks Steam whether it's running on a Deck (`utils.isSteamRunningOnSteamDeck`) and there names the pad's buttons as the Deck prints them (L1, R1 and so on, not LB, RB). A text field reached by the pad (a climber's name, a first ascent's, the crew's) asks for Steam's floating keyboard under it (`utils.showFloatingGamepadTextInput`), as Deck Verified wants; Steam shows it only where the overlay is up (below). Neither has run on a Deck yet.
 
+## The demo
+
+Phase 14.5c: the demo keeps its keys under `dirtbag.demo.`, so it can't touch the full game's save even in the same `dirtbag.json`. Still, pack the demo under its own name (Electron's user-data folder follows the product name), so its file is its own and its Steam Cloud paths don't overlap the full game's.
+
 ## The overlay
 
 Steam's overlay (Shift+Tab, the Deck's on-screen keyboard) is switched on only when Steam starts the game (it sets `SteamAppId`): its switches put Chromium's GPU work in-process, so a copy started any other way doesn't take them.

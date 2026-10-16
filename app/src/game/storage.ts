@@ -6,7 +6,16 @@
 // v0.956's keys don't come through here: they were only ever in a browser's localStorage,
 // and legacy.ts reads them there.
 
+import { DEMO } from '../sim';
+
 let chosen: Storage | null | undefined;
+
+// Phase 14.5c: the demo keeps its keys apart from the full game's, under dirtbag.demo., so the
+// two never meet in one store (one site, one desktop folder): the demo would set the full
+// game's climber aside as a save it can't play. Both stay clear of v0.956's dirtbag- keys.
+export const ours = (name: string): string => (DEMO ? 'dirtbag.demo.' : 'dirtbag.') + name;
+// The demo's save, where the full game looks for a climber to carry on with.
+export const DEMO_SAVE = 'dirtbag.demo.save';
 
 // Where the keys live from now on. Called once, at start-up, before the game boots; null
 // keeps nothing, and undefined goes back to the browser's.
