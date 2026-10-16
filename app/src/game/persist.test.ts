@@ -2,9 +2,9 @@
 // aside and never overwritten, the day before is there to fall back on, and a browser
 // that won't store anything still starts a game.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, newGame, toSave } from '../sim';
+import { act, asDemo, newGame, toSave } from '../sim';
 import { loadPlans, savePlans } from './plan';
-import { boot, replace, save } from './persist';
+import { boot, DEFAULT_SETTINGS, demoClimber, replace, save, saveSettings } from './persist';
 import { keepIn } from './storage';
 
 class FakeStorage {
@@ -112,5 +112,41 @@ describe('persist', () => {
     expect([...own.data.keys()].sort()).toEqual(['dirtbag.plan', 'dirtbag.save']);
     expect(ls.data.size).toBe(0);
     expect(loadPlans()).toEqual({ plan: [], yesterday: [] });
+  });
+
+  it('keeps the demo’s keys apart, and never sees the full game’s climber there', () => {
+    const full = { ...newGame('full'), day: 40, climber: { ...newGame('full').climber, name: 'Robin' } };
+    ls.setItem('dirtbag.save', toSave(full, '0.0.0-test'));
+    asDemo(true);
+    try {
+      expect(boot(seed).state.day).toBe(1);
+      const demo = { ...newGame('demo'), day: 20, climber: { ...newGame('demo').climber, name: 'Kit' } };
+      expect(save(demo)).toBe(true);
+      expect(saveSettings(DEFAULT_SETTINGS)).toBe(true);
+      expect(savePlans({ plan: [], yesterday: [] })).toBe(true);
+      expect([...ls.data.keys()].sort()).toEqual([
+        'dirtbag.demo.plan',
+        'dirtbag.demo.save',
+        'dirtbag.demo.settings',
+        'dirtbag.save',
+      ]);
+      // The full game's climber is where it was, untouched.
+      expect(ls.getItem('dirtbag.save')).toBe(toSave(full, '0.0.0-test'));
+      // The demo finds no demo climber to carry on with: it's the demo.
+      expect(demoClimber()).toBeNull();
+    } finally {
+      asDemo(false);
+    }
+    // The full game finds its own climber, and the demo's beside it to carry on with.
+    expect(boot(seed).state.climber.name).toBe('Robin');
+    expect(demoClimber()?.climber.name).toBe('Kit');
+  });
+
+  it('offers no demo climber that isn’t one', () => {
+    expect(demoClimber()).toBeNull();
+    ls.setItem('dirtbag.demo.save', 'not a save');
+    expect(demoClimber()).toBeNull();
+    ls.setItem('dirtbag.demo.save', toSave(newGame('nobody'), '0.0.0-test'));
+    expect(demoClimber()).toBeNull();
   });
 });

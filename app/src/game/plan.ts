@@ -4,7 +4,7 @@
 // a plan ran them, and it lives beside the save, like the settings.
 
 import { ACTS, indoor, PLACES, ROUTES, type GameState } from '../sim';
-import { store } from './storage';
+import { ours, store } from './storage';
 
 export interface PlanStep {
   place: string;
@@ -75,7 +75,7 @@ export function planLine(plan: PlanStep[]): string {
 
 // ---- beside the save ----
 
-const KEY = 'dirtbag.plan';
+const KEY = () => ours('plan');
 
 export interface Plans {
   // The plan you've made.
@@ -86,7 +86,7 @@ export interface Plans {
 
 export function loadPlans(): Plans {
   try {
-    const raw = store()?.getItem(KEY);
+    const raw = store()?.getItem(KEY());
     const v = raw ? (JSON.parse(raw) as Partial<Record<keyof Plans, unknown>>) : {};
     return { plan: validSteps(v.plan), yesterday: validSteps(v.yesterday) };
   } catch {
@@ -99,7 +99,7 @@ export function savePlans(p: Plans): boolean {
   try {
     const ls = store();
     if (!ls) return false;
-    ls.setItem(KEY, JSON.stringify(p));
+    ls.setItem(KEY(), JSON.stringify(p));
     return true;
   } catch {
     return false;
@@ -109,7 +109,7 @@ export function savePlans(p: Plans): boolean {
 // Starting over starts the plans over too: they were that climber's.
 export function wipePlans(): void {
   try {
-    store()?.removeItem(KEY);
+    store()?.removeItem(KEY());
   } catch {
     // Nothing to wipe if storage is off.
   }
