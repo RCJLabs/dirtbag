@@ -114,6 +114,16 @@ export function replace(state: GameState): boolean {
   }
 }
 
+// Phase 15.2: the save as it's kept, for the error screen to hand over as a file without
+// loading it (whatever broke may be in the loading); null if there's none or no store.
+export function rawSave(): string | null {
+  try {
+    return store()?.getItem(KEY()) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // Phase 14.5c: the demo's climber, where the full game finds one beside its own (the two share
 // a site or a desktop folder): loaded as any save is, or null. The full game offers to carry
 // on with them; the demo's copy stays where it is, the demo's to keep.

@@ -4036,6 +4036,19 @@ The CURRENT MILESTONE moves to Phase 15, the demo, the store page and Next Fest.
   - `storecopy.test.ts` holds every number and name in the copy to the content: the $41 start, the nine crags by name (the Hollow kept off), five acts ending on The Line, V18, the 51 entries, the comps, the expeditions.
 - **Unverified:** the sizes and the 300-character limit are Steamworks' as of 2026 from memory; check its page before uploading. Valve's rules for what a capsule may carry (the title, no other text) were followed as remembered.
 
+**Status (16 Oct 2026): 15.2 built: the error screen.** No save change, 0.999.85.
+- **A crash says so** (`ui/crash.ts`), where a render crash left a blank page. It's plain DOM over everything, outside React, since React may be what broke. The screen:
+  - says something broke, and that the save is as it was after the last move (it's written after every move, never mid-way);
+  - offers a reload, and the save as a file (`persist.rawSave`: the save as kept, not loaded, in case the loading is what broke);
+  - shows what went wrong, all of it (the build, demo or not, web or desktop, the browser, the error and its stack), with nothing from the save, to copy.
+- **Two kinds of crash** (`main.tsx`):
+  - A render that throws has torn the page down: React's `onUncaughtError`, and only a reload brings it back.
+  - An error thrown outside React (the frame loop, a handler) also offers "Carry on".
+  - Not crashes: the browser's resize-observer notice, another site's script, and a promise left to fail (the game goes on, as it did).
+- **Emailing it** waits on an address: `REPORT_TO` in `ui/crash.ts` is empty, so the mail button isn't shown. It's web-only until the desktop's bridge can hand a `mailto:` to the system.
+- **The privacy page** says what a report holds, and that the game sends nothing.
+- **Checks:** `crash.test.ts` (what a report says, what isn't a crash); the e2e breaks the game on purpose (the screen, the save as a file, the report without the climber's name, carrying on, the game answering after). React's path was checked once by hand, by a component made to throw; it isn't in the e2e (nothing in the game can be made to throw on purpose).
+
 ---
 
 ## Stage F — Ship
@@ -4344,3 +4357,4 @@ The CURRENT MILESTONE moves to Phase 15, the demo, the store page and Next Fest.
 - 2026-10-16 — 14.5c built: the demo keeps its keys under `dirtbag.demo.`, so it never meets the full game's save; the full game offers to carry on with a demo climber it finds beside it. No save change. 0.999.84.
 - 2026-10-16 — Phase 14 closed by Evan's call: controller-only Act I and the demo's content diff pass; 60 fps on a Deck and achievements and Cloud in the Steam dev branch are carried to Evan's hardware and account. CURRENT MILESTONE moved to Phase 15, the demo, the store page and Next Fest.
 - 2026-10-16 — Phase 15 planned with Evan's calls: Next Fest June 2027; the demo on Steam now, on the web and Play with Phase 19's split; an error screen in place of crash dashboards; the store page localized later. 15.1 built: Steam's capsules and library art drawn by the game's painters, screenshots for Steam and Play from the build (`npm run store:art`), and the copy for both, its facts held to the content by a test.
+- 2026-10-16 — 15.2 built: a crash shows an error screen, not a blank page: the save is safe, a reload, the save as a file, and what went wrong (nothing from the save) to copy; carrying on past an error outside React. The privacy page says so. No save change. 0.999.85.
