@@ -64,7 +64,7 @@
 | 11 Valley map | Built on the rebuild (the taps, place cards, adding a place, the daily plan) and closed by Evan's call. Criteria 2 to 5 pass; its testers' criterion carries. Released in 0.961.0 with Phase 10. |
 | 12 UI system | Built on the rebuild (the Journal, the wide screen, keyboard and access, Tonight, no inline styles) and closed by Evan's call. The flows the e2e doesn't play in landscape or by keyboard carry to playtesting. |
 | 13 Sound and feel | Built on the rebuild (effects and ambience made in code, the licence ledger, credits) and closed by Evan's call. Music, made in code, came in Phase 25 by Evan's call, to hear how it turns out; criteria 1 and 2 wait on an ear. |
-| 14 Desktop and Steam, 15 Demo and store page | Moved after Phase 18 by Evan's call: the full game first. Phase 14 closed by Evan's call (16 Oct 2026), its Deck and Steam checks carried to him; Phase 15 is the current milestone. |
+| 14 Desktop and Steam, 15 Demo and store page | Moved after Phase 18 by Evan's call: the full game first. Phase 14 closed by Evan's call (16 Oct 2026), its Deck and Steam checks carried to him; Phase 15 closed the same day, its accounts and outreach carried to him. Phase 19 is the current milestone. |
 | 21 The climber, 22 The life, 23 Who you are | Added by Evan's call after the gap check; they run before 16. Phase 21 is the current milestone. |
 | 16 The spine | Next after 21–23. |
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
@@ -3968,7 +3968,7 @@ The CURRENT MILESTONE moves to Phase 15, the demo, the store page and Next Fest.
 
 ---
 
-### Phase 15 — The demo, the store page and Next Fest   **<<< CURRENT MILESTONE**
+### Phase 15 — The demo, the store page and Next Fest   ✅ Closed
 
 **Goal.** A polished free first season on web, Steam and Play, a store page that converts, and one well-timed Next Fest.
 
@@ -4076,11 +4076,24 @@ The CURRENT MILESTONE moves to Phase 15, the demo, the store page and Next Fest.
 
 Phase 15's code is done; criteria 1 to 3 are Evan's accounts and outreach, and run to Next Fest (June 2027). Closing the phase is his call.
 
+**Phase 15 closed by Evan's call (16 Oct 2026),** its code done. Criterion 4 passes. Carried to Evan, running to Next Fest (June 2027):
+- **1:** the Steam app and the demo app, their IDs in `desktop/steam.json`, the depots and Auto-Cloud, and the demo up;
+- **2:** the Coming Soon page and 7,000 wishlists;
+- **3:** the press kit's bracketed lines, and the kit sent to 30 or more outlets and creators.
+
+Also carried:
+- the address crash reports go to (`REPORT_TO`, empty);
+- the wide capsules' pick (the highball or the Lot);
+- Steamworks' asset sizes and its short description's limit, checked before uploading;
+- the store page in Steam's overlay, never yet run with Steam.
+
+The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
+
 ---
 
 ## Stage F — Ship
 
-### Phase 19 — Monetization, store readiness and beta
+### Phase 19 — Monetization, store readiness and beta   **<<< CURRENT MILESTONE**
 
 **Goal.** The demo/full split works on every store, players can buy the full game without trust or privacy compromises, and two beta rounds have shaken out the launch bugs.
 
@@ -4387,3 +4400,4 @@ Phase 15's code is done; criteria 1 to 3 are Evan's accounts and outreach, and r
 - 2026-10-16 — 15.2 built: a crash shows an error screen, not a blank page: the save is safe, a reload, the save as a file, and what went wrong (nothing from the save) to copy; carrying on past an error outside React. The privacy page says so. No save change. 0.999.85.
 - 2026-10-16 — 15.3 built: the desktop code packs the demo as "Dirtbag Demo", with its own user-data folder and Steam app, its last card opening the full game's store page in Steam's overlay; the error screen's mail through the desktop's bridge; the game's icon on the executables. CI plays the demo's desktop build. No save change. 0.999.86.
 - 2026-10-16 — 15.4 built: the press kit (`docs/PRESSKIT.md`, zipped by `store:art` with the art and shots), the trailer's beats a click each (`/trailer.html`), and the shot list. Done-when: criterion 4 passes (the full harness, the demo's bots, both e2es); 1 to 3 are Evan's (the Steam apps, wishlists, outreach). No change to the game.
+- 2026-10-16 — Phase 15 closed by Evan's call, its code done: criterion 4 passes; the Steam apps, the wishlists and the press outreach (1 to 3) carried to Evan, to Next Fest. CURRENT MILESTONE moved to Phase 19, monetization, store readiness and beta.
