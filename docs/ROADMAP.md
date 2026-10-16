@@ -4184,7 +4184,7 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
   - `twa/acknowledge.test.mjs` renders Bubblewrap's own templates offline and checks the hooks go in, twice changes nothing, and a template that moved on stops the build. In CI.
   - `npm run check` fails if `build-twa.yml` stops running the hook between generating the project and Gradle.
 - **Unverified:**
-  - The Java has been compiled only against stubs of the Android and billing classes, written from their documented shapes. Its first real compile is the next **Build TWA** run.
+  - The Java compiles: an unsigned **Build TWA** run on the branch generated the project, hooked the acknowledger in, and built the release bundle against the real Play Billing 8.3.0 and android-browser-helper. It hasn't run on a phone.
   - Nothing has been bought for real: that needs the product in the Play Console and a licence tester on a phone.
   - Whether `listPurchases()` lists a pending purchase (paid in cash, not yet cleared) isn't known. If it does, the game unlocks before Play has the money; the app acknowledges only once it's paid.
 
