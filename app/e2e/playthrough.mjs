@@ -26,7 +26,8 @@
 // moved by the D-pad, A to press and hold, B to put things down, Start and Select for the
 // journal and the map, and a name picked for a player who can't type one.
 // Then a save out as a file, the game started over, a file that isn't a save turned away,
-// and the climber brought back from the first screen (Phase 14.2).
+// and the climber brought back from the first screen (Phase 14.2). And a crash on purpose:
+// the error screen, the save as a file, and carrying on (Phase 15.2).
 // Last, a first morning on a landscape window (Phase 12): the screen widens rather than
 // letterboxing, sheets dock at the right, the map's valley sits in the middle of more
 // country, a wall close up is a panel over its crag, and turning the window to portrait
@@ -3460,6 +3461,54 @@ console.log('The Line');
   if (st.goals !== 24 || st.life.retired !== null)
     await fail(`line: the save: ${JSON.stringify({ goals: st.goals, life: st.life })}`);
   log('line: the naming, who was there, the credits, kept climbing');
+  await ctx.close();
+}
+
+console.log('Something broke');
+// Phase 15.2: a crash shows the error screen, not a blank page. One thrown on purpose outside
+// React, as the frame loop or a handler would: the screen says the save is safe, hands it over
+// as a file, shows what went wrong (the build and the error, nothing from the save) to copy,
+// and lets the game carry on. This page expects its one error; nothing else may go wrong.
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  const p = await ctx.newPage();
+  const errors = [];
+  p.on('pageerror', (e) => errors.push(e.message));
+  await p.goto(server.url, { waitUntil: 'load' });
+  await p.waitForSelector('#c-name');
+  await p.fill('#c-name', 'Wren');
+  await p.click('#c-go');
+  await p.waitForFunction(() => !document.querySelector('#create'));
+  await p.evaluate(() =>
+    setTimeout(() => {
+      throw new Error('e2e: broken on purpose');
+    }),
+  );
+  await p.waitForSelector('#crash');
+  await p.screenshot({ path: join(OUT, 'crash.png') });
+  const said = await p.inputValue('#crash-said');
+  const version = JSON.parse(readFileSync(join(APP, 'package.json'), 'utf8')).version;
+  if (
+    !said.startsWith(`Dirtbag ${version}, web`) ||
+    !/Error: e2e: broken on purpose/.test(said) ||
+    /Wren/.test(said)
+  )
+    await fail(`crash: what it says: ${said}`);
+  if (!/Your save is as it was after your last move/.test(await p.textContent('#crash')))
+    await fail('crash: the save line');
+  const [file] = await Promise.all([p.waitForEvent('download'), p.click('#crash-save')]);
+  const kept = JSON.parse(readFileSync(await file.path(), 'utf8'));
+  if (kept.state?.climber?.name !== 'Wren')
+    await fail(`crash: the save as a file: ${kept.state?.climber?.name}`);
+  if (await p.locator('#crash-mail').count()) await fail('crash: a mail button with nowhere to send it');
+  await p.click('#crash-on');
+  await p.waitForFunction(() => !document.querySelector('#crash'));
+  // Carried on: the game answers as before.
+  await p.locator('#b-nav', { hasText: 'Map' }).click();
+  await p.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Close');
+  if (errors.length !== 1)
+    problems.push(`crash: errors besides the one on purpose: ${errors.slice(1).join('; ')}`);
+  log('crash: the screen, the save as a file, what went wrong without the save, carried on');
   await ctx.close();
 }
 

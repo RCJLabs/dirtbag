@@ -1320,3 +1320,60 @@ button.pill:disabled {
   pointer-events: none;
   z-index: 50;
 }
+
+/* Phase 15.2: the error screen, over everything, outside the game's screen (React may be what
+   broke). The comic kit's look, its tokens set here as the screen sets them. */
+.crash {
+  --u-ink: #1b1b1f;
+  --u-dim: #5e5a52;
+  --u-acc: #ce422a;
+  --u-fs: 1.08;
+  --u-font: 'Patrick Hand SC', 'Patrick Hand', cursive;
+  --u-mono: 'Patrick Hand', cursive;
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(21, 22, 26, 0.92);
+}
+.crash .card {
+  box-sizing: border-box;
+  width: min(420px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  padding: 13px 13px 12px;
+  background: #fffdf5;
+  color: var(--u-ink);
+  border: 2.5px solid #1b1b1f;
+  border-radius: 4px;
+  box-shadow: 4px 4px 0 #1b1b1f;
+}
+.crash h3 {
+  margin: 0;
+  font: 700 calc(25px * var(--u-fs)) / 1 var(--u-font);
+}
+.crash .sub {
+  margin: 6px 0 8px;
+  font: 500 calc(13px * var(--u-fs)) / 1.35 var(--u-mono);
+  color: var(--u-dim);
+}
+.crash .note {
+  margin: 12px 0 6px;
+  font: 600 calc(13px * var(--u-fs)) / 1.35 var(--u-mono);
+  color: var(--u-acc);
+}
+.crash .said {
+  box-sizing: border-box;
+  width: 100%;
+  resize: vertical;
+  padding: 6px;
+  border: 1.5px solid var(--u-dim);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--u-ink);
+  font:
+    12px/1.35 ui-monospace,
+    monospace;
+}

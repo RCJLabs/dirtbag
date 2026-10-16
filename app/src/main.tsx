@@ -11,6 +11,7 @@ import { desktop, fileStorage } from './game/desktop';
 import { Game } from './game/game';
 import { keepIn } from './game/storage';
 import { App } from './ui/App';
+import { crashed, notACrash } from './ui/crash';
 
 // Phase 14.3: on the desktop, the game's keys live in a file Steam Cloud syncs, read before
 // the game boots.
@@ -46,7 +47,15 @@ if (
         .catch(() => undefined),
   );
 
-createRoot(document.getElementById('root')!).render(
+// Phase 15.2: a crash shows the error screen, not a blank page. React's own (a render that
+// threw has torn the page down: only a reload) and anything thrown outside it, in the frame
+// loop or a handler (the page may live through it). A promise left to fail isn't a crash: the
+// game goes on, as it did.
+window.addEventListener('error', (e) => {
+  if (!notACrash(e.message, e.error)) crashed(e.error ?? e.message, true);
+});
+
+createRoot(document.getElementById('root')!, { onUncaughtError: (e) => crashed(e, false) }).render(
   <StrictMode>
     <App game={game} />
   </StrictMode>,
