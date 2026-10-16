@@ -1,6 +1,6 @@
-// Static checks on the release: one version everywhere, the built site is whole, and the Play
-// app can still verify the domain. Fast, no browser. Run before every commit that touches the
-// site: `npm run check`. The site is the rebuild's build, so build it first
+// Static checks on the release: one version everywhere, the built site is whole, the Play app
+// can still verify the domain, and the desktop build reaches nowhere. Fast, no browser. Run
+// before every commit that touches the site: `npm run check`. The site is the rebuild's build, so build it first
 // (`npm run build --prefix app`); a missing build fails, it doesn't skip.
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -181,6 +181,17 @@ check('TWA host matches CNAME and assetlinks.json names the app', () => {
   const entry = links.find((l) => l.target?.package_name === twa.packageId);
   if (!entry) fail(`assetlinks.json has no entry for ${twa.packageId}; the Play app would show a browser bar`);
   if (!entry.target.sha256_cert_fingerprints?.length) fail('assetlinks.json entry has no certificate fingerprints');
+});
+
+// --- the desktop build reaches nowhere -------------------------------------------------------
+// Phase 14.3: the same promise as the site's, for the window around it. The game is served
+// from app:// and the desktop smoke fails on any other request; this keeps an address from
+// creeping into the main process, where the smoke wouldn't see what it fetched.
+check('the desktop build names no address to reach', () => {
+  const files = ['desktop/main.js', 'desktop/preload.cjs', 'desktop/store.js', 'desktop/window.js'];
+  const hits = files.filter((f) => /\b(?:https?|wss?):\/\//.test(read(f)));
+  if (hits.length) fail(`an address in ${hits.join(', ')}`);
+  return `${files.length} files`;
 });
 
 const bad = results.filter((r) => !r.ok);

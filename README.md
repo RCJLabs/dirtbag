@@ -15,7 +15,8 @@ A climbing life-sim. Live out of your van, work shifts, and push your grade from
 | `app/` | The game: sim, renderer, UI, tests, and the build that makes the site. Its own package; see [`app/README.md`](app/README.md) |
 | `privacy.html` | Privacy policy (the game collects and sends nothing) |
 | `.well-known/assetlinks.json`, `twa-manifest.json`, `twa/` | Google Play wrapper (TWA): domain verification, config, pinned build tools |
-| `.github/workflows/` | CI, deploy on tag, Play bundle build |
+| `desktop/` | The desktop build for Steam (Electron): the game from `app/dist` in its own window, its save in a file Steam Cloud syncs; pinned Electron and packager, a smoke test |
+| `.github/workflows/` | CI, deploy on tag, Play bundle build, desktop build |
 | `scripts/` | Checks, smoke test, staging, version stamping |
 | `docs/` | The v0.956 audit and the roadmap |
 
@@ -33,6 +34,16 @@ npm run size                 # what a player downloads, against the budget
 
 The game has its own commands (tests, types, the e2e bot, the balance harness) in [`app/README.md`](app/README.md).
 
+The desktop build (Phase 14.3), once the game is built:
+
+```sh
+npm ci --prefix desktop
+npm test --prefix desktop             # its save file: written whole, never written over when unreadable
+xvfb-run -a npm run smoke --prefix desktop   # opens, saves to its file, comes back, quits (any display will do)
+npm start --prefix desktop            # play it
+npm run pack --prefix desktop         # a folder for this platform, in desktop/out/
+```
+
 ## Releasing
 
 1. Set `version` in `package.json`, then run `npm run stamp`.
@@ -43,6 +54,8 @@ The game has its own commands (tests, types, the e2e bot, the balance harness) i
    - deploys;
    - confirms the live site serves this commit, and smoke-tests it.
 4. For a Play update, wait until the deploy is live: the bundle build fetches its icons from the site. Then run **Actions → Build TWA (AAB)** and upload the bundle in the Play Console. The build takes the version from `package.json`, and fails if the Android target SDK is below Play's current floor.
+
+5. For a desktop build, run **Actions → Build desktop**: a folder each for Linux, Windows and macOS (Apple silicon), as artifacts, for Steam's depots. They're unsigned until there are certificates to sign them with.
 
 **Rolling back:** run the Deploy workflow by hand on the previous release's tag. v0.956 has no tag yet: creating `v0.956.0` on commit `e098332` deploys it, with its own files and its own copy of the workflow, so create that tag only to roll back. Players' saves from both games stay in their browsers either way.
 

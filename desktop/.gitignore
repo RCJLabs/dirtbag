@@ -1,0 +1,4 @@
+node_modules/
+out/
+# Copied in from app/dist by pack.mjs; the site's build is the source.
+game/

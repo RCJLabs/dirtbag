@@ -22,7 +22,8 @@ Climbing life-sim: live out of your van, work shifts, push your grade from gym p
 - `npm run stage` — copies the build and the allowlist into `_site/` (what `deploy.yml` publishes).
 - `npm run smoke` — headless Chromium plays the first minute on `_site/`: boot, the service worker, a new climber, the save, the clock (moved by an action), reload, offline start. It fails on any error, failed request or request that leaves the site. Must pass before any commit that touches the site or its pipeline.
 - `npm run size` — what a player downloads, by part, against the budget.
-- `npm run stamp` — after changing `package.json` `version`: writes it into both lockfiles, `app/package.json` and the TWA's `appVersionName`.
+- `npm run stamp` — after changing `package.json` `version`: writes it into the lockfiles, `app/package.json`, `desktop/package.json` and the TWA's `appVersionName`.
+- **The desktop build (`desktop/`, Phase 14.3):** `npm ci --prefix desktop`, then `npm test --prefix desktop` (its save file) and `xvfb-run -a npm run smoke --prefix desktop` (opens on the built game, saves to its file, comes back, quits; nothing asked of anywhere but `app://`). Run both before any commit that touches `desktop/` or the game's storage.
 
 Releasing and rolling back: `README.md` → Releasing.
 
@@ -42,7 +43,7 @@ Releasing and rolling back: `README.md` → Releasing.
 - **Nothing leaves the site.** The privacy page promises no network calls, and the smoke test fails on any cross-origin request. No analytics, CDNs or hosted web fonts: the rebuild bundles its fonts (OFL) from `@fontsource`, and its e2e bot fails on any off-site request too.
 - **Asset licenses.** The game's art and sound are code; keep them that way unless an asset's licence is written down. v0.956's sprites came from purchased LimeZu packs whose terms are ambiguous (the license file inside each pack is the authority), and this repo is public: never commit extracted sprite or audio files to it. v0.956's music was "Bitwise" by tcarisland (CC BY 4.0); if any music comes back, its credit goes on screen.
 - **v0.956's keys are read-only.** `dirtbag-` keys in a player's localStorage belong to their retired v0.956 career. The game reads them to offer the file and the carry-over, and never writes or deletes them. Its own keys are `dirtbag.`.
-- **Pinned tools.** Playwright via `package-lock.json` (the rebuild's e2e uses the same one); the rebuild's toolchain (Vite, TypeScript, React, Vitest, Prettier) at exact versions in `app/package-lock.json`; Bubblewrap (CLI and core — core owns the Android template) via `twa/package-lock.json`. Upgrade them deliberately, in their own commit. The TWA workflow fails if `targetSdkVersion` drops below Play's floor (`MIN_TARGET_SDK`, 36 since 31 Aug 2026).
+- **Pinned tools.** Playwright via `package-lock.json` (the rebuild's e2e uses the same one); the rebuild's toolchain (Vite, TypeScript, React, Vitest, Prettier) at exact versions in `app/package-lock.json`; Bubblewrap (CLI and core — core owns the Android template) via `twa/package-lock.json`; Electron and `@electron/packager` via `desktop/package-lock.json`. Upgrade them deliberately, in their own commit. The TWA workflow fails if `targetSdkVersion` drops below Play's floor (`MIN_TARGET_SDK`, 36 since 31 Aug 2026).
 - **The game's rules** (details in `app/README.md`):
   - **The sim decides; the view stages.** Rules live in `app/src/sim`: no DOM, no `Math.random`, no wall clock, no imports from the layers above. `tsconfig.sim.json` and `purity.test.ts` enforce it. Every state change goes through `act(state, action)`.
   - **Seeded RNG, shared with Unreal.** `sim/rng.ts` matches `Dirtbag-UE/Sim/DirtbagRng` and its golden vectors. If they move, it's save-breaking: log the decision.

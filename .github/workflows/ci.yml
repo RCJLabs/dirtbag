@@ -1,9 +1,11 @@
-# Runs on every push and PR. Two jobs:
+# Runs on every push and PR. Three jobs:
 #   check  the site as it would ship: the game built, one version everywhere, every referenced
 #          file there, the download size, then the staged site booted in headless Chromium (a
 #          new climber, the save, the clock, reload, offline start).
 #   app    the game in app/: formatting, types, the sim's tests, a build inside its size
 #          budget, then a bot that plays the first five days on the build, and a v0.956 player.
+#   desktop  the desktop build (Electron, pinned in desktop/): its save file's tests, then its
+#          first minute under a virtual display (opens, saves to the file, comes back, quits).
 # Failure screenshots from either are kept as run artifacts.
 name: CI
 
@@ -111,3 +113,43 @@ jobs:
           name: app-e2e-artifacts
           path: app/e2e-artifacts/
           if-no-files-found: ignore
+
+  desktop:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            app/package-lock.json
+            desktop/package-lock.json
+
+      # Electron's own download, about 100 MB, kept between runs by its pinned version.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/electron
+          key: electron-${{ hashFiles('desktop/package-lock.json') }}
+
+      # The game, the desktop's pinned Electron, and the root's Playwright that drives it.
+      - run: npm ci && npm ci --prefix app && npm ci --prefix desktop
+
+      - name: Build the game
+        run: npm run build --prefix app
+
+      - name: The save file's tests
+        run: npm test --prefix desktop
+
+      # Chromium's libraries, and the user namespaces its sandbox needs, which Ubuntu 24.04's
+      # AppArmor holds back by default: the smoke runs sandboxed, as a player's copy does.
+      - name: Let Electron run here
+        run: |
+          npx playwright install-deps chromium
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
+      - name: Play the first minute in the desktop build
+        run: xvfb-run -a npm run smoke --prefix desktop
