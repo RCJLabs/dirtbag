@@ -34,6 +34,7 @@ Releasing and rolling back: `README.md` → Releasing.
 - `npm run build`, then `npm run size` (player download against the budget) and `npm run e2e` (a bot plays five days on the build, counting day three's taps and running day four as a plan, then a v0.956 player crosses over). Run both before any commit that changes what a player sees.
 - `npm run play:demo`, `npm run build:demo`, then `npm run diff:demo` and `npm run e2e:demo` (Phase 14.5): bots play the demo to its end; the demo build in `dist-demo/`; none of the full game's content in it; its first morning (its places only) and its last card. Run all four before any commit that touches the demo's rules (`sim/edition.ts`, `sim/demo.ts`, `content/demo.ts`), what it shows, or any `*.full.ts` module.
 - `npm run dev` — local dev server.
+- `npm run store:art` (after `npm run build`) — Steam's capsules and library art, drawn by the game (`/store.html` under `npm run dev`), and the store screenshots for Steam and Play, played on the build, into `store-art/` (not committed). The copy is `docs/STORE.md`; `src/storecopy.test.ts` holds its facts to the content.
 
 ## Load-bearing rules
 

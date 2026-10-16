@@ -90,16 +90,24 @@ check('privacy.html exists', () => {
   if (!exists('privacy.html')) fail('the Play listing links the privacy page');
 });
 
-// --- the store copy fits Play's limits --------------------------------------------------------
-check("docs/STORE.md fits Play's limits", () => {
+// --- the store copy fits the stores' limits -------------------------------------------------
+// Play's three fields, and Steam's short description (Steamworks' limit as of 2026). Steam's
+// "About This Game" has no limit the copy comes near, but it has to be there.
+check("docs/STORE.md fits the stores' limits", () => {
   const md = read('docs/STORE.md');
-  const LIMIT = { short: 80, full: 4000, 'whats-new': 500 };
-  const out = Object.entries(LIMIT).map(([key, max]) => {
+  const LIMIT = {
+    short: ['Play', 80],
+    full: ['Play', 4000],
+    'whats-new': ['Play', 500],
+    'steam-short': ['Steam', 300],
+    'steam-about': ['Steam', Infinity],
+  };
+  const out = Object.entries(LIMIT).map(([key, [store, max]]) => {
     const block = md.match(new RegExp('```text ' + key + '\\n([\\s\\S]*?)\\n```'));
     if (!block) fail(`no \`\`\`text ${key} block`);
     const n = [...block[1]].length;
-    if (n > max) fail(`${key} is ${n} characters; Play allows ${max}`);
-    return `${key} ${n}/${max}`;
+    if (n > max) fail(`${key} is ${n} characters; ${store} allows ${max}`);
+    return max === Infinity ? `${key} ${n}` : `${key} ${n}/${max}`;
   });
   return out.join(', ');
 });
