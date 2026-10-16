@@ -1,0 +1,47 @@
+# Packs the desktop build (Electron, Phase 14.3) for Steam: one folder per platform, as run
+# artifacts, each a depot's worth. Run it from the Actions tab: "Build desktop" -> "Run workflow".
+#
+# The game is built from app/ as the site is, copied in beside desktop/main.js, and packed by the
+# pinned @electron/packager (desktop/package-lock.json). The builds are unsigned: Windows
+# SmartScreen and macOS Gatekeeper warn until they're signed (and the Mac one notarized), which
+# needs Evan's certificates. macos-15 runs on Apple silicon, so the Mac folder is arm64 only.
+name: Build desktop
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pack:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            app/package-lock.json
+            desktop/package-lock.json
+
+      - run: npm ci --prefix app && npm ci --prefix desktop
+
+      - name: Build the game
+        run: npm run build --prefix app
+
+      - name: Pack
+        run: npm run pack --prefix desktop
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dirtbag-desktop-${{ runner.os }}
+          path: desktop/out/
+          if-no-files-found: error

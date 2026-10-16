@@ -244,6 +244,7 @@ import { buildSheet, owedNote, SKILL_NAME, type ListSpec } from './sheets';
 import { CREDITS } from './credits';
 import { kitNote, kitState } from './kit';
 import { SaveFiles } from './SaveFiles';
+import { desktop } from '../game/desktop';
 import { vars } from './vars';
 
 // "a, b and c".
@@ -2801,6 +2802,7 @@ function SettingsBody({ game, settings }: { game: Game; settings: Settings }) {
         {choice('buzz', 'off', 'Off')}
       </div>
       <SaveFiles game={game} />
+      {desktop && <Window />}
       <OldCareer />
       <ul>
         <li>
@@ -2861,6 +2863,37 @@ function CreditsBody({ titled = true }: { titled?: boolean }) {
 }
 
 // v0.956's saves, still in this browser after the old game retired: kept as a file on request.
+// Phase 14.3: the desktop build's window, full-screen or not (F11 too), and the way out. The
+// game saves as you play, so quitting loses nothing.
+function Window() {
+  const [full, setFull] = useState(() => desktop!.fullscreen());
+  return (
+    <>
+      <p className="crux">Window</p>
+      <div role="radiogroup" aria-label="Window">
+        {([true, false] as const).map((on) => (
+          <button
+            type="button"
+            key={String(on)}
+            className="beta choice"
+            role="radio"
+            aria-checked={full === on}
+            onClick={() => setFull(desktop!.fullscreen(on))}
+          >
+            <span className="dot" />
+            <span>{on ? 'Full screen' : 'In a window'}</span>
+          </button>
+        ))}
+      </div>
+      <button type="button" className="opt" id="s-quit" onClick={() => desktop!.quit()}>
+        <span>Quit</span>
+        <span className="c" />
+        <small>Your game is saved as you play.</small>
+      </button>
+    </>
+  );
+}
+
 function OldCareer() {
   const [there] = useState(() => legacyFile() !== null);
   const [kept, setKept] = useState(false);

@@ -1,6 +1,7 @@
 // One version string, in the root package.json, for the whole release. Copies of it live in the
-// rebuild's package (compiled into the game, and written into every save), both lockfiles, and
-// the Play build's versionName. `npm run stamp` writes them; `npm run check` fails on drift.
+// rebuild's package (compiled into the game, and written into every save), the desktop build's
+// package, their lockfiles, and the Play build's versionName. `npm run stamp` writes them;
+// `npm run check` fails on drift.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -26,6 +27,16 @@ export const COPIES = [
   { file: 'app/package.json', get: (j) => [j.version], set: (j, v) => (j.version = v) },
   {
     file: 'app/package-lock.json',
+    get: (j) => [j.version, j.packages?.['']?.version],
+    set: (j, v) => {
+      j.version = v;
+      if (j.packages?.['']) j.packages[''].version = v;
+    },
+  },
+  // Phase 14.3: the desktop build, which packs its version into the app.
+  { file: 'desktop/package.json', get: (j) => [j.version], set: (j, v) => (j.version = v) },
+  {
+    file: 'desktop/package-lock.json',
     get: (j) => [j.version, j.packages?.['']?.version],
     set: (j, v) => {
       j.version = v;

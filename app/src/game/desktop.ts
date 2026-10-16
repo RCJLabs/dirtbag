@@ -1,0 +1,44 @@
+// Phase 14.3 (Evan's call): the desktop build's bridge (desktop/preload.cjs), there only when
+// the game runs in it. The game's keys live in a file in the user-data folder, which Steam
+// Cloud syncs; the window can go full-screen and quit.
+export interface Desktop {
+  all(): Record<string, string>;
+  set(key: string, value: string): boolean;
+  remove(key: string): boolean;
+  // Asked with nothing, says whether it is; with a yes or a no, makes it so.
+  fullscreen(on?: boolean): boolean;
+  quit(): void;
+}
+
+declare global {
+  interface Window {
+    dirtbagDesktop?: Desktop;
+  }
+}
+
+export const desktop: Desktop | null = typeof window !== 'undefined' ? (window.dirtbagDesktop ?? null) : null;
+
+// The file's keys as the Storage the game's store wants: read once at start-up, every write
+// through to the file before it counts. A write the file refused throws, as a full
+// localStorage does, so the game says it couldn't save.
+export function fileStorage(d: Desktop): Storage {
+  const keys = new Map(Object.entries(d.all()));
+  return {
+    get length() {
+      return keys.size;
+    },
+    key: (i: number) => [...keys.keys()][i] ?? null,
+    getItem: (k: string) => keys.get(k) ?? null,
+    setItem(k: string, v: string) {
+      const s = String(v);
+      if (!d.set(k, s)) throw new Error('The save file could not be written.');
+      keys.set(k, s);
+    },
+    removeItem(k: string) {
+      if (d.remove(k)) keys.delete(k);
+    },
+    clear() {
+      for (const k of [...keys.keys()]) if (d.remove(k)) keys.delete(k);
+    },
+  };
+}
