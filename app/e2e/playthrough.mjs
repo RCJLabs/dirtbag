@@ -3512,7 +3512,9 @@ console.log('Something broke');
   await p.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Close');
   if (errors.length !== 1)
     problems.push(`crash: errors besides the one on purpose: ${errors.slice(1).join('; ')}`);
-  log('crash: the screen, the save as a file, what went wrong and the last moves (no name typed), carried on');
+  log(
+    'crash: the screen, the save as a file, what went wrong and the last moves (no name typed), carried on',
+  );
   await ctx.close();
 }
 
