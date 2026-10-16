@@ -135,6 +135,8 @@ export interface Settings {
   buzz: 'on' | 'off';
   // Phase 25: the music, made in code.
   music: 'on' | 'off';
+  // Phase 14.6: frames a second in a corner, for checking a Deck holds 60.
+  meter: 'off' | 'on';
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -143,6 +145,7 @@ export const DEFAULT_SETTINGS: Settings = {
   sound: 'on',
   buzz: 'on',
   music: 'on',
+  meter: 'off',
 };
 
 export function loadSettings(): Settings {
@@ -156,6 +159,7 @@ export function loadSettings(): Settings {
       sound: v.sound === 'quiet' || v.sound === 'off' ? v.sound : 'on',
       buzz: v.buzz === 'off' ? 'off' : 'on',
       music: v.music === 'off' ? 'off' : 'on',
+      meter: v.meter === 'on' ? 'on' : 'off',
     };
   } catch {
     return DEFAULT_SETTINGS;

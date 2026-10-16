@@ -246,6 +246,7 @@ import { kitNote, kitState } from './kit';
 import { SaveFiles } from './SaveFiles';
 import { desktop } from '../game/desktop';
 import { vars } from './vars';
+import { Glyph, glyphs } from './Glyph';
 
 // "a, b and c".
 const and = (xs: string[]): string =>
@@ -375,9 +376,9 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
         {spec.rows.map((r) => (
           <li key={r.label}>
             <button type="button" className="opt" disabled={r.off} onClick={r.run}>
-              <span>{r.label}</span>
+              <span>{glyphs(r.label)}</span>
               <span className="c">{r.cost ?? ''}</span>
-              {r.note && <small>{r.note}</small>}
+              {r.note && <small>{glyphs(r.note)}</small>}
             </button>
           </li>
         ))}
@@ -485,11 +486,18 @@ function RushBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
               <span className="c">{n >= 0 ? n + 1 : ''}</span>
               <small>
                 {DRINKS[o.drink]!.make} to make · waits {o.waits} · tips {o.tip}
-                {when !== undefined
-                  ? when <= o.waits
-                    ? ` · done at ${when} ✓`
-                    : ` · done at ${when}, gone`
-                  : ''}
+                {when !== undefined ? (
+                  when <= o.waits ? (
+                    <>
+                      {' '}
+                      · done at {when} <Glyph c="✓" />
+                    </>
+                  ) : (
+                    ` · done at ${when}, gone`
+                  )
+                ) : (
+                  ''
+                )}
               </small>
             </button>
           );
@@ -823,7 +831,7 @@ function SetBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
       <ul className="checks" id="set-checks">
         {checks.map(([ok, what]) => (
           <li key={what} className={ok ? 'ok' : ''}>
-            {ok ? '✓' : '·'} {what}
+            {ok ? <Glyph c="✓" /> : '·'} {what}
           </li>
         ))}
       </ul>
@@ -913,7 +921,7 @@ function PlanBody({ game, ui }: { game: Game; ui: Ui }) {
                 aria-label={`Take out step ${i + 1}`}
                 onClick={() => game.setPlan(steps.filter((_, j) => j !== i))}
               >
-                ✕
+                <Glyph c="✕" />
               </button>
             </li>
           ))}
@@ -1000,7 +1008,7 @@ function Close({ game, back }: { game: Game; back?: boolean }) {
       aria-label="Close"
       onClick={() => (back ? game.shiftBack() : game.closeSheet())}
     >
-      ✕
+      <Glyph c="✕" />
     </button>
   );
 }
@@ -1840,7 +1848,13 @@ function BoardBody({ game, s }: { game: Game; s: GameState }) {
       <div id="board">
         <p className="sub">{up} You took one; the rest came down.</p>
         <p className="crux">
-          {mine.paid ? '✓ ' : ''}
+          {mine.paid ? (
+            <>
+              <Glyph c="✓" />{' '}
+            </>
+          ) : (
+            ''
+          )}
           {j.title} · {payWords(mine)}
         </p>
         <p className="sub">
@@ -1921,12 +1935,12 @@ function BookBody({ s }: { s: GameState }) {
 // Phase 25.7: a sheet's text with the glossary's words in it marked, each a tap from its
 // entry. Not on a word's own card, nor the journal.
 function Glossed({ game, at, text }: { game: Game; at: SheetId; text: string }) {
-  if (at.k === 'word') return <>{text}</>;
+  if (at.k === 'word') return <>{glyphs(text)}</>;
   return (
     <>
       {glossSplit(text).map((p, i) =>
         typeof p === 'string' ? (
-          <Fragment key={i}>{p}</Fragment>
+          <Fragment key={i}>{glyphs(p)}</Fragment>
         ) : (
           <button
             type="button"
@@ -1981,7 +1995,7 @@ function LatelyBody({ s }: { s: GameState }) {
             {lines.map((l, i) => (
               <li key={i}>
                 <b>{clock(l.min)}</b>
-                <span>{l.text}</span>
+                <span>{glyphs(l.text)}</span>
               </li>
             ))}
           </ul>
@@ -2103,8 +2117,8 @@ function CallingRow({ game, s }: { game: Game; s: GameState }) {
       {c.rungs.map((aim, i) => (
         <p className="sub" key={i}>
           {s.calling.rungs[i] !== undefined
-            ? `✓ ${rungText(aim)}, day ${s.calling.rungs[i]}.`
-            : `○ ${rungText(aim)}.`}
+            ? glyphs(`✓ ${rungText(aim)}, day ${s.calling.rungs[i]}.`)
+            : glyphs(`○ ${rungText(aim)}.`)}
         </p>
       ))}
     </>
@@ -2135,13 +2149,14 @@ function PathsRow({ game, s }: { game: Game; s: GameState }) {
             </p>
             {p.tiers.slice(0, n).map((t) => (
               <p className="sub" key={t.name}>
-                ✓ {t.name}: {edgeText(t.edge)}
+                <Glyph c="✓" /> {t.name}: {edgeText(t.edge)}
               </p>
             ))}
             {next &&
               (why ? (
                 <p className="sub">
-                  ○ {next.name}: V{PATH.gates[n]} and {deedText(next.deed)}. {edgeText(next.edge)}
+                  <Glyph c="○" /> {next.name}: V{PATH.gates[n]} and {deedText(next.deed)}.{' '}
+                  {edgeText(next.edge)}
                 </p>
               ) : (
                 <button
@@ -2801,6 +2816,11 @@ function SettingsBody({ game, settings }: { game: Game; settings: Settings }) {
       <div role="radiogroup" aria-label="Vibration">
         {choice('buzz', 'on', 'On, where the phone can')}
         {choice('buzz', 'off', 'Off')}
+      </div>
+      <p className="crux">Frame meter</p>
+      <div role="radiogroup" aria-label="Frame meter">
+        {choice('meter', 'off', 'Off')}
+        {choice('meter', 'on', 'On: frames a second, in the corner')}
       </div>
       <SaveFiles game={game} />
       {desktop && <Window />}

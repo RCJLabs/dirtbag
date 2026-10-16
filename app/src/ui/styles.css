@@ -1283,3 +1283,40 @@ button.pill:disabled {
 .post[aria-pressed='true']:disabled {
   opacity: 1;
 }
+
+/* Phase 14.6: the marks the fonts don't have (Glyph.tsx), at the text's size and colour. */
+.glyph {
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  vertical-align: -0.08em;
+  overflow: visible;
+}
+
+/* Phase 14.6: a control's pad button (PadHint.tsx), only while the pad is in use. */
+.pad-hint {
+  display: none;
+}
+.screen[data-input='pad'] .pad-hint {
+  display: inline-block;
+  margin-left: 0.4em;
+  padding: 0 0.4em;
+  border: 1.5px solid currentColor;
+  border-radius: 1em;
+  font-size: 0.75em;
+  line-height: 1.4;
+}
+
+/* Phase 14.6: the frame meter (Settings), out of the way of the HUD and every control. */
+.meter {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  padding: 1px 6px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-family: var(--u-mono);
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 50;
+}
