@@ -103,6 +103,7 @@ import { LADDERS } from './ladders';
 import { MEDIA, OWN_GYM, SETTING } from './dials';
 import { boardWeek, jobProgress } from './board';
 import { BOARD_JOBS } from './content/board';
+import { demoOver } from './demo';
 
 export interface BotRun {
   state: GameState;
@@ -1808,7 +1809,8 @@ export function playDays(seed: string, opts: WeekOpts = {}): BotRun {
   if (opts.calling) go({ t: 'calling', id: opts.calling });
   const end = s.day + (opts.days ?? 7);
   // A climber who's hung it up (Phase 16.1) has no more days to play.
-  for (let guard = 0; s.day < end && !s.life.retired; guard++) {
+  // A life hung up, or the demo's last morning (Phase 14.5): nothing left to play.
+  for (let guard = 0; s.day < end && !s.life.retired && !demoOver(s); guard++) {
     if (guard > (opts.days ?? 7) * 2)
       throw new Error(`the bot is stuck on day ${s.day}: ${run.refused.slice(-3).join(' | ')}`);
     if (strategy === 'career') careerDay();

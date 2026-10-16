@@ -4,6 +4,7 @@
 
 import { bolted } from './business';
 import { GUIDE } from './dials';
+import { inEdition } from './edition';
 import { ACTS, PLACES } from './content/places';
 import { ROUTES, type RouteDef } from './content/routes';
 import type { GameState } from './types';
@@ -20,8 +21,8 @@ export const guideLines = (s: GameState, place: string): RouteDef[] =>
       bolted(s, r),
   );
 
-// The crags a guide could be written for.
-export const GUIDE_CRAGS = Object.keys(PLACES).filter((id) => PLACES[id]!.crag);
+// The crags a guide could be written for: the demo's own, in the demo (Phase 14.5b).
+export const GUIDE_CRAGS = Object.keys(PLACES).filter((id) => PLACES[id]!.crag && inEdition(id));
 
 // What's still to do before you can write one: lines unsent, and whether one's your own.
 export function guideLeft(s: GameState, place: string): { unsent: number; fa: boolean } {

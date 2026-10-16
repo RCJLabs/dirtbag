@@ -4,7 +4,8 @@
 #          new climber, the save, the clock, reload, offline start).
 #   app    the game in app/: formatting, types, the sim's tests, a build inside its size
 #          budget, then a bot that plays the first five days on the build, and a v0.956 player;
-#          then the demo built, and its first morning and last card played.
+#          then the demo: a bot plays it to its end, it's built, the build is checked for any
+#          of the full game's content, and its first morning and last card are played.
 #   desktop  the desktop build (Electron, pinned in desktop/): its save file's tests, then its
 #          first minute under a virtual display (opens, saves to the file, comes back, quits).
 # Failure screenshots from either are kept as run artifacts.
@@ -108,8 +109,15 @@ jobs:
         run: npm run e2e
 
       # Phase 14.5: the demo, built from the same code with its flag, from both ends.
+      - name: The demo's bot plays it to its end
+        run: npm run play:demo
+
       - name: Build the demo
         run: npm run build:demo
+
+      # Phase 14.5b (Done-when 4): the content diff.
+      - name: The demo holds none of the full game's content
+        run: npm run diff:demo
 
       - name: The demo's first morning and last card
         run: npm run e2e:demo

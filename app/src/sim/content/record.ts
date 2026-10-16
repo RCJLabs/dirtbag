@@ -5,6 +5,8 @@
 // stays out of the book until then. `aim` is what earns it, worked out in record.ts. Ids are
 // stable: Phase 14 maps them to Steam achievements.
 
+import { HOLLOW_RECORD } from './hollow';
+
 export type RecordAim =
   // Phase 25.1: a guide out, a quirk named, what you've given over a life.
   | { guide: true }
@@ -514,16 +516,8 @@ export const RECORD: RecordEntry[] = [
     from: ['f1:retired'],
     aim: { retired: true },
   },
-  // Phase 32.2: the Hollow found, up the wash with three people's directions.
-  {
-    id: 'hollow',
-    title: 'Off the Map',
-    desc: 'Find the Hollow.',
-    story:
-      'Three people each knew a piece of the way, and you were the one who put it together and walked in. There is a canyon past the Gorge that isn’t on any map, and you know where it is.',
-    from: [],
-    aim: { hollow: true },
-  },
+  // Phase 32.2: the Hollow found: the full game's (hollow.full.ts).
+  ...HOLLOW_RECORD,
   // Phase 31.3: a family's kid sends the line the old climber gave them at the fire.
   {
     id: 'kinquest',

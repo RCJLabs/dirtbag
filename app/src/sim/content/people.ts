@@ -16,6 +16,7 @@ import { renownNodes, renownStarts } from './renown';
 import { kinNodes, kinStarts } from './kin';
 import { OLD_WORD } from './hollow';
 import { PLACES } from './places';
+import { inEdition } from '../edition';
 import type { Delta, HollowClue, Skills } from '../types';
 
 export interface TalkFx {
@@ -147,7 +148,8 @@ const SIT: TalkOpt[] = [
 function inviteOpts(who: string, say: string): TalkOpt[] {
   const out: TalkOpt[] = [];
   for (const [id, p] of Object.entries(PLACES)) {
-    if (p.invite === undefined) continue;
+    // Nobody's asked anywhere the demo doesn't go (Phase 14.5b).
+    if (p.invite === undefined || !inEdition(id)) continue;
     out.push({
       label: p.name,
       when: {

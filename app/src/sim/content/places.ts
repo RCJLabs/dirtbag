@@ -12,6 +12,7 @@
 
 import type { Need } from '../cond';
 import { INGREDIENTS, RECIPES } from './food';
+import { PLACE_WORDS } from './places.full';
 import {
   CLINIC,
   DAY,
@@ -169,6 +170,12 @@ export interface RoadDef {
   cash: number;
 }
 
+// What a later place is called and says (Phase 14.5b): the full game's, in places.full.ts. The
+// demo's build has none of them (places.demo.ts) and keeps each later place's rules under a
+// blank name, for the people and the weather that still reckon with it; nobody goes there.
+export type PlaceWords = Pick<PlaceDef, 'name' | 'away' | 'here' | 'locked' | 'closed'>;
+const said = (id: string): PlaceWords => PLACE_WORDS[id] ?? { name: '', away: '', here: '' };
+
 export const PLACES: Record<string, PlaceDef> = {
   lot: {
     name: 'The Lot',
@@ -225,18 +232,15 @@ export const PLACES: Record<string, PlaceDef> = {
   // v0.956's third crag, "a fabled desert highball mecca, a real road trip out": V6 to
   // get in, a haul to pay for once, and a permit every trip.
   moon: {
+    ...said('moon'),
     crowd: 0.45,
-    name: 'Moonstone Boulders',
     crag: true,
     rock: 'quartzite',
     scene: 'moon',
     ambience: { wind: 0.6, hawk: 0.3 },
-    away: 'Quartzite highballs out in the desert. A real road trip.',
-    here: 'Sand, sky, and boulders the size of houses.',
     acts: [],
     minGrade: 6,
     invite: 5,
-    locked: 'Tall, hard and a long way out. Come back when you’re climbing V6.',
     unlock: 400,
     permit: 20,
     pads: true,
@@ -249,19 +253,15 @@ export const PLACES: Record<string, PlaceDef> = {
   // v0.956's fourth crag: "a famous desert destination, world-class and brutal". V7 to get
   // in, three hours out, and shut for the summer heat. No haul to pay for: just the drive.
   mesa: {
+    ...said('mesa'),
     crowd: 0.45,
-    name: 'Sandstone Mesa',
     crag: true,
     rock: 'sandstone',
     scene: 'mesa',
     ambience: { wind: 0.5, hawk: 0.25 },
-    away: 'Red desert sandstone, three hours out. World-class, and brutal about it.',
-    here: 'Red rock, black varnish, and nobody for miles.',
     acts: [],
     minGrade: 7,
     invite: 5,
-    locked: 'V7 and up, and they mean it. Come back when you’re climbing V7.',
-    closed: { season: 'summer', why: 'Too hot to hold anything till fall' },
     desert: true,
     ownSky: true,
     // The sun comes round the far end first, as at Moonstone: the project out past the
@@ -283,18 +283,15 @@ export const PLACES: Record<string, PlaceDef> = {
   // v0.956's "valley of granite big walls, the multi-day proving ground": V8 to get in, a
   // trip paid for once, four hours out, and shaded. Its walls come with Phase 21.5.
   stone: {
+    ...said('stone'),
     crowd: 0.6,
-    name: 'The Big Stone',
     crag: true,
     rock: 'granite',
     scene: 'stone',
     ambience: { wind: 0.3, birds: 0.3, creek: 0.4 },
-    away: 'A valley of granite big walls, four hours out. The proving ground.',
-    here: 'Granite to the sky on both sides. Your neck hurts already.',
     acts: [],
     minGrade: 8,
     invite: 7,
-    locked: 'The walls are V8 and up, and they don’t care who you are. Come back when you’re climbing V8.',
     unlock: 600,
     shaded: true,
     ownSky: true,
@@ -303,58 +300,47 @@ export const PLACES: Record<string, PlaceDef> = {
   // trip paid for once and a permit every time, four hours out past the Gorge, shaded, and
   // snowed in all winter.
   wind: {
+    ...said('wind'),
     crowd: 0.3,
-    name: 'Wind River Walls',
     crag: true,
     rock: 'granite',
     scene: 'wind',
     ambience: { wind: 0.7, creek: 0.3, hawk: 0.15 },
-    away: 'High alpine granite past the Gorge. A long, costly haul for the committed.',
-    here: 'Thin air, cold rock, and weather you watch.',
     acts: [],
     minGrade: 9,
     invite: 7,
-    locked: 'V9 and up, and a long way up at that. Come back when you’re climbing V9.',
     unlock: 800,
     permit: 35,
-    closed: { season: 'winter', why: 'Snowed in till spring' },
     shaded: true,
     ownSky: true,
   },
   // v0.956's "remote, frigid wall, where the grades run out": V11, four hours out, shaded, no
   // haul to pay for. East out of the valley, over the pass above Midtown.
   crucible: {
+    ...said('crucible'),
     crowd: 0.2,
-    name: 'The Crucible',
     crag: true,
     rock: 'gneiss',
     scene: 'crucible',
     ambience: { wind: 0.8, hawk: 0.1 },
-    away: 'A remote, frigid wall four hours east, over the pass. Where the grades run out.',
-    here: 'Black gneiss, cold wind, and nothing easy.',
     acts: [],
     minGrade: 11,
     invite: 7,
-    locked: 'Nothing here is under V13. Come back when you’re climbing V11, and even then.',
     shaded: true,
     ownSky: true,
   },
   // v0.956's "deep-water solo over the sea, summer only, and a fall is just a splash": V4,
   // two hours out on the coast past Old Town, no fee, and shut the rest of the year.
   cove: {
+    ...said('cove'),
     crowd: 0.6,
-    name: 'Psicobloc Cove',
     crag: true,
     rock: 'limestone',
     scene: 'cove',
     ambience: { wind: 0.4, creek: 0.7, birds: 0.2 },
-    away: 'Deep-water solo on a limestone sea cliff, two hours out. A fall is just a splash.',
-    here: 'Salt on your hands, the swell under you, and no pads anywhere.',
     acts: [],
     minGrade: 4,
     invite: 3,
-    locked: 'The cliff starts at V2 but the swim doesn’t. Come back when you’re climbing V4.',
-    closed: { season: ['fall', 'winter', 'spring'], why: 'Cold, rough seas till summer' },
     ownSky: true,
     // The sun comes up the coast from the south end: the tall lines out at the point first.
     sun: ['pdeep', 'parete', 'poverhang', 'pleap', 'pbarnacle', 'pslab', 'pplunge', 'ptide'],
@@ -362,8 +348,8 @@ export const PLACES: Record<string, PlaceDef> = {
   // Phase 18.6 [proposed]: Miller's Bluff, east of the Lot on a farm track. Ed Miller's
   // back forty: limestone nobody's climbed, for sale. Buy it and bolt it, line by line.
   bluff: {
+    ...said('bluff'),
     crowd: 0.05,
-    name: 'Miller’s Bluff',
     crag: true,
     rock: 'limestone',
     land: true,
@@ -372,8 +358,6 @@ export const PLACES: Record<string, PlaceDef> = {
     invite: 3,
     scene: 'bluff',
     ambience: { wind: 0.4, birds: 0.7, creek: 0.2 },
-    away: 'Limestone on the back of a farm east of the Lot. Never climbed: Ed Miller wants {bluff} for it.',
-    here: 'Cows over the fence, and a wall nobody has ever chalked.',
     acts: [],
     // The sun comes over the farm from the east end: the boulders in the field first.
     sun: ['bsilo', 'btrough', 'blong', 'broof', 'bpillar', 'bcow', 'btufa', 'bbarn', 'bhay'],
@@ -383,42 +367,34 @@ export const PLACES: Record<string, PlaceDef> = {
   // the quest (32.2), not bought. Shaded all day, and nobody comes: no crowd. Its lines are
   // every one an open project. The crew can be talked into it, by a Partner.
   hollow: {
-    name: 'The Hollow',
+    ...said('hollow'),
     crag: true,
     rock: 'sandstone',
     hidden: true,
     wild: true,
     scene: 'hollow',
     ambience: { wind: 0.5, hawk: 0.15 },
-    away: 'The slot canyon past the Gorge that nobody puts on a map. Headstones, and rock nobody has touched.',
-    here: 'Cool red sandstone, old headstones, and not one tick mark.',
     acts: [],
     minGrade: 8,
     invite: 5,
-    locked: 'Hard lines, and nobody to ask. Come back when you’re climbing V8.',
     shaded: true,
   },
   // v0.956's second gym: "a steep bouldering cave, no ropes, just hard plastic", V5 to V12
   // here (v0.956's V3 to V10, raised), at the trailhead below Roadside. A day pass, and coaching for work once you can climb.
   cave: {
-    name: 'The Cave',
+    ...said('cave'),
     scene: 'cave',
     ambience: { room: 0.3, murmur: 0.3, gym: 1 },
-    away: 'The bouldering cave at the trailhead. Steep plastic, V5 and up. Day pass {pass}.',
-    here: 'Low ceiling, loud music, everyone upside down.',
     acts: ['cave.pass', 'cave.coach'],
   },
   // v0.956's third gym, where the comp team trains: comp-style setting, V7 to V14, in Midtown
   // west of the highway. You need V7 to get past the desk.
   center: {
-    name: 'The Training Center',
+    ...said('center'),
     scene: 'center',
     ambience: { room: 0.2, murmur: 0.5, gym: 1 },
-    away: 'The comp gym in Midtown. Run-and-jumps and volumes, V7 to V14. Day pass {centerPass}.',
-    here: 'White walls, big volumes, a comp clock nobody turns off.',
     acts: ['center.pass'],
     minGrade: 7,
-    locked: 'The desk checks your ticklist: V7 and up. Come back when you’re climbing V7.',
   },
   gym: {
     name: 'Send City',

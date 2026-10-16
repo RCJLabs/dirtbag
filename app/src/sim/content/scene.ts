@@ -8,6 +8,7 @@
 // followers and the access fund dropped (nothing here holds them). Its text is kept,
 // tightened where it leaned on the internet as a character.
 
+import { HOLLOW_STANCE } from './hollow';
 import type { Edge } from './paths';
 
 export type Faction = 'old' | 'gym';
@@ -149,40 +150,8 @@ export const STANCES: Record<string, Stance> = {
       fx: { old: 10, gym: -12, psyche: -6 },
     },
   },
-  // Phase 32.3 (Evan's call: a stance at the fire argues it out): you bolted a crack in the
-  // Hollow. Pulling the bolts puts it back on gear (game.ts).
-  hollowbolts: {
-    after: 0,
-    crack: true,
-    title: 'You bolted a crack',
-    sit: 'Word gets round that there’s a canyon past the Gorge, and that whoever found it put bolts beside a crack that would have taken gear all the way. Nobody says who out loud. Everybody at the fire looks at you anyway.',
-    opts: [
-      {
-        label: 'My lines, my call.',
-        stance: 'Bolted a crack in the Hollow and said so.',
-        out: 'You say you found it, you cleaned it, you put up the line, and you’ll protect it how you like. The gym crowd likes that a lot. The old guard goes very quiet, which is worse than anything they could say.',
-        fx: { old: -6, gym: 6 },
-      },
-      {
-        label: 'Pull the bolts. It goes on gear.',
-        stance: 'Pulled my own bolts out of a crack in the Hollow. It goes on gear now.',
-        out: 'You go back up with a crowbar and a bag of epoxy and take them out, and patch the holes so nobody will ever find them. It goes on gear now, the way it was always going to. It costs you a day and the gym crowd’s good opinion, and Ray buys you a coffee for the first time.',
-        fx: { old: 12, gym: -4, psyche: -2, energy: -20 },
-      },
-      {
-        label: 'Nobody else was going to climb it.',
-        stance: 'Bolted a crack because nobody else was ever going to climb it.',
-        out: 'It’s true, and everybody knows it’s true, and it doesn’t help. People climb it, though. That’s something.',
-        fx: { gym: 4, psyche: 2 },
-      },
-    ],
-    elder: {
-      label: 'Leave them, and say why.',
-      stance: 'Kept the bolts in a crack in the Hollow, and told the old guard why.',
-      out: 'You tell the fire about the flake you pulled off it with your hands, the one that would have taken any gear with it, and nobody argues. They don’t agree, either. But they listen, which they wouldn’t have done five years ago.',
-      fx: { old: -2, gym: 4 },
-    },
-  },
+  // Phase 32.3: the Hollow's, the full game's (hollow.full.ts).
+  hollowbolts: HOLLOW_STANCE,
   fa: {
     after: 28,
     fa: true,

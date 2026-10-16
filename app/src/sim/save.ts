@@ -28,6 +28,9 @@ import { ECHOES, STANCES } from './content/scene';
 import { BOARD_JOBS } from './content/board';
 import { newMastery } from './paths';
 import { newlyEarned } from './record';
+import { DEMO_END } from './content/demo';
+import { fromFullGame } from './demo';
+import { DEMO } from './edition';
 import { aimMet, currentGoal } from './story';
 import { repeatsOf } from './settle';
 import { ACT_I } from './content/story';
@@ -609,6 +612,7 @@ export function fromSave(
       return { ok: false, why: `migration from v${n} failed: ${e instanceof Error ? e.message : String(e)}` };
     }
   }
+  if (DEMO && fromFullGame(state)) return { ok: false, why: DEMO_END.fullSave };
   const errors = validate(state);
   if (errors.length) return { ok: false, why: `invalid: ${errors.slice(0, 3).join('; ')}` };
   return { ok: true, state: state as GameState, from: v };
