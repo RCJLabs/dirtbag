@@ -88,13 +88,13 @@ export function BuskPanel({ game }: { game: Game }) {
               }}
             >
               {w.tap}
-              <PadHint b="a" />
+              <PadHint b="a" binds={ui.settings.binds.pad} />
             </button>
             {u.kind === 'cook' && u.scores.length === 0 && (
               <button type="button" className="opt" id="b-skip" onClick={() => game.cookSkip()}>
                 <span>Just eat it</span>
                 <span className="c">
-                  <PadHint b="b" />
+                  <PadHint b="b" binds={ui.settings.binds.pad} />
                 </span>
               </button>
             )}

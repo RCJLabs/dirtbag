@@ -10,6 +10,10 @@ export interface Desktop {
   quit(): void;
   // Phase 14.4: Steam achievements by name; how many unlocked just now (none without Steam).
   achieve(names: string[]): number;
+  // Phase 14.6b: whether Steam says this is a Steam Deck; and Steam's floating keyboard, under
+  // a text field at x, y (w by h), in the window's pixels.
+  deck(): boolean;
+  keyboard(x: number, y: number, w: number, h: number): void;
 }
 
 declare global {
@@ -19,6 +23,9 @@ declare global {
 }
 
 export const desktop: Desktop | null = typeof window !== 'undefined' ? (window.dirtbagDesktop ?? null) : null;
+
+// On a Deck, the pad's buttons are named as the Deck prints them (L1, not LB).
+export const onDeck: boolean = desktop?.deck() ?? false;
 
 // The file's keys as the Storage the game's store wants: read once at start-up, every write
 // through to the file before it counts. A write the file refused throws, as a full

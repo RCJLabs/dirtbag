@@ -244,7 +244,16 @@ import { buildSheet, owedNote, SKILL_NAME, type ListSpec } from './sheets';
 import { CREDITS } from './credits';
 import { kitNote, kitState } from './kit';
 import { SaveFiles } from './SaveFiles';
-import { desktop } from '../game/desktop';
+import { desktop, onDeck } from '../game/desktop';
+import {
+  buttonName,
+  DEFAULT_BINDS,
+  KEY_ROLES,
+  keyName,
+  PAD_ROLES,
+  ROLE_NAME,
+  type Binds,
+} from '../game/binds';
 import { vars } from './vars';
 import { Glyph, glyphs } from './Glyph';
 
@@ -314,7 +323,7 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
     ) : id.k === 'week' ? (
       <WeekBody game={game} s={state} />
     ) : id.k === 'settings' ? (
-      <SettingsBody game={game} settings={ui.settings} />
+      <SettingsBody game={game} settings={ui.settings} rebind={ui.rebind} />
     ) : id.k === 'credits' ? (
       <CreditsBody />
     ) : id.k === 'line' && id.step === 2 ? (
@@ -2772,8 +2781,54 @@ function LivingRows({ game, s }: { game: Game; s: GameState }) {
   );
 }
 
-function SettingsBody({ game, settings }: { game: Game; settings: Settings }) {
-  const choice = <K extends keyof Settings>(key: K, value: Settings[K], label: string) => (
+// Phase 14.6b: what the pad's buttons and the keys do. A row waits for the next press and
+// gives its role that button or key; whichever role had it takes the old one. The D-pad, the
+// stick and the arrows always move, and stop the waiting.
+function Controls({ game, binds, rebind }: { game: Game; binds: Binds; rebind: Ui['rebind'] }) {
+  const row = (id: string, role: keyof typeof ROLE_NAME, now: string, asking: boolean, ask: () => void) => (
+    <li key={id}>
+      <button type="button" className="opt" id={id} aria-pressed={asking} onClick={ask}>
+        <span>{ROLE_NAME[role]}</span>
+        <span className="c">
+          {asking ? (id.startsWith('bind-pad') ? 'Press a button' : 'Press a key') : now}
+        </span>
+      </button>
+    </li>
+  );
+  const asking = (device: 'pad' | 'keys', role: string) => rebind?.device === device && rebind.role === role;
+  return (
+    <>
+      <p className="crux">Controller</p>
+      <ul>
+        {PAD_ROLES.map((r) =>
+          row(`bind-pad-${r}`, r, buttonName(binds.pad[r], onDeck), asking('pad', r), () =>
+            game.listen('pad', r),
+          ),
+        )}
+      </ul>
+      <p className="crux">Keys</p>
+      <ul>
+        {KEY_ROLES.map((r) =>
+          row(`bind-keys-${r}`, r, keyName(binds.keys[r]), asking('keys', r), () => game.listen('keys', r)),
+        )}
+        <li>
+          <button
+            type="button"
+            className="opt"
+            id="bind-reset"
+            onClick={() => game.setSettings({ binds: DEFAULT_BINDS })}
+          >
+            <span>Put the controls back as they were</span>
+            <span className="c" />
+          </button>
+        </li>
+      </ul>
+    </>
+  );
+}
+
+function SettingsBody({ game, settings, rebind }: { game: Game; settings: Settings; rebind: Ui['rebind'] }) {
+  const choice = <K extends Exclude<keyof Settings, 'binds'>>(key: K, value: Settings[K], label: string) => (
     <button
       type="button"
       key={value}
@@ -2822,6 +2877,7 @@ function SettingsBody({ game, settings }: { game: Game; settings: Settings }) {
         {choice('meter', 'off', 'Off')}
         {choice('meter', 'on', 'On: frames a second, in the corner')}
       </div>
+      <Controls game={game} binds={settings.binds} rebind={rebind} />
       <SaveFiles game={game} />
       {desktop && <Window />}
       <OldCareer />

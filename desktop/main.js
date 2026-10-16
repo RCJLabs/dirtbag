@@ -107,6 +107,12 @@ else {
         Array.isArray(names) && names.length <= 64 && names.every((n) => /^[A-Z0-9_]{1,64}$/.test(n));
       e.returnValue = ours(e) && ok ? steam.achieve(names) : 0;
     });
+    // Phase 14.6b: whether this is a Steam Deck, and Steam's keyboard under a text field.
+    ipcMain.on('steam:deck', (e) => (e.returnValue = ours(e) && steam.deck));
+    ipcMain.on('steam:keyboard', (e, ...box) => {
+      const ok = box.length === 4 && box.every((n) => Number.isFinite(n) && n >= 0 && n <= 16384);
+      if (ours(e) && ok) steam.keyboard(...box.map(Math.round));
+    });
     // macOS keeps its app menu, for Quit and for copy and paste in a name; elsewhere, none.
     Menu.setApplicationMenu(
       process.platform === 'darwin'

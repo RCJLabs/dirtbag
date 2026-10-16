@@ -5,7 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 
-const OFF = { on: false, achieve: () => 0 };
+const OFF = { on: false, achieve: () => 0, deck: false, keyboard: () => false };
 
 export function appIdIn(path) {
   try {
@@ -25,8 +25,27 @@ export function startSteam(appId) {
     // Steam isn't running, or this machine has none: the stub.
     return OFF;
   }
+  let deck = false;
+  try {
+    deck = client.utils.isSteamRunningOnSteamDeck();
+  } catch {
+    // An older Steam: not a Deck, as far as anyone can tell.
+  }
   return {
     on: true,
+    // Phase 14.6b: on a Deck the game names its buttons as the Deck prints them.
+    deck,
+    // Steam's floating keyboard, under a text field at x, y (w by h) in the window, for a
+    // player with only a controller (Steam Deck Verified asks for it). It shows only when
+    // Steam's overlay is up, which a copy Steam started has.
+    keyboard(x, y, w, h) {
+      try {
+        client.utils.showFloatingGamepadTextInput(0, x, y, w, h).catch(() => false);
+        return true;
+      } catch {
+        return false;
+      }
+    },
     // Each name Steam doesn't have unlocked yet; how many were new. A name the app doesn't
     // define (480's are Spacewar's) is just not unlocked.
     achieve(names) {

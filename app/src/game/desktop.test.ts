@@ -13,6 +13,8 @@ const bridge = (start: Record<string, string> = {}) => {
     fullscreen: (on) => (on === undefined ? full : (full = on)),
     quit: () => undefined,
     achieve: () => 0,
+    deck: () => false,
+    keyboard: () => undefined,
   };
   return { d, file, breakIt: () => (broken = true) };
 };

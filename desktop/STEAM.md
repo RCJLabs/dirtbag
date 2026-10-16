@@ -33,6 +33,10 @@ Only that file: `window.json` (where the window was) belongs to the machine, and
 
 Unsigned for now: SmartScreen and Gatekeeper warn until the builds are signed (and the Mac one notarized), which needs your certificates.
 
+## The Deck: button names and the keyboard
+
+Phase 14.6b: the game asks Steam whether it's running on a Deck (`utils.isSteamRunningOnSteamDeck`) and there names the pad's buttons as the Deck prints them (L1, R1 and so on, not LB, RB). A text field reached by the pad (a climber's name, a first ascent's, the crew's) asks for Steam's floating keyboard under it (`utils.showFloatingGamepadTextInput`), as Deck Verified wants; Steam shows it only where the overlay is up (below). Neither has run on a Deck yet.
+
 ## The overlay
 
 Steam's overlay (Shift+Tab, the Deck's on-screen keyboard) is switched on only when Steam starts the game (it sets `SteamAppId`): its switches put Chromium's GPU work in-process, so a copy started any other way doesn't take them.

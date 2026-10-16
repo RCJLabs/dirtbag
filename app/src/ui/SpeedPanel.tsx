@@ -75,7 +75,7 @@ export function SpeedPanel({ game }: { game: Game }) {
               }}
             >
               {h}
-              <PadHint b={i ? 'rb' : 'lb'} />
+              <PadHint b={i ? 'rb' : 'lb'} binds={ui.settings.binds.pad} />
             </button>
           ))}
         </div>
