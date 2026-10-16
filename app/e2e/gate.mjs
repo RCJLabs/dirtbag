@@ -13,6 +13,9 @@ const APP = new URL('..', import.meta.url).pathname;
 const OUT = join(APP, 'e2e-artifacts');
 mkdirSync(OUT, { recursive: true });
 const server = await startServer({ root: join(APP, 'dist-gated') });
+// Phase 19.4: today's build, the gate off, for the tester's link (`npm run build` first).
+const today = await startServer({ root: join(APP, 'dist') });
+const ours = (u) => [server.url, today.url].some((s) => u.startsWith(s) || u.startsWith(`blob:${s}`));
 const browser = await chromium.launch(
   process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : { channel: 'chromium' },
 );
@@ -28,8 +31,7 @@ async function fresh() {
   page.on('requestfailed', (r) => problems.push(`request failed: ${r.url()}`));
   page.on('request', (r) => {
     const u = r.url();
-    if (!u.startsWith(server.url) && !u.startsWith('data:') && !u.startsWith(`blob:${server.url}`))
-      problems.push(`left the site: ${u}`);
+    if (!ours(u) && !u.startsWith('data:')) problems.push(`left the site: ${u}`);
   });
   return ctx;
 }
@@ -40,6 +42,7 @@ async function fail(msg) {
   if (problems.length) console.error(problems.join('\n'));
   await browser.close();
   await server.close();
+  await today.close();
   process.exit(1);
 }
 const ok = (what) => console.log(`✓ ${what}`);
@@ -147,8 +150,11 @@ await ctx.close();
 async function inTheApp(preset = null) {
   const c = await fresh();
   await c.addInitScript((p) => {
-    if (p && !localStorage.getItem('dirtbag.gate'))
+    // The preset goes in once: later loads find what the game has made of it since.
+    if (p && !localStorage.getItem('e2e.preset')) {
       for (const [k, v] of Object.entries(p)) localStorage.setItem(k, v);
+      localStorage.setItem('e2e.preset', '1');
+    }
     const bought = () =>
       localStorage.getItem('e2e.play') === 'bought' ? [{ itemId: 'full_game', purchaseToken: 'e2e' }] : [];
     const service = {
@@ -238,9 +244,60 @@ const toast = async (re) => {
   await c.close();
 }
 
+// 5. A tester's link (19.4) on today's site, the gate off: a licence tester's own climber, two
+// hundred days in and marked as from before, opens `?gate=try` in the app. The gate shuts for
+// that tab alone, the climber stops at the season's last card (never set aside as a save that
+// won't load), Play's unlock is bought, and the game opens again on the same climber.
+{
+  const fixture = readFileSync(join(APP, 'src/sim/fixtures/save-v75.json'), 'utf8');
+  const c = await inTheApp({ 'dirtbag.save': fixture, 'dirtbag.unlock': JSON.stringify({ how: 'before' }) });
+  await page.goto(`${today.url}?gate=try`, { waitUntil: 'load' });
+  await page
+    .waitForFunction(
+      () => document.querySelector('#sheet-title')?.textContent === 'That’s the season',
+      null,
+      {
+        timeout: 10_000,
+      },
+    )
+    .catch(() => fail('the tester’s link didn’t shut the gate'));
+  await opt('Unlock the full game')
+    .waitFor({ timeout: 5000 })
+    .catch(() => fail('no unlock on the tester’s card'));
+  const keys = await page.evaluate(() => Object.keys(localStorage));
+  if (keys.some((k) => k.startsWith('dirtbag.save.corrupt')) || (await stored('dirtbag.save')) !== fixture)
+    await fail(`the tester's climber was set aside: ${keys.join(', ')}`);
+  ok('a tester’s link shuts the gate for that tab; their climber waits at the last card, untouched');
+  await Promise.all([page.waitForEvent('load'), opt('Unlock the full game').click()]);
+  await page.waitForFunction(() => !!document.querySelector('#h-time'));
+  await page.waitForTimeout(1200);
+  if (
+    (await stored('dirtbag.unlock')) !== '{"how":"play"}' ||
+    (await text('#sheet-title')) === 'That’s the season'
+  )
+    await fail(`the tester bought it, and it's still shut: ${await stored('dirtbag.unlock')}`);
+  ok('bought on the tester’s link: open again, the same climber');
+  await c.close();
+}
+{
+  // The same site without the link: the gate's off, as it is for everyone.
+  const c = await fresh();
+  const fixture = readFileSync(join(APP, 'src/sim/fixtures/save-v75.json'), 'utf8');
+  await c.addInitScript((raw) => {
+    if (!localStorage.getItem('dirtbag.save')) localStorage.setItem('dirtbag.save', raw);
+  }, fixture);
+  await page.goto(today.url, { waitUntil: 'load' });
+  await page.waitForFunction(() => /Day 201/.test(document.querySelector('#h-time')?.textContent ?? ''));
+  await page.waitForTimeout(800);
+  if ((await text('#sheet-title')) === 'That’s the season') await fail('the gate shut without the link');
+  ok('without the link, today’s site is open to everyone');
+  await c.close();
+}
+
 if (problems.length) await fail('problems on the way');
 await browser.close();
 await server.close();
+await today.close();
 console.log(
   '\n✓ The gate lets the climbers from before it through, holds the rest to the first season, and opens to Play’s unlock.',
 );

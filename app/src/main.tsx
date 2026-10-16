@@ -13,7 +13,7 @@ import { keepIn } from './game/storage';
 import { askPlay } from './game/play';
 import { locked, openGate } from './game/unlock';
 import { App } from './ui/App';
-import { crashed, notACrash } from './ui/crash';
+import { crashed, crashTrail, notACrash } from './ui/crash';
 
 // Phase 14.3: on the desktop, the game's keys live in a file Steam Cloud syncs, read before
 // the game boots.
@@ -24,6 +24,8 @@ openGate(!!desktop);
 
 const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const game = new Game({ still });
+// Phase 19.4: the error screen's report says where the game was and what was just done.
+crashTrail(() => game.trail());
 // Phase 19.2: while it's locked, in the Android app, Play's word on it: bought before (a new
 // phone) opens it at once; otherwise the last card offers it at Play's price.
 if (locked())

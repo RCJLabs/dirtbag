@@ -1,10 +1,11 @@
 // Phase 15.2 (Evan's call): when the game breaks, it says so, where before a render crash left
 // a blank page. Plain DOM, outside React: React may be what broke. The screen says the save is
 // safe (it's written after every move, never mid-way), offers a reload and the save as a file,
-// and shows exactly what went wrong, to copy or to email from the player's own mail app. The
-// game sends nothing itself.
+// and shows exactly what went wrong (and, since 19.4, the last few moves), to copy or to email
+// from the player's own mail app. The game sends nothing itself.
 import { rawSave } from '../game/persist';
-import { DEMO } from '../sim';
+import type { Trail } from '../game/trail';
+import { clock, DEMO } from '../sim';
 
 // Where a report goes, when the player sends one: RCJ Labs' support address. Until there is
 // one, the report is copied, not mailed, and the button that would mail it isn't shown. The
@@ -13,10 +14,12 @@ import { DEMO } from '../sim';
 export const REPORT_TO = '';
 
 // What a report says: the build, where it's running, and the error with its stack, trimmed.
-// Nothing from the save: who you are and what you've done stay on the device.
+// Phase 19.4: then where the game was, and the last few moves (game/trail.ts), so a tester's
+// bug can be found again from the report and their save. No name the player typed.
 export function crashReport(
   e: unknown,
   where: { version: string; demo: boolean; desktop: boolean; agent: string },
+  trail?: Trail | null,
 ): string {
   const err = e instanceof Error ? e : new Error(String(e));
   const stack = (err.stack ?? '')
@@ -30,7 +33,21 @@ export function crashReport(
     '',
     `${err.name}: ${err.message}`,
     ...stack,
+    ...(trail
+      ? [
+          '',
+          `Day ${trail.day}, ${clock(trail.min)}, at ${trail.at}; seed ${trail.seed}`,
+          'Last moves:',
+          ...trail.moves,
+        ]
+      : []),
   ].join('\n');
+}
+
+// Where the game is, asked only once it's broken (main.tsx hands it over at start-up).
+let trailOf: (() => Trail) | null = null;
+export function crashTrail(f: () => Trail): void {
+  trailOf = f;
 }
 
 // Errors that aren't the game breaking: the browser's resize-observer notice, and another
@@ -46,12 +63,22 @@ let shown = false;
 export function crashed(e: unknown, carryOn: boolean): void {
   if (shown) return;
   shown = true;
-  const report = crashReport(e, {
-    version: __APP_VERSION__,
-    demo: DEMO,
-    desktop: !!window.dirtbagDesktop,
-    agent: navigator.userAgent,
-  });
+  let trail: Trail | null = null;
+  try {
+    trail = trailOf?.() ?? null;
+  } catch {
+    // The game may be what broke; the report goes without it.
+  }
+  const report = crashReport(
+    e,
+    {
+      version: __APP_VERSION__,
+      demo: DEMO,
+      desktop: !!window.dirtbagDesktop,
+      agent: navigator.userAgent,
+    },
+    trail,
+  );
   const el = (tag: string, cls?: string, text?: string): HTMLElement => {
     const n = document.createElement(tag);
     if (cls) n.className = cls;
@@ -112,7 +139,7 @@ export function crashed(e: unknown, carryOn: boolean): void {
     el(
       'p',
       'note',
-      'What went wrong, all of it. It holds nothing from your save, and goes nowhere unless you send it.',
+      'What went wrong, and what you’d just done. It holds no name you typed, and goes nowhere unless you send it.',
     ),
     said,
     button('crash-copy', 'Copy it', 'To paste wherever you tell RCJ Labs about it.', () => {

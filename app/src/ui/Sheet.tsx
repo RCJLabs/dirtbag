@@ -2894,6 +2894,10 @@ function SettingsBody({ game, settings, rebind }: { game: Game; settings: Settin
           </button>
         </li>
       </ul>
+      {/* Phase 19.4: the build, for a tester's report. */}
+      <p className="note" id="s-version">
+        Dirtbag {__APP_VERSION__}
+      </p>
     </>
   );
 }

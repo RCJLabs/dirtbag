@@ -89,6 +89,7 @@ import * as persist from './persist';
 import { bindKey, bindPad, type KeyRole, type PadRole } from './binds';
 import { earnedEver, steamName } from './achievements';
 import { desktop } from './desktop';
+import { Moves, type Trail } from './trail';
 import { exportSave } from './savefile';
 import { loadPlans, noted, savePlans, SLEEP, wipePlans, type PlanStep, type Plans } from './plan';
 import { createStore, type Store } from './store';
@@ -355,6 +356,8 @@ export class Game {
   private run: { steps: PlanStep[]; i: number } | null = null;
   // Phase 14.2: a save from a file is in, and the page is starting again from it.
   private leaving = false;
+  // Phase 19.4: the last few moves, for the error screen's report.
+  private moves = new Moves();
 
   constructor(opts: { still?: boolean } = {}) {
     this.systemStill = !!opts.still;
@@ -449,6 +452,7 @@ export class Game {
 
   dispatch(a: Action): GameEvent[] {
     const before = this.state;
+    this.moves.push(before, a);
     const r = act(before, a);
     const changed = r.state !== before;
     this.state = r.state;
@@ -1739,6 +1743,11 @@ export class Game {
     wipePlans();
     window.location.reload();
     return true;
+  }
+
+  // Phase 19.4: where the game is and what was just done, for the error screen's report.
+  trail(): Trail {
+    return this.moves.trail(this.state);
   }
 
   // Phase 19.2: the full game, unlocked: the page starts again from this save, the gate open.

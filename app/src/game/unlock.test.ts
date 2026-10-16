@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { asDemo, asDemoBuild, DEMO, newGame, toSave } from '../sim';
 import { boot, save } from './persist';
 import { keepIn } from './storage';
-import { GATE, keepUnlock, openGate, opened, unlockIn } from './unlock';
+import { GATE, keepUnlock, openGate, opened, trying, unlockIn } from './unlock';
 
 // A Storage over a Map, as the browser's localStorage behaves; `full` turns writes away.
 function storage(entries: Record<string, string> = {}): Storage & { m: Map<string, string>; full: boolean } {
@@ -157,6 +157,43 @@ describe('the gate, on (at launch)', () => {
     };
     expect(opened(ls, on)).toBeNull();
     expect(opened(null, on)).toBeNull();
+  });
+});
+
+describe('a tester’s link (19.4)', () => {
+  const trial = { gate: true, desktop: false, legacy: null, trial: true };
+
+  it('is this tab’s, from the link on, past a reload', () => {
+    vi.stubGlobal('sessionStorage', storage());
+    expect(trying('')).toBe(false);
+    expect(trying('?gate=on')).toBe(false);
+    expect(trying('?gate=try')).toBe(true);
+    expect(trying('')).toBe(true);
+  });
+
+  it('shuts the gate on a climber from before, and marks nothing', () => {
+    const ls = storage({ 'dirtbag.save': named('Robin') });
+    opened(ls, off);
+    expect(unlockIn(ls)).toBe('before');
+    const before = new Map(ls.m);
+    expect(opened(ls, trial)).toBeNull();
+    expect(ls.m).toEqual(before);
+  });
+
+  it('opens to Play’s unlock alone, and the desktop', () => {
+    const ls = storage();
+    keepUnlock(ls, 'play');
+    expect(opened(ls, trial)).toBe('play');
+    expect(opened(storage(), { ...trial, desktop: true })).toBe('desktop');
+  });
+
+  it('shuts the game, gate off or on, from the link', () => {
+    const ls = storage({ 'dirtbag.save': named('Robin') });
+    vi.stubGlobal('window', { localStorage: ls });
+    vi.stubGlobal('sessionStorage', storage());
+    vi.stubGlobal('location', { search: '?gate=try' });
+    expect(openGate(false)).toBeNull();
+    expect(DEMO).toBe(true);
   });
 });
 

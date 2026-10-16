@@ -4,7 +4,7 @@ import { routeById } from './content/gym';
 import { RACE_ROUTE } from './content/people';
 import { WALLS } from './content/routes';
 import { STORY } from './content/story';
-import { DEMO, inEdition } from './edition';
+import { DEMO, DEMO_BUILD, inEdition } from './edition';
 import type { GameState } from './types';
 
 // The day Dex's race was decided: Dex's first ascent overnight, or your send. Null till then.
@@ -17,9 +17,23 @@ export function raceDecided(s: GameState): number | null {
 // The demo's over the morning after the race is decided, once Act I's done: a last day either
 // way, and never on top of the send that won it.
 export function demoOver(s: GameState): boolean {
-  if (!DEMO || s.goals < STORY[0]!.goals.length) return false;
+  if (!DEMO) return false;
+  // Phase 19.4: the full game, locked, holds a climber who's been past where the demo goes (a
+  // save from before the gate, a tester's link) at the last card, where it can be unlocked. The
+  // demo's own build never loads one (save.ts), so it doesn't ask.
+  if (!DEMO_BUILD && pastTheDemo(s)) return true;
+  if (s.goals < STORY[0]!.goals.length) return false;
   const d = raceDecided(s);
   return d !== null && s.day > d;
+}
+
+// fromFullGame, asked once a state: a state is never changed, only replaced, and the game asks
+// demoOver on every move.
+const past = new WeakMap<GameState, boolean>();
+function pastTheDemo(s: GameState): boolean {
+  let p = past.get(s);
+  if (p === undefined) past.set(s, (p = fromFullGame(s)));
+  return p;
 }
 
 // A climber from the full game (Phase 14.5b): somewhere, or with a line, a wall or a trip, the
