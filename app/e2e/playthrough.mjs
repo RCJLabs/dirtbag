@@ -25,6 +25,8 @@
 // Then the same day with a controller alone, on a Steam Deck's shape (Phase 14.1): focus
 // moved by the D-pad, A to press and hold, B to put things down, Start and Select for the
 // journal and the map, and a name picked for a player who can't type one.
+// Then a save out as a file, the game started over, a file that isn't a save turned away,
+// and the climber brought back from the first screen (Phase 14.2).
 // Last, a first morning on a landscape window (Phase 12): the screen widens rather than
 // letterboxing, sheets dock at the right, the map's valley sits in the middle of more
 // country, a wall close up is a panel over its crag, and turning the window to portrait
@@ -141,6 +143,28 @@ let n = 0;
 const shot = (name) => page.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-${name}.png`) });
 const log = (...a) => console.log('  ', ...a);
 const wait = (ms) => page.waitForTimeout(ms);
+
+// A save changed by hand, and a page loaded from it. The change goes in as the page reloads,
+// before the game boots: written while the old page still ran, it could be overwritten by a
+// save the old page made on its way out (a fade's last step, a card just answered). Nationals'
+// final once came back as the qualifier's morning that way. Returns the save it went in with.
+let reloads = 0;
+async function reloadWith(p, change) {
+  const file = change(JSON.parse(await p.evaluate(() => localStorage.getItem('dirtbag.save'))));
+  const next = JSON.stringify(file);
+  const token = `e2e-reload-${++reloads}`;
+  await p.addInitScript(
+    ([t, raw]) => {
+      if (sessionStorage.getItem('e2e-reload') !== t) return;
+      sessionStorage.removeItem('e2e-reload');
+      localStorage.setItem('dirtbag.save', raw);
+    },
+    [token, next],
+  );
+  await p.evaluate((t) => sessionStorage.setItem('e2e-reload', t), token);
+  await p.reload({ waitUntil: 'load' });
+  return file;
+}
 
 async function fail(msg) {
   await shot('failed').catch(() => {});
@@ -2177,11 +2201,7 @@ console.log('Nationals: a qualifier and a final');
     fed: 100,
     x: null,
   };
-  await page.evaluate((s) => {
-    const save = JSON.parse(localStorage.getItem('dirtbag.save'));
-    localStorage.setItem('dirtbag.save', JSON.stringify({ ...save, state: s }));
-  }, evening);
-  await page.reload({ waitUntil: 'load' });
+  await reloadWith(page, (f) => ({ ...f, state: evening }));
   await until('the final', async () => (await text('#b-nav')) === 'Map');
   await wait(600);
   await climbAll('F', 4);
@@ -2436,12 +2456,7 @@ console.log('An expedition');
   log(`exped: day ${after.day}, pitches fixed: ${after.pitch}, nights on the portaledge: ${after.nights}`);
   // The haul bag jams (Phase 24.4): its card on the reload, each call's cost beside it; cut
   // the food loose, and back to the day's card two days lighter.
-  await ex.evaluate(() => {
-    const f = JSON.parse(localStorage.getItem('dirtbag.save'));
-    f.state.encounter = { kind: 'wall', id: 'haulbag' };
-    localStorage.setItem('dirtbag.save', JSON.stringify(f));
-  });
-  await ex.reload({ waitUntil: 'load' });
+  await reloadWith(ex, (f) => ({ ...f, state: { ...f.state, encounter: { kind: 'wall', id: 'haulbag' } } }));
   await ex.waitForFunction(() => /^The Pig/.test(document.querySelector('#sheet-title')?.textContent ?? ''));
   if (!(await sheetText()).includes('−2 days of food and water'))
     await fail(`the haul bag's card doesn't say what cutting it costs: ${await sheetText()}`);
@@ -2467,12 +2482,7 @@ console.log('An expedition');
   const book = await ex.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.book);
   if (book.length !== 1 || book[0].end !== 'bail' || book[0].told)
     await fail(`the book: ${JSON.stringify(book)}`);
-  await ex.evaluate(() => {
-    const f = JSON.parse(localStorage.getItem('dirtbag.save'));
-    f.state.min = 21 * 60;
-    localStorage.setItem('dirtbag.save', JSON.stringify(f));
-  });
-  await ex.reload({ waitUntil: 'load' });
+  await reloadWith(ex, (f) => ({ ...f, state: { ...f.state, min: 21 * 60 } }));
   await ex.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Map');
   await ex.waitForTimeout(600);
   await ex.mouse.click(100, 560);
@@ -2836,6 +2846,66 @@ console.log('A controller');
   page = portrait;
 }
 
+console.log('A save, as a file');
+{
+  const portrait = page;
+  page = await playPage({ width: 390, height: 844 }, 2, 'save file: ');
+  await page.goto(server.url, { waitUntil: 'load' });
+  await until('the climber screen', () => page.locator('#create').count());
+  await page.fill('#c-name', 'Robin');
+  await click('#c-technician');
+  await click('#c-go', 'Start');
+  await until('the climber screen to go', async () => !(await page.locator('#create').count()));
+  await wait(400);
+
+  // Out, from Settings: the save as the game keeps it, named for who and when.
+  await openMap();
+  await click('#b-settings', 'Settings');
+  const [dl] = await Promise.all([page.waitForEvent('download'), click('#s-save-out', 'Export your save')]);
+  const file = join(OUT, dl.suggestedFilename());
+  await dl.saveAs(file);
+  const kept = JSON.parse(readFileSync(file, 'utf8'));
+  if (
+    dl.suggestedFilename() !== 'dirtbag-robin-day-1.json' ||
+    kept.format !== 'dirtbag' ||
+    kept.state?.climber?.name !== 'Robin'
+  )
+    await fail(`the exported save: ${dl.suggestedFilename()} ${JSON.stringify(kept).slice(0, 120)}`);
+  await expectText('#s-save-out', /Saved as dirtbag-robin-day-1\.json/, 'the export');
+  await click('#sheet .x');
+
+  // Over, and the first screen again.
+  await click('.corner .restart', 'Start over');
+  await click('#sheet .opt', 'Start a new game');
+  await until('the climber screen', () => page.locator('#create').count());
+
+  // A file that isn't a save: turned away, with why, and nothing changes.
+  await page.setInputFiles('#save-file', {
+    name: 'notes.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from('nope'),
+  });
+  await expectText(
+    '#save-why',
+    /won’t load: not JSON\. Nothing here has changed\./,
+    'a file that isn’t a save',
+  );
+  if (!(await page.locator('#create').count())) await fail('a file that isn’t a save left the first screen');
+
+  // Robin's file: who it holds, then Robin, as they were.
+  await page.setInputFiles('#save-file', file);
+  await expectText('#save-confirm', /^Robin, day 1, V\d+\./, 'the save, before it loads');
+  await Promise.all([page.waitForEvent('load'), click('#s-save-load', 'Load Robin')]);
+  await until('the game to start again from the file', async () => !(await page.locator('#create').count()));
+  const back = await page.evaluate(
+    () => JSON.parse(localStorage.getItem('dirtbag.save') ?? 'null')?.state?.climber?.name,
+  );
+  if (back !== 'Robin') await fail(`the save brought back: ${back}`);
+  log('Robin out as a file, the game over, a notes file turned away, Robin back from the first screen');
+  await page.close();
+  page = portrait;
+}
+
 console.log('A landscape window');
 // A Steam Deck's shape, 1280 x 800: the screen is 740 tall and 1184 across.
 {
@@ -3113,10 +3183,10 @@ console.log('Hanging it up');
   await old.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-heir-you.png`) });
   // Phase 31.2-31.3 (criterion 1): that night Robin's at the fire. Jo sits with them, is given
   // a line, and asks about one of Robin's, learning its next beta as told.
-  const night = await old.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
-  night.state = { ...night.state, at: 'lot', x: null, min: 20 * 60, encounter: null };
-  await old.evaluate((v) => localStorage.setItem('dirtbag.save', JSON.stringify(v)), night);
-  await old.reload({ waitUntil: 'load' });
+  const night = await reloadWith(old, (f) => ({
+    ...f,
+    state: { ...f.state, at: 'lot', x: null, min: 20 * 60, encounter: null },
+  }));
   await old
     .locator('button.hot[aria-label="Your van"]')
     .first()

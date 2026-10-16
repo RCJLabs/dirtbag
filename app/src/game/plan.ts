@@ -4,6 +4,7 @@
 // a plan ran them, and it lives beside the save, like the settings.
 
 import { ACTS, indoor, PLACES, ROUTES, type GameState } from '../sim';
+import { store } from './storage';
 
 export interface PlanStep {
   place: string;
@@ -82,14 +83,6 @@ export interface Plans {
   // The day before, as you played it: tomorrow's plan, unless you make another.
   yesterday: PlanStep[];
 }
-
-const store = (): Storage | null => {
-  try {
-    return window.localStorage;
-  } catch {
-    return null;
-  }
-};
 
 export function loadPlans(): Plans {
   try {

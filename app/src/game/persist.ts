@@ -1,27 +1,23 @@
-// Saves in localStorage. The rules from the audit, where v0.956 lost players' games:
+// Saves in the game's store (localStorage on the web; see storage.ts). The rules from the
+// audit, where v0.956 lost players' games:
 //   - Nothing is written until a load has succeeded or a new game has started.
 //   - A save that won't load is moved aside to a quarantine key, never overwritten.
 //   - The last save from an earlier day is kept as a fallback.
 //   - A failed write is reported, not swallowed.
 
 import { fromSave, newGame, toSave, type GameState } from '../sim';
+import { store } from './storage';
 
 const KEY = 'dirtbag.save';
 const PREV = 'dirtbag.save.prev';
 const QUARANTINE = 'dirtbag.save.corrupt.';
+// Phase 14.2: the climber a save brought in from a file took the place of, kept in case.
+const REPLACED = 'dirtbag.save.replaced';
 
 export interface Boot {
   state: GameState;
   // What to tell the player about how the load went, if anything.
   note: string | null;
-}
-
-function store(): Storage | null {
-  try {
-    return window.localStorage;
-  } catch {
-    return null;
-  }
 }
 
 function quarantine(ls: Storage, raw: string): string {
@@ -93,6 +89,23 @@ export function save(state: GameState): boolean {
       warned = true;
       void navigator.storage?.persist?.().catch(() => undefined);
     }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Phase 14.2: a save brought in from a file takes the place of this one. The climber it
+// replaces is kept aside, and the earlier day's fallback goes with them: a save that won't
+// load must never fall back to somebody else.
+export function replace(state: GameState): boolean {
+  const ls = store();
+  if (!ls) return false;
+  try {
+    const cur = ls.getItem(KEY);
+    if (cur !== null) ls.setItem(REPLACED, cur);
+    ls.removeItem(PREV);
+    ls.setItem(KEY, toSave(state, __APP_VERSION__));
     return true;
   } catch {
     return false;

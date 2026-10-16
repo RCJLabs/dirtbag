@@ -3,7 +3,9 @@
 // that won't store anything still starts a game.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, newGame, toSave } from '../sim';
-import { boot, save } from './persist';
+import { loadPlans, savePlans } from './plan';
+import { boot, replace, save } from './persist';
+import { keepIn } from './storage';
 
 class FakeStorage {
   data = new Map<string, string>();
@@ -30,7 +32,10 @@ beforeEach(() => {
   vi.stubGlobal('navigator', {});
   vi.stubGlobal('__APP_VERSION__', '0.0.0-test');
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  keepIn(undefined);
+  vi.unstubAllGlobals();
+});
 
 describe('persist', () => {
   it('starts a new game when there is no save, and loads the one it wrote', () => {
@@ -78,5 +83,34 @@ describe('persist', () => {
     expect(b.state).toEqual(newGame('test-seed'));
     expect(b.note).toMatch(/won't keep a save/);
     expect(save(b.state)).toBe(false);
+  });
+
+  // Phase 14.2: a save from a file takes this one's place.
+  it('puts a save from a file in place, keeping the one it replaced, with no fallback to it', () => {
+    const kit = { ...newGame('x'), day: 3 };
+    save({ ...kit, day: 2 });
+    save(kit);
+    expect(ls.data.has('dirtbag.save.prev')).toBe(true);
+    const robin = { ...newGame('y'), day: 12 };
+    expect(replace(robin)).toBe(true);
+    expect(boot(seed).state).toEqual(robin);
+    expect(JSON.parse(ls.data.get('dirtbag.save.replaced')!).state.day).toBe(3);
+    // The day before was Kit's: a broken save must never fall back to somebody else.
+    expect(ls.data.has('dirtbag.save.prev')).toBe(false);
+    ls.broken = true;
+    expect(replace(kit)).toBe(false);
+  });
+
+  // Phase 14.2: the desktop build keeps the game's keys in a store of its own.
+  it('keeps the save and the plan wherever the game is told to, and nothing in the browser', () => {
+    const own = new FakeStorage();
+    keepIn(own as unknown as Storage);
+    const s = { ...newGame('x'), day: 5 };
+    expect(save(s)).toBe(true);
+    expect(savePlans({ plan: [], yesterday: [] })).toBe(true);
+    expect(boot(seed).state).toEqual(s);
+    expect([...own.data.keys()].sort()).toEqual(['dirtbag.plan', 'dirtbag.save']);
+    expect(ls.data.size).toBe(0);
+    expect(loadPlans()).toEqual({ plan: [], yesterday: [] });
   });
 });

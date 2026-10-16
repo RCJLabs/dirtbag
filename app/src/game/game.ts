@@ -84,6 +84,7 @@ import {
 import { mapLeft, render, valleyArt, type Frame } from '../view/render';
 import { drivePath } from '../view/valley';
 import * as persist from './persist';
+import { exportSave } from './savefile';
 import { loadPlans, noted, savePlans, SLEEP, wipePlans, type PlanStep, type Plans } from './plan';
 import { createStore, type Store } from './store';
 
@@ -343,6 +344,8 @@ export class Game {
   // Today as you've played it, to offer as tomorrow's plan; and a plan being run.
   private today: PlanStep[] = [];
   private run: { steps: PlanStep[]; i: number } | null = null;
+  // Phase 14.2: a save from a file is in, and the page is starting again from it.
+  private leaving = false;
 
   constructor(opts: { still?: boolean } = {}) {
     this.systemStill = !!opts.still;
@@ -451,7 +454,9 @@ export class Game {
       else if (e.k === 'homecoming') this.cards.push({ k: 'homecoming', route: e.route, who: e.who });
     }
     if (changed) this.noteComings(before);
-    if (changed && !persist.save(this.state)) this.toast("Couldn't save. The browser's storage may be full.");
+    // Once a save from a file has taken this one's place, nothing here writes over it.
+    if (changed && !this.leaving && !persist.save(this.state))
+      this.toast("Couldn't save. The browser's storage may be full.");
     this.sync();
     // Off a solo: the go's over, and so is everything else.
     if (this.state.dead && !before.dead) {
@@ -1662,6 +1667,23 @@ export class Game {
       this.sync();
       this.enter('lot');
     });
+  }
+
+  // ---- your save as a file (Phase 14.2) ----
+
+  exportSave(): string {
+    return exportSave(this.state);
+  }
+
+  // A save from a file in place of this one. The page starts again from it, as it would from
+  // any save, so whatever a load sets up (a retired climber's page, a solo left halfway) is
+  // set up. False if the browser wouldn't keep it, and nothing has changed.
+  importSave(state: GameState): boolean {
+    if (!persist.replace(state)) return false;
+    this.leaving = true;
+    wipePlans();
+    window.location.reload();
+    return true;
   }
 
   // Phase 16.5: the kid you coached climbs on, in the same world, the morning after. They're
