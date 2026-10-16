@@ -28,4 +28,7 @@ export const DEMO_END = {
   you: 'You got there first. The open line at Roadside has your name on it, and Dex has to look at it every weekend.',
   carry: 'The full game picks up from this morning, with this climber. Export your save and bring it.',
   refused: 'That’s the end of the demo.',
+  retire: 'Hanging it up comes later, in the full game.',
+  // Why a full game's save won't load in the demo, after "That file won’t load:".
+  fullSave: 'it’s from the full game, past where the demo goes',
 };

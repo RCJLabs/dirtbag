@@ -3,6 +3,7 @@
 // class only decides what to show and when, and animates walking, driving and the wall.
 
 import {
+  DEMO,
   STORY,
   act,
   ACTS,
@@ -455,7 +456,8 @@ export class Game {
       if (e.k === 'line') this.toast(e.text);
       else if (e.k === 'refused') this.toast(e.why);
       else if (e.k === 'act')
-        this.cards.push(e.n === STORY.length ? { k: 'line', step: 0 } : { k: 'act', n: e.n });
+        // The demo's one act ends on its own card, never The Line's (Phase 14.5b).
+        this.cards.push(!DEMO && e.n === STORY.length ? { k: 'line', step: 0 } : { k: 'act', n: e.n });
       else if (e.k === 'home') this.cards.push({ k: 'home' });
       else if (e.k === 'holiday') this.cards.push({ k: 'holiday', id: e.id, who: e.who });
       else if (e.k === 'record') {

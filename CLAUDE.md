@@ -32,7 +32,7 @@ Releasing and rolling back: `README.md` → Releasing.
 - `npm run typecheck` — three configs; `tsconfig.sim.json` checks `src/sim` with no DOM types.
 - `npm run format:check` (or `npm run format`) — Prettier, as CI runs it.
 - `npm run build`, then `npm run size` (player download against the budget) and `npm run e2e` (a bot plays five days on the build, counting day three's taps and running day four as a plan, then a v0.956 player crosses over). Run both before any commit that changes what a player sees.
-- `npm run build:demo`, then `npm run e2e:demo` (Phase 14.5): the demo build in `dist-demo/`, its first morning (its places only) and its last card. Run both before any commit that touches the demo's rules (`sim/edition.ts`, `content/demo.ts`) or what it shows.
+- `npm run play:demo`, `npm run build:demo`, then `npm run diff:demo` and `npm run e2e:demo` (Phase 14.5): bots play the demo to its end; the demo build in `dist-demo/`; none of the full game's content in it; its first morning (its places only) and its last card. Run all four before any commit that touches the demo's rules (`sim/edition.ts`, `sim/demo.ts`, `content/demo.ts`), what it shows, or any `*.full.ts` module.
 - `npm run dev` — local dev server.
 
 ## Load-bearing rules
@@ -49,6 +49,7 @@ Releasing and rolling back: `README.md` → Releasing.
   - **The sim decides; the view stages.** Rules live in `app/src/sim`: no DOM, no `Math.random`, no wall clock, no imports from the layers above. `tsconfig.sim.json` and `purity.test.ts` enforce it. Every state change goes through `act(state, action)`.
   - **Seeded RNG, shared with Unreal.** `sim/rng.ts` matches `Dirtbag-UE/Sim/DirtbagRng` and its golden vectors. If they move, it's save-breaking: log the decision.
   - **Content is data.** Places, acts, routes, beta and lines live in `sim/content/`, checked by `content.test.ts`. Adding content never touches rules.
+  - **The demo strips the full game.** What lies past Roadside and the Gorge (the later crags' words, lines, walls, rock, layouts and scenes; Acts II to V and The Line; the expeditions; the Hollow) lives in `*.full.ts` modules, each with a `*.demo.ts` twin the demo's build takes instead. New content there goes in a `.full` module, or CI's content diff fails.
   - **No hand-typed numbers in text.** Prices, times and effects in the UI are formatted from the same numbers the rules use.
   - **Saves.** Change the state's shape only by bumping `SAVE_VERSION` and registering a migration, with a test that loads an old save. A save that won't load is quarantined, never overwritten.
   - **The 2D game is the spec** for the Unreal version: spec changes get logged in `Dirtbag-UE/concepts/2D-SPEC-LOG.md`.

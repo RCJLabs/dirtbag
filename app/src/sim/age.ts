@@ -11,6 +11,8 @@ import { ageOf, dayAtAge, startAge } from './ageing';
 import { AGE, HOME } from './dials';
 import { actOf } from './story';
 import { STORY } from './content/story';
+import { DEMO_END } from './content/demo';
+import { DEMO } from './edition';
 import { tierOf } from './presence';
 import type { GameState } from './types';
 
@@ -21,6 +23,8 @@ export { ageOf, dayAtAge, startAge };
 export function retireBlocked(s: GameState): string | null {
   if (!s.climber.name) return 'Make a climber first.';
   if (s.life.retired) return 'You already have.';
+  // The endings are the full game's (Phase 14.5b).
+  if (DEMO) return DEMO_END.retire;
   // After The Line (Phase 16.3), hanging it up is yours whatever your age.
   if (ageOf(s) < AGE.from && actOf(s) <= STORY.length)
     return `Not before ${AGE.from}. There’s too much left in you.`;

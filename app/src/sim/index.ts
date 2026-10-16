@@ -585,5 +585,6 @@ export {
   type RetainerId,
 } from './retainers';
 export { RETAINER_SAYS } from './content/retainers';
-export { DEMO, asDemo, demoOver, inEdition, raceDecided } from './edition';
+export { DEMO, asDemo, inEdition } from './edition';
+export { demoOver, raceDecided } from './demo';
 export { DEMO_END, DEMO_PLACES, DEMO_START } from './content/demo';

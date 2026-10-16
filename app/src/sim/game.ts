@@ -212,7 +212,7 @@ import {
   theirMove,
 } from './cards';
 import { DEMO_END } from './content/demo';
-import { demoOver } from './edition';
+import { demoOver } from './demo';
 import { dreamById } from './content/dreams';
 import { PEOPLE, RACE_ROUTE, RIVAL_FA_NAMES, TALK } from './content/people';
 import { ACT_PAID } from './content/story';

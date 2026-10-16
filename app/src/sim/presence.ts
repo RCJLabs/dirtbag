@@ -6,6 +6,7 @@
 import { PEOPLE } from './content/people';
 import { isWeekend } from './cond';
 import { dexHurt } from './curves';
+import { inEdition } from './edition';
 import { BOND, CAST, LIFE, RIVAL } from './dials';
 import { frankParks, RAY_GONE, stintOn, tamSlows, tamStops } from './lives';
 import { Rng } from './rng';
@@ -139,7 +140,9 @@ export function whereIs(
   p?: PersonLog,
   people?: Record<string, PersonLog>,
 ): string | null {
-  const at = whereAlone(seed, who, day, min, p);
+  const out = whereAlone(seed, who, day, min, p);
+  // The demo's people are somewhere it goes, or out of it (Phase 14.5b).
+  const at = out && inEdition(out) ? out : null;
   if (!at || !p?.avoid || !people) return at;
   return whereAlone(seed, p.avoid, day, min, people[p.avoid]) === at ? null : at;
 }

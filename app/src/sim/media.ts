@@ -8,6 +8,7 @@ import { SPONSORS } from './content/media';
 import { indoor, routeById } from './content/gym';
 import { PLACES } from './content/places';
 import { ageOf } from './ageing';
+import { inEdition } from './edition';
 import { FILM, MEDIA, PHOTO, PIECE, RUNWAY, SHOW } from './dials';
 import { money } from './format';
 import { Rng } from './rng';
@@ -94,7 +95,7 @@ export function cycleTasks(
   ];
   if (sp.shoot) {
     const crags = Object.entries(PLACES)
-      .filter(([id, p]) => p.crag && ((!p.unlock && !p.hidden) || s.unlocked.includes(id)))
+      .filter(([id, p]) => p.crag && inEdition(id) && ((!p.unlock && !p.hidden) || s.unlocked.includes(id)))
       .map(([id]) => id);
     const r = Rng.fromStream(s.seed, 'events').derive(`shoot-${s.day}`);
     tasks.push({ kind: 'shoot', place: crags[r.int(0, crags.length - 1)] ?? 'road', done: false });

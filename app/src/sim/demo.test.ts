@@ -7,9 +7,12 @@ import { DEMO_END, DEMO_PLACES } from './content/demo';
 import { RACE_ROUTE } from './content/people';
 import { PLACES } from './content/places';
 import { ACT_I } from './content/story';
-import { asDemo, demoOver, raceDecided } from './edition';
+import { demoOver, raceDecided } from './demo';
+import { asDemo } from './edition';
 import { act, emptyLog, newGame } from './game';
 import { known } from './hollow';
+import { fromSave, toSave } from './save';
+import { whereIs } from './presence';
 import { currentGoal } from './story';
 import type { FirstAscent, GameState } from './types';
 
@@ -50,6 +53,27 @@ describe('the demo', () => {
     expect(refused(act(s, { t: 'travel', to: 'road' }))).toBeNull();
     // Every place it names is a place.
     for (const id of DEMO_PLACES) expect(PLACES, id).toHaveProperty([id]);
+  });
+
+  it('keeps its people where it goes', () => {
+    const s = climber(4);
+    for (let day = 1; day <= 56; day++)
+      for (const who of ['hazel', 'sage', 'dex', 'mara', 'rico', 'tam', 'ray', 'frank'])
+        for (const min of [8 * 60, 13 * 60, 18 * 60]) {
+          const at = whereIs(s.seed, who, day, min, s.people[who], s.people);
+          if (at !== null) expect(DEMO_PLACES, `${who} on day ${day}`).toContain(at);
+        }
+  });
+
+  it('turns away a climber from the full game, and plays its own', () => {
+    const at = (s: GameState) => fromSave(toSave(s, 'test'));
+    const moon = at(climber(9, { at: 'moon' }));
+    expect(moon.ok ? null : moon.why).toBe(DEMO_END.fullSave);
+    const line = at({ ...climber(9), routes: { mopen: emptyLog() } });
+    expect(line.ok ? null : line.why).toBe(DEMO_END.fullSave);
+    expect(at(climber(4)).ok).toBe(true);
+    asDemo(false);
+    expect(at(climber(9, { at: 'moon' })).ok).toBe(true);
   });
 
   it('tells Act I, and no story after it', () => {
