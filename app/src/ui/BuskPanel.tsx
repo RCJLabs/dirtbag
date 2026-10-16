@@ -1,6 +1,8 @@
 import { BUSK, COOK, GAMES, RECIPES } from '../sim';
 import type { Game } from '../game/game';
+import { useEffect } from 'react';
 import { useStore } from '../game/store';
+import { PadHint } from './PadHint';
 import { vars } from './vars';
 
 // A set outside the café (Phase 22.5b): a marker crosses the bar, and you strum as it
@@ -40,8 +42,12 @@ const WORDS = {
 export function BuskPanel({ game }: { game: Game }) {
   const ui = useStore(game.ui);
   const u = ui.busk;
+  const done = u?.phase === 'done';
+  // Phase 14.6: when it's over, focus lands on the way out, so A or Enter takes it.
+  useEffect(() => {
+    if (done) document.getElementById('b-done')?.focus({ preventScroll: true });
+  }, [done]);
   if (!u) return null;
-  const done = u.phase === 'done';
   const hits = u.scores.filter((x) => x === 1).length;
   const w = WORDS[u.kind];
   const of = u.kind === 'shoes' ? GAMES.shoes.throws : u.kind === 'cook' ? COOK.beats : BUSK.notes;
@@ -82,11 +88,14 @@ export function BuskPanel({ game }: { game: Game }) {
               }}
             >
               {w.tap}
+              <PadHint b="a" />
             </button>
             {u.kind === 'cook' && u.scores.length === 0 && (
               <button type="button" className="opt" id="b-skip" onClick={() => game.cookSkip()}>
                 <span>Just eat it</span>
-                <span className="c" />
+                <span className="c">
+                  <PadHint b="b" />
+                </span>
               </button>
             )}
           </>

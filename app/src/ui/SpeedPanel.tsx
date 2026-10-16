@@ -1,6 +1,8 @@
 import { SPEED } from '../sim';
 import type { Game } from '../game/game';
+import { useEffect } from 'react';
 import { useStore } from '../game/store';
+import { PadHint } from './PadHint';
 import { vars } from './vars';
 
 // A run on the speed wall: three lights, then a hand at a time up the lane. Two buttons,
@@ -9,8 +11,12 @@ import { vars } from './vars';
 export function SpeedPanel({ game }: { game: Game }) {
   const ui = useStore(game.ui);
   const u = ui.speed;
+  const done = u?.phase === 'done';
+  // Phase 14.6: when it's over, focus lands on the way out, so A or Enter takes it.
+  useEffect(() => {
+    if (done) document.getElementById('s-again')?.focus({ preventScroll: true });
+  }, [done]);
   if (!u) return null;
-  const done = u.phase === 'done';
   const say = done
     ? u.time === null
       ? 'False start. The lights hadn’t gone green.'
@@ -69,6 +75,7 @@ export function SpeedPanel({ game }: { game: Game }) {
               }}
             >
               {h}
+              <PadHint b={i ? 'rb' : 'lb'} />
             </button>
           ))}
         </div>

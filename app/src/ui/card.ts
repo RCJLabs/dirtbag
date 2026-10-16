@@ -80,7 +80,7 @@ export const cardFile = (c: Card): string =>
   `dirtbag-${
     c.name
       .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
+      .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '') || 'send'

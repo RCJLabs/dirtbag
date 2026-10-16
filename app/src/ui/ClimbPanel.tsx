@@ -12,6 +12,7 @@ import {
 import type { Game } from '../game/game';
 import { useStore } from '../game/store';
 import { VERB_TEXT } from './Sheet';
+import { PadHint } from './PadHint';
 import { vars } from './vars';
 
 // Trad: how far you are over your gear, while you climb on.
@@ -157,6 +158,7 @@ export function ClimbPanel({ game }: { game: Game }) {
         }}
       >
         {label}
+        <PadHint b="a" />
       </button>
     </div>
   );

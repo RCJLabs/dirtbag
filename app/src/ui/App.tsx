@@ -11,8 +11,10 @@ import { Goal } from './Goal';
 import { PlanChip } from './PlanChip';
 import { Hots } from './Hots';
 import { Hud } from './Hud';
-import { back, hub, onPad } from './input';
+import { back, canSkip, hub, onPad } from './input';
 import { move } from './nav';
+import { glyphs } from './Glyph';
+import { Meter, meterLine } from './meter';
 import { Pad } from './pad';
 import { Sheet } from './Sheet';
 import type { Dir } from './spatial';
@@ -59,11 +61,16 @@ export function App({ game }: { game: Game }) {
     // Phase 14.1: a controller, read each frame. While it's the one in use, the focus ring
     // shows on whatever it's on, as a keyboard's would.
     const pad = new Pad();
+    // Phase 14.6: the frame meter, written straight into its line, never through React.
+    const meter = new Meter();
     let raf = 0;
     let last = 0;
     const loop = (ts: number) => {
       const dt = Math.min(0.05, (ts - last) / 1000 || 0);
       last = ts;
+      const f = meter.frame(ts);
+      const line = f && document.getElementById('meter');
+      if (f && line) line.textContent = meterLine(f);
       for (const ev of pad.poll(ts / 1000)) {
         sc.dataset.input = 'pad';
         game.sound.unlock();
@@ -121,7 +128,7 @@ export function App({ game }: { game: Game }) {
         if (hold(e)) {
           e.preventDefault();
           if (!e.repeat) game.buskTap();
-        }
+        } else if (e.key === 'Escape' && canSkip(u)) game.cookSkip();
         return;
       }
       // Escape puts down whatever's open, the most recent first: a conversation, a sheet
@@ -246,9 +253,10 @@ export function App({ game }: { game: Game }) {
               <span id="stamp-line">{ui.stamp}</span>
             </div>
           )}
+          {ui.settings.meter === 'on' && <div className="meter" id="meter" aria-hidden="true" />}
           {ui.toast && (
             <div className="toast" id="toast" role="status" key={ui.toast.n}>
-              {ui.toast.text}
+              {glyphs(ui.toast.text)}
             </div>
           )}
           <Goal game={game} ui={ui} />

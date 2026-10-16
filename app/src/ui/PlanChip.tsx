@@ -1,6 +1,7 @@
 import { PLACES } from '../sim';
 import type { Game, Ui } from '../game/game';
 import { stepLabel } from '../game/plan';
+import { Glyph } from './Glyph';
 
 // A plan being run, where you can see it: the step it's on, "Go on" once you've done
 // climbing, or why the day stopped it. The ✕ stops it, or clears the stop. It sits under
@@ -34,7 +35,7 @@ export function PlanChip({ game, ui }: { game: Game; ui: Ui }) {
         aria-label={p.stopped ? 'Dismiss' : 'Stop the plan'}
         onClick={() => game.stopPlan()}
       >
-        ✕
+        <Glyph c="✕" />
       </button>
     </div>
   );

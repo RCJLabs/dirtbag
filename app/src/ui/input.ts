@@ -37,9 +37,13 @@ export function hub(game: Game, h: Hub): void {
 // beta sheet, as a tap on it does.
 export function act(game: Game): void {
   const u = game.ui.get();
+  if (u.busk || u.speed) return;
   if (u.view === 'scene' && !u.talk && !u.sheet) game.useNearest();
   else if (u.view === 'wall' && !u.climbing && !u.sheet) game.tap(0, 0);
 }
+
+// Phase 14.6: B or Escape before the first stir is "Just eat it", as the panel's button is.
+export const canSkip = (u: Ui): boolean => u.busk?.kind === 'cook' && u.busk.scores.length === 0;
 
 // Whether the stick walks: in a scene with nothing open.
 const walks = (game: Game, u: Ui) => u.view === 'scene' && !u.sheet && !u.talk && !!game.state.climber.name;
@@ -58,6 +62,7 @@ export function onPad(game: Game, e: PadEvent): void {
   }
   if (u.busk && u.busk.phase === 'play') {
     if (hold && e.k === 'down') game.buskTap();
+    else if (e.k === 'down' && e.b === 'b' && canSkip(u)) game.cookSkip();
     return;
   }
   if (u.climbing) {

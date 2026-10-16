@@ -124,6 +124,28 @@ async function playPage(viewport, deviceScaleFactor, who = '') {
       }
     }).observe(document, { subtree: true, childList: true, characterData: true });
   });
+  // Phase 14.6: the marks the fonts lack are drawn (Glyph.tsx), never left as text a Deck
+  // would show as a box. Any that turns up as text, on any screen the run passes, fails it.
+  await p.addInitScript(() => {
+    const raw = /[✓✕○←♠♥♦♣]/;
+    const seen = new Set();
+    const look = (n) => {
+      const t = n.nodeType === Node.TEXT_NODE ? n.textContent : n.nodeType === Node.ELEMENT_NODE ? null : '';
+      if (t === null) {
+        const w = document.createTreeWalker(n, NodeFilter.SHOW_TEXT);
+        while (w.nextNode()) look(w.currentNode);
+      } else if (raw.test(t) && !seen.has(t)) {
+        seen.add(t);
+        window.problem(`a mark the fonts lack, as text: ${t.trim().slice(0, 60)}`);
+      }
+    };
+    new MutationObserver((ms) => {
+      for (const m of ms) {
+        if (m.type === 'characterData') look(m.target);
+        for (const n of m.addedNodes) look(n);
+      }
+    }).observe(document, { subtree: true, childList: true, characterData: true });
+  });
   p.on('pageerror', (e) => problems.push(`${who}uncaught: ${e.message}`));
   p.on('console', (m) => m.type() === 'error' && problems.push(`${who}console.error: ${m.text()}`));
   p.on('requestfailed', (r) => problems.push(`${who}request failed: ${r.url()}`));
@@ -2721,11 +2743,12 @@ console.log('A controller');
         return { x0: b.left, x1: b.right, y0: b.top, y1: b.bottom };
       };
       const a = document.activeElement;
-      const target = [...root.querySelectorAll('button:not(:disabled), input:not(:disabled)')].find((el) =>
-        r.test(say(el)),
-      );
+      const live = [...root.querySelectorAll('button:not(:disabled), input:not(:disabled)')];
+      const target = live.find((el) => r.test(say(el)));
       return {
         at: a && a !== document.body ? say(a) : '',
+        // Which one, where several say the same (Settings has an On for each thing it sets).
+        key: a && a !== document.body ? `${say(a)}#${live.indexOf(a)}` : '',
         from: a && a !== document.body ? box(a) : null,
         to: target ? box(target) : null,
       };
@@ -2749,10 +2772,10 @@ console.log('A controller');
           ['left', f.to.x1 <= cx, cx - f.to.x1],
           ['down', f.to.y0 >= cy, f.to.y0 - cy],
           ['up', f.to.y1 <= cy, cy - f.to.y1],
-        ].filter(([d, ok]) => ok && !tried.has(`${f.at}>${d}`));
+        ].filter(([d, ok]) => ok && !tried.has(`${f.key}>${d}`));
         if (!ways.length) await fail(`the controller can't get from ${f.at} to ${what}`);
         dir = ways.sort((a, b) => b[2] - a[2])[0][0];
-        tried.add(`${f.at}>${dir}`);
+        tried.add(`${f.key}>${dir}`);
       }
       await padPress(dir);
     }
@@ -2840,6 +2863,102 @@ console.log('A controller');
   await padPress('a');
   await expectText('#h-time', /^Day 2 · /, 'morning, by controller');
   log('a day by controller alone: a name picked, Hazel, the journal, the map, a go held on A, bed');
+
+  // Phase 14.6: what's left of a day by controller. The stove that evening, played on A (focus
+  // waits on the way out when it's done), then a second dish skipped on B; the speed wall the
+  // next morning, its hands on the bumpers; and the frame meter, switched on from Settings.
+  await reloadWith(page, (f) => ({
+    ...f,
+    state: {
+      ...f.state,
+      min: 19 * 60,
+      at: 'lot',
+      x: null,
+      energy: 80,
+      today: [],
+      gear: { ...f.state.gear, kitchen: 1 },
+      pantry: { pasta: 2, greens: 2 },
+      encounter: null,
+      table: null,
+    },
+  }));
+  await wait(1200);
+  // From the Lot, or from the van's card when a dish has just put you back at it.
+  const stove = async () => {
+    if (!/Your van/.test((await text('#sheet')) ?? '')) {
+      await padTo('your van', /\|Your van\|/);
+      await padPress('a');
+      await expectText('#sheet', /Your van/, 'the van, by controller');
+    }
+    await padTo('the pasta', /\|Cook pasta and greens/);
+    await padPress('a');
+    await until('the stove', () => page.locator('#busk').count());
+  };
+  await stove();
+  if (!(await page.locator('#b-skip .pad-hint').isVisible()))
+    await fail('the stove: no B beside "Just eat it"');
+  for (let k = 0; k < 5; k++) {
+    await padPress('a');
+    await wait(450);
+  }
+  await until('the dish', async () => /\bEat\b/.test((await text('#b-done')) ?? ''));
+  const out = await page.evaluate(() => document.activeElement?.id);
+  if (out !== 'b-done') await fail(`the stove's done, and focus is on ${out || 'nothing'}`);
+  await padPress('a');
+  await expectText('#sheet', /Your van/, 'back at the van, by controller');
+  await stove();
+  await padPress('b');
+  await until('the plain meal', async () => !(await page.locator('#busk').count()));
+  const fed = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.pantry);
+  if (fed.pasta !== 0 || fed.greens !== 0) await fail(`two dishes by controller: ${JSON.stringify(fed)}`);
+  await shot('controller-stove');
+
+  await reloadWith(page, (f) => ({
+    ...f,
+    state: { ...f.state, min: 10 * 60, at: 'gym', x: null, energy: 90, today: ['pass'], encounter: null },
+  }));
+  await wait(1200);
+  // A day pass bought, and the wall at the far end of the gym: the stick walks there.
+  await page.evaluate(() => (window.__pad.axes[0] = 1));
+  await until(
+    'the speed wall on screen',
+    () => page.locator('button[aria-label="The speed wall"]').count(),
+    10_000,
+  );
+  await page.evaluate(() => (window.__pad.axes[0] = 0));
+  await wait(300);
+  await padTo('the speed wall', /\|The speed wall\|/);
+  await padPress('a');
+  // A walks you to the wall's foot first, then opens its card.
+  await expectText('#sheet', /The speed wall/, 'the speed wall, by controller');
+  await padTo('the race', /\|Race the clock/);
+  await padPress('a');
+  await until('the green light', () => page.locator('#speed .green').count(), 6000);
+  for (let k = 0; k < 20 && !(await page.locator('#s-again').count()); k++)
+    await padPress(k % 2 ? 'rb' : 'lb');
+  await until('the clock to stop', () => page.locator('#s-again').count(), 6000);
+  const at = await page.evaluate(() => document.activeElement?.id);
+  if (at !== 's-again') await fail(`the run's over, and focus is on ${at || 'nothing'}`);
+  const run = await text('#s-status');
+  await shot('controller-speed');
+  await padTo('done', /^s-done\|/);
+  await padPress('a');
+  await until('off the wall', async () => !(await page.locator('#speed').count()));
+
+  await padPress('select');
+  await until('the map', async () => (await text('#b-nav')) === 'Close');
+  await wait(450);
+  await padTo('Settings', /^b-settings\|/);
+  await padPress('a');
+  await padTo('the frame meter', /\|On: frames a second/);
+  await padPress('a');
+  await padPress('b');
+  await until('the meter', async () =>
+    /^\d+ fps · slowest \d+ ms · \d+ slow$/.test((await text('#meter')) ?? ''),
+  );
+  log(
+    `and by controller: a dish stirred on A, another skipped on B, the speed wall on the bumpers (${run}), the meter: ${await text('#meter')}`,
+  );
   holdPad = false;
   down = false;
   await page.close();
