@@ -4166,6 +4166,28 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - **Checks:** `unlock.test.ts` (off and on, before and after, a v0.956 career, a store that won't keep or read, junk unlocks, the desktop, the locked game's keys); `npm run e2e:gate` on the gated build: a climber from before keeps the whole valley; one after gets the first season's places and its last card; unlocked, the same climber carries on from the same day with the whole valley. In CI.
 - **Not yet:** the locked last card still says to export the save for the full game; its ways to unlock (Play's, the store links) are 19.2's. A full game's save brought in by file to a locked browser is turned away, as the demo turns it away.
 
+**Found building 19.2 (16 Oct 2026), and Evan's call.** Version 2 of the Digital Goods API has no `acknowledge()`: Chrome's guide leaves acknowledging to a server, and Play refunds a purchase nobody acknowledges within three days [Chrome's and ChromeOS's docs, read through search]. A consumed purchase acknowledges itself, but then drops out of `listPurchases()`, so it can't be restored. **Evan's call: the app acknowledges on the phone**, from native code hooked into the project Bubblewrap generates. No server, nothing leaves the site, and Play's list restores the unlock on any phone.
+
+**Status (16 Oct 2026): 19.2 built: Play's unlock in the Android app.** No save change, 0.999.88.
+- **The page** (`app/src/game/play.ts`): Play through the Digital Goods API (`getDigitalGoodsService('https://play.google.com/billing')`) and Payment Request (`sku: full_game`, the one-time product Evan makes in the Play Console).
+  - **Its price** is Play's, in the player's currency (`getDetails`, `Intl.NumberFormat`).
+  - **A purchase counts** once Play lists it (`listPurchases`), never on the payment sheet's word. Then it's kept as the gate's `play` unlock and the page starts again from the same save, unlocked (`Game.reopen`).
+  - **At start-up,** while locked, a purchase Play already lists (a new phone, Chrome's data cleared) opens the game at once. On the last card, "You've bought it already" asks again.
+- **The app** (`twa/PlayAcknowledger.java`, hooked in by `twa/acknowledge.mjs` after `bubblewrap update` in `build-twa.yml`): when the app starts (`Application`), and on every call the page makes through the Digital Goods API (`DelegationService.onExtraCommand`), it acknowledges each paid purchase that isn't yet. It uses Play Billing 8.3.0, pinned beside Bubblewrap's `androidbrowserhelper:billing:1.2.0`. `twa-manifest.json` turns on Bubblewrap's Play Billing.
+- **The locked last card:**
+  - **In the Android app:** the unlock at Play's price, and "You've bought it already".
+  - **Elsewhere:** the store pages in `STORES` (`game/unlock.ts`, empty until Evan fills them at launch).
+  - The app shows no other store (Play's payments policy). It knows it's the app by the referrer Chrome gives its first load, remembered for the tab, or by reaching Play.
+- **Checks:**
+  - `play.test.ts`, against a fake Play: the price, a purchase only once listed, cancel and failure, restore at start-up and by hand, the app known past a reload.
+  - `e2e:gate` in the app, with a faked Play: the unlock at Play's price; nothing found; a cancel; a purchase reopening the game unlocked; a new phone restored at start-up.
+  - `twa/acknowledge.test.mjs` renders Bubblewrap's own templates offline and checks the hooks go in, twice changes nothing, and a template that moved on stops the build. In CI.
+  - `npm run check` fails if `build-twa.yml` stops running the hook between generating the project and Gradle.
+- **Unverified:**
+  - The Java has been compiled only against stubs of the Android and billing classes, written from their documented shapes. Its first real compile is the next **Build TWA** run.
+  - Nothing has been bought for real: that needs the product in the Play Console and a licence tester on a phone.
+  - Whether `listPurchases()` lists a pending purchase (paid in cash, not yet cleared) isn't known. If it does, the game unlocks before Play has the money; the app acknowledges only once it's paid.
+
 ---
 
 ### Phase 20 — Launch, live updates, and the Unreal decision
@@ -4439,3 +4461,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-16 — 15.4 built: the press kit (`docs/PRESSKIT.md`, zipped by `store:art` with the art and shots), the trailer's beats a click each (`/trailer.html`), and the shot list. Done-when: criterion 4 passes (the full harness, the demo's bots, both e2es); 1 to 3 are Evan's (the Steam apps, wishlists, outreach). No change to the game.
 - 2026-10-16 — Phase 15 closed by Evan's call, its code done: criterion 4 passes; the Steam apps, the wishlists and the press outreach (1 to 3) carried to Evan, to Next Fest. CURRENT MILESTONE moved to Phase 19, monetization, store readiness and beta.
 - 2026-10-16 — Phase 19 planned with Evan's calls: the web plays the first season at launch, and climbers from before keep the full game; Android keeps the TWA, with Play's unlock through Digital Goods; iOS after launch; the audit's prices. 19.1 built: the gate, off until launch (`game/unlock.ts`, `DIRTBAG_GATE`): the full game's build plays the demo's rules till it's unlocked, on the same keys; climbers here are marked as from before, and the first gated start marks the rest; `e2e:gate` on a gated build, in CI. No save change. 0.999.87.
+- 2026-10-16 — 19.2 built: Play's unlock in the Android app. The page buys through the Digital Goods API and Payment Request at Play's price, counts it once Play lists it, and restores it at start-up and by hand; the app acknowledges each purchase on the phone (Evan's call, since version 2 of the API has no acknowledge and Play refunds what isn't), from `twa/PlayAcknowledger.java` hooked into Bubblewrap's project by `twa/acknowledge.mjs`. The locked last card offers it in the app, and store pages elsewhere. No save change. 0.999.88.

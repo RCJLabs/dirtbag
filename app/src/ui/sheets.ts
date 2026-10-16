@@ -332,6 +332,8 @@ import { CRAGS } from '../view/layout';
 import { whoAround, type Who } from './who';
 import { planLine } from '../game/plan';
 import { desktop } from '../game/desktop';
+import { buyUnlock, inAndroidApp, playOffer, restoreUnlock } from '../game/play';
+import { locked, STORES } from '../game/unlock';
 
 export interface Row {
   label: string;
@@ -2743,14 +2745,46 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     }
 
     // Phase 14.5 (Evan's call): the demo's last card: the season, how the race went, and the
-    // save to carry into the full game.
-    case 'demoEnd':
+    // save to carry into the full game. Phase 19.2: on the full game's own build, locked, its
+    // unlock: through Play in the Android app (once Play has answered), and elsewhere the pages
+    // where it's sold. The app shows no other store: Play's payments policy.
+    case 'demoEnd': {
+      const offer = locked() ? playOffer() : null;
+      const pages = locked() && !inAndroidApp() ? STORES : [];
       return {
         title: DEMO_END.title,
         sub: DEMO_END.text,
-        lines: [s.firsts[RACE_ROUTE]?.by === 'dex' ? DEMO_END.dex : DEMO_END.you, DEMO_END.carry],
+        lines: [
+          s.firsts[RACE_ROUTE]?.by === 'dex' ? DEMO_END.dex : DEMO_END.you,
+          offer ? DEMO_END.unlockCarry : DEMO_END.carry,
+        ],
         close: false,
         rows: [
+          ...(offer
+            ? [
+                {
+                  label: DEMO_END.unlock,
+                  note: offer.price
+                    ? fill(DEMO_END.unlockNote, { price: offer.price })
+                    : DEMO_END.unlockNoPrice,
+                  run: () =>
+                    void buyUnlock().then((r) => {
+                      if (r === 'bought') game.reopen();
+                      else if (r !== 'cancelled')
+                        game.toast(r === 'noPlay' ? DEMO_END.noPlay : DEMO_END.buyFailed);
+                    }),
+                },
+                {
+                  label: DEMO_END.restore,
+                  note: DEMO_END.restoreNote,
+                  run: () =>
+                    void restoreUnlock().then((r) => {
+                      if (r === 'restored') game.reopen();
+                      else game.toast(r === 'none' ? DEMO_END.notBought : DEMO_END.noPlay);
+                    }),
+                },
+              ]
+            : []),
           {
             label: 'Export your save',
             note: 'Your climber as a file, for the full game.',
@@ -2768,6 +2802,11 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
                 },
               ]
             : []),
+          ...pages.map((p) => ({
+            label: fill(DEMO_END.page, { store: p.name }),
+            note: DEMO_END.pageNote,
+            run: () => void window.open(p.url, '_blank', 'noopener'),
+          })),
           {
             label: 'Start over',
             note: 'A new first morning in the demo.',
@@ -2775,6 +2814,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           },
         ],
       };
+    }
 
     case 'dead': {
       const d = s.dead;

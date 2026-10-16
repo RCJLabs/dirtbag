@@ -57,6 +57,8 @@ npm run pack --prefix desktop         # a folder for this platform, in desktop/o
 
 5. For a desktop build, run **Actions → Build desktop**: a folder each for Linux, Windows and macOS (Apple silicon), as artifacts, for Steam's depots. They're unsigned until there are certificates to sign them with.
 
+**Play's unlock** (Phase 19.2): the Play Console needs a one-time product with the id `full_game` (the price is set there; the game shows Play's). Try it with a licence tester before launch. **Build TWA** hooks the purchase acknowledger into the app (`twa/acknowledge.mjs`); without it Play refunds every unlock after three days.
+
 **At launch, the gate** (Phase 19.1): set `DIRTBAG_GATE` to `'1'` in `deploy.yml` and release. The site then plays the first season till the full game's unlocked; a climber who was here before keeps the full game. Rolling back to a release from before the flip opens the game to everyone while it's live; a climber who started while the gate was on is shut again once it's back on.
 
 **Rolling back:** run the Deploy workflow by hand on the previous release's tag. v0.956 has no tag yet: creating `v0.956.0` on commit `e098332` deploys it, with its own files and its own copy of the workflow, so create that tag only to roll back. Players' saves from both games stay in their browsers either way.

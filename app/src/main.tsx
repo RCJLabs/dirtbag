@@ -10,7 +10,8 @@ import { createRoot } from 'react-dom/client';
 import { desktop, fileStorage } from './game/desktop';
 import { Game } from './game/game';
 import { keepIn } from './game/storage';
-import { openGate } from './game/unlock';
+import { askPlay } from './game/play';
+import { locked, openGate } from './game/unlock';
 import { App } from './ui/App';
 import { crashed, notACrash } from './ui/crash';
 
@@ -23,6 +24,13 @@ openGate(!!desktop);
 
 const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const game = new Game({ still });
+// Phase 19.2: while it's locked, in the Android app, Play's word on it: bought before (a new
+// phone) opens it at once; otherwise the last card offers it at Play's price.
+if (locked())
+  void askPlay(
+    () => game.redraw(),
+    () => game.reopen(),
+  );
 
 // Canvas text doesn't ask for a web font by itself in every browser; ask up front so the
 // signs and labels switch from the fallback within a frame or two.
