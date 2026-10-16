@@ -134,6 +134,42 @@ If you played the old version (0.956): it has retired. Your career is still on y
 Your climber can leave as a file and come back: Settings has Export your save, and the first screen has Import a save. A controller works on every screen now, its buttons yours to move in Settings. The marks the handwriting never had, the ticks, the crosses and the suits, are drawn now instead of guessed at. And if the game breaks, it says so instead of going blank, with your save where you left it.
 ```
 
+### At launch (Phase 19)
+
+When the gate goes on (`DIRTBAG_GATE` in `deploy.yml`), the listing changes with it: the first season free, the rest one purchase inside the game. These replace the three blocks above on the day; until then they'd describe a game that isn't live. The price isn't in the words: Play shows it, and "Contains in-app purchases", itself.
+
+```text short-launch
+Live in your van, work shifts, climb from gym plastic to V18. First season free.
+```
+
+```text full-launch
+You’ve got a van, $41, and a gym pass you can’t really afford. Dirtbag is a climbing life-sim about the trade you make every day: a shift at the café, or a day on the rock.
+
+THE LIFE
+Sleep in the van at the Lot. Cook ramen. Pick up shifts when the money runs low, set problems at the gym for a free pass, and keep enough on the card for gas. The bills come every week, whether you sent anything or not. The van gets older with every mile.
+
+THE CLIMBING
+Every crux has more than one way through it. Before a go you choose your beta, then you climb it: hold to climb, load a throw and let go in the band, stay in tension, or tap on the beat. Pump builds, skin wears thin, and the sun works its way across the crag, greasing each line it reaches. Fall at a crux often enough and you’ll find another way. Watch someone who knows it and you might learn a better one. Place gear on the trad lines, haul up the walls, and name the first ascents you make.
+
+THE PLACES
+Send City, the gym, with a new set every week. Roadside Crag, the first rock you’ll touch. Then Granite Gorge, Moonstone Boulders, Psicobloc Cove, Sandstone Mesa, The Big Stone, Wind River Walls and The Crucible, each one waiting till you climb hard enough to need it. Miller’s Bluff, if you can buy it. And somewhere past the Gorge, a canyon that isn’t on the map.
+
+THE PEOPLE
+Hazel knows everyone at the fire. Sage will climb with you if you keep showing up. Dex wants the first ascent you’ve been working, and he isn’t going to wait. Get close enough to a few of them and you’re a crew, with a name and favours owed both ways. A stray called Scout sleeps by the vans. Keep heading out to climb and he might decide he’s yours.
+
+THE YEARS
+Five acts, from gym plastic to The Line. Comps in rounds, a field that comes back every year, and a body that gets older. Send something for the first time and the game draws you a card of it: your line, your grade, the day.
+
+THE PROMISE
+The first season is free, all of it. Unlock the rest once, inside the game, and the same climber carries on from the same morning. No ads, no accounts, no tracking, and nothing else to buy. Plays offline. Your save stays on your phone, and the game sends nothing anywhere. You can take it with you as a file.
+
+If you played the old version (0.956): it has retired. Your career is still on your phone. The game will keep it as a file, or carry you across under your old name.
+```
+
+```text whats-new-launch
+The first season stays free, and the rest of the valley is one purchase now, made once through Google Play, and the same climber carries on from the same morning. If you were climbing here before today, nothing changes: your climber keeps the whole game.
+```
+
 ### Screenshots
 
 1080 × 1920 (9:16, which Play can feature), from the build, in `app/store-art/play/`, in this order:
