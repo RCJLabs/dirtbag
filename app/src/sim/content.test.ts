@@ -22,6 +22,10 @@ import { GEAR } from './content/gear';
 import { HOLIDAY_SCENES, HOLIDAY_WITH, HOLIDAYS } from './content/folks';
 import { KNOCKS } from './content/knocks';
 import { HITCHERS, PASS_BY, STOPS } from './content/road';
+import { NAME_IDEAS } from './content/origins';
+import { ROSTER } from './content/comps';
+import { MEDIA_RIVAL } from './content/media';
+import { NAME_MAX } from './game';
 
 const STYLES = Object.keys(MIX);
 // The fixed lines, and the gym's first two months (the wall and the board) for two seeds.
@@ -331,5 +335,22 @@ describe('the road and the year', () => {
         ).toBe(true);
     }
     for (const who of Object.keys(HOLIDAY_WITH)) expect(PEOPLE, who).toHaveProperty([who]);
+  });
+});
+
+// Phase 14.1: the names the first screen offers a controller that can't type one.
+describe('the names on offer', () => {
+  it('are short enough to take, one each, and nobody you meet in the valley or across a comp', () => {
+    const taken = new Set(
+      [...Object.values(PEOPLE).map((p) => p.name), ...ROSTER.map((r) => r.name), MEDIA_RIVAL.name].map(
+        (n) => n.split(' ')[0],
+      ),
+    );
+    expect(new Set(NAME_IDEAS).size).toBe(NAME_IDEAS.length);
+    for (const n of NAME_IDEAS) {
+      expect(n.length, n).toBeLessThanOrEqual(NAME_MAX);
+      expect(n, n).toMatch(/^[A-Z][a-z]+$/);
+      expect(taken.has(n), n).toBe(false);
+    }
   });
 });

@@ -22,6 +22,9 @@
 // Then a day played with the keyboard alone, and the text at its larger size (Phase 12):
 // making a climber, Hazel, the journal, the map's pins, a go on the Warm Boulder, the drive
 // home and bed, with nothing running off the screen.
+// Then the same day with a controller alone, on a Steam Deck's shape (Phase 14.1): focus
+// moved by the D-pad, A to press and hold, B to put things down, Start and Select for the
+// journal and the map, and a name picked for a player who can't type one.
 // Last, a first morning on a landscape window (Phase 12): the screen widens rather than
 // letterboxing, sheets dock at the right, the map's valley sits in the middle of more
 // country, a wall close up is a panel over its crag, and turning the window to portrait
@@ -194,15 +197,18 @@ async function bookCards() {
     // the list (and what Enter takes on the keyboard day).
     if (t === 'calling') {
       log('asked what you’re climbing for: The Purist');
-      if (holdKey) await page.keyboard.press('Enter');
+      if (holdPad) await padA();
+      else if (holdKey) await page.keyboard.press('Enter');
       else await page.locator('#sheet .opt', { hasText: 'The Purist' }).first().click();
       await page.waitForTimeout(150);
       continue;
     }
     booked.push(t);
     log(`record book: ${t}`);
-    // On the keyboard day, as a keyboard player would: the sheet focuses its button.
-    if (holdKey) await page.keyboard.press('Enter');
+    // On the keyboard and controller days, as their players would: the sheet focuses its
+    // button.
+    if (holdPad) await padA();
+    else if (holdKey) await page.keyboard.press('Enter');
     else await page.locator('#sheet .opt', { hasText: 'Right' }).first().click();
     await page.waitForTimeout(150);
   }
@@ -243,10 +249,48 @@ const hudTime = () => text('#h-time');
 // ---- the hold button ----
 
 let down = false;
-// The keyboard day holds on with the space bar instead of a finger on the button.
+// The keyboard day holds on with the space bar instead of a finger on the button, and the
+// controller day with A.
 let holdKey = false;
+let holdPad = false;
+// The controller day's pad: one of the standard mapping's buttons, down or up. The page reads
+// it once a frame, so a press stays down long enough for a few frames to see it.
+const PAD = {
+  a: 0,
+  b: 1,
+  y: 3,
+  lb: 4,
+  rb: 5,
+  rt: 7,
+  select: 8,
+  start: 9,
+  up: 12,
+  down: 13,
+  left: 14,
+  right: 15,
+};
+const padSet = (b, on) =>
+  page.evaluate(
+    ([i, on]) => {
+      const x = window.__pad.buttons[i];
+      x.pressed = on;
+      x.value = on ? 1 : 0;
+    },
+    [PAD[b], on],
+  );
+const padA = async () => {
+  await padSet('a', true);
+  await page.waitForTimeout(70);
+  await padSet('a', false);
+  await page.waitForTimeout(70);
+};
 async function setHold(on) {
   if (on === down) return;
+  if (holdPad) {
+    await padSet('a', on);
+    down = on;
+    return;
+  }
   if (holdKey) {
     if (on) await page.keyboard.down(' ');
     else await page.keyboard.up(' ');
@@ -2616,6 +2660,178 @@ console.log('A keyboard, and larger text');
   await key('Enter');
   await expectText('#h-time', /^Day 2 · /, 'morning, by keyboard');
   holdKey = false;
+  await page.close();
+  page = portrait;
+}
+
+console.log('A controller');
+// The keyboard day again, with a controller and nothing else, on a Steam Deck's shape.
+{
+  const portrait = page;
+  page = await playPage({ width: 1280, height: 800 }, 1, 'controller: ');
+  await page.addInitScript(() => {
+    for (const t of ['pointerdown', 'mousedown', 'touchstart', 'keydown'])
+      window.addEventListener(t, () => window.problem(`the controller day used something else (${t})`), true);
+    // A standard controller, plugged in, nothing pressed.
+    const pad = {
+      id: 'e2e pad',
+      index: 0,
+      connected: true,
+      mapping: 'standard',
+      timestamp: 0,
+      axes: [0, 0, 0, 0],
+      buttons: Array.from({ length: 17 }, () => ({ pressed: false, touched: false, value: 0 })),
+    };
+    window.__pad = pad;
+    Object.defineProperty(navigator, 'getGamepads', { value: () => [pad] });
+  });
+  holdPad = true;
+  const padPress = async (b) => {
+    await padSet(b, true);
+    await wait(70);
+    await padSet(b, false);
+    await wait(70);
+  };
+  // Where focus is, and where the thing wanted is: the top layer's live buttons, as the game
+  // reads them.
+  const focusAndTarget = (re) =>
+    page.evaluate((src) => {
+      const r = new RegExp(src);
+      const say = (a) =>
+        a
+          ? `${a.id}|${a.getAttribute('aria-label') ?? ''}|${a.textContent?.replace(/\s+/g, ' ').trim() ?? ''}`
+          : '';
+      const root =
+        document.getElementById('sheet') ??
+        document.getElementById('bubble') ??
+        document.getElementById('create') ??
+        document.querySelector('#scr .ui');
+      const box = (el) => {
+        const b = el.getBoundingClientRect();
+        return { x0: b.left, x1: b.right, y0: b.top, y1: b.bottom };
+      };
+      const a = document.activeElement;
+      const target = [...root.querySelectorAll('button:not(:disabled), input:not(:disabled)')].find((el) =>
+        r.test(say(el)),
+      );
+      return {
+        at: a && a !== document.body ? say(a) : '',
+        from: a && a !== document.body ? box(a) : null,
+        to: target ? box(target) : null,
+      };
+    }, re.source);
+  // D-pad presses toward the thing, as a player who can see it would press, until focus is on
+  // it: a way it lies wholly past where focus is, the farther first. A press that comes back
+  // round to a button already left that way tries the other way from there, as a player
+  // would; with every way tried, the thing can't be reached.
+  const padTo = async (what, re, most = 40) => {
+    const tried = new Set();
+    for (let i = 0; i < most; i++) {
+      const f = await focusAndTarget(re);
+      if (re.test(f.at)) return;
+      if (!f.to) await fail(`the controller can't see ${what}`);
+      let dir = 'down';
+      if (f.from) {
+        const cx = (f.from.x0 + f.from.x1) / 2;
+        const cy = (f.from.y0 + f.from.y1) / 2;
+        const ways = [
+          ['right', f.to.x0 >= cx, f.to.x0 - cx],
+          ['left', f.to.x1 <= cx, cx - f.to.x1],
+          ['down', f.to.y0 >= cy, f.to.y0 - cy],
+          ['up', f.to.y1 <= cy, cy - f.to.y1],
+        ].filter(([d, ok]) => ok && !tried.has(`${f.at}>${d}`));
+        if (!ways.length) await fail(`the controller can't get from ${f.at} to ${what}`);
+        dir = ways.sort((a, b) => b[2] - a[2])[0][0];
+        tried.add(`${f.at}>${dir}`);
+      }
+      await padPress(dir);
+    }
+    await fail(`the controller never reached ${what}`);
+  };
+
+  await page.goto(server.url, { waitUntil: 'load' });
+  await until('the climber screen', () => page.locator('#create').count());
+  // No typing: a name, picked.
+  await padTo('the name on offer', /^c-pick\|/);
+  await padPress('a');
+  const named = await page.inputValue('#c-name');
+  if (named !== 'Robin') await fail(`the name on offer: ${named}`);
+  await padTo('The Technician', /^c-technician\|/);
+  await padPress('a');
+  await padTo('Start', /^c-go\|/);
+  await padPress('a');
+  await until('the climber screen to go', async () => !(await page.locator('#create').count()));
+  await wait(400);
+  await shot('controller-lot');
+
+  // Hazel's on the screen from the start on this shape; her bubble takes the controller.
+  await padTo('Hazel', /\|Hazel\|/);
+  await padPress('a');
+  await expectText('#bubble', /staring at The Pump/, 'Hazel, by controller');
+  await padPress('a');
+  await expectText('#bubble', /Hook your left heel/, 'Hazel on the roof');
+  await padPress('a');
+  await expectText('#toast', /New beta: heel-hook the lip/, 'toast');
+
+  // The journal on Start, B to put it down.
+  await padPress('start');
+  await expectText('#log', /heel-hook the lip/, 'the journal, by Start');
+  await shot('controller-journal');
+  await padPress('b');
+  await until('the journal to close', async () => !(await page.locator('#sheet').count()));
+
+  // The map on Select, a pin by the D-pad, and the drive.
+  await padPress('select');
+  await until('the map', async () => (await text('#b-nav')) === 'Close');
+  await wait(450);
+  await padTo('Roadside Crag’s pin', /^pin-road\|/);
+  await padPress('a');
+  await expectText('#sheet', /Roadside Crag/, 'the card, by controller');
+  await padTo('the drive', /\|Drive here/);
+  await padPress('a');
+  await until('the crag', async () => (await text('#hint'))?.includes('Boulders on the talus'));
+  await wait(400);
+
+  // The Warm Boulder: its sheet, B, A at the wall for it again, and a go held on A.
+  await padTo('the Warm Boulder', /\|Warm Boulder, V2/);
+  await padPress('a');
+  await expectText('#sheet', /Warm Boulder · V2/, 'the beta sheet, by controller');
+  await padPress('b');
+  await until('the sheet to close', async () => !(await page.locator('#sheet').count()));
+  await padPress('a');
+  await expectText('#sheet', /Warm Boulder · V2/, 'the beta sheet again, from the wall');
+  await padTo('Pull on', /\|Pull on/);
+  await padPress('a');
+  await until('the climb panel', () => page.locator('#climb').count());
+  await shot('controller-climb');
+  await climb();
+  await until('the go to end', () => page.locator('#sheet').count(), 15_000);
+  await padTo('the way down', /\|(Walk down the back|Walk off)$/);
+  await padPress('a');
+  await until('the crag again', async () => (await text('#b-nav')) === 'Map');
+  await wait(600);
+
+  // Home, and bed at dark.
+  await padPress('select');
+  await until('the map', async () => (await text('#b-nav')) === 'Close');
+  await wait(450);
+  await padTo('the Lot’s pin', /^pin-lot\|/);
+  await padPress('a');
+  await padTo('the drive home', /\|Drive here/);
+  await padPress('a');
+  await until('the Lot', async () => (await text('#hint')) !== null || (await text('#b-nav')) === 'Map');
+  await wait(1200);
+  await padTo('your van', /\|Your van\|/);
+  await padPress('a');
+  await expectText('#sheet', /Your van/, 'the van, by controller');
+  await padTo('lying around', /\|Lie around till dark/);
+  await padPress('a');
+  await padTo('bed', /\|Sleep/);
+  await padPress('a');
+  await expectText('#h-time', /^Day 2 · /, 'morning, by controller');
+  log('a day by controller alone: a name picked, Hazel, the journal, the map, a go held on A, bed');
+  holdPad = false;
+  down = false;
   await page.close();
   page = portrait;
 }

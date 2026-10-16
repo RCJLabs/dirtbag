@@ -11,7 +11,18 @@ import { Goal } from './Goal';
 import { PlanChip } from './PlanChip';
 import { Hots } from './Hots';
 import { Hud } from './Hud';
+import { back, hub, onPad } from './input';
+import { move } from './nav';
+import { Pad } from './pad';
 import { Sheet } from './Sheet';
+import type { Dir } from './spatial';
+
+const ARROWS: Record<string, Dir> = {
+  ArrowUp: 'up',
+  ArrowDown: 'down',
+  ArrowLeft: 'left',
+  ArrowRight: 'right',
+};
 
 // The screen: 740 logical pixels tall, scaled to fit the window, and as wide as the window's
 // shape allows: 360 in portrait, up to W_MAX in landscape. The world is on a canvas
@@ -45,11 +56,19 @@ export function App({ game }: { game: Game }) {
     ro.observe(st);
     fit();
 
+    // Phase 14.1: a controller, read each frame. While it's the one in use, the focus ring
+    // shows on whatever it's on, as a keyboard's would.
+    const pad = new Pad();
     let raf = 0;
     let last = 0;
     const loop = (ts: number) => {
       const dt = Math.min(0.05, (ts - last) / 1000 || 0);
       last = ts;
+      for (const ev of pad.poll(ts / 1000)) {
+        sc.dataset.input = 'pad';
+        game.sound.unlock();
+        onPad(game, ev);
+      }
       game.step(dt);
       if (!document.hidden) game.draw(g, ts / 1000, px);
       raf = requestAnimationFrame(loop);
@@ -65,9 +84,22 @@ export function App({ game }: { game: Game }) {
 
     const hold = (e: KeyboardEvent) => e.key === ' ' || e.key === 'Enter';
     const keydown = (e: KeyboardEvent) => {
-      // While you're typing your name, keys are for the form.
-      if (!game.state.climber.name) return;
       const a = document.activeElement;
+      // A field keeps its own keys, but for Up and Down, which leave it.
+      const typing = a instanceof HTMLInputElement || a instanceof HTMLTextAreaElement;
+      const dir: Dir | undefined = ARROWS[e.key];
+      const moves =
+        !!dir && !e.metaKey && !e.ctrlKey && !e.altKey && !(typing && (dir === 'left' || dir === 'right'));
+      // Phase 14.1: the arrows move focus to the nearest button that way. Where there's none,
+      // the key does what it would have (a long sheet scrolls).
+      const step = () => {
+        if (move(dir!)) e.preventDefault();
+      };
+      // While you're making your climber, keys are for the form.
+      if (!game.state.climber.name) {
+        if (moves) step();
+        return;
+      }
       const onButton = a instanceof HTMLButtonElement;
       const u = game.ui.get();
       // On the speed wall: F and J (or the arrows) are your hands.
@@ -95,10 +127,21 @@ export function App({ game }: { game: Game }) {
       // Escape puts down whatever's open, the most recent first: a conversation, a sheet
       // that has a close button, then the map, back to where you are.
       if (e.key === 'Escape') {
-        const x = document.querySelector<HTMLButtonElement>('#sheet .x');
-        if (u.talk) game.hush();
-        else if (x) x.click();
-        else if (!u.sheet && u.view === 'map' && game.navLabel(u) === 'Close') game.nav();
+        back(game);
+        return;
+      }
+      // Left and right walk a scene with nothing open; every other arrow moves focus, but
+      // mid-go, when the hold is all there is.
+      const walking = u.view === 'scene' && !u.sheet && !u.talk && (dir === 'left' || dir === 'right');
+      if (moves && !walking && !u.climbing) {
+        step();
+        return;
+      }
+      // The HUD's buttons: M the map, J the journal, P the plan. Never from a field: a crew
+      // can have an M in its name.
+      const k = e.key.toLowerCase();
+      if (!typing && !e.metaKey && !e.ctrlKey && !e.altKey && (k === 'm' || k === 'j' || k === 'p')) {
+        hub(game, k === 'm' ? 'map' : k === 'j' ? 'journal' : 'plan');
         return;
       }
       if (u.view === 'wall') {
@@ -119,7 +162,7 @@ export function App({ game }: { game: Game }) {
       } else if (hold(e) && !onButton && !u.talk && !u.sheet) {
         e.preventDefault();
         game.useNearest();
-      } else if ((e.key === 'm' || e.key === 'M') && !u.talk) game.openMap();
+      }
     };
     const keyup = (e: KeyboardEvent) => {
       const u = game.ui.get();
@@ -131,7 +174,11 @@ export function App({ game }: { game: Game }) {
 
     // Sound can only start from a gesture, so every tap and key offers it one. A button in
     // the panels ticks as it's pressed; the hold button has the climbing's own sounds.
-    const wake = () => game.sound.unlock();
+    const wake = (e: Event) => {
+      game.sound.unlock();
+      // A finger, a mouse or a key: the controller's no longer the one in use.
+      if (e.type === 'pointerdown' || e.type === 'keydown') delete sc.dataset.input;
+    };
     const tick = (e: MouseEvent) => {
       const b = (e.target as Element | null)?.closest?.('button');
       if (b && b.id !== 'hold') game.sound.play('tap');

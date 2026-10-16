@@ -511,7 +511,7 @@ export {
   standingWord,
   whereYouStand,
 } from './scene';
-export { ORIGINS, CAME_ACROSS, CAME_ACROSS_NAME, type Origin } from './content/origins';
+export { ORIGINS, CAME_ACROSS, CAME_ACROSS_NAME, NAME_IDEAS, type Origin } from './content/origins';
 export { TALENTS, type Talent } from './content/talents';
 export { soloed } from './solo';
 export { speedBlocked, speedFactor, speedGains, speedTime, runsToday, SPEED_WALL } from './speed';
