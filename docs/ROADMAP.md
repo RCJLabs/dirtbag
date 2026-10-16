@@ -64,12 +64,12 @@
 | 11 Valley map | Built on the rebuild (the taps, place cards, adding a place, the daily plan) and closed by Evan's call. Criteria 2 to 5 pass; its testers' criterion carries. Released in 0.961.0 with Phase 10. |
 | 12 UI system | Built on the rebuild (the Journal, the wide screen, keyboard and access, Tonight, no inline styles) and closed by Evan's call. The flows the e2e doesn't play in landscape or by keyboard carry to playtesting. |
 | 13 Sound and feel | Built on the rebuild (effects and ambience made in code, the licence ledger, credits) and closed by Evan's call. Music, made in code, came in Phase 25 by Evan's call, to hear how it turns out; criteria 1 and 2 wait on an ear. |
-| 14 Desktop and Steam, 15 Demo and store page | Moved after Phase 18 by Evan's call: the full game first. |
+| 14 Desktop and Steam, 15 Demo and store page | Moved after Phase 18 by Evan's call: the full game first. Phase 14 closed by Evan's call (16 Oct 2026), its Deck and Steam checks carried to him; Phase 15 is the current milestone. |
 | 21 The climber, 22 The life, 23 Who you are | Added by Evan's call after the gap check; they run before 16. Phase 21 is the current milestone. |
 | 16 The spine | Next after 21–23. |
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 | 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
-| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27, 28 and 29 (14 Oct 2026), and Phases 33, 34, 30, 31, 32 and 35 (15 Oct 2026). Phase 14 is the current milestone. |
+| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27, 28 and 29 (14 Oct 2026), and Phases 33, 34, 30, 31, 32 and 35 (15 Oct 2026). Then Phase 14, closed 16 Oct 2026. |
 
 ## The rebuild track
 
@@ -3821,7 +3821,7 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 *Moved here by Evan's call (29 Sep 2026): the whole game gets built first, and the Steam build, the demo and the store page come after it. The phase numbers stay as they were, so older references still find them.*
 
-### Phase 14 — Desktop and Steam build   **<<< CURRENT MILESTONE**
+### Phase 14 — Desktop and Steam build   ✅ Closed
 
 *Waited until Evan asked for it (8 Oct 2026) while Phases 26–35 came first. Started by his call after Phase 35 (15 Oct 2026).*
 
@@ -3954,9 +3954,21 @@ Phase 14's two criteria that can pass here pass; the other two are Evan's hardwa
 - **Separate homes, as practice** (for Phase 15): the web demo at its own address (a subdomain is a separate origin; a path on dirtbag.rcjlabs.com isn't), and a desktop demo packed under its own name (its own user-data folder), so the carry-over above is a bonus where they meet, not the plan.
 - **Checks:** `persist.test.ts` (the demo boots past a full game's climber without touching it, writes only `dirtbag.demo.` keys, and finds no demo climber of its own; the full game finds its climber and the demo's beside it; nothing that isn't a demo climber is offered); the demo e2e checks the demo's keys are all `dirtbag.demo.`; the full e2e plants a demo climber beside the game and carries on with it from the first screen.
 
+**Phase 14 closed by Evan's call (16 Oct 2026).** Criteria 1 and 4 pass. Criteria 2 and 3 are carried to Evan:
+- **2, 60 fps on a Deck:** run it on the hardware with Settings → Frame meter on.
+- **3, achievements and Cloud in the Steam dev branch:** needs a real app ID in `desktop/steam.json` (480, Valve's test app, until then), the 51 achievements entered with their icons, and Auto-Cloud set (`desktop/STEAM.md`).
+
+Also carried:
+- Nothing has run on a real Deck or with Steam itself: not the Deck's button names, Steam's floating keyboard, or the achievement calls.
+- Whether Valve's Deck review takes Xbox button names off a Deck is unverified; on a Deck the game names the Deck's own buttons.
+- Controller-only Act I is shown by construction plus the e2e's controller day, not by a full Act I played on a pad.
+- The demo's kept pools still name the later crags in passing.
+
+The CURRENT MILESTONE moves to Phase 15, the demo, the store page and Next Fest. The download is 466.4 KB of 490.
+
 ---
 
-### Phase 15 — The demo, the store page and Next Fest
+### Phase 15 — The demo, the store page and Next Fest   **<<< CURRENT MILESTONE**
 
 **Goal.** A polished free first season on web, Steam and Play, a store page that converts, and one well-timed Next Fest.
 
@@ -4290,3 +4302,4 @@ Phase 14's two criteria that can pass here pass; the other two are Evan's hardwa
 - 2026-10-16 — 14.6b built: rebinding the pad's buttons and the keys in Settings, a role going down only with its button; on the desktop, a Deck's button names and Steam's floating keyboard for text fields. Done-when 1 and 4 pass; 2 and 3 are Evan's (a Deck, the Steam app). No save change. 0.999.83.
 - 2026-10-16 — The download budget to 490 KB (Evan's call), for Phase 15's demo; 466.3 KB after Phase 14.
 - 2026-10-16 — 14.5c built: the demo keeps its keys under `dirtbag.demo.`, so it never meets the full game's save; the full game offers to carry on with a demo climber it finds beside it. No save change. 0.999.84.
+- 2026-10-16 — Phase 14 closed by Evan's call: controller-only Act I and the demo's content diff pass; 60 fps on a Deck and achievements and Cloud in the Steam dev branch are carried to Evan's hardware and account. CURRENT MILESTONE moved to Phase 15, the demo, the store page and Next Fest.
