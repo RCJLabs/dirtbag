@@ -12,6 +12,7 @@ const bridge = (start: Record<string, string> = {}) => {
     remove: (k) => !broken && (delete file[k], true),
     fullscreen: (on) => (on === undefined ? full : (full = on)),
     quit: () => undefined,
+    achieve: () => 0,
   };
   return { d, file, breakIt: () => (broken = true) };
 };

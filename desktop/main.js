@@ -7,6 +7,7 @@ import { app, BrowserWindow, ipcMain, Menu, net, protocol } from 'electron';
 import { existsSync } from 'node:fs';
 import { join, normalize, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { appIdIn, overlayForSteam, startSteam } from './steam.js';
 import { fileStore } from './store.js';
 import { keepWindow, loadWindow } from './window.js';
 
@@ -24,6 +25,7 @@ protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true } },
 ]);
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+overlayForSteam();
 
 // The game's files, and nothing outside them.
 async function serve(req) {
@@ -82,6 +84,8 @@ else {
     const data = app.getPath('userData');
     const store = fileStore(join(data, 'dirtbag.json'));
     const winFile = join(data, 'window.json');
+    // A test can turn Steam off outright, whatever's running on the machine.
+    const steam = startSteam(process.env.DIRTBAG_STEAM === 'off' ? null : appIdIn(join(HERE, 'steam.json')));
     protocol.handle('app', serve);
     ipcMain.on('store:all', (e) => (e.returnValue = ours(e) ? store.all() : {}));
     ipcMain.on('store:set', (e, k, v) => {
@@ -97,6 +101,12 @@ else {
       e.returnValue = win?.isFullScreen() ?? false;
     });
     ipcMain.on('window:quit', (e) => ours(e) && app.quit());
+    // The Record Book's ids, in Steam's capitals; how many unlocked just now.
+    ipcMain.on('steam:achieve', (e, names) => {
+      const ok =
+        Array.isArray(names) && names.length <= 64 && names.every((n) => /^[A-Z0-9_]{1,64}$/.test(n));
+      e.returnValue = ours(e) && ok ? steam.achieve(names) : 0;
+    });
     // macOS keeps its app menu, for Quit and for copy and paste in a name; elsewhere, none.
     Menu.setApplicationMenu(
       process.platform === 'darwin'

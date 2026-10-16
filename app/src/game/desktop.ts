@@ -1,6 +1,6 @@
 // Phase 14.3 (Evan's call): the desktop build's bridge (desktop/preload.cjs), there only when
 // the game runs in it. The game's keys live in a file in the user-data folder, which Steam
-// Cloud syncs; the window can go full-screen and quit.
+// Cloud syncs; the window can go full-screen and quit; the Record Book unlocks on Steam.
 export interface Desktop {
   all(): Record<string, string>;
   set(key: string, value: string): boolean;
@@ -8,6 +8,8 @@ export interface Desktop {
   // Asked with nothing, says whether it is; with a yes or a no, makes it so.
   fullscreen(on?: boolean): boolean;
   quit(): void;
+  // Phase 14.4: Steam achievements by name; how many unlocked just now (none without Steam).
+  achieve(names: string[]): number;
 }
 
 declare global {

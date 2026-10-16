@@ -25,9 +25,15 @@ const out = await packager({
   name: 'Dirtbag',
   appVersion: version,
   overwrite: true,
-  asar: true,
+  // Steamworks' native module and Steam's library load from disk, not from inside the archive.
+  asar: { unpack: '**/*.{node,so,dll,dylib}' },
   prune: true,
   // Only what the app runs: the game, the main process and its parts.
-  ignore: [/^\/out($|\/)/, /^\/(smoke|pack|store\.test)\.mjs$/, /^\/\.gitignore$/],
+  ignore: [
+    /^\/out($|\/)/,
+    /^\/steam($|\/)/,
+    /^\/(smoke|pack|store\.test)\.mjs$/,
+    /^\/(\.gitignore|STEAM\.md)$/,
+  ],
 });
 console.log(`✓ packed ${version}: ${out.join(', ')}`);
