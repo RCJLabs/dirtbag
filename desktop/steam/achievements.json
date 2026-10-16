@@ -1,0 +1,257 @@
+[
+  {
+    "name": "FIRSTSEND",
+    "title": "First Send",
+    "desc": "Send your first line."
+  },
+  {
+    "name": "FLASH",
+    "title": "First Try",
+    "desc": "Send a line on your first go."
+  },
+  {
+    "name": "ONSIGHT",
+    "title": "Cold Read",
+    "desc": "Onsight a line: first go, no beta, outside."
+  },
+  {
+    "name": "CALLED",
+    "title": "Called It",
+    "desc": "Call the flash or the onsight before a first go, and send it, ten times."
+  },
+  {
+    "name": "TRAIN",
+    "title": "Send Train",
+    "desc": "Send the crew project with the crew there, and watch them follow you up it."
+  },
+  {
+    "name": "OUTSIDE",
+    "title": "On Real Rock",
+    "desc": "Send your first line outside."
+  },
+  {
+    "name": "FA",
+    "title": "First Ascent",
+    "desc": "Climb a line nobody has and name it."
+  },
+  {
+    "name": "PROLIFIC",
+    "title": "Prolific",
+    "desc": "Claim three first ascents."
+  },
+  {
+    "name": "V5",
+    "title": "A Real Climber",
+    "desc": "Send V5 or 5.12a."
+  },
+  {
+    "name": "V10",
+    "title": "Double Digits",
+    "desc": "Send V10 or 5.14a."
+  },
+  {
+    "name": "V15",
+    "title": "World Class",
+    "desc": "Send V15 or 5.15c."
+  },
+  {
+    "name": "V18",
+    "title": "Off the Charts",
+    "desc": "Send V18: the top of the scale."
+  },
+  {
+    "name": "SEND10",
+    "title": "Tick List",
+    "desc": "Send ten lines."
+  },
+  {
+    "name": "SEND50",
+    "title": "Crusher",
+    "desc": "Send fifty lines."
+  },
+  {
+    "name": "CIRCUIT",
+    "title": "The Full Circuit",
+    "desc": "Send at every crag open to you."
+  },
+  {
+    "name": "RIVAL",
+    "title": "Past the Rival",
+    "desc": "Climb harder than Dex."
+  },
+  {
+    "name": "HURT",
+    "title": "The Body Keeps Score",
+    "desc": "Get hurt climbing."
+  },
+  {
+    "name": "YEAR",
+    "title": "A Year on the Road",
+    "desc": "Last a year out of the van."
+  },
+  {
+    "name": "SHIFT",
+    "title": "Clocked In",
+    "desc": "Work your first shift."
+  },
+  {
+    "name": "REGULAR",
+    "title": "Regular",
+    "desc": "Earn a raise at a job."
+  },
+  {
+    "name": "LETGO",
+    "title": "Burned a Bridge",
+    "desc": "Get let go from a job."
+  },
+  {
+    "name": "GRAND",
+    "title": "First Grand",
+    "desc": "Have $1,000 in hand."
+  },
+  {
+    "name": "LOADED",
+    "title": "Loaded",
+    "desc": "Have $5,000 in hand."
+  },
+  {
+    "name": "KIT",
+    "title": "Kitted Out",
+    "desc": "Own five kinds of kit."
+  },
+  {
+    "name": "RIG",
+    "title": "Home Sweet Van",
+    "desc": "Build out the Dream Rig."
+  },
+  {
+    "name": "BROKEDOWN",
+    "title": "Stranded",
+    "desc": "Break down on the road."
+  },
+  {
+    "name": "CREW",
+    "title": "Tight Crew",
+    "desc": "Get close to someone you climb with."
+  },
+  {
+    "name": "SUMMIT",
+    "title": "The Top of Something",
+    "desc": "Summit an expedition."
+  },
+  {
+    "name": "DOG",
+    "title": "Good Dog",
+    "desc": "Take in a dog."
+  },
+  {
+    "name": "GUIDEBOOK",
+    "title": "Guidebook Author",
+    "desc": "Write and publish a crag’s guide."
+  },
+  {
+    "name": "COMP",
+    "title": "Game On",
+    "desc": "Compete in a comp."
+  },
+  {
+    "name": "COMPWIN",
+    "title": "Top Step",
+    "desc": "Win a comp."
+  },
+  {
+    "name": "OLYMPICS",
+    "title": "Games Medalist",
+    "desc": "Podium at the Games."
+  },
+  {
+    "name": "DYNOCOMP",
+    "title": "Big Throw",
+    "desc": "Win the Fall Festival dyno comp."
+  },
+  {
+    "name": "LEAGUE",
+    "title": "Season Champion",
+    "desc": "Top League night’s table for a season."
+  },
+  {
+    "name": "TRAIT",
+    "title": "Known For It",
+    "desc": "Have your habits give you a name."
+  },
+  {
+    "name": "FAMOUS",
+    "title": "Internet Famous",
+    "desc": "Reach 5,000 followers."
+  },
+  {
+    "name": "SPONSORED",
+    "title": "Sponsored",
+    "desc": "Land a sponsor."
+  },
+  {
+    "name": "PRO",
+    "title": "Going Pro",
+    "desc": "Turn pro."
+  },
+  {
+    "name": "FILM",
+    "title": "On Screen",
+    "desc": "Get the film made."
+  },
+  {
+    "name": "COMMISSIONED",
+    "title": "Paid for the Light",
+    "desc": "Pay for a film of one of your lines."
+  },
+  {
+    "name": "GYMOWNER",
+    "title": "Your Own Four Walls",
+    "desc": "Own a gym."
+  },
+  {
+    "name": "MENTOR",
+    "title": "Pass It On",
+    "desc": "Coach a kid to V8."
+  },
+  {
+    "name": "OUTFITTER",
+    "title": "Ropes for Hire",
+    "desc": "Start a guiding outfit of your own."
+  },
+  {
+    "name": "PATRON",
+    "title": "Somebody Else’s Summit",
+    "desc": "Pay for a young team’s trip, and see them stand on top."
+  },
+  {
+    "name": "PATRONS",
+    "title": "Everybody Else’s Summits",
+    "desc": "See a team you paid for stand on top of every objective."
+  },
+  {
+    "name": "LANDOWNER",
+    "title": "The Back Forty",
+    "desc": "Buy a crag."
+  },
+  {
+    "name": "GIVING",
+    "title": "Dirtbag Philanthropist",
+    "desc": "Give $1,000 to charity, over a life."
+  },
+  {
+    "name": "RETIRED",
+    "title": "The Long Game",
+    "desc": "Hang it up, or have your body hang it up for you."
+  },
+  {
+    "name": "HOLLOW",
+    "title": "Off the Map",
+    "desc": "Find the Hollow."
+  },
+  {
+    "name": "KINQUEST",
+    "title": "Unfinished Business",
+    "desc": "Send the line the old climber gave you at the fire."
+  }
+]

@@ -188,7 +188,7 @@ check('TWA host matches CNAME and assetlinks.json names the app', () => {
 // from app:// and the desktop smoke fails on any other request; this keeps an address from
 // creeping into the main process, where the smoke wouldn't see what it fetched.
 check('the desktop build names no address to reach', () => {
-  const files = ['desktop/main.js', 'desktop/preload.cjs', 'desktop/store.js', 'desktop/window.js'];
+  const files = ['desktop/main.js', 'desktop/preload.cjs', 'desktop/steam.js', 'desktop/store.js', 'desktop/window.js'];
   const hits = files.filter((f) => /\b(?:https?|wss?):\/\//.test(read(f)));
   if (hits.length) fail(`an address in ${hits.join(', ')}`);
   return `${files.length} files`;

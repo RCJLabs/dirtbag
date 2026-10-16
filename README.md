@@ -15,7 +15,7 @@ A climbing life-sim. Live out of your van, work shifts, and push your grade from
 | `app/` | The game: sim, renderer, UI, tests, and the build that makes the site. Its own package; see [`app/README.md`](app/README.md) |
 | `privacy.html` | Privacy policy (the game collects and sends nothing) |
 | `.well-known/assetlinks.json`, `twa-manifest.json`, `twa/` | Google Play wrapper (TWA): domain verification, config, pinned build tools |
-| `desktop/` | The desktop build for Steam (Electron): the game from `app/dist` in its own window, its save in a file Steam Cloud syncs; pinned Electron and packager, a smoke test |
+| `desktop/` | The desktop build for Steam (Electron): the game from `app/dist` in its own window, its save in a file Steam Cloud syncs, the Record Book as achievements; pinned Electron, packager and steamworks.js, a smoke test. Steamworks setup: [`desktop/STEAM.md`](desktop/STEAM.md) |
 | `.github/workflows/` | CI, deploy on tag, Play bundle build, desktop build |
 | `scripts/` | Checks, smoke test, staging, version stamping |
 | `docs/` | The v0.956 audit and the roadmap |

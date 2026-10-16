@@ -1,8 +1,9 @@
 // The desktop build's first minute (Phase 14.3): it opens on the game; a new climber is saved
-// to the user-data file and nowhere in the browser's storage; a relaunch starts where it left
-// off; nothing is asked of anywhere but app://; and Quit in Settings closes it. Needs the game
-// built (app/dist) and a display (xvfb-run on a Linux runner); `node smoke.mjs <executable>`
-// runs it on a packed build instead. Playwright is the root's pinned one, as the e2e's is.
+// to the user-data file and nowhere in the browser's storage; with Steam off, achievements do
+// nothing (14.4); a relaunch starts where it left off; nothing is asked of anywhere but app://;
+// and Quit in Settings closes it. Needs the game built (app/dist) and a display (xvfb-run on a
+// Linux runner); `node smoke.mjs <executable>` runs it on a packed build instead. Playwright is
+// the root's pinned one, as the e2e's is.
 import { mkdtempSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
@@ -24,7 +25,7 @@ async function launch() {
   const app = await electron.launch({
     executablePath,
     args,
-    env: { ...process.env, DIRTBAG_USER_DATA: data },
+    env: { ...process.env, DIRTBAG_USER_DATA: data, DIRTBAG_STEAM: 'off' },
   });
   const page = await app.firstWindow();
   page.on('pageerror', (e) => problems.push(`uncaught: ${e.message}`));
@@ -73,6 +74,15 @@ const worker = await page.evaluate(async () => {
 });
 if (worker) await fail('a service worker registered');
 ok('a new climber, saved to the user-data file, nothing in the browser’s storage, no worker');
+
+// Phase 14.4: with Steam off, the stub: achievements ask nothing and unlock nothing, and a name
+// Steam wouldn't take is turned away before it gets that far.
+const unlocked = await page.evaluate(() => [
+  window.dirtbagDesktop.achieve(['FIRSTSEND']),
+  window.dirtbagDesktop.achieve(['not a name']),
+]);
+if (unlocked.join() !== '0,0') await fail(`achievements with Steam off: ${unlocked}`);
+ok('Steam off: the Record Book’s achievements are a quiet no');
 
 await app.close();
 ({ app, page } = await launch());

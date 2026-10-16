@@ -84,6 +84,8 @@ import {
 import { mapLeft, render, valleyArt, type Frame } from '../view/render';
 import { drivePath } from '../view/valley';
 import * as persist from './persist';
+import { earnedEver, steamName } from './achievements';
+import { desktop } from './desktop';
 import { exportSave } from './savefile';
 import { loadPlans, noted, savePlans, SLEEP, wipePlans, type PlanStep, type Plans } from './plan';
 import { createStore, type Store } from './store';
@@ -354,6 +356,9 @@ export class Game {
     // A game closed halfway up a solo comes back to the fall.
     this.state = unfinishedSolo(b.state);
     if (this.state !== b.state) persist.save(this.state);
+    // Phase 14.4: on Steam, everything the family's ever earned, so what came while Steam
+    // wasn't looking (offline, an earlier generation, another device) unlocks now.
+    this.achieve(earnedEver(this.state));
     const home = PLACES[this.state.at];
     this.ui = createStore<Ui>({
       state: this.state,
@@ -448,8 +453,10 @@ export class Game {
         this.cards.push(e.n === STORY.length ? { k: 'line', step: 0 } : { k: 'act', n: e.n });
       else if (e.k === 'home') this.cards.push({ k: 'home' });
       else if (e.k === 'holiday') this.cards.push({ k: 'holiday', id: e.id, who: e.who });
-      else if (e.k === 'record') this.cards.push({ k: 'record', ids: e.ids });
-      else if (e.k === 'calling') this.cards.push({ k: 'calling' });
+      else if (e.k === 'record') {
+        this.cards.push({ k: 'record', ids: e.ids });
+        this.achieve(e.ids);
+      } else if (e.k === 'calling') this.cards.push({ k: 'calling' });
       else if (e.k === 'year') this.cards.push({ k: 'year', n: e.n });
       else if (e.k === 'homecoming') this.cards.push({ k: 'homecoming', route: e.route, who: e.who });
     }
@@ -1667,6 +1674,11 @@ export class Game {
       this.sync();
       this.enter('lot');
     });
+  }
+
+  // Phase 14.4: Record Book entries as Steam achievements, where the desktop build has Steam.
+  private achieve(ids: string[]): void {
+    if (ids.length) desktop?.achieve(ids.map(steamName));
   }
 
   // ---- your save as a file (Phase 14.2) ----
