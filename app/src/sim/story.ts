@@ -12,6 +12,7 @@ import { PARTNERS } from './presence';
 import { familyWords, kinLine } from './heir';
 import { HEIR_ACT, HEIR_END } from './content/heir';
 import type { GameState } from './types';
+import { DEMO } from './edition';
 
 type Rung = { act: number; i: number; goal: Goal };
 const ladder = (acts: Act[]): Rung[] =>
@@ -82,8 +83,11 @@ export const aimMet = (s: GameState, aim: Aim): boolean => {
   return p.have >= p.need;
 };
 
-// The stage you're on, or null once the story's done.
-export const currentGoal = (s: GameState): Goal | null => ladderOf(s)[s.goals]?.goal ?? null;
+// The stage you're on, or null once the story's done. The demo's story is Act I (Phase 14.5).
+export function currentGoal(s: GameState): Goal | null {
+  const e = ladderOf(s)[s.goals];
+  return e && !(DEMO && e.act > 1) ? e.goal : null;
+}
 
 // The act you're in, 1 to 5; one past the last once it's all done.
 export const actOf = (s: GameState): number => ladderOf(s)[s.goals]?.act ?? STORY.length + 1;

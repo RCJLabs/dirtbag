@@ -211,6 +211,8 @@ import {
   readsOn,
   theirMove,
 } from './cards';
+import { DEMO_END } from './content/demo';
+import { demoOver } from './edition';
 import { dreamById } from './content/dreams';
 import { PEOPLE, RACE_ROUTE, RIVAL_FA_NAMES, TALK } from './content/people';
 import { ACT_PAID } from './content/story';
@@ -959,6 +961,8 @@ export function act(s0: GameState, a: Action): Result {
   const refuse = (why: string): Result => ({ state: s0, events: [{ k: 'refused', why }] });
   // Phase 16.5: the kid you coached climbs on after you, a new state in the same world.
   if (a.t === 'heir') return heirOf(s0, newGame) ?? refuse('Not while you’re still climbing.');
+  // Phase 14.5: the demo's last morning has come, and nothing more happens in it.
+  if (demoOver(s0)) return refuse(DEMO_END.refused);
   const note = (text: string) => {
     s.log.push({ day: s.day, min: s.min, text });
     if (s.log.length > LOG_MAX) s.log.splice(0, s.log.length - LOG_MAX);

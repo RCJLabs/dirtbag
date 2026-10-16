@@ -1,6 +1,6 @@
 {
   "name": "dirtbag",
-  "version": "0.999.79",
+  "version": "0.999.80",
   "private": true,
   "description": "Dirtbag, rebuilt: the sim, the Mix renderer and the UI. See docs/ROADMAP.md, the rebuild track.",
   "type": "module",
@@ -10,11 +10,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:demo": "vite build --mode demo",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.sim.json && tsc -p tsconfig.app.json && tsc -p tsconfig.node.json",
     "test": "vitest run",
     "harness": "vitest run --mode harness",
     "e2e": "node e2e/playthrough.mjs",
+    "e2e:demo": "node e2e/demo.mjs",
     "size": "node scripts/size.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

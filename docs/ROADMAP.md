@@ -3901,6 +3901,20 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 - **Checks:** `achievements.test.ts` (one name each, in Steam's pattern; a family's books counted; the list in step with the book); the desktop smoke adds the stub (Steam off: no unlocks, a bad name turned away); a packed Linux build passes the smoke, and with the app ID set and no Steam running unlocks nothing and stays up. `npm run check` reads `steam.js` for addresses too.
 - **Not yet:** criterion 3 (achievements and Cloud in a Steam dev branch) needs the real app ID, the achievements entered, and their icons: Evan's. Nothing here has run with Steam itself.
 
+**The demo, Evan's calls (16 Oct 2026), all as recommended:**
+- **The strip:** places and story. The demo build physically lacks the later crags (their lines, walls, rock, scenes), Acts II to V, the endings and The Line, expeditions and the Hollow, and CI greps the demo build for them. Comps past League night, job ranks and the like stay in, shut by the flag.
+- **The end:** after Dex's race. Act I as built, then the race week, with the Gorge open at V4 as it is now, so both of Phase 5's crags are played.
+- **At the end:** a last card in the game's voice, Export your save (it loads in the full game: the same save), and the demo stops there, with Start over.
+- 14.5 goes in two: **14.5a** the demo's build and rules, **14.5b** the strip and its content diff.
+
+**Status (16 Oct 2026): 14.5a built: the demo's build and its rules.** No save change, 0.999.80.
+- **The flag** (`sim/edition.ts`): `npm run build:demo` (`--mode demo`) sets `__DEMO__` and builds into `dist-demo/`; the full build, the tests and the harness play the whole game. Tests play the demo's rules with `asDemo(true)`.
+- **Its places** (`content/demo.ts`): the Lot, the town (the gym, the café, the diner, the warehouse, the shops, the clinic, the lake, the market, the garage), Roadside and the Gorge. `known()` knows nothing else, so the map pins only those and the sim won't drive anywhere else.
+- **Its story:** Act I, as built. After its card there's no next goal (the pill goes, and the journal's story row says Act I's done), and the race week runs as it always does: Dex is met on your first V4 send, his race starts that night, and the Gorge is open.
+- **Its end** (`demoOver`): the morning after the race is decided, by Dex's first ascent overnight or by your send, once Act I's done. A day plays out either way, so the end never lands on top of the send that won it. A climber who reaches V4 without sending one hasn't met Dex yet, and plays on at Roadside and the Gorge till the send brings the race. Then the last card ("That’s the season"): the season, how the race went, the full game picking up from this morning; Export your save and Start over; it doesn't close, and the sim takes no more actions.
+- **Checks:** `demo.test.ts` (its places, and no drive elsewhere; Act I and no story after; the end the morning after, Dex's way or yours, and not before Act I's done; nothing after; the full game untouched); `e2e/demo.mjs` on the demo build (the first screen says it's the demo; the map has its twelve places and none of the full game's; a climber the morning after Dex took the line gets the last card, which won't close, exports a save the full game reads, and starts over). CI's app job builds the demo and plays both ends.
+- **Not yet (14.5b):** the demo build still carries everything, only shut: the strip and its content diff (criterion 4) are next. A full-game save opened in the demo is treated as a demo save (past Act I and the race, it's on its last card); once the strip lands, one that names a stripped place won't load, and is turned away.
+
 ---
 
 ### Phase 15 — The demo, the store page and Next Fest
@@ -4230,3 +4244,5 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 - 2026-10-16 — 14.2 built: the game's keys go through one seam the desktop build can hand a file to; Export and Import save, from Settings and the first screen, a file that won't load turned away with why, one that will asking first. No save change. 0.999.77.
 - 2026-10-16 — 14.3 built: the desktop build: the game in an Electron window from `app://`, its keys in a file in the user-data folder for Steam Cloud, full screen and Quit; a smoke test in CI, and a workflow that packs Linux, Windows and macOS. No save change. 0.999.78.
 - 2026-10-16 — 14.4 built: Steamworks behind a stub: the Record Book's entries unlock as Steam achievements (each as it's earned, and everything ever earned at launch), Steam's overlay when Steam starts the game, and `desktop/STEAM.md` for the Steamworks site (the app ID, the 51 achievements, Auto-Cloud's paths). No save change. 0.999.79.
+- 2026-10-16 — Evan's calls for the demo: strip the places and the story; end after Dex's race; a last card, the save to export, and stop.
+- 2026-10-16 — 14.5a built: the demo build (`npm run build:demo`): Act I and Dex's race week at the Lot, in town, at Roadside and the Gorge; no story after Act I; over the morning after the race is decided, on a last card with the save to export. No save change. 0.999.80.

@@ -7,11 +7,14 @@
 import { indoor, routeById } from './content/gym';
 import { PLACES } from './content/places';
 import { HOLLOW } from './dials';
+import { inEdition } from './edition';
 import { RAY_GONE } from './lives';
 import type { GameState, HollowClue } from './types';
 
-// Whether you know a place is there: every place but a hidden one you haven't found.
-export const known = (s: GameState, id: string): boolean => !PLACES[id]?.hidden || s.unlocked.includes(id);
+// Whether you know a place is there: every place but a hidden one you haven't found, and, in
+// the demo (Phase 14.5), only the demo's places.
+export const known = (s: GameState, id: string): boolean =>
+  inEdition(id) && (!PLACES[id]?.hidden || s.unlocked.includes(id));
 
 export const found = (s: GameState): boolean => s.unlocked.includes('hollow');
 

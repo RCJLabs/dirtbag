@@ -2,6 +2,8 @@ import { useState } from 'react';
 import {
   CARRIED,
   carried,
+  DEMO,
+  DEMO_START,
   gradeOf,
   NAME_IDEAS,
   NAME_MAX,
@@ -52,6 +54,11 @@ export function Create({ game }: { game: Game }) {
       }}
     >
       <h2 id="create-title">{family ? `Who has ${family.forebear}’s keys?` : "Who's in the van?"}</h2>
+      {DEMO && (
+        <p className="sub" id="c-demo">
+          {DEMO_START}
+        </p>
+      )}
       {family && (
         <p className="sub" id="c-family">
           {family.forebear} hung it up. The kid they spent all those seasons coaching takes the van, and their
