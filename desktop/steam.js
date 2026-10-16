@@ -1,15 +1,16 @@
 // Steamworks (Phase 14.4, Evan's call: behind a stub). With Steam running and an app ID, the
 // Record Book's entries unlock as achievements. Without either (a dev run, the smoke test, a
-// copy started outside Steam) every call does nothing, and the game plays the same. The app ID
-// is in steam.json: Valve's public test app (480) until Dirtbag has its own.
+// copy started outside Steam) every call does nothing, and the game plays the same. The app IDs
+// are in steam.json, the full game's and (15.3) the demo's: Valve's public test app (480) until
+// Dirtbag has its own.
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 
-const OFF = { on: false, achieve: () => 0, deck: false, keyboard: () => false };
+const OFF = { on: false, achieve: () => 0, deck: false, keyboard: () => false, toStore: () => false };
 
-export function appIdIn(path) {
+export function appIdIn(path, key = 'appId') {
   try {
-    const id = JSON.parse(readFileSync(path, 'utf8')).appId;
+    const id = JSON.parse(readFileSync(path, 'utf8'))[key];
     return Number.isInteger(id) && id > 0 ? id : null;
   } catch {
     return null;
@@ -41,6 +42,16 @@ export function startSteam(appId) {
     keyboard(x, y, w, h) {
       try {
         client.utils.showFloatingGamepadTextInput(0, x, y, w, h).catch(() => false);
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    // Phase 15.3: a store page in Steam's overlay (the demo's way to the full game). Whether
+    // Steam took it; where the overlay's off, Steam may open the page in the client instead.
+    toStore(appId) {
+      try {
+        client.overlay.activateToStore(appId, 0);
         return true;
       } catch {
         return false;

@@ -169,3 +169,10 @@ jobs:
 
       - name: Play the first minute in the desktop build
         run: xvfb-run -a npm run smoke --prefix desktop
+
+      # Phase 15.3: the demo's edition of the same desktop code, on the demo's build.
+      - name: Build the demo
+        run: npm run build:demo --prefix app
+
+      - name: Play the demo's first minute in the desktop build
+        run: xvfb-run -a npm run smoke:demo --prefix desktop

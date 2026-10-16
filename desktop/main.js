@@ -2,24 +2,31 @@
 // own, for Steam. Electron, so it's the same Chromium the game is tuned on. It serves the
 // built game from app:// (no network, no service worker), keeps the game's keys in a file in
 // the user-data folder for Steam Cloud, and lets sound start without a tap, since a
-// controller's press doesn't count as one.
-import { app, BrowserWindow, ipcMain, Menu, net, protocol } from 'electron';
+// controller's press doesn't count as one. The same code packs the demo (Phase 15.3): its own
+// build, user-data folder, title and Steam app (edition.js).
+import { app, BrowserWindow, ipcMain, Menu, net, protocol, shell } from 'electron';
 import { existsSync } from 'node:fs';
 import { join, normalize, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { editionOf } from './edition.js';
 import { appIdIn, overlayForSteam, startSteam } from './steam.js';
 import { fileStore } from './store.js';
 import { keepWindow, loadWindow } from './window.js';
 
 const HERE = fileURLToPath(new URL('.', import.meta.url));
-// The game: copied in beside this file for a packaged build, or the repo's own build.
-const GAME = existsSync(join(HERE, 'game', 'index.html'))
-  ? join(HERE, 'game')
-  : join(HERE, '..', 'app', 'dist');
+const EDITION = editionOf(HERE, process.env);
+// The game: copied in beside this file for a packed build, or the repo's own build of this
+// edition for a dev run (a copy a pack left behind is never it).
+const GAME = app.isPackaged ? join(HERE, 'game') : join(HERE, '..', 'app', EDITION.build);
 const ORIGIN = 'app://game';
+// The window's icon where the system takes it from the window (Linux); pack.mjs draws it.
+const ICON = join(HERE, 'icons', 'dirtbag.png');
 
-// A test runs in a folder of its own, never a player's.
+// A test runs in a folder of its own, never a player's. The demo keeps a folder of its own
+// beside the full game's (which stays where it always was, named for the product).
 if (process.env.DIRTBAG_USER_DATA) app.setPath('userData', process.env.DIRTBAG_USER_DATA);
+else if (EDITION.demo) app.setPath('userData', join(app.getPath('appData'), EDITION.name));
+if (EDITION.demo) app.setName(EDITION.name);
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true } },
@@ -52,7 +59,8 @@ function open(store, winFile) {
     minWidth: 360,
     minHeight: 600,
     fullscreen: at.fullscreen,
-    title: 'Dirtbag',
+    title: EDITION.name,
+    ...(existsSync(ICON) ? { icon: ICON } : {}),
     backgroundColor: '#14141a',
     autoHideMenuBar: true,
     webPreferences: {
@@ -62,6 +70,8 @@ function open(store, winFile) {
       nodeIntegration: false,
     },
   });
+  // The window keeps its edition's name; the page's own title would say only "Dirtbag".
+  win.on('page-title-updated', (e) => e.preventDefault());
   // Nothing leaves the game: no new windows, no navigating away.
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   win.webContents.on('will-navigate', (e, url) => {
@@ -85,7 +95,8 @@ else {
     const store = fileStore(join(data, 'dirtbag.json'));
     const winFile = join(data, 'window.json');
     // A test can turn Steam off outright, whatever's running on the machine.
-    const steam = startSteam(process.env.DIRTBAG_STEAM === 'off' ? null : appIdIn(join(HERE, 'steam.json')));
+    const ids = join(HERE, 'steam.json');
+    const steam = startSteam(process.env.DIRTBAG_STEAM === 'off' ? null : appIdIn(ids, EDITION.steamKey));
     protocol.handle('app', serve);
     ipcMain.on('store:all', (e) => (e.returnValue = ours(e) ? store.all() : {}));
     ipcMain.on('store:set', (e, k, v) => {
@@ -112,6 +123,19 @@ else {
     ipcMain.on('steam:keyboard', (e, ...box) => {
       const ok = box.length === 4 && box.every((n) => Number.isFinite(n) && n >= 0 && n <= 16384);
       if (ours(e) && ok) steam.keyboard(...box.map(Math.round));
+    });
+    // Phase 15.3: the full game's store page, in Steam's overlay (the demo's last card asks).
+    ipcMain.on('steam:store', (e) => {
+      const full = appIdIn(ids);
+      e.returnValue = ours(e) && !!full && steam.toStore(full);
+    });
+    // A mail the player sends from their own mail app (the error screen's report): handed to
+    // the system, since the window goes nowhere but the game. Only a mailto: link, and only
+    // what the page itself asks for.
+    ipcMain.on('desktop:mail', (e, url) => {
+      const ok = typeof url === 'string' && url.length <= 8192 && /^mailto:[^\s"<>]+$/.test(url);
+      e.returnValue = ours(e) && ok;
+      if (e.returnValue) void shell.openExternal(url).catch(() => undefined);
     });
     // macOS keeps its app menu, for Quit and for copy and paste in a name; elsewhere, none.
     Menu.setApplicationMenu(

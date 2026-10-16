@@ -331,6 +331,7 @@ import type { Game, SheetId } from '../game/game';
 import { CRAGS } from '../view/layout';
 import { whoAround, type Who } from './who';
 import { planLine } from '../game/plan';
+import { desktop } from '../game/desktop';
 
 export interface Row {
   label: string;
@@ -2755,6 +2756,18 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             note: 'Your climber as a file, for the full game.',
             run: () => void game.exportSave(),
           },
+          // Phase 15.3: on Steam, the full game's page, in Steam's overlay.
+          ...(desktop
+            ? [
+                {
+                  label: DEMO_END.store,
+                  note: DEMO_END.storeNote,
+                  run: () => {
+                    if (!desktop?.toStore()) game.toast(DEMO_END.noSteam);
+                  },
+                },
+              ]
+            : []),
           {
             label: 'Start over',
             note: 'A new first morning in the demo.',

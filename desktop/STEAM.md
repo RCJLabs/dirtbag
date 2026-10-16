@@ -1,10 +1,10 @@
 # The desktop build on Steam
 
-What the repo does (Phase 14.3 and 14.4), and what's yours to do on the Steamworks site.
+What the repo does (Phase 14.3, 14.4 and 15.3), and what's yours to do on the Steamworks site.
 
 ## The app ID
 
-`steam.json` holds it: `480`, Valve's public test app, until Dirtbag has its own. Put the real one there and commit it. Without Steam running (a dev run, the smoke test, a copy started outside Steam), the game plays the same and unlocks nothing.
+`steam.json` holds two: `appId`, the full game's, and `demoAppId`, the demo's (a Steam demo is an app of its own under the game's). Both are `480`, Valve's public test app, until Dirtbag has its own. Put the real ones there and commit them. Without Steam running (a dev run, the smoke test, a copy started outside Steam), the game plays the same and unlocks nothing.
 
 ## Achievements
 
@@ -39,7 +39,22 @@ Phase 14.6b: the game asks Steam whether it's running on a Deck (`utils.isSteamR
 
 ## The demo
 
-Phase 14.5c: the demo keeps its keys under `dirtbag.demo.`, so it can't touch the full game's save even in the same `dirtbag.json`. Still, pack the demo under its own name (Electron's user-data folder follows the product name), so its file is its own and its Steam Cloud paths don't overlap the full game's.
+Phase 15.3: the same desktop code packs the demo. `npm run build:demo --prefix app`, then `npm run pack:demo`: it copies `app/dist-demo` in and writes `edition.json` (`{"edition":"demo"}`) beside `main.js` for the packed copy (both gone from the repo's folder once it's packed). The demo then:
+
+- is **"Dirtbag Demo"**: its folder (`Dirtbag Demo-<platform>`), its executable (`Dirtbag Demo.exe`, `Dirtbag Demo`, `Dirtbag Demo.app`) and its window's title;
+- keeps its **own user-data folder**, `Dirtbag Demo` beside the full game's `Dirtbag`, so its `dirtbag.json` is its own (14.5c's keys already keep the two apart in one file);
+- starts Steam as **`demoAppId`**;
+- on its **last card**, offers the full game's store page in Steam's overlay (`overlay.activateToStore` with `appId`). Without Steam it says Steam isn't running.
+
+`npm run smoke:demo` plays the demo's first minute in the desktop build (CI does, after the full game's); `node smoke.mjs --demo "out/Dirtbag Demo-linux-x64/Dirtbag Demo"` plays a packed one. **Build desktop** packs both, each platform's artifact holding the two folders.
+
+On the Steamworks site: create the demo app under Dirtbag's, put its ID in `demoAppId`, upload the demo's folders as its depots (launch options as above, under the demo's name), and give it Auto-Cloud with the subdirectory `Dirtbag Demo` in place of `Dirtbag`. It needs no achievements: the Record Book's land when the climber carries on in the full game (14.4 unlocks everything the save has earned at launch).
+
+**Unverified:** the store page in the overlay hasn't run with Steam. Where the overlay is off (a copy Steam didn't start), Steam may show the page in its client or not at all.
+
+## The icon
+
+The executables and the Linux window take the game's own icon, drawn at pack time by the site's icon painter (`icons.mjs`, from `app/build/pwa.ts`): an `.ico` (16 to 256) for Windows, an `.icns` (128 to 1024) for macOS, a 512 PNG for Linux. Steam's own icons (the client icon, the community icon) are uploaded on the Steamworks site: `npm run store:art --prefix app` draws the community icon (`docs/STORE.md`).
 
 ## The overlay
 

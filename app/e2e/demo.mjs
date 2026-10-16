@@ -82,6 +82,9 @@ const card = (await text('#sheet')) ?? '';
 if (!/Dex got there first/.test(card) || !/Export your save and bring it/.test(card))
   await fail(`the demo's last card: ${card.slice(0, 300)}`);
 if (await page.locator('#sheet .x').count()) await fail('the last card can be closed');
+// Phase 15.3: the full game's Steam page is the desktop's; a browser has no Steam to ask.
+if (await page.locator('#sheet .opt', { hasText: 'The full game on Steam' }).count())
+  await fail('a Steam page offered in a browser');
 await page.screenshot({ path: join(OUT, 'demo-end.png') });
 ok('the last card, the morning after Dex took the line');
 

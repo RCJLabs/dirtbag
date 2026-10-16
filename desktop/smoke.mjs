@@ -4,6 +4,10 @@
 // and Quit in Settings closes it. Needs the game built (app/dist) and a display (xvfb-run on a
 // Linux runner); `node smoke.mjs <executable>` runs it on a packed build instead. Playwright is
 // the root's pinned one, as the e2e's is.
+// `--demo` (Phase 15.3) runs the demo's edition instead (app/dist-demo, `npm run build:demo`):
+// its title, its first screen, its keys in its file, and its last card's way to the full game.
+// Both check the bridge's store page and mail say no when they should: the store page with
+// Steam off, a mail that isn't a mailto: link.
 import { mkdtempSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
@@ -14,7 +18,11 @@ import { _electron as electron } from 'playwright';
 const HERE = fileURLToPath(new URL('.', import.meta.url));
 // This package's pinned Electron, which Playwright (installed at the root) can't find itself;
 // or, given a packed build's executable, that, with the app inside it.
-const packed = process.argv[2];
+const cli = process.argv.slice(2);
+const DEMO = cli.includes('--demo');
+const packed = cli.find((a) => a !== '--demo');
+const NAME = DEMO ? 'Dirtbag Demo' : 'Dirtbag';
+const SAVE = DEMO ? 'dirtbag.demo.save' : 'dirtbag.save';
 const executablePath = packed ?? createRequire(import.meta.url)('electron');
 const data = mkdtempSync(join(tmpdir(), 'dirtbag-desktop-'));
 const problems = [];
@@ -25,7 +33,13 @@ async function launch() {
   const app = await electron.launch({
     executablePath,
     args,
-    env: { ...process.env, DIRTBAG_USER_DATA: data, DIRTBAG_STEAM: 'off' },
+    // A packed copy knows its edition; a dev run is told.
+    env: {
+      ...process.env,
+      DIRTBAG_USER_DATA: data,
+      DIRTBAG_STEAM: 'off',
+      ...(packed ? {} : { DIRTBAG_EDITION: DEMO ? 'demo' : 'full' }),
+    },
   });
   const page = await app.firstWindow();
   page.on('pageerror', (e) => problems.push(`uncaught: ${e.message}`));
@@ -53,14 +67,15 @@ const keys = () => JSON.parse(readFileSync(join(data, 'dirtbag.json'), 'utf8')).
 ({ app, page } = await launch());
 await page.waitForSelector('#create', { timeout: 30_000 }).catch(() => fail('the game never opened'));
 const title = await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0]?.getTitle());
-if (!/Dirtbag/.test(title ?? '')) await fail(`the window's title: ${title}`);
+if (title !== NAME) await fail(`the window's title: ${title}`);
+if (DEMO !== !!(await page.locator('#c-demo').count())) await fail('the wrong edition opened');
 ok(`opens on the game (${title})`);
 
 await page.fill('#c-name', 'Robin');
 await page.click('#c-go');
 await page.waitForSelector('#h-time', { timeout: 15_000 });
 await page.waitForFunction(() => !document.querySelector('#create'));
-const saved = JSON.parse(keys()['dirtbag.save'] ?? 'null');
+const saved = JSON.parse(keys()[SAVE] ?? 'null');
 if (saved?.state?.climber?.name !== 'Robin') await fail('the new climber isn’t in the save file');
 const leaked = await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('dirtbag')));
 if (leaked.length) await fail(`the browser's storage holds ${leaked.join(', ')}`);
@@ -91,6 +106,16 @@ const deck = await page.evaluate(() => {
 });
 if (deck !== false) await fail(`a Deck, with Steam off: ${deck}`);
 ok('Steam off: not a Deck, and no keyboard to show');
+// Phase 15.3: no store page without Steam, and only a mailto: link goes to the mail app (a
+// real one isn't tried: it would open one).
+const asked = await page.evaluate(() => [
+  window.dirtbagDesktop.toStore(),
+  window.dirtbagDesktop.mail('file:///etc/passwd'),
+  window.dirtbagDesktop.mail('mailto:someone@example.com?body=a b'),
+  window.dirtbagDesktop.mail(42),
+]);
+if (asked.some(Boolean)) await fail(`the store page and the mail: ${asked}`);
+ok('Steam off: no store page; nothing but a mailto: link goes to the mail app');
 
 await app.close();
 ({ app, page } = await launch());
@@ -115,7 +140,37 @@ if (!(win.width >= 360 && win.height >= 600))
   await fail(`the window kept for next time: ${JSON.stringify(win)}`);
 ok('Quit, from Settings, and the window kept for next time');
 
+// Phase 15.3: the demo's last card, the morning after Dex's race, offers the full game's
+// store page, which with Steam off says so.
+if (DEMO) {
+  ({ app, page } = await launch());
+  await page
+    .waitForSelector('#h-time', { timeout: 30_000 })
+    .catch(() => fail('the third launch never opened'));
+  await page.evaluate(() => {
+    const file = JSON.parse(window.dirtbagDesktop.all()['dirtbag.demo.save']);
+    const day = file.state.day + 6;
+    file.state = {
+      ...file.state,
+      day,
+      goals: 5,
+      firsts: { ...file.state.firsts, rsopen: { name: 'Hers Now', call: 0, day: day - 1, by: 'dex' } },
+    };
+    window.dirtbagDesktop.set('dirtbag.demo.save', JSON.stringify(file));
+  });
+  await page.reload();
+  await page
+    .waitForFunction(() => document.querySelector('#sheet-title')?.textContent === 'That’s the season')
+    .catch(() => fail('the demo’s last card never came'));
+  await page.locator('#sheet .opt', { hasText: 'The full game on Steam' }).first().click();
+  await page
+    .waitForFunction(() => /Steam isn’t running/.test(document.querySelector('#toast')?.textContent ?? ''))
+    .catch(() => fail('the store page with Steam off said nothing'));
+  ok('the last card: the full game on Steam, and with Steam off, a word that it isn’t running');
+  await app.close();
+}
+
 if (problems.length) await fail('problems on the way');
 console.log(
-  '\n✓ The desktop build opens, saves to its file, comes back, and quits, asking nothing of anywhere but itself.',
+  `\n✓ ${DEMO ? 'The demo’s' : 'The'} desktop build opens, saves to its file, comes back, and quits, asking nothing of anywhere but itself.`,
 );

@@ -1,16 +1,18 @@
 {
   "name": "dirtbag-desktop",
   "productName": "Dirtbag",
-  "version": "0.999.85",
+  "version": "0.999.86",
   "private": true,
   "description": "The desktop build (Phase 14.3): the game from app/dist in an Electron window, its save in a file Steam Cloud syncs, its Record Book as Steam achievements (steamworks.js, behind a stub). Electron, the packager and steamworks.js are pinned here, upgraded deliberately in their own commit.",
   "type": "module",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "test": "node --test store.test.mjs",
+    "test": "node --test store.test.mjs edition.test.mjs",
     "smoke": "node smoke.mjs",
-    "pack": "node pack.mjs"
+    "pack": "node pack.mjs",
+    "smoke:demo": "node smoke.mjs --demo",
+    "pack:demo": "node pack.mjs --demo"
   },
   "devDependencies": {
     "@electron/packager": "20.3.0",

@@ -8,8 +8,8 @@ import { DEMO } from '../sim';
 
 // Where a report goes, when the player sends one: RCJ Labs' support address. Until there is
 // one, the report is copied, not mailed, and the button that would mail it isn't shown. The
-// desktop build can't follow a mailto: link (its window goes nowhere but the game), so there
-// it's copied either way until the bridge can hand one to the system.
+// desktop build's window goes nowhere but the game, so there the bridge hands the mailto:
+// link to the system (15.3).
 export const REPORT_TO = '';
 
 // What a report says: the build, where it's running, and the error with its stack, trimmed.
@@ -120,10 +120,12 @@ export function crashed(e: unknown, carryOn: boolean): void {
       void navigator.clipboard?.writeText(report).catch(() => document.execCommand('copy'));
     }),
   );
-  if (REPORT_TO && !window.dirtbagDesktop)
+  if (REPORT_TO)
     card.append(
       button('crash-mail', 'Email it', `From your own mail, to ${REPORT_TO}.`, () => {
-        location.href = `mailto:${REPORT_TO}?subject=${encodeURIComponent(report.split('\n')[0]!)}&body=${encodeURIComponent(report)}`;
+        const url = `mailto:${REPORT_TO}?subject=${encodeURIComponent(report.split('\n')[0]!)}&body=${encodeURIComponent(report)}`;
+        if (window.dirtbagDesktop) window.dirtbagDesktop.mail(url);
+        else location.href = url;
       }),
     );
   box.append(card);
