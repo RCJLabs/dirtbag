@@ -1,4 +1,4 @@
-# Store copy — Steam and Google Play, 0.999.84
+# Store copy — Steam and Google Play, 0.999.86
 
 The listings for the game, in its voice: dry, wry, second-person, climber-authentic, never jokey. Every fact in them is the build's, and the ones with a number or a name are held to it by `app/src/storecopy.test.ts`: the $41 start, the crags and their names, the five acts, V18 at the top, the 51 entries in the Record Book. When the game changes, change this with it.
 
@@ -77,6 +77,23 @@ The wide capsules come two ways. **The highball** (recommended): the climber big
 
 `02-map.png` and `06-sent.png` are there to swap in.
 
+### The trailer
+
+60 to 90 seconds that show the loop (van, shift, crag, send, fire) with the climbing as the hero, gameplay from the first two seconds, no talking head (the market audit: §1 on Jusant, §4.1). Cut by Evan; the shots come from the game:
+
+1. `npm run dev --prefix app`, then `/trailer.html`: each beat loads a career two hundred days in, where the beat is, on a dry day, and opens the game (`app/src/dev/beats.ts`). The save that was there is kept, and the page's last button puts it back.
+2. Chrome at 1920 × 1080, full screen (F11), Settings → Frame meter off, sound on. Record each beat at 60 fps (OBS or the like).
+3. The beats, in the loop's order:
+   - **The Lot, a morning:** walk to the fire, past Scout.
+   - **A shift at the café:** the drive from the map, the money, the clock.
+   - **Roadside, afternoon:** the wall, the people at the foot of it.
+   - **The highball, sent:** the beta, the climb close up, the card. The hero shot.
+   - **At the limit, Moonstone:** the pump and the cruxes on the hardest problem out there.
+   - **The fire, at night:** the lights, the crew, the dog.
+4. Open on the climb (the first two seconds), then the loop; close on the title (`library-logo.png`) over the Lot at night (`library-hero.png`) and "Free first season · Wishlist on Steam".
+
+Music: the game's own, made in code (Phase 25), under its own credit, or none. No bought tracks without their licence written down (CLAUDE.md).
+
 ## Google Play
 
 ### Short description
@@ -111,10 +128,10 @@ Free. No ads, no accounts, no tracking. Plays offline. Your save stays on your p
 If you played the old version (0.956): it has retired. Your career is still on your phone. The game will keep it as a file, or carry you across under your old name.
 ```
 
-### What’s new in 0.999.84
+### What’s new in 0.999.86
 
 ```text whats-new
-Your climber can leave as a file and come back: Settings has Export your save, and the first screen has Import a save. A controller works on every screen now, its buttons yours to move in Settings. The marks the handwriting never had, the ticks, the crosses and the suits, are drawn now instead of guessed at.
+Your climber can leave as a file and come back: Settings has Export your save, and the first screen has Import a save. A controller works on every screen now, its buttons yours to move in Settings. The marks the handwriting never had, the ticks, the crosses and the suits, are drawn now instead of guessed at. And if the game breaks, it says so instead of going blank, with your save where you left it.
 ```
 
 ### Screenshots
