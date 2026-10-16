@@ -191,6 +191,27 @@ check('TWA host matches CNAME and assetlinks.json names the app', () => {
   if (!entry.target.sha256_cert_fingerprints?.length) fail('assetlinks.json entry has no certificate fingerprints');
 });
 
+// --- the Play app acknowledges what it sells -------------------------------------------------
+// Phase 19.2: Play refunds a purchase nobody acknowledges within three days, and the page can't
+// (version 2 of the Digital Goods API leaves it to a server). The app does it on the phone, from
+// code twa/acknowledge.mjs hooks into Bubblewrap's project. Without that step between generating
+// the project and building it, every unlock sold would come back as a refund.
+check('the Play app acknowledges its purchases', () => {
+  const twa = json('twa-manifest.json');
+  if (!twa.features?.playBilling?.enabled) return 'Play Billing off';
+  // Bubblewrap exports the delegation service the Digital Goods API comes through only with
+  // notifications on; `bubblewrap update` refuses Play Billing without them.
+  if (twa.enableNotifications !== true) fail('twa-manifest.json has Play Billing without enableNotifications');
+  const wf = read('.github/workflows/build-twa.yml');
+  const at = (s) => wf.indexOf(s);
+  const [gen, ack, build] = [at('bubblewrap update'), at('node twa/acknowledge.mjs'), at('gradlew bundleRelease')];
+  if (ack < 0) fail('build-twa.yml never runs twa/acknowledge.mjs: every Play purchase would be refunded');
+  if (!(gen < ack && ack < build)) fail('build-twa.yml must run twa/acknowledge.mjs after bubblewrap update and before Gradle');
+  if (!read('twa/PlayAcknowledger.java').includes(`package ${twa.packageId};`))
+    fail(`twa/PlayAcknowledger.java isn't in ${twa.packageId}`);
+  return 'hooked between bubblewrap update and Gradle';
+});
+
 // --- the desktop build reaches nowhere -------------------------------------------------------
 // Phase 14.3: the same promise as the site's, for the window around it. The game is served
 // from app:// and the desktop smoke fails on any other request; this keeps an address from

@@ -13,7 +13,7 @@
 // It's an honor gate. Everything it keeps is in the player's own storage, and nothing is
 // checked anywhere else: the privacy page promises no network calls.
 
-import { asDemo, DEMO_BUILD, fromSave } from '../sim';
+import { asDemo, DEMO, DEMO_BUILD, fromSave } from '../sim';
 import { findLegacy } from './legacy';
 import { ours, store } from './storage';
 
@@ -21,6 +21,15 @@ declare const __GATE__: boolean | undefined;
 
 // The gate's switch, as this build was made.
 export const GATE: boolean = typeof __GATE__ !== 'undefined' && __GATE__ === true;
+
+// The full game's own build, playing the demo's rules till it's unlocked: the demo's build
+// never is.
+export const locked = (): boolean => DEMO && !DEMO_BUILD;
+
+// Phase 19.2: where else the full game is sold, for a locked game's last card outside the
+// Android app (whose only way to buy is Play's). Evan's to fill at launch: the Steam page, and
+// itch.io's.
+export const STORES: readonly { name: string; url: string }[] = [];
 
 // How the full game came to be unlocked here: the desktop's full edition (bought on Steam,
 // never written down); a climber here before the gate; Play's unlock in the Android app

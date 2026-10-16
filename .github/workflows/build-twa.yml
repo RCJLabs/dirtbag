@@ -79,6 +79,11 @@ jobs:
       - name: Generate the Android project (fetches icons from the live site)
         run: twa/node_modules/.bin/bubblewrap update --skipVersionUpgrade
 
+      # Phase 19.2: Play refunds a purchase nobody acknowledges within three days, and the page
+      # can't acknowledge one; the app does, from code hooked into the generated project.
+      - name: Hook in the purchase acknowledger
+        run: node twa/acknowledge.mjs
+
       - name: Assert targetSdkVersion meets Play's floor
         run: |
           sdk=$(grep -oE 'targetSdkVersion[[:space:]]+[0-9]+' app/build.gradle | grep -oE '[0-9]+$' || true)

@@ -1,7 +1,8 @@
 # Runs on every push and PR. Three jobs:
 #   check  the site as it would ship: the game built, one version everywhere, every referenced
 #          file there, the download size, then the staged site booted in headless Chromium (a
-#          new climber, the save, the clock, reload, offline start).
+#          new climber, the save, the clock, reload, offline start); and the Play app's purchase
+#          acknowledger hooked into Bubblewrap's own templates.
 #   app    the game in app/: formatting, types, the sim's tests, a build inside its size
 #          budget, then a bot that plays the first five days on the build, and a v0.956 player;
 #          then the demo: a bot plays it to its end, it's built, the build is checked for any
@@ -39,6 +40,7 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             app/package-lock.json
+            twa/package-lock.json
 
       - run: npm ci && npm ci --prefix app
 
@@ -47,6 +49,10 @@ jobs:
 
       - name: Static checks (one version, the build whole, the Play domain link)
         run: npm run check
+
+      # Phase 19.2: the purchase acknowledger hooks into the project Bubblewrap generates.
+      - name: The Play app's acknowledger, on Bubblewrap's own templates
+        run: npm ci --prefix twa && node --test twa/acknowledge.test.mjs
 
       - name: Size report
         run: npm run size

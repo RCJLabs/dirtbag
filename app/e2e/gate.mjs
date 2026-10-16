@@ -1,8 +1,9 @@
 // The gate (Phase 19.1), switched on as it will be at launch, on its own build: `npm run
 // build:gated` first. A climber who was here before its first start keeps the full game; one
 // who starts after plays the first season, to its last card; and once that one's unlocked, the
-// same climber carries on from the same morning. It fails on any error, failed request or
-// request that leaves the site, as the playthrough does.
+// same climber carries on from the same morning. Then in the Android app (19.2), with Play
+// faked: the unlock at Play's price, bought and restored. It fails on any error, failed request
+// or request that leaves the site, as the playthrough does.
 import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
@@ -112,10 +113,13 @@ await page.evaluate((s) => localStorage.setItem('dirtbag.save', s), JSON.stringi
 await page.reload({ waitUntil: 'load' });
 await page.waitForFunction(() => document.querySelector('#sheet-title')?.textContent === 'That’s the season');
 if (await page.locator('#sheet .x').count()) await fail('the last card can be closed');
+// Phase 19.2: Play's unlock is the Android app's; a browser has no Play to ask.
+if (await page.locator('#sheet .opt', { hasText: 'Unlock the full game' }).count())
+  await fail('Play’s unlock offered in a browser');
 await page.screenshot({ path: join(OUT, 'gate-end.png') });
 ok('and ends on the last card, the morning after Dex’s race');
 
-// 3. Unlocked (as Play's will, 19.2): the same climber, the same morning, the full game.
+// 3. Unlocked, however it was: the same climber, the same morning, the full game.
 await page.evaluate(() => localStorage.setItem('dirtbag.unlock', JSON.stringify({ how: 'play' })));
 await page.reload({ waitUntil: 'load' });
 await page.waitForFunction(
@@ -137,7 +141,106 @@ await page.screenshot({ path: join(OUT, 'gate-unlocked.png') });
 ok(`unlocked, Kit carries on from day ${day} with the whole valley`);
 await ctx.close();
 
+// 4. In the Android app (19.2), with Play as the page sees it: the Digital Goods API and Payment
+// Request, faked here. What the account has bought, and how Play's sheet answers, are kept
+// beside the game's keys so they last a reload, as Play's would.
+async function inTheApp(preset = null) {
+  const c = await fresh();
+  await c.addInitScript((p) => {
+    if (p && !localStorage.getItem('dirtbag.gate'))
+      for (const [k, v] of Object.entries(p)) localStorage.setItem(k, v);
+    const bought = () =>
+      localStorage.getItem('e2e.play') === 'bought' ? [{ itemId: 'full_game', purchaseToken: 'e2e' }] : [];
+    const service = {
+      getDetails: async (ids) => ids.map((itemId) => ({ itemId, price: { currency: 'USD', value: '4.99' } })),
+      listPurchases: async () => bought(),
+    };
+    window.getDigitalGoodsService = async (method) => {
+      if (method !== 'https://play.google.com/billing') throw new Error('no such service');
+      return service;
+    };
+    window.PaymentRequest = class {
+      constructor(methods) {
+        if (methods[0]?.data?.sku !== 'full_game')
+          throw new Error(`asked Play for ${JSON.stringify(methods)}`);
+      }
+      async show() {
+        if (localStorage.getItem('e2e.sheet') === 'cancel') throw new DOMException('cancelled', 'AbortError');
+        localStorage.setItem('e2e.play', 'bought');
+        return { details: { purchaseToken: 'e2e' }, complete: async () => undefined };
+      }
+    };
+  }, preset);
+  return c;
+}
+const pastTheRace = JSON.stringify(file);
+const opt = (label) => page.locator('#sheet .opt', { hasText: label }).first();
+const toast = async (re) => {
+  await page
+    .waitForFunction(
+      (src) => new RegExp(src).test(document.querySelector('#toast')?.textContent ?? ''),
+      re.source,
+      {
+        timeout: 5000,
+      },
+    )
+    .catch(() => fail(`no toast saying ${re}`));
+};
+{
+  const c = await inTheApp({ 'dirtbag.gate': '1', 'dirtbag.save': pastTheRace });
+  await page.goto(server.url, { waitUntil: 'load' });
+  await page.waitForFunction(
+    () => document.querySelector('#sheet-title')?.textContent === 'That’s the season',
+  );
+  await opt('Unlock the full game')
+    .waitFor({ timeout: 5000 })
+    .catch(() => fail('no unlock on the app’s last card'));
+  const card = (await text('#sheet')) ?? '';
+  if (!/Once, through Google Play: \$4\.99\./.test(card) || !/carries on from this morning/.test(card))
+    await fail(`the app's last card: ${card.slice(0, 400)}`);
+  await page.screenshot({ path: join(OUT, 'gate-play.png') });
+  ok('in the Android app, the last card offers the unlock at Play’s price');
+
+  await opt('You’ve bought it already').click();
+  await toast(/Play has no purchase of the full game/);
+  await page.evaluate(() => localStorage.setItem('e2e.sheet', 'cancel'));
+  await opt('Unlock the full game').click();
+  await page.waitForTimeout(500);
+  if ((await text('#sheet-title')) !== 'That’s the season' || (await stored('dirtbag.unlock')))
+    await fail('a cancelled purchase changed something');
+  ok('nothing bought, nothing found; a cancel leaves the card as it was');
+
+  await page.evaluate(() => localStorage.setItem('e2e.sheet', 'buy'));
+  await Promise.all([page.waitForEvent('load'), opt('Unlock the full game').click()]);
+  await page.waitForFunction(() => !!document.querySelector('#h-time'));
+  await page.waitForTimeout(800);
+  if (
+    (await stored('dirtbag.unlock')) !== '{"how":"play"}' ||
+    (await text('#sheet-title')) === 'That’s the season'
+  )
+    await fail(`bought, and still locked: ${await stored('dirtbag.unlock')}`);
+  ok('bought: the game opens again, unlocked, on the same morning');
+  await c.close();
+}
+{
+  // A new phone: the climber's save brought over, the gate already started, Play's purchase there.
+  const c = await inTheApp({ 'dirtbag.gate': '1', 'dirtbag.save': pastTheRace, 'e2e.play': 'bought' });
+  await page.goto(server.url, { waitUntil: 'load' });
+  await page
+    .waitForFunction(() => localStorage.getItem('dirtbag.unlock') === '{"how":"play"}', null, {
+      timeout: 10_000,
+    })
+    .catch(() => fail('Play’s purchase wasn’t restored at start-up'));
+  await page.waitForFunction(() => !!document.querySelector('#h-time'));
+  await page.waitForTimeout(1500);
+  if ((await text('#sheet-title')) === 'That’s the season') await fail('restored, and still the last card');
+  ok('on a new phone, Play’s purchase opens the game at start-up');
+  await c.close();
+}
+
 if (problems.length) await fail('problems on the way');
 await browser.close();
 await server.close();
-console.log('\n✓ The gate lets the climbers from before it through, and holds the rest to the first season.');
+console.log(
+  '\n✓ The gate lets the climbers from before it through, holds the rest to the first season, and opens to Play’s unlock.',
+);

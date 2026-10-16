@@ -22,6 +22,7 @@ Climbing life-sim: live out of your van, work shifts, push your grade from gym p
 - `npm run stage` — copies the build and the allowlist into `_site/` (what `deploy.yml` publishes).
 - `npm run smoke` — headless Chromium plays the first minute on `_site/`: boot, the service worker, a new climber, the save, the clock (moved by an action), reload, offline start. It fails on any error, failed request or request that leaves the site. Must pass before any commit that touches the site or its pipeline.
 - `npm run size` — what a player downloads, by part, against the budget.
+- `npm ci --prefix twa && node --test twa/acknowledge.test.mjs` — the Play app's purchase acknowledger hooks into the project Bubblewrap generates (its own templates, rendered offline). Run before any commit that touches `twa/` or `twa-manifest.json`.
 - `npm run stamp` — after changing `package.json` `version`: writes it into the lockfiles, `app/package.json`, `desktop/package.json` and the TWA's `appVersionName`.
 - **The desktop build (`desktop/`, Phase 14.3):** `npm ci --prefix desktop`, then `npm test --prefix desktop` (its save file, its edition) and `xvfb-run -a npm run smoke --prefix desktop` (opens on the built game, saves to its file, comes back, quits; nothing asked of anywhere but `app://`). The demo's edition (15.3): `xvfb-run -a npm run smoke:demo --prefix desktop` on `app/dist-demo`, and `npm run pack:demo` packs it as "Dirtbag Demo". Run the tests and both smokes before any commit that touches `desktop/` or the game's storage.
 
@@ -33,7 +34,7 @@ Releasing and rolling back: `README.md` → Releasing.
 - `npm run format:check` (or `npm run format`) — Prettier, as CI runs it.
 - `npm run build`, then `npm run size` (player download against the budget) and `npm run e2e` (a bot plays five days on the build, counting day three's taps and running day four as a plan, then a v0.956 player crosses over). Run both before any commit that changes what a player sees.
 - `npm run play:demo`, `npm run build:demo`, then `npm run diff:demo` and `npm run e2e:demo` (Phase 14.5): bots play the demo to its end; the demo build in `dist-demo/`; none of the full game's content in it; its first morning (its places only) and its last card. Run all four before any commit that touches the demo's rules (`sim/edition.ts`, `sim/demo.ts`, `content/demo.ts`), what it shows, or any `*.full.ts` module.
-- `npm run build:gated`, then `npm run e2e:gate` (Phase 19.1): the full game with its gate on, in `dist-gated/`; a climber from before keeps the full game, one after gets the first season and its last card, and an unlock carries them on. Run both before any commit that touches the gate (`game/unlock.ts`) or the demo's rules.
+- `npm run build:gated`, then `npm run e2e:gate` (Phase 19.1): the full game with its gate on, in `dist-gated/`; a climber from before keeps the full game, one after gets the first season and its last card, and an unlock carries them on; in the Android app, with Play faked (19.2), the unlock bought and restored. Run both before any commit that touches the gate (`game/unlock.ts`), Play's unlock (`game/play.ts`) or the demo's rules.
 - `npm run dev` — local dev server.
 - `npm run store:art` (after `npm run build`) — Steam's capsules and library art, drawn by the game (`/store.html` under `npm run dev`), the store screenshots for Steam and Play, played on the build, and the press kit (`docs/PRESSKIT.md`'s words, a zip), into `store-art/` (not committed). The copy is `docs/STORE.md`; `src/storecopy.test.ts` holds its facts, and the kit's, to the content. The trailer's beats load from `/trailer.html` under `npm run dev` (`src/dev/beats.ts`).
 
@@ -55,6 +56,7 @@ Releasing and rolling back: `README.md` → Releasing.
   - **No hand-typed numbers in text.** Prices, times and effects in the UI are formatted from the same numbers the rules use.
   - **Saves.** Change the state's shape only by bumping `SAVE_VERSION` and registering a migration, with a test that loads an old save. A save that won't load is quarantined, never overwritten.
   - **The gate** (Phase 19.1, `game/unlock.ts`): off until launch (`DIRTBAG_GATE` in `deploy.yml`, Evan's to flip). A climber from before it keeps the full game: never clear `dirtbag.unlock`, and keep the gate's first start marking them. The locked full game keeps the full game's keys, so an unlock carries the same climber on.
+  - **Play's unlock is acknowledged by the app** (Phase 19.2): the page can't, and Play refunds what isn't within three days. `build-twa.yml` runs `twa/acknowledge.mjs` between `bubblewrap update` and Gradle; `npm run check` fails without it. The Android app never shows another store's page (Play's payments policy).
   - **The 2D game is the spec** for the Unreal version: spec changes get logged in `Dirtbag-UE/concepts/2D-SPEC-LOG.md`.
 
 ## Style

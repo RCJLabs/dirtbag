@@ -1741,6 +1741,17 @@ export class Game {
     return true;
   }
 
+  // Phase 19.2: the full game, unlocked: the page starts again from this save, the gate open.
+  reopen(): void {
+    this.leaving = true;
+    window.location.reload();
+  }
+
+  // Something a sheet shows changed outside the game: Play's price came (19.2).
+  redraw(): void {
+    this.ui.update((u) => ({ ...u }));
+  }
+
   // Phase 16.5: the kid you coached climbs on, in the same world, the morning after. They're
   // made on the next screen, like anyone.
   climbOn(): void {

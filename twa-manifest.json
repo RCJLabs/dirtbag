@@ -12,7 +12,7 @@
   "navigationDividerColor": "#15161a",
   "navigationDividerColorDark": "#15161a",
   "backgroundColor": "#15161a",
-  "enableNotifications": false,
+  "enableNotifications": true,
   "startUrl": "/index.html",
   "iconUrl": "https://dirtbag.rcjlabs.com/icons/icon-512.png",
   "maskableIconUrl": "https://dirtbag.rcjlabs.com/icons/icon-512-maskable.png",
@@ -21,13 +21,17 @@
     "path": "./android.keystore",
     "alias": "dirtbag"
   },
-  "appVersionName": "0.999.87",
+  "appVersionName": "0.999.88",
   "appVersionCode": 670,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://dirtbag.rcjlabs.com/manifest.webmanifest",
   "fallbackType": "customtabs",
-  "features": {},
+  "features": {
+    "playBilling": {
+      "enabled": true
+    }
+  },
   "alphaDependencies": {
     "enabled": false
   },
