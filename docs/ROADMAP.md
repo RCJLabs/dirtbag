@@ -64,7 +64,7 @@
 | 11 Valley map | Built on the rebuild (the taps, place cards, adding a place, the daily plan) and closed by Evan's call. Criteria 2 to 5 pass; its testers' criterion carries. Released in 0.961.0 with Phase 10. |
 | 12 UI system | Built on the rebuild (the Journal, the wide screen, keyboard and access, Tonight, no inline styles) and closed by Evan's call. The flows the e2e doesn't play in landscape or by keyboard carry to playtesting. |
 | 13 Sound and feel | Built on the rebuild (effects and ambience made in code, the licence ledger, credits) and closed by Evan's call. Music, made in code, came in Phase 25 by Evan's call, to hear how it turns out; criteria 1 and 2 wait on an ear. |
-| 14 Desktop and Steam, 15 Demo and store page | Moved after Phase 18 by Evan's call: the full game first. Phase 14 closed by Evan's call (16 Oct 2026), its Deck and Steam checks carried to him; Phase 15 is the current milestone. |
+| 14 Desktop and Steam, 15 Demo and store page | Moved after Phase 18 by Evan's call: the full game first. Phase 14 closed by Evan's call (16 Oct 2026), its Deck and Steam checks carried to him; Phase 15 closed the same day, its accounts and outreach carried to him. Phase 19 is the current milestone. |
 | 21 The climber, 22 The life, 23 Who you are | Added by Evan's call after the gap check; they run before 16. Phase 21 is the current milestone. |
 | 16 The spine | Next after 21–23. |
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
@@ -3968,7 +3968,7 @@ The CURRENT MILESTONE moves to Phase 15, the demo, the store page and Next Fest.
 
 ---
 
-### Phase 15 — The demo, the store page and Next Fest   **<<< CURRENT MILESTONE**
+### Phase 15 — The demo, the store page and Next Fest   ✅ Closed
 
 **Goal.** A polished free first season on web, Steam and Play, a store page that converts, and one well-timed Next Fest.
 
@@ -4076,11 +4076,24 @@ The CURRENT MILESTONE moves to Phase 15, the demo, the store page and Next Fest.
 
 Phase 15's code is done; criteria 1 to 3 are Evan's accounts and outreach, and run to Next Fest (June 2027). Closing the phase is his call.
 
+**Phase 15 closed by Evan's call (16 Oct 2026),** its code done. Criterion 4 passes. Carried to Evan, running to Next Fest (June 2027):
+- **1:** the Steam app and the demo app, their IDs in `desktop/steam.json`, the depots and Auto-Cloud, and the demo up;
+- **2:** the Coming Soon page and 7,000 wishlists;
+- **3:** the press kit's bracketed lines, and the kit sent to 30 or more outlets and creators.
+
+Also carried:
+- the address crash reports go to (`REPORT_TO`, empty);
+- the wide capsules' pick (the highball or the Lot);
+- Steamworks' asset sizes and its short description's limit, checked before uploading;
+- the store page in Steam's overlay, never yet run with Steam.
+
+The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
+
 ---
 
 ## Stage F — Ship
 
-### Phase 19 — Monetization, store readiness and beta
+### Phase 19 — Monetization, store readiness and beta   **<<< CURRENT MILESTONE**
 
 **Goal.** The demo/full split works on every store, players can buy the full game without trust or privacy compromises, and two beta rounds have shaken out the launch bugs.
 
@@ -4115,6 +4128,43 @@ Phase 15's code is done; criteria 1 to 3 are Evan's accounts and outreach, and r
 5. Crash-free sessions exceed 99.5%.
 
 **Depends on:** Phases 14–18. **Effort:** ~3–4 weeks. **Main risk:** billing plugin quirks. Build the purchase flow early in the phase.
+
+**The survey (16 Oct 2026):**
+- **The web and Play are the full game, free,** and the Play app is a TWA over the public site: a paywall there is in every browser's reach.
+- **The demo's build exists** (14.5): stripped of the full game's content, with keys of its own. Its rules are a switch the full game can play under too (`asDemo`, the tests' way since 14.5).
+- **Moving Android to Capacitor loses saves:** its storage isn't the site's, so every Play player's climber stays behind in Chrome unless they export it first [inferred from how WebView storage is scoped, not tried].
+- **Play Billing with no server** checks a purchase on the phone only (Digital Goods' `listPurchases`); anyone who can edit the app's storage can unlock it.
+- **The terms say "provided free"; the privacy page leaves out hosting.** Crash reporting came in 15.2 as the error screen.
+- **The public repo** (Phase 14's question): an honor gate ships the full game's content to every browser anyway, so the source being public adds nothing to what's already reachable. Nothing moves out of the repo unless Evan says.
+
+**Evan's calls (16 Oct 2026), all as recommended:**
+- **The web:** at launch the site plays the first season till the full game's unlocked; a climber from before the gate keeps the full game. An honor gate.
+- **Android:** the TWA stays, with the Digital Goods API for a one-time unlock through Play Billing. Saves stay where they are.
+- **iOS:** after launch (Phase 20).
+- **Prices,** as the market audit set them: Steam $9.99 with a 10–20% launch discount; the Android unlock $4.99; itch.io pay-what-you-want from $9.99.
+
+**Slices:**
+- **19.1** the gate, off until launch: the full game's build plays the demo's rules till it's unlocked, and a climber from before keeps the full game;
+- **19.2** Play's unlock in the Android app (Digital Goods and Payment Request, restore, acknowledge; Bubblewrap's Play Billing), and the locked last card's ways to the full game;
+- **19.3** the paperwork: privacy and terms for a paid game, the IARC and data-safety answers, Play's listing for a free first season and an unlock;
+- **19.4** the beta kit (the report with the seed and the last actions, `docs/BETA.md` with its severity gates) and the close.
+
+**Done when, as Evan's calls leave it:**
+1. A purchase unlocks the full game on each store, and a restore works: Steam's is the full edition; Play's is the unlock, restored from Play; itch.io's is the DRM-free build. iOS moves to Phase 20.
+2. Without an unlock, the full game's gated build never goes past the first season, and the demo's own build holds none of the full game's content. On the web it's an honor gate, by Evan's call.
+3. Legal text is updated.
+4. Beta round 2 has no open critical or high bugs.
+5. No crash in the bots' and the e2e's runs, and a crash shows the error screen (as Phase 15's criterion 4: no dashboard sees one).
+
+**Status (16 Oct 2026): 19.1 built: the gate, off until launch.** No save change, 0.999.87.
+- **The gate** (`app/src/game/unlock.ts`) settles at start-up, before the game boots, whether this is the full game or its demo's rules till it's unlocked (`asDemo`). It's a build switch, `__GATE__`: `DIRTBAG_GATE=1` turns it on (`deploy.yml`, `'0'` until launch, Evan's to flip); `npm run build:gated` builds it on into `app/dist-gated` for its e2e.
+- **Off (now):** everyone plays the full game, and a climber here (a save, or the morning before it, with a name; or a v0.956 career) is marked as here before the gate (`dirtbag.unlock`).
+- **On (at launch):** its first start marks anyone with a climber who wasn't, then remembers it has (`dirtbag.gate`). A climber started after that plays the first season to its last card, and isn't marked even by a build from before the flip, put back for a rollback. The unlock goes down before the mark, so a start cut short errs toward the player.
+- **Always open:** the desktop's full edition (bought on Steam). The demo's build stays the demo.
+- **One climber, one set of keys:** the locked full game keeps the full game's keys (`dirtbag.`); only the demo's build has its own. So an unlock carries the same climber on from the same morning. The key switch follows the demo's build (`DEMO_BUILD`), the rules the runtime switch (`DEMO`).
+- **The guidebooks' crags** are asked each time (`guideCrags()`), since the full game only knows at start-up which rules it plays.
+- **Checks:** `unlock.test.ts` (off and on, before and after, a v0.956 career, a store that won't keep or read, junk unlocks, the desktop, the locked game's keys); `npm run e2e:gate` on the gated build: a climber from before keeps the whole valley; one after gets the first season's places and its last card; unlocked, the same climber carries on from the same day with the whole valley. In CI.
+- **Not yet:** the locked last card still says to export the save for the full game; its ways to unlock (Play's, the store links) are 19.2's. A full game's save brought in by file to a locked browser is turned away, as the demo turns it away.
 
 ---
 
@@ -4387,3 +4437,5 @@ Phase 15's code is done; criteria 1 to 3 are Evan's accounts and outreach, and r
 - 2026-10-16 — 15.2 built: a crash shows an error screen, not a blank page: the save is safe, a reload, the save as a file, and what went wrong (nothing from the save) to copy; carrying on past an error outside React. The privacy page says so. No save change. 0.999.85.
 - 2026-10-16 — 15.3 built: the desktop code packs the demo as "Dirtbag Demo", with its own user-data folder and Steam app, its last card opening the full game's store page in Steam's overlay; the error screen's mail through the desktop's bridge; the game's icon on the executables. CI plays the demo's desktop build. No save change. 0.999.86.
 - 2026-10-16 — 15.4 built: the press kit (`docs/PRESSKIT.md`, zipped by `store:art` with the art and shots), the trailer's beats a click each (`/trailer.html`), and the shot list. Done-when: criterion 4 passes (the full harness, the demo's bots, both e2es); 1 to 3 are Evan's (the Steam apps, wishlists, outreach). No change to the game.
+- 2026-10-16 — Phase 15 closed by Evan's call, its code done: criterion 4 passes; the Steam apps, the wishlists and the press outreach (1 to 3) carried to Evan, to Next Fest. CURRENT MILESTONE moved to Phase 19, monetization, store readiness and beta.
+- 2026-10-16 — Phase 19 planned with Evan's calls: the web plays the first season at launch, and climbers from before keep the full game; Android keeps the TWA, with Play's unlock through Digital Goods; iOS after launch; the audit's prices. 19.1 built: the gate, off until launch (`game/unlock.ts`, `DIRTBAG_GATE`): the full game's build plays the demo's rules till it's unlocked, on the same keys; climbers here are marked as from before, and the first gated start marks the rest; `e2e:gate` on a gated build, in CI. No save change. 0.999.87.

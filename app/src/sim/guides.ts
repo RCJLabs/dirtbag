@@ -21,8 +21,11 @@ export const guideLines = (s: GameState, place: string): RouteDef[] =>
       bolted(s, r),
   );
 
-// The crags a guide could be written for: the demo's own, in the demo (Phase 14.5b).
-export const GUIDE_CRAGS = Object.keys(PLACES).filter((id) => PLACES[id]!.crag && inEdition(id));
+// The crags a guide could be written for: the demo's own, in the demo (Phase 14.5b). Asked each
+// time, since the full game playing the demo's rules till it's unlocked (19.1) only knows which
+// it is once it starts.
+export const guideCrags = (): string[] =>
+  Object.keys(PLACES).filter((id) => PLACES[id]!.crag && inEdition(id));
 
 // What's still to do before you can write one: lines unsent, and whether one's your own.
 export function guideLeft(s: GameState, place: string): { unsent: number; fa: boolean } {

@@ -10,12 +10,16 @@ import { createRoot } from 'react-dom/client';
 import { desktop, fileStorage } from './game/desktop';
 import { Game } from './game/game';
 import { keepIn } from './game/storage';
+import { openGate } from './game/unlock';
 import { App } from './ui/App';
 import { crashed, notACrash } from './ui/crash';
 
 // Phase 14.3: on the desktop, the game's keys live in a file Steam Cloud syncs, read before
 // the game boots.
 if (desktop) keepIn(fileStorage(desktop));
+// Phase 19.1: the full game, or its demo's rules till it's unlocked, settled before the game
+// boots and never changed while it runs.
+openGate(!!desktop);
 
 const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const game = new Game({ still });

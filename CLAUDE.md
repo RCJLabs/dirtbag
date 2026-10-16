@@ -33,6 +33,7 @@ Releasing and rolling back: `README.md` → Releasing.
 - `npm run format:check` (or `npm run format`) — Prettier, as CI runs it.
 - `npm run build`, then `npm run size` (player download against the budget) and `npm run e2e` (a bot plays five days on the build, counting day three's taps and running day four as a plan, then a v0.956 player crosses over). Run both before any commit that changes what a player sees.
 - `npm run play:demo`, `npm run build:demo`, then `npm run diff:demo` and `npm run e2e:demo` (Phase 14.5): bots play the demo to its end; the demo build in `dist-demo/`; none of the full game's content in it; its first morning (its places only) and its last card. Run all four before any commit that touches the demo's rules (`sim/edition.ts`, `sim/demo.ts`, `content/demo.ts`), what it shows, or any `*.full.ts` module.
+- `npm run build:gated`, then `npm run e2e:gate` (Phase 19.1): the full game with its gate on, in `dist-gated/`; a climber from before keeps the full game, one after gets the first season and its last card, and an unlock carries them on. Run both before any commit that touches the gate (`game/unlock.ts`) or the demo's rules.
 - `npm run dev` — local dev server.
 - `npm run store:art` (after `npm run build`) — Steam's capsules and library art, drawn by the game (`/store.html` under `npm run dev`), the store screenshots for Steam and Play, played on the build, and the press kit (`docs/PRESSKIT.md`'s words, a zip), into `store-art/` (not committed). The copy is `docs/STORE.md`; `src/storecopy.test.ts` holds its facts, and the kit's, to the content. The trailer's beats load from `/trailer.html` under `npm run dev` (`src/dev/beats.ts`).
 
@@ -53,6 +54,7 @@ Releasing and rolling back: `README.md` → Releasing.
   - **The demo strips the full game.** What lies past Roadside and the Gorge (the later crags' words, lines, walls, rock, layouts and scenes; Acts II to V and The Line; the expeditions; the Hollow) lives in `*.full.ts` modules, each with a `*.demo.ts` twin the demo's build takes instead. New content there goes in a `.full` module, or CI's content diff fails.
   - **No hand-typed numbers in text.** Prices, times and effects in the UI are formatted from the same numbers the rules use.
   - **Saves.** Change the state's shape only by bumping `SAVE_VERSION` and registering a migration, with a test that loads an old save. A save that won't load is quarantined, never overwritten.
+  - **The gate** (Phase 19.1, `game/unlock.ts`): off until launch (`DIRTBAG_GATE` in `deploy.yml`, Evan's to flip). A climber from before it keeps the full game: never clear `dirtbag.unlock`, and keep the gate's first start marking them. The locked full game keeps the full game's keys, so an unlock carries the same climber on.
   - **The 2D game is the spec** for the Unreal version: spec changes get logged in `Dirtbag-UE/concepts/2D-SPEC-LOG.md`.
 
 ## Style

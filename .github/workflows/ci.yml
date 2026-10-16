@@ -5,7 +5,8 @@
 #   app    the game in app/: formatting, types, the sim's tests, a build inside its size
 #          budget, then a bot that plays the first five days on the build, and a v0.956 player;
 #          then the demo: a bot plays it to its end, it's built, the build is checked for any
-#          of the full game's content, and its first morning and last card are played.
+#          of the full game's content, and its first morning and last card are played; then
+#          the full game with its gate on (Phase 19.1), from both sides of it.
 #   desktop  the desktop build (Electron, pinned in desktop/): its save file's tests, then its
 #          first minute under a virtual display (opens, saves to the file, comes back, quits).
 # Failure screenshots from either are kept as run artifacts.
@@ -121,6 +122,13 @@ jobs:
 
       - name: The demo's first morning and last card
         run: npm run e2e:demo
+
+      # Phase 19.1: the full game with its gate on, as the site will be at launch.
+      - name: Build the game with its gate on
+        run: npm run build:gated
+
+      - name: The gate lets the climbers from before through, and holds the rest
+        run: npm run e2e:gate
 
       - name: Keep failure screenshots
         if: failure()

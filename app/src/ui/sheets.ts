@@ -291,7 +291,7 @@ import {
   GIFT_AT,
   GIVING,
   GUIDE,
-  GUIDE_CRAGS,
+  guideCrags,
   giveBlocked,
   guideBlocked,
   guideLeft,
@@ -539,25 +539,25 @@ function giveRow(game: Game, s: GameState, to: Gift): Row {
 
 // Your guides (Phase 25.1): where each crag stands, and tonight's pages where you can write.
 function guideRows(game: Game, s: GameState): Row[] {
-  return GUIDE_CRAGS.filter(
-    (id) => (!PLACES[id]!.unlock && !PLACES[id]!.hidden) || s.unlocked.includes(id),
-  ).map((id) => {
-    const g = s.guides[id];
-    const why = guideBlocked(s, id);
-    const left = guideLeft(s, id);
-    const note = g?.out
-      ? `Out since day ${g.out}: ${money(royaltyOf(s, id))} a week${fasIn(s, id) ? `, ${fasIn(s, id)} of your lines in it` : ''}.`
-      : left.unsent || !left.fa
-        ? `${why}.`
-        : `${g?.pages ?? 0} of ${GUIDE.pages} evenings written.${why ? ` ${why}.` : ''}`;
-    return {
-      label: PLACES[id]!.name,
-      cost: why ? '' : costLabel({ min: GUIDE.min, energy: -GUIDE.energy }),
-      note,
-      off: !!why,
-      run: () => game.guide(id),
-    };
-  });
+  return guideCrags()
+    .filter((id) => (!PLACES[id]!.unlock && !PLACES[id]!.hidden) || s.unlocked.includes(id))
+    .map((id) => {
+      const g = s.guides[id];
+      const why = guideBlocked(s, id);
+      const left = guideLeft(s, id);
+      const note = g?.out
+        ? `Out since day ${g.out}: ${money(royaltyOf(s, id))} a week${fasIn(s, id) ? `, ${fasIn(s, id)} of your lines in it` : ''}.`
+        : left.unsent || !left.fa
+          ? `${why}.`
+          : `${g?.pages ?? 0} of ${GUIDE.pages} evenings written.${why ? ` ${why}.` : ''}`;
+      return {
+        label: PLACES[id]!.name,
+        cost: why ? '' : costLabel({ min: GUIDE.min, energy: -GUIDE.energy }),
+        note,
+        off: !!why,
+        run: () => game.guide(id),
+      };
+    });
 }
 
 // Your guiding outfit (Phase 25.2): offered at the shop from Guide, yours from Lead guide.
