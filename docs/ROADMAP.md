@@ -4049,6 +4049,20 @@ The CURRENT MILESTONE moves to Phase 15, the demo, the store page and Next Fest.
 - **The privacy page** says what a report holds, and that the game sends nothing.
 - **Checks:** `crash.test.ts` (what a report says, what isn't a crash); the e2e breaks the game on purpose (the screen, the save as a file, the report without the climber's name, carrying on, the game answering after). React's path was checked once by hand, by a component made to throw; it isn't in the e2e (nothing in the game can be made to throw on purpose).
 
+**Status (16 Oct 2026): 15.3 built: the Steam demo.** No save change, 0.999.86.
+- **One desktop code, two editions** (`desktop/edition.js`). `npm run pack:demo` packs `app/dist-demo` with `edition.json` beside `main.js`; a dev run or a test is told (`DIRTBAG_EDITION`). The demo:
+  - is "Dirtbag Demo": its folder, its executable and its window's title (the page's own title no longer renames the window);
+  - keeps its own user-data folder beside the full game's, which stays where it was;
+  - starts Steam as `demoAppId` (`steam.json`, 480 until it has its own).
+- **The last card's way to the full game:** on the desktop, "The full game on Steam" opens its store page in Steam's overlay (`overlay.activateToStore`, steamworks.js 0.4.0). Without Steam, a toast says Steam isn't running. A browser's demo doesn't offer it.
+- **The error screen's mail** goes through the bridge on the desktop (`mail`: a `mailto:` link only, handed to the system), so once `REPORT_TO` is set the desktop can send it too.
+- **The game's icon** on the executables and the Linux window (`desktop/icons.mjs`, drawn at pack time by the site's icon painter): an `.ico`, an `.icns` and a PNG, in place of Electron's.
+- **A dev run serves the repo's build of its edition,** never a copy a pack left behind; the pack tidies its copy and edition away.
+- **CI and packing:** CI's desktop job builds the demo and plays its first minute in the desktop build, through to its last card; **Build desktop** packs both editions.
+- **Docs:** `desktop/STEAM.md` covers the demo's app, depots and Auto-Cloud (`Dirtbag Demo`), and the icon.
+- **Checks:** `edition.test.mjs`; `npm run smoke:demo` (the title, the first screen, its keys in its file, the bridge's store page and mail saying no when they should, the last card and its Steam row); a packed demo on Linux smoked the same (its default user-data folder `Dirtbag Demo`); the demo e2e checks a browser offers no Steam page.
+- **Unverified:** the store page has never run with Steam; where the overlay is off, Steam may show the page in its client or not at all.
+
 ---
 
 ## Stage F — Ship
@@ -4358,3 +4372,4 @@ The CURRENT MILESTONE moves to Phase 15, the demo, the store page and Next Fest.
 - 2026-10-16 — Phase 14 closed by Evan's call: controller-only Act I and the demo's content diff pass; 60 fps on a Deck and achievements and Cloud in the Steam dev branch are carried to Evan's hardware and account. CURRENT MILESTONE moved to Phase 15, the demo, the store page and Next Fest.
 - 2026-10-16 — Phase 15 planned with Evan's calls: Next Fest June 2027; the demo on Steam now, on the web and Play with Phase 19's split; an error screen in place of crash dashboards; the store page localized later. 15.1 built: Steam's capsules and library art drawn by the game's painters, screenshots for Steam and Play from the build (`npm run store:art`), and the copy for both, its facts held to the content by a test.
 - 2026-10-16 — 15.2 built: a crash shows an error screen, not a blank page: the save is safe, a reload, the save as a file, and what went wrong (nothing from the save) to copy; carrying on past an error outside React. The privacy page says so. No save change. 0.999.85.
+- 2026-10-16 — 15.3 built: the desktop code packs the demo as "Dirtbag Demo", with its own user-data folder and Steam app, its last card opening the full game's store page in Steam's overlay; the error screen's mail through the desktop's bridge; the game's icon on the executables. CI plays the demo's desktop build. No save change. 0.999.86.

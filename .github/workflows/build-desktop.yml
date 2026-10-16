@@ -1,5 +1,6 @@
 # Packs the desktop build (Electron, Phase 14.3) for Steam: one folder per platform, as run
-# artifacts, each a depot's worth. Run it from the Actions tab: "Build desktop" -> "Run workflow".
+# artifacts, each a depot's worth; and (15.3) the demo's, "Dirtbag Demo", beside it. Run it
+# from the Actions tab: "Build desktop" -> "Run workflow".
 #
 # The game is built from app/ as the site is, copied in beside desktop/main.js, and packed by the
 # pinned @electron/packager (desktop/package-lock.json). The builds are unsigned: Windows
@@ -39,6 +40,13 @@ jobs:
 
       - name: Pack
         run: npm run pack --prefix desktop
+
+      # Phase 15.3: the demo, its own app beside the full game's in the same artifact.
+      - name: Build the demo
+        run: npm run build:demo --prefix app
+
+      - name: Pack the demo
+        run: npm run pack:demo --prefix desktop
 
       - uses: actions/upload-artifact@v7
         with:

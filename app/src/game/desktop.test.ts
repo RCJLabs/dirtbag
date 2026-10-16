@@ -15,6 +15,8 @@ const bridge = (start: Record<string, string> = {}) => {
     achieve: () => 0,
     deck: () => false,
     keyboard: () => undefined,
+    toStore: () => false,
+    mail: () => false,
   };
   return { d, file, breakIt: () => (broken = true) };
 };

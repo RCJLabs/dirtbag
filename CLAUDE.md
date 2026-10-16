@@ -23,7 +23,7 @@ Climbing life-sim: live out of your van, work shifts, push your grade from gym p
 - `npm run smoke` — headless Chromium plays the first minute on `_site/`: boot, the service worker, a new climber, the save, the clock (moved by an action), reload, offline start. It fails on any error, failed request or request that leaves the site. Must pass before any commit that touches the site or its pipeline.
 - `npm run size` — what a player downloads, by part, against the budget.
 - `npm run stamp` — after changing `package.json` `version`: writes it into the lockfiles, `app/package.json`, `desktop/package.json` and the TWA's `appVersionName`.
-- **The desktop build (`desktop/`, Phase 14.3):** `npm ci --prefix desktop`, then `npm test --prefix desktop` (its save file) and `xvfb-run -a npm run smoke --prefix desktop` (opens on the built game, saves to its file, comes back, quits; nothing asked of anywhere but `app://`). Run both before any commit that touches `desktop/` or the game's storage.
+- **The desktop build (`desktop/`, Phase 14.3):** `npm ci --prefix desktop`, then `npm test --prefix desktop` (its save file, its edition) and `xvfb-run -a npm run smoke --prefix desktop` (opens on the built game, saves to its file, comes back, quits; nothing asked of anywhere but `app://`). The demo's edition (15.3): `xvfb-run -a npm run smoke:demo --prefix desktop` on `app/dist-demo`, and `npm run pack:demo` packs it as "Dirtbag Demo". Run the tests and both smokes before any commit that touches `desktop/` or the game's storage.
 
 Releasing and rolling back: `README.md` → Releasing.
 

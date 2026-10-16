@@ -27,6 +27,10 @@ export const DEMO_END = {
   dex: 'Dex got there first. The open line at Roadside has his name on it.',
   you: 'You got there first. The open line at Roadside has your name on it, and Dex has to look at it every weekend.',
   carry: 'The full game picks up from this morning, with this climber. Export your save and bring it.',
+  // Phase 15.3: the last card's way to the full game, on Steam.
+  store: 'The full game on Steam',
+  storeNote: 'Its page, in Steam’s overlay.',
+  noSteam: 'Steam isn’t running, so there’s no page to show. The full game is on Steam, as Dirtbag.',
   refused: 'That’s the end of the demo.',
   retire: 'Hanging it up comes later, in the full game.',
   // Why a full game's save won't load in the demo, after "That file won’t load:".

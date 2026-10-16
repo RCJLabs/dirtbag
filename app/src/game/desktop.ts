@@ -1,6 +1,7 @@
 // Phase 14.3 (Evan's call): the desktop build's bridge (desktop/preload.cjs), there only when
 // the game runs in it. The game's keys live in a file in the user-data folder, which Steam
-// Cloud syncs; the window can go full-screen and quit; the Record Book unlocks on Steam.
+// Cloud syncs; the window can go full-screen and quit; the Record Book unlocks on Steam; and
+// (15.3) the demo shows the full game's store page.
 export interface Desktop {
   all(): Record<string, string>;
   set(key: string, value: string): boolean;
@@ -14,6 +15,10 @@ export interface Desktop {
   // a text field at x, y (w by h), in the window's pixels.
   deck(): boolean;
   keyboard(x: number, y: number, w: number, h: number): void;
+  // Phase 15.3: the full game's store page in Steam's overlay, and whether Steam took it; and a
+  // mailto: link handed to the player's own mail app, and whether it was one.
+  toStore(): boolean;
+  mail(url: string): boolean;
 }
 
 declare global {

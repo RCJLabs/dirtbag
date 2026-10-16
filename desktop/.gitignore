@@ -2,3 +2,6 @@ node_modules/
 out/
 # Copied in from app/dist by pack.mjs; the site's build is the source.
 game/
+# Written by pack.mjs for the copy it packs (Phase 15.3), and gone after.
+edition.json
+icons/
