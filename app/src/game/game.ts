@@ -30,6 +30,7 @@ import {
   THINGS,
   whereIs,
   whereNow,
+  demoOver,
   type Action,
   type Play,
   type Attempt,
@@ -191,6 +192,8 @@ export type SheetId =
   // Phase 16.1: hanging it up, asked first; and a climbing life, tallied.
   | { k: 'hangup' }
   | { k: 'retired' }
+  // Phase 14.5: the demo's last card.
+  | { k: 'demoEnd' }
   // Broken down on the road (Phase 22.2a): the ways out.
   | { k: 'breakdown' }
   // Phase 22.6: an encounter waiting on your answer: a knock, a hitchhiker, a stop.
@@ -366,19 +369,21 @@ export class Game {
       scene: home?.scene ?? 'lot',
       sheet: this.state.life.retired
         ? { k: 'retired' }
-        : this.state.dead
-          ? { k: 'dead' }
-          : this.state.breakdown
-            ? { k: 'breakdown' }
-            : this.state.encounter
-              ? { k: 'encounter' }
-              : this.state.table || this.state.cards
-                ? { k: 'fire' }
-                : this.state.expedition
-                  ? { k: 'exped', id: this.state.expedition.id }
-                  : home?.scene
-                    ? null
-                    : { k: 'place', id: this.state.at },
+        : demoOver(this.state)
+          ? { k: 'demoEnd' }
+          : this.state.dead
+            ? { k: 'dead' }
+            : this.state.breakdown
+              ? { k: 'breakdown' }
+              : this.state.encounter
+                ? { k: 'encounter' }
+                : this.state.table || this.state.cards
+                  ? { k: 'fire' }
+                  : this.state.expedition
+                    ? { k: 'exped', id: this.state.expedition.id }
+                    : home?.scene
+                      ? null
+                      : { k: 'place', id: this.state.at },
       talk: null,
       toast: null,
       stamp: null,
@@ -476,6 +481,12 @@ export class Game {
       this.cards = [];
       this.set({ sheet: { k: 'retired' }, climbing: false });
     }
+    // Phase 14.5: the demo's last morning: its card is all there is now.
+    if (demoOver(this.state) && !demoOver(before)) {
+      this.att = null;
+      this.cards = [];
+      this.set({ sheet: { k: 'demoEnd' }, climbing: false });
+    }
     this.maybeCard();
     return r.events;
   }
@@ -518,6 +529,8 @@ export class Game {
     if (this.state.dead && 'sheet' in p && p.sheet?.k !== 'dead') p = { ...p, sheet: { k: 'dead' } };
     if (this.state.life.retired && 'sheet' in p && p.sheet?.k !== 'retired')
       p = { ...p, sheet: { k: 'retired' } };
+    if (demoOver(this.state) && 'sheet' in p && p.sheet?.k !== 'demoEnd')
+      p = { ...p, sheet: { k: 'demoEnd' } };
     // An encounter (Phase 22.6): its card, until you've answered; on the road, once you're there.
     // A call at the crag after a go (Phase 23.5) waits for the go's own card to close.
     const goCard =

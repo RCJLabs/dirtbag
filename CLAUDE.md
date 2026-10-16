@@ -32,6 +32,7 @@ Releasing and rolling back: `README.md` → Releasing.
 - `npm run typecheck` — three configs; `tsconfig.sim.json` checks `src/sim` with no DOM types.
 - `npm run format:check` (or `npm run format`) — Prettier, as CI runs it.
 - `npm run build`, then `npm run size` (player download against the budget) and `npm run e2e` (a bot plays five days on the build, counting day three's taps and running day four as a plan, then a v0.956 player crosses over). Run both before any commit that changes what a player sees.
+- `npm run build:demo`, then `npm run e2e:demo` (Phase 14.5): the demo build in `dist-demo/`, its first morning (its places only) and its last card. Run both before any commit that touches the demo's rules (`sim/edition.ts`, `content/demo.ts`) or what it shows.
 - `npm run dev` — local dev server.
 
 ## Load-bearing rules

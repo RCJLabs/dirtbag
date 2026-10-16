@@ -13,8 +13,10 @@ export default defineConfig(({ mode }) => ({
   // Relative asset URLs, so the same build runs at the site root, under a subpath or as a preview.
   base: './',
   plugins: [react(), pwa()],
-  define: { __APP_VERSION__: JSON.stringify(version) },
-  build: { target: 'es2022' },
+  // Phase 14.5: `--mode demo` builds the demo (sim/edition.ts) into dist-demo, beside the
+  // full game's dist.
+  define: { __APP_VERSION__: JSON.stringify(version), __DEMO__: JSON.stringify(mode === 'demo') },
+  build: { target: 'es2022', outDir: mode === 'demo' ? 'dist-demo' : 'dist' },
   // `--mode harness` runs the balance harness instead of the tests.
   test: {
     include: mode === 'harness' ? ['harness/**/*.harness.ts'] : ['src/**/*.test.ts'],

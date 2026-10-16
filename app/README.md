@@ -37,6 +37,7 @@ This is the game as it ships from 0.960.0 (the roadmap's R3): the first season, 
 - **A controller, and the arrows** (Phase 14.1): the D-pad, the stick or the arrow keys move focus to the nearest button that way (`ui/spatial.ts`, `ui/nav.ts`); the stick and Left/Right walk a scene with nothing open. A presses and holds (the right trigger too), B puts down what's open, the bumpers are the speed wall's hands, Start the journal, Select the map, Y the plan (`ui/pad.ts`, `ui/input.ts`); M, J and P are the same three on a keyboard. The first screen offers a name for a player who can't type one.
 - **Your save as a file** (Phase 14.2): Settings exports the save as the game keeps it (`game/savefile.ts`), and imports one back, as does the first screen; a file is loaded by the same rules as any save, and asks before it takes the place of the climber here (`persist.replace`). The save, the plan and the settings go through one store (`game/storage.ts`), localStorage unless the desktop build hands it another.
 - **The desktop build** (Phase 14.3): `desktop/` runs this build in Electron. Its preload's bridge (`window.dirtbagDesktop`, typed in `game/desktop.ts`) hands the game a store backed by a file in the user-data folder (`fileStorage`, set with `keepIn` before the game boots); there the game registers no service worker, and Settings gets the window (full screen or not) and Quit. Record Book entries go to Steam as achievements (`game/achievements.ts`, Phase 14.4): each as it's earned, and at every launch everything the save's family has ever earned.
+- **The demo** (Phase 14.5): `npm run build:demo` builds the same code with `__DEMO__` set (`sim/edition.ts`): Act I and Dex's race week, at the Lot, in town and at Roadside and the Gorge (`DEMO_PLACES`, `content/demo.ts`); no story past Act I; over the morning after the race is decided, on a last card with the save to export (`demoOver`), after which the sim takes no more actions. Tests play its rules with `asDemo(true)`.
 - **Any window** (Phase 12.2, after 0.961.0): portrait is a phone screen; a wider window widens the world, up to about 16:9, with sheets docked at the right from 1080 across. Walls close up stay portrait, as a panel over their crag.
 
 ## Commands
@@ -53,6 +54,8 @@ npm run build          # dist/
 npm run size           # what a player downloads, against the budget
 npm run e2e            # a bot plays five days on dist/ in headless Chromium (counting day three's taps, running day four as a plan) and reloads offline, then a v0.956 player crosses over
 npm run harness        # bots play whole seasons, then four-year careers; prints the tables and their targets
+npm run build:demo     # the demo (Phase 14.5), into dist-demo/
+npm run e2e:demo       # the demo's first morning (its places only) and its last card, on dist-demo/
 ```
 
 ## Layout

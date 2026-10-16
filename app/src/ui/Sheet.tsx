@@ -13,6 +13,7 @@ import {
   ROMAN,
   stageOf,
   STORY,
+  DEMO,
   AGE,
   ageOf,
   daysLeft,
@@ -2398,7 +2399,8 @@ function ActRow({ s }: { s: GameState }) {
   const g = currentGoal(s);
   const n = actOf(s);
   if (!g) {
-    const last = STORY[STORY.length - 1]!;
+    // The demo's story is Act I (Phase 14.5): that's the act that's done.
+    const last = DEMO ? STORY[0]! : STORY[STORY.length - 1]!;
     return (
       <>
         <p className="crux">{last.title} · done</p>

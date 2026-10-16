@@ -3,7 +3,8 @@
 #          file there, the download size, then the staged site booted in headless Chromium (a
 #          new climber, the save, the clock, reload, offline start).
 #   app    the game in app/: formatting, types, the sim's tests, a build inside its size
-#          budget, then a bot that plays the first five days on the build, and a v0.956 player.
+#          budget, then a bot that plays the first five days on the build, and a v0.956 player;
+#          then the demo built, and its first morning and last card played.
 #   desktop  the desktop build (Electron, pinned in desktop/): its save file's tests, then its
 #          first minute under a virtual display (opens, saves to the file, comes back, quits).
 # Failure screenshots from either are kept as run artifacts.
@@ -105,6 +106,13 @@ jobs:
 
       - name: Play the first day
         run: npm run e2e
+
+      # Phase 14.5: the demo, built from the same code with its flag, from both ends.
+      - name: Build the demo
+        run: npm run build:demo
+
+      - name: The demo's first morning and last card
+        run: npm run e2e:demo
 
       - name: Keep failure screenshots
         if: failure()

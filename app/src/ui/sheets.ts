@@ -321,6 +321,8 @@ import {
   FAMILY,
   forebearAtFire,
   forebearBlocked,
+  DEMO_END,
+  RACE_ROUTE,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import { bestTrip } from './card';
@@ -2738,6 +2740,28 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         ],
       };
     }
+
+    // Phase 14.5 (Evan's call): the demo's last card: the season, how the race went, and the
+    // save to carry into the full game.
+    case 'demoEnd':
+      return {
+        title: DEMO_END.title,
+        sub: DEMO_END.text,
+        lines: [s.firsts[RACE_ROUTE]?.by === 'dex' ? DEMO_END.dex : DEMO_END.you, DEMO_END.carry],
+        close: false,
+        rows: [
+          {
+            label: 'Export your save',
+            note: 'Your climber as a file, for the full game.',
+            run: () => void game.exportSave(),
+          },
+          {
+            label: 'Start over',
+            note: 'A new first morning in the demo.',
+            run: () => game.restart(),
+          },
+        ],
+      };
 
     case 'dead': {
       const d = s.dead;
