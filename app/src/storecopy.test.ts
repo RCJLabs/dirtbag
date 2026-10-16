@@ -7,6 +7,15 @@ import { describe, expect, it } from 'vitest';
 import { COMP_TIERS, EXPEDITIONS, MONEY, PEOPLE, PLACES, RECORD, ROUTES, STORY } from './sim';
 
 const md = readFileSync(join(__dirname, '..', '..', 'docs', 'STORE.md'), 'utf8');
+// Phase 15.4: the press kit's own words, beside the store's.
+const kit = readFileSync(join(__dirname, '..', '..', 'docs', 'PRESSKIT.md'), 'utf8');
+const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf8')) as {
+  dependencies: Record<string, string>;
+};
+const ledger = JSON.parse(readFileSync(join(__dirname, 'audio', 'ledger.json'), 'utf8')) as {
+  sounds: Record<string, { made: string }>;
+  recordings: unknown[];
+};
 const block = (key: string): string => {
   const m = md.match(new RegExp('```text ' + key + '\\n([\\s\\S]*?)\\n```'));
   if (!m) throw new Error(`no ${key} block in docs/STORE.md`);
@@ -22,6 +31,28 @@ const word = (n: number): string => {
 
 const crags = Object.values(PLACES).filter((p) => p.crag && !p.hidden);
 const hidden = Object.values(PLACES).filter((p) => p.crag && p.hidden);
+
+describe('the press kit', () => {
+  it('names every typeface the game bundles', () => {
+    const faces = Object.keys(pkg.dependencies)
+      .filter((d) => d.startsWith('@fontsource/'))
+      .map((d) =>
+        d
+          .slice('@fontsource/'.length)
+          .split('-')
+          .map((w) => (w === 'sc' ? 'SC' : w[0]!.toUpperCase() + w.slice(1)))
+          .join(' '),
+      );
+    expect(faces.length).toBeGreaterThan(0);
+    for (const f of faces) expect(kit, f).toContain(f);
+  });
+
+  it('says no recordings only while there are none', () => {
+    expect(kit).toContain('no recordings');
+    expect(ledger.recordings).toEqual([]);
+    expect(Object.values(ledger.sounds).every((s) => s.made === 'code')).toBe(true);
+  });
+});
 
 describe('the store copy', () => {
   it('starts you with the cash the game does', () => {

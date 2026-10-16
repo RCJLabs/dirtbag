@@ -4063,6 +4063,19 @@ The CURRENT MILESTONE moves to Phase 15, the demo, the store page and Next Fest.
 - **Checks:** `edition.test.mjs`; `npm run smoke:demo` (the title, the first screen, its keys in its file, the bridge's store page and mail saying no when they should, the last card and its Steam row); a packed demo on Linux smoked the same (its default user-data folder `Dirtbag Demo`); the demo e2e checks a browser offers no Steam page.
 - **Unverified:** the store page has never run with Steam; where the overlay is off, Steam may show the page in its client or not at all.
 
+**Status (16 Oct 2026): 15.4 built: the press kit, the trailer's beats, and the Done-when check.** No change to the game, 0.999.86.
+- **The press kit** (`docs/PRESSKIT.md`): a fact sheet, made in code (the art, the sound, the music; the open typefaces), and what's in the kit. `npm run store:art` assembles it with Steam's About This Game from `docs/STORE.md`, the logo and icon, the capsules both ways, and the shots for Steam and a phone, into `app/store-art/dirtbag-presskit/` and a zip (`scripts/zip.mjs`: no dependencies, the same files make the same zip). The bracketed lines are Evan's: the dates, the store link, a press address, a line about him. `storecopy.test.ts` holds the kit's typefaces to the bundle and its "no recordings" to the licence ledger.
+- **The trailer's beats** (`/trailer.html` under `npm run dev`, `src/dev/beats.ts`): six saves, a click each, from the v75 career put where the beat is on a dry, open day: the Lot in the morning, a shift's start, Roadside in the afternoon, the highball fresh (its send and card), Moonstone's hardest problem, the fire at night. The save that was there is kept and put back. `beats.test.ts` holds each to the save's rules; each was loaded in the game at 1920 × 1080.
+- **The shot list** (`docs/STORE.md`, The trailer): the loop's order, the climbing as the hero, the opening and the close, the music's rule. Play's What's new brought to 0.999.86.
+
+**Done when, checked (16 Oct 2026), as Evan's calls left them:**
+1. **The demo is live on Steam: ready, Evan's to put up.** The demo packs as its own app (15.3); it needs the Steam app, the demo app, their IDs in `steam.json`, the depots and Auto-Cloud. Web and Play are Phase 19's.
+2. **7,000 wishlists before Next Fest: Evan's.** The Coming Soon page has its art, screenshots and copy (15.1).
+3. **The press kit sent to ≥30 outlets and creators: Evan's.** The kit is ready (15.4), its bracketed lines his.
+4. **No crash in the bots' and the e2e's runs, and a crash shows the error screen: passes.** The full harness (16 careers to day 224, and 16 to their endings by day 480; 10 of 10 tests) had no refusal and no stuck night; `play:demo` plays the demo to its end; the e2e and `e2e:demo` fail on any page error and passed; the error screen (15.2) shows on a crash, in the e2e on purpose.
+
+Phase 15's code is done; criteria 1 to 3 are Evan's accounts and outreach, and run to Next Fest (June 2027). Closing the phase is his call.
+
 ---
 
 ## Stage F — Ship
@@ -4373,3 +4386,4 @@ The CURRENT MILESTONE moves to Phase 15, the demo, the store page and Next Fest.
 - 2026-10-16 — Phase 15 planned with Evan's calls: Next Fest June 2027; the demo on Steam now, on the web and Play with Phase 19's split; an error screen in place of crash dashboards; the store page localized later. 15.1 built: Steam's capsules and library art drawn by the game's painters, screenshots for Steam and Play from the build (`npm run store:art`), and the copy for both, its facts held to the content by a test.
 - 2026-10-16 — 15.2 built: a crash shows an error screen, not a blank page: the save is safe, a reload, the save as a file, and what went wrong (nothing from the save) to copy; carrying on past an error outside React. The privacy page says so. No save change. 0.999.85.
 - 2026-10-16 — 15.3 built: the desktop code packs the demo as "Dirtbag Demo", with its own user-data folder and Steam app, its last card opening the full game's store page in Steam's overlay; the error screen's mail through the desktop's bridge; the game's icon on the executables. CI plays the demo's desktop build. No save change. 0.999.86.
+- 2026-10-16 — 15.4 built: the press kit (`docs/PRESSKIT.md`, zipped by `store:art` with the art and shots), the trailer's beats a click each (`/trailer.html`), and the shot list. Done-when: criterion 4 passes (the full harness, the demo's bots, both e2es); 1 to 3 are Evan's (the Steam apps, wishlists, outreach). No change to the game.

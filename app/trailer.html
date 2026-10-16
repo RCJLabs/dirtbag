@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Dirtbag trailer beats</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        background: #15161a;
+        color: #e9e4d8;
+        font: 15px/1.45 sans-serif;
+        max-width: 760px;
+      }
+      li {
+        margin: 0 0 14px;
+      }
+      button {
+        font: inherit;
+        padding: 6px 12px;
+        margin-right: 10px;
+        cursor: pointer;
+      }
+      .play {
+        color: #b9b2a4;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Trailer beats</h1>
+    <p>
+      Each loads a career two hundred days in, where the beat is, and opens the game. Record at 1920 × 1080,
+      full screen (F11), Settings → Frame meter off. The save that was here is kept, and comes back from the
+      last button.
+    </p>
+    <ol id="beats"></ol>
+    <p><button type="button" id="restore">Put my save back</button> <span id="said"></span></p>
+    <script type="module" src="/src/dev/trailer.ts"></script>
+  </body>
+</html>

@@ -6,14 +6,17 @@
 //   steam/   each capsule, the library's art and the community icon, at Steam's sizes, from
 //            src/dev/store.ts under Vite's dev server; and the screenshots, 1920 × 1080.
 //   play/    the same screenshots on a phone, 1080 × 1920, and the send card.
+//   dirtbag-presskit/ and dirtbag-presskit.zip (15.4): the press kit, docs/PRESSKIT.md's words
+//            with Steam's description from docs/STORE.md, the logo, the capsules and the shots.
 // The screenshots are played on the build: a new climber's first morning, the map, Roadside's
 // card, the Warm Boulder's beta, a go on it and its send; then a career two hundred days in
 // (the v75 fixture): its fire at night, and its journal's You and Record pages. docs/STORE.md says which goes where.
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { chromium } from 'playwright';
 import { createServer } from 'vite';
 import { startServer } from '../../scripts/lib/serve.mjs';
+import { presskit } from './presskit.mjs';
 
 const APP = new URL('..', import.meta.url).pathname;
 const OUT = join(APP, 'store-art');
@@ -230,6 +233,8 @@ async function shoot(dir, viewport, deviceScaleFactor) {
 await shoot('steam', { width: 1920, height: 1080 }, 1);
 await shoot('play', { width: 360, height: 640 }, 3);
 await server.close();
+// Phase 15.4: the press kit, from all of the above and docs/PRESSKIT.md.
+made.push(relative(OUT, presskit(OUT)));
 await browser.close();
 console.log(`✓ ${made.length} files in ${OUT}`);
 for (const f of made) console.log(`  ${f}`);
