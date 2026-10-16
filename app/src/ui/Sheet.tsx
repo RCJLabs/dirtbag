@@ -243,6 +243,7 @@ import { glossSplit } from './gloss';
 import { buildSheet, owedNote, SKILL_NAME, type ListSpec } from './sheets';
 import { CREDITS } from './credits';
 import { kitNote, kitState } from './kit';
+import { SaveFiles } from './SaveFiles';
 import { vars } from './vars';
 
 // "a, b and c".
@@ -2771,7 +2772,7 @@ function SettingsBody({ game, settings }: { game: Game; settings: Settings }) {
   return (
     <>
       <h3 id="sheet-title">Settings</h3>
-      <p className="sub">Kept in this browser, apart from your game. Starting over doesn't touch them.</p>
+      <p className="sub">Kept apart from your game. Starting over doesn't touch them.</p>
       <p className="crux">Motion</p>
       <div role="radiogroup" aria-label="Motion">
         {choice('motion', 'system', 'Match this device')}
@@ -2799,6 +2800,7 @@ function SettingsBody({ game, settings }: { game: Game; settings: Settings }) {
         {choice('buzz', 'on', 'On, where the phone can')}
         {choice('buzz', 'off', 'Off')}
       </div>
+      <SaveFiles game={game} />
       <OldCareer />
       <ul>
         <li>

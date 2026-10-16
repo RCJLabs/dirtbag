@@ -13,6 +13,7 @@ import {
 } from '../sim';
 import type { Game } from '../game/game';
 import { findLegacy, saveLegacyFile } from '../game/legacy';
+import { SaveFiles } from './SaveFiles';
 import { SKILL_NAME } from './sheets';
 import { vars } from './vars';
 
@@ -169,6 +170,7 @@ export function Create({ game }: { game: Game }) {
           </small>
         </button>
       )}
+      {!family && <SaveFiles game={game} out={false} />}
       <button type="submit" className="go" id="c-go" disabled={!ok}>
         Start
         <small>
