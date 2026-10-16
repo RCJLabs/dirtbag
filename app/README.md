@@ -58,6 +58,7 @@ npm run build:demo     # the demo (Phase 14.5), into dist-demo/
 npm run e2e:demo       # the demo's first morning (its places only) and its last card, on dist-demo/
 npm run play:demo      # bots play the demo's rules and content to its end (Phase 14.5b)
 npm run diff:demo      # after build:demo: none of the full game's content in dist-demo/ (Phase 14.5b)
+npm run store:art      # after build: Steam's capsules and library art (drawn in /store.html) and the store screenshots, into store-art/ (Phase 15.1)
 ```
 
 ## Layout

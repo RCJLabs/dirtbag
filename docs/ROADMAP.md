@@ -64,12 +64,12 @@
 | 11 Valley map | Built on the rebuild (the taps, place cards, adding a place, the daily plan) and closed by Evan's call. Criteria 2 to 5 pass; its testers' criterion carries. Released in 0.961.0 with Phase 10. |
 | 12 UI system | Built on the rebuild (the Journal, the wide screen, keyboard and access, Tonight, no inline styles) and closed by Evan's call. The flows the e2e doesn't play in landscape or by keyboard carry to playtesting. |
 | 13 Sound and feel | Built on the rebuild (effects and ambience made in code, the licence ledger, credits) and closed by Evan's call. Music, made in code, came in Phase 25 by Evan's call, to hear how it turns out; criteria 1 and 2 wait on an ear. |
-| 14 Desktop and Steam, 15 Demo and store page | Moved after Phase 18 by Evan's call: the full game first. |
+| 14 Desktop and Steam, 15 Demo and store page | Moved after Phase 18 by Evan's call: the full game first. Phase 14 closed by Evan's call (16 Oct 2026), its Deck and Steam checks carried to him; Phase 15 is the current milestone. |
 | 21 The climber, 22 The life, 23 Who you are | Added by Evan's call after the gap check; they run before 16. Phase 21 is the current milestone. |
 | 16 The spine | Next after 21–23. |
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 | 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
-| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27, 28 and 29 (14 Oct 2026), and Phases 33, 34, 30, 31, 32 and 35 (15 Oct 2026). Phase 14 is the current milestone. |
+| 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27, 28 and 29 (14 Oct 2026), and Phases 33, 34, 30, 31, 32 and 35 (15 Oct 2026). Then Phase 14, closed 16 Oct 2026. |
 
 ## The rebuild track
 
@@ -3821,7 +3821,7 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 *Moved here by Evan's call (29 Sep 2026): the whole game gets built first, and the Steam build, the demo and the store page come after it. The phase numbers stay as they were, so older references still find them.*
 
-### Phase 14 — Desktop and Steam build   **<<< CURRENT MILESTONE**
+### Phase 14 — Desktop and Steam build   ✅ Closed
 
 *Waited until Evan asked for it (8 Oct 2026) while Phases 26–35 came first. Started by his call after Phase 35 (15 Oct 2026).*
 
@@ -3954,9 +3954,21 @@ Phase 14's two criteria that can pass here pass; the other two are Evan's hardwa
 - **Separate homes, as practice** (for Phase 15): the web demo at its own address (a subdomain is a separate origin; a path on dirtbag.rcjlabs.com isn't), and a desktop demo packed under its own name (its own user-data folder), so the carry-over above is a bonus where they meet, not the plan.
 - **Checks:** `persist.test.ts` (the demo boots past a full game's climber without touching it, writes only `dirtbag.demo.` keys, and finds no demo climber of its own; the full game finds its climber and the demo's beside it; nothing that isn't a demo climber is offered); the demo e2e checks the demo's keys are all `dirtbag.demo.`; the full e2e plants a demo climber beside the game and carries on with it from the first screen.
 
+**Phase 14 closed by Evan's call (16 Oct 2026).** Criteria 1 and 4 pass. Criteria 2 and 3 are carried to Evan:
+- **2, 60 fps on a Deck:** run it on the hardware with Settings → Frame meter on.
+- **3, achievements and Cloud in the Steam dev branch:** needs a real app ID in `desktop/steam.json` (480, Valve's test app, until then), the 51 achievements entered with their icons, and Auto-Cloud set (`desktop/STEAM.md`).
+
+Also carried:
+- Nothing has run on a real Deck or with Steam itself: not the Deck's button names, Steam's floating keyboard, or the achievement calls.
+- Whether Valve's Deck review takes Xbox button names off a Deck is unverified; on a Deck the game names the Deck's own buttons.
+- Controller-only Act I is shown by construction plus the e2e's controller day, not by a full Act I played on a pad.
+- The demo's kept pools still name the later crags in passing.
+
+The CURRENT MILESTONE moves to Phase 15, the demo, the store page and Next Fest. The download is 466.4 KB of 490.
+
 ---
 
-### Phase 15 — The demo, the store page and Next Fest
+### Phase 15 — The demo, the store page and Next Fest   **<<< CURRENT MILESTONE**
 
 **Goal.** A polished free first season on web, Steam and Play, a store page that converts, and one well-timed Next Fest.
 
@@ -3983,6 +3995,46 @@ Phase 14's two criteria that can pass here pass; the other two are Evan's hardwa
 4. Crash-free demo sessions on the Play and Steam dashboards exceed 99%.
 
 **Depends on:** Phases 7–14. **Effort:** ~2–3 weeks. **Main risk:** timing. There's one Next Fest per game; don't burn it on an unfinished demo.
+
+**The survey (16 Oct 2026).** Most of this phase isn't code:
+- **Not code:** the Steam app and its demo app (Steam Direct, $100), the Coming Soon page, the wishlists, the press outreach, and the Next Fest registration are Evan's.
+- **No crash reporting:** neither store's dashboard sees a JavaScript error inside a TWA or Electron [inferred, not verified], and the game sends nothing anywhere. It also has no error screen: a render crash leaves a blank page.
+- **Next Fest dates disagree:** the market audit lists 22 Feb – 1 Mar 2027 (register by 10 Jan); this phase said June 2027 as a stretch.
+- **The demo has nothing to funnel to yet:** the full game is free on the web and Play, so a demo beside it funnels nothing until Phase 19 makes the full game paid.
+- **No translation layer:** the game has none.
+- **What's already built:** the demo's build and its rules (Act I, the last card, export and import, the carry-over) came in 14.5.
+
+**Evan's calls (16 Oct 2026), all as recommended:**
+- **Next Fest:** June 2027. The Coming Soon page goes up as soon as there's art and copy for it.
+- **The demo on the web and Play waits for Phase 19's split.** Until then the free full game is the funnel there. The Steam demo comes now. Criterion 1's web and Play parts move to Phase 19.
+- **Crashes:** an error screen ("your save is safe", reload, export, and the error to copy or send from the player's own mail), with nothing sent by the game. Criterion 4 becomes: no crash in the bots' and the e2e's runs, demo included.
+- **Localization:** the store page only, later, by paid native translators near Next Fest. The game stays English.
+
+**Slices:**
+- **15.1** the store page kit: Steam's capsules and library art drawn by the game's own painters, screenshots from the build for Steam and Play, and the copy for both;
+- **15.2** the error screen and the opt-in report;
+- **15.3** the Steam demo: its own pack, name, folder and app ID, and its last card pointing to the full game's page;
+- **15.4** the press kit, a page that stages the trailer's shots, and the close.
+
+**Done when, as Evan's calls leave it:**
+1. The demo is live on Steam. Web and Play move to Phase 19.
+2. At least 7,000 wishlists before Next Fest (Evan's).
+3. The press kit is sent to ≥30 outlets and creators (Evan's).
+4. No crash in the bots' and the e2e's runs of the demo and the full game, and a crash shows the error screen, not a blank page.
+
+**Status (16 Oct 2026): 15.1 built: the store page kit.** No change to the game, 0.999.84.
+- **Steam's art** (`app/src/dev/store.ts`, `npm run dev`, then `/store.html`): every capsule, the library's art, the page background and the community icon, at Steamworks' sizes, drawn by the game's own painters.
+  - **The highball:** the climber big near the top of Roadside's highball at golden hour, the title in the signs' poster face beside it. For the capsules.
+  - **The Lot at night:** the vans, the lights, you and Hazel at the fire, Scout. For the hero and the background.
+  - The wide capsules come both ways for Evan to pick; the highball is recommended (it says climbing at a list's size).
+- **`npm run store:art`** writes them, and the screenshots, to `app/store-art/` (not committed). The screenshots are played on the build:
+  - the first morning, the map, Roadside's card, the Warm Boulder's beta, a go on it and its send, and the send card;
+  - then the v75 fixture's career at night, its journal and its Record Book;
+  - at 1920 × 1080 for Steam and 1080 × 1920 for Play, toasts waited out.
+- **The copy** (`docs/STORE.md`): Steam's short description and About This Game, written new; Play's listing brought up from 0.960 (it said V5 and Moonstone at V6); which file goes in which slot.
+  - `npm run check` holds Steam's short description to 300 characters, beside Play's limits.
+  - `storecopy.test.ts` holds every number and name in the copy to the content: the $41 start, the nine crags by name (the Hollow kept off), five acts ending on The Line, V18, the 51 entries, the comps, the expeditions.
+- **Unverified:** the sizes and the 300-character limit are Steamworks' as of 2026 from memory; check its page before uploading. Valve's rules for what a capsule may carry (the title, no other text) were followed as remembered.
 
 ---
 
@@ -4290,3 +4342,5 @@ Phase 14's two criteria that can pass here pass; the other two are Evan's hardwa
 - 2026-10-16 — 14.6b built: rebinding the pad's buttons and the keys in Settings, a role going down only with its button; on the desktop, a Deck's button names and Steam's floating keyboard for text fields. Done-when 1 and 4 pass; 2 and 3 are Evan's (a Deck, the Steam app). No save change. 0.999.83.
 - 2026-10-16 — The download budget to 490 KB (Evan's call), for Phase 15's demo; 466.3 KB after Phase 14.
 - 2026-10-16 — 14.5c built: the demo keeps its keys under `dirtbag.demo.`, so it never meets the full game's save; the full game offers to carry on with a demo climber it finds beside it. No save change. 0.999.84.
+- 2026-10-16 — Phase 14 closed by Evan's call: controller-only Act I and the demo's content diff pass; 60 fps on a Deck and achievements and Cloud in the Steam dev branch are carried to Evan's hardware and account. CURRENT MILESTONE moved to Phase 15, the demo, the store page and Next Fest.
+- 2026-10-16 — Phase 15 planned with Evan's calls: Next Fest June 2027; the demo on Steam now, on the web and Play with Phase 19's split; an error screen in place of crash dashboards; the store page localized later. 15.1 built: Steam's capsules and library art drawn by the game's painters, screenshots for Steam and Play from the build (`npm run store:art`), and the copy for both, its facts held to the content by a test.
