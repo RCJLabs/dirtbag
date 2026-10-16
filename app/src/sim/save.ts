@@ -30,7 +30,7 @@ import { newMastery } from './paths';
 import { newlyEarned } from './record';
 import { DEMO_END } from './content/demo';
 import { fromFullGame } from './demo';
-import { DEMO } from './edition';
+import { DEMO_BUILD } from './edition';
 import { aimMet, currentGoal } from './story';
 import { repeatsOf } from './settle';
 import { ACT_I } from './content/story';
@@ -612,7 +612,11 @@ export function fromSave(
       return { ok: false, why: `migration from v${n} failed: ${e instanceof Error ? e.message : String(e)}` };
     }
   }
-  if (DEMO && fromFullGame(state)) return { ok: false, why: DEMO_END.fullSave };
+  // The demo's build turns a full game's climber away: its keys are its own, and it has none of
+  // the content. The full game playing the demo's rules till it's unlocked (19.1) loads it, and
+  // the climber stops at the season's last card, where it can be unlocked (19.4: never a
+  // refusal at start-up, which would set a real climber aside).
+  if (DEMO_BUILD && fromFullGame(state)) return { ok: false, why: DEMO_END.fullSave };
   const errors = validate(state);
   if (errors.length) return { ok: false, why: `invalid: ${errors.slice(0, 3).join('; ')}` };
   return { ok: true, state: state as GameState, from: v };

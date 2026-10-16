@@ -81,12 +81,29 @@ export interface Opening {
   desktop: boolean;
   // Where v0.956 kept its career: the browser's localStorage, which the desktop's store isn't.
   legacy: Storage | null;
+  // A tester's link (19.4): shut as if it were launch day, and this climber not from before.
+  trial?: boolean;
+}
+
+// Phase 19.4 (Evan's call): a tester's link. `?gate=try` shuts the gate in this tab only, as if
+// it were launch day and the climber here weren't from before, so a licence tester can buy and
+// restore Play's unlock in the Android app before the gate is on for anyone. Only Play's unlock
+// opens it, and it marks nothing. The tab remembers it past the reload a purchase makes.
+const TRY = 'dirtbag.gate.try';
+export function trying(search: string): boolean {
+  try {
+    if (new URLSearchParams(search).get('gate') === 'try') sessionStorage.setItem(TRY, '1');
+    return sessionStorage.getItem(TRY) === '1';
+  } catch {
+    return false;
+  }
 }
 
 // Whether the full game is open here, and how; null while it's locked. Writes down what the
 // gate needs to remember: a climber here before it, and that it has been gated.
 export function opened(ls: Storage | null, o: Opening): How | null {
   if (o.desktop) return 'desktop';
+  if (o.trial) return unlockIn(ls) === 'play' ? 'play' : null;
   const kept = unlockIn(ls);
   if (kept || !ls) return kept;
   // Once the gate has started here, nobody else is from before it: not even under a build from
@@ -120,7 +137,8 @@ export function openGate(desktop: boolean): How | null {
   } catch {
     // No browser storage: no v0.956 career to find.
   }
-  const how = opened(store(), { gate: GATE, desktop, legacy });
-  asDemo(GATE && !how);
+  const trial = trying(typeof location === 'undefined' ? '' : location.search);
+  const how = opened(store(), { gate: GATE || trial, desktop, legacy, trial });
+  asDemo((GATE || trial) && !how);
   return how;
 }

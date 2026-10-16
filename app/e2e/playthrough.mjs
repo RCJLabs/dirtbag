@@ -3467,8 +3467,9 @@ console.log('The Line');
 console.log('Something broke');
 // Phase 15.2: a crash shows the error screen, not a blank page. One thrown on purpose outside
 // React, as the frame loop or a handler would: the screen says the save is safe, hands it over
-// as a file, shows what went wrong (the build and the error, nothing from the save) to copy,
-// and lets the game carry on. This page expects its one error; nothing else may go wrong.
+// as a file, shows what went wrong (the build and the error; since 19.4 the day, the seed and the
+// last moves, no name typed) to copy, and lets the game carry on. This page expects its one
+// error; nothing else may go wrong.
 {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
   const p = await ctx.newPage();
@@ -3491,6 +3492,9 @@ console.log('Something broke');
   if (
     !said.startsWith(`Dirtbag ${version}, web`) ||
     !/Error: e2e: broken on purpose/.test(said) ||
+    !/^Day 1, .*; seed \S+$/m.test(said) ||
+    !/^Last moves:$/m.test(said) ||
+    !/: create name=… start=/.test(said) ||
     /Wren/.test(said)
   )
     await fail(`crash: what it says: ${said}`);
@@ -3508,7 +3512,7 @@ console.log('Something broke');
   await p.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Close');
   if (errors.length !== 1)
     problems.push(`crash: errors besides the one on purpose: ${errors.slice(1).join('; ')}`);
-  log('crash: the screen, the save as a file, what went wrong without the save, carried on');
+  log('crash: the screen, the save as a file, what went wrong and the last moves (no name typed), carried on');
   await ctx.close();
 }
 

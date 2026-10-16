@@ -56,6 +56,7 @@ Releasing and rolling back: `README.md` → Releasing.
   - **No hand-typed numbers in text.** Prices, times and effects in the UI are formatted from the same numbers the rules use.
   - **Saves.** Change the state's shape only by bumping `SAVE_VERSION` and registering a migration, with a test that loads an old save. A save that won't load is quarantined, never overwritten.
   - **The gate** (Phase 19.1, `game/unlock.ts`): off until launch (`DIRTBAG_GATE` in `deploy.yml`, Evan's to flip). A climber from before it keeps the full game: never clear `dirtbag.unlock`, and keep the gate's first start marking them. The locked full game keeps the full game's keys, so an unlock carries the same climber on.
+  - **The tester's link** (Phase 19.4): `?gate=try` shuts the gate for one tab, so Play's unlock can be tried before launch (`docs/BETA.md`). It marks nothing; keep it that way. The locked full game never refuses a full climber's save at start-up: it waits at the last card.
   - **Play's unlock is acknowledged by the app** (Phase 19.2): the page can't, and Play refunds what isn't within three days. `build-twa.yml` runs `twa/acknowledge.mjs` between `bubblewrap update` and Gradle; `npm run check` fails without it. The Android app never shows another store's page (Play's payments policy).
   - **The 2D game is the spec** for the Unreal version: spec changes get logged in `Dirtbag-UE/concepts/2D-SPEC-LOG.md`.
 

@@ -4211,6 +4211,46 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - **Play's listing at launch** (`docs/STORE.md`, At launch): the short and full descriptions and "What's new" for a free first season and an unlock, under Play's limits (`npm run check`) and held to the content's facts (`storecopy.test.ts`).
 - **Done-when 3 (legal text updated): passes, for Evan's review.** Not legal advice; the terms' governing law and the two data-safety points are his.
 
+**Found writing the beta plan (16 Oct 2026), and Evan's call.** The Android app always shows the live site, where the gate is off till launch, so no licence tester could try Play's unlock before then. **Evan's call: a tester's link.**
+
+**Status (16 Oct 2026): 19.4 built: the beta kit.** No save change, 0.999.90.
+- **The error screen's report** ends on where the game was (the day, the hour, the place, the save's seed) and the last twelve moves (`game/trail.ts`, `Game.trail()`). They're kept in memory as dispatched, a walk folded into one line, any name the player typed left out (the climber's, a first ascent's, the crew's). The privacy page and the screen's own words say so.
+- **A tester's link** (`?gate=try`, `trying` in `game/unlock.ts`): the gate shuts for that tab alone, as on launch day for a climber not from before. Only Play's unlock opens it, and it marks nothing. A licence tester can buy and restore in the Android app before the gate is on for anyone (`docs/BETA.md`).
+- **Found building it: a locked game set a real climber aside.** In the full game, locked, a full game's save was refused at start-up, and a refused save is quarantined; under the link, a tester's own climber would have been. Now only the demo's own build turns a full save away (`save.ts`). The locked full game loads it, and a climber who's been past where the demo goes waits at the last card (`demoOver`, asked once a state), where it can be unlocked. A full save brought in by file at launch does the same, where 19.1 turned it away.
+- **Settings ends on the build's version,** for testers' reports.
+- **`docs/BETA.md`:**
+  - the two rounds: Play's closed track and a Steam Playtest, 50–200 players, a third non-climbers;
+  - the tester's link, step by step;
+  - the invitation's words, where reports go, and what one holds;
+  - the severities: critical and high block launch;
+  - weekly triage, and the bug list.
+- **`.github/ISSUE_TEMPLATE/beta-bug.yml`:** a tester's issue, asking for no save (the repository is public).
+- **Checks:**
+  - `trail.test.ts` (a move as a line, typed names left out, a walk folded, the cap);
+  - `crash.test.ts` (the report's trail);
+  - `unlock.test.ts` (the link: this tab's, past a reload; it shuts a climber from before, marks nothing, and opens only to Play's unlock);
+  - `demo.test.ts` (the demo's build turns a full climber away; the locked full game loads and holds them);
+  - the e2e's crash section (the day, the seed, the moves, the create move without its name);
+  - `e2e:gate` on today's build: a tester's own climber two hundred days in, the link, the last card with the save untouched, bought, open again; and without the link the site open to everyone.
+
+**Done when, checked (16 Oct 2026), as Evan's calls left them:**
+1. **A purchase unlocks the full game on each store, and a restore works: the code's ready; the real stores are Evan's.**
+   - **Steam:** the full edition is the purchase, always open (the desktop smoke).
+   - **Play:** the unlock and its restore pass against a faked Play (`e2e:gate`), and the acknowledger compiles in **Build TWA**. A real purchase and restore wait on `full_game` in the Play Console and a licence tester on the tester's link.
+   - **itch.io:** its DRM-free build is **Build desktop**'s folders, Evan's to upload.
+   - iOS is Phase 20's.
+2. **Without an unlock, the gated build never goes past the first season, and the demo's own build holds none of the full game's content: passes.** `e2e:gate` (a climber after the gate gets the first season and its last card; a full climber waits at the last card) and `diff:demo`. On the web it's an honor gate, by Evan's call.
+3. **Legal text is updated: passes** (19.3), for Evan's review: the terms' governing law, and the two data-safety points.
+4. **Beta round 2 has no open critical or high bugs: Evan's.** The kit is ready: `docs/BETA.md`, the report, the tester's link, the issue template.
+5. **No crash in the bots' and the e2e's runs, and a crash shows the error screen: passes.**
+   - The full harness, 10 of 10 in 16 minutes: 16 careers to day 224 and 16 to their endings, with no refusal and no stuck night.
+   - Two balance lines inside it still read short, as they have since Phase 30: Outdoors 1 of 4 and Comps 3 of 4 reach the top. Phase 19 moved no balance.
+   - `play:demo` plays the demo to its end.
+   - The e2e, `e2e:demo` and `e2e:gate` fail on any page error, and passed.
+   - The error screen shows on a crash, in the e2e on purpose.
+
+**Phase 19's code is done.** Criteria 1 (the real stores) and 4 (the beta) are Evan's: his accounts, his testers, his launch. Closing the phase is his call.
+
 ---
 
 ### Phase 20 — Launch, live updates, and the Unreal decision
@@ -4486,3 +4526,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-16 — Phase 19 planned with Evan's calls: the web plays the first season at launch, and climbers from before keep the full game; Android keeps the TWA, with Play's unlock through Digital Goods; iOS after launch; the audit's prices. 19.1 built: the gate, off until launch (`game/unlock.ts`, `DIRTBAG_GATE`): the full game's build plays the demo's rules till it's unlocked, on the same keys; climbers here are marked as from before, and the first gated start marks the rest; `e2e:gate` on a gated build, in CI. No save change. 0.999.87.
 - 2026-10-16 — 19.2 built: Play's unlock in the Android app. The page buys through the Digital Goods API and Payment Request at Play's price, counts it once Play lists it, and restores it at start-up and by hand; the app acknowledges each purchase on the phone (Evan's call, since version 2 of the API has no acknowledge and Play refunds what isn't), from `twa/PlayAcknowledger.java` hooked into Bubblewrap's project by `twa/acknowledge.mjs`. The locked last card offers it in the app, and store pages elsewhere. No save change. 0.999.88.
 - 2026-10-16 — 19.3 built: the paperwork. The privacy page brought up to date (the host, each store's part in a purchase, the Android app's unused notification permission, deleting by platform); terms of use written new (`terms.html`, shipped beside it, both checked); the stores' forms answered from the code (`docs/PAPERWORK.md`: Play's data safety, the IARC questionnaire with its simulated gambling, the target audience, Steam's content survey); Play's listing for launch in `docs/STORE.md`. No change to the game. 0.999.89.
+- 2026-10-16 — 19.4 built: the beta kit. The error screen's report ends on where the game was and the last twelve moves (`game/trail.ts`; no typed names); a tester's link (`?gate=try`) shuts the gate for one tab so Play's unlock can be tried before launch; the locked full game no longer sets a full climber's save aside at start-up, it holds them at the last card (`demoOver`; only the demo's build refuses one); Settings shows the version; `docs/BETA.md` (two rounds, the link, reporting, severities that gate launch) and a beta issue template. Phase 19's Done-when checked: 2, 3 and 5 pass; 1's real stores and 4's beta are Evan's. 0.999.90.

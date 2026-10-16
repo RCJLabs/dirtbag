@@ -1,0 +1,47 @@
+# Phase 19.4: a beta tester's bug (docs/BETA.md). The repository is public: no saves here.
+name: Beta bug
+description: Something wrong in the beta — what you did, what happened, what you expected.
+labels: ['beta']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for climbing. This page is public, so **don't attach your save here**. If we need it, we'll ask you to email it.
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where were you playing?
+      options:
+        - Android app (Google Play)
+        - Steam (desktop)
+        - A browser (dirtbag.rcjlabs.com)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The last line of Settings, or the first line of the "Something broke" report.
+      placeholder: 0.999.90
+  - type: textarea
+    id: report
+    attributes:
+      label: The "Something broke" report, if you got one
+      description: Tap **Copy it** on that screen and paste it here. It holds no name you typed.
+      render: text
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did just before, what happened, and what you expected instead.
+    validations:
+      required: true
+  - type: dropdown
+    id: how-bad
+    attributes:
+      label: How bad is it?
+      options:
+        - It lost my save or my purchase
+        - The game broke or I got stuck
+        - Something's wrong, but I could carry on
+        - It's cosmetic or a wording thing

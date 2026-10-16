@@ -20,6 +20,23 @@ describe('the crash report', () => {
     );
   });
 
+  it('ends on where the game was and the last moves, when it can say', () => {
+    const trail = {
+      seed: 'dirtbag-abc',
+      day: 34,
+      min: 14 * 60 + 20,
+      at: 'road',
+      moves: ['day 34 2:10 PM: go route=rswarm'],
+    };
+    const r = crashReport(new Error('x'), where, trail).split('\n');
+    expect(r.slice(-3)).toEqual([
+      'Day 34, 2:20 PM, at road; seed dirtbag-abc',
+      'Last moves:',
+      'day 34 2:10 PM: go route=rswarm',
+    ]);
+    expect(crashReport(new Error('x'), where, null)).not.toContain('Last moves');
+  });
+
   it('takes a thrown string as well as an Error', () => {
     expect(crashReport('the van caught fire', where)).toContain('Error: the van caught fire');
   });

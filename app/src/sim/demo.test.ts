@@ -8,7 +8,7 @@ import { RACE_ROUTE } from './content/people';
 import { PLACES } from './content/places';
 import { ACT_I } from './content/story';
 import { demoOver, raceDecided } from './demo';
-import { asDemo } from './edition';
+import { asDemo, asDemoBuild } from './edition';
 import { act, emptyLog, newGame } from './game';
 import { known } from './hollow';
 import { fromSave, toSave } from './save';
@@ -65,15 +65,28 @@ describe('the demo', () => {
         }
   });
 
-  it('turns away a climber from the full game, and plays its own', () => {
+  it('turns away a climber from the full game in its own build, and plays its own', () => {
     const at = (s: GameState) => fromSave(toSave(s, 'test'));
-    const moon = at(climber(9, { at: 'moon' }));
-    expect(moon.ok ? null : moon.why).toBe(DEMO_END.fullSave);
-    const line = at({ ...climber(9), routes: { mopen: emptyLog() } });
-    expect(line.ok ? null : line.why).toBe(DEMO_END.fullSave);
-    expect(at(climber(4)).ok).toBe(true);
+    asDemoBuild(true);
+    try {
+      const moon = at(climber(9, { at: 'moon' }));
+      expect(moon.ok ? null : moon.why).toBe(DEMO_END.fullSave);
+      const line = at({ ...climber(9), routes: { mopen: emptyLog() } });
+      expect(line.ok ? null : line.why).toBe(DEMO_END.fullSave);
+      expect(at(climber(4)).ok).toBe(true);
+    } finally {
+      asDemoBuild(false);
+    }
     asDemo(false);
     expect(at(climber(9, { at: 'moon' })).ok).toBe(true);
+  });
+
+  // Phase 19.4: the full game, locked, sets no real climber aside: it loads them, and they stop
+  // at the season's last card, where the game can be unlocked.
+  it('loads a full climber in the full game, locked, and holds them at the last card', () => {
+    const got = fromSave(toSave(climber(9, { at: 'moon' }), 'test'));
+    expect(got.ok).toBe(true);
+    if (got.ok) expect(demoOver(got.state)).toBe(true);
   });
 
   it('tells Act I, and no story after it', () => {
