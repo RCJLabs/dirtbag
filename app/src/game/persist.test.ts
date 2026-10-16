@@ -2,7 +2,7 @@
 // aside and never overwritten, the day before is there to fall back on, and a browser
 // that won't store anything still starts a game.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, asDemo, newGame, toSave } from '../sim';
+import { act, asDemoBuild, newGame, toSave } from '../sim';
 import { loadPlans, savePlans } from './plan';
 import { boot, DEFAULT_SETTINGS, demoClimber, replace, save, saveSettings } from './persist';
 import { keepIn } from './storage';
@@ -117,7 +117,7 @@ describe('persist', () => {
   it('keeps the demo’s keys apart, and never sees the full game’s climber there', () => {
     const full = { ...newGame('full'), day: 40, climber: { ...newGame('full').climber, name: 'Robin' } };
     ls.setItem('dirtbag.save', toSave(full, '0.0.0-test'));
-    asDemo(true);
+    asDemoBuild(true);
     try {
       expect(boot(seed).state.day).toBe(1);
       const demo = { ...newGame('demo'), day: 20, climber: { ...newGame('demo').climber, name: 'Kit' } };
@@ -135,7 +135,7 @@ describe('persist', () => {
       // The demo finds no demo climber to carry on with: it's the demo.
       expect(demoClimber()).toBeNull();
     } finally {
-      asDemo(false);
+      asDemoBuild(false);
     }
     // The full game finds its own climber, and the demo's beside it to carry on with.
     expect(boot(seed).state.climber.name).toBe('Robin');

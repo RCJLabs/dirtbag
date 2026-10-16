@@ -5,7 +5,7 @@
 //   - The last save from an earlier day is kept as a fallback.
 //   - A failed write is reported, not swallowed.
 
-import { DEMO, fromSave, newGame, toSave, type GameState } from '../sim';
+import { DEMO_BUILD, fromSave, newGame, toSave, type GameState } from '../sim';
 import { DEMO_SAVE, ours, store } from './storage';
 import { DEFAULT_BINDS, readBinds, type Binds } from './binds';
 
@@ -128,7 +128,7 @@ export function rawSave(): string | null {
 // a site or a desktop folder): loaded as any save is, or null. The full game offers to carry
 // on with them; the demo's copy stays where it is, the demo's to keep.
 export function demoClimber(): GameState | null {
-  if (DEMO) return null;
+  if (DEMO_BUILD) return null;
   try {
     const raw = store()?.getItem(DEMO_SAVE);
     const got = raw ? fromSave(raw) : null;

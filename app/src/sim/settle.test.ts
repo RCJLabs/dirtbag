@@ -8,7 +8,7 @@ import { FA_NOTE, REPEAT_FIRST, REPEAT_WILD, REPEATERS, SETTLED } from './conten
 import { GUIDE, SETTLE } from './dials';
 import { fill, money } from './format';
 import { act, lineGrade, newGame } from './game';
-import { fasIn, GUIDE_CRAGS, poorestWeek, royalties, royaltyOf } from './guides';
+import { fasIn, guideCrags, poorestWeek, royalties, royaltyOf } from './guides';
 import { fromSave, MIGRATIONS, validate } from './save';
 import { faNote, repeatDays, repeatsOf, settled } from './settle';
 import type { FirstAscent, GameState } from './types';
@@ -181,9 +181,9 @@ describe('royalties', () => {
   it('never come to more than the poorest job’s week, however many guides', () => {
     expect(poorestWeek()).toBe(ACTS['cafe.shift']!.cost.cash! * GUIDE.week);
     const all = shelf({
-      guides: Object.fromEntries(GUIDE_CRAGS.map((id) => [id, { pages: GUIDE.pages, out: 60 }])),
+      guides: Object.fromEntries(guideCrags().map((id) => [id, { pages: GUIDE.pages, out: 60 }])),
     });
-    const sum = GUIDE_CRAGS.reduce((t, id) => t + royaltyOf(all, id), 0);
+    const sum = guideCrags().reduce((t, id) => t + royaltyOf(all, id), 0);
     expect(sum).toBeGreaterThan(poorestWeek());
     expect(royalties(all)).toBe(poorestWeek());
   });

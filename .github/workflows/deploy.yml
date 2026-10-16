@@ -47,8 +47,13 @@ jobs:
             exit 1
           fi
 
+      # Phase 19.1: the gate (app/src/game/unlock.ts). '0' until launch; at launch, '1': the site
+      # plays the first season till it's unlocked, and a climber from before keeps the full game.
+      # Evan's to flip.
       - name: Build the game
         run: npm run build --prefix app
+        env:
+          DIRTBAG_GATE: '0'
 
       - name: Static checks
         run: npm run check
