@@ -35,6 +35,30 @@ describe('a controller', () => {
     expect(pad.poll(0.048)).toEqual([{ k: 'down', b: 'rt' }]);
   });
 
+  it('reads each role from the button Settings gave it, and says which went down', () => {
+    const pad = new Pad();
+    pad.binds = { ...pad.binds, b: PAD.x };
+    set('x', true);
+    expect(pad.poll(0)).toEqual([{ k: 'down', b: 'b' }]);
+    expect(pad.fresh).toEqual([PAD.x]);
+    set('x', false);
+    set('b', true);
+    expect(pad.poll(0.016)).toEqual([{ k: 'up', b: 'b' }]);
+    expect(pad.fresh).toEqual([PAD.b]);
+  });
+
+  it('doesn’t count a button given a role while it’s held as a press of it', () => {
+    const pad = new Pad();
+    set('x', true);
+    expect(pad.poll(0)).toEqual([]);
+    pad.binds = { ...pad.binds, b: PAD.x };
+    expect(pad.poll(0.016)).toEqual([]);
+    set('x', false);
+    expect(pad.poll(0.032)).toEqual([]);
+    set('x', true);
+    expect(pad.poll(0.048)).toEqual([{ k: 'down', b: 'b' }]);
+  });
+
   it('repeats a held direction after a beat, then quicker, like a held arrow key', () => {
     const pad = new Pad();
     set('down', true);

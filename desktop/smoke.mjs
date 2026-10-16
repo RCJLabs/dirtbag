@@ -83,6 +83,14 @@ const unlocked = await page.evaluate(() => [
 ]);
 if (unlocked.join() !== '0,0') await fail(`achievements with Steam off: ${unlocked}`);
 ok('Steam off: the Record Book’s achievements are a quiet no');
+// Phase 14.6b: and no Deck, and Steam's keyboard asked for (and a bad box) without a word back.
+const deck = await page.evaluate(() => {
+  window.dirtbagDesktop.keyboard(10, 20, 300, 40);
+  window.dirtbagDesktop.keyboard(-1, Infinity, 'x', 40);
+  return window.dirtbagDesktop.deck();
+});
+if (deck !== false) await fail(`a Deck, with Steam off: ${deck}`);
+ok('Steam off: not a Deck, and no keyboard to show');
 
 await app.close();
 ({ app, page } = await launch());

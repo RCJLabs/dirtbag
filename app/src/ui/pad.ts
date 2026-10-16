@@ -1,6 +1,7 @@
 // Phase 14.1 (Evan's call): a controller, read once a frame. The browser sends no events for
 // a gamepad's buttons, only its state, so this turns the change since the last frame into
 // presses and releases, and a held direction into moves that repeat like a held arrow key.
+import { DEFAULT_BINDS, type PadRole } from '../game/binds';
 import type { Dir } from './spatial';
 
 // The standard mapping's buttons (W3C Gamepad, "standard"), by name.
@@ -20,7 +21,16 @@ export const PAD = {
   left: 14,
   right: 15,
 } as const;
-export type PadButton = keyof typeof PAD;
+// Phase 14.6b: what a press means. The roles go to whichever button Settings gave them; the
+// right trigger and the D-pad are always themselves.
+export type PadButton = PadRole | 'rt' | Dir;
+const FIXED: [PadButton, number][] = [
+  ['rt', PAD.rt],
+  ['up', PAD.up],
+  ['down', PAD.down],
+  ['left', PAD.left],
+  ['right', PAD.right],
+];
 
 export type PadEvent =
   | { k: 'down' | 'up'; b: PadButton }
@@ -45,6 +55,12 @@ const DIR_BUTTONS: [PadButton, Dir][] = [
 ];
 
 export class Pad {
+  // Which button each role is on (Settings), read each frame.
+  binds: Record<PadRole, number> = DEFAULT_BINDS.pad;
+  // The buttons that went down this frame, by index, whatever they mean: what Settings
+  // listens for when it gives a role a button.
+  fresh: number[] = [];
+  private raw = new Set<number>();
   private was = new Set<PadButton>();
   private held: { dir: Dir; stick: boolean; next: number } | null = null;
   private lx: -1 | 0 | 1 = 0;
@@ -61,19 +77,29 @@ export class Pad {
   poll(now: number): PadEvent[] {
     const gp = Pad.read();
     const out: PadEvent[] = [];
+    this.fresh = [];
     if (!gp) {
       for (const b of this.was) out.push({ k: 'up', b });
       this.was.clear();
+      this.raw.clear();
       this.held = null;
       if (this.lx) out.push({ k: 'lean', x: 0 });
       this.lx = this.ly = 0;
       return out;
     }
-    const is = new Set<PadButton>();
-    for (const [name, i] of Object.entries(PAD) as [PadButton, number][]) {
+    const down = (i: number) => {
       const b = gp.buttons[i];
-      if (b && (b.pressed || b.value > PRESSED)) is.add(name);
-    }
+      return !!b && (b.pressed || b.value > PRESSED);
+    };
+    const raw = new Set(gp.buttons.map((_, i) => i).filter(down));
+    this.fresh = [...raw].filter((i) => !this.raw.has(i));
+    this.raw = raw;
+    // A role goes down when its button does, and stays down while it's held: a button given
+    // a role while it's held (Settings, just now) isn't a press of that role.
+    const fresh = new Set(this.fresh);
+    const is = new Set<PadButton>();
+    for (const [role, i] of [...(Object.entries(this.binds) as [PadRole, number][]), ...FIXED])
+      if (raw.has(i) && (fresh.has(i) || this.was.has(role))) is.add(role);
     for (const b of is) if (!this.was.has(b)) out.push({ k: 'down', b });
     for (const b of this.was) if (!is.has(b)) out.push({ k: 'up', b });
     this.was = is;

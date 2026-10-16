@@ -304,6 +304,7 @@ let holdPad = false;
 const PAD = {
   a: 0,
   b: 1,
+  x: 2,
   y: 3,
   lb: 4,
   rb: 5,
@@ -2956,8 +2957,33 @@ console.log('A controller');
   await until('the meter', async () =>
     /^\d+ fps · slowest \d+ ms · \d+ slow$/.test((await text('#meter')) ?? ''),
   );
+  const meter = await text('#meter');
+
+  // Phase 14.6b: Back moved to X from Settings, by controller. B does nothing then, X puts the
+  // sheet down; then the controls put back as they were, and B is Back again.
+  await padTo('Settings', /^b-settings\|/);
+  await padPress('a');
+  await padTo('Back, on the pad', /^bind-pad-b\|/);
+  await padPress('a');
+  await expectText('#bind-pad-b', /Press a button/, 'Settings waiting for a button');
+  await padPress('x');
+  await expectText('#bind-pad-b', /X$/, 'Back, on X');
+  await padPress('b');
+  await wait(300);
+  if (!(await page.locator('#sheet').count())) await fail('B still put Settings down, with Back on X');
+  await padPress('x');
+  await until('Settings put down on X', async () => !(await page.locator('#sheet').count()));
+  const kept = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.settings')).binds.pad.b);
+  if (kept !== 2) await fail(`Back's button, kept: ${kept}`);
+  await padTo('Settings', /^b-settings\|/);
+  await padPress('a');
+  await padTo('the controls as they were', /^bind-reset\|/);
+  await padPress('a');
+  await expectText('#bind-pad-b', /B$/, 'Back, on B again');
+  await padPress('b');
+  await until('Settings put down on B', async () => !(await page.locator('#sheet').count()));
   log(
-    `and by controller: a dish stirred on A, another skipped on B, the speed wall on the bumpers (${run}), the meter: ${await text('#meter')}`,
+    `and by controller: a dish stirred on A, another skipped on B, the speed wall on the bumpers (${run}), the meter: ${meter}, Back moved to X and put back`,
   );
   holdPad = false;
   down = false;

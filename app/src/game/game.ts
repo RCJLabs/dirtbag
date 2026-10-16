@@ -86,6 +86,7 @@ import {
 import { mapLeft, render, valleyArt, type Frame } from '../view/render';
 import { drivePath } from '../view/valley';
 import * as persist from './persist';
+import { bindKey, bindPad, type KeyRole, type PadRole } from './binds';
 import { earnedEver, steamName } from './achievements';
 import { desktop } from './desktop';
 import { exportSave } from './savefile';
@@ -228,6 +229,8 @@ export interface Ui {
   driving: boolean;
   wallRoute: string;
   settings: persist.Settings;
+  // Phase 14.6b: a role in Settings waiting for the button or key it's to have.
+  rebind: { device: 'pad'; role: PadRole } | { device: 'keys'; role: KeyRole } | null;
   still: boolean;
   // The screen's width in logical pixels: W in portrait, wider on a wider window.
   w: number;
@@ -400,6 +403,7 @@ export class Game {
       plans: loadPlans(),
       plan: null,
       speed: null,
+      rebind: null,
       busk: null,
       trip: null,
     });
@@ -598,6 +602,30 @@ export class Game {
     this.sound.configure(settings);
     if (!persist.saveSettings(settings)) this.toast("Couldn't keep that setting in this browser.");
     this.set({ settings, still: stillFor(settings, this.systemStill) });
+  }
+
+  // Phase 14.6b: Settings asks for the next button or key, for a role; asked again, it stops.
+  listen(device: 'pad', role: PadRole): void;
+  listen(device: 'keys', role: KeyRole): void;
+  listen(device: 'pad' | 'keys', role: PadRole | KeyRole): void {
+    const r = this.ui.get().rebind;
+    this.set({ rebind: r?.device === device && r.role === role ? null : ({ device, role } as Ui['rebind']) });
+  }
+
+  // The button or key it was given: the role has it, and whichever role had it takes the old
+  // one. Anything a role can't take just stops the asking.
+  rebound(input: number | string | null): void {
+    const r = this.ui.get().rebind;
+    if (!r) return;
+    const b = this.ui.get().settings.binds;
+    const next =
+      input === null
+        ? b
+        : r.device === 'pad'
+          ? bindPad(b, r.role, Number(input))
+          : bindKey(b, r.role, String(input));
+    this.set({ rebind: null });
+    if (next !== b) this.setSettings({ binds: next });
   }
 
   // `carry`: a v0.956 climber's skills, to come across as they were (the sim caps them).

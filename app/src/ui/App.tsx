@@ -15,6 +15,8 @@ import { back, canSkip, hub, onPad } from './input';
 import { move } from './nav';
 import { glyphs } from './Glyph';
 import { Meter, meterLine } from './meter';
+import { BINDABLE, keyOf } from '../game/binds';
+import { desktop } from '../game/desktop';
 import { Pad } from './pad';
 import { Sheet } from './Sheet';
 import type { Dir } from './spatial';
@@ -71,11 +73,19 @@ export function App({ game }: { game: Game }) {
       const f = meter.frame(ts);
       const line = f && document.getElementById('meter');
       if (f && line) line.textContent = meterLine(f);
-      for (const ev of pad.poll(ts / 1000)) {
-        sc.dataset.input = 'pad';
-        game.sound.unlock();
-        onPad(game, ev);
-      }
+      const u = game.ui.get();
+      pad.binds = u.settings.binds.pad;
+      const evs = pad.poll(ts / 1000);
+      // Phase 14.6b: Settings asking for a button takes the next one pressed; the D-pad stops
+      // the asking and moves as it always does.
+      const asked = u.rebind?.device === 'pad' && pad.fresh.length ? pad.fresh[0]! : null;
+      if (asked !== null) game.rebound(asked);
+      if (asked === null || !BINDABLE.includes(asked))
+        for (const ev of evs) {
+          sc.dataset.input = 'pad';
+          game.sound.unlock();
+          onPad(game, ev);
+        }
       game.step(dt);
       if (!document.hidden) game.draw(g, ts / 1000, px);
       raf = requestAnimationFrame(loop);
@@ -89,8 +99,19 @@ export function App({ game }: { game: Game }) {
     };
     cv.addEventListener('pointerdown', down);
 
-    const hold = (e: KeyboardEvent) => e.key === ' ' || e.key === 'Enter';
+    // Phase 14.6b: the keys as Settings has them; Enter always presses, the arrows always move.
+    const keys = () => game.ui.get().settings.binds.keys;
+    const is = (e: KeyboardEvent, k: string) => keyOf(e.key) === k;
+    const hold = (e: KeyboardEvent) => is(e, keys().press) || e.key === 'Enter';
     const keydown = (e: KeyboardEvent) => {
+      // Settings asking for a key takes the next one; one no role can take just stops it.
+      if (game.ui.get().rebind?.device === 'keys') {
+        game.rebound(e.key);
+        if (!ARROWS[e.key]) {
+          e.preventDefault();
+          return;
+        }
+      }
       const a = document.activeElement;
       // A field keeps its own keys, but for Up and Down, which leave it.
       const typing = a instanceof HTMLInputElement || a instanceof HTMLTextAreaElement;
@@ -112,9 +133,9 @@ export function App({ game }: { game: Game }) {
       // On the speed wall: F and J (or the arrows) are your hands.
       if (u.speed && u.speed.phase !== 'done') {
         const hand =
-          e.key === 'f' || e.key === 'F' || e.key === 'ArrowLeft'
+          is(e, keys().left) || e.key === 'ArrowLeft'
             ? 0
-            : e.key === 'j' || e.key === 'J' || e.key === 'ArrowRight'
+            : is(e, keys().right) || e.key === 'ArrowRight'
               ? 1
               : null;
         if (hand !== null) {
@@ -128,12 +149,13 @@ export function App({ game }: { game: Game }) {
         if (hold(e)) {
           e.preventDefault();
           if (!e.repeat) game.buskTap();
-        } else if (e.key === 'Escape' && canSkip(u)) game.cookSkip();
+        } else if (is(e, keys().back) && canSkip(u)) game.cookSkip();
         return;
       }
-      // Escape puts down whatever's open, the most recent first: a conversation, a sheet
-      // that has a close button, then the map, back to where you are.
-      if (e.key === 'Escape') {
+      // Back (Escape, unless Settings moved it) puts down whatever's open, the most recent
+      // first: a conversation, a sheet that has a close button, then the map, back to where
+      // you are.
+      if (is(e, keys().back)) {
         back(game);
         return;
       }
@@ -146,13 +168,22 @@ export function App({ game }: { game: Game }) {
       }
       // The HUD's buttons: M the map, J the journal, P the plan. Never from a field: a crew
       // can have an M in its name.
-      const k = e.key.toLowerCase();
-      if (!typing && !e.metaKey && !e.ctrlKey && !e.altKey && (k === 'm' || k === 'j' || k === 'p')) {
-        hub(game, k === 'm' ? 'map' : k === 'j' ? 'journal' : 'plan');
+      const to = is(e, keys().map)
+        ? 'map'
+        : is(e, keys().journal)
+          ? 'journal'
+          : is(e, keys().plan)
+            ? 'plan'
+            : null;
+      if (!typing && !e.metaKey && !e.ctrlKey && !e.altKey && to) {
+        hub(game, to);
         return;
       }
       if (u.view === 'wall') {
-        if (u.climbing && hold(e) && a?.id !== 'hold') {
+        // The hold button takes Space and Enter itself, when it has focus; a rebound key it
+        // doesn't know comes through here.
+        const own = a?.id === 'hold' && (e.key === ' ' || e.key === 'Enter');
+        if (u.climbing && hold(e) && !own) {
           e.preventDefault();
           if (!e.repeat) game.press(true);
         } else if (!u.climbing && !u.sheet && hold(e) && !onButton) {
@@ -178,6 +209,17 @@ export function App({ game }: { game: Game }) {
     };
     window.addEventListener('keydown', keydown);
     window.addEventListener('keyup', keyup);
+    // Phase 14.6b: a text field reached by the pad, on the desktop: Steam's floating keyboard
+    // under it (Steam shows it only where its overlay is up, as on a Deck).
+    const typed = (e: FocusEvent) => {
+      const t = e.target;
+      if (!desktop || sc.dataset.input !== 'pad' || !(t instanceof HTMLInputElement) || t.type !== 'text')
+        return;
+      const r = t.getBoundingClientRect();
+      const k = window.devicePixelRatio || 1;
+      desktop.keyboard(r.left * k, r.top * k, r.width * k, r.height * k);
+    };
+    window.addEventListener('focusin', typed);
 
     // Sound can only start from a gesture, so every tap and key offers it one. A button in
     // the panels ticks as it's pressed; the hold button has the climbing's own sounds.
@@ -201,6 +243,7 @@ export function App({ game }: { game: Game }) {
       cv.removeEventListener('pointerdown', down);
       window.removeEventListener('keydown', keydown);
       window.removeEventListener('keyup', keyup);
+      window.removeEventListener('focusin', typed);
       window.removeEventListener('pointerdown', wake, true);
       window.removeEventListener('keydown', wake, true);
       sc.removeEventListener('click', tick);

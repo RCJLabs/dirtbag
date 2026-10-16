@@ -7,6 +7,7 @@
 
 import { fromSave, newGame, toSave, type GameState } from '../sim';
 import { store } from './storage';
+import { DEFAULT_BINDS, readBinds, type Binds } from './binds';
 
 const KEY = 'dirtbag.save';
 const PREV = 'dirtbag.save.prev';
@@ -137,6 +138,8 @@ export interface Settings {
   music: 'on' | 'off';
   // Phase 14.6: frames a second in a corner, for checking a Deck holds 60.
   meter: 'off' | 'on';
+  // Phase 14.6b: what the pad's buttons and the keys do.
+  binds: Binds;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -146,6 +149,7 @@ export const DEFAULT_SETTINGS: Settings = {
   buzz: 'on',
   music: 'on',
   meter: 'off',
+  binds: DEFAULT_BINDS,
 };
 
 export function loadSettings(): Settings {
@@ -160,6 +164,7 @@ export function loadSettings(): Settings {
       buzz: v.buzz === 'off' ? 'off' : 'on',
       music: v.music === 'off' ? 'off' : 'on',
       meter: v.meter === 'on' ? 'on' : 'off',
+      binds: readBinds(v.binds),
     };
   } catch {
     return DEFAULT_SETTINGS;

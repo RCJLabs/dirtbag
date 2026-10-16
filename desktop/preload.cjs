@@ -1,6 +1,7 @@
 // The one bridge between the game's page and the desktop (Phase 14.3): the game's keys in the
-// user-data file, the window's full screen, quitting, and (14.4) Steam's achievements. Nothing else of Electron or Node
-// reaches the page. A sandboxed preload must be CommonJS.
+// user-data file, the window's full screen, quitting, (14.4) Steam's achievements, and (14.6b)
+// whether it's a Deck and Steam's keyboard. Nothing else of Electron or Node reaches the page.
+// A sandboxed preload must be CommonJS.
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('dirtbagDesktop', {
@@ -10,4 +11,6 @@ contextBridge.exposeInMainWorld('dirtbagDesktop', {
   fullscreen: (on) => ipcRenderer.sendSync('window:fullscreen', on),
   quit: () => ipcRenderer.send('window:quit'),
   achieve: (names) => ipcRenderer.sendSync('steam:achieve', names),
+  deck: () => ipcRenderer.sendSync('steam:deck'),
+  keyboard: (x, y, w, h) => ipcRenderer.send('steam:keyboard', x, y, w, h),
 });

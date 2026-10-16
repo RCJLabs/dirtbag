@@ -158,7 +158,7 @@ export function ClimbPanel({ game }: { game: Game }) {
         }}
       >
         {label}
-        <PadHint b="a" />
+        <PadHint b="a" binds={ui.settings.binds.pad} />
       </button>
     </div>
   );
