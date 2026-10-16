@@ -1,5 +1,5 @@
 // Copies exactly what the site serves into _site/ (what deploy.yml publishes): the rebuild's
-// build (app/dist), the privacy page, CNAME, and .well-known/assetlinks.json. Without that last
+// build (app/dist), the privacy page and the terms (Phase 19.3), CNAME, and .well-known/assetlinks.json. Without that last
 // one the Play app loses domain verification and shows a browser address bar. Nothing else in
 // the repo ships, so nothing becomes public by accident.
 //
@@ -10,7 +10,7 @@ import { join, resolve } from 'node:path';
 import { ROOT, packageVersion } from './lib/version.mjs';
 
 const DIST = join(ROOT, 'app', 'dist');
-const FILES = ['privacy.html', 'CNAME'];
+const FILES = ['privacy.html', 'terms.html', 'CNAME'];
 const DIRS = ['.well-known'];
 
 const out = resolve(process.argv[2] || join(ROOT, '_site'));

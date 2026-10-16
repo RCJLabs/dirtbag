@@ -13,7 +13,8 @@ A climbing life-sim. Live out of your van, work shifts, and push your grade from
 | Path | What it is |
 |---|---|
 | `app/` | The game: sim, renderer, UI, tests, and the build that makes the site. Its own package; see [`app/README.md`](app/README.md) |
-| `privacy.html` | Privacy policy (the game collects and sends nothing) |
+| `privacy.html` | Privacy policy (the game collects and sends nothing; the stores handle purchases) |
+| `terms.html` | Terms of use (Phase 19.3: a free first season, the full game bought from a store) |
 | `.well-known/assetlinks.json`, `twa-manifest.json`, `twa/` | Google Play wrapper (TWA): domain verification, config, pinned build tools |
 | `desktop/` | The desktop build for Steam (Electron): the game from `app/dist` in its own window, its save in a file Steam Cloud syncs, the Record Book as achievements; pinned Electron, packager and steamworks.js, a smoke test. Steamworks setup: [`desktop/STEAM.md`](desktop/STEAM.md) |
 | `.github/workflows/` | CI, deploy on tag, Play bundle build, desktop build |
@@ -59,7 +60,7 @@ npm run pack --prefix desktop         # a folder for this platform, in desktop/o
 
 **Play's unlock** (Phase 19.2): the Play Console needs a one-time product with the id `full_game` (the price is set there; the game shows Play's). Try it with a licence tester before launch. **Build TWA** hooks the purchase acknowledger into the app (`twa/acknowledge.mjs`); without it Play refunds every unlock after three days.
 
-**At launch, the gate** (Phase 19.1): set `DIRTBAG_GATE` to `'1'` in `deploy.yml` and release. The site then plays the first season till the full game's unlocked; a climber who was here before keeps the full game. Rolling back to a release from before the flip opens the game to everyone while it's live; a climber who started while the gate was on is shut again once it's back on.
+**At launch, the gate** (Phase 19.1): before the day, fill in the stores' forms from `docs/PAPERWORK.md` (Play's data safety and content rating, Steam's content survey) and have the privacy page and the terms read. On the day, set `DIRTBAG_GATE` to `'1'` in `deploy.yml` and release, and swap Play's listing for the launch blocks in `docs/STORE.md`. The site then plays the first season till the full game's unlocked; a climber who was here before keeps the full game. Rolling back to a release from before the flip opens the game to everyone while it's live; a climber who started while the gate was on is shut again once it's back on.
 
 **Rolling back:** run the Deploy workflow by hand on the previous release's tag. v0.956 has no tag yet: creating `v0.956.0` on commit `e098332` deploys it, with its own files and its own copy of the workflow, so create that tag only to roll back. Players' saves from both games stay in their browsers either way.
 

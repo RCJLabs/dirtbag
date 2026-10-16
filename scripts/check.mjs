@@ -86,8 +86,12 @@ if (built('index.html')) {
 }
 
 // --- served beside the build ---------------------------------------------------------------
-check('privacy.html exists', () => {
+check('the privacy page and the terms exist, and link each other', () => {
   if (!exists('privacy.html')) fail('the Play listing links the privacy page');
+  // Phase 19.3: the terms for a paid game, served beside it (scripts/stage-site.mjs).
+  if (!exists('terms.html')) fail('the stores link the terms');
+  if (!read('privacy.html').includes('href="terms.html"')) fail('privacy.html doesn’t link the terms');
+  if (!read('terms.html').includes('href="privacy.html"')) fail('terms.html doesn’t link the privacy page');
 });
 
 // --- the store copy fits the stores' limits -------------------------------------------------
@@ -99,6 +103,10 @@ check("docs/STORE.md fits the stores' limits", () => {
     short: ['Play', 80],
     full: ['Play', 4000],
     'whats-new': ['Play', 500],
+    // Phase 19.3: Play's listing for launch, when the gate goes on.
+    'short-launch': ['Play', 80],
+    'full-launch': ['Play', 4000],
+    'whats-new-launch': ['Play', 500],
     'steam-short': ['Steam', 300],
     'steam-about': ['Steam', Infinity],
   };

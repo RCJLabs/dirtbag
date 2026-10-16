@@ -4188,6 +4188,29 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
   - Nothing has been bought for real: that needs the product in the Play Console and a licence tester on a phone.
   - Whether `listPurchases()` lists a pending purchase (paid in cash, not yet cleared) isn't known. If it does, the game unlocks before Play has the money; the app acknowledges only once it's paid.
 
+**Status (16 Oct 2026): 19.3 built: the paperwork.** No change to the game, 0.999.89 (the site's pages change).
+- **`privacy.html`, brought up to date:**
+  - what the game keeps (the unlock among it);
+  - the host: GitHub Pages sees an IP address and a browser when files load;
+  - each store's part in a purchase (Google Play in the Android app, Steam with its achievements and Cloud, itch.io);
+  - the notification permission the Android app declares and never uses;
+  - the save as a file;
+  - deleting your data by platform. It used to say uninstalling the Android app removes the save; the save is the browser's, so it may stay [inferred].
+- **`terms.html`, new.** There were no terms in the rebuild; v0.956's "provided free" left with its bundle. They cover:
+  - the licence to play, and that the public source isn't a licence to copy (the repo has no licence: © RCJ Labs, all rights reserved);
+  - purchases under each store's terms and refunds;
+  - climbers from before the gate;
+  - saves being the player's to keep;
+  - "not climbing instruction";
+  - no warranty, with consumer law left standing.
+  - **No governing law: Evan's to name.**
+- **Shipping:** both ship (`stage-site.mjs`), and `npm run check` fails if either goes missing or they stop linking each other.
+- **The forms** (`docs/PAPERWORK.md`): Play's data safety (none collected, with two points for Evan to confirm: Play Billing's purchase history, and the host's logs), the IARC questionnaire, target audience, and Steam's content survey and legal fields, each answer with its evidence in the code.
+  - **Simulated gambling:** the fire's blackjack and hold'em are played for in-game cash, which IARC counts as simulated gambling. A child audience is out under Play's Families policy.
+  - **The rest is mild, in text:** alcohol references and a few drinks handed or brought, injuries, an opt-in Free Solo death without blood, a romance as far as a kiss, "hell" three times.
+- **Play's listing at launch** (`docs/STORE.md`, At launch): the short and full descriptions and "What's new" for a free first season and an unlock, under Play's limits (`npm run check`) and held to the content's facts (`storecopy.test.ts`).
+- **Done-when 3 (legal text updated): passes, for Evan's review.** Not legal advice; the terms' governing law and the two data-safety points are his.
+
 ---
 
 ### Phase 20 — Launch, live updates, and the Unreal decision
@@ -4462,3 +4485,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-16 — Phase 15 closed by Evan's call, its code done: criterion 4 passes; the Steam apps, the wishlists and the press outreach (1 to 3) carried to Evan, to Next Fest. CURRENT MILESTONE moved to Phase 19, monetization, store readiness and beta.
 - 2026-10-16 — Phase 19 planned with Evan's calls: the web plays the first season at launch, and climbers from before keep the full game; Android keeps the TWA, with Play's unlock through Digital Goods; iOS after launch; the audit's prices. 19.1 built: the gate, off until launch (`game/unlock.ts`, `DIRTBAG_GATE`): the full game's build plays the demo's rules till it's unlocked, on the same keys; climbers here are marked as from before, and the first gated start marks the rest; `e2e:gate` on a gated build, in CI. No save change. 0.999.87.
 - 2026-10-16 — 19.2 built: Play's unlock in the Android app. The page buys through the Digital Goods API and Payment Request at Play's price, counts it once Play lists it, and restores it at start-up and by hand; the app acknowledges each purchase on the phone (Evan's call, since version 2 of the API has no acknowledge and Play refunds what isn't), from `twa/PlayAcknowledger.java` hooked into Bubblewrap's project by `twa/acknowledge.mjs`. The locked last card offers it in the app, and store pages elsewhere. No save change. 0.999.88.
+- 2026-10-16 — 19.3 built: the paperwork. The privacy page brought up to date (the host, each store's part in a purchase, the Android app's unused notification permission, deleting by platform); terms of use written new (`terms.html`, shipped beside it, both checked); the stores' forms answered from the code (`docs/PAPERWORK.md`: Play's data safety, the IARC questionnaire with its simulated gambling, the target audience, Steam's content survey); Play's listing for launch in `docs/STORE.md`. No change to the game. 0.999.89.

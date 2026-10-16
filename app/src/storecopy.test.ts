@@ -21,7 +21,8 @@ const block = (key: string): string => {
   if (!m) throw new Error(`no ${key} block in docs/STORE.md`);
   return m[1]!;
 };
-const LONG = ['steam-about', 'full'];
+// Phase 19.3: Play's listing for launch is held to the same facts.
+const LONG = ['steam-about', 'full', 'full-launch'];
 const WORD: Record<number, string> = { 5: 'Five', 9: 'Nine', 51: 'Fifty-one' };
 const word = (n: number): string => {
   const w = WORD[n];
@@ -84,7 +85,7 @@ describe('the store copy', () => {
         .filter((r) => r.disc === 'boulder')
         .map((r) => r.grade),
     );
-    expect(block('short')).toContain(`to V${top}.`);
+    for (const k of ['short', 'short-launch']) expect(block(k), k).toContain(`to V${top}.`);
   });
 
   it('counts the Record Book', () => {
