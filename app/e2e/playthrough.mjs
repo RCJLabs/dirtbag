@@ -588,6 +588,18 @@ await expectText('#goal', /Send 3 lines anywhere/, 'the first goal, the money on
 await wait(400);
 await shot('lot-morning');
 
+// Phase 40: "What now?", lit on Act I's first morning. Hazel's moves, each with its reason,
+// the story's first; asked, it stops asking for the day.
+if (!(await page.locator('#whatnow.lit').count())) await fail('what now: not lit on the first morning');
+await click('#whatnow');
+await expectText('#sheet', /Next on your list: Send 3 lines anywhere/, 'what now');
+const moves = await page.locator('#sheet .opt').count();
+if (moves < 2 || moves > 3) await fail(`what now: ${moves} moves`);
+await shot('what-now');
+await click('#sheet .x');
+await until('the card to close', async () => !(await page.locator('#sheet').count()));
+if (await page.locator('#whatnow.lit').count()) await fail('what now: still lit once asked');
+
 console.log('Hazel');
 // Two taps toward the fire walk you to Hazel (spawn 300: 423, then 546); Enter talks.
 await tapAt(340, 650);
