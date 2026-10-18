@@ -1488,9 +1488,10 @@ export class Game {
     this.openSheet({ k: 'fire' });
   }
 
-  holdem(what: 'sit' | 'deal' | 'fold' | 'call' | 'bet' | 'leave', who?: string): void {
+  // Phase 36.3: hold'em is everyone at the fire, so there's nobody to pick.
+  holdem(what: 'sit' | 'deal' | 'fold' | 'call' | 'bet' | 'leave'): void {
     this.sound.play(what === 'sit' || what === 'leave' || what === 'bet' ? 'chips' : 'card');
-    this.dispatch({ t: 'holdem', do: what, who });
+    this.dispatch({ t: 'holdem', do: what });
     this.openSheet({ k: 'fire' });
   }
 

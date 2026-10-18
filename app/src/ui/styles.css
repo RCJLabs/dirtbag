@@ -554,6 +554,62 @@ button.pill:disabled {
   opacity: 0.4;
   cursor: default;
 }
+/* Hold'em (Phase 36.3): the board, the others' seats across the fire, the button. */
+.he-board {
+  margin: 8px 0 6px;
+}
+.pc-slot {
+  width: 34px;
+  height: 48px;
+  flex: none;
+  border: 1.5px dashed color-mix(in srgb, var(--u-ink) 30%, transparent);
+  border-radius: 4px;
+}
+.he-seats {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 6px;
+}
+.he-seat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 3px 5px;
+  border: 1.5px solid color-mix(in srgb, var(--u-ink) 30%, transparent);
+  border-radius: calc(var(--u-rad) + 2px);
+  font: 600 calc(13px * var(--u-fs)) / 1.2 var(--u-mono);
+}
+.he-seat .pc {
+  width: 26px;
+  height: 37px;
+}
+.he-seat small {
+  font: 500 calc(11.5px * var(--u-fs)) / 1.2 var(--u-mono);
+  color: var(--u-dim);
+  text-align: center;
+}
+.he-seat[data-out='true'] {
+  opacity: 0.45;
+}
+.he-seat[data-turn='true'],
+.he-seat[data-won='true'] {
+  border-color: var(--u-ink);
+  box-shadow: inset 0 0 0 1px var(--u-ink);
+}
+.he-btn {
+  display: inline-block;
+  margin-left: 5px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--u-btn);
+  color: var(--u-btnInk);
+  font: 700 10px/16px var(--u-mono);
+  text-align: center;
+  vertical-align: 1px;
+}
 /* Liar's dice (Phase 36.1): the others' cups across the fire, the round's bids, your cup
    lifted, and your bid as a count and a face. */
 .p-others {

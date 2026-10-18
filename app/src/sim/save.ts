@@ -36,7 +36,7 @@ import { repeatsOf } from './settle';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 78;
+export const SAVE_VERSION = 79;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -592,6 +592,15 @@ export const MIGRATIONS: Record<number, Migration> = {
     const { you, bet, ...rest } = c.bj;
     return { ...x, cards: { ...c, bj: { ...rest, you: [{ cards: you, bet }], at: 0, paid: null } } };
   },
+  // v78 -> v79 (Phase 36.3): hold'em is everyone at the fire now. A heads-up hand on the go is
+  // put away, and what you'd put in it, half its pot, comes back in front of you.
+  78: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const c = x.cards;
+    if (!isObj(c) || !isObj(c.he)) return x;
+    const back = isNum(c.he.pot) ? c.he.pot / 2 : 0;
+    return { ...x, cards: { ...c, chips: (isNum(c.chips) ? c.chips : 0) + back, he: null } };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -1018,16 +1027,42 @@ export function validate(x: unknown): string[] {
       cards(h.dealer) &&
       isInt(h.next) &&
       (h.paid === null || (Array.isArray(h.paid) && h.paid.length === h.you.length && h.paid.every(isNum))));
+  const seatIn = (i: unknown, h: { seats: unknown[] }) => isInt(i) && i >= 0 && i < h.seats.length;
   const heOk = (h: unknown) =>
     h === null ||
     (isObj(h) &&
-      cards(h.you) &&
-      cards(h.them) &&
+      Array.isArray(h.seats) &&
+      h.seats.length >= 2 &&
+      h.seats.every(
+        (p) =>
+          isObj(p) &&
+          typeof p.who === 'string' &&
+          cards(p.hole) &&
+          (p.hole as unknown[]).length === 2 &&
+          typeof p.in === 'boolean' &&
+          isNum(p.put) &&
+          isNum(p.total) &&
+          typeof p.acted === 'boolean' &&
+          typeof p.all === 'boolean',
+      ) &&
       cards(h.board) &&
+      (h.board as unknown[]).length === 5 &&
       isInt(h.street) &&
+      h.street >= 0 &&
+      h.street <= 4 &&
+      seatIn(h.button, h as { seats: unknown[] }) &&
+      seatIn(h.turn, h as { seats: unknown[] }) &&
+      isNum(h.bet) &&
+      isInt(h.bets) &&
       isNum(h.pot) &&
-      isNum(h.facing) &&
-      typeof h.bet === 'boolean');
+      Array.isArray(h.said) &&
+      h.said.every((m) => isObj(m) && seatIn(m.by, h as { seats: unknown[] }) && typeof m.did === 'string') &&
+      (h.won === null ||
+        (isObj(h.won) &&
+          Array.isArray(h.won.by) &&
+          h.won.by.every((i) => seatIn(i, h as { seats: unknown[] })) &&
+          isNum(h.won.back) &&
+          typeof h.won.shown === 'boolean')));
   need(
     cd === null ||
       (isObj(cd) &&

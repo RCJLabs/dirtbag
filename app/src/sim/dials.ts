@@ -951,21 +951,26 @@ export const GAMES = {
   // your own bet a hand, one of `bets`, hand after hand till the fire's out, each hand `min`
   // minutes [proposed]: a fresh deck each, the dealer standing on every 17, 3:2 for a blackjack
   // (to the dollar up), double on any two cards, a pair split once (aces a card each).
-  // Played right that's about even: variance, not a living. Hold'em is heads-up, `ante` each,
-  // then `bets` before the flop, on the flop, and on the turn and river together; `hands` a
-  // night. Their play weighs a `samples`-deal guess at how often their hand wins. Reads come at
-  // `reads` hands played; once you've been caught betting a loser `caughtShare` of your hands,
-  // they call `adapt` lighter.
+  // Played right that's about even: variance, not a living. Hold'em (Phase 36.3, Evan's calls,
+  // 18 Oct 2026) is fixed-limit with everyone at the fire who plays: `blinds` (small, big)
+  // with the button going round; `bets` a bet before the flop and on it, then on the turn and
+  // the river; `raises` raises a street on the first bet; a hand `min` minutes [proposed],
+  // hand after hand till the fire's out. Their play weighs a `samples`-deal guess at how often
+  // their hand beats the field. Reads come at `reads` hands played; once you've been caught
+  // betting a loser `caughtShare` of your hands, they call `adapt` lighter. With the second
+  // read, their tells show, right `tell` of the time [proposed].
   bj: { cap: 40, bets: [5, 10], min: 4 },
   holdem: {
     cap: 40,
-    ante: 1,
-    bets: [2, 4, 4],
-    hands: 6,
+    blinds: [1, 2],
+    bets: [2, 4],
+    raises: 3,
+    min: 5,
     samples: 60,
     reads: [5, 12],
     caughtShare: 0.25,
     adapt: 0.15,
+    tell: 0.8,
   },
 };
 

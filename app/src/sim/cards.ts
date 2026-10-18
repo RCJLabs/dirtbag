@@ -1,5 +1,5 @@
-// Cards at the fire (Phase 22.9b): blackjack for money, and heads-up hold'em for money that
-// keeps reads on each person. Both are dealt from the seed, a fresh deck a hand; the numbers
+// Cards at the fire (Phase 22.9b): blackjack for money, and hold'em for money that keeps reads
+// on each person (36.3: everyone at the fire, fixed limit, in holdem.ts). Both are dealt from the seed, a fresh deck a hand; the numbers
 // are GAMES.bj and GAMES.holdem (dials.ts), the people's styles content/cards.ts. Phase 36.2:
 // blackjack is your own bet a hand, splits and all, hand after hand till the fire's out.
 
@@ -35,23 +35,25 @@ export type Cards = NonNullable<GameState['cards']>;
 export type CardGame = Cards['game'];
 export const CARD_NAME: Record<CardGame, string> = { bj: 'Blackjack', holdem: 'Hold’em' };
 
-// What you need in front of you to play a hand: the least bet, or every bet a hold'em hand
-// can ask.
+// What you need in front of you to play a hand: the least bet, or the big blind (36.3: short
+// of a call after that, you're all in).
 export const handNeeds = (g: CardGame): number =>
-  g === 'bj' ? Math.min(...GAMES.bj.bets) : GAMES.holdem.ante + GAMES.holdem.bets.reduce((a, b) => a + b, 0);
+  g === 'bj' ? Math.min(...GAMES.bj.bets) : GAMES.holdem.blinds[1]!;
 
-export function cardsBlocked(s: GameState, g: CardGame, who?: string): string | null {
+export function cardsBlocked(s: GameState, g: CardGame): string | null {
   if (s.at !== 'lot') return 'The cards are at the fire at the Lot';
   if (!isNight(s.min)) return 'Nobody’s dealing till dark';
   if (fireOut(s)) return 'The fire’s down to coals';
   if (!atFire(s).length) return 'Nobody’s at the fire tonight';
-  if (who && !atFire(s).includes(who)) return `${PEOPLE[who]?.name ?? who} isn’t at the fire tonight`;
   if (s.today.includes(g)) return `You’ve played ${CARD_NAME[g].toLowerCase()} tonight`;
   if (s.energy < GAMES.energy) return 'Too tired for cards';
   if (Math.floor(s.cash) < handNeeds(g)) return `You need ${'$'}${handNeeds(g)} in hand to sit down`;
-  if (g === 'holdem' && who && !STYLES[who]) return 'They don’t play';
+  if (g === 'holdem' && !holdemPlayers(s).length) return 'Nobody at the fire plays hold’em';
   return null;
 }
+
+// Phase 36.3: who's in at hold'em: everyone at the fire who plays.
+export const holdemPlayers = (s: GameState): string[] => atFire(s).filter((w) => STYLES[w]);
 
 // ---- blackjack ----
 
@@ -176,9 +178,9 @@ const CATEGORY = [
 ];
 export const handWord = (cs: number[]): string => CATEGORY[Math.floor(handValue(cs) / 13 ** 5)]!;
 
-// How often a hand wins against a random one by the river, from what it can see: a seeded
-// sample of the cards it can't.
-export function equity(hole: number[], board: number[], label: string, s: GameState): number {
+// How often a hand wins against `field` random ones by the river (36.3: one, heads-up), from
+// what it can see: a seeded sample of the cards it can't. A tie counts as a share.
+export function equity(hole: number[], board: number[], label: string, s: GameState, field = 1): number {
   const r = Rng.fromStream(s.seed, 'events').derive(label);
   const seen = new Set([...hole, ...board]);
   const rest = Array.from({ length: 52 }, (_, i) => i).filter((c) => !seen.has(c));
@@ -187,18 +189,20 @@ export function equity(hole: number[], board: number[], label: string, s: GameSt
   for (let k = 0; k < n; k++) {
     const pool = [...rest];
     const take = () => pool.splice(r.int(0, pool.length - 1), 1)[0]!;
-    const opp = [take(), take()];
+    const opps = Array.from({ length: field }, () => [take(), take()]);
     const b = [...board];
     while (b.length < 5) b.push(take());
     const me = handValue([...hole, ...b]);
-    const them = handValue([...opp, ...b]);
-    won += me > them ? 1 : me === them ? 0.5 : 0;
+    const best = Math.max(...opps.map((o) => handValue([...o, ...b])));
+    const tied = opps.filter((o) => handValue([...o, ...b]) === me).length;
+    won += me > best ? 1 : me === best ? 1 / (tied + 1) : 0;
   }
   return won / n;
 }
 
-// How much of the board is showing on a street: none, the flop, then all five.
-export const boardAt = (street: number): number => (street === 0 ? 0 : street === 1 ? 3 : 5);
+// How much of the board is showing on a street: none, the flop, the turn, the river (36.3:
+// four streets), and all five once it's over.
+export const boardAt = (street: number): number => [0, 3, 4, 5][street] ?? 5;
 
 // What they've learned about you: how often you've been caught betting a loser, as a share of
 // the hands you've played them, which loosens their calls.
@@ -206,22 +210,6 @@ export function theyKnow(s: GameState, who: string): number {
   const r = s.reads[who];
   if (!r || r.hands < GAMES.holdem.reads[0]!) return 0;
   return Math.min(1, r.caught / r.hands / GAMES.holdem.caughtShare);
-}
-
-// Their move on a street: call your bet or fold; or, when you've checked, bet or check.
-export function theirMove(
-  s: GameState,
-  he: NonNullable<Cards['he']>,
-  who: string,
-  facing: boolean,
-  hands: number,
-): 'call' | 'fold' | 'bet' | 'check' {
-  const st = STYLES[who]!;
-  const label = `he-${who}-${s.day}-${hands}-${he.street}`;
-  const e = equity(he.them, he.board.slice(0, boardAt(he.street)), `${label}-eq`, s);
-  if (facing) return e >= st.call - GAMES.holdem.adapt * theyKnow(s, who) ? 'call' : 'fold';
-  const bluff = Rng.fromStream(s.seed, 'events').derive(`${label}-bluff`).next() < st.bluff;
-  return e >= st.bet || bluff ? 'bet' : 'check';
 }
 
 // The reads you've earned on someone: how they bet, from the first count of hands played,

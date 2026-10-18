@@ -877,7 +877,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 78 ||
+  saved?.v !== 79 ||
   // Phase 29.1: nothing scavenged, a few days in.
   st.parts !== 0 ||
   // Phase 29.3: miles on the clock past a new climber's, and nothing for Dale to say yet.
@@ -2282,7 +2282,8 @@ console.log('Cards at the fire');
 // hold'em with Hazel, a hand checked and called to the end, and up again. The money in front
 // of you comes back to your pocket, both games are played once tonight, and Hazel's had a
 // hand played on her. Phase 36.2: blackjack drawn, the $10 bet picked, two hands stood on,
-// each a hand's minutes, and the played hand left face up on the table.
+// each a hand's minutes, and the played hand left face up on the table. Phase 36.3: hold'em
+// with everyone at the fire, a hand checked and called to its end, the board drawn.
 {
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
   saved.state = {
@@ -2315,7 +2316,6 @@ console.log('Cards at the fire');
   await cards.waitForTimeout(600);
   await cards.mouse.click(100, 560);
   await cards.waitForFunction(() => /Your van/.test(document.querySelector('#sheet')?.textContent ?? ''));
-  const sheet = () => cards.evaluate(() => document.querySelector('#sheet')?.textContent ?? '');
   const pick = async (text) => {
     await cards.waitForFunction(
       (t) => (document.querySelector('#sheet')?.textContent ?? '').includes(t),
@@ -2358,19 +2358,26 @@ console.log('Cards at the fire');
   await cards.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-blackjack-played.png`) });
   await cards.click('#bj-up');
   await cards.waitForFunction(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.cards === null);
-  await pick('Hold’em with Hazel');
-  await pick('Deal');
+  // Phase 36.3: hold'em with everyone at the fire, drawn: a hand checked and called to its end.
+  await pick('Hold’em');
+  await cards.waitForSelector('#he #he-deal');
+  await cards.click('#he-deal');
   await cards.waitForFunction(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.cards?.he);
   await cards.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-holdem.png`) });
-  for (let g = 0; g < 8 && (await seated())?.he; g++) {
+  for (let g = 0; g < 30 && !(await seated()).he.won; g++) {
     const was = JSON.stringify(await seated());
-    await pick(/Check/.test(await sheet()) ? 'Check' : 'Call');
+    await cards.click('#he-call');
     await cards.waitForFunction(
       (w) => JSON.stringify(JSON.parse(localStorage.getItem('dirtbag.save')).state.cards) !== w,
       was,
     );
   }
-  await pick('Get up');
+  const hand = (await seated()).he;
+  const board = await cards.evaluate(() => document.querySelectorAll('#he .he-board .pc').length);
+  if (!hand.won || !(board >= 3 || !hand.won.shown))
+    await fail(`hold’em: ${JSON.stringify({ won: hand.won, board, said: hand.said })}`);
+  await cards.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-holdem-over.png`) });
+  await cards.click('#he-up');
   await cards.waitForFunction(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.cards === null);
   const after = await cards.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
   const heard = await cards.evaluate(() => window.cues);
