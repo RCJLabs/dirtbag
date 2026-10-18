@@ -2565,6 +2565,133 @@ console.log('The glovebox deck');
   await ctx.close();
 }
 
+console.log('A session at Roadside');
+// Phase 37 (Phase 37's criterion 1). Day 39 on this seed is a busy morning at Roadside, with
+// Dex and Sage there: the session on the Warm Boulder, joined from its beta. The first go comes
+// off at its crux, which turns up its move for you; telling them pays what the card says, in
+// the save. Then goes till it's decided: the day's first send pays what the card said, if it's
+// yours, and nothing if someone beat you to it.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  const routes = { ...saved.state.routes };
+  delete routes.warm;
+  saved.state = {
+    ...saved.state,
+    day: 39,
+    min: 10 * 60,
+    at: 'road',
+    x: null,
+    energy: 100,
+    skin: 100,
+    fed: 100,
+    today: ['crag', 'warm'],
+    load: { acute: 10, chronic: 200, today: 0 },
+    injury: null,
+    routes,
+    people: {
+      ...saved.state.people,
+      sage: { since: 1, ...saved.state.people.sage, bond: 4, last: 0 },
+      dex: { bond: 2, last: 0, since: 1 },
+    },
+    encounter: null,
+    table: null,
+    cards: null,
+    sesh: null,
+  };
+  const main = page;
+  page = await playPage({ width: 390, height: 844 }, 2, 'session: ');
+  await page.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+  }, JSON.stringify(saved));
+  const state = () => page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  const warm = () =>
+    page
+      .locator('button.hot[aria-label^="Warm Boulder"]')
+      .first()
+      .evaluate((el) => el.click());
+  // Back to the session's card after a go: from its fall, past any call the crag puts to you
+  // between goes (a stance, answered its first way, as a player would) and the card it leaves,
+  // then by the wall, whose beta has the way back.
+  const toSession = async () => {
+    for (let i = 0; i < 8; i++) {
+      const title = (await text('#sheet-title')) ?? '';
+      if (/^The session/.test(title)) return;
+      if (await page.locator('#sheet .opt', { hasText: 'Back to the session' }).count())
+        await click('#sheet .opt', 'Back to the session');
+      else if (await page.locator('#sesh-back').count()) await click('#sesh-back');
+      else if ((await state()).encounter && (await page.locator('#sheet').count())) {
+        log(`session: a call between goes: ${title}`);
+        await page.locator('#sheet .opt').first().click();
+      } else if (await page.locator('#sheet').count())
+        await page.locator('#sheet .x, #sheet .opt').first().click();
+      else await tapAt(180, 300);
+      await wait(400);
+    }
+    await fail(`session: never back at the session: ${(await text('#sheet'))?.slice(0, 200)}`);
+  };
+  await page.goto(server.url, { waitUntil: 'load' });
+  await until('Roadside', async () => (await text('#b-nav')) === 'Map');
+  await wait(600);
+  await warm();
+  await expectText('#sheet', /Join the session/, 'the session on the beta');
+  await click('#sesh-join');
+  await expectText('#sheet', /The session: Warm Boulder/, 'the session');
+  await shot('session');
+  const joined = await state();
+  const cast = joined.sesh.seats.filter((p) => !p.who.startsWith('local-')).map((p) => p.who);
+  // Off at the crux on the first go: the move turns up, and the card asks.
+  await click('#sheet .opt', 'Your go');
+  await until('the climb panel', () => page.locator('#climb').count());
+  await climb({ failFirst: true });
+  await until('off', async () => !(await page.locator('#climb').count()));
+  await wait(400);
+  await toSession();
+  const asked = await expectText('#sheet', /Tell them, or keep it\?/, 'a find');
+  await shot('session-find');
+  // Telling them: what the card says it pays, against the save.
+  const says = (await page.locator('#sheet .opt', { hasText: 'Tell them' }).first().textContent()) ?? '';
+  const old = Number(/\+(\d+) with the old guard/.exec(says)?.[1] ?? NaN);
+  const bond = Number(/\+(\d+) bond with/.exec(says)?.[1] ?? 0);
+  const was = await state();
+  await click('#sheet .opt', 'Tell them');
+  await expectText('#sheet', /You tell them/, 'told');
+  const told = await state();
+  const paid =
+    told.scene.old === Math.min(100, was.scene.old + old) &&
+    cast.every((w) => told.people[w].bond === was.people[w].bond + bond) &&
+    told.sesh.seats.every((p) => p.knows.length > 0);
+  if (!paid || !Number.isFinite(old))
+    await fail(
+      `session: telling them paid ${JSON.stringify({ says, old, bond, was: was.scene.old, now: told.scene.old })}`,
+    );
+  // Then goes till it's decided.
+  let before = told;
+  let sent = false;
+  for (let g = 0; g < 8 && !sent; g++) {
+    before = await state();
+    if (!before.sesh || !(await page.locator('#sheet .opt', { hasText: 'Your go' }).count())) break;
+    await click('#sheet .opt', 'Your go');
+    await until('the climb panel', () => page.locator('#climb').count());
+    await climb();
+    await until('the go to end', async () => !(await page.locator('#climb').count()), 15_000);
+    await wait(400);
+    sent = !!(await state()).routes.warm?.sent;
+    if (!sent) await toSession();
+  }
+  const after = await state();
+  const firstWas = before.sesh?.first ?? null;
+  if (sent && !firstWas && (after.seshFirsts !== 1 || !after.record.firstup))
+    await fail(
+      `session: first to the top, unpaid: ${JSON.stringify({ firsts: after.seshFirsts, record: !!after.record.firstup })}`,
+    );
+  if (sent && firstWas && after.seshFirsts !== 0) await fail('session: paid for second');
+  log(
+    `session: ${[...cast, ...(joined.sesh.seats.length - cast.length === 1 ? ['a local'] : [`${joined.sesh.seats.length - cast.length} locals`])].join(', ')}; ${asked.match(/You’ve worked out [^?]*\?/)?.[0] ?? ''} told them; ${sent ? (firstWas ? `sent it after ${firstWas}` : 'first to the top') : 'not sent in eight goes'}.`,
+  );
+  await page.close();
+  page = main;
+}
+
 console.log('An expedition');
 // Phase 24.1. A V9 climber with Hazel close and $3,000 at the van in the morning: the
 // expeditions, El Capitan's odds with Hazel, and away. Each day up there: wait out a storm, or
