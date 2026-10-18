@@ -31,6 +31,8 @@ import {
   fill,
   classicsAt,
   CLASSIC_SAYS,
+  whatNow,
+  WHAT_NOW,
   CLASSICS,
   localAt,
   ticked,
@@ -1958,6 +1960,25 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       };
     }
 
+    // Phase 40: Hazel's three moves, each to where it happens.
+    case 'whatnow': {
+      const moves = whatNow(s);
+      return {
+        title: WHAT_NOW.title,
+        sub: moves.length ? WHAT_NOW.open : WHAT_NOW.none,
+        close: true,
+        rows: moves.map((m) => ({
+          label: m.label,
+          note: m.why,
+          run: () =>
+            m.to.k === 'place'
+              ? game.openSheet({ k: 'place', id: m.to.id })
+              : m.to.k === 'line'
+                ? game.lookUp(m.to.route)
+                : game.openSheet({ k: 'journal', page: 'you' }),
+        })),
+      };
+    }
     case 'sesh': {
       // Phase 37: the session on the problem at the wall: who's on it and how they're getting
       // on, the last round, and your move. A move you've found waits on your answer.

@@ -8,6 +8,7 @@ import { SpeedPanel } from './SpeedPanel';
 import { BuskPanel } from './BuskPanel';
 import { Create } from './Create';
 import { Goal } from './Goal';
+import { WhatNow } from './WhatNow';
 import { PlanChip } from './PlanChip';
 import { Hots } from './Hots';
 import { Hud } from './Hud';
@@ -302,7 +303,10 @@ export function App({ game }: { game: Game }) {
               {glyphs(ui.toast.text)}
             </div>
           )}
-          <Goal game={game} ui={ui} />
+          <div className="dock">
+            <WhatNow game={game} ui={ui} />
+            <Goal game={game} ui={ui} />
+          </div>
           <PlanChip game={game} ui={ui} />
           {ui.hint && !ui.sheet && !ui.talk && (
             <p className="hint" id="hint">

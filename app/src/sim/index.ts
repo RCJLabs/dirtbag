@@ -156,6 +156,8 @@ export { faNote, repeatDays, repeatsOf, settled } from './settle';
 export { ghostAt, ghostOf, outclimbs } from './ghost';
 export { classicsAt, localAt, localPlaces, ticked } from './classics';
 export { CLASSIC_SAYS } from './content/classics';
+export { whatNow, whatNowLit, type Move, type MoveTo } from './whatnow';
+export { WHAT_NOW } from './content/whatnow';
 export {
   cyclePay,
   filmBlocked,
@@ -350,6 +352,7 @@ export {
   SESH,
   GHOST,
   CLASSICS,
+  WHATNOW,
 } from './dials';
 export type { Plan } from './dials';
 export { weeklyBills, clinicBill, carePrice, jabbed, premiumOf } from './clinic';

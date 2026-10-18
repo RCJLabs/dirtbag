@@ -111,6 +111,8 @@ export type SheetId =
   | { k: 'desk' }
   | { k: 'board' }
   | { k: 'place'; id: string }
+  // Phase 40: Hazel's three moves.
+  | { k: 'whatnow' }
   | { k: 'beta'; route: string }
   | { k: 'fall'; route: string; fall: FallRun; notes: string[]; gains: Partial<Skills>; best: number | null }
   // `first`: the line's first send, which gets a card.
@@ -234,6 +236,8 @@ export interface Ui {
   stamp: string | null;
   fading: boolean;
   hint: string | null;
+  // Phase 40: the day you last asked Hazel "What now?", so the button stops asking that day.
+  whatNowSeen: number | null;
   hud: Hud;
   climbing: boolean;
   driving: boolean;
@@ -408,6 +412,7 @@ export class Game {
       stamp: null,
       fading: false,
       hint: null,
+      whatNowSeen: null,
       hud: hudOf(this.state),
       climbing: false,
       driving: false,
@@ -737,6 +742,11 @@ export class Game {
 
   openSheet(sheet: SheetId | null): void {
     this.set({ sheet, talk: null });
+  }
+
+  // Phase 40: Hazel's card, and the button's asked for the day.
+  whatNow(): void {
+    this.set({ sheet: { k: 'whatnow' }, talk: null, whatNowSeen: this.state.day });
   }
 
   closeSheet(): void {

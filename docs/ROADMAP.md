@@ -4200,13 +4200,70 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 ### Phase 40 — "What now?" from Hazel   **<<< CURRENT MILESTONE**
 
-*Queued (18 Oct 2026). Small [INFERRED].*
+*Small. Planned with Evan's calls (18 Oct 2026). No save change.*
 
 **Goal.** A new player always knows a good next move, and why.
 
 **Scope.** Three suggested moves, each with a one-line reason drawn from the state (the rent's due Friday; the Gorge is dry; Sage is at the Cave). It fades after Act I unless you ask for it.
 
+**Evan's calls (18 Oct 2026), all as recommended:**
+- **Where:** a "What now?" button beside the goal chip opens Hazel's card with three moves. Through Act I it's lit each morning; after Act I it stays, but waits to be asked.
+- **Which first:** what's pressing (bills due, low energy or skin, an injury), then the story's next goal, then what's good today (a dry crag, a friend around, a line nearly had).
+- **What a move does:** it's a button that takes you there: a place's card, a line's sheet, or the journal's goal.
+
+**From the survey (18 Oct 2026):**
+- **The goal chip** (`ui/Goal.tsx`) shows the story's next goal (`currentGoal`, `goalDesc`), and `actOf` says which act you're in.
+- **The week's bills** come out at the end of every seventh day (`weeklyBills`).
+- **A shift needs** posting, your schedule, the hour and the energy (`unmet` on its act).
+- **The cast's whereabouts:** `whereNow`.
+- **The day's sky** at each crag: `conditionsAt`.
+
 **Done when** [proposed]: every reason comes from the state, never typed in (a test); the e2e's first week sees it.
+
+**One slice, 40.1:** the moves, the card, the button, the tests and the e2e.
+
+**Status (18 Oct 2026): 40.1 built: "What now?" from Hazel.** No save change, 0.999.100.
+- **The moves** (`sim/whatnow.ts`, words in `content/whatnow.ts`), up to `WHATNOW.moves` (3) [proposed], never two to one place:
+  - **needs:**
+    - an injury, the clinic;
+    - spent, the van;
+    - skin gone, a shift while it grows back;
+    - the bills `WHATNOW.billsWithin` (2) days off [proposed] with less than they come to, a shift, saying the bill, your cash and the day;
+  - **the story's next goal,** in its own words:
+    - money, a shift;
+    - sends, the easiest unsent line here, else the gym or Roadside;
+    - a crag, that crag;
+    - a Regular, the friend you're closest to, where they are now;
+    - anything else, the journal;
+  - **chances:**
+    - a line here you came off within `WHATNOW.near` (2) moves of the top [proposed];
+    - a friend somewhere else;
+    - a crag in prime shape that'll have you;
+    - a shift going, its pay and hours from the act (one you're signed up for today first).
+- **The button** (`ui/WhatNow.tsx`), over the goal chip:
+  - lit through Act I till you've asked that day (`whatNowLit`); after Act I, there unlit;
+  - the day you asked is the session's, not the save's, so a reload lights it again.
+- **Hazel's card** (`{k: 'whatnow'}`): her line, then each move as a row with its reason, opening a place's card, a line's sheet (`lookUp`), or the journal's goal.
+- **Tests** (`whatnow.test.ts`, 7):
+  - needs first, each reason carrying the state's facts (the injury's name, the bill, the cash, the day);
+  - the story's goal in its words, to the line, the gym, Roadside or the friend;
+  - chances: a line nearly had, a prime crag;
+  - a signed-up shift first, its pay and hours from the act;
+  - three at most, in order, never two to one place;
+  - lit till asked in Act I, not after;
+  - the words hold no number, no straight quote, no doubled space (criterion 1).
+- **The e2e** (criterion 2): on the first morning the button's lit; Hazel's card names the story's goal and two or three moves; asked, it stops asking.
+- **Seen on the dev server:** a new climber's first morning: "Go to Send City" (the goal), "Go to Roadside Crag" (cold and dry), "A shift at Coffee Shop" ($31 for 3 h, the origin's bonus in).
+
+**Phase 40 against its Done-when (18 Oct 2026):** both pass.
+1. **Every reason comes from the state:** the reasons are templates filled from the state, the words carry no number of their own, and the tests hold each fact to the state's (`whatnow.test.ts`).
+2. **The e2e's first week sees it:** the first morning, lit, opened, asked.
+
+**Closing Phase 40 is Evan's call.** Carried:
+- **[proposed]:** the three moves, the two days' warning for the bills, the two moves for a line nearly had.
+- **The moves only take you there.** None acts by itself, so a shift or a sleep is still the place card's second tap.
+- **No bot reads Hazel,** so how much her advice helps isn't measured; the bots' own choices stand.
+- **"Lit" is the session's,** so a reload in Act I lights it again the same day.
 
 ### Phase 41 — The week's forecast and send temps
 
@@ -4984,3 +5041,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-18 — Phase 38 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 39, each crag's classics.
 - 2026-10-18 — Phase 39 planned with Evan's calls: five hand-picked classics a crag; a local waits for nothing on a busy day, finds the beta on a quiet one, and earns an entry; your settled first ascents join the list. 39.1 built: the classics, the card, the Record Book's 53rd entry; no save change. Phase 39's Done-when pass; closing it is Evan's call. 0.999.99.
 - 2026-10-18 — Phase 39 closed by Evan's call: all three criteria pass. CURRENT MILESTONE moved to Phase 40, "What now?" from Hazel.
+- 2026-10-18 — Phase 40 planned with Evan's calls: a "What now?" button by the goal chip; needs, then the story, then chances; each move takes you there. 40.1 built: Hazel's card of three moves, every reason from the state; lit through Act I's mornings till asked. No save change. Phase 40's Done-when pass; closing it is Evan's call. 0.999.100.
