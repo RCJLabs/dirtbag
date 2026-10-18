@@ -250,7 +250,17 @@ export interface GameState {
     who: string;
     chips: number;
     hands: number;
-    bj: { you: number[]; dealer: number[]; next: number; bet: number } | null;
+    // Phase 36.2 (save v78): a blackjack hand: yours (one, or two once a pair's split), each
+    // with its bet; the one you're playing (`at`, past the last once they're all played); the
+    // dealer's cards and the deck's next card; and once it's paid, what each of yours paid
+    // back, the hand left on the table till the next deal.
+    bj: {
+      you: { cards: number[]; bet: number }[];
+      at: number;
+      dealer: number[];
+      next: number;
+      paid: number[] | null;
+    } | null;
     // A hold'em hand: the street (0 before the flop, 1 the flop, 2 the turn and river), the
     // pot, a bet of theirs you're facing, and whether you bet the last street.
     he: {
@@ -729,8 +739,9 @@ export type Action =
   // Phase 24.5: the last trip's story, told at the fire.
   | { t: 'story' }
   // Phase 22.9b: cards at the fire. Sit down (with whom, for hold'em), deal a hand, play it,
-  // and get up with what's in front of you.
-  | { t: 'bj'; do: 'sit' | 'deal' | 'hit' | 'stand' | 'double' | 'leave' }
+  // and get up with what's in front of you. Phase 36.2: blackjack's deal takes your bet, and a
+  // pair can be split.
+  | { t: 'bj'; do: 'sit' | 'deal' | 'hit' | 'stand' | 'double' | 'split' | 'leave'; bet?: number }
   | { t: 'holdem'; do: 'sit' | 'deal' | 'fold' | 'call' | 'bet' | 'leave'; who?: string };
 
 // Phase 24.5. A trip come home from: which, the calendar day you got back, how it ended, the

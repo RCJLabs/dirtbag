@@ -947,15 +947,16 @@ export const GAMES = {
   dice: { n: 5, min: 6 },
   late: 25 * 60,
   // Phase 22.9b, by Evan's calls (1 Oct 2026): cards, for money. You sit down with what's in hand up to `cap`, the
-  // most a night can cost. Blackjack is `bet` a hand, up to `hands` a night: a fresh deck each,
-  // the dealer standing on every 17, 3:2 for a blackjack (to the dollar up), double on two
-  // cards, no split.
+  // most a night can cost, once a night. Blackjack (Phase 36.2, Evan's calls, 18 Oct 2026) is
+  // your own bet a hand, one of `bets`, hand after hand till the fire's out, each hand `min`
+  // minutes [proposed]: a fresh deck each, the dealer standing on every 17, 3:2 for a blackjack
+  // (to the dollar up), double on any two cards, a pair split once (aces a card each).
   // Played right that's about even: variance, not a living. Hold'em is heads-up, `ante` each,
   // then `bets` before the flop, on the flop, and on the turn and river together; `hands` a
   // night. Their play weighs a `samples`-deal guess at how often their hand wins. Reads come at
   // `reads` hands played; once you've been caught betting a loser `caughtShare` of your hands,
   // they call `adapt` lighter.
-  bj: { cap: 40, bet: 5, hands: 10 },
+  bj: { cap: 40, bets: [5, 10], min: 4 },
   holdem: {
     cap: 40,
     ante: 1,

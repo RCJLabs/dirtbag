@@ -877,7 +877,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 77 ||
+  saved?.v !== 78 ||
   // Phase 29.1: nothing scavenged, a few days in.
   st.parts !== 0 ||
   // Phase 29.3: miles on the clock past a new climber's, and nothing for Dale to say yet.
@@ -2281,7 +2281,8 @@ console.log('Cards at the fire');
 // Phase 22.9b. Half nine at the Lot with $100: blackjack, a hand stood on and up again; then
 // hold'em with Hazel, a hand checked and called to the end, and up again. The money in front
 // of you comes back to your pocket, both games are played once tonight, and Hazel's had a
-// hand played on her.
+// hand played on her. Phase 36.2: blackjack drawn, the $10 bet picked, two hands stood on,
+// each a hand's minutes, and the played hand left face up on the table.
 {
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
   saved.state = {
@@ -2326,21 +2327,36 @@ console.log('Cards at the fire');
   await pick('The fire');
   await pick('Blackjack');
   await cards.waitForFunction(() =>
-    /In front of you: \$40/.test(document.querySelector('#sheet')?.textContent ?? ''),
+    /In front of you: \$40/.test(document.querySelector('#bj')?.textContent ?? ''),
   );
-  await pick('Deal');
-  await cards.waitForFunction(() => {
-    const c = JSON.parse(localStorage.getItem('dirtbag.save')).state.cards;
-    return c && (c.bj || c.hands === 1);
-  });
-  if ((await seated()).bj) {
-    await cards.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-blackjack.png`) });
-    await pick('Stand');
+  const clock = async () =>
+    await cards.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.min);
+  const sat = await clock();
+  await cards.click('#bj-bet-10');
+  for (let hand = 1; hand <= 2; hand++) {
+    await cards.click('#bj-deal');
+    // This hand on the go, or already paid (a blackjack either side).
+    await cards.waitForFunction((h) => {
+      const c = JSON.parse(localStorage.getItem('dirtbag.save')).state.cards;
+      return c?.bj && ((!c.bj.paid && c.hands === h - 1) || c.hands === h);
+    }, hand);
+    if (hand === 1 && !(await seated()).bj.paid)
+      await cards.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-blackjack.png`) });
+    for (let g = 0; g < 4 && !(await seated()).bj.paid; g++) {
+      await cards.click('#bj-stand');
+      await cards.waitForTimeout(150);
+    }
+    await cards.waitForFunction(
+      (h) => JSON.parse(localStorage.getItem('dirtbag.save')).state.cards?.hands === h,
+      hand,
+    );
   }
-  await cards.waitForFunction(
-    () => JSON.parse(localStorage.getItem('dirtbag.save')).state.cards?.hands === 1,
-  );
-  await pick('Get up');
+  const table = await seated();
+  const drawn = await cards.evaluate(() => document.querySelectorAll('#bj .pc:not(.down)').length);
+  if (table.bj.you[0].bet !== 10 || !table.bj.paid || !(drawn >= 4) || !((await clock()) > sat))
+    await fail(`blackjack: ${JSON.stringify({ table, drawn, sat, now: await clock() })}`);
+  await cards.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-blackjack-played.png`) });
+  await cards.click('#bj-up');
   await cards.waitForFunction(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.cards === null);
   await pick('Hold’em with Hazel');
   await pick('Deal');
@@ -2369,7 +2385,7 @@ console.log('Cards at the fire');
     await fail(
       `after the cards: ${JSON.stringify({ today: after.today, reads: after.reads, cash: after.cash, heard })}`,
     );
-  log(`cards: up from the fire with $${after.cash}, one hand each`);
+  log(`cards: up from the fire with $${after.cash}, two hands of blackjack and one of hold’em`);
   await ctx.close();
 }
 

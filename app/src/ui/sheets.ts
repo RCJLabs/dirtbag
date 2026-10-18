@@ -156,10 +156,8 @@ import {
   touristLine,
   touristsBlocked,
   touristsOn,
-  bjTotal,
   boardAt,
   CARD_NAME,
-  cardName,
   cardsBlocked,
   cardsName,
   handNeeds,
@@ -1068,7 +1066,8 @@ function sitRow(
   const why = cardsBlocked(s, g, who);
   return {
     label,
-    cost: costLabel({ min: GAMES.min, energy: -GAMES.energy }),
+    // Phase 36.2: blackjack's time is its hands'.
+    cost: g === 'bj' ? `${costLabel({ min: GAMES.bj.min })} a hand` : costLabel({ min: GAMES.min }),
     note: why ? `${why}.` : note,
     off: !!why,
     run: () => (g === 'bj' ? game.bj('sit') : game.holdem('sit', who)),
@@ -1084,58 +1083,25 @@ function readsLeft(s: GameState, who: string): string {
 }
 
 // Phase 22.9b: the card table, sat down: the hand on the go, or the next one, and getting up.
+// Phase 36.2: blackjack is drawn (ui/Cards.tsx); this is hold'em's.
 function cardsSheet(game: Game, s: GameState, c: NonNullable<GameState['cards']>): ListSpec {
   const name = PEOPLE[c.who]?.name ?? c.who;
   const front = `In front of you: ${money(c.chips)}.`;
-  const last = c.game === 'bj' ? GAMES.bj.hands : GAMES.holdem.hands;
+  const last = GAMES.holdem.hands;
   const between = (deal: Row): ListSpec => ({
     title: CARD_NAME[c.game],
     sub: `${front} ${c.hands ? `${c.hands} of ${last} hands played.` : `Up to ${last} hands tonight.`}`,
-    notes: c.game === 'holdem' ? readsOn(s, c.who) : undefined,
+    notes: readsOn(s, c.who),
     close: false,
     rows: [
       c.hands >= last ? { ...deal, off: true, note: 'That’s the last hand tonight.' } : deal,
       {
         label: 'Get up',
         note: `${money(c.chips)} back in your pocket.`,
-        run: () => (c.game === 'bj' ? game.bj('leave') : game.holdem('leave')),
+        run: () => game.holdem('leave'),
       },
     ],
   });
-  if (c.game === 'bj') {
-    const h = c.bj;
-    if (!h) {
-      const short = c.chips < GAMES.bj.bet;
-      return between({
-        label: 'Deal',
-        cost: costLabel({ cash: -GAMES.bj.bet }),
-        note: short ? 'Not enough in front of you for a hand.' : undefined,
-        off: short,
-        run: () => game.bj('deal'),
-      });
-    }
-    const can = h.you.length === 2 && c.chips >= h.bet;
-    return {
-      title: 'Blackjack',
-      sub: `You have ${cardsName(h.you)} (${bjTotal(h.you).n}). ${name} shows ${cardName(h.dealer[0]!)}. ${money(h.bet)} on it; ${money(c.chips)} in front of you.`,
-      close: false,
-      rows: [
-        { label: 'Hit', run: () => game.bj('hit') },
-        { label: 'Stand', run: () => game.bj('stand') },
-        {
-          label: 'Double',
-          cost: costLabel({ cash: -h.bet }),
-          note: can
-            ? 'One more card, then you stand.'
-            : h.you.length === 2
-              ? 'Not enough in front of you.'
-              : 'Only on your first two cards.',
-          off: !can,
-          run: () => game.bj('double'),
-        },
-      ],
-    };
-  }
   const he = c.he;
   if (!he) {
     const short = c.chips < handNeeds('holdem');
@@ -2539,7 +2505,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             'Blackjack',
             'bj',
             undefined,
-            `${money(GAMES.bj.bet)} a hand, up to ${GAMES.bj.hands} hands, and you sit down with ${money(GAMES.bj.cap)} at most. ${here[0] ?? 'Whoever’s up'} deals.`,
+            `${GAMES.bj.bets.map(money).join(' or ')} a hand, as many as the night holds, and you sit down with ${money(GAMES.bj.cap)} at most. ${here[0] ?? 'Whoever’s up'} deals.`,
           ),
           ...atFire(s)
             .filter((w) => STYLES[w])

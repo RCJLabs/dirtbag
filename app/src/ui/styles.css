@@ -473,6 +473,87 @@ button.pill:disabled {
 .checks .ok {
   color: var(--u-ink);
 }
+/* Cards (Phase 36.2): a playing card, face up or down, and blackjack's hands in rows: who,
+   the cards, the total and the bet. */
+.pc {
+  width: 34px;
+  height: 48px;
+  flex: none;
+}
+.pc rect {
+  fill: var(--u-bg);
+  stroke: var(--u-ink);
+  stroke-width: 1.6;
+}
+.pc text {
+  font: 700 14px var(--u-font);
+  fill: var(--u-ink);
+}
+.pc .pip {
+  fill: var(--u-ink);
+}
+.pc.red text,
+.pc.red .pip {
+  fill: var(--u-acc);
+}
+.pc.down rect.back {
+  fill: color-mix(in srgb, var(--u-acc) 70%, var(--u-bg));
+  stroke: none;
+}
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.bj-hands {
+  margin: 8px 0 4px;
+}
+.bj-hand {
+  display: grid;
+  grid-template-columns: 4.6em 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  border-radius: calc(var(--u-rad) + 2px);
+  font: 600 calc(13px * var(--u-fs)) / 1.2 var(--u-mono);
+}
+.bj-hand[data-live='true'] {
+  box-shadow: inset 0 0 0 1.5px var(--u-ink);
+}
+.bj-total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font: 700 calc(15px * var(--u-fs)) / 1.15 var(--u-mono);
+}
+.bj-total small {
+  font: 500 calc(11.5px * var(--u-fs)) / 1.2 var(--u-mono);
+  color: var(--u-dim);
+}
+.bj-bets {
+  display: flex;
+  gap: 6px;
+  margin: 8px 0 6px;
+}
+.bj-bet {
+  min-width: 56px;
+  padding: 7px 10px;
+  border: 1.5px solid color-mix(in srgb, var(--u-ink) 30%, transparent);
+  border-radius: calc(var(--u-rad) + 2px);
+  background: none;
+  color: var(--u-ink);
+  font: 700 calc(15px * var(--u-fs)) / 1 var(--u-mono);
+  cursor: pointer;
+}
+.bj-bet[aria-checked='true'] {
+  border-color: var(--u-ink);
+  background: var(--u-btn);
+  color: var(--u-btnInk);
+}
+.bj-bet:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
 /* Liar's dice (Phase 36.1): the others' cups across the fire, the round's bids, your cup
    lifted, and your bid as a count and a face. */
 .p-others {

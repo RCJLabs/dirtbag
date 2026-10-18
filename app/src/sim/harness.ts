@@ -7,7 +7,7 @@ import { FOLKS_CALLS } from './content/folks';
 import { GIFTS, NAMED_FOR } from './content/gifts';
 import { TALK } from './content/people';
 import { expedLoop, humanHands, playDays, type BotRun, type Strategy } from './bot';
-import { bjTotal, boardAt, equity, handNeeds } from './cards';
+import { bjTotal, boardAt, equity, handNeeds, isPair } from './cards';
 import { CLIMB, EXPED, GAMES } from './dials';
 import { EXPEDITIONS } from './content/expeditions';
 import { defaultPlan, planOdds, tripPay } from './expeditions';
@@ -17,7 +17,7 @@ import { ORIGINS } from './content/origins';
 import { indoor } from './content/gym';
 import type { RouteDef } from './content/routes';
 import { newMastery } from './paths';
-import { atFire } from './fire';
+import { atFire, fireOut } from './fire';
 import { atLeast, FACES, inCup, inPlay, least } from './perudo';
 import { DICE_STYLE } from './content/perudo';
 import { act, newGame, routeOfId } from './game';
@@ -192,23 +192,40 @@ export function gamesAtFire(seed: string, nights: number) {
     }
     for (const w of Object.keys(was)) bondDay = Math.max(bondDay, s.people[w]!.bond - was[w]!.bond);
   }
-  // Blackjack by the book: hit to 17 against a 7 or better, to 12 otherwise, soft to 18;
-  // double 11, and 10 against a 9 or worse.
+  // Blackjack by the book, at the top bet, hand after hand till the chips or the fire run out
+  // (36.2): hit to 17 against a 7 or better, to 12 otherwise, soft to 18; double 11, and 10
+  // against a 9 or worse; split aces and eights, nines but against a 7 or a ten or better, and
+  // the small pairs against a small card. Its money an hour by the clock's minutes a hand.
   let bj = 0;
+  let bjHands = 0;
+  const top = Math.max(...GAMES.bj.bets);
   s = base;
   for (let d = 1; d <= nights; d++) {
     s = act(night(s, d), { t: 'bj', do: 'sit' }).state;
     const start = s.cards!.chips;
-    while (s.cards!.hands < GAMES.bj.hands && s.cards!.chips >= GAMES.bj.bet) {
-      s = act(s, { t: 'bj', do: 'deal' }).state;
-      while (s.cards!.bj) {
+    while (s.cards!.chips >= top && !fireOut(s)) {
+      s = act(s, { t: 'bj', do: 'deal', bet: top }).state;
+      bjHands++;
+      for (let g = 0; g < 20 && s.cards!.bj && !s.cards!.bj.paid; g++) {
         const h = s.cards!.bj;
-        const y = bjTotal(h.you);
+        const mine = h.you[h.at]!;
+        const y = bjTotal(mine.cards);
         const up = bjTotal([h.dealer[0]!]).n;
-        const dbl =
-          h.you.length === 2 && !y.soft && (y.n === 11 || (y.n === 10 && up < 10)) && s.cards!.chips >= h.bet;
+        const v = bjTotal([mine.cards[0]!]).n;
+        const room = s.cards!.chips >= mine.bet;
+        const split =
+          room &&
+          h.you.length === 1 &&
+          isPair(mine.cards) &&
+          (v === 11 ||
+            v === 8 ||
+            (v === 9 && up !== 7 && up < 10) ||
+            (v === 7 && up <= 7) ||
+            (v === 6 && up <= 6) ||
+            (v <= 3 && up <= 7));
+        const dbl = room && mine.cards.length === 2 && !y.soft && (y.n === 11 || (y.n === 10 && up < 10));
         const hit = y.soft ? y.n <= 17 : y.n <= 11 || (y.n <= 16 && up >= 7);
-        s = act(s, { t: 'bj', do: dbl ? 'double' : hit ? 'hit' : 'stand' }).state;
+        s = act(s, { t: 'bj', do: split ? 'split' : dbl ? 'double' : hit ? 'hit' : 'stand' }).state;
       }
     }
     bj += s.cards!.chips - start;
@@ -261,7 +278,7 @@ export function gamesAtFire(seed: string, nights: number) {
   return {
     bondDay,
     dice: { min: diceMin / diceGames, won: diceWon / diceGames },
-    bj: bj / nights / hours,
+    bj: bj / ((bjHands * GAMES.bj.min) / 60),
     holdem: Object.fromEntries(
       ['hazel', 'sage'].flatMap((w) => ways.map((k) => [`${w} ${k}`, holdem(k, w)])),
     ) as Record<string, number>,

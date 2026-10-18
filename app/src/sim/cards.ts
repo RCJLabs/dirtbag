@@ -1,11 +1,12 @@
 // Cards at the fire (Phase 22.9b): blackjack for money, and heads-up hold'em for money that
 // keeps reads on each person. Both are dealt from the seed, a fresh deck a hand; the numbers
-// are GAMES.bj and GAMES.holdem (dials.ts), the people's styles content/cards.ts.
+// are GAMES.bj and GAMES.holdem (dials.ts), the people's styles content/cards.ts. Phase 36.2:
+// blackjack is your own bet a hand, splits and all, hand after hand till the fire's out.
 
 import { isNight } from './cond';
 import { STYLES } from './content/cards';
 import { PEOPLE } from './content/people';
-import { atFire } from './fire';
+import { atFire, fireOut } from './fire';
 import { GAMES } from './dials';
 import { Rng } from './rng';
 import type { GameState } from './types';
@@ -34,13 +35,15 @@ export type Cards = NonNullable<GameState['cards']>;
 export type CardGame = Cards['game'];
 export const CARD_NAME: Record<CardGame, string> = { bj: 'Blackjack', holdem: 'Hold’em' };
 
-// What you need in front of you to play a hand: a bet, or every bet a hold'em hand can ask.
+// What you need in front of you to play a hand: the least bet, or every bet a hold'em hand
+// can ask.
 export const handNeeds = (g: CardGame): number =>
-  g === 'bj' ? GAMES.bj.bet : GAMES.holdem.ante + GAMES.holdem.bets.reduce((a, b) => a + b, 0);
+  g === 'bj' ? Math.min(...GAMES.bj.bets) : GAMES.holdem.ante + GAMES.holdem.bets.reduce((a, b) => a + b, 0);
 
 export function cardsBlocked(s: GameState, g: CardGame, who?: string): string | null {
   if (s.at !== 'lot') return 'The cards are at the fire at the Lot';
   if (!isNight(s.min)) return 'Nobody’s dealing till dark';
+  if (fireOut(s)) return 'The fire’s down to coals';
   if (!atFire(s).length) return 'Nobody’s at the fire tonight';
   if (who && !atFire(s).includes(who)) return `${PEOPLE[who]?.name ?? who} isn’t at the fire tonight`;
   if (s.today.includes(g)) return `You’ve played ${CARD_NAME[g].toLowerCase()} tonight`;
@@ -85,14 +88,22 @@ export function dealerPlays(
   return { dealer: d, next: i };
 }
 
+// A pair, to split: two cards of a rank.
+export const isPair = (cs: number[]): boolean => cs.length === 2 && rank(cs[0]!) === rank(cs[1]!);
+
 // What a finished hand pays back, the bet included: a blackjack 3:2, a win even, a push the
-// bet, a loss nothing.
-export function bjSettle(you: number[], dealer: number[], bet: number): { back: number; how: string } {
+// bet, a loss nothing. Twenty-one in two cards after a split is twenty-one, not a blackjack.
+export function bjSettle(
+  you: number[],
+  dealer: number[],
+  bet: number,
+  split = false,
+): { back: number; how: string } {
   const y = bjTotal(you).n;
   const d = bjTotal(dealer).n;
   if (y > 21) return { back: 0, how: 'bust' };
   // 3:2, to the dollar up: a $5 blackjack pays $8.
-  if (isBlackjack(you) && !isBlackjack(dealer))
+  if (!split && isBlackjack(you) && !isBlackjack(dealer))
     return { back: bet + Math.ceil((bet * 3) / 2), how: 'blackjack' };
   if (isBlackjack(dealer) && !isBlackjack(you)) return { back: 0, how: 'dealer blackjack' };
   if (d > 21) return { back: bet * 2, how: 'dealer bust' };
