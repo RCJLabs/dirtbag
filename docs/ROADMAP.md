@@ -4129,13 +4129,72 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 ### Phase 39 — Each crag's classics   **<<< CURRENT MILESTONE**
 
-*Queued (18 Oct 2026). Small [INFERRED]; changes the save.*
+*Small. Planned with Evan's calls (18 Oct 2026). No save change, though the queue guessed one.*
 
 **Goal.** Every crag has its must-dos, and ticking them means something.
 
 **Scope.** Five starred lines on each crag's place card. Tick them all and you're a local there, with small perks. Your own first ascents can become classics once their grades settle (32.4).
 
+**Evan's calls (18 Oct 2026), all as recommended:**
+- **Which lines:** five a crag, hand-picked in its content, spread across its grades and kinds so a newcomer can tick the easy ones first. Where unclimbed lines leave fewer (the Bluff, the Hollow), there are fewer, until your first ascents fill them.
+- **What a local gets:**
+  - on a busy day, no waiting for a line there;
+  - the crowd there answers when you ask for beta;
+  - a Record Book entry, the first time you're a local anywhere.
+- **Your first ascents:** once one's grade settles (three repeats), it's a classic at its crag on top of the set ones, and it counts toward being a local there.
+
+**From the survey (18 Oct 2026):**
+- **Ten crags, 7 to 12 lines each** (the Big Stone's wall pitches aside), so five is half or more of a crag.
+- **24 lines are still to be climbed:** every line at the Bluff (9) and the Hollow (7), and each crag's open project (8). None of them can be a classic until it's climbed.
+- **Nothing is kept per crag:** standing is the valley's (`scene.old`, `scene.gym`).
+- **Where the perks hook in:**
+  - a busy crag's queue (`queueMin`, `CROWD.queue`);
+  - asking around for beta (`canAsk`), which needs a busy or packed crowd.
+
 **Done when** [proposed]: the content test gives every crag its five; a bot career becomes a local somewhere; a save from before loads.
+
+**One slice, 39.1:** the classics, being a local, the card, the Record Book, the tests, the harness's line and the e2e.
+
+**Status (18 Oct 2026): 39.1 built: each crag's classics.** No save change, 0.999.99.
+- **The classics** (`PlaceDef.classics`, hand-picked [proposed]):
+  - **Roadside:** the Warm Boulder, Crimpfest, The Pump, Highball Arête, Local Testpiece;
+  - **the Gorge:** Granite Slab, Gorge Classic, Serenity Crack, Crimp Cathedral, Gorge Trad;
+  - **Moonstone:** Tall Arête, The Egg, Desert Spire, Hueco Pockets, Lunar Roof;
+  - **the Mesa:** Desert Varnish, The Prow, Desert Enduro, Powerhouse, Desert Trad Line;
+  - **the Big Stone:** Base Camp Boulder, The Apron, The Splitter Pitch, The Trad Pitch, Valley Classic;
+  - **Wind River:** Alpine Crimps, Glacier Point, The Diamond, Alpine Trad, Astroman;
+  - **the Crucible:** The Reckoning, Crucible Crux, The Vise, The Lifeline, Threshold;
+  - **the Cove:** Tide Pool Traverse, Saltwater Slab, Leap of Faith, Overhanging Tide, The Deep End;
+  - **the Bluff and the Hollow:** none; every line there is still to be climbed.
+- **The rules** (`sim/classics.ts`):
+  - a crag's classics are its five, then your first ascents there whose grades have settled;
+  - any send ticks one;
+  - a local has every classic ticked, at least `CLASSICS.list` (5) of them. Where the lines are still to be climbed, your settled first ascents make up the five.
+  - Worked out from your sends and first ascents: nothing new is kept.
+- **A local:**
+  - no queue at that crag on a busy or packed day;
+  - asking around there works on a quiet day too (`canAsk`), though not on an empty one;
+  - the act that makes you one says so, once;
+  - the Record Book's "A Local", its 53rd entry. Steam's list, `desktop/STEAM.md` and the store copy follow.
+- **Shown:**
+  - the crag's card: how many are ticked, and which are still to go; your own among them; room for more where lines are still to be climbed; "You're a local here";
+  - a classic's beta sheet: "One of Roadside Crag's classics."
+- **Tests:**
+  - the content test (criterion 1): every crag's five are climbable lines there, across at least three grades and more than one kind where it has more than one, the easiest within a grade of the crag's easiest; none where every line is unclimbed;
+  - `classics.test.ts` (6): the list and your settled first ascents; a local, and one short; a crag of unclimbed lines filled from yours; no queue; asking on a quiet day; the line once, the Record Book, and a save that was already a local (no line, the entry on its next act).
+- **The harness** (criterion 2): the career bots, 16 runs of 224 days: 9 become a local somewhere, all at Roadside, one at Moonstone too. Median classics ticked a run: Roadside 5, Moonstone 3, the Gorge 2, the Mesa 1. The career harness's other seven targets hold.
+- **The e2e:** Roadside's card lists its classics, none ticked; the Warm Boulder's sheet says it's one.
+- **Seen on the dev server:** Roadside's card with three ticked: "The classics, 3 of 5 ticked. Still to go: Highball Arête and Local Testpiece."
+
+**Phase 39 against its Done-when (18 Oct 2026):** all three pass.
+1. **The content test gives every crag its five:** five at every crag with lines to climb; none at the Bluff and the Hollow, where every line waits for its first ascent.
+2. **A bot career becomes a local somewhere:** 9 of 16 career runs, by day 224.
+3. **A save from before loads:** nothing in the save changed. The v80 fixture loads as before, and a save that was already a local gets the entry on its next act, with no line.
+
+**Closing Phase 39 is Evan's call.** Carried:
+- **[proposed]:** the forty picks, and the local's two perks as built (no queue on a busy day; asking around on a quiet one).
+- **The bots become locals only at Roadside, and once at Moonstone.** They don't go after classics; they send what they send. No boulderer becomes one anywhere: two of Roadside's five are sport.
+- **The Bluff and the Hollow need five of your own lines, settled,** before anyone's a local there.
 
 ### Phase 40 — "What now?" from Hazel
 
@@ -4921,3 +4980,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-18 — Phase 37 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 38, a ghost of your best go.
 - 2026-10-18 — Phase 38 planned with Evan's calls: your best go at its pace, on every line you're working, gone once it's sent. 38.1 built: each go keeps its pace; a line keeps its best go's till it's sent; the wall draws it, faint, beside your next go; a switch in Settings; a set that comes down takes its ghosts. Save v81. Phase 38's Done-when pass; closing it is Evan's call. 0.999.98.
 - 2026-10-18 — Phase 38 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 39, each crag's classics.
+- 2026-10-18 — Phase 39 planned with Evan's calls: five hand-picked classics a crag; a local waits for nothing on a busy day, finds the beta on a quiet one, and earns an entry; your settled first ascents join the list. 39.1 built: the classics, the card, the Record Book's 53rd entry; no save change. Phase 39's Done-when pass; closing it is Evan's call. 0.999.99.

@@ -82,6 +82,10 @@ export interface PlaceDef {
   // The bond a partner needs with you to come out here when you ask: further, harder to
   // talk them into (BOND.tiers names them).
   invite?: number;
+  // Phase 39: the crag's classics, five hand-picked lines across its grades and kinds, none of
+  // them still to be climbed (so none at a crag whose every line is). Your settled first
+  // ascents join them (classics.ts).
+  classics?: string[];
   // How many climbers it draws on a plain weekday afternoon, 0 to 1 (v0.956's crag
   // popularity). Crowds (Phase 21.6) build from it; a place without one never has one.
   crowd?: number;
@@ -196,6 +200,7 @@ export const PLACES: Record<string, PlaceDef> = {
     here: "You're parked here.",
     acts: [],
     invite: 1,
+    classics: ['warm', 'crimpfest', 'pump', 'highball', 'testpiece'],
     // The sun comes round the far end first: the projects out in the boulder field lose
     // their shade early, and the warm-ups by the road keep theirs longest.
     sun: [
@@ -225,6 +230,7 @@ export const PLACES: Record<string, PlaceDef> = {
     acts: [],
     minGrade: 4,
     invite: 3,
+    classics: ['gslab', 'gclassic', 'gserenity', 'gcathedral', 'gtrad'],
     locked: 'V5 and up. It’s no place to learn: come back when you’re climbing V4.',
     closed: { season: 'spring', why: 'Closed for nesting raptors till summer' },
     shaded: true,
@@ -241,6 +247,7 @@ export const PLACES: Record<string, PlaceDef> = {
     acts: [],
     minGrade: 6,
     invite: 5,
+    classics: ['marete', 'megg', 'mspire', 'mhueco', 'mroof'],
     unlock: 400,
     permit: 20,
     pads: true,
@@ -262,6 +269,7 @@ export const PLACES: Record<string, PlaceDef> = {
     acts: [],
     minGrade: 7,
     invite: 5,
+    classics: ['svarnish', 'sprow', 'senduro', 'spowerhouse', 'sdtrad'],
     desert: true,
     ownSky: true,
     // The sun comes round the far end first, as at Moonstone: the project out past the
@@ -292,6 +300,7 @@ export const PLACES: Record<string, PlaceDef> = {
     acts: [],
     minGrade: 8,
     invite: 7,
+    classics: ['bbase', 'bapron', 'bsplit', 'btrad', 'bclassic'],
     unlock: 600,
     shaded: true,
     ownSky: true,
@@ -309,6 +318,7 @@ export const PLACES: Record<string, PlaceDef> = {
     acts: [],
     minGrade: 9,
     invite: 7,
+    classics: ['walpine', 'wglacier', 'wdiamond', 'wtrad', 'wastroman'],
     unlock: 800,
     permit: 35,
     shaded: true,
@@ -326,6 +336,7 @@ export const PLACES: Record<string, PlaceDef> = {
     acts: [],
     minGrade: 11,
     invite: 7,
+    classics: ['creckoning', 'ccrux', 'cvise', 'clifeline', 'cthreshold'],
     shaded: true,
     ownSky: true,
   },
@@ -341,6 +352,7 @@ export const PLACES: Record<string, PlaceDef> = {
     acts: [],
     minGrade: 4,
     invite: 3,
+    classics: ['ptide', 'pslab', 'pleap', 'poverhang', 'pdeep'],
     ownSky: true,
     // The sun comes up the coast from the south end: the tall lines out at the point first.
     sun: ['pdeep', 'parete', 'poverhang', 'pleap', 'pbarnacle', 'pslab', 'pplunge', 'ptide'],

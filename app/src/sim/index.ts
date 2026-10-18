@@ -154,6 +154,8 @@ export {
 } from './guides';
 export { faNote, repeatDays, repeatsOf, settled } from './settle';
 export { ghostAt, ghostOf, outclimbs } from './ghost';
+export { classicsAt, localAt, localPlaces, ticked } from './classics';
+export { CLASSIC_SAYS } from './content/classics';
 export {
   cyclePay,
   filmBlocked,
@@ -347,6 +349,7 @@ export {
   HOLLOW,
   SESH,
   GHOST,
+  CLASSICS,
 } from './dials';
 export type { Plan } from './dials';
 export { weeklyBills, clinicBill, carePrice, jabbed, premiumOf } from './clinic';

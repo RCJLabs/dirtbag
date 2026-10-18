@@ -23,7 +23,7 @@ const block = (key: string): string => {
 };
 // Phase 19.3: Play's listing for launch is held to the same facts.
 const LONG = ['steam-about', 'full', 'full-launch'];
-const WORD: Record<number, string> = { 5: 'Five', 9: 'Nine', 52: 'Fifty-two' };
+const WORD: Record<number, string> = { 5: 'Five', 9: 'Nine', 53: 'Fifty-three' };
 const word = (n: number): string => {
   const w = WORD[n];
   if (!w) throw new Error(`${n}: the copy has no word for it; write the new number into STORE.md`);

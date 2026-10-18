@@ -17,7 +17,7 @@ import { fill } from './format';
 import { PEOPLE, TALK, THINGS } from './content/people';
 import { LIBRARY, PITCH_KINDS, ROUTES, WALLS, type RouteDef } from './content/routes';
 import { ROCK_LINES, ROCK_MOVES } from './content/rock';
-import { HIGHBALL } from './dials';
+import { CLASSICS, HIGHBALL } from './dials';
 import { GEAR } from './content/gear';
 import { HOLIDAY_SCENES, HOLIDAY_WITH, HOLIDAYS } from './content/folks';
 import { KNOCKS } from './content/knocks';
@@ -160,6 +160,40 @@ describe('content', () => {
     for (const [id, p] of Object.entries(PLACES))
       for (const text of [p.away, p.here])
         expect(fill(text, { ...TEXT_VALUES, lines: 1 }), id).not.toMatch(/\{/);
+  });
+
+  // Phase 39 (criterion 1): five classics a crag, hand-picked across its grades and kinds, from
+  // lines there to be climbed; none at a crag whose every line is still waiting for its first.
+  it('gives every crag its five classics, spread across its grades and kinds', () => {
+    for (const [id, p] of Object.entries(PLACES)) {
+      if (!p.crag) {
+        expect(p.classics, id).toBeUndefined();
+        continue;
+      }
+      const lines = Object.values(ROUTES).filter((r) => r.place === id && !r.wall);
+      const climbed = lines.filter((r) => !r.open);
+      if (!climbed.length) {
+        expect(p.classics ?? [], id).toEqual([]);
+        continue;
+      }
+      const picks = (p.classics ?? []).map((c) => ROUTES[c]);
+      expect(picks, id).toHaveLength(CLASSICS.list);
+      expect(new Set(p.classics).size, id).toBe(CLASSICS.list);
+      for (const r of picks) {
+        expect(r, id).toBeDefined();
+        expect(r!.place, r!.id).toBe(id);
+        expect(r!.open || r!.wall || r!.hiddenUntil, r!.id).toBeFalsy();
+      }
+      // Spread: the grades aren't all one, and where the crag has more than one kind of line,
+      // the classics do too.
+      expect(new Set(picks.map((r) => r!.grade)).size, id).toBeGreaterThan(2);
+      const kinds = (rs: (RouteDef | undefined)[]) => new Set(rs.map((r) => r!.disc));
+      if (kinds(climbed).size > 1) expect(kinds(picks).size, id).toBeGreaterThan(1);
+      // A newcomer's first: the crag's easiest classic is within a grade of its easiest line.
+      expect(Math.min(...picks.map((r) => r!.grade)), id).toBeLessThanOrEqual(
+        Math.min(...climbed.map((r) => r.grade)) + 1,
+      );
+    }
   });
 
   it("a place that's shut to you says the grade that opens it", () => {

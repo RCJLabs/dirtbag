@@ -4,6 +4,8 @@ import {
   COACH_EDGE,
   byName,
   faNote,
+  classicsAt,
+  CLASSIC_SAYS,
   familyFill,
   kinLine,
   FOREBEAR_MET,
@@ -1292,6 +1294,11 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
       {s.firsts[route] && !s.firsts[route]!.by && (
         <p className="sub" id="fa-note">
           {faNote(s, route, lineGrade(s, r))}
+        </p>
+      )}
+      {classicsAt(s, r.place).includes(route) && (
+        <p className="sub" id="classic-note">
+          {fill(CLASSIC_SAYS.star, { place: PLACES[r.place]!.name })}
         </p>
       )}
       {unnamed && log.sent && (

@@ -19,6 +19,7 @@ import { act } from '../src/sim/game';
 import { oldStart, questDone, questOf } from '../src/sim/heir';
 import { found } from '../src/sim/hollow';
 import { settled } from '../src/sim/settle';
+import { classicsAt, localPlaces, ticked } from '../src/sim/classics';
 import { ROUTES } from '../src/sim/content/routes';
 
 // Phase 30's criterion 1: how far under their best a 40-year-old may climb, in grades.
@@ -197,6 +198,16 @@ it('career', { timeout: 1_800_000 }, () => {
     buskOk,
     'Busking starts under every job an hour and passes every job after 100+ days of sets',
     `see the busking table; ${BUSK.notes} chords a set, one set a day.`,
+  );
+  // Phase 39's criterion 2: a career becomes a local somewhere, every classic at a crag ticked.
+  const locals = all.map((r) => localPlaces(r.state));
+  const crags = Object.keys(PLACES).filter((p) => PLACES[p]!.classics?.length);
+  const ticks = (p: string) =>
+    median(all.map((r) => classicsAt(r.state, p).filter((id) => ticked(r.state, id)).length));
+  say(
+    locals.some((l) => l.length > 0),
+    'A career becomes a local somewhere (Phase 39, criterion 2)',
+    `${locals.filter((l) => l.length).length}/${all.length} runs by day ${DAYS}; locals at ${crags.map((p) => `${p} ${locals.filter((l) => l.includes(p)).length}`).join(', ')}; classics ticked a run (median): ${crags.map((p) => `${p} ${ticks(p)}`).join(', ')}.`,
   );
 });
 

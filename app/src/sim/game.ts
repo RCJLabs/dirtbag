@@ -416,6 +416,8 @@ import { PARTNERS, tierOf, whereIs, whereNow } from './presence';
 import { hashSeed, Rng } from './rng';
 import { repeatsOf, settled } from './settle';
 import { outclimbs } from './ghost';
+import { localAt, localPlaces } from './classics';
+import { CLASSIC_SAYS } from './content/classics';
 import { REPEAT_FIRST, REPEAT_WILD, REPEATERS, SETTLED } from './content/settle';
 import { actEndedBy, aimMet, currentGoal } from './story';
 import { newlyEarned } from './record';
@@ -4790,6 +4792,10 @@ export function act(s0: GameState, a: Action): Result {
         `${t.good ? 'Something you didn’t know about yourself' : 'Something you’d rather not know'}: ${t.name}. ${t.desc}`,
       );
     }
+  // Phase 39: a crag whose classics you've just ticked, by a send or a line of yours settling.
+  if (s.climber.name)
+    for (const p of localPlaces(s))
+      if (!localAt(s0, p)) line(fill(CLASSIC_SAYS.local, { place: PLACES[p]!.name }));
   // Phase 23.1: anything that's just gone in the Record Book, each with its card.
   if (s.climber.name) {
     const got = newlyEarned(s);

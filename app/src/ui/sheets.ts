@@ -29,6 +29,11 @@ import {
   DOG_TIER_NAME,
   dogTier,
   fill,
+  classicsAt,
+  CLASSIC_SAYS,
+  CLASSICS,
+  localAt,
+  ticked,
   goBlocked,
   gradeLabel,
   gradeOf,
@@ -323,6 +328,7 @@ import {
   seshOn,
   SESH,
 } from '../sim';
+
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import { bestTrip } from './card';
 import { wordOf } from './gloss';
@@ -333,6 +339,25 @@ import { planLine } from '../game/plan';
 import { desktop } from '../game/desktop';
 import { buyUnlock, inAndroidApp, playOffer, restoreUnlock } from '../game/play';
 import { locked, STORES } from '../game/unlock';
+
+// Phase 39: a crag's classics on its card: what's still to go, your own among them, and whether
+// you're a local.
+function classicNotes(s: GameState, place: string): string[] {
+  if (!PLACES[place]?.crag) return [];
+  const list = classicsAt(s, place);
+  if (!list.length) return [CLASSIC_SAYS.none];
+  const names = (ids: string[]) => listOf(ids.map((id) => lineName(s, ROUTES[id]!)));
+  const todo = list.filter((id) => !ticked(s, id));
+  const mine = list.filter((id) => s.firsts[id] && !s.firsts[id]!.by);
+  return [
+    todo.length
+      ? fill(CLASSIC_SAYS.todo, { n: list.length - todo.length, of: list.length, lines: names(todo) })
+      : fill(CLASSIC_SAYS.done, { of: list.length }),
+    ...(mine.length ? [fill(CLASSIC_SAYS.yours, { lines: names(mine) })] : []),
+    ...(list.length < CLASSICS.list ? [fill(CLASSIC_SAYS.more, { more: CLASSICS.list - list.length })] : []),
+    ...(localAt(s, place) ? [CLASSIC_SAYS.here] : []),
+  ];
+}
 
 export interface Row {
   label: string;
@@ -1804,7 +1829,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       const shut = here_.closed;
       const sky = PLACES[id.id]?.ownSky ? [skyNote(here_.sky)] : [];
       const crowd = p.crowd && !shut ? [crowdNote(crowdAt(s.seed, s.day, min, id.id))] : [];
-      const extra = [...(shut ? [`${shut}.`] : []), ...sky, ...crowd];
+      const extra = [...(shut ? [`${shut}.`] : []), ...sky, ...crowd, ...classicNotes(s, id.id)];
       const notes = extra.length ? extra : undefined;
       if (!here) {
         const locked = p.minGrade !== undefined && gradeOf(s.climber.skills) < p.minGrade;
