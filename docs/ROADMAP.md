@@ -3915,6 +3915,16 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 - **Words:** the paperwork's gambling answer now says hold'em is everyone at the fire (`docs/PAPERWORK.md`); the answers don't change.
 - **The download:** 477.4 KB of 490.
 
+**Status (18 Oct 2026): 36.4 built: the glovebox deck.** No save change, 0.999.94.
+- **Where:** "The glovebox deck" on the van's card, at the Lot or at a crag, any time of day.
+- **The table** (`sim/glovebox.ts`): a copy of the climber with the glovebox's flag, its own seed each time the deck comes out, and a box of matches for its cash (`GAMES.glove.sticks`, 40 [proposed]). With the flag, the people at the table are the cast (`GLOVE_CAST`: Hazel, Sage and Frank [proposed], met or not), and where, when, once a night and the fire's close don't apply (`atFire`, `gameBlocked`, `cardsBlocked`, `fireOut`). The games are the fire's own, played through `act` by the same rules: Perudo; blackjack with its bets and splits; hold'em with its blinds, styles, reads and tells.
+- **Outside the career** (`game/game.ts`, `Ui.glove`): the copy lives in the UI's state, never in the save, and goes back in the glovebox when its card closes. Nobody tires at it, and its clock is its own: the career's clock, cash, bond and reads don't move. What you know of each of them from the fire comes with you (the reads, and the tells once you've the second), and nothing learned in the glovebox goes back.
+- **The matchsticks:** the tables count matchsticks where the fire counts dollars, and show no minutes. What you don't take to a card table stays in the box. Each card game is shut when the box can't cover its least (blackjack's lower bet, hold'em's big blind), and a new box is there once either is.
+- **The card** (`ui/Glovebox.tsx`): the three games, who's in, the matchsticks left, and a new box when you're short. Each game opens the fire's own table, drawn as at the fire, in the glovebox's words ("so far", "back in the box").
+- **Tests:** `glovebox.test.ts` (5): the copy (its seed, the box, nothing on); the fire's limits lifted (by day at the gym, past 1 AM, again the same night); all three games played on it, as often as you like; the climber it was copied from untouched, byte for byte; a new box once short of a game.
+- **The e2e** (Phase 36's criterion 3): a morning at the Lot, the van, the glovebox deck, a bid at liar's dice, a blackjack hand stood on and a hold'em hand called down, no dollars or minutes on any of them, and the deck put away: the career's save is the same, byte for byte.
+- **The download:** 478.6 KB of 490.
+
 ### Phase 37 — The session
 
 *Queued (18 Oct 2026). Small to medium [INFERRED]. Planned with Evan's calls when it comes up.*
@@ -4721,3 +4731,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-18 — 36.1 built: liar's dice is Perudo, with everyone at the fire, drawn: five dice each under a cup, ones wild, bids round the fire, a call costing whoever's wrong a die, the last cup taking it; Hazel, Sage and Frank each bid in their own style from their own cups; game after game till the fire's out at 1 AM; bond once a day as before. Save v77. 0.999.91.
 - 2026-10-18 — 36.2 built: blackjack drawn, with your own bet ($5 or $10) and a pair split once (aces a card each), hand after hand till the fire's out, each hand its minutes; the played hand left face up on the table till the next deal. Save v78. 0.999.92.
 - 2026-10-18 — 36.3 built: hold'em round the fire with everyone who plays, fixed limit: $1 and $2 blinds and the button going round, four streets with a raise reopening the betting, your all in for the money that matched yours, Frank at the table, and each person's tells once you've the second read on them; hand after hand till the fire's out, drawn. Save v79. 0.999.93.
+- 2026-10-18 — 36.4 built: the glovebox deck, on the van's card any time: liar's dice, blackjack and hold'em against Hazel, Sage and Frank for a box of matches, on a copy of the climber that's never saved, so no time passes and nothing carries over. No save change. 0.999.94.

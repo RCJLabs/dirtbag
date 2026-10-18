@@ -41,6 +41,9 @@ export const handNeeds = (g: CardGame): number =>
   g === 'bj' ? Math.min(...GAMES.bj.bets) : GAMES.holdem.blinds[1]!;
 
 export function cardsBlocked(s: GameState, g: CardGame): string | null {
+  // Phase 36.4: the glovebox deck plays anywhere, any time, as often as you like, for its
+  // matchsticks.
+  if (s.glovebox) return Math.floor(s.cash) < handNeeds(g) ? 'Not enough matchsticks in the box' : null;
   if (s.at !== 'lot') return 'The cards are at the fire at the Lot';
   if (!isNight(s.min)) return 'Nobody’s dealing till dark';
   if (fireOut(s)) return 'The fire’s down to coals';

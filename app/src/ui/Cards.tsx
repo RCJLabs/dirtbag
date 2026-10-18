@@ -3,7 +3,7 @@
 // the hand's played, yours (two hands once a pair's split), your bet, and the moves. The rules
 // are the sim's (sim/cards.ts): this only stages them.
 import { useLayoutEffect, useRef, useState } from 'react';
-import type { Game } from '../game/game';
+import type { TableMoves } from '../game/game';
 import {
   betOn,
   bjTotal,
@@ -28,6 +28,7 @@ import {
   suit,
   type GameState,
 } from '../sim';
+import { glyphs } from './Glyph';
 import { MARKS } from './marks';
 
 const RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
@@ -83,6 +84,22 @@ const upWords = (c: number): string => {
   return `${w === 'ace' || w === 'eight' ? 'an' : 'a'} ${w}`;
 };
 
+// What the table plays for: money and the clock at the fire, or the glovebox's matchsticks
+// (36.4), where no time passes.
+interface Purse {
+  unit: (n: number) => string;
+  clock: boolean;
+}
+export const sticks = (n: number): string => {
+  const k = Math.floor(n);
+  return `${k} ${k === 1 ? 'matchstick' : 'matchsticks'}`;
+};
+const CASH: Purse = { unit: money, clock: true };
+const STICKS: Purse = { unit: sticks, clock: false };
+// A move's cost: its minutes, where the clock runs, and what it puts in.
+const cost = (bank: Purse, min: number, put: number): string =>
+  [bank.clock && min ? costLabel({ min }) : '', put ? bank.unit(put) : ''].filter(Boolean).join(' · ');
+
 // A hand's total as you'd say it: "soft 17", "bust", "blackjack".
 function totalWords(cs: number[], natural: boolean): string {
   const t = bjTotal(cs);
@@ -91,7 +108,16 @@ function totalWords(cs: number[], natural: boolean): string {
   return t.soft && t.n < 21 ? `soft ${t.n}` : String(t.n);
 }
 
-export function BlackjackBody({ game, s }: { game: Game; s: GameState }) {
+export function BlackjackBody({
+  game,
+  s,
+  glove = false,
+}: {
+  game: TableMoves;
+  s: GameState;
+  glove?: boolean;
+}) {
+  const bank = glove ? STICKS : CASH;
   const c = s.cards!;
   const h = c.bj;
   const live = h && !h.paid ? h : null;
@@ -113,8 +139,10 @@ export function BlackjackBody({ game, s }: { game: Game; s: GameState }) {
     <div className="bj" id="bj" ref={ref}>
       <h3 id="sheet-title">Blackjack</h3>
       <p className="sub">
-        In front of you: {money(c.chips)}.{' '}
-        {c.hands ? `${c.hands} ${c.hands === 1 ? 'hand' : 'hands'} tonight.` : `${name} deals.`}
+        In front of you: {bank.unit(c.chips)}.{' '}
+        {c.hands
+          ? `${c.hands} ${c.hands === 1 ? 'hand' : 'hands'} ${bank.clock ? 'tonight' : 'so far'}.`
+          : `${name} deals.`}
       </p>
       {h && (
         <ul className="bj-hands">
@@ -142,11 +170,11 @@ export function BlackjackBody({ game, s }: { game: Game; s: GameState }) {
                 <small>
                   {h.paid
                     ? h.paid[i]! > y.bet
-                      ? `+${money(h.paid[i]! - y.bet)}`
+                      ? `+${bank.unit(h.paid[i]! - y.bet)}`
                       : h.paid[i] === y.bet
                         ? 'push'
-                        : `−${money(y.bet)}`
-                    : `${money(y.bet)} on it`}
+                        : `−${bank.unit(y.bet)}`
+                    : `${bank.unit(y.bet)} on it`}
                 </small>
               </span>
             </li>
@@ -155,16 +183,20 @@ export function BlackjackBody({ game, s }: { game: Game; s: GameState }) {
       )}
       {h?.paid && (
         <p className="note" id="bj-said">
-          {net > 0 ? `Up ${money(net)}.` : net < 0 ? `Down ${money(-net)}.` : 'Even.'}
+          {net > 0 ? `Up ${bank.unit(net)}.` : net < 0 ? `Down ${bank.unit(-net)}.` : 'Even.'}
         </p>
       )}
-      {live ? <Moves game={game} s={s} /> : <Between game={game} s={s} want={want} pick={setWant} />}
+      {live ? (
+        <Moves game={game} s={s} bank={bank} />
+      ) : (
+        <Between game={game} s={s} bank={bank} want={want} pick={setWant} />
+      )}
     </div>
   );
 }
 
 // The hand on the go: hit, stand, double on two cards, split a pair once.
-function Moves({ game, s }: { game: Game; s: GameState }) {
+function Moves({ game, s, bank }: { game: TableMoves; s: GameState; bank: Purse }) {
   const c = s.cards!;
   const h = c.bj!;
   const y = h.you[h.at]!;
@@ -194,7 +226,7 @@ function Moves({ game, s }: { game: Game; s: GameState }) {
           onClick={() => game.bj('double')}
         >
           <span>Double</span>
-          <span className="c">{costLabel({ cash: -y.bet })}</span>
+          <span className="c">{bank.unit(y.bet)}</span>
           <small>
             {!two
               ? 'Only on two cards.'
@@ -214,7 +246,7 @@ function Moves({ game, s }: { game: Game; s: GameState }) {
             onClick={() => game.bj('split')}
           >
             <span>Split</span>
-            <span className="c">{costLabel({ cash: -y.bet })}</span>
+            <span className="c">{bank.unit(y.bet)}</span>
             <small>
               {!room
                 ? 'Not enough in front of you.'
@@ -233,11 +265,13 @@ function Moves({ game, s }: { game: Game; s: GameState }) {
 function Between({
   game,
   s,
+  bank,
   want,
   pick,
 }: {
-  game: Game;
+  game: TableMoves;
   s: GameState;
+  bank: Purse;
   want: number;
   pick: (b: number) => void;
 }) {
@@ -261,7 +295,7 @@ function Between({
             disabled={c.chips < b}
             onClick={() => pick(b)}
           >
-            {money(b)}
+            {bank.unit(b)}
           </button>
         ))}
       </div>
@@ -275,7 +309,7 @@ function Between({
             onClick={() => game.bj('deal', bet)}
           >
             <span>Deal</span>
-            <span className="c">{costLabel({ min: GAMES.bj.min, cash: -bet })}</span>
+            <span className="c">{cost(bank, GAMES.bj.min, bet)}</span>
             <small>
               {out
                 ? 'The fire’s down to coals.'
@@ -288,7 +322,9 @@ function Between({
         <li>
           <button type="button" className="opt" id="bj-up" onClick={() => game.bj('leave')}>
             <span>Get up</span>
-            <small>{money(c.chips)} back in your pocket.</small>
+            <small>
+              {bank.unit(c.chips)} back {bank.clock ? 'in your pocket' : 'in the box'}.
+            </small>
           </button>
         </li>
       </ul>
@@ -300,7 +336,8 @@ function Between({
 // cards down till a showdown, the button, what they last did), yours, the pot, and your move:
 // fold, check or call, bet or raise, each with what it costs. A tell shows under the seats
 // once you know them well enough to read it; what you know of each is at the foot.
-export function HoldemBody({ game, s }: { game: Game; s: GameState }) {
+export function HoldemBody({ game, s, glove = false }: { game: TableMoves; s: GameState; glove?: boolean }) {
+  const bank = glove ? STICKS : CASH;
   const c = s.cards!;
   const h = c.he;
   const live = h && !h.won ? h : null;
@@ -328,8 +365,10 @@ export function HoldemBody({ game, s }: { game: Game; s: GameState }) {
     <div className="he" id="he" ref={ref}>
       <h3 id="sheet-title">Hold’em</h3>
       <p className="sub">
-        In front of you: {money(c.chips)}.{' '}
-        {h ? `The pot: ${money(pot)}.` : `${listOf(players.map((w) => PEOPLE[w]?.name ?? w))} at the table.`}
+        In front of you: {bank.unit(c.chips)}.{' '}
+        {h
+          ? `The pot: ${bank.unit(pot)}.`
+          : `${listOf(players.map((w) => PEOPLE[w]?.name ?? w))} at the table.`}
       </p>
       {h && (
         <>
@@ -363,7 +402,7 @@ export function HoldemBody({ game, s }: { game: Game; s: GameState }) {
                   </span>
                   <small>
                     {lastBy(i)?.did ?? ''}
-                    {p.put && !h.won ? ` ${money(p.put)}` : ''}
+                    {p.put && !h.won ? ` ${bank.unit(p.put)}` : ''}
                   </small>
                 </li>
               ),
@@ -394,17 +433,21 @@ export function HoldemBody({ game, s }: { game: Game; s: GameState }) {
                   ? handWord([...h.seats[0]!.hole, ...h.board.slice(0, up)])
                   : ''
                 : 'folded'}
-              <small>{h.seats[0]!.total ? `${money(h.seats[0]!.total)} in` : ''}</small>
+              <small>{h.seats[0]!.total ? `${bank.unit(h.seats[0]!.total)} in` : ''}</small>
             </span>
           </div>
           {h.won && (
             <p className="note" id="he-said">
-              {holdemLines(h).join(' ')}
+              {glyphs(holdemLines(h, bank.unit).join(' '))}
             </p>
           )}
         </>
       )}
-      {live && live.turn === 0 ? <HoldemMoves game={game} s={s} /> : <HoldemBetween game={game} s={s} />}
+      {live && live.turn === 0 ? (
+        <HoldemMoves game={game} s={s} bank={bank} />
+      ) : (
+        <HoldemBetween game={game} s={s} bank={bank} />
+      )}
       {players.map((w) => {
         const reads = readsOn(s, w);
         const left = GAMES.holdem.reads.find((n) => n > (s.reads[w]?.hands ?? 0));
@@ -413,7 +456,7 @@ export function HoldemBody({ game, s }: { game: Game; s: GameState }) {
           <p className="sub" key={w}>
             {reads.length
               ? reads.join(' ')
-              : left !== undefined
+              : left !== undefined && bank.clock
                 ? `${left - (s.reads[w]?.hands ?? 0)} more hands and you’ll have a read on ${name}.`
                 : ''}
           </p>
@@ -424,7 +467,7 @@ export function HoldemBody({ game, s }: { game: Game; s: GameState }) {
 }
 
 // Your move: fold to a bet, check or call, bet or raise; short of a call, the call's all in.
-function HoldemMoves({ game, s }: { game: Game; s: GameState }) {
+function HoldemMoves({ game, s, bank }: { game: TableMoves; s: GameState; bank: Purse }) {
   const c = s.cards!;
   const h = c.he!;
   const owe = owes(h, 0);
@@ -444,14 +487,14 @@ function HoldemMoves({ game, s }: { game: Game; s: GameState }) {
       <li>
         <button type="button" className="opt" id="he-call" onClick={() => game.holdem('call')}>
           <span>{owe > 0 ? (short ? 'Call, all in' : 'Call') : 'Check'}</span>
-          <span className="c">{owe > 0 ? costLabel({ cash: -Math.min(owe, c.chips) }) : ''}</span>
+          <span className="c">{owe > 0 ? bank.unit(Math.min(owe, c.chips)) : ''}</span>
           {short && <small>All you’ve got in front of you, for the part of the pot it matches.</small>}
         </button>
       </li>
       <li>
         <button type="button" className="opt" id="he-bet" disabled={!room} onClick={() => game.holdem('bet')}>
           <span>{h.bet > 0 ? 'Raise' : 'Bet'}</span>
-          <span className="c">{costLabel({ cash: -Math.min(owe + B, c.chips) })}</span>
+          <span className="c">{bank.unit(Math.min(owe + B, c.chips))}</span>
           <small>
             {!canRaise(h)
               ? `A street takes ${inWords(GAMES.holdem.raises + 1)} bets at most.`
@@ -468,7 +511,7 @@ function HoldemMoves({ game, s }: { game: Game; s: GameState }) {
 }
 
 // Between hands: the deal, or up from the table with what's in front of you.
-function HoldemBetween({ game, s }: { game: Game; s: GameState }) {
+function HoldemBetween({ game, s, bank }: { game: TableMoves; s: GameState; bank: Purse }) {
   const c = s.cards!;
   const out = fireOut(s);
   const short = c.chips < handNeeds('holdem');
@@ -483,20 +526,22 @@ function HoldemBetween({ game, s }: { game: Game; s: GameState }) {
           onClick={() => game.holdem('deal')}
         >
           <span>Deal</span>
-          <span className="c">{costLabel({ min: GAMES.holdem.min })}</span>
+          <span className="c">{cost(bank, GAMES.holdem.min, 0)}</span>
           <small>
             {out
               ? 'The fire’s down to coals.'
               : short
                 ? 'Not enough in front of you for the blinds.'
-                : `Blinds of ${GAMES.holdem.blinds.map(money).join(' and ')}; the button goes round.`}
+                : `Blinds of ${bank.clock ? GAMES.holdem.blinds.map(money).join(' and ') : `${GAMES.holdem.blinds[0]} and ${bank.unit(GAMES.holdem.blinds[1]!)}`}; the button goes round.`}
           </small>
         </button>
       </li>
       <li>
         <button type="button" className="opt" id="he-up" onClick={() => game.holdem('leave')}>
           <span>Get up</span>
-          <small>{money(c.chips)} back in your pocket.</small>
+          <small>
+            {bank.unit(c.chips)} back {bank.clock ? 'in your pocket' : 'in the box'}.
+          </small>
         </button>
       </li>
     </ul>

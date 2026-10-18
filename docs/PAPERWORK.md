@@ -62,6 +62,7 @@ Answer as below; the rating each region gives comes out of the questionnaire, no
   - At the fire at night: blackjack and fixed-limit hold'em with everyone at the fire (Phase 36), played for the player's in-game cash. The buy-in a night is capped (`GAMES.bj.cap`, `GAMES.holdem.cap` in `sim/dials.ts`). The cash is won or lost (the `bj` and `holdem` actions in `sim/game.ts`).
   - The cash can't be bought with real money and can't be cashed out.
   - Liar's dice and horseshoes are for nothing but bond.
+  - From the van's glovebox, any time (36.4): the same three games for matchsticks, on a copy of the climber that's never saved. Nothing is won or lost.
   - **Answers:** real-money gambling: no. Simulated gambling: yes.
 - **Crude humour, discrimination:** none (no slurs, no stereotyping).
 - **Interactivity:**
@@ -87,7 +88,7 @@ The launch versions of the short and full descriptions and "What's new" are in `
 ### The content survey (Mature Content)
 
 - **Recommended:** tick none of the boxes. There's no frequent violence or gore, no nudity or sexual content, and nothing adults-only.
-- **Describe it, in the survey's free text:** "Card games (blackjack and hold'em) played at a campfire for in-game money, which can't be bought or cashed out. References to alcohol. An optional mode in which one fall ends your climber, shown without blood. Climbing injuries, in text. A romance, as far as a kiss."
+- **Describe it, in the survey's free text:** "Card games (blackjack and hold'em) played at a campfire for in-game money, which can't be bought or cashed out, or for matchsticks. References to alcohol. An optional mode in which one fall ends your climber, shown without blood. Climbing injuries, in text. A romance, as far as a kiss."
 - **To check:** whether Valve wants the simulated gambling under General Mature Content. Its survey's current wording decides; I haven't read it [unverified].
 
 ### Legal fields

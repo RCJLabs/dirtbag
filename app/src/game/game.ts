@@ -59,6 +59,8 @@ import {
   EXPED_ROUTES,
   defaultPlan,
   type TripPlan,
+  gloveShort,
+  gloveTable,
 } from '../sim';
 import { bedFor, ON_THE_MAP } from '../audio/beds';
 import { moodFor } from '../audio/moods';
@@ -204,7 +206,9 @@ export type SheetId =
   // Phase 22.8: your dreams, and the jar.
   | { k: 'dreams' }
   // Phase 22.9a: the fire at night: who's there, the games, and a hand of dice on the go.
-  | { k: 'fire' };
+  | { k: 'fire' }
+  // Phase 36.4: the glovebox deck, its games for matchsticks.
+  | { k: 'glovebox' };
 
 export interface Hud {
   day: number;
@@ -214,6 +218,9 @@ export interface Hud {
   skin: number;
   fed: number;
 }
+
+// Phase 36.4: the moves a table at the fire takes, from the fire or from the glovebox.
+export type TableMoves = Pick<Game, 'dice' | 'bj' | 'holdem'>;
 
 export interface Ui {
   state: GameState;
@@ -246,6 +253,9 @@ export interface Ui {
   busk: BuskUi | null;
   // Phase 24.2: an expedition being planned, before it's booked.
   trip: { id: string; plan: TripPlan } | null;
+  // Phase 36.4: the glovebox deck's table, a copy of the climber played on and thrown away;
+  // the career, its save and its clock never see it.
+  glove: GameState | null;
 }
 
 // A set: the note you're on, the marker's sweep across the bar (0 to 1), each note's score
@@ -409,6 +419,7 @@ export class Game {
       rebind: null,
       busk: null,
       trip: null,
+      glove: null,
     });
     this.fast = createStore<Fast>({ cam: 0, att: null });
     this.sound.configure(settings);
@@ -521,6 +532,9 @@ export class Game {
   }
 
   private set(p: Partial<Ui>): void {
+    // Phase 36.4: the glovebox's table goes back in the glovebox when its sheet closes.
+    if ('sheet' in p && p.sheet?.k !== 'glovebox' && !('glove' in p) && this.ui.get().glove)
+      p = { ...p, glove: null };
     // Away on an expedition, the day's call is the only sheet there is, whatever else
     // tries to clear or replace it.
     const x = this.state.expedition;
@@ -1494,6 +1508,42 @@ export class Game {
     this.dispatch({ t: 'holdem', do: what });
     this.openSheet({ k: 'fire' });
   }
+
+  // Phase 36.4: the glovebox deck. A table of its own on a copy of the climber, played by the
+  // same rules and thrown away when it's put back: no time passes and nothing carries over.
+  private gloves = 0;
+  gloveOpen(): void {
+    this.set({ glove: gloveTable(this.state, ++this.gloves), sheet: { k: 'glovebox' } });
+  }
+  // A move at the glovebox's table, on its copy; nobody there tires.
+  private gloveDo(a: Action): void {
+    const g = this.ui.get().glove;
+    if (!g) return;
+    const r = act(g, a);
+    const no = r.events.find((e) => e.k === 'refused');
+    if (no && no.k === 'refused') this.toast(no.why);
+    this.set({ glove: { ...r.state, energy: 100 } });
+  }
+  // A new box of matches, when you're short.
+  gloveBox(): void {
+    const g = this.ui.get().glove;
+    if (g && gloveShort(g)) this.set({ glove: { ...g, cash: GAMES.glove.sticks } });
+  }
+  // The glovebox's table, as the fire's tables move: the same moves, on the copy.
+  readonly glovebox: TableMoves = {
+    dice: (what, bid) => {
+      if (what !== 'leave' && what !== 'bid') this.sound.play('dice');
+      this.gloveDo({ t: 'dice', do: what, ...bid });
+    },
+    bj: (what, bet) => {
+      this.sound.play(what === 'sit' || what === 'leave' ? 'chips' : 'card');
+      this.gloveDo({ t: 'bj', do: what, bet });
+    },
+    holdem: (what) => {
+      this.sound.play(what === 'sit' || what === 'leave' || what === 'bet' ? 'chips' : 'card');
+      this.gloveDo({ t: 'holdem', do: what });
+    },
+  };
 
   private stepBusk(dt: number): void {
     const u = this.ui.get().busk;

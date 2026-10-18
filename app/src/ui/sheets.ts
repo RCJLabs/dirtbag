@@ -158,6 +158,7 @@ import {
   touristsOn,
   cardsBlocked,
   holdemPlayers,
+  GLOVE_CAST,
   type CardGame,
   atFire,
   gameBlocked,
@@ -1049,6 +1050,13 @@ function dreamNote(s: GameState): string {
   return owned.length ? `${saving} Yours: ${owned.join(', ')}.` : saving;
 }
 
+// Phase 36.4: the glovebox deck, wherever the van is.
+const gloveRow = (game: Game): Row => ({
+  label: 'The glovebox deck',
+  note: `The fire’s games for matchsticks, against ${listOf(GLOVE_CAST.map((w) => PEOPLE[w]?.name ?? w))}. No time passes, and nothing carries over.`,
+  run: () => game.gloveOpen(),
+});
+
 // Phase 22.9b: sitting down to cards: what it costs, or why not.
 function sitRow(game: Game, s: GameState, label: string, g: CardGame, note: string): Row {
   const why = cardsBlocked(s, g);
@@ -1296,6 +1304,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           ...(isNight(s.min)
             ? [{ label: 'The fire', note: fireNote(s), run: () => game.openSheet({ k: 'fire' }) }]
             : []),
+          // Phase 36.4: the glovebox deck, any time.
+          gloveRow(game),
           // Phase 32.2: the Hollow, once you hold a clue to it and till you've found it.
           ...(!found(s) && s.hollow.clues.length ? [walkRow(game, s)] : []),
           actRow(game, s, 'lot.sleep'),
@@ -1689,6 +1699,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           ...shootRows(game, s),
           ...touristRows(game, s),
           ...(back ? [driveRow(game, s, 'lot', 'Drive back to the Lot')] : []),
+          gloveRow(game),
           mapRow(game),
         ],
       };

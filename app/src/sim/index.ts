@@ -401,6 +401,7 @@ export {
   type CardGame,
 } from './cards';
 export { betOn, canRaise, holdemLines, owes, stillIn, type Holdem } from './holdem';
+export { GLOVE_CAST, gloveShort, gloveTable } from './glovebox';
 export { STYLES } from './content/cards';
 export { WALL_EVENTS, wallEventById, type WallEvent } from './content/wallevents';
 export { WORDS, WORD_GROUP, type Word, type WordGroup } from './content/glossary';

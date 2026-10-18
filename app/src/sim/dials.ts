@@ -960,6 +960,9 @@ export const GAMES = {
   // betting a loser `caughtShare` of your hands, they call `adapt` lighter. With the second
   // read, their tells show, right `tell` of the time [proposed].
   bj: { cap: 40, bets: [5, 10], min: 4 },
+  // Phase 36.4 (Evan's call, 18 Oct 2026): the glovebox deck, the same games for matchsticks
+  // outside the career: a box is `sticks` of them [proposed], a new one whenever you're out.
+  glove: { sticks: 40 },
   holdem: {
     cap: 40,
     blinds: [1, 2],

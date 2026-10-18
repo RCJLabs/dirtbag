@@ -2396,6 +2396,97 @@ console.log('Cards at the fire');
   await ctx.close();
 }
 
+console.log('The glovebox deck');
+// Phase 36.4 (Phase 36's criterion 3). A morning at the Lot: the van, the glovebox deck, and a
+// turn at each of the fire's games for matchsticks (a bid at liar's dice, a blackjack hand
+// stood on, a hold'em hand called down), then the deck put away. The career's save and its
+// clock never move.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  saved.state = {
+    ...saved.state,
+    day: 22,
+    min: 10 * 60,
+    at: 'lot',
+    x: null,
+    energy: 60,
+    cash: 100,
+    today: [],
+    encounter: null,
+    table: null,
+    cards: null,
+  };
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  await ctx.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+  }, JSON.stringify(saved));
+  const glove = await ctx.newPage();
+  glove.on('pageerror', (e) => problems.push(`glovebox: uncaught: ${e.message}`));
+  glove.on('console', (m) => m.type() === 'error' && problems.push(`glovebox: console.error: ${m.text()}`));
+  await glove.goto(server.url, { waitUntil: 'load' });
+  await glove.waitForFunction(() => document.querySelector('#b-nav')?.textContent === 'Map');
+  await glove.waitForTimeout(600);
+  const before = await glove.evaluate(() => localStorage.getItem('dirtbag.save'));
+  const text = (q) => glove.evaluate((sel) => document.querySelector(sel)?.textContent ?? '', q);
+  await glove
+    .locator('button.hot[aria-label="Your van"]')
+    .first()
+    .evaluate((el) => el.click());
+  await glove.waitForFunction(() => document.querySelector('#sheet-title')?.textContent === 'Your van');
+  await glove.locator('#sheet .opt', { hasText: 'The glovebox deck' }).first().click();
+  await glove.waitForSelector('#glovebox');
+  await glove.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-glovebox.png`) });
+  // Liar's dice: a bid when it comes round (someone may have called before it did), and up.
+  await glove.click('#g-dice');
+  await glove.waitForSelector('#perudo #p-bid, #perudo #p-next');
+  if (await glove.$('#p-bid')) await glove.click('#p-bid');
+  await glove.waitForTimeout(150);
+  const dice = await text('#perudo');
+  await glove.click('#p-up');
+  await glove.waitForSelector('#glovebox');
+  // Blackjack: a hand at the least bet, stood on.
+  await glove.click('#g-bj');
+  await glove.waitForSelector('#bj #bj-deal');
+  await glove.click('#bj-deal');
+  for (let g = 0; g < 4 && (await glove.$('#bj-stand')); g++) {
+    await glove.click('#bj-stand');
+    await glove.waitForTimeout(150);
+  }
+  await glove.waitForSelector('#bj-up');
+  const bj = await text('#bj');
+  await glove.click('#bj-up');
+  await glove.waitForSelector('#glovebox');
+  // Hold'em: a hand checked and called to its end.
+  await glove.click('#g-holdem');
+  await glove.waitForSelector('#he #he-deal');
+  await glove.click('#he-deal');
+  for (let g = 0; g < 30 && (await glove.$('#he-call')); g++) {
+    await glove.click('#he-call');
+    await glove.waitForTimeout(150);
+  }
+  await glove.waitForSelector('#he-up');
+  const he = await text('#he');
+  await glove.click('#he-up');
+  await glove.waitForSelector('#glovebox');
+  const box = await text('#g-box-left');
+  await glove.click('#sheet .x');
+  await glove.waitForFunction(() => !document.querySelector('#sheet'));
+  const after = await glove.evaluate(() => localStorage.getItem('dirtbag.save'));
+  // No minutes and no dollars at the glovebox's tables, and nothing of it in the save.
+  const priced = [dice, bj, he].filter((t) => /\$|\bmin\b/.test(t));
+  if (
+    after !== before ||
+    priced.length ||
+    !/matchsticks/.test(bj + he) ||
+    !/matchsticks? in the box/.test(box)
+  )
+    await fail(`glovebox: ${JSON.stringify({ same: after === before, priced, box, bj: bj.slice(0, 160) })}`);
+  log(
+    `glovebox: liar's dice, blackjack and hold'em for matchsticks; ${box.toLowerCase()} The save untouched.`,
+  );
+  await ctx.close();
+}
+
 console.log('An expedition');
 // Phase 24.1. A V9 climber with Hazel close and $3,000 at the van in the morning: the
 // expeditions, El Capitan's odds with Hazel, and away. Each day up there: wait out a storm, or

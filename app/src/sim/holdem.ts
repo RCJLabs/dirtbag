@@ -210,8 +210,9 @@ export function showdown(h: Holdem): NonNullable<Holdem['won']> {
   return { by, back: main / by.length, shown: true };
 }
 
-// The hand's end in words: who showed what, and who took how much.
-export function holdemLines(h: Holdem): string[] {
+// The hand's end in words: who showed what, and who took how much (in `unit`: dollars, or the
+// glovebox's matchsticks).
+export function holdemLines(h: Holdem, unit: (n: number) => string = money): string[] {
   const won = h.won;
   if (!won) return [];
   const pot = h.seats.reduce((t, p) => t + p.total, 0);
@@ -219,8 +220,8 @@ export function holdemLines(h: Holdem): string[] {
   if (!won.shown)
     return [
       won.by[0] === 0
-        ? `Everyone else folds. You take ${money(pot)}.`
-        : `${names[0]} takes ${money(pot)}, and nobody sees the cards.`,
+        ? `Everyone else folds. You take ${unit(pot)}.`
+        : `${names[0]} takes ${unit(pot)}, and nobody sees the cards.`,
     ];
   const shown = h.seats
     .map((p, i) => ({ p, i }))
@@ -230,10 +231,10 @@ export function holdemLines(h: Holdem): string[] {
   const end =
     won.by.length > 1
       ? won.by.includes(0)
-        ? `A split pot: ${money(won.back)} back to you.`
+        ? `A split pot: ${unit(won.back)} back to you.`
         : `${names.join(' and ')} split it.`
       : won.by[0] === 0
-        ? `You take ${money(won.back)}.`
+        ? `You take ${unit(won.back)}.`
         : `${names[0]} takes it.`;
   return [[...shown, you, end].filter(Boolean).join(' ')];
 }

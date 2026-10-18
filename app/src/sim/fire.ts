@@ -12,6 +12,8 @@ import type { GameState } from './types';
 // Who's at the fire tonight: Hazel, who lives at the Lot, Sage some nights, once you're
 // regulars, and Frank if you've asked him over (Phase 17.5) and his rig's here.
 export function atFire(s: GameState): string[] {
+  // Phase 36.4: the glovebox deck's table is whoever it deals in.
+  if (s.glovebox) return s.glovebox.cast;
   if (s.at !== 'lot' || !isNight(s.min)) return [];
   const out: string[] = [];
   if (s.people.hazel || PEOPLE.hazel?.known) out.push('hazel');
@@ -26,10 +28,11 @@ export function atFire(s: GameState): string[] {
 export type Game = 'shoes' | 'dice';
 
 // Phase 36.1: the fire burns down at `GAMES.late`, and every game at it stops.
-export const fireOut = (s: GameState): boolean => s.min >= GAMES.late;
+export const fireOut = (s: GameState): boolean => !s.glovebox && s.min >= GAMES.late;
 export const GAME_NAME: Record<Game, string> = { shoes: 'Horseshoes', dice: 'Liar’s dice' };
 
 export function gameBlocked(s: GameState, g: Game): string | null {
+  if (s.glovebox) return null;
   if (s.at !== 'lot') return 'The games are at the fire at the Lot';
   if (!isNight(s.min)) return 'Nobody’s at the fire till dark';
   if (fireOut(s)) return 'The fire’s down to coals';
