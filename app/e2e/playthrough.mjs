@@ -3011,7 +3011,11 @@ console.log('A keyboard, and larger text');
   await key('Enter');
   await expectText('#sheet', /Roadside Crag/, 'the card, by keyboard');
   // Phase 39: the crag's classics on its card, none of them ticked yet.
-  await expectText('#sheet', /The classics, 0 of 5 ticked\. Still to go: Warm Boulder, /, 'the classics on the card');
+  await expectText(
+    '#sheet',
+    /The classics, 0 of 5 ticked\. Still to go: Warm Boulder, /,
+    'the classics on the card',
+  );
   await fits('a place card');
   await tabTo('the drive', /\|Drive here/);
   await key('Enter');
