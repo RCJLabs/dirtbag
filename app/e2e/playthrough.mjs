@@ -877,7 +877,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 76 ||
+  saved?.v !== 77 ||
   // Phase 29.1: nothing scavenged, a few days in.
   st.parts !== 0 ||
   // Phase 29.3: miles on the clock past a new climber's, and nothing for Dale to say yet.
@@ -1846,8 +1846,10 @@ console.log('A dream');
 
 console.log('Games at the fire');
 // Phase 22.9a. Half nine at the Lot, Hazel up: the van, the fire, four horseshoes thrown as
-// the marker crosses the band (the busking beat), back to the fire, and a hand of liar's
-// dice called. Both are heard, both are played once tonight, and Hazel's bond moves once.
+// the marker crosses the band (the busking beat), back to the fire, and liar's dice (Phase
+// 36.1, Perudo): your bid a count up from the one offered, the round played out to a call,
+// the cups up, another round, and up from the table. Both are heard, and Hazel's bond moves
+// once for the two.
 {
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
   saved.state = {
@@ -1915,23 +1917,48 @@ console.log('Games at the fire');
   const shoes = await fire.evaluate(() => document.querySelector('#b-status').textContent);
   await fire.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-horseshoes.png`) });
   await fire.click('#b-done');
+  const table = () => fire.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  const sat = (await table()).min;
   await pick('Liar’s dice');
-  await fire.waitForFunction(() => /Your cup/.test(document.querySelector('#sheet')?.textContent ?? ''));
+  await fire.waitForSelector('#perudo #p-bid');
   await fire.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-liars-dice.png`) });
-  await pick('Call it');
+  await fire.click('#p-more');
+  const opened = (await fire.locator('#p-bid span').first().textContent()).trim();
+  await fire.click('#p-bid');
+  // Then call any bid past a third of the dice, and raise as offered otherwise.
+  for (let i = 0; i < 40; i++) {
+    await fire.waitForSelector('#p-bid, #p-next, #p-again');
+    if (await fire.$('#p-next, #p-again')) break;
+    const tb = (await table()).table;
+    const dice = tb.seats.reduce((k, p) => k + p.dice.length, 0);
+    await fire.click(tb.bid && tb.bid.n > dice / 3 ? '#p-call' : '#p-bid');
+  }
+  const up = await fire.evaluate(() => ({
+    text: document.querySelector('#perudo')?.textContent ?? '',
+    shown: document.querySelectorAll('#perudo .p-seat .die').length,
+  }));
+  if (!/The cups come up/.test(up.text) || !up.shown) await fail(`fire: the cups never came up: ${up.text}`);
+  await fire.screenshot({ path: join(OUT, `${String(++n).padStart(2, '0')}-liars-dice-called.png`) });
+  const said = (await table()).table.said.length;
+  await fire.click('#p-next');
+  await fire.waitForSelector('#p-bid, #p-next');
+  await fire.click('#p-up');
   await fire.waitForFunction(() => JSON.parse(localStorage.getItem('dirtbag.save')).state.table === null);
-  const after = await fire.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  const after = await table();
   const heard = await fire.evaluate(() => window.cues);
   if (
     !after.today.includes('shoes') ||
     !after.today.includes('dice') ||
     after.people.hazel.bond !== 13 ||
     after.people.hazel.last !== 20 ||
+    !(after.min > sat) ||
     !heard.includes('clang') ||
     !heard.includes('dice')
   )
-    await fail(`after the fire: ${JSON.stringify({ today: after.today, hazel: after.people.hazel, heard })}`);
-  log(`fire: ${shoes}`);
+    await fail(
+      `after the fire: ${JSON.stringify({ today: after.today, hazel: after.people.hazel, min: [sat, after.min], heard })}`,
+    );
+  log(`fire: ${shoes} Dice: opened “${opened}”, ${said} bids to the call, two rounds by ${after.min} min.`);
   await ctx.close();
 }
 

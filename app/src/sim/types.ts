@@ -221,8 +221,28 @@ export interface GameState {
     // remembered), the answer and the night; `done` once they have. Once a knock, ever.
     back: { id: string; opt: number; day: number; done?: true }[];
   };
-  // Phase 22.9a. A hand of liar's dice you're in: who with, the dice, and the bid on it.
-  table: { who: string; mine: number[]; theirs: number[]; bid: { n: number; face: number } } | null;
+  // Phase 36.1 (save v77): a game of liar's dice (Perudo) at the fire: the cups round it, yours
+  // first (as 'you'); whose turn it is; the bid on the table and the round's bids; the round
+  // and tonight's game, which roll the dice; the last call's cups, shown till the next round;
+  // and who took the game, once someone has.
+  table: {
+    seats: { who: string; dice: number[] }[];
+    turn: number;
+    bid: { n: number; face: number; by: number } | null;
+    said: { by: number; n: number; face: number }[];
+    round: number;
+    game: number;
+    shown: {
+      caller: number;
+      by: number;
+      n: number;
+      face: number;
+      count: number;
+      loser: number;
+      cups: number[][];
+    } | null;
+    over: string | null;
+  } | null;
   // Phase 22.9b. Sat down to cards at the fire: which game, who with, what's in front of you,
   // hands played tonight, and the hand on the go (cards are 0–51: rank, then suit).
   cards: {
@@ -701,10 +721,11 @@ export type Action =
   | { t: 'answer'; opt: number }
   // Phase 22.8: a dream to pick, cash for the pot, the pot back, or the dream claimed.
   | { t: 'dream'; do: 'pick' | 'stash' | 'take' | 'claim'; id?: string; amount?: number }
-  // Phase 22.9a: horseshoes, with each throw's score (1 clean, a half near, 0 off), and a
-  // hand of liar's dice: dealt, then called or raised.
+  // Phase 22.9a: horseshoes, with each throw's score (1 clean, a half near, 0 off).
   | { t: 'shoes'; throws: number[] }
-  | { t: 'dice'; do: 'deal' | 'call' | 'raise' }
+  // Phase 36.1: Perudo. Sit down (or another game), bid, call the last bid, the next round,
+  // get up.
+  | { t: 'dice'; do: 'deal' | 'again' | 'bid' | 'call' | 'next' | 'leave'; n?: number; face?: number }
   // Phase 24.5: the last trip's story, told at the fire.
   | { t: 'story' }
   // Phase 22.9b: cards at the fire. Sit down (with whom, for hold'em), deal a hand, play it,

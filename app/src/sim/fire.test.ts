@@ -1,11 +1,10 @@
-// Phase 22.9a: the games at the fire. Who's there, horseshoes from your throws, liar's dice a
-// call at a time; each once a night, and bond with whoever's playing no faster than a day
-// climbing together.
+// Phase 22.9a: the games at the fire. Who's there, horseshoes from your throws once a night,
+// and bond with whoever's playing no faster than a day climbing together. Liar's dice is
+// Perudo now (perudo.test.ts, Phase 36.1).
 import { describe, expect, it } from 'vitest';
 import { GAMES } from './dials';
-import { atFire, bidWords, dealDice, gameBlocked, theirShoes, theyCall, yourRaise } from './fire';
+import { atFire, bidWords, gameBlocked, theirShoes } from './fire';
 import { act, newGame } from './game';
-import { fromSave, toSave } from './save';
 import type { Action, GameState } from './types';
 
 const base = (over: Partial<GameState> = {}): GameState => ({
@@ -42,6 +41,11 @@ describe('the fire', () => {
     expect(gameBlocked(base({ energy: 1 }), 'shoes')).toMatch(/tired/);
     expect(gameBlocked(base({ today: ['shoes'] }), 'shoes')).toMatch(/tonight/);
     expect(gameBlocked(base({ today: ['shoes'] }), 'dice')).toBeNull();
+    // Dice go on as long as the fire does; nothing does once it's out.
+    expect(gameBlocked(base({ today: ['dice'] }), 'dice')).toBeNull();
+    expect(gameBlocked(base({ min: GAMES.late }), 'shoes')).toMatch(/coals/);
+    expect(bidWords(20, 6)).toBe('twenty 6s');
+    expect(bidWords(1, 3)).toBe('one 3');
   });
 });
 
@@ -80,88 +84,13 @@ describe('horseshoes', () => {
   });
 });
 
-describe('liar’s dice', () => {
-  it('deals a hand from the seed, and nothing else happens till it’s played', () => {
-    const s = base({ day: 5 });
-    const r = run(s, { t: 'dice', do: 'deal' });
-    expect(r.state.table).toEqual(dealDice(s, 'hazel'));
-    expect(r.state.table!.mine).toHaveLength(GAMES.dice.n);
-    expect(refused(run(r.state, { t: 'act', act: 'lot.sleep' }))).toBe(true);
-    expect(refused(run(r.state, { t: 'dice', do: 'deal' }))).toBe(true);
-    expect(refused(run(s, { t: 'dice', do: 'call' }))).toBe(true);
-  });
-
-  it('opens on their best face: what they hold, one more, or a bluff of two, and your cup is the tell', () => {
-    const over = new Set<number>();
-    let none = 0;
-    let noneRight = 0;
-    for (let d = 1; d < 400; d++) {
-      const t = dealDice(base({ day: d }), 'hazel');
-      const held = t.theirs.filter((x) => x === t.bid.face).length;
-      expect(t.bid.n - held).toBeGreaterThanOrEqual(0);
-      expect(t.bid.n - held).toBeLessThanOrEqual(2);
-      over.add(t.bid.n - held);
-      const yours = t.mine.filter((x) => x === t.bid.face).length;
-      // Holding two of their face, their bid stands.
-      if (yours >= 2) expect(held + yours).toBeGreaterThanOrEqual(t.bid.n);
-      if (yours === 0) {
-        none++;
-        if (held < t.bid.n) noneRight++;
-      }
-    }
-    expect(over).toEqual(new Set([0, 1, 2]));
-    // Holding none of it, calling is right more often than not, and not always.
-    expect(noneRight / none).toBeGreaterThan(0.5);
-    expect(noneRight / none).toBeLessThan(0.8);
-  });
-
-  it('calls it right by what’s under both cups', () => {
-    for (let d = 1; d < 30; d++) {
-      const r = run(base({ day: d }), { t: 'dice', do: 'deal' });
-      const t = r.state.table!;
-      const n = [...t.mine, ...t.theirs].filter((x) => x === t.bid.face).length;
-      const out = run(r.state, { t: 'dice', do: 'call' });
-      expect(out.state.table).toBeNull();
-      expect(lines(out).join(' ')).toMatch(n >= t.bid.n ? /telling the truth/ : /bluffing/);
-      expect(lines(out).join(' ')).toContain(bidWords(n, t.bid.face));
-    }
-  });
-
-  it('raises your best face; they call it or let it go', () => {
-    const seen = new Set<string>();
-    for (let d = 1; d < 60; d++) {
-      const t = run(base({ day: d }), { t: 'dice', do: 'deal' }).state.table!;
-      const up = yourRaise(t);
-      // The least that beats theirs: a higher face at the same count, or one more.
-      expect(up.n * 6 + up.face).toBeGreaterThan(t.bid.n * 6 + t.bid.face);
-      expect(up.n).toBeLessThanOrEqual(t.bid.n + 1);
-      const out = lines(
-        run(run(base({ day: d }), { t: 'dice', do: 'deal' }).state, { t: 'dice', do: 'raise' }),
-      ).join(' ');
-      seen.add(theyCall(t, up) ? (/Yours/.test(out) ? 'won' : 'lost') : 'folded');
-      if (!theyCall(t, up)) expect(out).toMatch(/lets it go/);
-    }
-    // Over a couple of months, all three happen.
-    expect(seen).toEqual(new Set(['won', 'lost', 'folded']));
-  });
-
-  it('saves a hand on the go, and won’t load a broken one', () => {
-    const s = run(base(), { t: 'dice', do: 'deal' }).state;
-    const back = fromSave(toSave(s, 'test'));
-    expect(back.ok && back.state.table).toEqual(s.table);
-    const bad = JSON.parse(toSave(s, 'test'));
-    bad.state.table.mine = [7, 1, 1, 1, 1];
-    expect(fromSave(JSON.stringify(bad)).ok).toBe(false);
-  });
-});
-
 describe('what the games pay', () => {
   it('is bond with whoever’s playing, once a day however many games, as a day climbing gives', () => {
     const s = base({ people: regulars, day: 7 });
     const players = atFire(s);
     const shoes = run(s, { t: 'shoes', throws: [0, 0, 0, 0] }).state;
     for (const w of players) expect(shoes.people[w]!.bond).toBe(regulars[w as 'hazel'].bond + 1);
-    const dice = run(run(shoes, { t: 'dice', do: 'deal' }).state, { t: 'dice', do: 'call' }).state;
+    const dice = run(run(shoes, { t: 'dice', do: 'deal' }).state, { t: 'dice', do: 'leave' }).state;
     expect(dice.people.hazel!.bond).toBe(shoes.people.hazel!.bond);
     // Climbed with Hazel today already: the fire adds nothing to it.
     const climbed = base({ people: { hazel: { bond: 10, last: 7 } }, day: 7 });

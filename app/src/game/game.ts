@@ -1466,16 +1466,17 @@ export class Game {
     this.openSheet({ k: 'van' });
   }
 
-  // A hand of liar's dice: dealt, then called or raised. The fire's card shows it.
   // Phase 24.5: the last trip, told at the fire.
   story(): void {
     this.dispatch({ t: 'story' });
     this.openSheet({ k: 'fire' });
   }
 
-  dice(what: 'deal' | 'call' | 'raise'): void {
-    this.sound.play('dice');
-    this.dispatch({ t: 'dice', do: what });
+  // Liar's dice (Phase 36.1): sit down, bid or call, the next round, get up. The fire's card
+  // is the table while you're at it.
+  dice(what: 'deal' | 'again' | 'bid' | 'call' | 'next' | 'leave', bid?: { n: number; face: number }): void {
+    if (what !== 'leave' && what !== 'bid') this.sound.play('dice');
+    this.dispatch({ t: 'dice', do: what, ...bid });
     this.openSheet({ k: 'fire' });
   }
 

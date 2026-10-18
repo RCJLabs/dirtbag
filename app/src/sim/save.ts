@@ -36,7 +36,7 @@ import { repeatsOf } from './settle';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 76;
+export const SAVE_VERSION = 77;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -576,6 +576,12 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     return x;
   },
+  // v76 -> v77 (Phase 36.1): liar's dice is Perudo now, every cup at the fire. A hand of the
+  // old one-bid game left on the go is put away; nothing hung on it.
+  76: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, table: null };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -961,15 +967,30 @@ export function validate(x: unknown): string[] {
   } as Record<string, { id: string }[]>;
   const tb = x.table;
   const dice = (d: unknown) => Array.isArray(d) && d.every((v) => isInt(v) && v >= 1 && v <= 6);
+  const seat = (i: unknown, t: { seats: unknown[] }) => isInt(i) && i >= 0 && i < t.seats.length;
+  const bidOk = (b: unknown, t: { seats: unknown[] }) =>
+    isObj(b) && isInt(b.n) && b.n >= 1 && isInt(b.face) && b.face >= 2 && b.face <= 6 && seat(b.by, t);
   need(
     tb === null ||
       (isObj(tb) &&
-        typeof tb.who === 'string' &&
-        dice(tb.mine) &&
-        dice(tb.theirs) &&
-        isObj(tb.bid) &&
-        isInt(tb.bid.n) &&
-        isInt(tb.bid.face)),
+        Array.isArray(tb.seats) &&
+        tb.seats.length >= 2 &&
+        tb.seats.every((p) => isObj(p) && typeof p.who === 'string' && dice(p.dice)) &&
+        seat(tb.turn, tb as { seats: unknown[] }) &&
+        (tb.bid === null || bidOk(tb.bid, tb as { seats: unknown[] })) &&
+        Array.isArray(tb.said) &&
+        tb.said.every((b) => bidOk(b, tb as { seats: unknown[] })) &&
+        isInt(tb.round) &&
+        isInt(tb.game) &&
+        (tb.shown === null ||
+          (isObj(tb.shown) &&
+            bidOk(tb.shown, tb as { seats: unknown[] }) &&
+            seat(tb.shown.caller, tb as { seats: unknown[] }) &&
+            seat(tb.shown.loser, tb as { seats: unknown[] }) &&
+            isInt(tb.shown.count) &&
+            Array.isArray(tb.shown.cups) &&
+            tb.shown.cups.every(dice))) &&
+        (tb.over === null || typeof tb.over === 'string')),
     'table',
   );
   const cd = x.cards;

@@ -99,6 +99,7 @@ export const listOf = (xs: string[]): string =>
 
 // A name mid-sentence: "The roof" → "the roof".
 export const lower = (t: string): string => t.charAt(0).toLowerCase() + t.slice(1);
+export const upper = (t: string): string => t.charAt(0).toUpperCase() + t.slice(1);
 
 export const dayName = (day: number): string => WEEKDAY[day % 7]!;
 

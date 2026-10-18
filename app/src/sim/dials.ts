@@ -929,21 +929,23 @@ export const EVENTS = {
 };
 
 // Phase 22.9a: the games at the fire. The once-a-day bond and Sage's 40% are Evan's calls
-// (1 Oct 2026); the others' throws and bids [proposed]. Each takes `min` and `energy`, once a
-// night.
+// (1 Oct 2026); the others' throws [proposed]. Horseshoes takes `min` and `energy`, once a
+// night; liar's dice takes `energy` a game and its rounds' minutes (36.1).
 // They pay bond with whoever's playing, as a day climbing together does, and no faster: a
 // person's bond moves once a day, climbing or at the fire (no game out-bonds its time).
 // Sage stays over at the Lot `sage` of nights once you're regulars. Horseshoes is `throws`
 // throws, a ringer `ringer` points and a leaner `leaner`; the others throw a ringer `odds`
-// of the time and a leaner `lean`. Liar's dice is `n` dice each, no wilds, and one bid: their
-// opener is what they hold (safe), one more, or two more (a bluff), `bids` of the time, so
-// what's in your cup is the tell; they call a raise that needs more than `call` of your dice.
+// of the time and a leaner `lean`. Liar's dice is `dice` (Phase 36.1: Perudo, below).
 export const GAMES = {
   min: 60,
   energy: 3,
   sage: 0.4,
   shoes: { throws: 4, ringer: 3, leaner: 1, odds: 0.25, lean: 0.35 },
-  dice: { n: 5, bids: [0.35, 0.4], call: 1 },
+  // Phase 36.1 (Evan's calls, 18 Oct 2026): Perudo, `n` dice each, a round `min` minutes, as
+  // many games as the night holds; how each person bids is content/perudo.ts. The fire burns
+  // down at `late` (1 AM) [proposed], and every game at it stops.
+  dice: { n: 5, min: 6 },
+  late: 25 * 60,
   // Phase 22.9b, by Evan's calls (1 Oct 2026): cards, for money. You sit down with what's in hand up to `cap`, the
   // most a night can cost. Blackjack is `bet` a hand, up to `hands` a night: a fresh deck each,
   // the dealer standing on every 17, 3:2 for a blackjack (to the dollar up), double on two

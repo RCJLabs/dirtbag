@@ -64,12 +64,13 @@
 | 11 Valley map | Built on the rebuild (the taps, place cards, adding a place, the daily plan) and closed by Evan's call. Criteria 2 to 5 pass; its testers' criterion carries. Released in 0.961.0 with Phase 10. |
 | 12 UI system | Built on the rebuild (the Journal, the wide screen, keyboard and access, Tonight, no inline styles) and closed by Evan's call. The flows the e2e doesn't play in landscape or by keyboard carry to playtesting. |
 | 13 Sound and feel | Built on the rebuild (effects and ambience made in code, the licence ledger, credits) and closed by Evan's call. Music, made in code, came in Phase 25 by Evan's call, to hear how it turns out; criteria 1 and 2 wait on an ear. |
-| 14 Desktop and Steam, 15 Demo and store page | Moved after Phase 18 by Evan's call: the full game first. Phase 14 closed by Evan's call (16 Oct 2026), its Deck and Steam checks carried to him; Phase 15 closed the same day, its accounts and outreach carried to him. Phase 19 is the current milestone. |
+| 14 Desktop and Steam, 15 Demo and store page | Moved after Phase 18 by Evan's call: the full game first. Phase 14 closed by Evan's call (16 Oct 2026), its Deck and Steam checks carried to him; Phase 15 closed the same day, its accounts and outreach carried to him. Then Phase 19, its code done (16 Oct 2026) and open on its real stores and its beta, which are his. |
 | 21 The climber, 22 The life, 23 Who you are | Added by Evan's call after the gap check; they run before 16. Phase 21 is the current milestone. |
 | 16 The spine | Next after 21–23. |
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 | 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
 | 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27, 28 and 29 (14 Oct 2026), and Phases 33, 34, 30, 31, 32 and 35 (15 Oct 2026). Then Phase 14, closed 16 Oct 2026. |
+| 36–45 Hands on | Added by Evan's call (18 Oct 2026), before Phase 20: ten phases that make the game more its own and easier to play, and deepen it where it's thin. Phase 36, the games at the fire played in full, is the current milestone; 37 to 45 are queued in the order he took them. |
 
 ## The rebuild track
 
@@ -3817,6 +3818,168 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 **Phase 35 closed by Evan's call (15 Oct 2026).** Both criteria pass. Carried: the music's second pass (Phase 25's synthesized score, still unheard; `/sounds.html` is where to listen, and Phase 13's criteria 1 and 2 wait on the same ear); the hitchhikers' rotation holds only weakly in the bots (a median of three meetings in four years), so the unit test carries it; the bots take every knock's, stop's and scene's first way, so the returns they don't help, the stops' second ways, the dish and the cider are held by the unit tests and the e2e, not measured; the media target's margin (101% in 35.1's run, 81% since); Outdoors 0 to 2 of 4 across the phase's runs, as since 30.1. The deepening run (Phases 26–35) is done. The CURRENT MILESTONE moves to Phase 14, the desktop and Steam build. The download is 459.3 KB of 470.
 
+### Phases 36–45 — Hands on
+
+*Evan's call (18 Oct 2026), before Phase 20: "brainstorm more ways to improve the game. Going on making it distinct and unique, easy to understand and play, and building on the depth." Ten recommendations, taken as they came: start the first, queue the rest, and raise the download budget as needed.*
+
+**The order:** 36, then 37 to 45 as listed.
+
+**Weigh first:**
+- **Phase 19 stays open** on its real stores and its beta (criteria 1 and 4), both Evan's. Nothing here waits on them, and nothing here touches the gate, Play's unlock or the paperwork.
+- **The download.** 469.7 KB of 490 when the run started. Evan's call: raise it as needed. 36, 43 and 44 are the heaviest (drawn things to play); 37, 39, 40 and 41 the cheapest [INFERRED].
+- **Saves.** 36.1 changes the save's shape (v77); 39 and 43 will, and 38 may [INFERRED].
+- **Still bots only.** No person has played a full career; the beta is where that changes.
+
+### Phase 36 — The games at the fire, played   **<<< CURRENT MILESTONE**
+
+*Medium to large. Liar's dice was one bid against one person; blackjack and hold'em are lines of text and a few buttons, ten and six hands a night (22.9a, 22.9b). Evan's ask (18 Oct 2026): make them "actual card games you can play with cards", and "play for as long as you want, like a mini game".*
+
+**Goal.** The games at the fire are the real games, drawn and played by their full rules, for as long as the night lasts, or as long as you like from the glovebox.
+
+**Evan's calls (18 Oct 2026), all as recommended:**
+- **Liar's dice: Perudo, everyone in.** Five dice each under a cup, ones wild, bids going round everyone at the fire (Hazel, and Sage and Frank when they're there). Call a bid a lie, and whoever's wrong loses a die; the last cup with dice takes it. Still for bond, never money.
+- **How long: the night, and a glovebox deck.** At the fire, game after game until it dies down (about 1 AM). Each round or hand takes its minutes, and the night's $40 cap at cards stays. And a deck in the glovebox: all three games for matchsticks against the cast, as long as you like, outside the career. No time passes and nothing carries over.
+- **Hold'em: everyone at the fire, limit.** Fixed-limit hold'em with whoever's there (two or three others), blinds in place of antes, each person's style and reads as they are, and tells shown.
+- **Blackjack: splits and your own bet.** Split a pair once; bet $5 or $10 a hand within the night's cap; the dealer stands on 17; a fresh deck each hand.
+
+**Slices:**
+- **36.1** Perudo at the fire, drawn (save v77).
+- **36.2** Blackjack drawn: splits, your own bet, hand after hand until the fire's out.
+- **36.3** Hold'em round the fire: limit, everyone in, blinds, tells.
+- **36.4** The glovebox deck: all three games for matchsticks, outside the career.
+- **36.5** The e2e, the harness and the close.
+
+**Done when** [proposed]:
+1. Each game plays by its full rules, in the unit tests and the e2e.
+2. The fire's rule still holds: no game out-bonds a day climbing together or out-earns a shift an hour (the harness).
+3. The glovebox never touches the career's save.
+4. The download stays inside its budget, raised as needed (Evan's call).
+
+**Status (18 Oct 2026): 36.1 built: Perudo at the fire.** Save v77, 0.999.91.
+- **The rules** (`sim/perudo.ts`). You sit with everyone at the fire, five dice each (`GAMES.dice.n`), the cups rolled from the seed a round at a time, and you open the first round. Ones count for every face and are never bid. A bid beats the last with more of any face, or as many of a higher one. Call the bid on the table and every cup comes up: fewer than it says and the bidder loses a die, as many or more and the caller does. The loser opens the next round (the next seat on, if that was their last die); an empty cup is out; the last cup with dice takes the game. Out yourself, the others play it out to a winner.
+- **The others** (`content/perudo.ts`) bid from their own cups, with the chance that the dice nobody's seen make up the rest (a third each: the face or a one). Each has a style [proposed]:
+  - Hazel bids what's in her cup and lets a lot go;
+  - Sage pushes faces she hasn't got and calls early;
+  - Frank doesn't bluff and doesn't believe you either.
+
+  Each style is three numbers: how unlikely a bid must look before they call it, how often they raise on a face they haven't got, and how far under what they expect they open. The table shows each person's read.
+- **The night.** A game takes a round's minutes (`GAMES.dice.min`, six) and the energy to sit down; each round after takes its minutes. Liar's dice isn't once a night any more (horseshoes still is): play game after game, or get up mid-game. At `GAMES.late`, 1 AM [proposed], the fire's down to coals (`fireOut`): no game at it starts, and a round in play is the last. Bond with everyone playing, once a day, as before.
+- **The table** (`ui/Perudo.tsx`, on the fire's card):
+  - the others' cups across the fire, each with its dice left, drawn in code;
+  - the round's bids in order;
+  - your cup lifted, the dice that count for the face you've picked lit (a one is drawn wild);
+  - your bid as a count (a stepper from the least that beats the table) and a face (the five dice to pick from), started on the face you hold most of, with what's in your cup and how many dice you can't see;
+  - "Call it a lie";
+  - every cup up on a call, the dice that count lit, the loser's seat marked, and what happened in words;
+  - "Next round" (who opens it), "Another game", "Get up".
+
+  Every button is a button, so the keys and a pad move round it as round any sheet.
+- **Save v77:** `table` is the Perudo table (the seats and their dice, whose turn, the bid and the round's bids, the round and the game, the last call's cups, who took it). Migration 76 puts away a hand of the old one-bid game on the go; nothing hung on it. Fixture `save-v76.json` (a career bot at day 201, from main's code). The validator holds dice to 1–6, faces bid to 2–6, and seats to the table.
+- **Measured** (`gamesAtFire`, the season harness's games line). Over 300 games with Hazel and Sage, a game takes about 70 minutes, and a player who reads their own cup the way they do takes 37% (a fair share is a third). A player who calls anything past a third of the dice, cup unread, takes about 10%. The most bond anyone moved in a night of every game is still one.
+- **The e2e:** at the fire after the horseshoes, it bids a count up from the one offered, plays the round out to a call (calling past a third of the dice, raising as offered otherwise), checks the cups come up drawn, plays another round, and gets up. Hazel's bond moves once for both games, the clock moves, and both games are heard.
+- **Tests:** `perudo.test.ts`:
+  - the rules (ones wild, what beats what, who a call costs, who opens next, the last cup);
+  - the others' bids, legal and the same from the same cups;
+  - their styles told apart over 1,200 spots (Sage calls and bluffs more than Hazel);
+  - your bid going round in order to you or a call;
+  - whole games to the last cup, a die gone and a round's minutes with each call;
+  - the night's limit, and bond once a day over two games;
+  - the words (no number typed in, only the blanks the table fills);
+  - the save, broken tables refused, and the v76 fixture with and without an old hand.
+
+  `fire.test.ts` loses the old game's tests and gains the fire's limit.
+- **The download:** 473.4 KB of 490.
+
+### Phase 37 — The session
+
+*Queued (18 Oct 2026). Small to medium [INFERRED]. Planned with Evan's calls when it comes up.*
+
+**Goal.** A day at the boulders with the locals is a shared puzzle.
+
+**Scope.** Three or four locals take turns on one problem with you. Every fall shows that crux's beta to everyone there. Share what you've found (bond, renown) or keep it (a better shot at the day's first send).
+
+**Done when** [proposed]: a session plays in the e2e; sharing and keeping each pay what they say, from the dials.
+
+### Phase 38 — A ghost of your best go
+
+*Queued (18 Oct 2026). Small to medium [INFERRED]; may change the save.*
+
+**Goal.** A project shows you how far you've come on it.
+
+**Scope.** On a line you're working, your best go so far climbs beside you, faint, to where it fell. Built on the high point the wall already flags (`view/render.ts`).
+
+**Done when** [proposed]: the ghost climbs to the best go's high point and no further; a save from before loads.
+
+### Phase 39 — Each crag's classics
+
+*Queued (18 Oct 2026). Small [INFERRED]; changes the save.*
+
+**Goal.** Every crag has its must-dos, and ticking them means something.
+
+**Scope.** Five starred lines on each crag's place card. Tick them all and you're a local there, with small perks. Your own first ascents can become classics once their grades settle (32.4).
+
+**Done when** [proposed]: the content test gives every crag its five; a bot career becomes a local somewhere; a save from before loads.
+
+### Phase 40 — "What now?" from Hazel
+
+*Queued (18 Oct 2026). Small [INFERRED].*
+
+**Goal.** A new player always knows a good next move, and why.
+
+**Scope.** Three suggested moves, each with a one-line reason drawn from the state (the rent's due Friday; the Gorge is dry; Sage is at the Cave). It fades after Act I unless you ask for it.
+
+**Done when** [proposed]: every reason comes from the state, never typed in (a test); the e2e's first week sees it.
+
+### Phase 41 — The week's forecast and send temps
+
+*Queued (18 Oct 2026). Small [INFERRED].*
+
+**Goal.** The weather is something to plan around, not just weather.
+
+**Scope.** A five-day forecast for the valley at the café, vaguer further out. Cold, dry days give better friction. Expeditions already have their forecast call (`forecastCall`).
+
+**Done when** [proposed]: the forecast comes true as often as it says (the harness); friction shows in a go's odds and on the plan.
+
+### Phase 42 — Belaying, played
+
+*Queued (18 Oct 2026). Small to medium [INFERRED].*
+
+**Goal.** Holding someone's rope is something you do, not a line of text.
+
+**Scope.** A short timing game: pay out, take in, catch softly. It builds trust and better beta from whoever you held.
+
+**Done when** [proposed]: the e2e plays it; it can't out-bond a day climbing together (the harness).
+
+### Phase 43 — Your van, laid out
+
+*Queued (18 Oct 2026). Medium to large [INFERRED]; changes the save.*
+
+**Goal.** The van is a place you've built.
+
+**Scope.** The build-outs (29.1) as a floor plan on a grid: where the shelf, the panel, the mattress and the kitchen go, and what fits.
+
+**Done when** [proposed]: every build-out can be placed; a save from before loads with its build-outs laid out.
+
+### Phase 44 — The setter's wall, hands-on
+
+*Queued (18 Oct 2026). Medium to large [INFERRED].*
+
+**Goal.** Setting is setting: holds on a wall.
+
+**Scope.** The setting puzzle (18.1, `content/setting.ts`) becomes placing holds on a drawn panel, with the grade shown live as you go.
+
+**Done when** [proposed]: the e2e sets a problem on the panel; a set's pay still comes from the shift's (the harness's pay rule).
+
+### Phase 45 — The problem of the day
+
+*Queued (18 Oct 2026). Medium [INFERRED].*
+
+**Goal.** One day to play, the same for everyone, and something to show for it.
+
+**Scope.** A one-day scenario on a seed fixed by the date, offline (no server: nothing leaves the site), in its own save slot, ending on a send card to share.
+
+**Done when** [proposed]: the same date gives the same day on every device (a test); it never touches the career's save.
+
 ## Stage D — Get it in front of people
 
 *Moved here by Evan's call (29 Sep 2026): the whole game gets built first, and the Steam build, the demo and the store page come after it. The phase numbers stay as they were, so older references still find them.*
@@ -4093,7 +4256,7 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 
 ## Stage F — Ship
 
-### Phase 19 — Monetization, store readiness and beta   **<<< CURRENT MILESTONE**
+### Phase 19 — Monetization, store readiness and beta
 
 **Goal.** The demo/full split works on every store, players can buy the full game without trust or privacy compromises, and two beta rounds have shaken out the launch bugs.
 
@@ -4250,6 +4413,8 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
    - The error screen shows on a crash, in the e2e on purpose.
 
 **Phase 19's code is done.** Criteria 1 (the real stores) and 4 (the beta) are Evan's: his accounts, his testers, his launch. Closing the phase is his call.
+
+**Phase 19 stays open (18 Oct 2026)** on criteria 1 and 4, while Phases 36–45 come first by Evan's call: "before all the phase 20 stuff". The CURRENT MILESTONE moves to Phase 36.
 
 ---
 
@@ -4527,3 +4692,5 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-16 — 19.2 built: Play's unlock in the Android app. The page buys through the Digital Goods API and Payment Request at Play's price, counts it once Play lists it, and restores it at start-up and by hand; the app acknowledges each purchase on the phone (Evan's call, since version 2 of the API has no acknowledge and Play refunds what isn't), from `twa/PlayAcknowledger.java` hooked into Bubblewrap's project by `twa/acknowledge.mjs`. The locked last card offers it in the app, and store pages elsewhere. No save change. 0.999.88.
 - 2026-10-16 — 19.3 built: the paperwork. The privacy page brought up to date (the host, each store's part in a purchase, the Android app's unused notification permission, deleting by platform); terms of use written new (`terms.html`, shipped beside it, both checked); the stores' forms answered from the code (`docs/PAPERWORK.md`: Play's data safety, the IARC questionnaire with its simulated gambling, the target audience, Steam's content survey); Play's listing for launch in `docs/STORE.md`. No change to the game. 0.999.89.
 - 2026-10-16 — 19.4 built: the beta kit. The error screen's report ends on where the game was and the last twelve moves (`game/trail.ts`; no typed names); a tester's link (`?gate=try`) shuts the gate for one tab so Play's unlock can be tried before launch; the locked full game no longer sets a full climber's save aside at start-up, it holds them at the last card (`demoOver`; only the demo's build refuses one); Settings shows the version; `docs/BETA.md` (two rounds, the link, reporting, severities that gate launch) and a beta issue template. Phase 19's Done-when checked: 2, 3 and 5 pass; 1's real stores and 4's beta are Evan's. 0.999.90.
+- 2026-10-18 — Evan's call, before Phase 20: ten more phases, 36–45, to make the game more its own and easier to play (the games at the fire played in full, the session, a ghost of your best go, each crag's classics, "What now?" from Hazel, the forecast and send temps, belaying played, the van laid out, the setter's wall by hand, the problem of the day); the download budget raised as needed. Phase 19 stays open on its real stores and its beta, his. CURRENT MILESTONE moved to Phase 36, planned with his calls: Perudo with everyone at the fire; game after game till the fire's out, and a glovebox deck outside the career; limit hold'em with everyone; blackjack with splits and your own bet.
+- 2026-10-18 — 36.1 built: liar's dice is Perudo, with everyone at the fire, drawn: five dice each under a cup, ones wild, bids round the fire, a call costing whoever's wrong a die, the last cup taking it; Hazel, Sage and Frank each bid in their own style from their own cups; game after game till the fire's out at 1 AM; bond once a day as before. Save v77. 0.999.91.

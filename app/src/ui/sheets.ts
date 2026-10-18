@@ -167,10 +167,9 @@ import {
   STYLES,
   type CardGame,
   atFire,
-  bidWords,
   gameBlocked,
   GAMES,
-  yourRaise,
+  inWords,
   knockById,
   drivewayHost,
   expedCost,
@@ -259,6 +258,7 @@ import {
   roundName,
   TEAM_SAYS,
   listOf,
+  upper,
   gradesFor,
   leagueTier,
   promotedIn,
@@ -2493,28 +2493,6 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     // Phase 22.9a: the fire at night, and the games with whoever's there.
     case 'fire': {
       if (s.cards) return cardsSheet(game, s, s.cards);
-      const tb = s.table;
-      if (tb) {
-        const name = PEOPLE[tb.who]?.name ?? tb.who;
-        const up = yourRaise(tb);
-        return {
-          title: 'Liar’s dice',
-          sub: `Your cup: ${[...tb.mine].sort().join(' ')}. ${name} bids ${bidWords(tb.bid.n, tb.bid.face)}, between the two cups.`,
-          close: false,
-          rows: [
-            {
-              label: 'Call it',
-              note: `You’re right if there are fewer than ${bidWords(tb.bid.n, tb.bid.face)} under both cups.`,
-              run: () => game.dice('call'),
-            },
-            {
-              label: `Raise: ${bidWords(up.n, up.face)}`,
-              note: `${name} can call it, or let it go.`,
-              run: () => game.dice('raise'),
-            },
-          ],
-        };
-      }
       const here = atFire(s).map((w) => PEOPLE[w]?.name ?? w);
       // Phase 31.2: the old climber, in their chair.
       const old_ = forebearAtFire(s) ? s.family!.forebear : null;
@@ -2523,7 +2501,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         const why = gameBlocked(s, g);
         return {
           label,
-          cost: costLabel({ min: GAMES.min, energy: -GAMES.energy }),
+          cost: costLabel({ min: g === 'dice' ? GAMES.dice.min : GAMES.min, energy: -GAMES.energy }),
           note: why ? `${why}.` : note,
           off: !!why,
           run,
@@ -2547,10 +2525,11 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             `Four throws each against ${here.join(' and ') || 'whoever’s up'}. Throw as the marker crosses the band.`,
             () => game.shoesStart(),
           ),
+          // Phase 36.1: Perudo, everyone at the fire, a round at a time till the fire's out.
           game_(
             'Liar’s dice',
             'dice',
-            `Five dice each, no wilds, a hand with ${here[0] ?? 'whoever’s up'}. One bid: call it or raise.`,
+            `${upper(inWords(GAMES.dice.n))} dice each, ones wild, with ${listOf(here) || 'whoever’s up'}. A round at a time, as long as the fire lasts.`,
             () => game.dice('deal'),
           ),
           // Phase 22.9b: cards, for money.
