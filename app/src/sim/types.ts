@@ -292,6 +292,10 @@ export interface GameState {
   // Phase 22.9b. Hold'em with each person: hands played, and the times they caught you
   // betting a loser.
   reads: Record<string, { hands: number; caught: number }>;
+  // Phase 36.4: set only on the glovebox deck's own copy of a climber, played on and thrown
+  // away, never saved: who's at its table. With it the fire's limits (where, when, once a
+  // night, the fire's close) don't apply.
+  glovebox?: { cast: string[] };
   // Phase 22.8. Your dream: the one you're saving for, the pot (the card and the bills never
   // touch it), and the ones you own.
   dream: {

@@ -2,7 +2,7 @@
 // the round's bids in order; your bid, a count and a face; and every cup up on a call, the
 // dice that count lit. The rules are the sim's (sim/perudo.ts): this only stages them.
 import { useLayoutEffect, useRef, useState } from 'react';
-import type { Game } from '../game/game';
+import type { TableMoves } from '../game/game';
 import {
   bidWords,
   callLines,
@@ -108,7 +108,8 @@ const diceWords = (n: number) => `${inWords(n)} ${n === 1 ? 'die' : 'dice'}`;
 // Ones first: they count for every face.
 const sorted = (dice: readonly number[]) => [...dice].sort((a, b) => a - b);
 
-export function PerudoBody({ game, s }: { game: Game; s: GameState }) {
+// `glove`: the glovebox deck's table (36.4), where no time passes.
+export function PerudoBody({ game, s, glove = false }: { game: TableMoves; s: GameState; glove?: boolean }) {
   const t = s.table!;
   const ref = useRef<HTMLDivElement>(null);
   const sh = t.shown;
@@ -188,7 +189,9 @@ export function PerudoBody({ game, s }: { game: Game; s: GameState }) {
               onClick={() => game.dice('again')}
             >
               <span>Another game</span>
-              <span className="c">{costLabel({ min: GAMES.dice.min, energy: -GAMES.energy })}</span>
+              <span className="c">
+                {glove ? '' : costLabel({ min: GAMES.dice.min, energy: -GAMES.energy })}
+              </span>
               <small>
                 {why ? `${why}.` : `${upper(diceWords(GAMES.dice.n))} each again, everyone back in.`}
               </small>
@@ -200,7 +203,7 @@ export function PerudoBody({ game, s }: { game: Game; s: GameState }) {
           <li>
             <button type="button" className="opt" id="p-next" onClick={() => game.dice('next')}>
               <span>{fireOut(s) ? 'Put the cups away' : 'Next round'}</span>
-              <span className="c">{fireOut(s) ? '' : costLabel({ min: GAMES.dice.min })}</span>
+              <span className="c">{fireOut(s) || glove ? '' : costLabel({ min: GAMES.dice.min })}</span>
               <small>
                 {fireOut(s)
                   ? PERUDO.late
@@ -217,7 +220,11 @@ export function PerudoBody({ game, s }: { game: Game; s: GameState }) {
           <button type="button" className="opt" id="p-up" onClick={() => game.dice('leave')}>
             <span>Get up</span>
             <small>
-              {t.over || !t.seats[0]!.dice.length ? 'Back to the fire.' : 'They’ll play on without you.'}
+              {t.over || !t.seats[0]!.dice.length
+                ? glove
+                  ? 'The cups back in the glovebox.'
+                  : 'Back to the fire.'
+                : 'They’ll play on without you.'}
             </small>
           </button>
         </li>
@@ -237,7 +244,7 @@ export function PerudoBody({ game, s }: { game: Game; s: GameState }) {
 // Your turn: a count and a face, started on the face you hold most of (ones count), at what
 // you can see to open or the least that beats the bid on the table; your dice that count for
 // the face picked lit. Or call it.
-function YourBid({ game, t }: { game: Game; t: DiceTable }) {
+function YourBid({ game, t }: { game: TableMoves; t: DiceTable }) {
   const all = inPlay(t);
   const mine = t.seats[0]!.dice;
   const best = [...FACES].sort((a, b) => inCup(mine, b) - inCup(mine, a) || b - a)[0]!;
