@@ -1,6 +1,7 @@
 // Crowds: who else is at the crag, from its draw, the weekend, the hour, the sky and the
 // day's luck. A crowd queues for the ropes and knows the beta, whether you want it or not.
 
+import { localAt } from './classics';
 import { isWeekend } from './cond';
 import { isCompProblem } from './comps';
 import { PLACES } from './content/places';
@@ -38,6 +39,8 @@ export const crowdNow = (s: GameState, place = s.at): Crowd => crowdAt(s.seed, s
 export function queueMin(s: GameState, r: RouteDef): number {
   if (r.wall) return 0;
   const c = crowdNow(s, r.place);
+  // Phase 39: the locals let a local on.
+  if ((c === 'busy' || c === 'packed') && localAt(s, r.place)) return 0;
   if (c !== 'busy' && c !== 'packed') return 0;
   return (onWall(r) && !r.dws ? CROWD.queue.rope : CROWD.queue.boulder)[c];
 }
@@ -51,10 +54,12 @@ export function sprayable(s: GameState, r: RouteDef): string[] {
   return r.cruxes.flatMap((c) => c.beta.slice(1).filter((b) => !known.includes(b)));
 }
 
-// Whether someone at the base can tell you anything now.
+// Whether someone at the base can tell you anything now. Phase 39: at a crag where you're a
+// local, somebody there knows it on a quiet day too.
 export const canAsk = (s: GameState, r: RouteDef): boolean => {
   const c = crowdNow(s, r.place);
-  return s.at === r.place && (c === 'busy' || c === 'packed') && sprayable(s, r).length > 0;
+  const around = c === 'busy' || c === 'packed' || (c === 'quiet' && localAt(s, r.place));
+  return s.at === r.place && around && sprayable(s, r).length > 0;
 };
 
 // On a first go at a packed crag, whether someone shouts the beta at you: seeded by the line

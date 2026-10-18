@@ -1367,6 +1367,11 @@ export const SESH = {
 // to where it came off, so a save never carries more than this a line [proposed].
 export const GHOST = { keys: 48 };
 
+// Phase 39 (Evan's call, 18 Oct 2026: five hand-picked a crag). A local has ticked every classic
+// at a crag, and at least `list` of them: a crag's five, or where its lines are still to be
+// climbed, your settled first ascents there making up the five.
+export const CLASSICS = { list: 5 };
+
 // The speed wall at Send City (v0.956's, which cost no time and no pass: the audit's
 // exploit 20). A run is 20 holds, lights to buzzer. Your time is the seconds you took on
 // the screen times `factor`, which is `v0` at V0 and `perGrade` less a grade of power and

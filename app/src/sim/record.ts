@@ -9,6 +9,7 @@ import { DYNO_COMP, GAMES_TIER } from './content/comps';
 import { EXPEDITIONS } from './content/expeditions';
 import { PLACES } from './content/places';
 import { RECORD, type RecordAim, type RecordEntry } from './content/record';
+import { localPlaces } from './classics';
 import { questDone } from './heir';
 import { rankAt } from './jobs';
 import { tierOf } from './presence';
@@ -31,6 +32,7 @@ export function aimEarned(s: GameState, aim: RecordAim, sent = sends(s)): boolea
   if ('train' in aim) return (s.crewSends ?? []).filter((x) => x.train.length > 0).length >= aim.train;
   // Migration 30 asks this of states from long before sessions.
   if ('seshFirst' in aim) return (s.seshFirsts ?? 0) >= aim.seshFirst;
+  if ('local' in aim) return localPlaces(s).length >= aim.local;
   if ('outside' in aim) return sent.some(({ r }) => !!r && !indoor(r.place));
   if ('fa' in aim) return Object.values(s.firsts).filter((f) => !f.by).length >= aim.fa;
   // A walk-in doesn't count toward a raise, but it's a shift: today's counts when it's worked.

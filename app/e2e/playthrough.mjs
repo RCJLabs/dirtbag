@@ -3010,6 +3010,12 @@ console.log('A keyboard, and larger text');
   await tabTo('Roadside Crag’s pin', /^pin-road\|/);
   await key('Enter');
   await expectText('#sheet', /Roadside Crag/, 'the card, by keyboard');
+  // Phase 39: the crag's classics on its card, none of them ticked yet.
+  await expectText(
+    '#sheet',
+    /The classics, 0 of 5 ticked\. Still to go: Warm Boulder, /,
+    'the classics on the card',
+  );
   await fits('a place card');
   await tabTo('the drive', /\|Drive here/);
   await key('Enter');
@@ -3021,6 +3027,7 @@ console.log('A keyboard, and larger text');
   await tabTo('the Warm Boulder', /\|Warm Boulder, V2/);
   await key('Enter');
   await expectText('#sheet', /Warm Boulder · V2/, 'the beta sheet, by keyboard');
+  await expectText('#classic-note', /One of Roadside Crag’s classics/, 'a classic, starred');
   await fits('a beta sheet');
   await key('Escape');
   await until('the sheet to close', async () => !(await page.locator('#sheet').count()));

@@ -24,6 +24,7 @@ export type RecordAim =
   | { train: number }
   // Phase 37: sessions you sent first in.
   | { seshFirst: number }
+  | { local: number }
   | { outside: true }
   | { fa: number }
   | { shift: true }
@@ -129,6 +130,15 @@ export const RECORD: RecordEntry[] = [
       'A handful of you on one problem all morning, everyone coming off at the same move. Then you didn’t. Nobody says much on the pads. Nobody has to.',
     from: [],
     aim: { seshFirst: 1 },
+  },
+  {
+    id: 'local',
+    title: 'A Local',
+    desc: 'Tick every classic at a crag.',
+    story:
+      'Somebody you’ve never met asks you the way down, then which way the crux goes. You tell them both without thinking. You stopped visiting here a while ago. Now you just go.',
+    from: [],
+    aim: { local: 1 },
   },
   {
     id: 'outside',

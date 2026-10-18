@@ -8,7 +8,7 @@ What the repo does (Phase 14.3, 14.4 and 15.3), and what's yours to do on the St
 
 ## Achievements
 
-One per Record Book entry: 52, listed in `steam/achievements.json` with the API name, the display name and the description to enter under **Stats & Achievements**. The API names are the entries' ids in capitals (`FIRSTSEND`), and the ids are stable, so an entry can't be renamed out from under Steam. When the book changes, `WRITE=1 npx vitest run src/game/achievements.test.ts` in `app/` rewrites the list, and the test fails until you do.
+One per Record Book entry: 53, listed in `steam/achievements.json` with the API name, the display name and the description to enter under **Stats & Achievements**. The API names are the entries' ids in capitals (`FIRSTSEND`), and the ids are stable, so an entry can't be renamed out from under Steam. When the book changes, `WRITE=1 npx vitest run src/game/achievements.test.ts` in `app/` rewrites the list, and the test fails until you do.
 
 - Each needs an icon, locked and unlocked: art to make.
 - Worth hiding (Steam's "hidden" box): `HOLLOW` (Off the Map, a place the game doesn't show till you find it), and any you'd rather not spoil.

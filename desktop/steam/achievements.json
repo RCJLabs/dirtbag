@@ -30,6 +30,11 @@
     "desc": "Send a problem first, in a session with the locals."
   },
   {
+    "name": "LOCAL",
+    "title": "A Local",
+    "desc": "Tick every classic at a crag."
+  },
+  {
     "name": "OUTSIDE",
     "title": "On Real Rock",
     "desc": "Send your first line outside."
