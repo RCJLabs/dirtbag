@@ -228,7 +228,14 @@ export function callLines(t: Table): string[] {
   // Out, unless that was the game: the last line says who took it. Yours is said either way.
   if (!t.seats[sh.loser]!.dice.length && (!t.over || loser === YOU))
     lines.push(fill(PERUDO.out, { who: named(loser), is: you(loser, 'are', 'is') }));
+  // Out yourself with others still in, the game was played out unseen (`playedOut`), their cups
+  // as they were when you went out.
+  const unseen = t.seats.filter((p) => p.dice.length).length > 1;
   if (t.over)
-    lines.push(t.over === YOU ? PERUDO.youWon : fill(PERUDO.won, { who: named(t.over), takes: 'takes' }));
+    lines.push(
+      t.over === YOU
+        ? PERUDO.youWon
+        : fill(unseen ? PERUDO.wonWithout : PERUDO.won, { who: named(t.over), takes: 'takes' }),
+    );
   return lines;
 }

@@ -44,6 +44,8 @@ export const PERUDO = {
   loses: '{who} {loses} a die.',
   out: '{who} {is} out of dice.',
   won: '{who} {takes} it, last cup standing.',
+  // Out yourself with more than one cup still in: the rest is played without you, unseen.
+  wonWithout: 'They play it out without you. {who} {takes} it, last cup standing.',
   youWon: 'Last cup standing: yours.',
   late: 'The fire’s down to coals, and the cups go back in the crate.',
 };

@@ -1,6 +1,6 @@
 {
   "name": "dirtbag-site",
-  "version": "0.999.94",
+  "version": "0.999.95",
   "private": true,
   "description": "Dirtbag (dirtbag.rcjlabs.com): the game in app/, and its release pipeline. See README.md.",
   "type": "module",

@@ -2400,7 +2400,9 @@ console.log('The glovebox deck');
 // Phase 36.4 (Phase 36's criterion 3). A morning at the Lot: the van, the glovebox deck, and a
 // turn at each of the fire's games for matchsticks (a bid at liar's dice, a blackjack hand
 // stood on, a hold'em hand called down), then the deck put away. The career's save and its
-// clock never move.
+// clock never move. Phase 36.5 (Phase 36's criterion 1): then each game by its full rules,
+// where the clock's no object: liar's dice to the last cup, blackjack till a hand's doubled
+// and a pair's split, hold'em with a raise and then a fold.
 {
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
   saved.state = {
@@ -2469,6 +2471,81 @@ console.log('The glovebox deck');
   await glove.click('#he-up');
   await glove.waitForSelector('#glovebox');
   const box = await text('#g-box-left');
+  const tap = async (q) => {
+    await glove.click(q);
+    await glove.waitForTimeout(120);
+  };
+  // Short at a card table: up, a new box if the box is short too, and back down.
+  const restock = async (up, sit) => {
+    await tap(up);
+    await glove.waitForSelector('#glovebox');
+    if (await glove.$('#g-box')) await tap('#g-box');
+    await tap(sit);
+  };
+  // Liar's dice: open, then call whatever comes round, to the last cup.
+  await tap('#g-dice');
+  let rounds = 0;
+  for (let i = 0; i < 200; i++) {
+    await glove.waitForSelector('#p-bid, #p-next, #p-again');
+    if (await glove.$('#p-again')) break;
+    if (await glove.$('#p-next')) {
+      rounds++;
+      await tap('#p-next');
+    } else await tap((await glove.$('#p-call:not([disabled])')) ? '#p-call' : '#p-bid');
+  }
+  const last = await text('#perudo');
+  if (!(await glove.$('#p-again')) || !/last cup standing/i.test(last))
+    await fail(`glovebox: liar's dice never came to its last cup: ${last.slice(0, 240)}`);
+  await tap('#p-up');
+  await glove.waitForSelector('#glovebox');
+  // Blackjack: the first pair dealt split, and the first two cards that can be doubled.
+  await tap('#g-bj');
+  let split = false;
+  let doubled = '';
+  for (let k = 0; k < 150 && !(split && doubled); k++) {
+    await glove.waitForSelector('#bj-deal');
+    if (await glove.$('#bj-deal[disabled]')) {
+      await restock('#bj-up', '#g-bj');
+      continue;
+    }
+    await tap('#bj-deal');
+    for (let g = 0; g < 8 && (await glove.$('#bj-stand')); g++) {
+      if (!split && (await glove.$('#bj-split:not([disabled])'))) {
+        await tap('#bj-split');
+        split = /Hand 2/.test(await text('#bj'));
+      } else if (!doubled && (await glove.$('#bj-double:not([disabled])'))) {
+        await tap('#bj-double');
+        doubled = await text('#bj');
+      } else await tap('#bj-stand');
+    }
+  }
+  if (!split || !/10 matchsticks|push/.test(doubled))
+    await fail(`glovebox: blackjack in full: ${JSON.stringify({ split, doubled: doubled.slice(0, 240) })}`);
+  await tap('#bj-up');
+  await glove.waitForSelector('#glovebox');
+  // Hold'em: a raise at the first chance, called down; in a later hand, a fold to a bet.
+  await tap('#g-holdem');
+  let raised = -1;
+  let folded = '';
+  for (let k = 0; k < 40 && !folded; k++) {
+    await glove.waitForSelector('#he-deal');
+    if (await glove.$('#he-deal[disabled]')) {
+      await restock('#he-up', '#g-holdem');
+      continue;
+    }
+    await tap('#he-deal');
+    for (let g = 0; g < 40 && (await glove.$('#he-call')); g++) {
+      if (raised < 0 && (await glove.$('#he-bet:not([disabled])'))) {
+        await tap('#he-bet');
+        raised = k;
+      } else if (raised >= 0 && raised < k && (await glove.$('#he-fold'))) {
+        await tap('#he-fold');
+        folded = await text('#he');
+      } else await tap('#he-call');
+    }
+  }
+  if (raised < 0 || !/folded/.test(folded))
+    await fail(`glovebox: hold'em in full: ${JSON.stringify({ raised, folded: folded.slice(0, 240) })}`);
   await glove.click('#sheet .x');
   await glove.waitForFunction(() => !document.querySelector('#sheet'));
   const after = await glove.evaluate(() => localStorage.getItem('dirtbag.save'));
@@ -2481,8 +2558,9 @@ console.log('The glovebox deck');
     !/matchsticks? in the box/.test(box)
   )
     await fail(`glovebox: ${JSON.stringify({ same: after === before, priced, box, bj: bj.slice(0, 160) })}`);
+  log(`glovebox: liar's dice, blackjack and hold'em for matchsticks; ${box.toLowerCase()}`);
   log(
-    `glovebox: liar's dice, blackjack and hold'em for matchsticks; ${box.toLowerCase()} The save untouched.`,
+    `glovebox, in full: liar's dice played to the last cup (${rounds + 1} rounds at the table); blackjack doubled and split; hold'em raised and folded. The save untouched.`,
   );
   await ctx.close();
 }

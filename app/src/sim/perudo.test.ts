@@ -163,7 +163,13 @@ describe('the rules', () => {
     expect(out.seats[0]!.dice).toEqual([]);
     expect(['hazel', 'sage', 'frank']).toContain(out.over);
     expect(out.over).toBe(playedOut(s, { ...out, over: null }));
-    expect(callLines(out).join(' ')).toMatch(/You are out of dice\. .* takes it, last cup standing\./);
+    expect(callLines(out).join(' ')).toMatch(
+      /You are out of dice\. They play it out without you\. .* takes it, last cup standing\./,
+    );
+    // Out on the call that left one cup: that was the game, with nothing to play out.
+    const beaten = settle(s, table([[3], [2]], { n: 1, face: 3, by: 1 }), 0);
+    expect(beaten.over).toBe('hazel');
+    expect(callLines(beaten).join(' ')).toMatch(/You are out of dice\. Hazel takes it, last cup standing\.$/);
   });
 });
 
