@@ -36,7 +36,7 @@ import { repeatsOf } from './settle';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 77;
+export const SAVE_VERSION = 78;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -582,6 +582,16 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, table: null };
   },
+  // v77 -> v78 (Phase 36.2): a blackjack hand is your hands (two once a pair's split), each with
+  // its bet, the one you're playing, and what they paid once it's over. A hand on the go
+  // carries on as your one hand.
+  77: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const c = x.cards;
+    if (!isObj(c) || !isObj(c.bj)) return x;
+    const { you, bet, ...rest } = c.bj;
+    return { ...x, cards: { ...c, bj: { ...rest, you: [{ cards: you, bet }], at: 0, paid: null } } };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -996,7 +1006,18 @@ export function validate(x: unknown): string[] {
   const cd = x.cards;
   const cards = (d: unknown) => Array.isArray(d) && d.every((v) => isInt(v) && v >= 0 && v <= 51);
   const bjOk = (h: unknown) =>
-    h === null || (isObj(h) && cards(h.you) && cards(h.dealer) && isInt(h.next) && isNum(h.bet));
+    h === null ||
+    (isObj(h) &&
+      Array.isArray(h.you) &&
+      h.you.length >= 1 &&
+      h.you.length <= 2 &&
+      h.you.every((y) => isObj(y) && cards(y.cards) && isNum(y.bet) && y.bet > 0) &&
+      isInt(h.at) &&
+      h.at >= 0 &&
+      h.at <= h.you.length &&
+      cards(h.dealer) &&
+      isInt(h.next) &&
+      (h.paid === null || (Array.isArray(h.paid) && h.paid.length === h.you.length && h.paid.every(isNum))));
   const heOk = (h: unknown) =>
     h === null ||
     (isObj(h) &&

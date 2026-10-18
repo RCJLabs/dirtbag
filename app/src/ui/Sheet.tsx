@@ -257,6 +257,7 @@ import {
 import { vars } from './vars';
 import { Glyph, glyphs } from './Glyph';
 import { PerudoBody } from './Perudo';
+import { BlackjackBody } from './Cards';
 
 // "a, b and c".
 const and = (xs: string[]): string =>
@@ -337,6 +338,8 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
       <ShiftBody game={game} act={id.act} s={state} />
     ) : id.k === 'fire' && state.table ? (
       <PerudoBody game={game} s={state} />
+    ) : id.k === 'fire' && state.cards?.game === 'bj' ? (
+      <BlackjackBody game={game} s={state} />
     ) : null;
   if (body)
     return (

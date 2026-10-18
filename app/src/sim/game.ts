@@ -208,6 +208,8 @@ import {
   handValue,
   handWord,
   isBlackjack,
+  isPair,
+  rank,
   readsOn,
   theirMove,
 } from './cards';
@@ -2133,33 +2135,55 @@ export function act(s0: GameState, a: Action): Result {
     p.last = s.day;
     bond(who, p.bond + 1);
   };
-  // Phase 22.9b: a blackjack hand played out: the dealer draws if you're still in, and the
-  // table pays what it owes.
+  // Phase 22.9b: a blackjack hand played out: the dealer draws if any hand of yours is still
+  // in, and the table pays what it owes. Phase 36.2: each of your hands, split or not, paid on
+  // its own, and the hand left on the table, face up, till the next deal.
   const settleBj = () => {
     const c = s.cards!;
     const h = c.bj!;
     const deck = bjDeck(s, c.hands);
     const name = PEOPLE[c.who]?.name ?? c.who;
+    const split = h.you.length > 1;
+    const natural = !split && (isBlackjack(h.you[0]!.cards) || isBlackjack(h.dealer));
     let dealer = h.dealer;
-    if (bjTotal(h.you).n <= 21 && !isBlackjack(h.you) && !isBlackjack(h.dealer))
+    if (!natural && h.you.some((y) => bjTotal(y.cards).n <= 21))
       dealer = dealerPlays(h.dealer, deck, h.next).dealer;
-    const { back, how } = bjSettle(h.you, dealer, h.bet);
+    const pays = h.you.map((y) => bjSettle(y.cards, dealer, y.bet, split));
+    const back = pays.reduce((n, p) => n + p.back, 0);
+    const staked = h.you.reduce((n, y) => n + y.bet, 0);
     c.chips += back;
     c.hands++;
-    c.bj = null;
-    const you = `${cardsName(h.you)} (${bjTotal(h.you).n})`;
+    h.dealer = dealer;
+    h.at = h.you.length;
+    h.paid = pays.map((p) => p.back);
     const them = `${cardsName(dealer)} (${bjTotal(dealer).n})`;
-    const net = back - h.bet;
+    if (split) {
+      const net = back - staked;
+      const WORD: Record<string, string> = {
+        bust: 'bust',
+        'dealer bust': 'paid',
+        win: 'paid',
+        push: 'a push',
+        lose: `${name}’s`,
+      };
+      line(
+        `${name} draws to ${them}. ${h.you.map((y, i) => `${cardsName(y.cards)} (${bjTotal(y.cards).n}): ${WORD[pays[i]!.how]}`).join('; ')}. ${net > 0 ? `Up ${money(net)}.` : net < 0 ? `Down ${money(-net)}.` : 'Even.'}`,
+      );
+      return;
+    }
+    const y = h.you[0]!;
+    const you = `${cardsName(y.cards)} (${bjTotal(y.cards).n})`;
+    const net = back - y.bet;
     const SAY: Record<string, string> = {
       blackjack: `Blackjack. ${name} pays you ${money(net)} without looking happy about it.`,
-      'dealer blackjack': `${name} turns over ${them}. Blackjack. ${money(h.bet)} gone.`,
-      bust: `${you}: bust. ${money(h.bet)} to ${name}.`,
+      'dealer blackjack': `${name} turns over ${them}. Blackjack. ${money(y.bet)} gone.`,
+      bust: `${you}: bust. ${money(y.bet)} to ${name}.`,
       'dealer bust': `You stand on ${you}. ${name} draws to ${them} and busts. Up ${money(net)}.`,
       win: `${you} against ${them}. Up ${money(net)}.`,
       push: `${you} against ${them}. A push.`,
-      lose: `${you} against ${them}. ${money(h.bet)} to ${name}.`,
+      lose: `${you} against ${them}. ${money(y.bet)} to ${name}.`,
     };
-    line(SAY[how]!);
+    line(SAY[pays[0]!.how]!);
   };
   // A hold'em hand to its next street, or to the showdown after the river.
   const nextStreet = () => {
@@ -3748,7 +3772,8 @@ export function act(s0: GameState, a: Action): Result {
         const why = cardsBlocked(s, 'bj');
         if (why) return refuse(`${why}.`);
         const chips = Math.min(Math.floor(s.cash), GAMES.bj.cap);
-        spend({ min: GAMES.min, energy: -GAMES.energy, cash: -chips });
+        // Phase 36.2: sitting down is the energy; each hand takes its minutes.
+        spend({ energy: -GAMES.energy, cash: -chips });
         s.today.push('bj');
         s.cards = { game: 'bj', who: atFire(s)[0]!, chips, hands: 0, bj: null, he: null };
         line(`You sit down with ${money(chips)}. ${PEOPLE[s.cards.who]?.name ?? s.cards.who} shuffles.`);
@@ -3756,41 +3781,87 @@ export function act(s0: GameState, a: Action): Result {
       }
       const c = s.cards;
       if (!c || c.game !== 'bj') return refuse('You’re not sat at blackjack.');
+      // The hand on the go: a paid one stays on the table, but nothing's played on it.
+      const live = c.bj && !c.bj.paid ? c.bj : null;
       if (a.do === 'leave') {
-        if (c.bj) return refuse('Finish the hand first.');
+        if (live) return refuse('Finish the hand first.');
         s.cash += c.chips;
         s.cards = null;
         line(`You get up with ${money(c.chips)}.`);
         break;
       }
       if (a.do === 'deal') {
-        if (c.bj) return refuse('There’s a hand on the go.');
-        if (c.hands >= GAMES.bj.hands) return refuse('That’s the last hand tonight.');
-        if (c.chips < GAMES.bj.bet) return refuse('Not enough in front of you for a hand.');
+        if (live) return refuse('There’s a hand on the go.');
+        if (fireOut(s)) return refuse('The fire’s down to coals.');
+        const bet = a.bet ?? handNeeds('bj');
+        if (!GAMES.bj.bets.includes(bet)) return refuse('That’s not a bet at this table.');
+        if (c.chips < bet) return refuse('Not enough in front of you for that.');
+        spend({ min: GAMES.bj.min });
         const deck = bjDeck(s, c.hands);
-        c.chips -= GAMES.bj.bet;
-        c.bj = { you: [deck[0]!, deck[2]!], dealer: [deck[1]!, deck[3]!], next: 4, bet: GAMES.bj.bet };
+        c.chips -= bet;
+        c.bj = {
+          you: [{ cards: [deck[0]!, deck[2]!], bet }],
+          at: 0,
+          dealer: [deck[1]!, deck[3]!],
+          next: 4,
+          paid: null,
+        };
         // The dealer peeks: a blackjack either side ends it now.
-        if (isBlackjack(c.bj.dealer) || isBlackjack(c.bj.you)) settleBj();
+        if (isBlackjack(c.bj.dealer) || isBlackjack(c.bj.you[0]!.cards)) settleBj();
         break;
       }
-      const h = c.bj;
+      const h = live;
       if (!h) return refuse('No hand on the go.');
       const deck = bjDeck(s, c.hands);
+      const y = h.you[h.at]!;
+      // On to your next hand: a split hand's second card comes when you get to it, twenty-one
+      // stands, and once they're all played the dealer plays.
+      const onward = () => {
+        h.at++;
+        for (; h.at < h.you.length; h.at++) {
+          const z = h.you[h.at]!;
+          if (z.cards.length === 1) z.cards.push(deck[h.next++]!);
+          if (bjTotal(z.cards).n < 21) return;
+        }
+        settleBj();
+      };
       if (a.do === 'hit') {
-        h.you.push(deck[h.next++]!);
-        if (bjTotal(h.you).n >= 21) settleBj();
+        y.cards.push(deck[h.next++]!);
+        if (bjTotal(y.cards).n >= 21) onward();
+        break;
+      }
+      if (a.do === 'stand') {
+        onward();
         break;
       }
       if (a.do === 'double') {
-        if (h.you.length !== 2) return refuse('Only on your first two cards.');
-        if (c.chips < h.bet) return refuse('Not enough in front of you to double.');
-        c.chips -= h.bet;
-        h.bet *= 2;
-        h.you.push(deck[h.next++]!);
+        if (y.cards.length !== 2) return refuse('Only on two cards.');
+        if (c.chips < y.bet) return refuse('Not enough in front of you to double.');
+        c.chips -= y.bet;
+        y.bet *= 2;
+        y.cards.push(deck[h.next++]!);
+        onward();
+        break;
       }
-      settleBj();
-      break;
+      if (a.do === 'split') {
+        if (h.you.length > 1) return refuse('One split a hand.');
+        if (!isPair(y.cards)) return refuse('Only a pair splits.');
+        if (c.chips < y.bet) return refuse('Not enough in front of you to split.');
+        c.chips -= y.bet;
+        const [one, two] = y.cards as [number, number];
+        h.you = [
+          { cards: [one, deck[h.next++]!], bet: y.bet },
+          { cards: [two], bet: y.bet },
+        ];
+        // Aces split take a card each, and that's them.
+        if (rank(one) === 12) {
+          h.you[1]!.cards.push(deck[h.next++]!);
+          h.at = 1;
+          onward();
+        } else if (bjTotal(h.you[0]!.cards).n === 21) onward();
+        break;
+      }
+      return refuse('Not a move at blackjack.');
     }
 
     // Phase 22.9b: heads-up hold'em with someone at the fire, for money, and reads on them.

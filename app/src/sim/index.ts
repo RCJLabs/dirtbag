@@ -391,7 +391,11 @@ export {
   boardAt,
   handNeeds,
   handWord,
+  isBlackjack,
+  isPair,
+  rank,
   readsOn,
+  suit,
   theyKnow,
   type CardGame,
 } from './cards';

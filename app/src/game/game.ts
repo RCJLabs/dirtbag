@@ -1481,9 +1481,10 @@ export class Game {
   }
 
   // Cards at the fire (Phase 22.9b): sit down, play, get up. The fire's card is the table.
-  bj(what: 'sit' | 'deal' | 'hit' | 'stand' | 'double' | 'leave'): void {
+  // Phase 36.2: blackjack's deal takes your bet, and a pair splits.
+  bj(what: 'sit' | 'deal' | 'hit' | 'stand' | 'double' | 'split' | 'leave', bet?: number): void {
     this.sound.play(what === 'sit' || what === 'leave' ? 'chips' : 'card');
-    this.dispatch({ t: 'bj', do: what });
+    this.dispatch({ t: 'bj', do: what, bet });
     this.openSheet({ k: 'fire' });
   }
 
