@@ -261,16 +261,32 @@ export interface GameState {
       next: number;
       paid: number[] | null;
     } | null;
-    // A hold'em hand: the street (0 before the flop, 1 the flop, 2 the turn and river), the
-    // pot, a bet of theirs you're facing, and whether you bet the last street.
+    // Phase 36.3 (save v79): a hold'em hand round the fire: the seats (yours first, as 'you'),
+    // each with its two cards, whether it's still in, what it's put in this street and in all,
+    // whether it's acted since the last raise, and whether it's all in; the five board cards
+    // (shown a street at a time); the street (0 before the flop, 1 the flop, 2 the turn, 3 the
+    // river); the button; whose move; the street's bet and how many bets it's seen; the pot
+    // from the streets before; the hand's moves, a tell with any you can read; and once it's
+    // over, who took it, what came back to you, and whether the cards were shown.
     he: {
-      you: number[];
-      them: number[];
+      seats: {
+        who: string;
+        hole: number[];
+        in: boolean;
+        put: number;
+        total: number;
+        acted: boolean;
+        all: boolean;
+      }[];
       board: number[];
       street: number;
+      button: number;
+      turn: number;
+      bet: number;
+      bets: number;
       pot: number;
-      facing: number;
-      bet: boolean;
+      said: { by: number; did: string; street: number; sign?: string }[];
+      won: { by: number[]; back: number; shown: boolean } | null;
     } | null;
   } | null;
   // Phase 22.9b. Hold'em with each person: hands played, and the times they caught you
@@ -742,7 +758,9 @@ export type Action =
   // and get up with what's in front of you. Phase 36.2: blackjack's deal takes your bet, and a
   // pair can be split.
   | { t: 'bj'; do: 'sit' | 'deal' | 'hit' | 'stand' | 'double' | 'split' | 'leave'; bet?: number }
-  | { t: 'holdem'; do: 'sit' | 'deal' | 'fold' | 'call' | 'bet' | 'leave'; who?: string };
+  // Phase 36.3: hold'em is everyone at the fire; `call` checks when nothing's bet, `bet` raises
+  // when something is.
+  | { t: 'holdem'; do: 'sit' | 'deal' | 'fold' | 'call' | 'bet' | 'leave' };
 
 // Phase 24.5. A trip come home from: which, the calendar day you got back, how it ended, the
 // pitches fixed, who was on the rope, the nights up there, what happened, and whether you've

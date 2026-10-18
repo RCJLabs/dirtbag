@@ -203,16 +203,20 @@ import {
   cardsBlocked,
   cardsName,
   dealerPlays,
-  deckFor,
   handNeeds,
-  handValue,
-  handWord,
+  holdemPlayers,
   isBlackjack,
   isPair,
   rank,
   readsOn,
-  theirMove,
 } from './cards';
+import {
+  deal as holdemDeal,
+  holdemLines,
+  play as holdemPlay,
+  showdown,
+  theirTurns as holdemTurns,
+} from './holdem';
 import { DEMO_END } from './content/demo';
 import { demoOver } from './demo';
 import { dreamById } from './content/dreams';
@@ -390,7 +394,7 @@ import {
 } from './van';
 import { BODGE_FAILED, BODGE_HELD, BREAKDOWN_LINE } from './content/van';
 import { speedBlocked, speedGains, speedLoad, speedTime, runsToday } from './speed';
-import { dayName, fill, lower, money, ordinal, skillsNote } from './format';
+import { dayName, fill, listOf, lower, money, ordinal, skillsNote } from './format';
 import { perkMult, perkPasses } from './perks';
 import { dueTonight, retained, retainerBlocked, RETAINERS } from './retainers';
 import { RETAINER_SAYS } from './content/retainers';
@@ -2185,41 +2189,29 @@ export function act(s0: GameState, a: Action): Result {
     };
     line(SAY[pays[0]!.how]!);
   };
-  // A hold'em hand to its next street, or to the showdown after the river.
-  const nextStreet = () => {
-    const he = s.cards!.he!;
-    if (he.street < 2) {
-      he.street++;
-      return;
-    }
+  // Phase 36.3: a hold'em hand over: what came back to you, a hand played on everyone at the
+  // table, and your river bet that lost a showdown counted as caught by everyone who saw it.
+  // The hand stays on the table, cards and all, till the next deal.
+  const endHoldem = () => {
     const c = s.cards!;
-    const name = PEOPLE[c.who]?.name ?? c.who;
-    const mine = handValue([...he.you, ...he.board]);
-    const theirs = handValue([...he.them, ...he.board]);
-    const shown = `${name} shows ${cardsName(he.them)}, ${handWord([...he.them, ...he.board])}. You have ${handWord([...he.you, ...he.board])}.`;
-    if (mine === theirs) {
-      c.chips += he.pot / 2;
-      endHoldem(null, `${shown} A split pot.`);
-    } else endHoldem(mine > theirs, shown);
-  };
-  // A hold'em hand over: the pot to whoever took it, a hand played on them, and a bet of yours
-  // on the river they called and beat goes down as caught.
-  const endHoldem = (won: boolean | null, said: string) => {
-    const c = s.cards!;
-    const he = c.he!;
-    const name = PEOPLE[c.who]?.name ?? c.who;
-    const r = (s.reads[c.who] ??= { hands: 0, caught: 0 });
-    const had = readsOn(s, c.who).length;
-    r.hands++;
-    if (won === false && he.bet && he.street === 2) r.caught++;
-    if (won) c.chips += he.pot;
+    const h = c.he!;
+    const won = showdown(h);
+    c.chips += won.back;
     c.hands++;
-    c.he = null;
-    const outcome =
-      won === null ? '' : won ? ` You take ${money(he.pot)}.` : ` ${name} takes ${money(he.pot)}.`;
-    line(`${said}${outcome}`);
-    const now = readsOn(s, c.who);
-    if (now.length > had) line(`You’re getting a read on ${name}: ${now[now.length - 1]}`);
+    h.won = won;
+    line(holdemLines(h).join(' '));
+    const riverBet = h.said.some(
+      (x) => x.by === 0 && x.street === 3 && (x.did === 'bets' || x.did === 'raises'),
+    );
+    for (const p of h.seats.slice(1)) {
+      const had = readsOn(s, p.who).length;
+      const r = (s.reads[p.who] ??= { hands: 0, caught: 0 });
+      r.hands++;
+      if (won.shown && riverBet && p.in && !won.by.includes(0)) r.caught++;
+      const now = readsOn(s, p.who);
+      if (now.length > had)
+        line(`You’re getting a read on ${PEOPLE[p.who]?.name ?? p.who}: ${now[now.length - 1]}`);
+    }
   };
   const learn = (route: string, beta: string, how: 'fall' | 'told' | 'watched', text: string) => {
     const L = logOf(s, route);
@@ -3864,81 +3856,58 @@ export function act(s0: GameState, a: Action): Result {
       return refuse('Not a move at blackjack.');
     }
 
-    // Phase 22.9b: heads-up hold'em with someone at the fire, for money, and reads on them.
+    // Phase 22.9b: hold'em at the fire, for money, and reads on the people you play.
+    // Phase 36.3: everyone at the fire, fixed limit, hand after hand till the fire's out.
     case 'holdem': {
       if (a.do === 'sit') {
-        const who = a.who ?? atFire(s)[0];
-        const why = cardsBlocked(s, 'holdem', who);
+        const why = cardsBlocked(s, 'holdem');
         if (why) return refuse(`${why}.`);
         const chips = Math.min(Math.floor(s.cash), GAMES.holdem.cap);
-        spend({ min: GAMES.min, energy: -GAMES.energy, cash: -chips });
+        spend({ energy: -GAMES.energy, cash: -chips });
         s.today.push('holdem');
-        s.cards = { game: 'holdem', who: who!, chips, hands: 0, bj: null, he: null };
-        line(`You sit down across from ${PEOPLE[who!]?.name ?? who} with ${money(chips)}.`);
+        const players = holdemPlayers(s);
+        s.cards = { game: 'holdem', who: players[0]!, chips, hands: 0, bj: null, he: null };
+        line(
+          `You sit down with ${money(chips)}. ${listOf(players.map((w) => PEOPLE[w]?.name ?? w))} make room.`,
+        );
         break;
       }
       const c = s.cards;
       if (!c || c.game !== 'holdem') return refuse('You’re not sat at hold’em.');
-      const H = GAMES.holdem;
+      // The hand on the go: a finished one stays on the table, but nothing's played on it.
+      const live = c.he && !c.he.won ? c.he : null;
       if (a.do === 'leave') {
-        if (c.he) return refuse('Finish the hand first.');
+        if (live) return refuse('Finish the hand first.');
         s.cash += c.chips;
         s.cards = null;
         line(`You get up with ${money(c.chips)}.`);
         break;
       }
       if (a.do === 'deal') {
-        if (c.he) return refuse('There’s a hand on the go.');
-        if (c.hands >= H.hands) return refuse('That’s the last hand tonight.');
-        if (c.chips < handNeeds('holdem')) return refuse('Not enough in front of you for a hand.');
-        const deck = deckFor(s, `he-${c.who}-${s.day}-${c.hands}`);
-        c.chips -= H.ante;
-        c.he = {
-          you: [deck[0]!, deck[2]!],
-          them: [deck[1]!, deck[3]!],
-          board: deck.slice(4, 9),
-          street: 0,
-          pot: 2 * H.ante,
-          facing: 0,
-          bet: false,
-        };
+        if (live) return refuse('There’s a hand on the go.');
+        if (fireOut(s)) return refuse('The fire’s down to coals.');
+        if (c.chips < handNeeds('holdem')) return refuse('Not enough in front of you for the blinds.');
+        const players = holdemPlayers(s);
+        if (!players.length) return refuse('Nobody at the fire plays hold’em.');
+        spend({ min: GAMES.holdem.min });
+        let h = holdemDeal(s, players, c.hands, c.chips);
+        c.chips -= h.seats[0]!.total;
+        const before = h.seats[0]!.total;
+        h = holdemTurns(s, h, c.hands);
+        c.chips -= h.seats[0]!.total - before;
+        c.he = h;
+        if (h.street === 4) endHoldem();
         break;
       }
-      const he = c.he;
-      if (!he) return refuse('No hand on the go.');
-      const B = H.bets[he.street]!;
-      if (a.do === 'fold') {
-        endHoldem(false, he.facing ? `You fold to the bet.` : `You fold.`);
-        break;
-      }
-      if (he.facing) {
-        if (a.do === 'bet') return refuse('Call it or fold.');
-        c.chips -= he.facing;
-        he.pot += 2 * he.facing;
-        he.facing = 0;
-        he.bet = false;
-        nextStreet();
-        break;
-      }
-      if (a.do === 'bet') {
-        c.chips -= B;
-        he.pot += B;
-        he.bet = true;
-        if (theirMove(s, he, c.who, true, c.hands) === 'fold') {
-          endHoldem(true, `${PEOPLE[c.who]?.name ?? c.who} folds.`);
-          break;
-        }
-        he.pot += B;
-        nextStreet();
-        break;
-      }
-      // A check: they bet, or the street goes by.
-      he.bet = false;
-      if (theirMove(s, he, c.who, false, c.hands) === 'bet') {
-        he.facing = B;
-        break;
-      }
-      nextStreet();
+      const h = live;
+      if (!h) return refuse('No hand on the go.');
+      if (h.turn !== 0 || h.street === 4) return refuse('It isn’t your move.');
+      const before = h.seats[0]!.total;
+      let next = holdemPlay(h, 0, a.do === 'fold' ? 'fold' : a.do === 'bet' ? 'bet' : 'call', c.chips);
+      next = holdemTurns(s, next, c.hands);
+      c.chips -= next.seats[0]!.total - before;
+      c.he = next;
+      if (next.street === 4) endHoldem();
       break;
     }
 

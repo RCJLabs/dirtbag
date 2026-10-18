@@ -156,13 +156,8 @@ import {
   touristLine,
   touristsBlocked,
   touristsOn,
-  boardAt,
-  CARD_NAME,
   cardsBlocked,
-  cardsName,
-  handNeeds,
-  readsOn,
-  STYLES,
+  holdemPlayers,
   type CardGame,
   atFire,
   gameBlocked,
@@ -1055,85 +1050,15 @@ function dreamNote(s: GameState): string {
 }
 
 // Phase 22.9b: sitting down to cards: what it costs, or why not.
-function sitRow(
-  game: Game,
-  s: GameState,
-  label: string,
-  g: CardGame,
-  who: string | undefined,
-  note: string,
-): Row {
-  const why = cardsBlocked(s, g, who);
+function sitRow(game: Game, s: GameState, label: string, g: CardGame, note: string): Row {
+  const why = cardsBlocked(s, g);
   return {
     label,
-    // Phase 36.2: blackjack's time is its hands'.
-    cost: g === 'bj' ? `${costLabel({ min: GAMES.bj.min })} a hand` : costLabel({ min: GAMES.min }),
+    // Phase 36.2, 36.3: a game's time is its hands'.
+    cost: `${costLabel({ min: g === 'bj' ? GAMES.bj.min : GAMES.holdem.min })} a hand`,
     note: why ? `${why}.` : note,
     off: !!why,
-    run: () => (g === 'bj' ? game.bj('sit') : game.holdem('sit', who)),
-  };
-}
-
-// How far off the next read on someone is.
-function readsLeft(s: GameState, who: string): string {
-  const played = s.reads[who]?.hands ?? 0;
-  const next = GAMES.holdem.reads.find((n) => n > played);
-  const name = PEOPLE[who]?.name ?? who;
-  return next === undefined ? '' : `${next - played} more hands and you’ll have a read on ${name}.`;
-}
-
-// Phase 22.9b: the card table, sat down: the hand on the go, or the next one, and getting up.
-// Phase 36.2: blackjack is drawn (ui/Cards.tsx); this is hold'em's.
-function cardsSheet(game: Game, s: GameState, c: NonNullable<GameState['cards']>): ListSpec {
-  const name = PEOPLE[c.who]?.name ?? c.who;
-  const front = `In front of you: ${money(c.chips)}.`;
-  const last = GAMES.holdem.hands;
-  const between = (deal: Row): ListSpec => ({
-    title: CARD_NAME[c.game],
-    sub: `${front} ${c.hands ? `${c.hands} of ${last} hands played.` : `Up to ${last} hands tonight.`}`,
-    notes: readsOn(s, c.who),
-    close: false,
-    rows: [
-      c.hands >= last ? { ...deal, off: true, note: 'That’s the last hand tonight.' } : deal,
-      {
-        label: 'Get up',
-        note: `${money(c.chips)} back in your pocket.`,
-        run: () => game.holdem('leave'),
-      },
-    ],
-  });
-  const he = c.he;
-  if (!he) {
-    const short = c.chips < handNeeds('holdem');
-    const [b0, b1, b2] = GAMES.holdem.bets;
-    return between({
-      label: 'Deal',
-      cost: costLabel({ cash: -GAMES.holdem.ante }),
-      note: short
-        ? 'Not enough in front of you for a hand.'
-        : `An ante each, then bets of ${money(b0!)} before the flop, ${money(b1!)} on it, and ${money(b2!)} on the turn and river.`,
-      off: short,
-      run: () => game.holdem('deal'),
-    });
-  }
-  const shown = boardAt(he.street);
-  const board = shown ? `On the board: ${cardsName(he.board.slice(0, shown))}.` : 'Nothing on the board yet.';
-  const B = GAMES.holdem.bets[he.street]!;
-  return {
-    title: `Hold’em with ${name}`,
-    sub: `You have ${cardsName(he.you)}. ${board} The pot’s ${money(he.pot)}.${he.facing ? ` ${name} bets ${money(he.facing)}.` : ''} ${front}`,
-    notes: readsOn(s, c.who),
-    close: false,
-    rows: he.facing
-      ? [
-          { label: 'Call', cost: costLabel({ cash: -he.facing }), run: () => game.holdem('call') },
-          { label: 'Fold', run: () => game.holdem('fold') },
-        ]
-      : [
-          { label: 'Check', run: () => game.holdem('call') },
-          { label: 'Bet', cost: costLabel({ cash: -B }), run: () => game.holdem('bet') },
-          { label: 'Fold', run: () => game.holdem('fold') },
-        ],
+    run: () => (g === 'bj' ? game.bj('sit') : game.holdem('sit')),
   };
 }
 
@@ -2458,7 +2383,6 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
 
     // Phase 22.9a: the fire at night, and the games with whoever's there.
     case 'fire': {
-      if (s.cards) return cardsSheet(game, s, s.cards);
       const here = atFire(s).map((w) => PEOPLE[w]?.name ?? w);
       // Phase 31.2: the old climber, in their chair.
       const old_ = forebearAtFire(s) ? s.family!.forebear : null;
@@ -2504,23 +2428,16 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
             s,
             'Blackjack',
             'bj',
-            undefined,
             `${GAMES.bj.bets.map(money).join(' or ')} a hand, as many as the night holds, and you sit down with ${money(GAMES.bj.cap)} at most. ${here[0] ?? 'Whoever’s up'} deals.`,
           ),
-          ...atFire(s)
-            .filter((w) => STYLES[w])
-            .map((w) => {
-              const name = PEOPLE[w]?.name ?? w;
-              const reads = readsOn(s, w);
-              return sitRow(
-                game,
-                s,
-                `Hold’em with ${name}`,
-                'holdem',
-                w,
-                `Heads-up, ${money(GAMES.holdem.cap)} at most. ${reads.length ? reads.join(' ') : readsLeft(s, w)}`,
-              );
-            }),
+          // Phase 36.3: hold'em with everyone at the fire who plays.
+          sitRow(
+            game,
+            s,
+            'Hold’em',
+            'holdem',
+            `Limit, ${GAMES.holdem.blinds.map(money).join(' and ')} blinds, with ${listOf(holdemPlayers(s).map((w) => PEOPLE[w]?.name ?? w)) || 'whoever’s up'}, hand after hand. You sit down with ${money(GAMES.holdem.cap)} at most.`,
+          ),
         ],
       };
     }

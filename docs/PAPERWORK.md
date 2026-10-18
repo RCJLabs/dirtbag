@@ -59,7 +59,7 @@ Answer as below; the rating each region gives comes out of the questionnaire, no
   - A cortisone shot is a treatment for injury (`content/places.ts:631`).
   - **Answers:** alcohol: referenced, used by the player in a few choices, no intoxication. Tobacco: no. Drugs: no.
 - **Gambling:** **simulated gambling, yes.**
-  - At the fire at night: blackjack and heads-up hold'em, played for the player's in-game cash. The buy-in a night is capped (`GAMES.bj.cap`, `GAMES.he.cap` in `sim/dials.ts`). The cash is won or lost (`sim/game.ts:3727`, `3738`).
+  - At the fire at night: blackjack and fixed-limit hold'em with everyone at the fire (Phase 36), played for the player's in-game cash. The buy-in a night is capped (`GAMES.bj.cap`, `GAMES.holdem.cap` in `sim/dials.ts`). The cash is won or lost (the `bj` and `holdem` actions in `sim/game.ts`).
   - The cash can't be bought with real money and can't be cashed out.
   - Liar's dice and horseshoes are for nothing but bond.
   - **Answers:** real-money gambling: no. Simulated gambling: yes.

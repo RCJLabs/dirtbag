@@ -391,6 +391,7 @@ export {
   boardAt,
   handNeeds,
   handWord,
+  holdemPlayers,
   isBlackjack,
   isPair,
   rank,
@@ -399,6 +400,7 @@ export {
   theyKnow,
   type CardGame,
 } from './cards';
+export { betOn, canRaise, holdemLines, owes, stillIn, type Holdem } from './holdem';
 export { STYLES } from './content/cards';
 export { WALL_EVENTS, wallEventById, type WallEvent } from './content/wallevents';
 export { WORDS, WORD_GROUP, type Word, type WordGroup } from './content/glossary';

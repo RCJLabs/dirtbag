@@ -175,7 +175,6 @@ export function gamesAtFire(seed: string, nights: number) {
     cash: 200,
     today: [],
   });
-  const hours = GAMES.min / 60;
   // Bond: a night of every game, on nights both are up; the most anyone gained in one.
   let bondDay = 0;
   let s = base;
@@ -231,34 +230,43 @@ export function gamesAtFire(seed: string, nights: number) {
     bj += s.cards!.chips - start;
     s = act(s, { t: 'bj', do: 'leave' }).state;
   }
-  const holdem = (way: 'bet' | 'call' | 'odds', who: string) => {
+  // Hold'em round the fire (36.3), on nights Hazel and Sage are both there, hand after hand
+  // till the chips or the fire run out: always betting, always calling, or by the odds against
+  // the field. Its money an hour by the clock's minutes a hand.
+  const holdem = (way: 'bet' | 'call' | 'odds') => {
     let net = 0;
+    let hands = 0;
     let t = base;
     for (let d = 1, n = 0; n < nights; d++) {
       t = night(t, d);
-      if (!atFire(t).includes(who)) continue;
+      if (!atFire(t).includes('sage')) continue;
       n++;
-      t = act(t, { t: 'holdem', do: 'sit', who }).state;
+      t = act(t, { t: 'holdem', do: 'sit' }).state;
       const start = t.cards!.chips;
-      while (t.cards!.hands < GAMES.holdem.hands && t.cards!.chips >= handNeeds('holdem')) {
+      while (t.cards!.chips >= handNeeds('holdem') && !fireOut(t)) {
         t = act(t, { t: 'holdem', do: 'deal' }).state;
-        for (let g = 0; t.cards!.he && g < 10; g++) {
-          const he = t.cards!.he;
+        hands++;
+        for (let g = 0; g < 40 && t.cards!.he && !t.cards!.he.won; g++) {
+          const h = t.cards!.he;
+          const field = h.seats.filter((p) => p.in).length - 1;
           const e = equity(
-            he.you,
-            he.board.slice(0, boardAt(he.street)),
-            `bot-${d}-${t.cards!.hands}-${he.street}`,
+            h.seats[0]!.hole,
+            h.board.slice(0, boardAt(h.street)),
+            `bot-${d}-${t.cards!.hands}-${h.street}-${h.said.length}`,
             t,
+            field,
           );
-          const call = way === 'odds' ? e > 0.45 : true;
-          const bet = way === 'bet' || (way === 'odds' && e > 0.6);
-          t = act(t, { t: 'holdem', do: he.facing ? (call ? 'call' : 'fold') : bet ? 'bet' : 'call' }).state;
+          const fair = 1 / (field + 1);
+          const raise = way === 'bet' || (way === 'odds' && e > 1.3 * fair);
+          const stay = way !== 'odds' || e > 0.85 * fair;
+          const owe = h.bet - h.seats[0]!.put;
+          t = act(t, { t: 'holdem', do: raise ? 'bet' : owe > 0 && !stay ? 'fold' : 'call' }).state;
         }
       }
       net += t.cards!.chips - start;
       t = act(t, { t: 'holdem', do: 'leave' }).state;
     }
-    return net / nights / hours;
+    return net / ((hands * GAMES.holdem.min) / 60);
   };
   // Liar's dice (36.1): a game's minutes, and how many a player reading their cup takes, with
   // Hazel and Sage (a fair share is a third).
@@ -279,9 +287,7 @@ export function gamesAtFire(seed: string, nights: number) {
     bondDay,
     dice: { min: diceMin / diceGames, won: diceWon / diceGames },
     bj: bj / ((bjHands * GAMES.bj.min) / 60),
-    holdem: Object.fromEntries(
-      ['hazel', 'sage'].flatMap((w) => ways.map((k) => [`${w} ${k}`, holdem(k, w)])),
-    ) as Record<string, number>,
+    holdem: Object.fromEntries(ways.map((k) => [k, holdem(k)])) as Record<string, number>,
   };
 }
 

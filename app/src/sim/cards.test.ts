@@ -1,23 +1,9 @@
-// Phase 22.9b: cards at the fire. Blackjack for money under a nightly cap, and heads-up
-// hold'em for money that keeps reads on each person, and lets them read you back. Neither
-// is a living: played well, each is about even. Phase 36.2: blackjack is your own bet, a pair
-// split once, hand after hand till the fire's out.
+// Phase 22.9b: cards at the fire. Blackjack for money under a nightly cap: played well, about
+// even. Phase 36.2: blackjack is your own bet, a pair split once, hand after hand till the
+// fire's out. The hands' values here; hold'em itself, holdem.test.ts (36.3).
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import {
-  bjSettle,
-  bjTotal,
-  boardAt,
-  cardsBlocked,
-  equity,
-  handValue,
-  handWord,
-  isPair,
-  rank,
-  readsOn,
-  theyKnow,
-} from './cards';
-import { STYLES } from './content/cards';
+import { bjSettle, bjTotal, handValue, handWord, isPair, rank } from './cards';
 import { ACTS } from './content/places';
 import { GAMES } from './dials';
 import { fireOut } from './fire';
@@ -44,10 +30,6 @@ const refused = (r: ReturnType<typeof act>) => r.events[0]?.k === 'refused';
 const lines = (r: ReturnType<typeof act>) => r.events.flatMap((e) => (e.k === 'line' ? [e.text] : []));
 // A café shift's pay, the least a shift pays.
 const SHIFT = ACTS['cafe.shift']!.cost.cash!;
-// A night with Sage at the fire: the first, from the seed, she's there.
-const sageNight = (() => {
-  for (let d = 1; ; d++) if (!cardsBlocked(base({ day: d }), 'holdem', 'sage')) return d;
-})();
 
 describe('the hands', () => {
   it('ranks every kind of hand, ties broken by what’s left', () => {
@@ -302,135 +284,5 @@ describe('blackjack', () => {
     expect(broken((h) => (h.at = 3))).toBe(false);
     expect(broken((h) => (h.you = []))).toBe(false);
     expect(broken((h) => (h.paid = [5, 5]))).toBe(false);
-  });
-});
-
-describe('hold’em', () => {
-  it('sits you across from someone at the fire, and only them', () => {
-    expect(refused(run(base({ day: sageNight }), { t: 'holdem', do: 'sit', who: 'sage' }))).toBe(false);
-    const noSage = Array.from({ length: 30 }, (_, d) => d + 1).find((d) =>
-      cardsBlocked(base({ day: d }), 'holdem', 'sage'),
-    );
-    expect(refused(run(base({ day: noSage }), { t: 'holdem', do: 'sit', who: 'sage' }))).toBe(true);
-    const s = run(base(), { t: 'holdem', do: 'sit' }).state;
-    expect(s.cards).toMatchObject({ game: 'holdem', who: 'hazel', chips: GAMES.holdem.cap });
-  });
-
-  it('deals a hand: an ante each, three streets, their bet to call or fold', () => {
-    let s = run(run(base({ day: 3 }), { t: 'holdem', do: 'sit' }).state, { t: 'holdem', do: 'deal' }).state;
-    const he = s.cards!.he!;
-    expect(he).toMatchObject({ street: 0, pot: 2 * GAMES.holdem.ante, facing: 0 });
-    expect(new Set([...he.you, ...he.them, ...he.board]).size).toBe(9);
-    expect(s.cards!.chips).toBe(GAMES.holdem.cap - GAMES.holdem.ante);
-    let guard = 0;
-    while (s.cards!.he && guard++ < 10) {
-      if (s.cards!.he.facing) expect(refused(run(s, { t: 'holdem', do: 'bet' }))).toBe(true);
-      s = run(s, { t: 'holdem', do: 'call' }).state;
-    }
-    expect(s.cards!.he).toBeNull();
-    expect(s.cards!.hands).toBe(1);
-    expect(s.reads.hazel).toEqual({ hands: 1, caught: 0 });
-  });
-
-  it('gives a read at five hands and another at twelve, and says so', () => {
-    let s = base();
-    const said: string[] = [];
-    for (let d = 1; s.reads.hazel?.hands !== 12; d++) {
-      s = run(
-        { ...s, day: d, min: 21 * 60, energy: 80, cash: 200, today: [] },
-        { t: 'holdem', do: 'sit' },
-      ).state;
-      while (s.cards!.hands < GAMES.holdem.hands && s.reads.hazel?.hands !== 12) {
-        s = run(s, { t: 'holdem', do: 'deal' }).state;
-        const r = run(s, { t: 'holdem', do: 'fold' });
-        said.push(...lines(r));
-        s = r.state;
-      }
-      s = run(s, { t: 'holdem', do: 'leave' }).state;
-    }
-    const reads = readsOn(s, 'hazel');
-    expect(reads).toHaveLength(2);
-    expect(said.filter((l) => /getting a read on Hazel/.test(l))).toHaveLength(2);
-    expect(reads[0]).toBe(STYLES.hazel!.read);
-    expect(reads[1]).toContain(`one hand in ${Math.round(1 / STYLES.hazel!.bluff)}`);
-    expect(readsOn({ ...s, reads: { hazel: { hands: 4, caught: 0 } } }, 'hazel')).toEqual([]);
-  });
-
-  it('remembers being shown a bet that loses on the river, and calls you lighter for it', () => {
-    expect(theyKnow(base({ reads: { hazel: { hands: 20, caught: 0 } } }), 'hazel')).toBe(0);
-    expect(theyKnow(base({ reads: { hazel: { hands: 20, caught: 5 } } }), 'hazel')).toBe(1);
-    expect(theyKnow(base({ reads: { hazel: { hands: 2, caught: 2 } } }), 'hazel')).toBe(0);
-    // Always betting gets you caught.
-    let s = base();
-    for (let d = 1; d <= 20; d++) {
-      s = run(
-        { ...s, day: d, min: 21 * 60, energy: 80, cash: 200, today: [] },
-        { t: 'holdem', do: 'sit' },
-      ).state;
-      for (let h = 0; h < GAMES.holdem.hands; h++) {
-        s = run(s, { t: 'holdem', do: 'deal' }).state;
-        let g = 0;
-        while (s.cards!.he && g++ < 10)
-          s = run(s, { t: 'holdem', do: s.cards!.he.facing ? 'call' : 'bet' }).state;
-      }
-      s = run(s, { t: 'holdem', do: 'leave' }).state;
-    }
-    expect(s.reads.hazel!.caught).toBeGreaterThan(0);
-    expect(theyKnow(s, 'hazel')).toBeGreaterThan(0);
-  });
-
-  it('can’t be farmed: no simple way to play earns much of a shift a night', () => {
-    const night = (s: GameState, d: number) => ({
-      ...s,
-      day: d,
-      min: 21 * 60,
-      energy: 80,
-      cash: 200,
-      today: [],
-    });
-    for (const strat of ['bet', 'call', 'read'] as const) {
-      let s = base();
-      let net = 0;
-      for (let d = 1; d <= 40; d++) {
-        s = run(night(s, d), { t: 'holdem', do: 'sit' }).state;
-        const start = s.cards!.chips;
-        for (let h = 0; h < GAMES.holdem.hands; h++) {
-          s = run(s, { t: 'holdem', do: 'deal' }).state;
-          let g = 0;
-          while (s.cards!.he && g++ < 10) {
-            const he = s.cards!.he;
-            const e = equity(he.you, he.board.slice(0, boardAt(he.street)), `t-${d}-${h}-${he.street}`, s);
-            const a =
-              strat === 'bet'
-                ? he.facing
-                  ? 'call'
-                  : 'bet'
-                : strat === 'call'
-                  ? 'call'
-                  : he.facing
-                    ? e > 0.45
-                      ? 'call'
-                      : 'fold'
-                    : e > 0.6
-                      ? 'bet'
-                      : 'call';
-            s = run(s, { t: 'holdem', do: a }).state;
-          }
-        }
-        net += s.cards!.chips - start;
-        s = run(s, { t: 'holdem', do: 'leave' }).state;
-      }
-      expect(net / 40).toBeLessThan(SHIFT / 4);
-    }
-  });
-
-  it('saves a hand on the go and the reads, and won’t load a broken one', () => {
-    const s = run(run(base(), { t: 'holdem', do: 'sit' }).state, { t: 'holdem', do: 'deal' }).state;
-    const back = fromSave(toSave({ ...s, reads: { hazel: { hands: 3, caught: 1 } } }, 'test'));
-    expect(back.ok && back.state.cards).toEqual(s.cards);
-    expect(back.ok && back.state.reads).toEqual({ hazel: { hands: 3, caught: 1 } });
-    const bad = JSON.parse(toSave(s, 'test'));
-    bad.state.cards.he.board = [52, 1, 2, 3, 4];
-    expect(fromSave(JSON.stringify(bad)).ok).toBe(false);
   });
 });

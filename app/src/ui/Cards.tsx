@@ -5,15 +5,26 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { Game } from '../game/game';
 import {
+  betOn,
   bjTotal,
+  boardAt,
+  canRaise,
   costLabel,
   fireOut,
   GAMES,
+  handNeeds,
+  handWord,
+  holdemLines,
+  holdemPlayers,
+  inWords,
   isBlackjack,
   isPair,
+  listOf,
   money,
+  owes,
   PEOPLE,
   rank,
+  readsOn,
   suit,
   type GameState,
 } from '../sim';
@@ -282,5 +293,212 @@ function Between({
         </li>
       </ul>
     </>
+  );
+}
+
+// Phase 36.3: hold'em round the fire. The board a street at a time, the others' seats (their
+// cards down till a showdown, the button, what they last did), yours, the pot, and your move:
+// fold, check or call, bet or raise, each with what it costs. A tell shows under the seats
+// once you know them well enough to read it; what you know of each is at the foot.
+export function HoldemBody({ game, s }: { game: Game; s: GameState }) {
+  const c = s.cards!;
+  const h = c.he;
+  const live = h && !h.won ? h : null;
+  const ref = useRef<HTMLDivElement>(null);
+  const moment = `${c.hands}-${h?.said.length ?? -1}-${h?.won ? 1 : 0}`;
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || el.contains(document.activeElement)) return;
+    el.querySelector<HTMLButtonElement>('button.opt:not(:disabled)')?.focus({ preventScroll: true });
+  }, [moment]);
+  const players = holdemPlayers(s);
+  const pot = h ? h.seats.reduce((t, p) => t + p.total, 0) : 0;
+  // How much of the board is up: by the street, or, over, all of it at a showdown and what was
+  // dealt by the last move otherwise.
+  const up = !h
+    ? 0
+    : h.won
+      ? h.won.shown
+        ? 5
+        : boardAt(Math.max(0, ...h.said.map((x) => x.street)))
+      : boardAt(h.street);
+  const lastBy = (i: number) => (h ? [...h.said].reverse().find((x) => x.by === i) : undefined);
+  const signs = live ? live.said.filter((x) => x.street === live.street && x.sign) : [];
+  return (
+    <div className="he" id="he" ref={ref}>
+      <h3 id="sheet-title">Hold’em</h3>
+      <p className="sub">
+        In front of you: {money(c.chips)}.{' '}
+        {h ? `The pot: ${money(pot)}.` : `${listOf(players.map((w) => PEOPLE[w]?.name ?? w))} at the table.`}
+      </p>
+      {h && (
+        <>
+          <div className="he-board cards" aria-label="The board">
+            {h.board.map((d, i) =>
+              i < up ? <PlayingCard key={i} c={d} /> : <span key={i} className="pc-slot" />,
+            )}
+          </div>
+          <ul className="he-seats">
+            {h.seats.map((p, i) =>
+              i === 0 ? null : (
+                <li
+                  key={p.who}
+                  className="he-seat"
+                  data-out={!p.in}
+                  data-turn={!!live && live.turn === i}
+                  data-won={!!h.won?.by.includes(i)}
+                >
+                  <span className="he-who">
+                    {PEOPLE[p.who]?.name ?? p.who}
+                    {h.button === i && (
+                      <span className="he-btn" aria-label="the button">
+                        D
+                      </span>
+                    )}
+                  </span>
+                  <span className="cards">
+                    {p.hole.map((d, k) => (
+                      <PlayingCard key={k} c={d} down={!(h.won?.shown && p.in)} />
+                    ))}
+                  </span>
+                  <small>
+                    {lastBy(i)?.did ?? ''}
+                    {p.put && !h.won ? ` ${money(p.put)}` : ''}
+                  </small>
+                </li>
+              ),
+            )}
+          </ul>
+          {signs.map((x, k) => (
+            <p className="note" key={k}>
+              {x.sign}
+            </p>
+          ))}
+          <div className="bj-hand he-you" data-live={!!live && live.turn === 0}>
+            <span className="bj-who">
+              You
+              {h.button === 0 && (
+                <span className="he-btn" aria-label="the button">
+                  D
+                </span>
+              )}
+            </span>
+            <span className="cards">
+              {h.seats[0]!.hole.map((d, k) => (
+                <PlayingCard key={k} c={d} />
+              ))}
+            </span>
+            <span className="bj-total">
+              {h.seats[0]!.in
+                ? up >= 3
+                  ? handWord([...h.seats[0]!.hole, ...h.board.slice(0, up)])
+                  : ''
+                : 'folded'}
+              <small>{h.seats[0]!.total ? `${money(h.seats[0]!.total)} in` : ''}</small>
+            </span>
+          </div>
+          {h.won && (
+            <p className="note" id="he-said">
+              {holdemLines(h).join(' ')}
+            </p>
+          )}
+        </>
+      )}
+      {live && live.turn === 0 ? <HoldemMoves game={game} s={s} /> : <HoldemBetween game={game} s={s} />}
+      {players.map((w) => {
+        const reads = readsOn(s, w);
+        const left = GAMES.holdem.reads.find((n) => n > (s.reads[w]?.hands ?? 0));
+        const name = PEOPLE[w]?.name ?? w;
+        return (
+          <p className="sub" key={w}>
+            {reads.length
+              ? reads.join(' ')
+              : left !== undefined
+                ? `${left - (s.reads[w]?.hands ?? 0)} more hands and you’ll have a read on ${name}.`
+                : ''}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
+// Your move: fold to a bet, check or call, bet or raise; short of a call, the call's all in.
+function HoldemMoves({ game, s }: { game: Game; s: GameState }) {
+  const c = s.cards!;
+  const h = c.he!;
+  const owe = owes(h, 0);
+  const B = betOn(h.street);
+  const short = c.chips <= owe;
+  const room = canRaise(h) && !short;
+  return (
+    <ul>
+      {owe > 0 && (
+        <li>
+          <button type="button" className="opt" id="he-fold" onClick={() => game.holdem('fold')}>
+            <span>Fold</span>
+            <small>Out of this hand; what you’ve put in stays in.</small>
+          </button>
+        </li>
+      )}
+      <li>
+        <button type="button" className="opt" id="he-call" onClick={() => game.holdem('call')}>
+          <span>{owe > 0 ? (short ? 'Call, all in' : 'Call') : 'Check'}</span>
+          <span className="c">{owe > 0 ? costLabel({ cash: -Math.min(owe, c.chips) }) : ''}</span>
+          {short && <small>All you’ve got in front of you, for the part of the pot it matches.</small>}
+        </button>
+      </li>
+      <li>
+        <button type="button" className="opt" id="he-bet" disabled={!room} onClick={() => game.holdem('bet')}>
+          <span>{h.bet > 0 ? 'Raise' : 'Bet'}</span>
+          <span className="c">{costLabel({ cash: -Math.min(owe + B, c.chips) })}</span>
+          <small>
+            {!canRaise(h)
+              ? `A street takes ${inWords(GAMES.holdem.raises + 1)} bets at most.`
+              : short
+                ? 'Not enough in front of you.'
+                : h.street < 2
+                  ? 'The small bet, before the flop and on it.'
+                  : 'The big bet, on the turn and the river.'}
+          </small>
+        </button>
+      </li>
+    </ul>
+  );
+}
+
+// Between hands: the deal, or up from the table with what's in front of you.
+function HoldemBetween({ game, s }: { game: Game; s: GameState }) {
+  const c = s.cards!;
+  const out = fireOut(s);
+  const short = c.chips < handNeeds('holdem');
+  return (
+    <ul>
+      <li>
+        <button
+          type="button"
+          className="opt"
+          id="he-deal"
+          disabled={out || short}
+          onClick={() => game.holdem('deal')}
+        >
+          <span>Deal</span>
+          <span className="c">{costLabel({ min: GAMES.holdem.min })}</span>
+          <small>
+            {out
+              ? 'The fire’s down to coals.'
+              : short
+                ? 'Not enough in front of you for the blinds.'
+                : `Blinds of ${GAMES.holdem.blinds.map(money).join(' and ')}; the button goes round.`}
+          </small>
+        </button>
+      </li>
+      <li>
+        <button type="button" className="opt" id="he-up" onClick={() => game.holdem('leave')}>
+          <span>Get up</span>
+          <small>{money(c.chips)} back in your pocket.</small>
+        </button>
+      </li>
+    </ul>
   );
 }
