@@ -70,7 +70,7 @@
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 | 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
 | 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27, 28 and 29 (14 Oct 2026), and Phases 33, 34, 30, 31, 32 and 35 (15 Oct 2026). Then Phase 14, closed 16 Oct 2026. |
-| 36–45 Hands on | Added by Evan's call (18 Oct 2026), before Phase 20: ten phases that make the game more its own and easier to play, and deepen it where it's thin. Phase 36, the games at the fire played in full, closed by his call (18 Oct 2026); Phase 37, the session, is the current milestone; 38 to 45 are queued in the order he took them. |
+| 36–45 Hands on | Added by Evan's call (18 Oct 2026), before Phase 20: ten phases that make the game more its own and easier to play, and deepen it where it's thin. Phases 36, the games at the fire played in full, and 37, the session, closed by his call (18 Oct 2026); Phase 38, a ghost of your best go, is the current milestone; 39 to 45 are queued in the order he took them. |
 
 ## The rebuild track
 
@@ -3955,7 +3955,7 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 **Phase 36 closed by Evan's call (18 Oct 2026).** All four criteria pass. Carried, as listed under 36.5: the [proposed] numbers and styles (the glovebox's box and cast among them); criterion 2 held by the harness's nights at the fire, not a career; the fire's e2e plays each game but not every move. The CURRENT MILESTONE moves to Phase 37. The download is 478.6 KB of 490.
 
-### Phase 37 — The session   **<<< CURRENT MILESTONE**
+### Phase 37 — The session
 
 *Small to medium. Planned with Evan's calls (18 Oct 2026).*
 
@@ -4048,7 +4048,9 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 - **No career bot joins a session,** so its pay isn't measured inside a career, only on the harness's mornings.
 - **A first-go send is most first sends** (about seven in ten in the measure, at half a grade under). The choice to share or keep arises only after a find, about a third of sessions.
 
-### Phase 38 — A ghost of your best go
+**Phase 37 closed by Evan's call (18 Oct 2026).** Both criteria pass. Carried, as listed above: the [proposed] numbers, the retune's cap among them (nobody sessions a problem over its grade, the cast included); no career bot joins a session; most first sends are first-go sends, and the choice to share or keep comes up in about a third of sessions. The CURRENT MILESTONE moves to Phase 38. The download is 482.2 KB of 490.
+
+### Phase 38 — A ghost of your best go   **<<< CURRENT MILESTONE**
 
 *Queued (18 Oct 2026). Small to medium [INFERRED]; may change the save.*
 
@@ -4849,3 +4851,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-18 — Phase 36 closed by Evan's call: all four criteria pass. CURRENT MILESTONE moved to Phase 37, the session.
 - 2026-10-18 — Phase 37 planned with Evan's calls: the cast who boulder and nameless locals; busy days at the boulders, once a day; falls adding up to a find, shared or kept; bond, the old guard and the day's first send. 37.1 built: the session, joined from a problem's beta, its rounds, finds, share or keep, and First to the Top in the Record Book. Save v80. 0.999.96.
 - 2026-10-18 — 37.2 built: a session played in the e2e (a find told, its pay checked against the card's words, the goes to the end); the harness measures sharing against keeping, and the dials are retuned so that keeping a find buys a better shot at the first send (26% against 10%); nobody sessions a problem over its grade. Phase 37's Done-when pass; closing it is Evan's call. 0.999.97.
+- 2026-10-18 — Phase 37 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 38, a ghost of your best go.
