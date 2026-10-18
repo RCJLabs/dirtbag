@@ -70,7 +70,7 @@
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 | 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
 | 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27, 28 and 29 (14 Oct 2026), and Phases 33, 34, 30, 31, 32 and 35 (15 Oct 2026). Then Phase 14, closed 16 Oct 2026. |
-| 36–45 Hands on | Added by Evan's call (18 Oct 2026), before Phase 20: ten phases that make the game more its own and easier to play, and deepen it where it's thin. Phase 36, the games at the fire played in full, is the current milestone; 37 to 45 are queued in the order he took them. |
+| 36–45 Hands on | Added by Evan's call (18 Oct 2026), before Phase 20: ten phases that make the game more its own and easier to play, and deepen it where it's thin. Phase 36, the games at the fire played in full, closed by his call (18 Oct 2026); Phase 37, the session, is the current milestone; 38 to 45 are queued in the order he took them. |
 
 ## The rebuild track
 
@@ -3830,7 +3830,7 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 - **Saves.** 36.1 changes the save's shape (v77); 39 and 43 will, and 38 may [INFERRED].
 - **Still bots only.** No person has played a full career; the beta is where that changes.
 
-### Phase 36 — The games at the fire, played   **<<< CURRENT MILESTONE**
+### Phase 36 — The games at the fire, played
 
 *Medium to large. Liar's dice was one bid against one person; blackjack and hold'em are lines of text and a few buttons, ten and six hands a night (22.9a, 22.9b). Evan's ask (18 Oct 2026): make them "actual card games you can play with cards", and "play for as long as you want, like a mini game".*
 
@@ -3953,7 +3953,9 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 - **Criterion 2 isn't measured in a career:** no career bot plays the fire's games, so it's held by the harness's nights at the fire (`gamesAtFire`).
 - **At the fire, the e2e plays each game but not every move:** a round of liar's dice to its call, two blackjack hands stood on, a hold'em hand checked and called down. The rest of the rules are played in the glovebox, through the same `act`.
 
-### Phase 37 — The session
+**Phase 36 closed by Evan's call (18 Oct 2026).** All four criteria pass. Carried, as listed under 36.5: the [proposed] numbers and styles (the glovebox's box and cast among them); criterion 2 held by the harness's nights at the fire, not a career; the fire's e2e plays each game but not every move. The CURRENT MILESTONE moves to Phase 37. The download is 478.6 KB of 490.
+
+### Phase 37 — The session   **<<< CURRENT MILESTONE**
 
 *Queued (18 Oct 2026). Small to medium [INFERRED]. Planned with Evan's calls when it comes up.*
 
@@ -4761,3 +4763,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-18 — 36.3 built: hold'em round the fire with everyone who plays, fixed limit: $1 and $2 blinds and the button going round, four streets with a raise reopening the betting, your all in for the money that matched yours, Frank at the table, and each person's tells once you've the second read on them; hand after hand till the fire's out, drawn. Save v79. 0.999.93.
 - 2026-10-18 — 36.4 built: the glovebox deck, on the van's card any time: liar's dice, blackjack and hold'em against Hazel, Sage and Frank for a box of matches, on a copy of the climber that's never saved, so no time passes and nothing carries over. No save change. 0.999.94.
 - 2026-10-18 — 36.5 built: each of the fire's games by its full rules in the e2e, in the glovebox (liar's dice to the last cup, blackjack doubled and split, hold'em raised and folded); out of dice with others still in, the last line says they play it out without you; the season harness on the build, 12 of 12. Phase 36's Done-when all pass; closing it is Evan's call. 0.999.95.
+- 2026-10-18 — Phase 36 closed by Evan's call: all four criteria pass. CURRENT MILESTONE moved to Phase 37, the session.
