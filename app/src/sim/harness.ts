@@ -6,7 +6,7 @@ import { FIRE_LINES, LEDGE_LINES, SEND_CHEERS } from './content/ambient';
 import { FOLKS_CALLS } from './content/folks';
 import { GIFTS, NAMED_FOR } from './content/gifts';
 import { TALK } from './content/people';
-import { expedLoop, humanHands, playDays, type BotRun, type Strategy } from './bot';
+import { expedLoop, humanHands, playDays, playGo, type BotRun, type Strategy } from './bot';
 import { bjTotal, boardAt, equity, handNeeds, isPair } from './cards';
 import { CLIMB, EXPED, GAMES } from './dials';
 import { EXPEDITIONS } from './content/expeditions';
@@ -491,4 +491,90 @@ export function weekOneTold(seeds: number) {
   const origins = classify(Object.keys(ORIGINS).flatMap((o) => run({ origin: o }).map((x) => ({ y: o, x }))));
   const starts = classify(Object.keys(STARTS).flatMap((st) => run({ start: st }).map((x) => ({ y: st, x }))));
   return { origins, starts };
+}
+
+// Phase 37: the session, measured. On `n` busy mornings at Roadside, a climber `under` grades
+// below Crimpfest joins the session on it and goes, with a bot's hands, till it's sent or the
+// session's decided, answering every find the same way: always telling them, or always keeping
+// it. What each pays a session: how often you're first to the top, overall and in the sessions
+// where you found its move (the only ones the answer can change: a first-go send finds
+// nothing), and the bond and old-guard standing it moved (the day together's bond is in both,
+// and so is any call the crag put to you, answered the first way).
+export type SeshPay = {
+  sessions: number;
+  found: number;
+  first: number;
+  firstFound: number;
+  bond: number;
+  old: number;
+};
+export function seshMeasure(seed: string, n: number, under = 0.5): Record<'share' | 'keep', SeshPay> {
+  const route = 'crimpfest';
+  const created = act(newGame(seed), { t: 'create', name: 'Bot', start: 'allrounder' }).state;
+  const r0 = routeOfId(created, route)!;
+  const k = needFor(r0.grade - under);
+  const base: GameState = {
+    ...created,
+    climber: { ...created.climber, skills: { power: k, fingers: k, endurance: k, technique: k, head: k } },
+    people: { dex: { bond: 2, last: 0, since: 1 }, sage: { bond: 4, last: 0, since: 1 } },
+  };
+  const out = {} as Record<'share' | 'keep', SeshPay>;
+  for (const policy of ['share', 'keep'] as const) {
+    const t = { sessions: 0, first: 0, found: 0, firstFound: 0, bond: 0, old: 0 };
+    for (let d = 8; t.sessions < n && d < 8 + n * 40; d++) {
+      const s0: GameState = {
+        ...base,
+        day: d,
+        at: 'road',
+        min: 10 * 60,
+        energy: 100,
+        skin: 100,
+        today: ['crag', 'warm'],
+        // No call from the crag today (a stance moves the old guard too): it's the session's
+        // pay being measured.
+        scene: { ...base.scene, last: d, echoLast: d },
+      };
+      const j = act(s0, { t: 'sesh', do: 'join', route });
+      if (j.events[0]?.k === 'refused') continue;
+      t.sessions++;
+      let s = j.state;
+      let found = false;
+      const hands = humanHands(Rng.fromStream(seed, 'events').derive(`sesh-hands-${d}`));
+      for (let g = 0; g < 16 && s.sesh; g++) {
+        // A call the crag puts to you between goes, answered the first way, as the bots do.
+        if (s.encounter) {
+          s = act(s, { t: 'answer', opt: 0 }).state;
+          continue;
+        }
+        if (s.sesh.seats.every((p) => p.sent)) break;
+        if (s.sesh.found.some((f) => f.by === 'you' && f.shared === null)) {
+          t.found++;
+          found = true;
+          s = act(s, { t: 'sesh', do: policy }).state;
+          continue;
+        }
+        const go = act(s, { t: 'go', route });
+        if (go.events[0]?.k === 'refused') break;
+        s = act(go.state, {
+          t: 'done',
+          route,
+          result: playGo(go.state, routeOfId(go.state, route)!, hands),
+        }).state;
+      }
+      t.first += s.seshFirsts;
+      if (found) t.firstFound += s.seshFirsts;
+      t.bond += Object.entries(s.people).reduce((b, [w, p]) => b + p.bond - (s0.people[w]?.bond ?? 0), 0);
+      t.old += s.scene.old - s0.scene.old;
+    }
+    const per = (x: number) => Math.round((x / Math.max(1, t.sessions)) * 100) / 100;
+    out[policy] = {
+      sessions: t.sessions,
+      found: per(t.found),
+      first: per(t.first),
+      firstFound: Math.round((t.firstFound / Math.max(1, t.found)) * 100) / 100,
+      bond: per(t.bond),
+      old: per(t.old),
+    };
+  }
+  return out;
 }

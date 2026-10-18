@@ -23,6 +23,7 @@ import {
   firstInjury,
   firstTry,
   gamesAtFire,
+  seshMeasure,
   median,
   season,
 } from '../src/sim/harness';
@@ -207,6 +208,20 @@ function targets(all: Record<Seasonal, BotRun[]>, reckless: BotRun[]): void {
     )
       .map(([k, v]) => `${k} $${v.toFixed(2)}/h`)
       .join(', ')}; the worst shift $${shiftHour.toFixed(2)}/h.`,
+  );
+  // 6b. Phase 37's criterion 2: sharing and keeping each pay what they say. Over 120 busy
+  // mornings on Crimpfest, a climber half a grade under it always telling the locals what they
+  // find, or always keeping it: telling pays the old guard and the cast's bond, and keeping
+  // buys a better chance of the day's first send, where there was a find to tell.
+  const sesh = seshMeasure('h-sesh', 120);
+  const pays = (p: { bond: number; old: number; found: number }) =>
+    `${p.bond.toFixed(2)} bond and ${p.old.toFixed(2)} with the old guard a session`;
+  say(
+    sesh.share.old > sesh.keep.old &&
+      sesh.share.bond > sesh.keep.bond &&
+      sesh.keep.firstFound > sesh.share.firstFound,
+    'In a session, telling them pays standing and bond, and keeping it buys the first send',
+    `${sesh.share.sessions} sessions each, a find in ${Math.round(100 * sesh.share.found)}% of them; telling: ${pays(sesh.share)}, first to the top ${Math.round(100 * sesh.share.firstFound)}% after a find; keeping: ${pays(sesh.keep)}, first ${Math.round(100 * sesh.keep.firstFound)}% after a find (${Math.round(100 * sesh.keep.first)}% of all sessions, most on a first go).`,
   );
   // 7. Phase 24's criterion 4: the summit odds shown are the odds the bots get, within ten
   // points, for a climber at each objective's grade roped to Sage. 300 trips each: at 100 the

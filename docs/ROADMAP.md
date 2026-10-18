@@ -4027,6 +4027,27 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
   The old saves' tests expect the two new fields; the store copy and Steam's list count 52 entries.
 - **The download:** 482.3 KB of 490 (+3.7).
 
+**Status (18 Oct 2026): 37.2 built: the session in the e2e, measured, retuned, and the close.** No save change, 0.999.97.
+- **The e2e** (criterion 1): day 39 on its seed is a busy morning at Roadside with Dex and Sage there:
+  - it joins the session on the Warm Boulder from its beta;
+  - it comes off at the crux on the first go, which turns up the move, and the card asks;
+  - it tells them, and checks the save against what the card said that pays: the old guard's standing and each of the cast's bond;
+  - then it goes till the session's decided, and checks the day's first send's pay if it's yours, or nothing if a local beat you to it (on its seed: Dex, Sage and a local are on it, the crag puts a stance to you between goes, and you send it first).
+
+  Its first try stopped on a stance the crag put to you between goes, as any call can come; the player answers it and gets back to the session through the problem's beta. The section sets today's call aside in its save, as other sections set up theirs.
+- **The measure** (`seshMeasure`, criterion 2): 120 busy mornings on Crimpfest, a climber half a grade under it, always telling or always keeping. About a third of sessions turn up the move on your first go's fall; the rest are a first-go send, or a find nobody gets to. Measured on 37.1's dials, keeping never bought a first send (none sharing, 3% keeping, after a find): a local a grade over the problem, or the cast capped there, sent within a round or two either way.
+- **Retuned, [proposed]** (`SESH`): nobody sessions a problem over its grade (`spread` −2 to 0), the move is worth two grades to them (`knows`), and their chance is spread over twelve goes (`goes`). After a find, the first send is now 10% sharing and 26% keeping. Sharing pays its bond (+0.24 a session) and the old guard (+0.5 a session) over keeping. The harness holds both: its new line passes, and so do the other twelve.
+- **The download:** 482.2 KB of 490.
+
+**Phase 37 against its Done-when (18 Oct 2026):** both pass.
+1. A session plays in the e2e: joined, a find turned up and told, the goes to the end.
+2. Sharing and keeping each pay what they say, from the dials: the unit tests hold each pay to its dial (`sesh.test.ts`), the e2e holds telling to what the card says, and the harness measures the trade: telling pays standing and bond, keeping buys the first send after a find.
+
+**Closing Phase 37 is Evan's call.** Carried:
+- **The [proposed] numbers:** the seats, the round's minutes, the spread, the shares, the move's worth, the goes, and what sharing and the first send pay.
+- **No career bot joins a session,** so its pay isn't measured inside a career, only on the harness's mornings.
+- **A first-go send is most first sends** (about seven in ten in the measure, at half a grade under). The choice to share or keep arises only after a find, about a third of sessions.
+
 ### Phase 38 — A ghost of your best go
 
 *Queued (18 Oct 2026). Small to medium [INFERRED]; may change the save.*
@@ -4827,3 +4848,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-18 — 36.5 built: each of the fire's games by its full rules in the e2e, in the glovebox (liar's dice to the last cup, blackjack doubled and split, hold'em raised and folded); out of dice with others still in, the last line says they play it out without you; the season harness on the build, 12 of 12. Phase 36's Done-when all pass; closing it is Evan's call. 0.999.95.
 - 2026-10-18 — Phase 36 closed by Evan's call: all four criteria pass. CURRENT MILESTONE moved to Phase 37, the session.
 - 2026-10-18 — Phase 37 planned with Evan's calls: the cast who boulder and nameless locals; busy days at the boulders, once a day; falls adding up to a find, shared or kept; bond, the old guard and the day's first send. 37.1 built: the session, joined from a problem's beta, its rounds, finds, share or keep, and First to the Top in the Record Book. Save v80. 0.999.96.
+- 2026-10-18 — 37.2 built: a session played in the e2e (a find told, its pay checked against the card's words, the goes to the end); the harness measures sharing against keeping, and the dials are retuned so that keeping a find buys a better shot at the first send (26% against 10%); nobody sessions a problem over its grade. Phase 37's Done-when pass; closing it is Evan's call. 0.999.97.
