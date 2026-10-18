@@ -22,6 +22,8 @@ export type RecordAim =
   | { called: number }
   // Phase 28.2: crew projects sent with the crew there.
   | { train: number }
+  // Phase 37: sessions you sent first in.
+  | { seshFirst: number }
   | { outside: true }
   | { fa: number }
   | { shift: true }
@@ -118,6 +120,15 @@ export const RECORD: RecordEntry[] = [
       'You went first because somebody had to. Then they came up it one after another, each of them doing it a little differently, all of them doing it your way at the crux. Nobody will remember who sent it first. Everyone will remember the afternoon.',
     from: [],
     aim: { train: 1 },
+  },
+  {
+    id: 'firstup',
+    title: 'First to the Top',
+    desc: 'Send a problem first, in a session with the locals.',
+    story:
+      'A handful of you on one problem all morning, everyone coming off at the same move. Then you didn’t. Nobody says much on the pads. Nobody has to.',
+    from: [],
+    aim: { seshFirst: 1 },
   },
   {
     id: 'outside',

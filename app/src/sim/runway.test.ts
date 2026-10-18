@@ -61,6 +61,8 @@ describe('a save from before the runway', () => {
     const old = JSON.parse(V68).state;
     // Phase 32.4: its first ascents' repeats so far, heard of quietly.
     expect(r.state).toEqual({
+      sesh: null,
+      seshFirsts: 0,
       ...old,
       hollow: { clues: [], tries: 0 },
       boltedCracks: [],

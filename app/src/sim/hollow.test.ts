@@ -194,6 +194,8 @@ describe('the walk in', () => {
     expect(r.state.hollow).toEqual({ clues: [], tries: 0 });
     const old = JSON.parse(V70).state;
     expect(r.state).toEqual({
+      sesh: null,
+      seshFirsts: 0,
       ...old,
       hollow: { clues: [], tries: 0 },
       boltedCracks: [],
@@ -314,6 +316,8 @@ describe('first ascents in the Hollow', () => {
     expect(r.from).toBe(71);
     const old = JSON.parse(V71).state;
     expect(r.state).toEqual({
+      sesh: null,
+      seshFirsts: 0,
       ...old,
       boltedCracks: [],
       firsts: (MIGRATIONS[72]!(old) as GameState).firsts,

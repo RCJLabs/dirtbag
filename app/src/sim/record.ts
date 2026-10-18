@@ -29,6 +29,8 @@ export function aimEarned(s: GameState, aim: RecordAim, sent = sends(s)): boolea
   if ('called' in aim) return sent.filter((x) => x.called).length >= aim.called;
   // Migration 30 asks this of states from long before the crew had projects.
   if ('train' in aim) return (s.crewSends ?? []).filter((x) => x.train.length > 0).length >= aim.train;
+  // Migration 30 asks this of states from long before sessions.
+  if ('seshFirst' in aim) return (s.seshFirsts ?? 0) >= aim.seshFirst;
   if ('outside' in aim) return sent.some(({ r }) => !!r && !indoor(r.place));
   if ('fa' in aim) return Object.values(s.firsts).filter((f) => !f.by).length >= aim.fa;
   // A walk-in doesn't count toward a raise, but it's a shift: today's counts when it's worked.

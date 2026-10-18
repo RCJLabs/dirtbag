@@ -197,6 +197,19 @@ import {
 } from './perudo';
 import { PERUDO } from './content/perudo';
 import {
+  allSent,
+  answer,
+  pendingFind,
+  SESH_DAY,
+  seshBlocked,
+  seshOn,
+  startSesh,
+  theirRound,
+  yourFall,
+  type Sesh,
+} from './sesh';
+import { SESH_SAYS } from './content/sesh';
+import {
   bjDeck,
   bjSettle,
   bjTotal,
@@ -327,6 +340,7 @@ import {
   FAMILY,
   HOLLOW,
   SETTLE,
+  SESH,
 } from './dials';
 import { EXPED_ROUTES, EXPEDITIONS, expedPitches, tripDays } from './content/expeditions';
 import { WALL_EVENTS, wallEventById } from './content/wallevents';
@@ -572,6 +586,8 @@ export function newGame(seed: string): GameState {
     table: null,
     cards: null,
     reads: {},
+    sesh: null,
+    seshFirsts: 0,
     wall: null,
     expedition: null,
     booked: null,
@@ -1171,6 +1187,8 @@ export function act(s0: GameState, a: Action): Result {
     }
     // An owner's pass is the keys (Phase 18.6): the wall and the shower, every day.
     s.today = s.gym ? ['pass'] : [];
+    // Phase 37: a session is a day's.
+    s.sesh = null;
     // Phase 34.1: a setter's rank is their way in, at Send City and then every gym.
     for (const pass of perkPasses(s)) if (!s.today.includes(pass)) s.today.push(pass);
     // Phase 33.4: a round you're through to is your way in at its wall, as the entry was.
@@ -2138,6 +2156,16 @@ export function act(s0: GameState, a: Action): Result {
     if (p.last === s.day) return;
     p.last = s.day;
     bond(who, p.bond + 1);
+  };
+  // Phase 37: the others' round in a session, after your go or while you sit one out: its
+  // minutes, what's said, and the moves they tell you, which you've watched.
+  const seshRound = (x: Sesh, r: RouteDef): string[] => {
+    spend({ min: SESH.round });
+    const { said, shown } = theirRound(s, x, r);
+    for (const b of shown) learn(r.id, b, 'watched', '');
+    if (allSent(x)) said.push(SESH_SAYS.allSent);
+    for (const l of said) note(l);
+    return said;
   };
   // Phase 22.9b: a blackjack hand played out: the dealer draws if any hand of yours is still
   // in, and the table pays what it owes. Phase 36.2: each of your hands, split or not, paid on
@@ -3568,9 +3596,13 @@ export function act(s0: GameState, a: Action): Result {
         if (!s.today.includes('exped')) s.today.push('exped');
         break;
       }
+      // Phase 37: in a session the pads take turns, so there's no queue and nobody shouting; a
+      // move you've found waits on your answer first.
+      const sx = seshOn(s, r);
+      if (sx && pendingFind(sx)) return refuse('They’re waiting to hear what you found.');
       // Whether the crowd shouts the beta at you, decided at the base, before the queue.
-      const sprayed = sprayedOn(s, r);
-      const queued = queueMin(s, r);
+      const sprayed = !sx && sprayedOn(s, r);
+      const queued = sx ? 0 : queueMin(s, r);
       spend(goCost(r, s));
       const L = logOf(s, a.route);
       L.goes += 1;
@@ -4357,6 +4389,81 @@ export function act(s0: GameState, a: Action): Result {
         s.flare = { area, until: s.day + SCARS.flareDays };
         line(`Your old ${MARK_NAME[area]} injury flares up. It'll settle in a few days, or with physio.`);
       }
+      // Phase 37: the session on this problem, while anyone's still on it. A send is the end of
+      // yours, and the day's first if nobody beat you to it; a fall adds to its crux's count,
+      // then the others have their round.
+      const sx = seshOn(s, r);
+      if (sx && !allSent(sx)) {
+        if (res.sent) {
+          if (!sx.first) {
+            sx.first = 'you';
+            s.today.push('sesh-first');
+            s.scene = shift(s.scene, { old: SESH.first.old });
+            s.seshFirsts += 1;
+            line(SESH_SAYS.youFirst);
+          }
+          note(SESH_SAYS.youSent);
+          s.sesh = null;
+        } else {
+          const said: string[] = [];
+          if (res.fellAt) {
+            const f = yourFall(sx, r, res.fellAt, L.known);
+            if (f.beta && !L.known.includes(f.beta))
+              learn(r.id, f.beta, 'fall', r.beta[f.beta]!.unlock!.line);
+            said.push(...f.said);
+          }
+          sx.said = [...said, ...seshRound(sx, r)];
+        }
+      }
+      break;
+    }
+
+    case 'sesh': {
+      // Phase 37: the session. Joined from a problem's beta, once a day.
+      if (a.do === 'join') {
+        const r = a.route ? routeOfId(s, a.route) : undefined;
+        if (!r) return refuse('Not a problem here.');
+        const why = seshBlocked(s, r) ?? goBlocked(s, r);
+        if (why) return refuse(`${why}.`);
+        s.today.push(SESH_DAY);
+        s.sesh = startSesh(s, r);
+        for (const l of s.sesh.said) note(l);
+        break;
+      }
+      const x = s.sesh;
+      const r = x && x.day === s.day ? routeOfId(s, x.route) : undefined;
+      if (!x || !r || r.place !== s.at) return refuse('There’s no session on.');
+      if (a.do === 'leave') {
+        s.sesh = null;
+        note(SESH_SAYS.leave);
+        break;
+      }
+      if (a.do === 'share' || a.do === 'keep') {
+        const got = answer(x, r, a.do === 'share');
+        if (!got) return refuse('There’s nothing to tell them.');
+        if (a.do === 'share') {
+          s.scene = shift(s.scene, { old: SESH.share.old });
+          // The first move you tell them today is worth something to the cast who heard it.
+          if (!s.today.includes('sesh-shared')) {
+            s.today.push('sesh-shared');
+            for (const p of x.seats) {
+              const them = s.people[p.who];
+              if (them) bond(p.who, them.bond + SESH.share.bond);
+            }
+          }
+        }
+        x.said = got.said;
+        for (const l of got.said) note(l);
+        break;
+      }
+      // A round sat out, watching: before your first go, it costs you the onsight.
+      if (pendingFind(x)) return refuse('They’re waiting to hear what you found.');
+      if (allSent(x)) return refuse('Everyone else is up it.');
+      const L = logOf(s, r.id);
+      const first = !L.goes && !L.told.length;
+      if (first) learn(r.id, r.cruxes[0]!.beta[0]!, 'watched', '');
+      note(first ? SESH_SAYS.watch : SESH_SAYS.wait);
+      x.said = [first ? SESH_SAYS.watch : SESH_SAYS.wait, ...seshRound(x, r)];
       break;
     }
 

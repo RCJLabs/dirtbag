@@ -208,7 +208,9 @@ export type SheetId =
   // Phase 22.9a: the fire at night: who's there, the games, and a hand of dice on the go.
   | { k: 'fire' }
   // Phase 36.4: the glovebox deck, its games for matchsticks.
-  | { k: 'glovebox' };
+  | { k: 'glovebox' }
+  // Phase 37: the session on the problem at the wall.
+  | { k: 'sesh' };
 
 export interface Hud {
   day: number;
@@ -1507,6 +1509,15 @@ export class Game {
     this.sound.play(what === 'sit' || what === 'leave' || what === 'bet' ? 'chips' : 'card');
     this.dispatch({ t: 'holdem', do: what });
     this.openSheet({ k: 'fire' });
+  }
+
+  // Phase 37: the session on the problem at the wall: join it, sit a round out, tell them the
+  // move you've found or keep it, or walk away, back to the problem.
+  sesh(what: 'join' | 'wait' | 'share' | 'keep' | 'leave'): void {
+    const route = this.ui.get().wallRoute;
+    const ev = this.dispatch({ t: 'sesh', do: what, ...(what === 'join' ? { route } : {}) });
+    if (ev.some((e) => e.k === 'refused')) return;
+    this.openSheet(what === 'leave' ? { k: 'beta', route } : { k: 'sesh' });
   }
 
   // Phase 36.4: the glovebox deck. A table of its own on a copy of the climber, played by the

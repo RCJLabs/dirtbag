@@ -199,6 +199,8 @@ describe('a save from before', () => {
     expect(repeatsOf(r.state, 'mopen')).toBe(SETTLE.repeats);
     expect(repeatsOf(r.state, 'bproject')).toBe(0);
     expect(r.state).toEqual({
+      sesh: null,
+      seshFirsts: 0,
       ...old,
       firsts: { ...old.firsts, mopen: { ...old.firsts.mopen, heard: SETTLE.repeats } },
       // Phase 35.1: its hitchhikers met, counted as come once.

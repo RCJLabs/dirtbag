@@ -171,6 +171,8 @@ describe('a save from before', () => {
     const old = JSON.parse(V73).state;
     expect(Object.keys(old.deck.met).length).toBeGreaterThan(0);
     expect(r.state).toEqual({
+      sesh: null,
+      seshFirsts: 0,
       ...old,
       // And Phase 35.3's: no knocks owed a return.
       deck: {

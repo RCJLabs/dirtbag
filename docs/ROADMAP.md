@@ -3957,13 +3957,75 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 ### Phase 37 — The session   **<<< CURRENT MILESTONE**
 
-*Queued (18 Oct 2026). Small to medium [INFERRED]. Planned with Evan's calls when it comes up.*
+*Small to medium. Planned with Evan's calls (18 Oct 2026).*
 
 **Goal.** A day at the boulders with the locals is a shared puzzle.
 
 **Scope.** Three or four locals take turns on one problem with you. Every fall shows that crux's beta to everyone there. Share what you've found (bond, renown) or keep it (a better shot at the day's first send).
 
+**Evan's calls (18 Oct 2026), all as recommended:**
+- **Who:** whoever of Dex, Sage, Rico, Mara and Tam is at the crag, and nameless locals ("a kid in a beanie") to make three or four. Bond goes to the cast; the nameless locals' regard is the old guard's standing (`scene.old`, "the purists and the locals").
+- **Where and when:** any boulder problem at a crag when the crowd's busy or packed (mostly weekends), by day. Roadside and the Gorge in the demo, every boulder crag in the full game; deep-water solos out. One session a day.
+- **Falls:** everyone's falls at a crux, theirs and yours, count toward its hidden beta; whoever's fall turns it up has found it. Yours you share or keep; a local shares theirs or not, by their style. Watching costs your onsight, not your flash.
+- **What it pays:** share: +1 bond with each of the cast there, on top of the day together (once a day), and the old guard's standing. Keep: nothing now, but they don't have it, so they send later. The day's first send pays psyche and standing, and a Record Book entry the first time.
+
+**From the survey (18 Oct 2026):**
+- **One find a crux.** An outdoor problem hides one move a crux, earned by falling there once or twice (`unlock`); a highball has a second crux at the top-out. So a session's puzzle is one find, or two.
+- **Your go is played** (`climb.ts`); `done` records the crux you came off, and your falls there unlock its move.
+- **No locals yet.** Strangers are on screen only. Of the cast, Dex, Sage, Rico, Mara and Tam boulder; only Dex and Sage have grade curves (`CURVES`), the rest a grade over or under yours (`PersonDef.grade`, as on an expedition).
+- **Bond already moves.** A day climbing with any of the cast gives +1, once a day (`climbedWith`).
+- **The name.** "Session" is taken in the code (training sessions, the bot's `session()`, an RNG stream), so the code calls it the sesh.
+
+**Slices:**
+- **37.1** The session (save v80): who's there, the rounds (theirs seeded from their grade against the problem's, yours played), falls adding up to a find, share or keep, the day's first send and what each pays; the card, from the beta sheet.
+- **37.2** The e2e, the harness's measure of sharing against keeping, and the close.
+
 **Done when** [proposed]: a session plays in the e2e; sharing and keeping each pay what they say, from the dials.
+
+**Status (18 Oct 2026): 37.1 built: the session.** Save v80, 0.999.96.
+- **Joining** (`sim/sesh.ts`, the `sesh` action): "Join the session" on a boulder's beta sheet, outside, on a busy or packed day, by day, on a problem you haven't sent, once a day. Not on a rope, a deep-water solo, a comp's problem or plastic.
+- **Who's on it** (`seatsFor`, seeded by the problem and the day):
+  - first the cast who boulder and are here (Dex, Sage, Rico, Mara, Tam, in that order, met);
+  - then nameless locals drawn from `LOCALS` (`content/sesh.ts`), to make three on a busy day and four on a packed one (`SESH.seats`).
+
+  A local climbs from two grades under the problem to one over (`SESH.spread`), and shares what they find six times in ten (`SESH.shares`) [proposed]. The cast share as their words say: Sage, Rico and Mara do, Dex and Tam don't [proposed]. Nobody sessions it more than a grade over the problem, the cast included [proposed]: well over it, they'd flash it before anyone else had a go.
+- **The rounds:**
+  - you've got next go when you join; your go is played as any go, without the queue or the crowd's shouting;
+  - after it, the others have their round (`theirRound`, `SESH.round` 10 minutes [proposed]);
+  - or sit a round out and watch.
+
+  Each of them goes at a comp's chance from their grade against the problem's (`COMP.steep`), spread over six goes (`SESH.goes`) [proposed]. Knowing the problem's hidden moves is worth a grade to them (`SESH.knows`) [proposed].
+- **Falls add up to a find, once a session:**
+  - everyone's falls at a crux count toward its hidden move, and the fall that reaches the move's count turns it up for whoever took it;
+  - a move you work out with your own falls is your find too;
+  - each move is found once a session: whoever didn't hear it climbs without it.
+- **Share or keep.** A move of yours (found today, or brought from another day) waits on your answer before your next go:
+  - **Tell them:** they all have it; +1 bond with each of the cast there the first time today, on top of the day together (`SESH.share.bond`), and +2 with the old guard each time (`SESH.share.old`) [proposed].
+  - **Keep it:** nothing now; they climb without it.
+
+  A local's find is shared with everyone or kept, by their style. A move they tell you, you've watched: it costs the onsight, not the flash, as does a round sat out before your first go.
+- **The day's first send:**
+  - yours pays +3 psyche (a lift inside the day's cap) and +3 with the old guard (`SESH.first`) [proposed], and puts First to the Top in the Record Book the first time (`seshFirsts`; Steam's list has it, 52 entries);
+  - a local's first send pays you nothing;
+  - your send ends your session; the session breaks up once everyone else is up it, and the night clears it.
+- **The card** (`ui/sheets.ts`, `{k:'sesh'}`): who's on it and how they're getting on (sent, still on it, knows something), the last round in words, and your move: Your go (its cost, then their round's), Sit a round out (with what watching costs before a first go), Walk away; or, with a find waiting, Tell them (what it pays, from the dials) and Keep it. The fall sheet in a session has Back to the session where Rest would be; the beta sheet has Back to the session while it's on.
+- **Save v80:** `sesh` (the problem, the day, the seats, the falls, the finds, the first send, the round and its words) and `seshFirsts`. Migration 79 sets them empty. Fixture `save-v79.json`, made by main's code from the v78 fixture.
+- **Tests:** `sesh.test.ts` (13):
+  - who's on it, seeded;
+  - where and when (a rope, a quiet day, the dark, sent, the gym, once a day);
+  - falls adding up to a find once, and a local sharing or keeping it;
+  - your find, sharing (bond and the old guard) and keeping (nothing);
+  - a move brought from another day;
+  - watching costing the onsight, not the flash;
+  - the first send's pay and the Record Book;
+  - a local's first send paying you nothing;
+  - the move's worth to them;
+  - their round after your go, and the night;
+  - the save, a broken session refused, and the v79 fixture;
+  - the words.
+
+  The old saves' tests expect the two new fields; the store copy and Steam's list count 52 entries.
+- **The download:** 482.3 KB of 490 (+3.7).
 
 ### Phase 38 — A ghost of your best go
 
@@ -4764,3 +4826,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-18 — 36.4 built: the glovebox deck, on the van's card any time: liar's dice, blackjack and hold'em against Hazel, Sage and Frank for a box of matches, on a copy of the climber that's never saved, so no time passes and nothing carries over. No save change. 0.999.94.
 - 2026-10-18 — 36.5 built: each of the fire's games by its full rules in the e2e, in the glovebox (liar's dice to the last cup, blackjack doubled and split, hold'em raised and folded); out of dice with others still in, the last line says they play it out without you; the season harness on the build, 12 of 12. Phase 36's Done-when all pass; closing it is Evan's call. 0.999.95.
 - 2026-10-18 — Phase 36 closed by Evan's call: all four criteria pass. CURRENT MILESTONE moved to Phase 37, the session.
+- 2026-10-18 — Phase 37 planned with Evan's calls: the cast who boulder and nameless locals; busy days at the boulders, once a day; falls adding up to a find, shared or kept; bond, the old guard and the day's first send. 37.1 built: the session, joined from a problem's beta, its rounds, finds, share or keep, and First to the Top in the Record Book. Save v80. 0.999.96.
