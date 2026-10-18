@@ -18,6 +18,8 @@ import { indoor } from './content/gym';
 import type { RouteDef } from './content/routes';
 import { newMastery } from './paths';
 import { atFire } from './fire';
+import { atLeast, FACES, inCup, inPlay, least } from './perudo';
+import { DICE_STYLE } from './content/perudo';
 import { act, newGame, routeOfId } from './game';
 import type { Action, GameState } from './types';
 import { Rng } from './rng';
@@ -132,6 +134,34 @@ export const median = (xs: number[]): number => {
 // and Sage both up, what each game pays an hour. Bond is the most anyone's moved in a day
 // with every game played; money is the night's net at blackjack by the book, and at hold'em
 // three plain ways: always bet, always call, and on the hand's odds.
+// Phase 36.1: a game of liar's dice played through as the others play it, from your own cup:
+// call a bid that looks less likely than `doubt`, else the raise likeliest to be true, opening
+// as a stranger at the fire would (DICE_STYLE). Where it left you, and whether you took it.
+export function perudoGame(s0: GameState, doubt = 0.4): { s: GameState; won: boolean } {
+  let s = act(s0, { t: 'dice', do: 'deal' }).state;
+  for (let g = 0; g < 400 && s.table && !s.table.over; g++) {
+    const t = s.table;
+    const mine = t.seats[0]!.dice;
+    const unseen = inPlay(t) - mine.length;
+    const likely = (n: number, face: number) => atLeast(n - inCup(mine, face), unseen);
+    let a: Action = { t: 'dice', do: 'call' };
+    if (t.shown) a = { t: 'dice', do: 'next' };
+    else if (!t.bid || likely(t.bid.n, t.bid.face) >= doubt) {
+      const bids = FACES.map((face) => ({
+        face,
+        n: t.bid
+          ? least(t.bid, face)
+          : Math.max(1, Math.floor(inCup(mine, face) + unseen / 3 - DICE_STYLE.caution)),
+      })).filter((b) => b.n <= inPlay(t));
+      const best = bids.sort((x, y) => likely(y.n, y.face) - likely(x.n, x.face))[0];
+      if (best) a = { t: 'dice', do: 'bid', ...best };
+    }
+    s = act(s, a).state;
+  }
+  const won = s.table?.over === 'you';
+  return { s: act(s, { t: 'dice', do: 'leave' }).state, won };
+}
+
 export function gamesAtFire(seed: string, nights: number) {
   const base: GameState = {
     ...act(newGame(seed), { t: 'create', name: 'Bot', start: 'allrounder' }).state,
@@ -155,8 +185,7 @@ export function gamesAtFire(seed: string, nights: number) {
     n++;
     const was = { ...s.people };
     s = act(s, { t: 'shoes', throws: [1, 0.5, 0, 1] }).state;
-    s = act(s, { t: 'dice', do: 'deal' }).state;
-    s = act(s, { t: 'dice', do: 'call' }).state;
+    s = perudoGame(s).s;
     for (const g of ['bj', 'holdem'] as const) {
       s = act(s, { t: g, do: 'sit' } as Action).state;
       s = act(s, { t: g, do: 'leave' } as Action).state;
@@ -214,9 +243,24 @@ export function gamesAtFire(seed: string, nights: number) {
     }
     return net / nights / hours;
   };
+  // Liar's dice (36.1): a game's minutes, and how many a player reading their cup takes, with
+  // Hazel and Sage (a fair share is a third).
+  let diceMin = 0;
+  let diceWon = 0;
+  let diceGames = 0;
+  s = base;
+  for (let d = 1; diceGames < nights; d++) {
+    s = night(s, d);
+    if (!atFire(s).includes('sage')) continue;
+    const g = perudoGame(s);
+    diceMin += g.s.min - s.min;
+    diceWon += g.won ? 1 : 0;
+    diceGames++;
+  }
   const ways = ['bet', 'call', 'odds'] as const;
   return {
     bondDay,
+    dice: { min: diceMin / diceGames, won: diceWon / diceGames },
     bj: bj / nights / hours,
     holdem: Object.fromEntries(
       ['hazel', 'sage'].flatMap((w) => ways.map((k) => [`${w} ${k}`, holdem(k, w)])),

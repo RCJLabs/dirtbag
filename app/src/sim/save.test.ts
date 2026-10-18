@@ -954,13 +954,16 @@ describe('saves', () => {
     expect(r.state.dream).toEqual({ pick: 'rig', pot: 300, owned: [] });
   });
 
-  it('load a real 0.981.0 save from before the cards: a hand of dice still on the go', () => {
+  // Phase 36.1: its hand of the old one-bid liar's dice is put away (v77); the rest loads.
+  it('load a real 0.981.0 save from before the cards: a hand of dice on the go, put away', () => {
     const r = fromSave(V25);
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(25);
+    expect(JSON.parse(V25).state.table?.who).toBe('hazel');
     expect(r.state).toEqual({
       ...revan(spoken(JSON.parse(V25).state)),
+      table: null,
       cards: null,
       reads: {},
       booked: null,
@@ -1001,7 +1004,6 @@ describe('saves', () => {
       crewSends: [],
       parts: 0,
     });
-    expect(r.state.table?.who).toBe('hazel');
   });
 
   it('load a real 0.984.0 save away on El Cap: the trip kept, roped to Hazel, nights counted', () => {
@@ -2229,7 +2231,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(76);
+    expect(SAVE_VERSION).toBe(77);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;

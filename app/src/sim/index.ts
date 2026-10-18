@@ -367,7 +367,21 @@ export { EPICS, type Epic } from './content/epics';
 export { dogAge, dogStage, hasPerk, nextDogName } from './scout';
 export { expedCost, owns, spotCost, worth } from './dreams';
 export { DREAMS, dreamById, type Dream } from './content/dreams';
-export { atFire, bidWords, gameBlocked, GAME_NAME, yourRaise, type Game } from './fire';
+export { atFire, bidWords, fireOut, gameBlocked, GAME_NAME, inWords, type Game } from './fire';
+// Phase 36.1: liar's dice at the fire, as Perudo.
+export {
+  beats,
+  callLines,
+  FACES,
+  inCup,
+  inPlay,
+  least,
+  nextSeat,
+  showing,
+  YOU,
+  type Table as DiceTable,
+} from './perudo';
+export { PERUDO, PERUDO_STYLES } from './content/perudo';
 export {
   bjTotal,
   CARD_NAME,

@@ -256,6 +256,7 @@ import {
 } from '../game/binds';
 import { vars } from './vars';
 import { Glyph, glyphs } from './Glyph';
+import { PerudoBody } from './Perudo';
 
 // "a, b and c".
 const and = (xs: string[]): string =>
@@ -334,6 +335,8 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
       <PlanBody game={game} ui={ui} />
     ) : id.k === 'shift' ? (
       <ShiftBody game={game} act={id.act} s={state} />
+    ) : id.k === 'fire' && state.table ? (
+      <PerudoBody game={game} s={state} />
     ) : null;
   if (body)
     return (
@@ -345,7 +348,9 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
         ref={ref}
         onClickCapture={ghost}
       >
-        {id.k !== 'fa' && id.k !== 'card' && id.k !== 'line' && <Close game={game} back={id.k === 'shift'} />}
+        {id.k !== 'fa' && id.k !== 'card' && id.k !== 'line' && id.k !== 'fire' && (
+          <Close game={game} back={id.k === 'shift'} />
+        )}
         {body}
       </div>
     );

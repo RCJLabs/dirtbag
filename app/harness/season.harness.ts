@@ -202,7 +202,7 @@ function targets(all: Record<Seasonal, BotRun[]>, reckless: BotRun[]): void {
   say(
     games.bondDay <= 1 && money.every((x) => x < shiftHour),
     'No game at the fire out-bonds a day climbing together or out-earns a shift an hour',
-    `most bond anyone moved in a night of every game: ${games.bondDay}; blackjack by the book $${games.bj.toFixed(2)}/h; hold'em ${Object.entries(
+    `most bond anyone moved in a night of every game: ${games.bondDay}; liar’s dice ${Math.round(games.dice.min)} min a game with Hazel and Sage, ${Math.round(100 * games.dice.won)}% taken reading your own cup; blackjack by the book $${games.bj.toFixed(2)}/h; hold'em ${Object.entries(
       games.holdem,
     )
       .map(([k, v]) => `${k} $${v.toFixed(2)}/h`)

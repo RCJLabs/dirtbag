@@ -1,6 +1,6 @@
 // The fire at night (Phase 22.9a): who's there, and the games. Horseshoes' throws come from
-// the player's hands (a beat, as busking's), the others' from the seed; liar's dice is dealt
-// from the seed and played a call at a time. The numbers are GAMES (dials.ts).
+// the player's hands (a beat, as busking's), the others' from the seed; liar's dice is Perudo
+// (perudo.ts, Phase 36.1). The numbers are GAMES (dials.ts).
 
 import { PEOPLE } from './content/people';
 import { isNight } from './cond';
@@ -24,13 +24,18 @@ export function atFire(s: GameState): string[] {
 }
 
 export type Game = 'shoes' | 'dice';
+
+// Phase 36.1: the fire burns down at `GAMES.late`, and every game at it stops.
+export const fireOut = (s: GameState): boolean => s.min >= GAMES.late;
 export const GAME_NAME: Record<Game, string> = { shoes: 'Horseshoes', dice: 'Liar’s dice' };
 
 export function gameBlocked(s: GameState, g: Game): string | null {
   if (s.at !== 'lot') return 'The games are at the fire at the Lot';
   if (!isNight(s.min)) return 'Nobody’s at the fire till dark';
+  if (fireOut(s)) return 'The fire’s down to coals';
   if (!atFire(s).length) return 'Nobody’s at the fire tonight';
-  if (s.today.includes(g)) return `You’ve played ${GAME_NAME[g].toLowerCase()} tonight`;
+  // Horseshoes is once a night; liar's dice goes on as long as the fire does (36.1).
+  if (g === 'shoes' && s.today.includes(g)) return `You’ve played ${GAME_NAME[g].toLowerCase()} tonight`;
   if (s.energy < GAMES.energy) return 'Too tired for games';
   return null;
 }
@@ -55,24 +60,33 @@ export function theirShoes(s: GameState, who: string): number {
   return n;
 }
 
-// Liar's dice: a hand dealt from the seed, and their opening bid on the face they hold most
-// of: what they hold and no more (safe), one more (what your cup is likely to add), or two
-// (a bluff), `bids` of the time each.
-export function dealDice(s: GameState, who: string): NonNullable<GameState['table']> {
-  const r = Rng.fromStream(s.seed, 'events').derive(`dice-${who}-${s.day}`);
-  const roll = () => Array.from({ length: GAMES.dice.n }, () => r.int(1, 6));
-  const mine = roll();
-  const theirs = roll();
-  const face = mostOf(theirs);
-  const x = r.next();
-  const [safe, fair] = GAMES.dice.bids;
-  const over = x < safe! ? 0 : x < safe! + fair! ? 1 : 2;
-  return { who, mine, theirs, bid: { n: count(theirs, face) + over, face } };
-}
-
 // A bid in words: "three 5s".
-const WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
-export const bidWords = (n: number, face: number): string => `${WORD[n] ?? n} ${face}${n === 1 ? '' : 's'}`;
+// To twenty: every die at a full fire.
+const WORD = [
+  'no',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+  'eleven',
+  'twelve',
+  'thirteen',
+  'fourteen',
+  'fifteen',
+  'sixteen',
+  'seventeen',
+  'eighteen',
+  'nineteen',
+  'twenty',
+];
+export const inWords = (n: number): string => WORD[n] ?? String(n);
+export const bidWords = (n: number, face: number): string => `${inWords(n)} ${face}${n === 1 ? '' : 's'}`;
 
 // Your ringers, to open a sentence: "Two ringers", "No ringers".
 export const ringersSaid = (n: number): string => {
@@ -84,21 +98,3 @@ export const bidSaid = (n: number, face: number): string => {
   const w = bidWords(n, face);
   return `${w[0]!.toUpperCase()}${w.slice(1)}`;
 };
-
-export const count = (dice: number[], face: number): number => dice.filter((d) => d === face).length;
-export function mostOf(dice: number[]): number {
-  let best = 6;
-  for (let f = 6; f >= 1; f--) if (count(dice, f) > count(dice, best)) best = f;
-  return best;
-}
-
-// Your raise: the least that beats their bid on the face you hold most of: the same count on
-// a higher face, or one more.
-export function yourRaise(t: NonNullable<GameState['table']>): { n: number; face: number } {
-  const face = mostOf(t.mine);
-  return { n: face > t.bid.face ? t.bid.n : t.bid.n + 1, face };
-}
-
-// Whether they call your raise: when it needs more than `call` of your dice, past what they hold.
-export const theyCall = (t: NonNullable<GameState['table']>, bid: { n: number; face: number }): boolean =>
-  bid.n - count(t.theirs, bid.face) > GAMES.dice.call;

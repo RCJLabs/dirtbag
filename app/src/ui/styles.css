@@ -473,6 +473,154 @@ button.pill:disabled {
 .checks .ok {
   color: var(--u-ink);
 }
+/* Liar's dice (Phase 36.1): the others' cups across the fire, the round's bids, your cup
+   lifted, and your bid as a count and a face. */
+.p-others {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 6px;
+  margin: 6px 0 4px;
+  padding: 0;
+  list-style: none;
+}
+.p-seat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 3px 5px;
+  border: 1.5px solid color-mix(in srgb, var(--u-ink) 30%, transparent);
+  border-radius: calc(var(--u-rad) + 2px);
+  font: 600 calc(13px * var(--u-fs)) / 1.2 var(--u-mono);
+}
+.p-seat small {
+  font: 500 calc(11.5px * var(--u-fs)) / 1.2 var(--u-mono);
+  color: var(--u-dim);
+}
+.p-seat[data-out='true'] {
+  opacity: 0.45;
+}
+.p-seat[data-lost='true'] {
+  border-color: var(--u-acc);
+  box-shadow: inset 0 0 0 1px var(--u-acc);
+}
+.cup {
+  width: 30px;
+  height: 28px;
+}
+.cup path {
+  fill: var(--u-btn);
+  stroke: var(--u-ink);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+.dice {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3px;
+}
+.die {
+  width: 16px;
+  height: 16px;
+}
+.die rect {
+  fill: var(--u-bg);
+  stroke: var(--u-ink);
+  stroke-width: 1.5;
+}
+.die circle {
+  fill: var(--u-ink);
+}
+.die circle.wild {
+  fill: var(--u-acc);
+}
+.die.hit rect {
+  fill: color-mix(in srgb, var(--u-btn) 75%, var(--u-bg));
+  stroke-width: 2.2;
+}
+.p-said {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  margin: 6px 0 2px;
+  padding: 0;
+  list-style: none;
+  font: 500 calc(12px * var(--u-fs)) / 1.35 var(--u-mono);
+  color: var(--u-dim);
+}
+.p-said li:last-child {
+  color: var(--u-ink);
+  font-weight: 700;
+}
+.p-you {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 4px;
+  font: 600 calc(13px * var(--u-fs)) / 1.2 var(--u-mono);
+}
+.p-you .die {
+  width: 28px;
+  height: 28px;
+}
+.p-pick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 8px 0 6px;
+}
+.p-n {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.p-n .step {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: var(--u-border);
+  border-radius: var(--u-rad);
+  background: var(--u-btn);
+  color: var(--u-btnInk);
+  font: 700 20px/1 var(--u-mono);
+  cursor: pointer;
+}
+.p-n .step:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.p-count {
+  min-width: 2ch;
+  text-align: center;
+  font: 700 calc(24px * var(--u-fs)) / 1 var(--u-font);
+}
+.p-faces {
+  display: flex;
+  gap: 3px;
+}
+.p-face {
+  padding: 2px;
+  border: 2px solid transparent;
+  border-radius: calc(var(--u-rad) + 2px);
+  background: none;
+  cursor: pointer;
+}
+.p-face .die {
+  display: block;
+  width: 28px;
+  height: 28px;
+}
+.p-face[aria-checked='true'] {
+  border-color: var(--u-ink);
+}
+.p-face:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
 
 .beta .win {
   display: flex;

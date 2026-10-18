@@ -183,19 +183,19 @@ import {
 } from './content/dog';
 import { dogAge, nextDogName, scoutFinds, type Perk } from './scout';
 import { expedCost, owns } from './dreams';
+import { atFire, bidWords, fireOut, gameBlocked, theirShoes, ringersSaid, throwPoints } from './fire';
 import {
-  atFire,
-  bidSaid,
-  bidWords,
-  count,
-  dealDice,
-  gameBlocked,
-  theirShoes,
-  theyCall,
-  ringersSaid,
-  throwPoints,
-  yourRaise,
-} from './fire';
+  beats,
+  callLines,
+  inPlay,
+  nextRound,
+  nextSeat,
+  settle,
+  sitDown,
+  theirTurns,
+  type Table,
+} from './perudo';
+import { PERUDO } from './content/perudo';
 import {
   bjDeck,
   bjSettle,
@@ -2370,8 +2370,8 @@ export function act(s0: GameState, a: Action): Result {
   // Phase 16.1: hung up; the tally's all that's left.
   if (s.life.retired) return refuse('You’ve hung it up.');
 
-  // A hand of liar's dice (Phase 22.9a): finish it first.
-  if (s.table && a.t !== 'dice' && a.t !== 'stand' && a.t !== 'pick') return refuse('Finish the hand first.');
+  // At the dice (Phase 36.1): get up first.
+  if (s.table && a.t !== 'dice' && a.t !== 'stand' && a.t !== 'pick') return refuse('You’re at the dice.');
   // Sat at cards (Phase 22.9b): get up first.
   if (s.cards && a.t !== s.cards.game && a.t !== 'stand' && a.t !== 'pick')
     return refuse('You’re sat at cards.');
@@ -3680,42 +3680,65 @@ export function act(s0: GameState, a: Action): Result {
     }
 
     // Phase 22.9a: a hand of liar's dice with whoever's first at the fire.
+    // Phase 36.1: liar's dice is Perudo, everyone at the fire, a round at a time for as long
+    // as the fire lasts. No money on it; it pays bond as a day together does, once a day.
     case 'dice': {
-      if (a.do === 'deal') {
+      const t = s.table;
+      const told = (tb: Table) => callLines(tb).forEach((l) => line(l));
+      // A game begins: everyone at the fire, five dice each. Tonight's minute names the game,
+      // so no two roll alike.
+      const begin = () => {
+        const others = atFire(s);
+        spend({ min: GAMES.dice.min, energy: -GAMES.energy });
+        if (!s.today.includes('dice')) s.today.push('dice');
+        for (const w of others) climbedWith(w);
+        s.table = sitDown(s, others, s.min);
+      };
+      if (a.do === 'deal' || a.do === 'again') {
+        if (a.do === 'deal' ? t : !t?.over)
+          return refuse(t ? 'Finish this game first.' : 'No game on the go.');
         const why = gameBlocked(s, 'dice');
         if (why) return refuse(`${why}.`);
-        const who = atFire(s)[0]!;
-        spend({ min: GAMES.min, energy: -GAMES.energy });
-        s.today.push('dice');
-        s.table = dealDice(s, who);
-        climbedWith(who);
+        begin();
         break;
       }
-      const t = s.table;
-      if (!t) return refuse('No hand on the go.');
-      const name = PEOPLE[t.who]?.name ?? t.who;
-      const total = (face: number) => count(t.mine, face) + count(t.theirs, face);
-      s.table = null;
+      if (!t) return refuse('No game on the go.');
+      if (a.do === 'leave') {
+        s.table = null;
+        break;
+      }
+      if (t.over) return refuse('This one’s over.');
+      if (a.do === 'next') {
+        if (!t.shown) return refuse('The round’s still going.');
+        if (fireOut(s)) {
+          s.table = null;
+          line(PERUDO.late);
+          break;
+        }
+        spend({ min: GAMES.dice.min });
+        const next = theirTurns(s, nextRound(s, t));
+        s.table = next;
+        if (next.shown) told(next);
+        break;
+      }
+      if (t.shown || t.turn !== 0) return refuse('It isn’t your turn.');
       if (a.do === 'call') {
-        const n = total(t.bid.face);
-        line(
-          n >= t.bid.n
-            ? `You call it. The cups come up: ${bidWords(n, t.bid.face)}. ${name} was telling the truth, and enjoys it.`
-            : `You call it. The cups come up: ${bidWords(n, t.bid.face)}. ${name} was bluffing, and takes it well, mostly.`,
-        );
+        if (!t.bid) return refuse('There’s nothing to call yet.');
+        const next = settle(s, t, 0);
+        s.table = next;
+        told(next);
         break;
       }
-      const bid = yourRaise(t);
-      if (!theyCall(t, bid)) {
-        line(`${bidSaid(bid.n, bid.face)}, you say. ${name} looks into the cup a long time and lets it go.`);
-        break;
-      }
-      const n = total(bid.face);
-      line(
-        n >= bid.n
-          ? `${bidSaid(bid.n, bid.face)}, you say, and ${name} calls it. ${bidSaid(n, bid.face)} on the table. Yours.`
-          : `${bidSaid(bid.n, bid.face)}, you say, and ${name} calls it. ${bidSaid(n, bid.face)} on the table. ${name} is insufferable about it.`,
-      );
+      const bid = { n: a.n ?? 0, face: a.face ?? 0 };
+      if (!beats(bid, t.bid, inPlay(t))) return refuse('That doesn’t beat the bid on the table.');
+      const next = theirTurns(s, {
+        ...t,
+        bid: { ...bid, by: 0 },
+        said: [...t.said, { by: 0, ...bid }],
+        turn: nextSeat(t, 0),
+      });
+      s.table = next;
+      if (next.shown) told(next);
       break;
     }
 
