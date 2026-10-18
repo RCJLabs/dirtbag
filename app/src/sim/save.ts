@@ -36,7 +36,7 @@ import { repeatsOf } from './settle';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 80;
+export const SAVE_VERSION = 81;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -607,6 +607,9 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, sesh: null, seshFirsts: 0 };
   },
+  // v80 -> v81 (Phase 38): a line keeps the pace of your best go on it, for its ghost. No go
+  // before it kept one: a high point from before climbs at an even pace till you go again.
+  80: (x) => x,
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -1570,10 +1573,19 @@ function validateRoute(x: unknown): string[] {
   need(isInt(r.goes) && r.goes >= 0, 'goes');
   need(isInt(r.goesToday) && r.goesToday >= 0, 'goesToday');
   need(isNum(r.hi) && r.hi >= 0, 'hi');
+  need(r.ghost === undefined || isPace(r.ghost), 'ghost');
   need(r.sent === null || isSend(r.sent), 'sent');
   need(typeof r.sentToday === 'boolean', 'sentToday');
   return err;
 }
+
+// Phase 38: a go's pace, [t, pos, …] from its first move to where it came off. Time only runs
+// forward.
+const isPace = (x: unknown): boolean =>
+  Array.isArray(x) &&
+  x.length >= 4 &&
+  x.length % 2 === 0 &&
+  x.every((v, i) => isNum(v) && v >= 0 && (i % 2 === 1 || i === 0 || v >= (x[i - 2] as number)));
 
 function isSend(x: unknown): x is SendRecord {
   return (

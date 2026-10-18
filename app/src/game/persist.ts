@@ -165,6 +165,8 @@ export interface Settings {
   meter: 'off' | 'on';
   // Phase 14.6b: what the pad's buttons and the keys do.
   binds: Binds;
+  // Phase 38: your best go on a line, climbing beside you, faint.
+  ghost: 'on' | 'off';
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -175,6 +177,7 @@ export const DEFAULT_SETTINGS: Settings = {
   music: 'on',
   meter: 'off',
   binds: DEFAULT_BINDS,
+  ghost: 'on',
 };
 
 export function loadSettings(): Settings {
@@ -190,6 +193,7 @@ export function loadSettings(): Settings {
       music: v.music === 'off' ? 'off' : 'on',
       meter: v.meter === 'on' ? 'on' : 'off',
       binds: readBinds(v.binds),
+      ghost: v.ghost === 'off' ? 'off' : 'on',
     };
   } catch {
     return DEFAULT_SETTINGS;

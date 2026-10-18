@@ -1997,6 +1997,7 @@ export class Game {
       wallRoute: u.wallRoute,
       att: this.att,
       speed: this.speedView(),
+      ghost: u.settings.ghost === 'on',
     };
   }
 

@@ -24,13 +24,15 @@ import {
   WALLS,
   crowdNow,
   EXPEDITIONS,
+  ghostAt,
+  ghostOf,
   SPEED,
   stormOn,
   type Attempt,
   type GameState,
   type RouteDef,
 } from '../sim';
-import { rad, type G, type Pt } from './kit/geom';
+import { mk, rad, type G, type Pt } from './kit/geom';
 import { mulberry32 } from './kit/noise';
 import {
   BOARD_X0,
@@ -98,6 +100,8 @@ export interface Frame {
   att: Attempt | null;
   // A run on the speed wall: holds taken, and whether you're slipping.
   speed: { holds: number; slip: boolean } | null;
+  // Phase 38: whether your best go climbs beside you (the settings').
+  ghost: boolean;
 }
 
 export function render(g: G, f: Frame): void {
@@ -510,6 +514,33 @@ function wallWeather(g: G, f: Frame, r: RouteDef): void {
 }
 
 // The wall itself, in the portrait column's pixels.
+// Your best go's ghost: how faint, and how far left of the line it climbs, clear of you. It's
+// drawn whole in a room of its own (logical px around its hips) and laid down faint, so its
+// limbs don't show through each other.
+const GHOST_ALPHA = 0.4;
+const GHOST_BESIDE = 24;
+const GHOST_ROOM = 34;
+let ghostLayer: { k: number; c: HTMLCanvasElement; g: G } | null = null;
+
+function drawGhost(g: G, k: number, x: number, y: number, scale: number, reach: number, off: number): void {
+  const half = GHOST_ROOM * scale;
+  if (!ghostLayer || ghostLayer.k !== k || ghostLayer.c.width !== Math.round(2 * half * k)) {
+    const [c, lg] = mk(2 * half, 2 * half, k);
+    ghostLayer = { k, c, g: lg };
+  }
+  const L = ghostLayer;
+  L.g.clearRect(0, 0, 2 * half, 2 * half);
+  L.g.save();
+  L.g.translate(half, half);
+  L.g.scale(scale, scale);
+  drawClimber(L.g, LOOK.you!, 0, 0, reach, off > 0);
+  L.g.restore();
+  g.save();
+  g.globalAlpha = GHOST_ALPHA * (1 - off);
+  g.drawImage(L.c, x - half, y - half, 2 * half, 2 * half);
+  g.restore();
+}
+
 function wallPanel(g: G, f: Frame, r: RouteDef): void {
   const s = f.state;
   const wall = wallOf(r);
@@ -669,6 +700,15 @@ function wallPanel(g: G, f: Frame, r: RouteDef): void {
     g.moveTo(hx - 12, hy);
     g.lineTo(hx - 12, hy - 12);
     g.stroke();
+  }
+  // Phase 38: your best go, faint, beside this one: on its pace from your first move, to where
+  // it came off, then off. It climbs left of the line, so it never hides under you.
+  const ghost = f.ghost && f.att ? ghostOf(log, f.att.mods.speed) : null;
+  const at = ghost && f.att ? ghostAt(ghost, f.att.moved === null ? 0 : f.att.t - f.att.moved) : null;
+  if (at) {
+    const scale = wall.big ? BIG : 1;
+    const [gx, gy] = onRoute(r, at.pos - at.off * at.off * Math.min(at.pos, 2));
+    drawGhost(g, f.px, gx - GHOST_BESIDE * scale, gy, scale, at.off ? 0 : Math.sin(at.pos * Math.PI), at.off);
   }
   const stride = falling ? 0 : Math.sin(pos * Math.PI);
   // Pumped arms shake: nothing under half a bar, then more and more as it fills. Only while

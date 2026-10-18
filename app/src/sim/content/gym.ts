@@ -280,6 +280,16 @@ export function routeById(seed: string, id: string): RouteDef | undefined {
   return set[Number(m[3]) - 1];
 }
 
+// Phase 38: whether a line is still there to climb on `day`: a fixed one always; a set's
+// problem while its week (the board's, its block) lasts; a comp's on its day.
+export function stillUp(day: number, id: string): boolean {
+  if (ROUTES[id] || EXPED_ROUTES[id]) return true;
+  const m = /^(sc|bd|cv|tc)-(\d+)-\d+$/.exec(id);
+  if (m) return Number(m[2]) === (m[1] === 'bd' ? blockOf(day) : weekOf(day));
+  const c = /^cp-\d+-(\d+)-\d+$/.exec(id);
+  return !!c && Number(c[1]) === day;
+}
+
 // The lines you can walk up to at a place today: at the gym, the week's wall, then the board.
 export function routesAt(seed: string, place: string, day: number): RouteDef[] {
   if (place === GYM) return [...gymSet(seed, weekOf(day)), ...boardSet(seed, blockOf(day))];

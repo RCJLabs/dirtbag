@@ -153,6 +153,7 @@ export {
   royaltyOf,
 } from './guides';
 export { faNote, repeatDays, repeatsOf, settled } from './settle';
+export { ghostAt, ghostOf, outclimbs } from './ghost';
 export {
   cyclePay,
   filmBlocked,
@@ -345,6 +346,7 @@ export {
   FAMILY,
   HOLLOW,
   SESH,
+  GHOST,
 } from './dials';
 export type { Plan } from './dials';
 export { weeklyBills, clinicBill, carePrice, jabbed, premiumOf } from './clinic';

@@ -1361,6 +1361,12 @@ export const SESH = {
   first: { psyche: 3, old: 3 },
 };
 
+// Phase 38: your best go on a line climbs beside the next one, faint. A go keeps its pace as
+// the points where it started or stopped moving; `keys` of them is a go of two dozen stops and
+// starts, more than a project's go takes. One that takes more glides from its last kept point
+// to where it came off, so a save never carries more than this a line [proposed].
+export const GHOST = { keys: 48 };
+
 // The speed wall at Send City (v0.956's, which cost no time and no pass: the audit's
 // exploit 20). A run is 20 holds, lights to buzzer. Your time is the seconds you took on
 // the screen times `factor`, which is `v0` at V0 and `perGrade` less a grade of power and

@@ -18,7 +18,7 @@ import { margin, pumpFactor, windowFactor } from './climber';
 import { overhead, reachMargin } from './reach';
 import { effGrade, PUMPED, type BetaDef, type CruxDef, type RouteDef, type Verb } from './content/routes';
 import { cold } from './body';
-import { BODY, CLIMB, FOOD, FREESOLO, LOAD, PLASMA, TRAD } from './dials';
+import { BODY, CLIMB, FOOD, FREESOLO, GHOST, LOAD, PLASMA, TRAD } from './dials';
 import { historyWindows } from './scars';
 import { sickWindows } from './sick';
 import { psycheWindows } from './psyche';
@@ -94,6 +94,13 @@ export interface Attempt {
   placed: number[];
   placing: number;
   t: number;
+  // Phase 38: the go's pace, for its ghost: [t, pos, t, pos, …] at each point where you started
+  // or stopped moving (between them you climb at one speed, or hang still), in seconds from
+  // your first move; then where you came off. When that first move was, on the go's clock
+  // (null till you make it), and whether you're moving now.
+  trace: number[];
+  moved: number | null;
+  moving: boolean;
 }
 
 export type AttemptEvent =
@@ -224,6 +231,9 @@ export function startAttempt(s: GameState, line: RouteDef): Attempt {
     placed: [],
     placing: 0,
     t: 0,
+    trace: [],
+    moved: null,
+    moving: false,
   };
 }
 
@@ -278,6 +288,23 @@ function say(a: Attempt, text: string, t: number): void {
   a.msg = { text, t };
 }
 
+const r2 = (v: number): number => Math.round(v * 100) / 100;
+
+// A point on the go's pace. The last of GHOST.keys is kept for where the go ends.
+function key(a: Attempt, end = false): void {
+  if (a.moved === null) a.moved = a.t;
+  if (!end && a.trace.length >= 2 * (GHOST.keys - 1)) return;
+  a.trace = [...a.trace, r2(a.t - a.moved), r2(a.pos)];
+}
+
+// Started or stopped moving since the last point: mark it.
+function pace(a: Attempt): void {
+  const moving = a.phase === 'climb' && a.hold;
+  if (moving === a.moving) return;
+  a.moving = moving;
+  key(a);
+}
+
 function startCrux(a: Attempt, r: RouteDef, c: CruxDef, ev: AttemptEvent[]): void {
   const id = a.pick[c.id] ?? c.beta[0] ?? '';
   const b = betaOf(r, id);
@@ -298,6 +325,7 @@ function startCrux(a: Attempt, r: RouteDef, c: CruxDef, ev: AttemptEvent[]): voi
     hits: 0,
     miss: 0,
   };
+  pace(a);
   if (b.skin) a.skin += b.skin;
   a.tried.push(id);
   ev.push({ k: 'crux', crux: c.id });
@@ -307,8 +335,12 @@ function clear(a: Attempt, r: RouteDef, ev: AttemptEvent[]): void {
   if (!a.crux) return;
   const c = cruxOf(r, a.crux.id);
   a.done.push(c.id);
+  // Through it in a moment: two points at once on the pace, where it held you and past it.
+  if (a.moved !== null) key(a);
   a.pos = c.to + CLIMB.clearCrux;
   a.phase = 'climb';
+  if (a.moved !== null) key(a);
+  a.moving = a.hold;
   a.crux = null;
   say(a, c.win, 1.6);
   ev.push({ k: 'cleared', crux: c.id });
@@ -355,6 +387,8 @@ function fall(a: Attempt, r: RouteDef, text: string | undefined, ev: AttemptEven
   a.phase = 'fall';
   a.hold = false;
   a.crux = null;
+  a.moving = false;
+  if (a.moved !== null) key(a, true);
   say(a, line, 3);
   ev.push({ k: 'fell', crux: a.fall.crux });
 }
@@ -403,6 +437,8 @@ export function stepAttempt(att: Attempt, dt: number = STEP): Step {
   const a = copy(att);
   const ev: AttemptEvent[] = [];
   const r = routeOf(a);
+  // A finger down or up since the last step starts or stops you now.
+  pace(a);
   a.t += dt;
   if (a.msg) {
     a.msg.t -= dt;
@@ -492,5 +528,6 @@ export function goResult(att: Attempt): GoResult {
     tried: [...att.tried],
     skin: att.skin,
     ...(att.fall?.deck ? { deck: att.fall.deck } : {}),
+    ...(att.fall && att.moved !== null ? { trace: att.trace } : {}),
   };
 }

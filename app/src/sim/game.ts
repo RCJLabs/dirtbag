@@ -157,7 +157,7 @@ import { cold, daysOff, freshLoad, goLoad, projected, ratio, rollInjury } from '
 import { CARRIED, carried, gains, gradeOf, SKILLS, STARTS, type GoSummary } from './climber';
 import { headroom, holds, isNight, leadOver, unmet } from './cond';
 import { dexHurt, dexSeason, gradeOfPerson } from './curves';
-import { indoor, INDOOR, INDOOR_CLOSE, routeById, routesAt, wallAt } from './content/gym';
+import { indoor, INDOOR, INDOOR_CLOSE, routeById, routesAt, stillUp, wallAt } from './content/gym';
 import { asSport } from './content/routes';
 import {
   CLINIC_LINE,
@@ -415,6 +415,7 @@ import { RETAINER_SAYS } from './content/retainers';
 import { PARTNERS, tierOf, whereIs, whereNow } from './presence';
 import { hashSeed, Rng } from './rng';
 import { repeatsOf, settled } from './settle';
+import { outclimbs } from './ghost';
 import { REPEAT_FIRST, REPEAT_WILD, REPEATERS, SETTLED } from './content/settle';
 import { actEndedBy, aimMet, currentGoal } from './story';
 import { newlyEarned } from './record';
@@ -1199,9 +1200,11 @@ export function act(s0: GameState, a: Action): Result {
       line(`The flight to ${EXPEDITIONS[s.booked.id]!.name} left without you. The money went with it.`);
       s.booked = null;
     }
-    for (const r of Object.values(s.routes)) {
+    for (const [id, r] of Object.entries(s.routes)) {
       r.goesToday = 0;
       r.sentToday = false;
+      // A set that's come down takes its ghosts with it (Phase 38).
+      if (r.ghost && !stillUp(s.day, id)) delete r.ghost;
     }
     if (where !== 'ledge') {
       s.at = 'lot';
@@ -4218,7 +4221,12 @@ export function act(s0: GameState, a: Action): Result {
       if (!s.today.includes('warm')) s.today.push('warm');
       s.skin = clamp100(s.skin - Math.max(0, tapedSkin(s, r, res.skin)));
       for (const l of wearKit(s, r)) line(l);
+      const hiWas = L.hi;
       L.hi = Math.max(L.hi, Math.min(r.moves, Math.max(0, Math.floor(res.hi))));
+      // Phase 38: the best go so far climbs beside the next one. A send leaves nothing to
+      // chase, and a lap climbs alone.
+      if (res.sent) delete L.ghost;
+      else if (!lap && outclimbs(res, L.ghost, hiWas)) L.ghost = res.trace;
       // A send answers a thread at its grade, and the film's line, outside (Phase 18.5).
       if (res.sent && !lap) {
         const h = s.media.heat;
