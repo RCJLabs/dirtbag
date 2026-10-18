@@ -3925,6 +3925,34 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 - **The e2e** (Phase 36's criterion 3): a morning at the Lot, the van, the glovebox deck, a bid at liar's dice, a blackjack hand stood on and a hold'em hand called down, no dollars or minutes on any of them, and the deck put away: the career's save is the same, byte for byte.
 - **The download:** 478.6 KB of 490.
 
+**Status (18 Oct 2026): 36.5 built: the games in full in the e2e, the harness, and the close.** No save change, 0.999.95.
+- **The e2e** (criterion 1): after 36.4's turn at each game in the glovebox, each by its full rules, where the clock's no object:
+  - liar's dice to its last cup, calling every bid it's handed (on the e2e's seed, out of dice after five rounds, and the others play it out);
+  - blackjack until a hand's doubled and a pair's split;
+  - hold'em with a raise called down, then a fold to a bet in a later hand.
+
+  The fire's own sections still play each game there, with the clock (36.1 to 36.3).
+- **A fix it found:** out of dice with more than one cup still in, the others play the game out without you (`playedOut`), and their cups stay as they were when you went out, so the last line said "last cup standing" under full cups. It now starts "They play it out without you." (`PERUDO.wonWithout`); `perudo.test.ts` holds both endings.
+- **The harness** (criterion 2), the season harness on this build, every target passing (12 of 12). The most bond anyone moved in a night of every game is one. Liar's dice takes about 70 minutes a game with Hazel and Sage, and reading your own cup takes 38% (a fair share is a third). Blackjack by the book makes −$2.10 an hour. Hold'em always betting makes −$68.87, always calling −$28.28, and playing the odds +$2.13. The worst shift is $6.50.
+- **The download:** 478.6 KB of 490.
+
+**Phase 36 against its Done-when (18 Oct 2026):** all four pass.
+1. Each game plays by its full rules, in the unit tests and the e2e: `perudo.test.ts` (18), `cards.test.ts` (11), `holdem.test.ts` (19), `glovebox.test.ts` (5); the e2e plays each game at the fire with the clock, and in full in the glovebox.
+2. The fire's rule still holds: the harness, above.
+3. The glovebox never touches the career's save: the e2e's byte-for-byte check after every game in it, and `glovebox.test.ts`.
+4. The download stays inside its budget: 478.6 KB of 490, the budget unchanged.
+
+**Closing Phase 36 is Evan's call.** Carried:
+- **The [proposed] numbers and styles:**
+  - the three Perudo styles;
+  - the fire's close at 1 AM;
+  - a round's six minutes, a blackjack hand's four, a hold'em hand's five;
+  - the tells right eight times in ten;
+  - Frank's hold'em style;
+  - the glovebox's 40 matchsticks, and its cast, fixed, met or not.
+- **Criterion 2 isn't measured in a career:** no career bot plays the fire's games, so it's held by the harness's nights at the fire (`gamesAtFire`).
+- **At the fire, the e2e plays each game but not every move:** a round of liar's dice to its call, two blackjack hands stood on, a hold'em hand checked and called down. The rest of the rules are played in the glovebox, through the same `act`.
+
 ### Phase 37 — The session
 
 *Queued (18 Oct 2026). Small to medium [INFERRED]. Planned with Evan's calls when it comes up.*
@@ -4732,3 +4760,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-18 — 36.2 built: blackjack drawn, with your own bet ($5 or $10) and a pair split once (aces a card each), hand after hand till the fire's out, each hand its minutes; the played hand left face up on the table till the next deal. Save v78. 0.999.92.
 - 2026-10-18 — 36.3 built: hold'em round the fire with everyone who plays, fixed limit: $1 and $2 blinds and the button going round, four streets with a raise reopening the betting, your all in for the money that matched yours, Frank at the table, and each person's tells once you've the second read on them; hand after hand till the fire's out, drawn. Save v79. 0.999.93.
 - 2026-10-18 — 36.4 built: the glovebox deck, on the van's card any time: liar's dice, blackjack and hold'em against Hazel, Sage and Frank for a box of matches, on a copy of the climber that's never saved, so no time passes and nothing carries over. No save change. 0.999.94.
+- 2026-10-18 — 36.5 built: each of the fire's games by its full rules in the e2e, in the glovebox (liar's dice to the last cup, blackjack doubled and split, hold'em raised and folded); out of dice with others still in, the last line says they play it out without you; the season harness on the build, 12 of 12. Phase 36's Done-when all pass; closing it is Evan's call. 0.999.95.
