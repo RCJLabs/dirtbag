@@ -513,6 +513,9 @@ export interface RouteLog {
   goesToday: number;
   // Your high point, in moves.
   hi: number;
+  // Phase 38: the pace of your best go, for its ghost (climb.ts: [t, pos, t, pos, …]); none
+  // once it's sent, nor on a set's problem that's come down.
+  ghost?: number[];
   sent: SendRecord | null;
   sentToday: boolean;
 }
@@ -824,6 +827,9 @@ export interface GoResult {
   skin: number;
   // Trad: the feet you hit the ground from, if a fall had nothing to catch it.
   deck?: number;
+  // Phase 38: how the go went, for a ghost, when it came off: where it started or stopped
+  // moving, and where it fell (climb.ts).
+  trace?: number[];
 }
 
 export type GameEvent =

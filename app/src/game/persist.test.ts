@@ -4,7 +4,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, asDemoBuild, newGame, toSave } from '../sim';
 import { loadPlans, savePlans } from './plan';
-import { boot, DEFAULT_SETTINGS, demoClimber, replace, save, saveSettings } from './persist';
+import { boot, DEFAULT_SETTINGS, demoClimber, loadSettings, replace, save, saveSettings } from './persist';
 import { keepIn } from './storage';
 
 class FakeStorage {
@@ -148,5 +148,16 @@ describe('persist', () => {
     expect(demoClimber()).toBeNull();
     ls.setItem('dirtbag.demo.save', toSave(newGame('nobody'), '0.0.0-test'));
     expect(demoClimber()).toBeNull();
+  });
+
+  it('shows your best go’s ghost unless you hide it, settings from before it included', () => {
+    expect(DEFAULT_SETTINGS.ghost).toBe('on');
+    const { ghost: _, ...before } = DEFAULT_SETTINGS;
+    ls.setItem('dirtbag.settings', JSON.stringify(before));
+    expect(loadSettings().ghost).toBe('on');
+    expect(saveSettings({ ...DEFAULT_SETTINGS, ghost: 'off' })).toBe(true);
+    expect(loadSettings().ghost).toBe('off');
+    ls.setItem('dirtbag.settings', JSON.stringify({ ...before, ghost: 'faint' }));
+    expect(loadSettings().ghost).toBe('on');
   });
 });

@@ -4052,13 +4052,78 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 ### Phase 38 — A ghost of your best go   **<<< CURRENT MILESTONE**
 
-*Queued (18 Oct 2026). Small to medium [INFERRED]; may change the save.*
+*Small to medium. Planned with Evan's calls (18 Oct 2026); changes the save (v81).*
 
 **Goal.** A project shows you how far you've come on it.
 
 **Scope.** On a line you're working, your best go so far climbs beside you, faint, to where it fell. Built on the high point the wall already flags (`view/render.ts`).
 
+**Evan's calls (18 Oct 2026), all as recommended:**
+- **What it replays:** your best go at its pace. It stops where that go stopped and comes off where it fell, so you see where you're quicker or slower. The best is the highest, and of two as high, the quicker there. The save keeps a short list of times a line (v81).
+- **Where:** every unsent line you've had a go on, indoors and out, sessions and comps included (it's your own go, not anyone's beta). On by default, with a switch in Settings.
+- **After a send:** it's gone, and its times leave the save. Laps climb alone.
+
+**From the survey (18 Oct 2026):**
+- **The high point** is the move you were on when you came off (`RouteLog.hi`, from `fall` in `sim/climb.ts`). The wall flags it.
+- **A go runs on its own clock** (`Attempt.t`, stepped at `STEP`):
+  - you move only while you hold, at one speed for the whole go (`CLIMB.climbRate` times your pace, fixed at the tie-in);
+  - you hang still at a rest, a placement or a crux;
+  - a cleared crux puts you past it in a moment.
+
+  `goResult` hands the go to `done`.
+- **Laps:** a sent line can be climbed again (`style: 'repeat'`).
+- **Settings** are the device's (`game/persist.ts`), not the save's.
+- **Sets come down:** a gym's problems carry their week in their ids (the board's carry its block), and a comp's carry its day. Their logs stay in the save for good.
+
 **Done when** [proposed]: the ghost climbs to the best go's high point and no further; a save from before loads.
+
+**One slice, 38.1:** the pace, the best go, the drawing, the switch, save v81, the tests and the e2e.
+
+**Status (18 Oct 2026): 38.1 built: the ghost.** Save v81, 0.999.98.
+- **The pace** (`sim/climb.ts`):
+  - a go keeps `[t, pos, …]` at each point where you started or stopped moving, counted from your first move, so standing at the bottom isn't counted;
+  - where a cleared crux puts you past it, two points at the same moment;
+  - the last point is where you came off;
+  - at most `GHOST.keys` (48) points [proposed], the last always where you came off;
+  - a go that sends, or never leaves the ground, keeps none.
+- **The best go** (`done`, `sim/ghost.ts`):
+  - kept on the line (`RouteLog.ghost`) when it's the highest so far, or as high and quicker;
+  - gone with the send, and a lap keeps none;
+  - a high point from before v81, which has no pace, climbs evenly at your pace now, up into the move it came off, until a go as high takes its place;
+  - at night, a set's problem that has come down (the week's set, the board's block, a comp's day) takes its ghost with it (`stillUp`); a crag's line keeps its ghost.
+- **The wall** (`view/render.ts`): the ghost climbs its pace beside your go, left of the line and faint, drawn whole so its limbs don't show through each other. Then it comes off and fades over a fall's time.
+- **Settings:** "Your best go": climbs beside you, faint, or hidden. On by default.
+- **Save v81:**
+  - the line's `ghost` is optional, and it's checked: an even list, with time only running forward;
+  - migration 80 changes nothing;
+  - fixture `save-v80.json`, made by main's code from v79.
+- **Tests:**
+  - `ghost.test.ts` (9):
+    - the pace of a played go on The Pump: a rest, A cleared, off B's throw;
+    - none for a send or a go that never moved;
+    - the cap;
+    - the ghost climbing to where it came off and no further (criterion 1);
+    - the best go kept;
+    - gone with the send, none on a lap;
+    - a high point from before;
+    - a set's problem's ghost going with it;
+    - the save (criterion 2).
+  - Settings: the switch, and settings from before it.
+- **The e2e:** the session's first go at the Warm Boulder keeps its pace, from the first move to where it came off, no higher than the high point; it goes with the send.
+- **Seen on the dev server:** the ghost climbs ahead to the crux, waits there as that go did, comes off and fades. With the switch off, it's hidden.
+- **The download:** 483.2 KB of 490 (+1.0).
+
+**Phase 38 against its Done-when (18 Oct 2026):** both pass.
+1. **The ghost climbs to the best go's high point and no further:**
+   - over a played go, `ghostAt` never passes where the go came off, and that's never past the high point (`ghost.test.ts`);
+   - the e2e holds the kept pace to the high point.
+2. **A save from before loads:** the v80 fixture loads as v81, its high points shown as even climbs (`ghost.test.ts`).
+
+**Closing Phase 38 is Evan's call.** Carried:
+- **[proposed]:** the 48 points, and the ghost's look (how faint, how far aside).
+- **The bots keep ghosts but never see them,** so no harness measures the ghost. Nothing in the rules reads it.
+- **A high point from before v81** climbs at an even pace, not that go's.
+- **The e2e checks the save, not the drawing.** The drawing was checked on the dev server, in screenshots.
 
 ### Phase 39 — Each crag's classics
 
@@ -4852,3 +4917,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-18 — Phase 37 planned with Evan's calls: the cast who boulder and nameless locals; busy days at the boulders, once a day; falls adding up to a find, shared or kept; bond, the old guard and the day's first send. 37.1 built: the session, joined from a problem's beta, its rounds, finds, share or keep, and First to the Top in the Record Book. Save v80. 0.999.96.
 - 2026-10-18 — 37.2 built: a session played in the e2e (a find told, its pay checked against the card's words, the goes to the end); the harness measures sharing against keeping, and the dials are retuned so that keeping a find buys a better shot at the first send (26% against 10%); nobody sessions a problem over its grade. Phase 37's Done-when pass; closing it is Evan's call. 0.999.97.
 - 2026-10-18 — Phase 37 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 38, a ghost of your best go.
+- 2026-10-18 — Phase 38 planned with Evan's calls: your best go at its pace, on every line you're working, gone once it's sent. 38.1 built: each go keeps its pace; a line keeps its best go's till it's sent; the wall draws it, faint, beside your next go; a switch in Settings; a set that comes down takes its ghosts. Save v81. Phase 38's Done-when pass; closing it is Evan's call. 0.999.98.

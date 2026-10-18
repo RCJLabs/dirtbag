@@ -2910,6 +2910,11 @@ function SettingsBody({ game, settings, rebind }: { game: Game; settings: Settin
         {choice('buzz', 'on', 'On, where the phone can')}
         {choice('buzz', 'off', 'Off')}
       </div>
+      <p className="crux">Your best go</p>
+      <div role="radiogroup" aria-label="Your best go">
+        {choice('ghost', 'on', 'Climbs beside you, faint')}
+        {choice('ghost', 'off', 'Hidden')}
+      </div>
       <p className="crux">Frame meter</p>
       <div role="radiogroup" aria-label="Frame meter">
         {choice('meter', 'off', 'Off')}

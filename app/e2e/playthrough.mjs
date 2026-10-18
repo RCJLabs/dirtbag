@@ -877,7 +877,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 80 ||
+  saved?.v !== 81 ||
   // Phase 29.1: nothing scavenged, a few days in.
   st.parts !== 0 ||
   // Phase 29.3: miles on the clock past a new climber's, and nothing for Dale to say yet.
@@ -2653,6 +2653,17 @@ console.log('A session at Roadside');
   const old = Number(/\+(\d+) with the old guard/.exec(says)?.[1] ?? NaN);
   const bond = Number(/\+(\d+) bond with/.exec(says)?.[1] ?? 0);
   const was = await state();
+  // Phase 38: the go kept its pace for a ghost, from the first move to where it came off.
+  const ghost = was.routes.warm?.ghost;
+  if (
+    !ghost ||
+    ghost.length < 4 ||
+    ghost.length % 2 ||
+    ghost[0] !== 0 ||
+    ghost[1] !== 0 ||
+    ghost.at(-1) > was.routes.warm.hi
+  )
+    await fail(`ghost: the first go's pace ${JSON.stringify({ ghost, hi: was.routes.warm?.hi })}`);
   await click('#sheet .opt', 'Tell them');
   await expectText('#sheet', /You tell them/, 'told');
   const told = await state();
@@ -2685,6 +2696,12 @@ console.log('A session at Roadside');
       `session: first to the top, unpaid: ${JSON.stringify({ firsts: after.seshFirsts, record: !!after.record.firstup })}`,
     );
   if (sent && firstWas && after.seshFirsts !== 0) await fail('session: paid for second');
+  // The ghost goes with the send; till then, the best go stays.
+  if (sent ? after.routes.warm?.ghost : !after.routes.warm?.ghost)
+    await fail(`ghost: ${sent ? 'still there after the send' : 'gone without a send'}`);
+  log(
+    `ghost: the first go's pace, ${ghost.length / 2} points, off at ${ghost.at(-1)} moves in ${ghost.at(-2)}s; ${sent ? 'gone with the send' : 'kept'}.`,
+  );
   log(
     `session: ${[...cast, ...(joined.sesh.seats.length - cast.length === 1 ? ['a local'] : [`${joined.sesh.seats.length - cast.length} locals`])].join(', ')}; ${asked.match(/You’ve worked out [^?]*\?/)?.[0] ?? ''} told them; ${sent ? (firstWas ? `sent it after ${firstWas}` : 'first to the top') : 'not sent in eight goes'}.`,
   );
