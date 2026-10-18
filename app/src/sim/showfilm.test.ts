@@ -51,6 +51,8 @@ describe('a save from before the stand and the film', () => {
     const old = JSON.parse(V67).state;
     // Phase 32.2: and no clues to the Hollow.
     expect(r.state).toEqual({
+      sesh: null,
+      seshFirsts: 0,
       ...old,
       media: { ...old.media, film: null },
       hollow: { clues: [], tries: 0 },

@@ -296,6 +296,24 @@ export interface GameState {
   // away, never saved: who's at its table. With it the fire's limits (where, when, once a
   // night, the fire's close) don't apply.
   glovebox?: { cast: string[] };
+  // Phase 37 (save v80): today's session on a boulder problem: the problem and the day; the
+  // others on it (the cast by id, a nameless local as `local-N`), each with their grade today,
+  // the problem's hidden moves they know, whether they've sent it, and whether they'd share
+  // what they find; everyone's falls at each crux this session; each hidden move turned up,
+  // by whom, and whether it was shared (null: yours, not decided yet); who sent it first; the
+  // rounds the others have had; and the last of them, in words.
+  sesh: {
+    route: string;
+    day: number;
+    seats: { who: string; grade: number; knows: string[]; sent: boolean; shares: boolean }[];
+    falls: Record<string, number>;
+    found: { beta: string; by: string; shared: boolean | null }[];
+    first: string | null;
+    round: number;
+    said: string[];
+  } | null;
+  // Phase 37: the sessions you sent first in.
+  seshFirsts: number;
   // Phase 22.8. Your dream: the one you're saving for, the pot (the card and the bills never
   // touch it), and the ones you own.
   dream: {
@@ -764,7 +782,10 @@ export type Action =
   | { t: 'bj'; do: 'sit' | 'deal' | 'hit' | 'stand' | 'double' | 'split' | 'leave'; bet?: number }
   // Phase 36.3: hold'em is everyone at the fire; `call` checks when nothing's bet, `bet` raises
   // when something is.
-  | { t: 'holdem'; do: 'sit' | 'deal' | 'fold' | 'call' | 'bet' | 'leave' };
+  | { t: 'holdem'; do: 'sit' | 'deal' | 'fold' | 'call' | 'bet' | 'leave' }
+  // Phase 37: the session on a problem: join it, sit a round out and watch, share or keep the
+  // move you've found, or walk away.
+  | { t: 'sesh'; do: 'join' | 'wait' | 'share' | 'keep' | 'leave'; route?: string };
 
 // Phase 24.5. A trip come home from: which, the calendar day you got back, how it ended, the
 // pitches fixed, who was on the rope, the nights up there, what happened, and whether you've

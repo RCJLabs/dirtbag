@@ -90,6 +90,8 @@ describe('a save from before the photos', () => {
     const old = JSON.parse(V66).state;
     // Phase 32.2: no clues to the Hollow, either.
     expect(r.state).toEqual({
+      sesh: null,
+      seshFirsts: 0,
       ...old,
       media: { ...old.media, photos: [], piece: null, film: null },
       hollow: { clues: [], tries: 0 },

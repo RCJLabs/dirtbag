@@ -37,6 +37,8 @@ describe('a save from before the retainers', () => {
     expect(r.from).toBe(65);
     const old = JSON.parse(V65).state;
     expect(r.state).toEqual({
+      sesh: null,
+      seshFirsts: 0,
       ...old,
       retainers: { physio: null, coach: null },
       media: { ...old.media, photos: [], piece: null, film: null },

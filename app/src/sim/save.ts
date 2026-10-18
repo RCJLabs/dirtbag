@@ -36,7 +36,7 @@ import { repeatsOf } from './settle';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 79;
+export const SAVE_VERSION = 80;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -601,6 +601,12 @@ export const MIGRATIONS: Record<number, Migration> = {
     const back = isNum(c.he.pot) ? c.he.pot / 2 : 0;
     return { ...x, cards: { ...c, chips: (isNum(c.chips) ? c.chips : 0) + back, he: null } };
   },
+  // v79 -> v80 (Phase 37): the session, today's on a boulder problem and the ones you sent
+  // first in. No save before it was in one.
+  79: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, sesh: null, seshFirsts: 0 };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -1078,6 +1084,41 @@ export function validate(x: unknown): string[] {
     isObj(x.reads) && Object.values(x.reads).every((r) => isObj(r) && isInt(r.hands) && isInt(r.caught)),
     'reads',
   );
+  const sx = x.sesh;
+  const strs = (v: unknown) => Array.isArray(v) && v.every((b) => typeof b === 'string');
+  need(
+    sx === null ||
+      (isObj(sx) &&
+        typeof sx.route === 'string' &&
+        isInt(sx.day) &&
+        Array.isArray(sx.seats) &&
+        sx.seats.length >= 1 &&
+        sx.seats.every(
+          (p) =>
+            isObj(p) &&
+            typeof p.who === 'string' &&
+            isNum(p.grade) &&
+            strs(p.knows) &&
+            typeof p.sent === 'boolean' &&
+            typeof p.shares === 'boolean',
+        ) &&
+        isObj(sx.falls) &&
+        Object.values(sx.falls).every((n) => isInt(n) && n >= 0) &&
+        Array.isArray(sx.found) &&
+        sx.found.every(
+          (f) =>
+            isObj(f) &&
+            typeof f.beta === 'string' &&
+            typeof f.by === 'string' &&
+            (f.shared === null || typeof f.shared === 'boolean'),
+        ) &&
+        (sx.first === null || typeof sx.first === 'string') &&
+        isInt(sx.round) &&
+        sx.round >= 0 &&
+        strs(sx.said)),
+    'sesh',
+  );
+  need(isInt(x.seshFirsts) && x.seshFirsts >= 0, 'seshFirsts');
   const dr = x.dream;
   const DREAMS = ['rig', 'warchest', 'homebase'];
   need(

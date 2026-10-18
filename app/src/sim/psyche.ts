@@ -2,7 +2,7 @@
 // Variety and company lift it, grind wears it down, and a nightly drift back to even means no
 // single ritual holds it up. The numbers are PSYCHE (dials.ts).
 
-import { DOG, PSYCHE } from './dials';
+import { DOG, PSYCHE, SESH } from './dials';
 import { hasPerk } from './scout';
 import type { GameState } from './types';
 
@@ -50,6 +50,8 @@ export function psycheDay(
     lift(PSYCHE.company, 'company');
   if (s.today.includes('crew-named')) lift(PSYCHE.crewNamed, 'a name for the crew');
   if (s.today.includes('crew-sent')) lift(PSYCHE.train, 'the send train');
+  // Phase 37: first to the top in a session.
+  if (s.today.includes('sesh-first')) lift(SESH.first.psyche, 'first to the top');
   if (s.today.includes('meal-good')) lift(PSYCHE.meal, 'a good meal');
   // Your dog settles at the fire with the perk (Phase 22.7), and it's worth a little more.
   if (s.today.includes('fire'))

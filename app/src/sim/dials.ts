@@ -1335,6 +1335,29 @@ export const CROWD = {
   spray: 0.4,
 };
 
+// Phase 37 (Evan's calls, 18 Oct 2026): the session. On a busy or packed day at a boulder
+// crag, whoever of `cast` is here (in that order), and nameless locals to make `seats` (busy,
+// packed), take turns on one problem with you, once a day. A round of their goes, with the
+// rests between, takes `round` minutes [proposed]. A nameless local climbs from `spread[0]` to
+// `spread[1]` grades either side of the problem, and nobody sessions it more than `spread[1]`
+// over, the cast included [proposed]; a nameless local shares what they find `shares`
+// of the time [proposed]; the cast as their words say. Knowing a problem's hidden moves is
+// worth `knows` grades to them [proposed]. Their chance at it is a comp's (COMP.steep), spread
+// over `goes` goes [proposed]. Sharing what you find pays `share.bond` with each of the cast
+// there, the first time a day, on top of the day together, and `share.old` of the old guard
+// each time; the day's first send pays `first.psyche` and `first.old` [proposed].
+export const SESH = {
+  cast: ['dex', 'sage', 'rico', 'mara', 'tam'],
+  seats: { busy: 3, packed: 4 },
+  round: 10,
+  spread: [-2, 1],
+  shares: 0.6,
+  knows: 1,
+  goes: 6,
+  share: { bond: 1, old: 2 },
+  first: { psyche: 3, old: 3 },
+};
+
 // The speed wall at Send City (v0.956's, which cost no time and no pass: the audit's
 // exploit 20). A run is 20 holds, lights to buzzer. Your time is the seconds you took on
 // the screen times `factor`, which is `v0` at V0 and `perGrade` less a grade of power and

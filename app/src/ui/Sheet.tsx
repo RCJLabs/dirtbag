@@ -231,6 +231,11 @@ import {
   CALL_SAYS,
   fill,
   listOf,
+  seatName,
+  seatsFor,
+  seshBlocked,
+  seshOn,
+  upper,
 } from '../sim';
 import type { Game, JournalPage, SheetId, Ui } from '../game/game';
 import { legacyFile, saveLegacyFile } from '../game/legacy';
@@ -1274,6 +1279,7 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
           </small>
         </button>
       )}
+      <SeshRow game={game} s={s} r={r} />
       <ProjectRows game={game} s={s} r={r} />
       {s.race?.route === route && (
         <p className="note">
@@ -1598,6 +1604,25 @@ function FaBody({ game, route, s }: { game: Game; route: string; s: GameState })
 
 // Phase 28.2: the crew project on its line's sheet: make it the project, or, on the project,
 // who's here, their goes, and dropping it.
+// Phase 37: the session on this problem, on a busy day: who's on it, to join; or back to it.
+function SeshRow({ game, s, r }: { game: Game; s: GameState; r: RouteDef }) {
+  if (seshOn(s, r))
+    return (
+      <button type="button" className="opt" id="sesh-back" onClick={() => game.openSheet({ k: 'sesh' })}>
+        <span>Back to the session</span>
+        <small>The pads are waiting on you.</small>
+      </button>
+    );
+  if (seshBlocked(s, r) || goBlocked(s, r)) return null;
+  const who = upper(listOf(seatsFor(s, r).map((p) => seatName(p.who))));
+  return (
+    <button type="button" className="opt" id="sesh-join" onClick={() => game.sesh('join')}>
+      <span>Join the session</span>
+      <small>{who} are taking turns on it. Work out the crux together, or keep what you find.</small>
+    </button>
+  );
+}
+
 function ProjectRows({ game, s, r }: { game: Game; s: GameState; r: RouteDef }) {
   const name = (w: string) => PEOPLE[w]?.name ?? w;
   if (projectable(s, r))

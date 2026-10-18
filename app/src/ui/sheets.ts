@@ -317,6 +317,11 @@ import {
   forebearBlocked,
   DEMO_END,
   RACE_ROUTE,
+  allSent,
+  pendingFind,
+  seatName,
+  seshOn,
+  SESH,
 } from '../sim';
 import { blockLine, phaseNote, prehabNote, taperNote } from './training';
 import { bestTrip } from './card';
@@ -1909,15 +1914,93 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         close: false,
         notes: [...(called ? [CALL_SAYS.fell] : []), ...id.notes, ...(gained ? [gained] : [])],
         rows: [
-          {
-            label: 'Rest, then go again',
-            cost: costLabel({ min: restCost(r) }),
-            note: why ? `${why}.` : 'Pump back to zero. Change your beta if you want.',
-            off: !!why,
-            run: () => game.rest(),
-          },
+          // Phase 37: in a session, the others have had their round while you rested.
+          seshOn(s, r)
+            ? {
+                label: 'Back to the session',
+                note: 'They’ve had their round. Your go, or theirs.',
+                run: () => game.openSheet({ k: 'sesh' }),
+              }
+            : {
+                label: 'Rest, then go again',
+                cost: costLabel({ min: restCost(r) }),
+                note: why ? `${why}.` : 'Pump back to zero. Change your beta if you want.',
+                off: !!why,
+                run: () => game.rest(),
+              },
           { label: 'Walk off', run: () => game.walkOff() },
         ],
+      };
+    }
+
+    case 'sesh': {
+      // Phase 37: the session on the problem at the wall: who's on it and how they're getting
+      // on, the last round, and your move. A move you've found waits on your answer.
+      const x = s.sesh;
+      const r = x ? routeOfId(s, x.route) : undefined;
+      if (!x || !r || !seshOn(s, r))
+        return {
+          title: 'The session',
+          sub: 'It’s broken up.',
+          close: true,
+          rows: [{ label: 'Back to the problem', run: () => game.closeSheet() }],
+        };
+      const L = s.routes[r.id];
+      const why = goBlocked(s, r);
+      const c = goCost(r, s);
+      const cast = x.seats.filter((p) => !!PEOPLE[p.who]).map((p) => PEOPLE[p.who]!.name);
+      const pend = pendingFind(x);
+      const first = x.first ? (x.first === 'you' ? 'you' : seatName(x.first)) : null;
+      const status = (p: (typeof x.seats)[number]) =>
+        `${upper(seatName(p.who))}: ${p.sent ? 'sent it' : x.found.some((f) => f.by === p.who && !f.shared) ? 'still on it, and knows something' : 'still on it'}.`;
+      const shareNote = [
+        ...(cast.length && !s.today.includes('sesh-shared')
+          ? [`+${SESH.share.bond} bond with ${listOf(cast)}, on top of the day`]
+          : []),
+        `+${SESH.share.old} with the old guard`,
+      ].join('; ');
+      return {
+        title: `The session: ${lineName(s, r)}`,
+        sub: first
+          ? `${upper(first)} sent it first today.`
+          : `Taking turns with the locals. First to the top today: +${SESH.first.psyche} psyche and +${SESH.first.old} with the old guard.`,
+        lines: x.seats.map(status),
+        notes: x.said,
+        close: true,
+        rows: pend
+          ? [
+              { label: 'Tell them', note: `${shareNote}.`, run: () => game.sesh('share') },
+              {
+                label: 'Keep it',
+                note: 'They climb without it, and send later for it.',
+                run: () => game.sesh('keep'),
+              },
+            ]
+          : allSent(x)
+            ? [{ label: 'Walk away', note: 'They’re all up it.', run: () => game.sesh('leave') }]
+            : [
+                {
+                  label: 'Your go',
+                  cost: `${costLabel({ min: c.min })} · ${bodyNote({ energy: c.energy, skin: c.skin })}`,
+                  note: why ? `${why}.` : `Then they take theirs: ${costLabel({ min: SESH.round })}.`,
+                  off: !!why,
+                  run: () => game.go(),
+                },
+                {
+                  label: 'Sit a round out',
+                  cost: costLabel({ min: SESH.round }),
+                  note:
+                    L?.goes || L?.told.length
+                      ? 'Rest while they go.'
+                      : 'Watch them first. No onsight after that; a flash is still on.',
+                  run: () => game.sesh('wait'),
+                },
+                {
+                  label: 'Walk away',
+                  note: 'Leave them to it. One session a day.',
+                  run: () => game.sesh('leave'),
+                },
+              ],
       };
     }
 

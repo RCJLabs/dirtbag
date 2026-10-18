@@ -25,6 +25,11 @@
     "desc": "Send the crew project with the crew there, and watch them follow you up it."
   },
   {
+    "name": "FIRSTUP",
+    "title": "First to the Top",
+    "desc": "Send a problem first, in a session with the locals."
+  },
+  {
     "name": "OUTSIDE",
     "title": "On Real Rock",
     "desc": "Send your first line outside."

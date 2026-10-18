@@ -344,6 +344,7 @@ export {
   FAVOUR,
   FAMILY,
   HOLLOW,
+  SESH,
 } from './dials';
 export type { Plan } from './dials';
 export { weeklyBills, clinicBill, carePrice, jabbed, premiumOf } from './clinic';
@@ -402,6 +403,7 @@ export {
 } from './cards';
 export { betOn, canRaise, holdemLines, owes, stillIn, type Holdem } from './holdem';
 export { GLOVE_CAST, gloveShort, gloveTable } from './glovebox';
+export { allSent, pendingFind, seatName, seatsFor, seshBlocked, seshOn, type Sesh } from './sesh';
 export { STYLES } from './content/cards';
 export { WALL_EVENTS, wallEventById, type WallEvent } from './content/wallevents';
 export { WORDS, WORD_GROUP, type Word, type WordGroup } from './content/glossary';
