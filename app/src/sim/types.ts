@@ -656,7 +656,8 @@ export interface Client {
 // from each wave (18.2); a focus for each client on the roster, or the warehouse's picks
 // begun (18.3).
 export type Play =
-  | { set: string[] }
+  // Phase 44: with each hold's square on the panel, from the bottom up; without, straight up.
+  | { set: string[]; at?: [number, number][] }
   | { queue: number[] }
   | { tables: number[][] }
   | { coach: ('burns' | 'drill' | 'head' | 'rest')[] }
@@ -696,6 +697,7 @@ export type Action =
       do: 'buy' | 'draw' | 'pay' | 'sell' | 'hire' | 'fire' | 'upgrade' | 'set';
       what?: string;
       set?: string[];
+      at?: [number, number][];
     }
   // Phase 32.3: a crack in a wild place takes gear (cleaned) or bolts; anything else, its kind.
   | { t: 'bolt'; route: string; how?: 'gear' | 'bolts' }

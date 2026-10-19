@@ -67,6 +67,28 @@ export function setBrief(s: GameState): SetBrief {
   return { wall, crowd, want, hand };
 }
 
+// Phase 44: a hold's square on the panel, across and up from the bottom left.
+export type Cell = [number, number];
+
+// Where holds go when only their order is known: up the middle a row at a time, no move
+// long enough to count. A set played without squares (and a bot's) climbs as before.
+export const straightUp = (n: number): Cell[] =>
+  Array.from({ length: n }, (_, i) => [Math.floor(SETTING.panel.cols / 2), i]);
+
+// How far a move spans, in squares, and how much harder that makes it.
+export const spanOf = (a: Cell, b: Cell): number => Math.hypot(b[0] - a[0], b[1] - a[1]);
+export const spanBump = (d: number): number =>
+  d >= SETTING.panel.huge ? 2 : d >= SETTING.panel.long ? 1 : 0;
+
+// A set's moves as climbed: each hold, made harder by a long reach to it.
+export function setMoves(ids: readonly string[], at: readonly Cell[] = straightUp(ids.length)): SetMove[] {
+  return ids.map((id, i) => {
+    const m = SET_MOVES[id]!;
+    const bump = i && at[i - 1] && at[i] ? spanBump(spanOf(at[i - 1]!, at[i]!)) : 0;
+    return bump ? { ...m, hard: Math.min(3, m.hard + bump) } : m;
+  });
+}
+
 // A set's grade, from how hard its moves are and how hard its hardest is.
 export function setGrade(moves: readonly SetMove[]): number {
   if (!moves.length) return 0;
@@ -90,8 +112,8 @@ export interface SetScore {
   score: number;
 }
 
-export function scoreSet(b: SetBrief, ids: readonly string[]): SetScore {
-  const moves = ids.map((id) => SET_MOVES[id]!);
+export function scoreSet(b: SetBrief, ids: readonly string[], cells?: readonly Cell[]): SetScore {
+  const moves = setMoves(ids, cells);
   const grade = setGrade(moves);
   const top = moves.length ? Math.max(...moves.map((m) => m.hard)) : 0;
   const at = moves.findIndex((m) => m.hard === top);
@@ -122,11 +144,22 @@ export function scoreSet(b: SetBrief, ids: readonly string[]): SetScore {
   return { grade, crux, rest, linked, varied, fit, crowd, score: Math.round(score * 1000) / 1000 };
 }
 
-// Why a set can't be hung from today's hand, or null when it can.
-export function setRefused(b: SetBrief, ids: readonly string[]): string | null {
+// Why a set can't be hung from today's hand, or null when it can. With its squares: each on
+// the panel, the first low enough to reach from the floor, each higher than the last, and
+// none out of reach.
+export function setRefused(b: SetBrief, ids: readonly string[], at?: readonly Cell[]): string | null {
   if (ids.length !== SETTING.pick) return `A set is ${SETTING.pick} moves.`;
   if (new Set(ids).size !== ids.length) return 'Each hold goes up once.';
   if (ids.some((id) => !b.hand.includes(id))) return 'That’s not in the bucket today.';
+  if (!at) return null;
+  const P = SETTING.panel;
+  if (at.length !== ids.length) return 'Each hold needs a square on the panel.';
+  const on = (n: unknown, most: number) => Number.isInteger(n) && (n as number) >= 0 && (n as number) < most;
+  if (at.some((c) => !Array.isArray(c) || !on(c[0], P.cols) || !on(c[1], P.rows)))
+    return 'That’s off the panel.';
+  if (at[0]![1] >= P.start) return 'The first hold goes where it’s reached from the floor.';
+  if (at.some((c, i) => i > 0 && c[1] <= at[i - 1]![1])) return 'Each hold goes higher than the last.';
+  if (at.some((c, i) => i > 0 && spanOf(at[i - 1]!, c) > P.most)) return 'Nobody reaches that far.';
   return null;
 }
 

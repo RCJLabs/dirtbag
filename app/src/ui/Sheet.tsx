@@ -101,6 +101,10 @@ import {
   playBonus,
   scoreSet,
   setBrief,
+  setMoves,
+  setRefused,
+  spanBump,
+  spanOf,
   SET_MOVES,
   SET_SAYS,
   SET_WALLS,
@@ -183,6 +187,7 @@ import {
   SPOT_IDS,
   SPOT_NAME,
   spotBlocked,
+  type Cell,
   type Spot,
   type SpotId,
   FOOD,
@@ -476,7 +481,7 @@ function PlayButton({
       onClick={() => {
         // Your own wall (Phase 18.6): set for the gym, not for a shift's pay.
         if (s.gym && 'set' in play) {
-          game.gymDo({ t: 'gym', do: 'set', set: play.set });
+          game.gymDo({ t: 'gym', do: 'set', set: play.set, at: play.at });
           return;
         }
         const why = game.playShift(act, play);
@@ -819,13 +824,26 @@ function HaulBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
 
 // The setter's puzzle (Phase 18.1): today's brief, the bucket of holds, the set as you hang
 // it with its grade and what it gets right.
+// Phase 44: the setter's panel. Pick a hold from the bucket, then the square it goes on. The
+// holds are climbed from the bottom up, one to a row (a hold put on a taken row sends the old
+// one back), and a long reach makes the move to a hold harder: the line to it shows the big
+// move, its square the step it adds (none past a crux), and the grade and the brief's checks
+// follow every hold.
 function SetBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
-  const [set, setSet] = useState<string[]>([]);
+  const [up, setUp] = useState<Record<string, Cell>>({});
+  const [pick, setPick] = useState<string | null>(null);
   const a = ACTS[act];
   if (!a) return null;
   const b = setBrief(s);
-  const sc = scoreSet(b, set);
-  const full = set.length === SETTING.pick;
+  const P = SETTING.panel;
+  const set = Object.keys(up).sort((m, n) => up[m]![1] - up[n]![1]);
+  const at = set.map((m) => up[m]!);
+  const sc = scoreSet(b, set, at);
+  const moves = setMoves(set, at);
+  const step = (i: number) => moves[i]!.hard - SET_MOVES[set[i]!]!.hard;
+  const bigs = set.filter((_, i) => step(i) > 0).length;
+  const why = set.length === SETTING.pick ? setRefused(b, set, at) : null;
+  const full = set.length === SETTING.pick && !why;
   const pay = actCost(s, a).cash ?? 0;
   const says = [...SET_SAYS].reverse().find(([at]) => sc.score >= at)![1];
   const climbing = set.filter((m) => SET_MOVES[m]!.kind !== 'rest').length;
@@ -839,32 +857,103 @@ function SetBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
     [climbing > 0 && fits === climbing, `Suits ${SET_WALLS[b.wall].name}: ${fits} of ${climbing}`],
     [sc.crowd, `${CROWDS[b.crowd].name}: ${CROWDS[b.crowd].wants}`],
   ];
-  const tap = (m: string) =>
-    setSet((x) => (x.includes(m) ? x.filter((y) => y !== m) : x.length < SETTING.pick ? [...x, m] : x));
+  const holdAt = (x: number, y: number) => set.find((m) => up[m]![0] === x && up[m]![1] === y);
+  const tap = (x: number, y: number) => {
+    const here = holdAt(x, y);
+    if (pick && (!here || here === pick)) {
+      const bumped = set.some((m) => m !== pick && up[m]![1] === y);
+      if (!up[pick] && !bumped && set.length >= SETTING.pick) {
+        game.toast(`${SETTING.pick} holds are up. Take one off first.`);
+        return;
+      }
+      setUp((u) => ({
+        ...Object.fromEntries(Object.entries(u).filter(([m, c]) => m !== pick && c[1] !== y)),
+        [pick]: [x, y],
+      }));
+      setPick(null);
+      return;
+    }
+    setPick(here ?? null);
+  };
+  const mid = (c: Cell) => [c[0] + 0.5, P.rows - c[1] - 0.5];
   return (
     <>
       <h3 id="sheet-title">Set problems for a shift</h3>
       <p className="sub">
-        Today it’s {SET_WALLS[b.wall].name}, and the desk wants a V{b.want}. This week:{' '}
-        {CROWDS[b.crowd].name.toLowerCase()}, who want {CROWDS[b.crowd].wants}. Hang {SETTING.pick} holds in
-        the order they’re climbed.
+        {pick
+          ? `${SET_MOVES[pick]!.name}: tap the square it goes on.`
+          : `Today it’s ${SET_WALLS[b.wall].name}, and the desk wants a V${b.want}. This week: ${CROWDS[b.crowd].name.toLowerCase()}, who want ${CROWDS[b.crowd].wants}. Put ${SETTING.pick} holds on the panel. They’re climbed from the bottom up, and a long reach makes a move harder.`}
       </p>
+      <div
+        className="sp-grid"
+        id="set-panel"
+        style={vars({ '--cols': String(P.cols), '--rows': String(P.rows) })}
+      >
+        {Array.from({ length: P.cols * P.rows }, (_, i) => {
+          const x = i % P.cols;
+          const y = P.rows - 1 - Math.floor(i / P.cols);
+          const here = holdAt(x, y);
+          const n = here ? set.indexOf(here) : -1;
+          return (
+            <button
+              type="button"
+              key={i}
+              className="sp-cell"
+              data-start={y < P.start ? '1' : undefined}
+              data-kind={here ? SET_MOVES[here]!.kind : undefined}
+              data-pick={here && here === pick ? '1' : undefined}
+              aria-label={`Panel, ${x + 1} across, ${y + 1} up${here ? `: ${SET_MOVES[here]!.name}, hold ${n + 1}` : ''}`}
+              style={vars({ '--x': String(x + 1), '--y': String(P.rows - y) })}
+              onClick={() => tap(x, y)}
+            >
+              {here && (
+                <>
+                  <b>{n + 1}</b>
+                  {step(n) > 0 && <small>+{step(n)}</small>}
+                </>
+              )}
+            </button>
+          );
+        })}
+        <svg
+          className="sp-lines"
+          viewBox={`0 0 ${P.cols} ${P.rows}`}
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          {at.slice(1).map((c, i) => {
+            const [x1, y1] = mid(at[i]!);
+            const [x2, y2] = mid(c);
+            return (
+              <line
+                key={i}
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+                className={spanBump(spanOf(at[i]!, c)) > 0 ? 'big' : undefined}
+                vectorEffect="non-scaling-stroke"
+              />
+            );
+          })}
+        </svg>
+      </div>
       <div className="moves" id="moves">
         {b.hand.map((m) => {
           const mv = SET_MOVES[m]!;
-          const at = set.indexOf(m);
+          const n = set.indexOf(m);
           return (
             <button
               key={m}
               type="button"
               className="beta"
-              aria-checked={at >= 0}
-              role="checkbox"
-              onClick={() => tap(m)}
+              aria-pressed={pick === m}
+              data-up={n >= 0 ? '1' : undefined}
+              onClick={() => setPick((p) => (p === m ? null : m))}
             >
               <span className="dot" />
               <span>{mv.name}</span>
-              <span className="c">{at >= 0 ? at + 1 : ''}</span>
+              <span className="c">{n >= 0 ? n + 1 : ''}</span>
               <small>
                 {mv.kind === 'rest'
                   ? 'a rest'
@@ -874,12 +963,29 @@ function SetBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
           );
         })}
       </div>
+      {pick && up[pick] && (
+        <button
+          type="button"
+          className="opt"
+          id="set-off"
+          onClick={() => {
+            setUp((u) => Object.fromEntries(Object.entries(u).filter(([m]) => m !== pick)));
+            setPick(null);
+          }}
+        >
+          <span>Take it off</span>
+          <span className="c" />
+        </button>
+      )}
       <ul className="checks" id="set-checks">
         {checks.map(([ok, what]) => (
           <li key={what} className={ok ? 'ok' : ''}>
             {ok ? <Glyph c="✓" /> : '·'} {what}
           </li>
         ))}
+        {bigs > 0 && (
+          <li id="set-big">{bigs === 1 ? 'One big move' : `${bigs} big moves`}, harder for the reach</li>
+        )}
       </ul>
       {full && (
         <p className="note" id="play-says">
@@ -891,10 +997,12 @@ function SetBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
         game={game}
         act={act}
         s={s}
-        play={{ set }}
+        play={{ set, at }}
         ready={full}
         note={
-          full ? 'The shift’s pay, and more for a good set.' : `${set.length} of ${SETTING.pick} holds up.`
+          full
+            ? 'The shift’s pay, and more for a good set.'
+            : (why ?? `${set.length} of ${SETTING.pick} holds up.`)
         }
       />
     </>
