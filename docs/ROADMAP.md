@@ -4418,13 +4418,64 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 ### Phase 43 — Your van, laid out   **<<< CURRENT MILESTONE**
 
-*Queued (18 Oct 2026). Medium to large [INFERRED]; changes the save.*
+*Medium. Planned with Evan's calls (19 Oct 2026). Save v82.*
 
 **Goal.** The van is a place you've built.
 
 **Scope.** The build-outs (29.1) as a floor plan on a grid: where the shelf, the panel, the mattress and the kitchen go, and what fits.
 
+**Evan's calls (19 Oct 2026), all as recommended:**
+- **What takes room:** on the floor, the bed (on its platform or not), the shelf, the kitchen and the heater; the solar panel on a grid of the roof. The seals, the insulation, the curtains and the tune-up aren't placed: they're in the walls, the windows and the engine.
+- **What placing does:** fit only. Footprints, no overlap, and the bed needs its length; where a piece goes changes no rule. A new van, or the Rig with its longer floor, starts its own plan.
+- **A save from before:** laid out for you. The migration puts what it owns in a default arrangement, which you can move.
+- **The download budget** goes to 500 KB.
+
+**From the survey (19 Oct 2026):**
+- **What's in the van is `s.gear`:** the garage's upgrades (`UPGRADE`: the mattress `bed`, the curtains, the tool kit, the tune-up, the heater, the insulation, the kitchen) and the build-outs from parts (`BUILD`: the shelf, the solar panel, the seals, the bed platform), built at the van (`lot.<id>`).
+- **Where they come and go:** the Rig's claim fits everything; Home Base gives the kitchen; a used van keeps nothing fitted but the tool kit (`FITTED`).
+- **Nothing had a place:** the van card listed the build-outs still to build, and no screen showed the van's inside.
+
 **Done when** [proposed]: every build-out can be placed; a save from before loads with its build-outs laid out.
+
+**One slice, 43.1:** the plan's rules and the save, the sheet, the tests and the e2e.
+
+**Status (19 Oct 2026): 43.1 built: the van, laid out.** Save v82, 0.999.103.
+- **The plan** (`sim/vanplan.ts`, dials `VAN_PLAN` [proposed]):
+  - **The floor** is `len` (8) cells long and `wide` (3) across, about half a metre a cell; the Rig's is `rig` (10) long. The sliding door's cells (`door`) on the near side stay clear. The roof is the floor's size.
+  - **Footprints, long by across:** the bed 4 by 3, the kitchen and the shelf 2 by 1, the heater 1 by 1, and the solar panel 3 by 2, on the roof.
+  - **A spot** (`{x, y, r}`) fits inside the van, off the door (for the floor's pieces), and on nothing else on its layer. Anything can turn (`r`) but the bed, which needs its length.
+  - **The bed** is always there and stays in. The rest can come out to make room, and still work while they wait.
+  - **`{t: 'place', piece, at}`** moves, turns or takes out a piece (`at: null`). A spot it doesn't fit is refused, with why: outside the van, the door, or something already there. It takes no time.
+  - **After anything** (`syncPlan`, in `act`'s tail): what you no longer have comes off the plan. What you've got that isn't on it, and wasn't taken out, goes in where it fits: its own spot first, then the first free one from the front.
+  - **A new van starts its own plan:** the used van and the Rig's claim lay theirs out afresh (`defaultPlan`).
+- **Save v82:** `vanPlan`, a spot or null (out) for each piece you have.
+  - The migration lays out what a save owns as a new van would be: the bed across the back, the kitchen and the shelf along the far wall at the front, the heater in the front corner by the door, and the panel mid-roof.
+  - Fixture `save-v81.json` (day 201, everything fitted), made by main's code.
+- **The sheet** ("Lay out the van" on the van card):
+  - **The grids:** the floor and the roof, the door marked. Each piece is drawn to its footprint and named, and a turned piece reads along its length.
+  - **Placing:** tap a piece, then where its top-left corner goes; a tap near an edge pulls it inside. "Turn it", "Take it out" (not the bed), and "Put back" for anything out.
+  - **Words:** the bed's line says what you sleep on. The van card's row says where things go, or what's out waiting for a spot.
+- **Tests** (`vanplan.test.ts`, 7):
+  - what fits where: inside, the door, overlap, the roof its own layer, and a piece never in its own way;
+  - turning, and the bed can't;
+  - everything you could own fits at once, in the van and in the Rig, and a new climber's van has the bed only;
+  - moving, turning and refusing, at no time;
+  - taken out stays out, and the bed stays in;
+  - what you build goes in, and what you lose comes off;
+  - the v81 fixture loads laid out.
+- **The e2e:** a morning at the Lot with a kitchen and a shelf. "Lay out the van" from the van card; the kitchen turned; the shelf out, then back in the gap; the bed moved along, never turned or out; the door refused. Each is in the save as it's done, and none of it costs a minute.
+- **The download:** 491.6 KB of 500 (+2.4), the budget raised from 490 by Evan's call.
+
+**Phase 43 against its Done-when (19 Oct 2026):** both pass.
+1. **Every build-out can be placed:** passes for each that takes room, by Evan's call. The shelf and the solar panel are placed; the platform is under the bed, and goes where the bed goes; the seals are in the walls, so aren't placed. Every piece you could own has a spot at once, in the van and in the Rig (the test), and each one moves, turns where it can, comes out and goes back (the test; the e2e on the sheet).
+2. **A save from before loads with its build-outs laid out:** passes. The v81 fixture loads with everything it owns on the plan, sound.
+
+**Closing Phase 43 is Evan's call.** Carried:
+- **[proposed]:** the van's size, the door's place, and each footprint.
+- **Fit only,** by his call: no rule reads where anything is. A layout that matters (the heater by the bed, the kitchen by the door) would be a later call.
+- **The scene's van is unchanged:** only the sheet shows the inside.
+- **No bot lays anything out,** since it changes no rule.
+- **By controller,** the cells are buttons that focus moves over, so A picks and places. The e2e plays it by pointer only.
 
 ### Phase 44 — The setter's wall, hands-on
 
@@ -5178,3 +5229,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-19 — Phase 41 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 42, belaying, played.
 - 2026-10-19 — 42.1: belaying, played, to Evan's calls. "Want a belay?" at the crag, and the crew's belay favour, put a partner's rope in your hands. Keep the slack in the band as they climb and clip, then brake and give for a soft catch. A belay is the day together, never on top of one; a clean belay gets you a beta on your line, and a hard catch gets you their grumble. The season harness's target 13: it can't out-bond a day climbing together. Both Done-when criteria pass. 0.999.102, no save change.
 - 2026-10-19 — Phase 42 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 43, your van laid out.
+- 2026-10-19 — 43.1: the van, laid out, to Evan's calls. "Lay out the van" opens its floor and roof as grids: the bed, the kitchen, the shelf and the heater on the floor, the solar panel on the roof. Move, turn or take out anything but the bed, which stays in and needs its length; the door stays clear, and nothing sits on anything. Where things go changes no rule. A new van or the Rig starts its own plan, and a save from before loads laid out. Both Done-when criteria pass. Save v82, 0.999.103; the download budget 500 KB, by his call.

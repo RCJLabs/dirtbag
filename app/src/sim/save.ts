@@ -33,10 +33,11 @@ import { fromFullGame } from './demo';
 import { DEMO_BUILD } from './edition';
 import { aimMet, currentGoal } from './story';
 import { repeatsOf } from './settle';
+import { defaultPlan, PIECES } from './vanplan';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 81;
+export const SAVE_VERSION = 82;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -610,6 +611,15 @@ export const MIGRATIONS: Record<number, Migration> = {
   // v80 -> v81 (Phase 38): a line keeps the pace of your best go on it, for its ghost. No go
   // before it kept one: a high point from before climbs at an even pace till you go again.
   80: (x) => x,
+  // v81 -> v82 (Phase 43): the van laid out. A save from before gets what it owns placed for
+  // it, as a new van would be.
+  81: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    const gear = isObj(x.gear) ? (x.gear as Record<string, number>) : {};
+    const dream =
+      isObj(x.dream) && isStrs(x.dream.owned) ? { pick: null, pot: 0, owned: x.dream.owned } : undefined;
+    return { ...x, vanPlan: defaultPlan({ gear, dream: dream as GameState['dream'] }) };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -1122,6 +1132,22 @@ export function validate(x: unknown): string[] {
     'sesh',
   );
   need(isInt(x.seshFirsts) && x.seshFirsts >= 0, 'seshFirsts');
+  const vp = x.vanPlan;
+  need(
+    isObj(vp) &&
+      Object.entries(vp).every(
+        ([id, sp]) =>
+          PIECES.includes(id) &&
+          (sp === null ||
+            (isObj(sp) &&
+              isInt(sp.x) &&
+              sp.x >= 0 &&
+              isInt(sp.y) &&
+              sp.y >= 0 &&
+              (sp.r === 0 || sp.r === 1))),
+      ),
+    'vanPlan',
+  );
   const dr = x.dream;
   const DREAMS = ['rig', 'warchest', 'homebase'];
   need(

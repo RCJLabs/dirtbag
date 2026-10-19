@@ -53,6 +53,7 @@ import {
 } from './content/favours';
 import { favourAsk, riding } from './favours';
 import { belayBlocked, belayLine, cleanBelay } from './belay';
+import { defaultPlan, fitBlocked, fixed, floorLen, owned, PIECES, syncPlan } from './vanplan';
 import { BELAY_ANY, BELAY_SAYS } from './content/belay';
 import { TEAM_FUNDED, TEAM_NOTHING, TEAM_SUMMIT, TEAM_TURNED } from './content/team';
 import { fasIn, guideBlocked, guidesOut, royalties, royaltyOf } from './guides';
@@ -594,6 +595,7 @@ export function newGame(seed: string): GameState {
     reads: {},
     sesh: null,
     seshFirsts: 0,
+    vanPlan: defaultPlan({ gear: {}, dream: { pick: null, pot: 0, owned: [] } }),
     wall: null,
     expedition: null,
     booked: null,
@@ -1787,6 +1789,8 @@ export function act(s0: GameState, a: Action): Result {
     if (d.swap === 'used') {
       for (const id of FITTED) delete s.gear[id];
       s.van = { ...VAN.start, miles: VAN_AGE.used.miles, rebuilt: 0, verdict: null };
+      // Phase 43: a new van starts its own plan.
+      s.vanPlan = defaultPlan(s);
     }
     // Phase 22.3: the pantry, the meals, the day's fuel, and the cups of coffee.
     if (d.buys) s.pantry[d.buys] = (s.pantry[d.buys] ?? 0) + INGREDIENTS[d.buys]!.servings;
@@ -4003,6 +4007,8 @@ export function act(s0: GameState, a: Action): Result {
           verdict: null,
         };
         line(fill(RIG_TRADE, { worth: money(worth) }));
+        // Phase 43: a new van, with a longer floor, laid out from scratch.
+        s.vanPlan = defaultPlan(s);
       }
       if (d.id === 'homebase') s.gear.kitchen = 1;
       line(d.claimed);
@@ -4136,7 +4142,24 @@ export function act(s0: GameState, a: Action): Result {
       break;
     }
 
-    // Phase 22.5b: a set outside the café, and how clean it was (0 to 1).
+    // Phase 43: a piece moved in the van, turned, or taken out to make room. Where it goes is
+    // yours, and costs nothing.
+    case 'place': {
+      if (!PIECES.includes(a.piece) || !owned(s, a.piece)) return refuse('That’s not in your van.');
+      if (a.at === null) {
+        if (fixed(a.piece)) return refuse('The bed stays in. You sleep there.');
+        s.vanPlan[a.piece] = null;
+        break;
+      }
+      const at = a.at;
+      if (!Number.isInteger(at?.x) || !Number.isInteger(at?.y) || (at.r !== 0 && at.r !== 1))
+        return refuse('Not a spot in the van.');
+      const why = fitBlocked(floorLen(s), s.vanPlan, a.piece, at);
+      if (why) return refuse(`${why}.`);
+      s.vanPlan[a.piece] = { x: at.x, y: at.y, r: at.r };
+      break;
+    }
+
     // Phase 42: a belay held to the catch. At the crag it costs its time, once a day each; as
     // their favour, the yes paid for it. Either way it's the day together, never on top of one,
     // and a clean belay gets you a beta on your line from them.
@@ -4162,6 +4185,7 @@ export function act(s0: GameState, a: Action): Result {
       break;
     }
 
+    // Phase 22.5b: a set outside the café, and how clean it was (0 to 1).
     case 'busk': {
       const why = buskBlocked(s);
       if (why) return refuse(`${why}.`);
@@ -4829,6 +4853,8 @@ export function act(s0: GameState, a: Action): Result {
   if (s.climber.name)
     for (const p of localPlaces(s))
       if (!localAt(s0, p)) line(fill(CLASSIC_SAYS.local, { place: PLACES[p]!.name }));
+  // Phase 43: what you've just got goes in the van where it fits; what's gone comes out.
+  if (s.vanPlan) syncPlan(s);
   // Phase 23.1: anything that's just gone in the Record Book, each with its card.
   if (s.climber.name) {
     const got = newlyEarned(s);

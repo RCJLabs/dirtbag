@@ -39,6 +39,7 @@ describe('a save from before the retainers', () => {
     expect(r.state).toEqual({
       sesh: null,
       seshFirsts: 0,
+      vanPlan: expect.any(Object),
       ...old,
       retainers: { physio: null, coach: null },
       media: { ...old.media, photos: [], piece: null, film: null },

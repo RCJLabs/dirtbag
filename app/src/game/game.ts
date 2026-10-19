@@ -33,6 +33,7 @@ import {
   startRope,
   stepRope,
   type Rope,
+  type Spot,
   talkStart,
   THINGS,
   whereIs,
@@ -179,6 +180,8 @@ export type SheetId =
   // A line too long for a toast, on a card you put down yourself.
   | { k: 'note'; text: string; day: number; min: number }
   | { k: 'week' }
+  // Phase 43: the van, laid out.
+  | { k: 'vanplan' }
   | { k: 'settings' }
   | { k: 'credits' }
   | { k: 'restart' }
@@ -1622,6 +1625,11 @@ export class Game {
     });
     const said = ev.flatMap((e) => (e.k === 'line' ? [e.text] : e.k === 'refused' ? [e.why] : [])).join(' ');
     this.set({ belay: { ...u, rope, said: said || null } });
+  }
+
+  // Phase 43: a piece moved, turned, or taken out (null). Refused, it says why.
+  place(piece: string, at: Spot | null): boolean {
+    return !this.dispatch({ t: 'place', piece, at }).some((e) => e.k === 'refused');
   }
 
   // Your hand on their rope (true) or off it (false).

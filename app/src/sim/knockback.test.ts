@@ -115,6 +115,12 @@ describe('knocks that come back', () => {
     if (!r.ok) throw new Error(r.why);
     expect(r.from).toBe(74);
     const old = JSON.parse(V74).state;
-    expect(r.state).toEqual({ ...old, deck: { ...old.deck, back: [] }, sesh: null, seshFirsts: 0 });
+    expect(r.state).toEqual({
+      ...old,
+      deck: { ...old.deck, back: [] },
+      sesh: null,
+      seshFirsts: 0,
+      vanPlan: expect.any(Object),
+    });
   });
 });

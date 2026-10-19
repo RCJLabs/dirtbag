@@ -898,7 +898,9 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 81 ||
+  saved?.v !== 82 ||
+  // Phase 43: a new climber's van, laid out: the bed across the back, and nothing else yet.
+  JSON.stringify(st.vanPlan) !== JSON.stringify({ bed: { x: 4, y: 0, r: 0 } }) ||
   // Phase 29.1: nothing scavenged, a few days in.
   st.parts !== 0 ||
   // Phase 29.3: miles on the clock past a new climber's, and nothing for Dale to say yet.
@@ -2855,6 +2857,92 @@ console.log('A belay at Roadside');
   log(
     `belay: ${clean ? 'a soft catch and a clean belay, and Hazel told a beta on the Pump' : 'a hard catch'}: ${said}`,
   );
+  await page.close();
+  page = main;
+}
+
+console.log('The van, laid out');
+// Phase 43. A morning at the Lot with a kitchen and a shelf in the van: "Lay out the van" from
+// the van card. The kitchen turned to run across; the shelf taken out, then put back in the gap;
+// the bed moved along, never out or turned; the door refused. Each in the save as it's done, and
+// none of it costs a minute.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  saved.state = {
+    ...saved.state,
+    day: 39,
+    min: 10 * 60,
+    at: 'lot',
+    x: null,
+    gear: { ...saved.state.gear, kitchen: 1, shelf: 1 },
+    vanPlan: { bed: { x: 4, y: 0, r: 0 }, kitchen: { x: 0, y: 0, r: 0 }, shelf: { x: 2, y: 0, r: 0 } },
+    today: [],
+    encounter: null,
+    table: null,
+    cards: null,
+    sesh: null,
+  };
+  const main = page;
+  page = await playPage({ width: 390, height: 844 }, 2, 'vanplan: ');
+  await page.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+  }, JSON.stringify(saved));
+  const state = () => page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  const at = (id) => page.evaluate((i) => document.getElementById(`vp-${i}`)?.dataset.at ?? null, id);
+  const cell = (x, y) => click(`#vp-floor .vp-cell[aria-label^="Floor, ${x} along, ${y} across"]`);
+  const plan = async (want, what) => {
+    await until(what, async () => JSON.stringify((await state()).vanPlan) === JSON.stringify(want));
+  };
+  await page.goto(server.url, { waitUntil: 'load' });
+  await until('the Lot', async () => (await text('#b-nav')) === 'Map');
+  await wait(600);
+  await page
+    .locator('button.hot[aria-label="Your van"]')
+    .first()
+    .evaluate((el) => el.click());
+  await until('the van card', async () => (await text('#sheet-title')) === 'Your van');
+  await click('#sheet .opt', 'Lay out the van');
+  await until('the plan', async () => (await text('#sheet-title')) === 'The van, laid out');
+  const laid = [await at('bed'), await at('kitchen'), await at('shelf')].join(' ');
+  if (laid !== '4,0,0 0,0,0 2,0,0') await fail(`vanplan: laid out as ${laid}`);
+  const before = await state();
+  // The kitchen, turned where it stands.
+  await cell(1, 1);
+  await click('#vp-turn');
+  await plan(
+    { bed: { x: 4, y: 0, r: 0 }, kitchen: { x: 0, y: 0, r: 1 }, shelf: { x: 2, y: 0, r: 0 } },
+    'the kitchen turned, in the save',
+  );
+  // The shelf out, and back in the gap the kitchen left.
+  await cell(3, 1);
+  await click('#vp-out');
+  await plan({ bed: { x: 4, y: 0, r: 0 }, kitchen: { x: 0, y: 0, r: 1 }, shelf: null }, 'the shelf out');
+  await click('#vp-back-shelf');
+  await cell(2, 2);
+  await plan(
+    { bed: { x: 4, y: 0, r: 0 }, kitchen: { x: 0, y: 0, r: 1 }, shelf: { x: 1, y: 1, r: 0 } },
+    'the shelf back in',
+  );
+  // The bed: no turning it and no taking it out, but it moves along.
+  await cell(6, 2);
+  await expectText('#sheet .sub', /The bed: .*It runs along the van/, 'the bed, picked');
+  if ((await page.locator('#vp-turn, #vp-out').count()) > 0)
+    await fail('vanplan: the bed offered a turn or out');
+  await cell(4, 1);
+  await plan(
+    { bed: { x: 3, y: 0, r: 0 }, kitchen: { x: 0, y: 0, r: 1 }, shelf: { x: 1, y: 1, r: 0 } },
+    'the bed moved along',
+  );
+  // The kitchen over the door: refused, and left where it was.
+  await cell(1, 1);
+  await cell(3, 3);
+  await expectText('#toast', /That’s the door\./, 'the door refused');
+  await shot('vanplan');
+  const after = await state();
+  if (JSON.stringify(after.vanPlan.kitchen) !== JSON.stringify({ x: 0, y: 0, r: 1 }))
+    await fail(`vanplan: the door moved the kitchen: ${JSON.stringify(after.vanPlan.kitchen)}`);
+  if (after.min !== before.min) await fail(`vanplan: laying it out took ${after.min - before.min} minutes`);
+  log(`vanplan: ${JSON.stringify(after.vanPlan)}`);
   await page.close();
   page = main;
 }

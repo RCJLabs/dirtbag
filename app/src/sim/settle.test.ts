@@ -201,6 +201,7 @@ describe('a save from before', () => {
     expect(r.state).toEqual({
       sesh: null,
       seshFirsts: 0,
+      vanPlan: expect.any(Object),
       ...old,
       firsts: { ...old.firsts, mopen: { ...old.firsts.mopen, heard: SETTLE.repeats } },
       // Phase 35.1: its hitchhikers met, counted as come once.

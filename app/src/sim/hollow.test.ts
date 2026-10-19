@@ -196,6 +196,7 @@ describe('the walk in', () => {
     expect(r.state).toEqual({
       sesh: null,
       seshFirsts: 0,
+      vanPlan: expect.any(Object),
       ...old,
       hollow: { clues: [], tries: 0 },
       boltedCracks: [],
@@ -318,6 +319,7 @@ describe('first ascents in the Hollow', () => {
     expect(r.state).toEqual({
       sesh: null,
       seshFirsts: 0,
+      vanPlan: expect.any(Object),
       ...old,
       boltedCracks: [],
       firsts: (MIGRATIONS[72]!(old) as GameState).firsts,

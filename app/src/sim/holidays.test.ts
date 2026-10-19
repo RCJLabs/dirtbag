@@ -89,6 +89,11 @@ describe('holiday nights', () => {
     const r = fromSave(V75);
     if (!r.ok) throw new Error(r.why);
     expect(r.from).toBe(75);
-    expect(r.state).toEqual({ ...JSON.parse(V75).state, sesh: null, seshFirsts: 0 });
+    expect(r.state).toEqual({
+      ...JSON.parse(V75).state,
+      sesh: null,
+      seshFirsts: 0,
+      vanPlan: expect.any(Object),
+    });
   });
 });

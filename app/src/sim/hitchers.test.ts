@@ -173,6 +173,7 @@ describe('a save from before', () => {
     expect(r.state).toEqual({
       sesh: null,
       seshFirsts: 0,
+      vanPlan: expect.any(Object),
       ...old,
       // And Phase 35.3's: no knocks owed a return.
       deck: {
