@@ -4562,13 +4562,72 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 ### Phase 45 — The problem of the day   **<<< CURRENT MILESTONE**
 
-*Queued (18 Oct 2026). Medium [INFERRED].*
+*Medium [INFERRED]. Planned with Evan's calls (19 Oct 2026). Two slices; no save change (the day keeps its own slot).*
 
 **Goal.** One day to play, the same for everyone, and something to show for it.
 
 **Scope.** A one-day scenario on a seed fixed by the date, offline (no server: nothing leaves the site), in its own save slot, ending on a send card to share.
 
+**Evan's calls (19 Oct 2026),** all as recommended:
+- **The day:** one line, one day. The date picks a crag and a line in your edition: one day there, first light to dark, in the day's weather. Send it in as few goes as you can.
+- **The climber:** one for everyone, made for the day at the line's level, the same on every device.
+- **What you keep:** a card to save or share. It's the send card with the date, the line and your goes (or how close you got), saved as an image or shared through the device's share sheet. The game itself sends nothing.
+
+**From the survey (19 Oct 2026):**
+- **Saves** (`game/persist.ts`) sit under one key per edition (`dirtbag.save`, `dirtbag.demo.save`), with a fallback and quarantine keys beside them, and the plan and settings beside those.
+- **Nothing in the sim reads a clock,** so the date has to come in from the page.
+- **Every line resolves from the seed and its id,** so a day is a seed (`day:<date>`) and a state made from it.
+- **The send card** (`view/paint/card.ts`, `ui/card.ts`) is drawn in code at 1080×1920 and goes out through the share sheet or a download (Phase 37), with no network.
+- **The service worker** matches requests with `ignoreSearch` and falls back to the page offline, so `?day` is served offline just as `/` is.
+
 **Done when** [proposed]: the same date gives the same day on every device (a test); it never touches the career's save.
+
+**Slices:**
+- **45.1, the day:** the draw, the climber, the slot, the page's day mode, its sheet, the ways in, the tests and the e2e. No save change. Budget 510 KB (Evan's call).
+- **45.2, the card:** the day's card (the date, the line, your goes or high point) to save or share, and the close.
+
+**Status (19 Oct 2026): 45.1 built: the day.** No save change, 0.999.106.
+- **The draw** (`sim/daily.ts`, `dayOf`, `dailyState`):
+  - A date (YYYY-MM-DD, one that's on the calendar) seeds the day as `day:<date>`.
+  - From the seed's world stream comes a boulder at a crag your edition has and the map shows, never an open project. Lines are taken in the order of their ids.
+  - It also draws a day of the year (2 to 56) when the line can be climbed at first light: in season, dry, the crag open. A line that can't be climbed on any of them hands over to the next.
+- **The climber** is `You`, the same for everyone, with every skill `DAILY.under` (1.25) grades below the line [proposed]. Measured with the bot's human-ish hands over 150 dates:
+  - **At the line's own grade,** they flashed it 39 days in 40.
+  - **1.25 under,** they sent it 7 days in 10, in 3 goes at the median (1 to 13), flashing 1 day in 7. The days it didn't go ended on skin, mostly.
+  - **By grade:** V2–5 76%, V6–9 60%, V10+ 87%.
+  - **From 1.5 under,** the line gains a crux for you (`OVER.cruxFrom`), and sends fell to 2 in 5.
+- **The day:**
+  - You start fresh at first light at the crag, standing at the line.
+  - It's over when the line goes, or when nothing more can be tried on it (`dayOver`: dark, energy, skin, hurt or fried).
+  - The result (`dayResult`) is the goes it took (a lap after doesn't count), the send's style, and the high point.
+- **Its own slot** (`game/storage.ts`, `useSlot`):
+  - The save, its fallback and the plan go under `dirtbag.day.` (`dirtbag.demo.day.` in the demo). Settings stay the player's.
+  - The slot keeps one day; another date's day takes its place.
+- **The page** (`?day`, `game/day.ts`): today by this device's calendar, or `?day=YYYY-MM-DD` for a day asked for. The Game's day mode:
+  - **off:** career cards, Steam achievements and plans;
+  - **not today's:** talk, the van and the map ("Not today. Today’s about the one line."). Settings leave out the save files and v0.956's career, and the week sheet shows only today's sky;
+  - **the HUD:** the date and no money, and "The day" in place of the map;
+  - **the dock:** a chip with the line and how it's going.
+- **The day's sheet** opens with the page: the date, the line and crag, the climber against it, the goes so far, the rules, and "To the line".
+  - When the day's over, it replaces the fall or send sheet: the send and its go, or "Not today" with why and the high point drawn.
+  - Its rows: "Back to your own climber" (or "Start a climber of your own"), Settings, and after a send with time left, "Stay out".
+- **The ways in:** Create ("Or skip all that…") and the map's corner.
+- **The tests:**
+  - `daily.test.ts` (4):
+    - the same date gives the same day, with goldens pinned for two dates in the full game and one in the demo (criterion 1);
+    - a boulder in the edition, climbable at first light, for a climber 1.25 under it;
+    - the demo's crags in the demo;
+    - a day played to its end by human-ish hands, with no call put to you and laps not counted.
+  - `persist.test.ts`: the day's slot leaves every career key as it was, settings are shared, and the demo's day stays the demo's (criterion 2).
+  - `day.test.ts` (2): the device's date, and how `?day` is read.
+- **The smoke:** a new step, "offline day": `?day` boots from the worker's cache, in its own slot.
+- **The e2e:** a new section, "The problem of the day":
+  - a career's save beside it, and 19 Oct 2026's day opened (Hueco Pockets, V9, at Moonstone; a V7 climber);
+  - to the line; a go come off on purpose, and the day going on; goes till it's over, and the slot's result;
+  - the career's save the same to the byte; opened again, the same day; back to the career;
+  - then 20 Oct, begun too tired for a second go: over on the fall.
+  - The demo's e2e: its 19 Oct is The Pinch at Granite Gorge, under the demo's keys.
+- **The download:** 497.0 KB of 510 (+2.5), with the budget raised by Evan's call.
 
 ## Stage D — Get it in front of people
 
@@ -5307,3 +5366,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-19 — Phase 44 planned with Evan's calls: holds on a grid where reach counts, today's grade plus reach shown live, and a set that stays up for the week, a climbable problem you name. 44.1: the setter's panel. The bucket's holds go on squares from the bottom up, and a long reach makes a move harder; the grade and the brief's checks follow every hold. 0.999.104, no save change.
 - 2026-10-19 — 44.2: the set stays up. A set you hang goes up on a panel at the end of Send City's wall under the name you give it, a problem like the gym's own, its holds where you put them, climbable till the week's reset; its id carries it. Both Done-when criteria pass. Save v83, 0.999.105.
 - 2026-10-19 — Phase 44 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 45, the problem of the day.
+- 2026-10-19 — Phase 45 planned with Evan's calls (one line, one day; one climber for everyone; a card to save or share). 45.1 built: the day, drawn from the date, played in its own slot, with its sheet, the ways in, the tests, the smoke's offline day and the e2e. Budget 510 KB. 0.999.106.

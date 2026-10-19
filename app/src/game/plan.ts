@@ -4,7 +4,7 @@
 // a plan ran them, and it lives beside the save, like the settings.
 
 import { ACTS, indoor, PLACES, ROUTES, type GameState } from '../sim';
-import { ours, store } from './storage';
+import { slotted, store } from './storage';
 
 export interface PlanStep {
   place: string;
@@ -75,7 +75,7 @@ export function planLine(plan: PlanStep[]): string {
 
 // ---- beside the save ----
 
-const KEY = () => ours('plan');
+const KEY = () => slotted('plan');
 
 export interface Plans {
   // The plan you've made.

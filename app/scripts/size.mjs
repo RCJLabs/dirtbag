@@ -17,9 +17,10 @@ const DIST = new URL('../dist/', import.meta.url).pathname;
 // (430.2 KB after Phase 28's crew), and to 470 KB on 15 Oct 2026 for Phase 35's knocks and
 // holidays (456.2 KB after its stops), and to 490 KB on 16 Oct 2026 for Phase 15's demo
 // (466.3 KB after Phase 14's Deck pass), and to 500 KB on 19 Oct 2026 for Phase 43's van
-// plan (489.2 KB after Phase 42's belay). The art is code, so the game is mostly React, the
-// fonts and the painters; this catches an accidental asset or dependency.
-const BUDGET = 500 * 1024;
+// plan (489.2 KB after Phase 42's belay), and to 510 KB the same day for Phase 45's problem
+// of the day (494.5 KB after Phase 44's setter's wall). The art is code, so the game is
+// mostly React, the fonts and the painters; this catches an accidental asset or dependency.
+const BUDGET = 510 * 1024;
 
 const PART = { '.js': 'script', '.css': 'styles', '.html': 'page', '.svg': 'icon', '.woff2': 'fonts' };
 const TEXT = new Set(['.js', '.css', '.html', '.svg']);

@@ -10,6 +10,7 @@ import { BelayPanel } from './BelayPanel';
 import { Create } from './Create';
 import { Goal } from './Goal';
 import { WhatNow } from './WhatNow';
+import { DayChip } from './DayChip';
 import { PlanChip } from './PlanChip';
 import { Hots } from './Hots';
 import { Hud } from './Hud';
@@ -19,6 +20,8 @@ import { glyphs } from './Glyph';
 import { Meter, meterLine } from './meter';
 import { BINDABLE, keyOf } from '../game/binds';
 import { desktop } from '../game/desktop';
+import { toDay } from '../game/day';
+import { DAY_SAYS } from '../sim';
 import { Pad } from './pad';
 import { Sheet } from './Sheet';
 import type { Dir } from './spatial';
@@ -301,6 +304,10 @@ export function App({ game }: { game: Game }) {
               >
                 Settings
               </button>
+              {/* Phase 45: the problem of the day, from the map: your climber stays where they are. */}
+              <button type="button" className="restart" id="b-day" onClick={toDay}>
+                {DAY_SAYS.entry}
+              </button>
             </div>
           )}
           {ui.stamp && (
@@ -316,8 +323,14 @@ export function App({ game }: { game: Game }) {
             </div>
           )}
           <div className="dock">
-            <WhatNow game={game} ui={ui} />
-            <Goal game={game} ui={ui} />
+            {game.day ? (
+              <DayChip game={game} ui={ui} />
+            ) : (
+              <>
+                <WhatNow game={game} ui={ui} />
+                <Goal game={game} ui={ui} />
+              </>
+            )}
           </div>
           <PlanChip game={game} ui={ui} />
           {ui.hint && !ui.sheet && !ui.talk && (

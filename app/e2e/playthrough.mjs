@@ -171,18 +171,19 @@ const wait = (ms) => page.waitForTimeout(ms);
 // before the game boots: written while the old page still ran, it could be overwritten by a
 // save the old page made on its way out (a fade's last step, a card just answered). Nationals'
 // final once came back as the qualifier's morning that way. Returns the save it went in with.
+// `key`: the problem of the day's slot (Phase 45), in place of the career's save.
 let reloads = 0;
-async function reloadWith(p, change) {
-  const file = change(JSON.parse(await p.evaluate(() => localStorage.getItem('dirtbag.save'))));
+async function reloadWith(p, change, key = 'dirtbag.save') {
+  const file = change(JSON.parse(await p.evaluate((k) => localStorage.getItem(k), key)));
   const next = JSON.stringify(file);
   const token = `e2e-reload-${++reloads}`;
   await p.addInitScript(
-    ([t, raw]) => {
+    ([t, raw, k]) => {
       if (sessionStorage.getItem('e2e-reload') !== t) return;
       sessionStorage.removeItem('e2e-reload');
-      localStorage.setItem('dirtbag.save', raw);
+      localStorage.setItem(k, raw);
     },
-    [token, next],
+    [token, next, key],
   );
   await p.evaluate((t) => sessionStorage.setItem('e2e-reload', t), token);
   await p.reload({ waitUntil: 'load' });
@@ -3017,6 +3018,117 @@ console.log('Your set on the wall');
   if (!after.routes[id]?.sent || after.routes[id].goes !== goes)
     await fail(`yourset: not in the save: ${JSON.stringify(after.routes[id])}`);
   log(`yourset: First Light sent on go ${goes}`);
+  await page.close();
+  page = main;
+}
+
+console.log('The problem of the day');
+// Phase 45 (its criterion 2; criterion 1 is daily.test.ts). Your climber's save beside it, the
+// page opened on a pinned date's day: its sheet (the line, the climber made for it), the line,
+// a go come off on purpose and the day going on, then goes till it goes or the day's done, and
+// the day's sheet. Its own slot all along: the career's save the same to the byte, and back to
+// it from the sheet. Then the next day, begun too tired for more than one go: it ends on the
+// fall, on the day's sheet.
+{
+  const career = await page.evaluate(() => localStorage.getItem('dirtbag.save'));
+  const main = page;
+  page = await playPage({ width: 390, height: 844 }, 2, 'day: ');
+  await page.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+  }, career);
+  const dayUrl = (date) => new URL(`?day=${date}`, server.url).href;
+  const slot = () => page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.day.save')).state);
+  await page.goto(dayUrl('2026-10-19'), { waitUntil: 'load' });
+  await expectText('#sheet-title', /The problem of the day/, 'day: its sheet');
+  await expectText('#sheet', /19 October 2026\. Hueco Pockets, V9, at Moonstone Boulders\./, 'day: its line');
+  await expectText('#sheet', /Today you climb V7, on a V9\./, 'day: its climber');
+  if ((await text('#b-nav')) !== 'The day') await fail(`day: the nav reads ${await text('#b-nav')}`);
+  if (await page.locator('#h-cash').count()) await fail('day: money in the HUD on a day');
+  await expectText('#h-time', /^19 Oct · 7:40/, 'day: its date and first light');
+  await shot('day');
+  await click('#sheet .opt', 'To the line');
+  await expectText('#sheet-title', /Hueco Pockets · V9/, 'day: the line, up close');
+  // Off at the first crux, on purpose: the fall's own sheet, and the day goes on.
+  await click('#sheet .go');
+  await until('the climb panel', () => page.locator('#climb').count());
+  await climb({ failFirst: true });
+  await until(
+    'day: the fall',
+    () => page.locator('#sheet .opt', { hasText: 'Rest, then go again' }).count(),
+    15_000,
+  );
+  let goes = 1;
+  const over = () =>
+    page.evaluate(() => {
+      const t = document.querySelector('#sheet-title')?.textContent ?? '';
+      return / on go \d+$|^Not today$/.test(t) ? t : null;
+    });
+  let end = null;
+  while (!end && goes < 16) {
+    await click('#sheet .opt', 'Rest, then go again');
+    end = await until(
+      'day: the beta sheet, or the day over',
+      async () => (await over()) ?? ((await page.locator('#sheet .go').count()) ? 'more' : null),
+    );
+    if (end !== 'more') break;
+    end = null;
+    await click('#sheet .go');
+    goes++;
+    await until('the climb panel', () => page.locator('#climb').count());
+    await climb();
+    end = await until(
+      'day: the go to end',
+      async () =>
+        (await over()) ??
+        ((await page.locator('#sheet .opt', { hasText: 'Rest, then go again' }).count()) ? 'fell' : null),
+      15_000,
+    );
+    if (end === 'fell') end = null;
+  }
+  if (!end) await fail(`day: still going after ${goes} goes`);
+  await shot('day-over');
+  const st = await slot();
+  // The day's line is the only one with goes on it.
+  const tried = Object.values(st.routes).filter((l) => l.goes > 0);
+  const L = tried[0];
+  if (st.seed !== 'day:2026-10-19') await fail(`day: the slot holds ${st.seed}`);
+  if (tried.length !== 1 || (L.sent ? L.sent.go : L.goes) !== goes)
+    await fail(`day: ${goes} goes played, the slot says ${JSON.stringify(st.routes)}`);
+  if (/ on go /.test(end) !== !!L.sent)
+    await fail(`day: the sheet says "${end}", the slot ${JSON.stringify(L.sent)}`);
+  log(`day: ${end} (${goes} goes)`);
+  // Its own slot: the career's save as it was, to the byte.
+  if ((await page.evaluate(() => localStorage.getItem('dirtbag.save'))) !== career)
+    await fail('day: the career’s save changed');
+  log(`day: keys ${(await page.evaluate(() => Object.keys(localStorage).sort())).join(', ')}`);
+  // Opened again, the same day, as it ended.
+  await page.goto(dayUrl('2026-10-19'), { waitUntil: 'load' });
+  await expectText('#sheet-title', new RegExp(`^${end}$`), 'day: the same day again');
+  if (JSON.stringify((await slot()).routes) !== JSON.stringify(st.routes))
+    await fail('day: opened again, the day moved');
+  // Back to your own climber.
+  await click('#sheet .opt', 'Back to your own climber');
+  await until(
+    'day: back to the career',
+    async () => /^Day \d+ · /.test((await text('#h-time')) ?? ''),
+    15_000,
+  );
+  if (new URL(page.url()).search) await fail(`day: back at ${page.url()}`);
+  if ((await page.evaluate(() => localStorage.getItem('dirtbag.save'))) === null)
+    await fail('day: no climber to go back to');
+  // The next day, begun with energy for one go: off it, and that's the day.
+  await page.goto(dayUrl('2026-10-20'), { waitUntil: 'load' });
+  await expectText('#sheet', /20 October 2026\./, 'day: the next day');
+  await reloadWith(page, (f) => ({ ...f, state: { ...f.state, energy: 12 } }), 'dirtbag.day.save');
+  await expectText('#sheet-title', /The problem of the day/, 'day: the next day, tired');
+  await click('#sheet .opt', 'To the line');
+  await click('#sheet .go');
+  await until('the climb panel', () => page.locator('#climb').count());
+  await climb({ failFirst: true });
+  await expectText('#sheet-title', /^Not today$/, 'day: over on the fall');
+  await expectText('#sheet', /Too tired to try\./, 'day: why');
+  if ((await page.evaluate(() => localStorage.getItem('dirtbag.save'))) !== career)
+    await fail('day: the career’s save changed on the next day');
   await page.close();
   page = main;
 }

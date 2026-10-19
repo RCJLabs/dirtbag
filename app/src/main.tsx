@@ -8,8 +8,9 @@ import './ui/styles.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { desktop, fileStorage } from './game/desktop';
+import { dayParam } from './game/day';
 import { Game } from './game/game';
-import { keepIn } from './game/storage';
+import { keepIn, useSlot } from './game/storage';
 import { askPlay } from './game/play';
 import { locked, openGate } from './game/unlock';
 import { App } from './ui/App';
@@ -22,8 +23,12 @@ if (desktop) keepIn(fileStorage(desktop));
 // boots and never changed while it runs.
 openGate(!!desktop);
 
+// Phase 45: `?day` is the problem of the day, played in its own save slot, never the career's.
+const day = dayParam(location.search, new Date());
+if (day) useSlot('day');
+
 const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const game = new Game({ still });
+const game = new Game({ still, day });
 // Phase 19.4: the error screen's report says where the game was and what was just done.
 crashTrail(() => game.trail());
 // Phase 19.2: while it's locked, in the Android app, Play's word on it: bought before (a new

@@ -101,9 +101,24 @@ await page.locator('#sheet .opt', { hasText: 'Start over' }).first().click();
 await page.waitForSelector('#create', { timeout: 10_000 }).catch(() => fail('Start over didn’t'));
 ok('and a new first morning');
 
+// Phase 45: the problem of the day in the demo: one of the demo's crags, and its own slot among
+// the demo's keys.
+await page.goto(new URL('?day=2026-10-19', server.url).href, { waitUntil: 'load' });
+await page.waitForFunction(
+  () => document.querySelector('#sheet-title')?.textContent === 'The problem of the day',
+);
+const daySheet = (await text('#sheet')) ?? '';
+if (!/19 October 2026\. The Pinch, V6, at Granite Gorge\./.test(daySheet))
+  await fail(`the demo's day: ${daySheet.slice(0, 200)}`);
+const dayKeys = await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('dirtbag.')));
+if (!dayKeys.includes('dirtbag.demo.day.save') || dayKeys.some((k) => !k.startsWith('dirtbag.demo.')))
+  await fail(`the demo's day's keys: ${dayKeys.join(', ')}`);
+await page.screenshot({ path: join(OUT, 'demo-day.png') });
+ok(`the day, at the demo's own crag: ${dayKeys.join(', ')}`);
+
 if (problems.length) await fail('problems on the way');
 await browser.close();
 await server.close();
 console.log(
-  '\n✓ The demo starts as the demo, keeps to its places, and ends on its last card, the save in hand.',
+  '\n✓ The demo starts as the demo, keeps to its places, and ends on its last card, the save in hand; its day is its own.',
 );

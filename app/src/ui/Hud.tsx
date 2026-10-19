@@ -1,4 +1,4 @@
-import { clock, gradeOf, money } from '../sim';
+import { clock, dateLabel, gradeOf, money } from '../sim';
 import type { Game, Ui } from '../game/game';
 import { vars } from './vars';
 
@@ -17,14 +17,17 @@ export function Hud({ game, ui }: { game: Game; ui: Ui }) {
         className="pill"
         id="h-time"
         disabled={busy}
-        aria-label={`Day ${day}, ${clock(min)}. The forecast.`}
+        aria-label={`${game.day ? dateLabel(game.day) : `Day ${day}`}, ${clock(min)}. The forecast.`}
         onClick={() => game.openSheet({ k: 'week' })}
       >
-        Day {day} · {clock(min)}
+        {/* Phase 45: a day's date, not a season's count; and a day has no money in it. */}
+        {game.day ? dateLabel(game.day, true) : `Day ${day}`} · {clock(min)}
       </button>
-      <span className={`pill${cash < 0 ? ' debt' : ''}`} id="h-cash">
-        {money(cash)}
-      </span>
+      {!game.day && (
+        <span className={`pill${cash < 0 ? ' debt' : ''}`} id="h-cash">
+          {money(cash)}
+        </span>
+      )}
       <button
         type="button"
         className="pill meters"

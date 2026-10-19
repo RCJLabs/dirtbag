@@ -3,6 +3,9 @@
 // sim's numbers through its formatters.
 
 import {
+  DAY_SAYS,
+  dateLabel,
+  dayResult,
   STORY,
   storyOf,
   LINE_SCENE,
@@ -345,6 +348,8 @@ import { planLine } from '../game/plan';
 import { desktop } from '../game/desktop';
 import { buyUnlock, inAndroidApp, playOffer, restoreUnlock } from '../game/play';
 import { locked, STORES } from '../game/unlock';
+import { careerSaved } from '../game/persist';
+import { fromDay } from '../game/day';
 import { radioLine } from './forecast';
 
 // Phase 43: what's in the van, and anything taken out and waiting for a spot.
@@ -402,7 +407,8 @@ export interface ListSpec {
   lines?: string[];
   // How far a go got, in moves, against your best before it (none on a first go), with the
   // cruxes shaded.
-  reach?: { moves: number; cruxes: [number, number][]; go: number; best: number | null };
+  // Phase 45: or how high you got, said your own way.
+  reach?: { moves: number; cruxes: [number, number][]; go: number; best: number | null; say?: string };
   // A place card's header: the place drawn as you'd find it at that minute, and said.
   head?: { place: string; min: number; say: string };
   // Who's around then.
@@ -1028,6 +1034,71 @@ const SKY_OUT: Record<Sky, string> = {
   rain: 'Out there today: rain. The rock’s soaked.',
 };
 const skyNote = (sky: Sky): string => SKY_OUT[sky];
+
+// Phase 45: the problem of the day: the line, the climber made for it, how it's going; once
+// it's over, how it went. Leaving goes back to your own climber, or makes one; the day keeps
+// in its slot till the date turns.
+function daySheet(game: Game, s: GameState, notes: string[]): ListSpec | null {
+  const r = game.dayLine ? routeOfId(s, game.dayLine) : undefined;
+  if (!game.day || !r) return null;
+  const res = dayResult(s, r.id);
+  const goes = (n: number) => `${n} go${n === 1 ? '' : 'es'}`;
+  const where = fill(DAY_SAYS.where, {
+    date: dateLabel(game.day),
+    line: lineName(s, r),
+    grade: gradeLabel(r),
+    crag: PLACES[r.place]?.name ?? '',
+  });
+  const reach = {
+    moves: res.moves,
+    cruxes: r.cruxes.map((c): [number, number] => [c.from, c.to]),
+    go: res.hi,
+    best: null,
+    say: DAY_SAYS.reach,
+  };
+  const leave: Row = careerSaved()
+    ? { label: DAY_SAYS.leave, note: DAY_SAYS.leaveNote, run: fromDay }
+    : { label: DAY_SAYS.leaveNew, note: DAY_SAYS.leaveNewNote, run: fromDay };
+  const settings: Row = { label: 'Settings', run: () => game.openSheet({ k: 'settings' }) };
+  if (!game.dailyDone())
+    return {
+      title: DAY_SAYS.title,
+      sub: where,
+      lines: [
+        fill(DAY_SAYS.level, { you: `V${gradeOf(s.climber.skills)}`, grade: gradeLabel(r) }),
+        res.goes
+          ? fill(DAY_SAYS.soFar, { goes: goes(res.goes), hi: res.hi, moves: res.moves })
+          : DAY_SAYS.none,
+        DAY_SAYS.rules,
+      ],
+      ...(res.goes ? { reach } : {}),
+      close: true,
+      rows: [{ label: DAY_SAYS.back, run: () => game.lookUp(r.id) }, leave, settings],
+    };
+  const why = goBlocked(s, r);
+  if (res.sent)
+    return {
+      title: fill(DAY_SAYS.sent, { style: SEND_NAME[res.sent], go: res.goes }),
+      sub: where,
+      lines: [DAY_SAYS.sentLine],
+      notes,
+      close: true,
+      rows: [
+        ...(why ? [] : [{ label: DAY_SAYS.stay, note: DAY_SAYS.stayNote, run: () => game.closeSheet() }]),
+        leave,
+        settings,
+      ],
+    };
+  return {
+    title: DAY_SAYS.notSent,
+    sub: where,
+    lines: [`${why}.`, fill(DAY_SAYS.notSentLine, { hi: res.hi, moves: res.moves, goes: goes(res.goes) })],
+    reach,
+    notes,
+    close: true,
+    rows: [leave, settings],
+  };
+}
 
 const mapRow = (game: Game): Row => ({
   label: 'Open the map',
@@ -2848,6 +2919,10 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         ],
       };
     }
+
+    // Phase 45: the problem of the day.
+    case 'day':
+      return daySheet(game, s, id.notes ?? []);
 
     case 'dead': {
       const d = s.dead;

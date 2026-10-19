@@ -2,10 +2,19 @@
 // aside and never overwritten, the day before is there to fall back on, and a browser
 // that won't store anything still starts a game.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, asDemoBuild, newGame, toSave } from '../sim';
+import { act, asDemoBuild, dailyState, daySeed, newGame, toSave } from '../sim';
 import { loadPlans, savePlans } from './plan';
-import { boot, DEFAULT_SETTINGS, demoClimber, loadSettings, replace, save, saveSettings } from './persist';
-import { keepIn } from './storage';
+import {
+  boot,
+  careerSaved,
+  DEFAULT_SETTINGS,
+  demoClimber,
+  loadSettings,
+  replace,
+  save,
+  saveSettings,
+} from './persist';
+import { keepIn, useSlot } from './storage';
 
 class FakeStorage {
   data = new Map<string, string>();
@@ -148,6 +157,45 @@ describe('persist', () => {
     expect(demoClimber()).toBeNull();
     ls.setItem('dirtbag.demo.save', toSave(newGame('nobody'), '0.0.0-test'));
     expect(demoClimber()).toBeNull();
+  });
+
+  // Phase 45: the problem of the day's slot.
+  it('keeps the problem of the day in a slot of its own, never touching the career’s keys', () => {
+    expect(careerSaved()).toBe(false);
+    const career = act(newGame('career'), { t: 'create', name: 'Robin', start: 'allrounder' }).state;
+    save(career);
+    savePlans({ plan: [{ place: 'gym', climb: true }], yesterday: [] });
+    saveSettings({ ...DEFAULT_SETTINGS, sound: 'quiet' });
+    const kept = new Map(ls.data);
+    useSlot('day');
+    try {
+      // Nothing in the slot yet: the game makes the day's climber.
+      expect(boot(seed).state.climber.name).toBe('');
+      const day = dailyState('2026-10-19');
+      expect(save(day)).toBe(true);
+      expect(save({ ...day, min: day.min + 10 })).toBe(true);
+      expect(boot(seed).state.seed).toBe(daySeed('2026-10-19'));
+      expect(loadPlans().plan).toEqual([]);
+      // The settings are the player's, whoever's climbing.
+      expect(loadSettings().sound).toBe('quiet');
+      expect(careerSaved()).toBe(true);
+    } finally {
+      useSlot('');
+    }
+    for (const [k, v] of kept) expect(ls.getItem(k)).toBe(v);
+    expect([...ls.data.keys()].filter((k) => !kept.has(k))).toEqual(['dirtbag.day.save']);
+    expect(boot(seed).state.climber.name).toBe('Robin');
+    // The demo's day is the demo's.
+    asDemoBuild(true);
+    useSlot('day');
+    try {
+      save(dailyState('2026-10-19'));
+    } finally {
+      useSlot('');
+      asDemoBuild(false);
+    }
+    expect(ls.getItem('dirtbag.demo.day.save')).not.toBeNull();
+    for (const [k, v] of kept) expect(ls.getItem(k)).toBe(v);
   });
 
   it('shows your best go’s ghost unless you hide it, settings from before it included', () => {

@@ -63,6 +63,14 @@ export const DAY = {
   nightUntil: 5 * 60,
 };
 
+// Phase 45: the problem of the day. Its climber sits `under` grades below the line, in every
+// skill. At the line's own grade, human-ish hands (bot.ts) flashed it 39 days in 40, which
+// makes "in as few goes as you can" a formality. At 1.25 under, over 150 dates, they sent it 7
+// days in 10, in 3 goes at the median (1 to 13), flashing 1 day in 7; the days it didn't go
+// ended on skin, mostly. From 1.5 under, the line gains a crux for you (OVER.cruxFrom) and
+// sends fell to 2 in 5. [proposed]: the hands are guesses, so playtests set it.
+export const DAILY = { under: 1.25 };
+
 export const MONEY = {
   // $41 is two nights at the Lot and one tank to the crag. A climbing day without a shift
   // ends in debt at bedtime: the trade the whole game is built on.

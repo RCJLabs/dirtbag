@@ -6,15 +6,16 @@
 //   - A failed write is reported, not swallowed.
 
 import { DEMO_BUILD, fromSave, newGame, toSave, type GameState } from '../sim';
-import { DEMO_SAVE, ours, store } from './storage';
+import { DEMO_SAVE, ours, slotted, store } from './storage';
 import { DEFAULT_BINDS, readBinds, type Binds } from './binds';
 
-// The demo's keys are its own (storage.ts, Phase 14.5c).
-const KEY = () => ours('save');
-const PREV = () => ours('save.prev');
-const QUARANTINE = () => ours('save.corrupt.');
+// The demo's keys are its own (storage.ts, Phase 14.5c), and the problem of the day's are in
+// its own slot (Phase 45).
+const KEY = () => slotted('save');
+const PREV = () => slotted('save.prev');
+const QUARANTINE = () => slotted('save.corrupt.');
 // Phase 14.2: the climber a save brought in from a file took the place of, kept in case.
-const REPLACED = () => ours('save.replaced');
+const REPLACED = () => slotted('save.replaced');
 
 export interface Boot {
   state: GameState;
@@ -135,6 +136,15 @@ export function demoClimber(): GameState | null {
     return got?.ok && got.state.climber.name ? got.state : null;
   } catch {
     return null;
+  }
+}
+
+// Phase 45: whether there's a career's climber beside the day's, to go back to.
+export function careerSaved(): boolean {
+  try {
+    return !!store()?.getItem(ours('save'));
+  } catch {
+    return false;
   }
 }
 
