@@ -3,6 +3,8 @@
 // when the scramble starts and {till} when it ends, {who} whoever's leading the trail work,
 // {name} a climber in the scramble, {n} how many problems, {second} and {third} what they pay.
 
+import type { RecordEntry } from './record';
+
 export const FESTIVAL_SAYS = {
   name: 'The Moonstone crag day',
   // The morning of it, wherever you wake; for someone who can't get there yet; and rain there.
@@ -13,6 +15,8 @@ export const FESTIVAL_SAYS = {
   washed: 'Rain at Moonstone again. There’ll be no crag day this winter.',
   // On the week ahead, on the day it's set for.
   week: 'The crag day at Moonstone, if it’s dry.',
+  // Strung over the sign-up table on the day.
+  banner: 'CRAG DAY',
   // Coming in before the scramble: the scene, and the three ways in.
   scene:
     'The whole desert’s here. The old guard have been out since first light with rakes and a wheelbarrow, putting the trail back where it goes. There’s a folding table by the vans with a sign-up sheet for the scramble at {time}, and a box of new shoes under it for whoever wins.',
@@ -72,3 +76,16 @@ export const FESTIVAL_SAYS = {
     frank: 'Frank brings his chair and a pot of chili that’s been on since the trail work started.',
   } as Record<string, string>,
 };
+
+// The Record Book's page for it: the scramble won.
+export const FESTIVAL_RECORD: RecordEntry[] = [
+  {
+    id: 'scramble',
+    title: 'Top of the Sheet',
+    desc: 'Win the scramble on the Moonstone crag day.',
+    story:
+      'An afternoon, every boulder at Moonstone, and a scorecard on a string with more ticks on it than anyone else’s. The shoes still smell of the box.',
+    from: [],
+    aim: { scramble: true },
+  },
+];

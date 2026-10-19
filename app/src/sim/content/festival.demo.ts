@@ -10,6 +10,7 @@ export const FESTIVAL_SAYS: typeof Full.FESTIVAL_SAYS = {
   rained: '',
   washed: '',
   week: '',
+  banner: '',
   scene: '',
   trail: way,
   scramble: { ...way, note: '' },
@@ -33,3 +34,4 @@ export const FESTIVAL_SAYS: typeof Full.FESTIVAL_SAYS = {
   alone: '',
   with: {},
 };
+export const FESTIVAL_RECORD: typeof Full.FESTIVAL_RECORD = [];

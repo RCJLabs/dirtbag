@@ -291,6 +291,10 @@ describe('the crag day at Moonstone', () => {
     const won = run(w, { t: 'scramble' });
     expect(won.state.festival?.place).toBe(1);
     expect(won.state.gear.shoes).toBe(100);
+    // And the Record Book's page for it; not for second.
+    expect(won.state.record.scramble).toBe(won.state.day);
+    expect(won.events.some((e) => e.k === 'record' && e.ids.includes('scramble'))).toBe(true);
+    expect(ok(signed(), { t: 'scramble' }).record.scramble).toBeUndefined();
     expect(lines(won.events).join(' ')).toContain(FESTIVAL_SAYS.shoes);
   });
 

@@ -240,6 +240,7 @@ export {
   cardSaid,
   festivalBlocked,
   festivalNote,
+  festivalOn,
   festivalSet,
   FESTIVAL_WAYS,
   fireSaid,

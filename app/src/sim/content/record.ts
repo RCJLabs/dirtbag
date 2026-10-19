@@ -5,6 +5,7 @@
 // stays out of the book until then. `aim` is what earns it, worked out in record.ts. Ids are
 // stable: Phase 14 maps them to Steam achievements.
 
+import { FESTIVAL_RECORD } from './festival';
 import { HOLLOW_RECORD } from './hollow';
 
 export type RecordAim =
@@ -58,7 +59,9 @@ export type RecordAim =
   // Phase 31.3: the line the old climber gave you at the fire, sent.
   | { quest: true }
   // Phase 32.2: the Hollow, found.
-  | { hollow: true };
+  | { hollow: true }
+  // Phase 20.3: the crag day's scramble, won.
+  | { scramble: true };
 
 export interface RecordEntry {
   id: string;
@@ -539,6 +542,8 @@ export const RECORD: RecordEntry[] = [
   },
   // Phase 32.2: the Hollow found: the full game's (hollow.full.ts).
   ...HOLLOW_RECORD,
+  // Phase 20.3: the crag day's scramble won: the full game's (festival.full.ts).
+  ...FESTIVAL_RECORD,
   // Phase 31.3: a family's kid sends the line the old climber gave them at the fire.
   {
     id: 'kinquest',

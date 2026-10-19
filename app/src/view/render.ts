@@ -25,6 +25,9 @@ import {
   WALLS,
   crowdNow,
   EXPEDITIONS,
+  FESTIVAL,
+  FESTIVAL_SAYS,
+  festivalOn,
   ghostAt,
   ghostOf,
   SPEED,
@@ -78,7 +81,16 @@ import { dirtRoad, mapArt } from './paint/map';
 import { SIDE_ROADS } from './valley';
 import { drawBelayerBack, drawClimber, drawDog, drawPerson, INK, LOOK, STRANGERS } from './paint/people';
 import { BIG } from './paint/scale';
-import { drawSkyMarks, FIRE_X, LIGHTS, sceneArt, SKY_W, type SceneArt, type Tod } from './paint/scenes';
+import {
+  dressCragDay,
+  drawSkyMarks,
+  FIRE_X,
+  LIGHTS,
+  sceneArt,
+  SKY_W,
+  type SceneArt,
+  type Tod,
+} from './paint/scenes';
 import { belayAt, onRoute, rockPath, routeStretch, topoFor, traceSelected, wallOf } from './paint/wall';
 import { sceneSun, sunLight, wallSun, wetness } from './sun';
 import { drawSnow, EXPED_SKY_W, expedScene, expedSpot, SCENED, SNOWS } from './paint/expeds';
@@ -316,6 +328,15 @@ export function sceneLive(g: G, s: GameState, scene: string, cam: number, eye: E
       .forEach((r, n) =>
         tapeTag(g, BOARD_X0 + 25 + n * 50 - cam, GND - 16, '#2B2825', gradeLabel(r), !!s.routes[r.id]?.sent),
       );
+  }
+  // Phase 20.3: Moonstone dressed for its crag day, the banner over the sign-up table.
+  if (crag && place === FESTIVAL.at && festivalOn(s.seed, s.day)) {
+    dressCragDay(g, -cam, f.still ? 0 : f.t);
+    label(g, 'poster', FESTIVAL_SAYS.banner, 262 - cam, GND - 112, {
+      size: 8,
+      color: CREAM,
+      halo: ACC.comic,
+    });
   }
   // The crowd, if there is one: strangers at the foot of the lines, the same ones all day.
   if (crag)

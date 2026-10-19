@@ -5150,11 +5150,16 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - **That night,** back at the Lot if you were out there: the fire. Your people around and the old guard you know: +1 bond each, +8 psyche, and a card in the morning with the day's line and one from each. Nobody knocks at the van that night.
 - **A fix it turned up:** the first card of a morning was shown as the night went through, then cleared by waking at the Lot, and lost. The night's cards now wait for the morning.
 - **The bots:** they answer the card with the first way, so nothing stalls. In 8 career bots over about eight winters each, they heard of 47 crag days and came to one, late (no refusals): they don't route to it, so balance doesn't move, and no bot's played the scramble.
-- **Not built:** nothing in the scene beyond the packed crowd (no banners or table); no Record Book entry; no harness for it.
+- **Not built:** no harness for it.
 - **What's new:** the newest note, never tagged as 0.999.108, is now 0.999.109 with the crag day in it, 497 of 500.
 - **Tests:** `festival.test.ts` (13); the old-save tests take the field; fixture `save-v83.json` (day 202), made by main's code.
 - **The e2e:** a section on this seed's day 81: the card, signed up, the Tall Arête on the card at one, handed in at the van, the fire's card the next morning.
 - **The download:** 502.0 KB of 510 (+3.9).
+
+**Status (19 Oct 2026): the crag day dressed** (Evan's pick after 20.3). No save change, 0.999.110.
+- **The scene:** on the crag day only, Moonstone has bunting from the van's roof to a pole, a CRAG DAY banner, a folding table with the sign-up sheet in front of the van, and the box of shoes under it. It's drawn live (`dress` in `view/paint/scenes.full.ts`; the demo's twin draws nothing).
+- **The Record Book:** "Top of the Sheet", for winning the scramble (`FESTIVAL_RECORD`, the full game's). That makes 54 entries and 52 Steam achievements. `achievements.json`, STORE.md's count and LAUNCH.md follow.
+- **What's new:** the newest note carried to 0.999.110, unchanged.
 
 **Goal.** Ship 1.0 on Steam, Play and web (+ iOS and itch), keep a post-launch rhythm a solo developer can sustain, and make the Unreal decision with real data.
 
@@ -5459,3 +5464,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-19 — Phase 20 planned with Evan's calls: the code side before launch is What's new, a launch checklist and a seasonal event with no server; 1.0 waits for his word. 20.1 built: What's new, from one notes file that Play takes too. 0.999.108.
 - 2026-10-19 — 20.2 built: the launch checklist (`docs/LAUNCH.md`), and README's status brought up to date. Evan's calls for 20.3: a crag day at Moonstone in winter, trail work and a scramble, standing, a prize and the night.
 - 2026-10-19 — 20.3 built: the crag day at Moonstone. Each winter, trail work with the old guard, a scramble on the boulders, or the crag packed to climb; the fire that night. A morning's first card is no longer lost on waking. Save v84, 0.999.109.
+- 2026-10-19 — The crag day dressed: bunting, a banner, the sign-up table and the box of shoes at Moonstone on the day, and "Top of the Sheet" in the Record Book for winning the scramble. 0.999.110.

@@ -1,6 +1,6 @@
 # Store copy — Steam and Google Play, 0.999.86
 
-The listings for the game, in its voice: dry, wry, second-person, climber-authentic, never jokey. Every fact in them is the build's, and the ones with a number or a name are held to it by `app/src/storecopy.test.ts`: the $41 start, the crags and their names, the five acts, V18 at the top, the 53 entries in the Record Book. When the game changes, change this with it.
+The listings for the game, in its voice: dry, wry, second-person, climber-authentic, never jokey. Every fact in them is the build's, and the ones with a number or a name are held to it by `app/src/storecopy.test.ts`: the $41 start, the crags and their names, the five acts, V18 at the top, the 54 entries in the Record Book. When the game changes, change this with it.
 
 The order follows the audit's advice (`docs/audit/market.md` §4.3): the life first, then the climbing, then the promise. Real people and brands stay out of it (§5); the expeditions' mountains are places, not brands.
 
@@ -35,7 +35,7 @@ THE YEARS
 Five acts, from your first season on gym plastic to The Line. League night, then the Circuit, then Nationals, the World Series and the Games, in rounds, against a field that comes back every year. You get older. The body notices before you do. When you stop, someone younger picks up where you left off, and you’re the one at the fire with the beta.
 
 THE RECORD BOOK
-Fifty-three entries, each with a few lines about the day you earned it. Send something for the first time and the game draws you a card of it: your line, your grade, the day.
+Fifty-four entries, each with a few lines about the day you earned it. Send something for the first time and the game draws you a card of it: your line, your grade, the day.
 
 THE PROMISE
 The first season is free as a demo, and your climber carries on from it. No ads, no accounts, no tracking. Plays offline. Mouse, keyboard or a controller, every button yours to move. Your save is a file on your machine, and it goes where you take it.

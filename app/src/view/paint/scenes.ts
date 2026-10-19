@@ -480,6 +480,8 @@ export interface SceneMakers {
   stroke: typeof stroke;
 }
 const LATER = laterScenes({ fill, stroke });
+// Phase 20.3: Moonstone dressed for the crag day, drawn live from the scene's left edge.
+export const dressCragDay = (g: G, x: number, t: number): void => LATER.dress(g, x, t);
 
 // The wall's outline: a ragged left edge from its foot, and either the scene's right edge
 // or, where the wall ends, a top that steps down into the talus.
