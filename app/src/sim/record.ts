@@ -65,6 +65,7 @@ export function aimEarned(s: GameState, aim: RecordAim, sent = sends(s)): boolea
   if ('quest' in aim) return questDone(s);
   // Migration 30 asks this of states from before anyone could find it.
   if ('hollow' in aim) return (s.unlocked ?? []).includes('hollow');
+  if ('scramble' in aim) return s.festival?.place === 1;
   if ('followers' in aim) return (s.media?.followers ?? 0) >= aim.followers;
   if ('sponsor' in aim) return (s.media?.sponsor?.tier ?? -1) >= aim.sponsor;
   if ('film' in aim) return !!s.media?.doc && 'aired' in s.media.doc;

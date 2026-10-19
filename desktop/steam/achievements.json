@@ -260,6 +260,11 @@
     "desc": "Find the Hollow."
   },
   {
+    "name": "SCRAMBLE",
+    "title": "Top of the Sheet",
+    "desc": "Win the scramble on the Moonstone crag day."
+  },
+  {
     "name": "KINQUEST",
     "title": "Unfinished Business",
     "desc": "Send the line the old climber gave you at the fire."

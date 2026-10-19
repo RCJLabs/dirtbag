@@ -8,4 +8,5 @@ export const laterScenes: typeof Full.laterScenes = () => ({
   talus: {},
   rocks: {},
   foot: () => undefined,
+  dress: () => undefined,
 });

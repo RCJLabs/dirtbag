@@ -15,6 +15,7 @@ export function laterScenes({ fill, stroke }: SceneMakers): {
   talus: Record<string, [number, number, number][]>;
   rocks: Partial<Record<Rock, Painter>>;
   foot: (g: G, id: string, spec: CragSpec, P: Palette) => void;
+  dress: (g: G, x: number, t: number) => void;
 } {
   // Moonstone: a high desert noon. Pale sky, mesas gone violet with distance, sand, and
   // quartzite that's nearly white where the sun's on it.
@@ -426,7 +427,55 @@ export function laterScenes({ fill, stroke }: SceneMakers): {
     hollow: { P: HOLLOW, seed: 53, rock: 'redrock', bare: true },
   };
 
+  // Phase 20.3: Moonstone's crag day, in front of the van (x is the scene's left edge): bunting
+  // from the van's roof to a pole, a folding table with the sign-up sheet, and the box of shoes
+  // under it. Live, so it's up only on the day.
+  const BUNT = ['#D8553F', '#F2C14E', '#2F6F73', '#F3E6CB'];
+  function dress(g: G, x: number, t: number): void {
+    const [ax, ay, bx, by] = [x + 206, GND - 98, x + 318, GND - 148];
+    fill(g, (gg) => gg.rect(bx - 2, by, 4, GND - by), '#6B4A30');
+    const at = (k: number): [number, number] => [
+      ax + (bx - ax) * k,
+      ay + (by - ay) * k + Math.sin(k * Math.PI) * 14,
+    ];
+    stroke(
+      g,
+      (gg) => {
+        for (let i = 0; i <= 12; i++) gg.lineTo(...at(i / 12));
+      },
+      '#2B2A33',
+      1.2,
+    );
+    for (let i = 0; i < 8; i++) {
+      const [x1, y1] = at((i + 0.15) / 8);
+      const [x2, y2] = at((i + 0.85) / 8);
+      const sway = Math.sin(t * 2 + i) * 1.5;
+      fill(
+        g,
+        (gg) =>
+          poly(
+            gg,
+            [
+              [x1, y1],
+              [x2, y2],
+              [(x1 + x2) / 2 + sway, Math.max(y1, y2) + 11],
+            ],
+            true,
+          ),
+        BUNT[i % 4]!,
+      );
+    }
+    // The table: legs, top, the sheet and its pencil on a string; the box under it.
+    for (const lx of [x + 126, x + 190]) fill(g, (gg) => gg.rect(lx, GND - 30, 3, 30), '#4A4A52');
+    fill(g, (gg) => rr(gg, x + 118, GND - 34, 82, 6, 2), '#7C7466');
+    fill(g, (gg) => gg.rect(x + 140, GND - 39, 22, 5), '#FFFDF5');
+    stroke(g, (gg) => (gg.moveTo(x + 162, GND - 37), gg.lineTo(x + 168, GND - 24)), '#2B2A33', 0.8);
+    fill(g, (gg) => gg.rect(x + 144, GND - 15, 30, 15), '#B07A4A');
+    fill(g, (gg) => gg.rect(x + 142, GND - 17, 34, 4), '#8F5F36');
+  }
+
   return {
+    dress,
     looks,
     trees: {
       cove: [
