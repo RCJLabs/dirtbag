@@ -43,6 +43,9 @@ import {
   clock,
   clockShort,
   conditions,
+  callOn,
+  fromSky,
+  FORECAST,
   conditionsAt,
   costLabel,
   dayFactor,
@@ -132,14 +135,13 @@ import {
   routeOfId,
   seasonOf,
   SKILLS,
-  SKY_NAME,
-  skyAt,
   startName,
   sunOn,
   tierOf,
   together,
   TIER_NAME,
   type Conditions,
+  type Call,
   type GameState,
   type LogLine,
   type PersonLog,
@@ -266,6 +268,7 @@ import { Glyph, glyphs } from './Glyph';
 import { PerudoBody } from './Perudo';
 import { BlackjackBody, HoldemBody } from './Cards';
 import { GloveboxBody } from './Glovebox';
+import { callSaid, friction } from './forecast';
 
 // "a, b and c".
 const and = (xs: string[]): string =>
@@ -399,6 +402,7 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
           <Glossed game={game} at={id} text={n} />
         </p>
       ))}
+      {spec.forecast && <ForecastList {...spec.forecast} s={state} />}
       {spec.tonight && <TonightList t={spec.tonight} />}
       {spec.who && <WhoList {...spec.who} />}
       <ul>
@@ -1043,7 +1047,7 @@ function Close({ game, back }: { game: Game; back?: boolean }) {
 }
 
 // What the day's doing to a line outdoors: in the sun already, or in the shade and till
-// when; and damp, the day after rain. Nothing on a day of rain: the rock's shut.
+// when. Nothing on a day of rain: the rock's shut. The damp is the friction note's.
 function rockNote(s: GameState, r: RouteDef): string {
   // Up on an expedition (Phase 24) the valley's sun and rain don't reach: its storms do.
   if (indoor(r.place) || r.exped) return '';
@@ -1055,7 +1059,38 @@ function rockNote(s: GameState, r: RouteDef): string {
     : sun < CLIMB.darkFrom
       ? ` · in the shade till ${clockShort(sun)}`
       : '';
-  return light + (c.seeping ? ' · damp from the rain' : '');
+  return light;
+}
+
+// Phase 41: what today's sky does to every window on a line outdoors, in words from the dials
+// the go itself uses. Shaded rock doesn't mind the heat.
+function dayFriction(s: GameState, r: RouteDef): string {
+  if (indoor(r.place) || r.exped) return '';
+  const c = conditionsAt(s.seed, s.day, r.place);
+  return c.open ? friction(c.sky, c.seeping, !!PLACES[r.place]?.shaded) : '';
+}
+
+// The café's radio (Phase 41): the valley's next days, called, each with what it would mean
+// for the rock if it holds.
+function ForecastList({ line, calls, s }: NonNullable<ListSpec['forecast']> & { s: GameState }) {
+  return (
+    <>
+      <p className="sub">{line}</p>
+      <ul className="days" id="forecast">
+        {calls.map((c, i) => {
+          const before = i ? calls[i - 1]!.sky : callOn(s.seed, s.day, s.day).sky;
+          const says = friction(c.sky, c.sky !== 'rain' && before === 'rain');
+          return (
+            <li key={c.day} data-sky={c.sky}>
+              <b>{c.day === s.day + 1 ? 'Tomorrow' : dayName(c.day)}</b>
+              <span className="sky">{callSaid(c)}</span>
+              {says && <small>{says}</small>}
+            </li>
+          );
+        })}
+      </ul>
+    </>
+  );
 }
 
 // A highball's landing, before you go [proposed]: who's spotting, what's under you, and how
@@ -1138,6 +1173,7 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
   const extra = overhead(s, r).cruxes.length - r.cruxes.length;
   const c = goCost(r, s);
   const cost = `${costLabel({ min: c.min })} · ${bodyNote({ energy: c.energy, skin: c.skin })}${rockNote(s, r)}`;
+  const feel = dayFriction(s, r);
   const log = s.routes[route];
   const unnamed = r.open && log?.sent && !s.firsts[route];
   // Phase 33.2: a comp problem's clock, the goes it has left.
@@ -1242,6 +1278,11 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
         <p className="note">
           <Glossed game={game} at={{ k: 'beta', route }} text="Open project: nobody’s sent it." /> Send it and
           it’s yours to name.
+        </p>
+      )}
+      {feel && (
+        <p className="note" id="friction">
+          {feel}
         </p>
       )}
       {r.highball && <Landing s={s} r={r} pad={pad} setPad={setPad} />}
@@ -1826,9 +1867,9 @@ function TonightList({ t }: { t: Tonight }) {
             {what}
           </small>
         </li>
-        <li data-sky={t.sky}>
+        <li data-sky={t.sky.sky} id="tonight-sky">
           <b>Tomorrow</b>
-          <span className="sky">{SKY_NAME[t.sky]}</span>
+          <span className="sky">{callSaid(t.sky)}</span>
         </li>
       </ul>
     </>
@@ -2576,14 +2617,14 @@ const SEASON: Record<Season, [string, string]> = {
 function skyLine(c: Conditions): string {
   const t = clockShort(c.greaseFrom);
   const all = clockShort(c.greaseFrom + CLIMB.sunSweep);
-  const wet = c.seeping ? ' Still seeping from the rain.' : '';
+  const wet = c.seeping ? ` ${friction('fair', true)}` : '';
   switch (c.sky) {
     case 'rain':
       return "The crag's shut. The gym isn't.";
     case 'prime':
-      return `Cold and dry: the best friction. The sun crosses the wall from ${t} to ${all}.${wet}`;
+      return `${friction('prime')} The sun crosses the wall from ${t} to ${all}.${wet}`;
     case 'hot':
-      return `Greasy from ${t}, and the whole wall by ${all}.${wet}`;
+      return `${friction('hot')} Greasy from ${t}, and the whole wall by ${all}.${wet}`;
     default:
       return `The sun crosses the wall from ${t} to ${all}.${wet}`;
   }
@@ -2599,16 +2640,19 @@ function WeekBody({ game, s }: { game: Game; s: GameState }) {
       <p className="sub">{blurb}</p>
       <ul className="days">
         {[0, 1, 2].map((i) => {
-          const c = conditions(s.seed, s.day + i);
+          // Today as it is; after that, what the radio calls (Phase 41), read as if it holds.
+          const d = s.day + i;
+          const call = callOn(s.seed, s.day, d);
+          const c = i ? fromSky(call.sky, callOn(s.seed, s.day, d - 1).sky) : conditions(s.seed, d);
           // A trip you've paid for out of the valley has its own sky: worth knowing before
           // three hours of gas.
           const away = s.unlocked
             .filter((id) => PLACES[id]?.ownSky)
-            .map((id) => `${PLACES[id]!.name}: ${SKY_NAME[skyAt(s.seed, s.day + i, id)].toLowerCase()}.`);
+            .map((id) => `${PLACES[id]!.name}: ${callSaid(callOn(s.seed, s.day, d, id)).toLowerCase()}.`);
           return (
             <li key={i} data-sky={c.sky}>
-              <b>{i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : `Day ${s.day + i}`}</b>
-              <span className="sky">{SKY_NAME[c.sky]}</span>
+              <b>{i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : dayName(d)}</b>
+              <span className="sky">{callSaid(call)}</span>
               <small>{[skyLine(c), ...away].join(' ')}</small>
             </li>
           );
@@ -2622,6 +2666,23 @@ function WeekBody({ game, s }: { game: Game; s: GameState }) {
       <PlanRows game={game} s={s} />
       <LivingRows game={game} s={s} />
     </>
+  );
+}
+
+// A day on the schedule, marked with the sky as far out as the radio calls (Phase 41): a
+// prime day says what it does for every window, so it's the day you keep free.
+function ShiftDay({ s, d, children }: { s: GameState; d: number; children: React.ReactNode }) {
+  const call: Call | null = d - s.day <= FORECAST.days ? callOn(s.seed, s.day, d) : null;
+  return (
+    <li data-sky={call?.sky}>
+      <b>{d === s.day ? 'Today' : dayName(d)}</b>
+      {children}
+      {call && (
+        <small>
+          <span className="sky">{callSaid(call)}</span>.{call.sky === 'prime' ? ` ${friction('prime')}` : ''}
+        </small>
+      )}
+    </li>
   );
 }
 
@@ -2641,8 +2702,7 @@ function ShiftRows({ game, s }: { game: Game; s: GameState }) {
       </p>
       <ul className="days shifts" id="shifts">
         {days.map((d) => (
-          <li key={d}>
-            <b>{d === s.day ? 'Today' : dayName(d)}</b>
+          <ShiftDay key={d} s={s} d={d}>
             <span className="posts">
               {Object.keys(JOBS)
                 .filter((j) => isPosted(s.seed, j, d))
@@ -2665,7 +2725,7 @@ function ShiftRows({ game, s }: { game: Game; s: GameState }) {
                   );
                 })}
             </span>
-          </li>
+          </ShiftDay>
         ))}
       </ul>
       {known.length > 0 && (

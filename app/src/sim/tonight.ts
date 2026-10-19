@@ -11,7 +11,7 @@ import { livingTonight, skimps } from './jobs';
 import { weeklyBills } from './clinic';
 import { ageCost } from './ageing';
 import { nightAt, type Night } from './spots';
-import { conditions, type Sky } from './weather';
+import { callOn, type Call } from './forecast';
 import type { GameState } from './types';
 
 // A day with no trips out: the van spot, two packets of ramen, and a seventh of the week's
@@ -52,7 +52,8 @@ export interface Tonight {
   // How your body reads in the morning, and days still off the rock.
   zone: Zone;
   off: number;
-  sky: Sky;
+  // Tomorrow's sky as the radio calls it (Phase 41): a call, not the day itself.
+  sky: Call;
 }
 
 export function tonight(s: GameState): Tonight {
@@ -96,6 +97,6 @@ export function tonight(s: GameState): Tonight {
     card: Math.max(0, cash + MONEY.cardLimit),
     zone: zone(ratio({ acute: p.acute, chronic: p.chronic, today: 0 })),
     off: daysOff({ ...s, day: s.day + 1 }),
-    sky: conditions(s.seed, s.day + 1).sky,
+    sky: callOn(s.seed, s.day, s.day + 1),
   };
 }

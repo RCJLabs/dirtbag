@@ -4269,13 +4269,72 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 ### Phase 41 — The week's forecast and send temps   **<<< CURRENT MILESTONE**
 
-*Queued (18 Oct 2026). Small [INFERRED].*
+*Small. Planned with Evan's calls (19 Oct 2026). No save change.*
 
 **Goal.** The weather is something to plan around, not just weather.
 
 **Scope.** A five-day forecast for the valley at the café, vaguer further out. Cold, dry days give better friction. Expeditions already have their forecast call (`forecastCall`).
 
+**Evan's calls (19 Oct 2026), all as recommended:**
+- **Where:** the café's card shows the valley's next five days, and the week's plan marks each day's forecast.
+- **How sure:** each day reads as a call and how sure it is ("Prime, likely", "Rain, maybe"). Tomorrow's comes true about nine times in ten, five days out about six in ten, on the expeditions' curve. The harness checks that it comes true as often as it says.
+- **Friction:** by the day, shown. As now, a prime day widens every window; the beta sheet says so in words built from the dials, and the plan marks those days.
+
+**From the survey (19 Oct 2026):**
+- **The sky** is a pure function of the seed and the day, from each season's odds (`skyOn`; `skyAt` for a place with its own sky).
+- **What it does to a go:** every window outdoors is ×1.1 on a prime day, ×0.9 on a hot one (not on shaded rock), and ×0.92 the day after rain (`conditionsAt`). The numbers were typed into `weather.ts`.
+- **The game already told the future:** the week sheet (the HUD's day button) showed the true sky three days out, and Tonight showed tomorrow's.
+- **The expeditions' forecast** (`forecastCall`) calls storm or clear, right `1 − lead/20` of the time (95% tomorrow), drawn afresh each day.
+- **The week's plan:** the week sheet's schedule, a row a day for a week. The day plan (`game/plan.ts`) covers one day only.
+
 **Done when** [proposed]: the forecast comes true as often as it says (the harness); friction shows in a go's odds and on the plan.
+
+**One slice, 41.1:** the calls, where they show, the friction words, the harness's check, the tests and the e2e.
+
+**Status (19 Oct 2026): 41.1 built: the forecast and send temps.** No save change, 0.999.101.
+- **The calls** (`sim/forecast.ts`, dials `FORECAST`):
+  - **Reach:** one a day for the next `FORECAST.days` (5). Today's is the sky itself.
+  - **Accuracy:** right `near` (0.9) of the time tomorrow, falling in a straight line to `far` (0.6) five days out. That's the expeditions' shape with the valley's own numbers; the expeditions' curve is unchanged.
+  - **A wrong call** is one of the season's other skies, as likely as the season makes it, so a winter forecast never calls hot.
+  - **How sure:** the chance a call is right, given what it calls, worked out from those odds. A call of a sky the season seldom has is wrong more often. It's said as "likely" from `FORECAST.likely` (0.75) [proposed] up and "maybe" below, never as a number.
+  - **Each day's calls are drawn afresh,** as the expeditions' are, so the call for a day can change as it comes closer.
+  - **A place with its own sky** gets its own calls, of its own sky.
+- **Where it shows:**
+  - **The café's card** (there, or from the map): the radio's line, filled from the dials ("Tomorrow's call comes true about nine times in ten; five days out, about six."), then the five days, each a call and what it would do to the rock.
+  - **The week sheet** (the week's plan):
+    - today as it is, then tomorrow and the day after as called, read as if the calls hold;
+    - each paid-for crag out of the valley, as called there;
+    - each schedule day the radio reaches, marked with its call; a prime day's name is in the accent, with what it does for every window.
+  - **Tonight:** tomorrow as called, no longer the day itself.
+- **Friction** (criterion 2): the rules are unchanged; their numbers moved to the dials (`CLIMB.sky {prime 1.1, hot 0.9, seep 0.92}`). They're said in words (`ui/forecast.ts`; "window" is a word the sim's purity test keeps out of the sim):
+  - the beta sheet's note (`#friction`) says what today's sky does to every window on the line ("Cold and dry: every window 10% wider."); shaded rock never mentions the heat;
+  - the week sheet says the same of each prime day.
+- **The harness** (criterion 1): the season harness's twelfth target. It counts every call over four years of mornings in 40 worlds, the valley's and each place's with its own sky (627,200 calls). Came true / said:
+  - by days out: 1, 90.1 / 90.0%; 2, 82.6 / 82.5%; 3, 75.0 / 75.0%; 4, 67.5 / 67.5%; 5, 60.0 / 60.0%;
+  - by word: "likely" 84.3 / 84.3%, "maybe" 64.4 / 64.3%.
+
+  The season harness passes all 14 of its targets.
+- **Tests** (`forecast.test.ts`, 7):
+  - the curve, today to five days out;
+  - five calls from tomorrow, the same however often asked, and today's the sky;
+  - calls change as the day comes closer;
+  - never a sky the season doesn't have;
+  - a place with its own sky gets its own calls;
+  - right as often as it says, by days out and by word, on a smaller sample;
+  - a call reads the way a day does.
+- **The e2e:** day one's café shows the radio and its five calls; day one's prime day at the Warm Boulder shows its friction; Tonight shows tomorrow as called; day two's schedule shows the calls.
+- **The download:** 486.9 KB of 490; no raise needed.
+
+**Phase 41 against its Done-when (19 Oct 2026):** both pass.
+1. **It comes true as often as it says:** within a tenth of a point at every distance and for each word (the season harness's twelfth target).
+2. **Friction shows in a go's odds and on the plan:** the beta sheet's note says what the day does to every window, from the dials the go uses, and the week's schedule marks the prime days.
+
+**Closing Phase 41 is Evan's call.** Carried:
+- **[proposed]:** "likely" from 0.75.
+- **The future isn't free any more.** The week sheet and Tonight used to show the true sky; now they show the radio's call, so a player who learned to trust them will sometimes be wrong.
+- **You don't need the café to read it.** Its card shows the forecast from the map too, and the week sheet marks every day, so the café is where it's said in full, not the only place to learn it.
+- **A day's call can flip-flop.** Each morning's calls are drawn afresh, so watching a day's call over several mornings tells you more than any one call says. The chance a call states is for that call alone.
+- **No bot reads the forecast,** so the harness measures that it's honest, not that it helps.
 
 ### Phase 42 — Belaying, played
 
@@ -5045,3 +5104,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-18 — Phase 39 closed by Evan's call: all three criteria pass. CURRENT MILESTONE moved to Phase 40, "What now?" from Hazel.
 - 2026-10-18 — Phase 40 planned with Evan's calls: a "What now?" button by the goal chip; needs, then the story, then chances; each move takes you there. 40.1 built: Hazel's card of three moves, every reason from the state; lit through Act I's mornings till asked. No save change. Phase 40's Done-when pass; closing it is Evan's call. 0.999.100.
 - 2026-10-19 — Phase 40 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 41, the week's forecast and send temps.
+- 2026-10-19 — 41.1: the valley's forecast and send temps, to Evan's calls. The café's radio calls the next five days, right nine times in ten tomorrow and six in ten five days out, and says how sure ("Prime, likely"). The week sheet marks each day's call, Tonight calls tomorrow, and the beta sheet says what the day's sky does to every window. The season harness's target 12: it comes true as often as it says. Both Done-when criteria pass. 0.999.101, no save change.

@@ -13,12 +13,14 @@ import { bestWeek, partWorth } from '../src/sim/board';
 import { DREAMS } from '../src/sim/content/dreams';
 import { JOBS } from '../src/sim/content/jobs';
 import { speedGains } from '../src/sim/speed';
+import { accuracy } from '../src/sim/forecast';
 import {
   checkpoints,
   contentOut,
   echoLanding,
   weekOneTold,
   expedCalibration,
+  forecastCalibration,
   expedFarm,
   firstInjury,
   firstTry,
@@ -288,6 +290,19 @@ function targets(all: Record<Seasonal, BotRun[]>, reckless: BotRun[]): void {
     told.origins.acc >= 2 * told.origins.chance && told.starts.acc >= 1.5 * told.starts.chance,
     'Climbers made differently play week one differently, and the harness tells them apart',
     `by origin ${Math.round(100 * told.origins.acc)}% (chance ${Math.round(100 * told.origins.chance)}%), by start ${Math.round(100 * told.starts.acc)}% (chance ${Math.round(100 * told.starts.chance)}%). Missed: origins ${miss(told.origins.wrong)}; starts ${miss(told.starts.wrong)}.`,
+  );
+  // 12. Phase 41's criterion 1: the valley's forecast comes true as often as it says, by how
+  // far out it calls (against its curve) and by the word it says (against what that word
+  // meant, its calls' mean chance), within two points: for the valley and every place with
+  // its own sky, four years of mornings in each of 40 worlds.
+  const radio = forecastCalibration(Number(process.env.WORLDS ?? 40), 448);
+  const within = (t: { right: number; said: number }) => Math.abs(t.right - t.said) <= 0.02;
+  const pc = (x: number) => `${Math.round(100 * x)}%`;
+  say(
+    radio.byLead.every((l) => within(l) && Math.abs(l.right - accuracy(l.lead)) <= 0.02) &&
+      radio.byWord.every(within),
+    'The forecast comes true as often as it says',
+    `by days out, came true / said: ${radio.byLead.map((l) => `${l.lead} ${pc(l.right)} / ${pc(l.said)}`).join(', ')}; by word: ${radio.byWord.map((w) => `“${w.word}” ${pc(w.right)} / ${pc(w.said)} of ${w.n}`).join(', ')}.`,
   );
   // Phase 22.8: how long a dream takes, at what the worker bots put by: their median cash at
   // the season's end, a day at a time. A guide, not a target.

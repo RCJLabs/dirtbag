@@ -257,10 +257,13 @@ export {
   conditionsAt,
   sunOn,
   seasonOf,
+  fromSky,
   SKY_NAME,
   SEASON_DAYS,
 } from './weather';
 export type { Sky, Season, Conditions } from './weather';
+export { accuracy, callOn, forecastFrom } from './forecast';
+export type { Call, Sure } from './forecast';
 export { whereIs, whereNow, around, tierOf, PARTNERS, staysAt, knows, DAY_END } from './presence';
 export type { Stay } from './presence';
 export { gradeOfPerson, dexHurt } from './curves';
@@ -353,6 +356,7 @@ export {
   GHOST,
   CLASSICS,
   WHATNOW,
+  FORECAST,
 } from './dials';
 export type { Plan } from './dials';
 export { weeklyBills, clinicBill, carePrice, jabbed, premiumOf } from './clinic';
