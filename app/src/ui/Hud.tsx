@@ -9,7 +9,7 @@ export function Hud({ game, ui }: { game: Game; ui: Ui }) {
   // Nothing to navigate until you've made your climber.
   const made = !!ui.state.climber.name;
   const nav = made ? game.navLabel(ui) : null;
-  const busy = ui.climbing || ui.driving || !made;
+  const busy = ui.climbing || ui.driving || !!ui.belay || !made;
   return (
     <div className="hud">
       <button

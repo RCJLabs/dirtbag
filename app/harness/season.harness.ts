@@ -21,6 +21,7 @@ import {
   weekOneTold,
   expedCalibration,
   forecastCalibration,
+  belayMeasure,
   expedFarm,
   firstInjury,
   firstTry,
@@ -303,6 +304,18 @@ function targets(all: Record<Seasonal, BotRun[]>, reckless: BotRun[]): void {
       radio.byWord.every(within),
     'The forecast comes true as often as it says',
     `by days out, came true / said: ${radio.byLead.map((l) => `${l.lead} ${pc(l.right)} / ${pc(l.said)}`).join(', ')}; by word: ${radio.byWord.map((w) => `“${w.word}” ${pc(w.right)} / ${pc(w.said)} of ${w.n}`).join(', ')}.`,
+  );
+  // 13. Phase 42's criterion 2: holding a rope can't out-bond a day climbing together. A clean
+  // belay moves a partner's bond no more than a go with them there, and the two together no
+  // more than either alone; and how often a bot's hands, a person's misses and all, belay clean.
+  const rope = belayMeasure(Number(process.env.ROPES ?? 60));
+  say(
+    rope.days > 0 &&
+      rope.belay <= rope.together &&
+      rope.goThenBelay <= rope.together &&
+      rope.belayThenGo <= rope.together,
+    'Holding a rope can’t out-bond a day climbing together',
+    `${rope.days} mornings with Hazel: a go together ${rope.together.toFixed(2)} bond, a clean belay ${rope.belay.toFixed(2)}, a go then a belay ${rope.goThenBelay.toFixed(2)}, a belay then a go ${rope.belayThenGo.toFixed(2)}; a bot's hands belay clean ${Math.round(100 * rope.clean)}% of the time.`,
   );
   // Phase 22.8: how long a dream takes, at what the worker bots put by: their median cash at
   // the season's end, a day at a time. A guide, not a target.

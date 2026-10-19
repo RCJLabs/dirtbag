@@ -1392,6 +1392,33 @@ export const WHATNOW = { moves: 3, billsWithin: 2, near: 2 };
 // there up, `maybe` below.
 export const FORECAST = { days: 5, near: 0.9, far: 0.6, likely: 0.75 };
 
+// Phase 42 [proposed] (Evan's calls, 19 Oct 2026: at the crag and on their favour; keep the
+// slack right; a clean belay is the day together and a beta). Holding a partner's rope at the
+// crag costs `min` and `energy`, once a day each. The meter runs from no slack (0) to all the
+// rope out (1), from `start`. Their climbing takes up `climb` of it a second; your hand off the
+// rope pays out `pay`, and holding takes in `take`. A clip pulls `clip.pull` in `clip.s`
+// seconds, and `clip.back` of it comes back once it's clipped; a line with no bolts has `clips`
+// placements, spread up it. They climb at `pace` of the line a second and come off once,
+// somewhere in `fall` of the way up; a fall takes the slack at `drop` a second. Letting go
+// within `soft` seconds of the rope coming tight gives a soft catch. The slack wants to sit in
+// `band`, and a belay is clean with a soft catch and the slack in the band `clean` of the time.
+export const BELAY = {
+  min: 30,
+  energy: 4,
+  start: 0.5,
+  climb: 0.05,
+  pay: 0.09,
+  take: 0.2,
+  clip: { pull: 0.3, s: 0.9, back: 0.2 },
+  clips: 4,
+  pace: 0.045,
+  fall: [0.55, 0.9] as [number, number],
+  drop: 0.6,
+  soft: 0.35,
+  band: [0.3, 0.7] as [number, number],
+  clean: 0.6,
+};
+
 // The speed wall at Send City (v0.956's, which cost no time and no pass: the audit's
 // exploit 20). A run is 20 holds, lights to buzzer. Your time is the seconds you took on
 // the screen times `factor`, which is `v0` at V0 and `perGrade` less a grade of power and

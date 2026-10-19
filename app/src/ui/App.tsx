@@ -6,6 +6,7 @@ import { Bubble } from './Bubble';
 import { ClimbPanel } from './ClimbPanel';
 import { SpeedPanel } from './SpeedPanel';
 import { BuskPanel } from './BuskPanel';
+import { BelayPanel } from './BelayPanel';
 import { Create } from './Create';
 import { Goal } from './Goal';
 import { WhatNow } from './WhatNow';
@@ -145,6 +146,15 @@ export function App({ game }: { game: Game }) {
         }
         return;
       }
+      // On belay (Phase 42): Space or Enter is your hand on the rope. The button takes them
+      // itself when it has focus.
+      if (u.belay && u.belay.rope.phase !== 'caught') {
+        if (hold(e) && a?.id !== 'belay-hold') {
+          e.preventDefault();
+          if (!e.repeat) game.belayPress(true);
+        }
+        return;
+      }
       // Outside the café (Phase 22.5b): Space or Enter strums.
       if (u.busk && u.busk.phase === 'play') {
         if (hold(e)) {
@@ -205,7 +215,8 @@ export function App({ game }: { game: Game }) {
     };
     const keyup = (e: KeyboardEvent) => {
       const u = game.ui.get();
-      if (u.view === 'wall' && hold(e)) game.press(false);
+      if (u.belay && hold(e)) game.belayPress(false);
+      else if (u.view === 'wall' && hold(e)) game.press(false);
       else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') game.walkKey(0);
     };
     window.addEventListener('keydown', keydown);
@@ -276,6 +287,7 @@ export function App({ game }: { game: Game }) {
           {ui.climbing && <ClimbPanel game={game} />}
           {ui.speed && <SpeedPanel game={game} />}
           {ui.busk && <BuskPanel game={game} />}
+          {ui.belay && <BelayPanel game={game} />}
           {ui.view === 'map' && !ui.driving && !ui.sheet && !ui.busk && (
             <div className="corner">
               <button type="button" className="restart" onClick={() => game.openSheet({ k: 'restart' })}>

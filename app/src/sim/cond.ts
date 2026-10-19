@@ -13,6 +13,7 @@ import { crewDue, crewNameDue, renownBeatDue, renownTier } from './crew';
 import { kinBeatDue } from './kin';
 import { oldWordDue } from './hollow';
 import { clashDue, favourDue } from './favours';
+import { belayBlocked } from './belay';
 import { strayDue } from './scout';
 import { clockShort, fill } from './format';
 import { benchedUntil, isPosted } from './jobs';
@@ -43,6 +44,7 @@ export interface Cond {
   crewName?: string; // they bring up naming the crew (Phase 28.1, crew.ts)
   favour?: string; // "who/kind": their ask is due (Phase 28.3, favours.ts)
   favourClash?: string; // "who/b": their ask clashes with your yes to b today
+  belay?: string; // you could give them a belay here, now (Phase 42, belay.ts)
   renown?: number; // the crew's renown is at this tier or past it (Phase 28.4)
   parts?: number; // this many scavenged parts in hand (Phase 29.1)
   renownBeat?: string; // "who/n": one of the old guard has a line about the crew at tier n
@@ -135,6 +137,7 @@ export function holds(s: GameState, c: Cond): boolean {
   if (c.crewName !== undefined && !crewNameDue(s, c.crewName)) return false;
   if (c.favour !== undefined && !favourDue(s, c.favour)) return false;
   if (c.favourClash !== undefined && !clashDue(s, c.favourClash)) return false;
+  if (c.belay !== undefined && belayBlocked(s, c.belay)) return false;
   if (c.renown !== undefined && renownTier(s) < c.renown) return false;
   if (c.parts !== undefined && s.parts < c.parts) return false;
   if (c.renownBeat !== undefined && !renownBeatDue(s, c.renownBeat)) return false;

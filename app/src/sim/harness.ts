@@ -26,6 +26,7 @@ import type { Action, GameState } from './types';
 import { Rng } from './rng';
 import { runway } from './tonight';
 import { forecastFrom, type Sure } from './forecast';
+import { belayBlocked, belayLine, cleanBelay, playRope, ropeResult, startRope } from './belay';
 import { skyAt, skyOn } from './weather';
 
 // Runway is the van's own measure (tonight.ts): the harness and the player read the same one.
@@ -614,5 +615,52 @@ export function forecastCalibration(seeds: number, days: number) {
   return {
     byLead: Object.entries(byLead).map(([lead, t]) => ({ lead: Number(lead), ...rate(t) })),
     byWord: Object.entries(byWord).map(([word, t]) => ({ word: word as Sure, ...rate(t!) })),
+  };
+}
+
+// Phase 42's criterion 2: holding a rope can't out-bond a day climbing together. On `n` open
+// mornings at Roadside with Hazel (bond 3): what a go with her there moves her bond, what a
+// clean belay of her moves it, and both, in either order; and how often a bot's hands, a
+// person's misses and all, make the belay clean.
+export function belayMeasure(n: number) {
+  const sum = { together: 0, belay: 0, goThenBelay: 0, belayThenGo: 0, clean: 0, days: 0 };
+  const CLEAN = { band: 1, soft: true };
+  for (let k = 0; k < n; k++) {
+    const seed = `belay-${k}`;
+    const base = act(newGame(seed), { t: 'create', name: 'Bot', start: 'allrounder' }).state;
+    for (let d = 30; d < 200; d++) {
+      const s: GameState = {
+        ...base,
+        day: d,
+        at: 'road',
+        x: null,
+        min: 10 * 60,
+        energy: 100,
+        skin: 100,
+        today: ['crag', 'warm'],
+        people: { hazel: { bond: 3, last: 0, since: 1, talked: true, arc: 9, beatDay: 1, life: 9 } },
+      };
+      if (belayBlocked(s, 'hazel')) continue;
+      const bond = (t: GameState) => (t.people.hazel?.bond ?? 3) - 3;
+      const go = (t: GameState) => act(t, { t: 'go', route: 'warm' }).state;
+      const belay = (t: GameState) => act(t, { t: 'belay', who: 'hazel', result: CLEAN }).state;
+      sum.together += bond(go(s));
+      sum.belay += bond(belay(s));
+      sum.goThenBelay += bond(belay(go(s)));
+      sum.belayThenGo += bond(go(belay(s)));
+      const r = belayLine(s, 'road')!;
+      if (cleanBelay(ropeResult(playRope(startRope(s, 'hazel', r), Rng.fromSeed(`hands-${k}`))))) sum.clean++;
+      sum.days++;
+      break;
+    }
+  }
+  const per = (x: number) => x / Math.max(1, sum.days);
+  return {
+    days: sum.days,
+    together: per(sum.together),
+    belay: per(sum.belay),
+    goThenBelay: per(sum.goThenBelay),
+    belayThenGo: per(sum.belayThenGo),
+    clean: per(sum.clean),
   };
 }

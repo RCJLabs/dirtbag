@@ -5,10 +5,10 @@
 // routes) with {goes|go|goes} for the plural, and {name}, your name.
 
 import type { Cond } from '../cond';
-import { ARC, BOND, FAVOUR } from '../dials';
+import { ARC, BELAY, BOND, FAVOUR } from '../dials';
 import { arcNodes, arcStarts } from './arcs';
 import { FIRE_ASK, GIFTS } from './gifts';
-import { money } from '../format';
+import { bodyNote, costLabel, money } from '../format';
 import { romanceNodes, romanceStarts } from './romance';
 import { crewNameNodes, crewNameStarts, crewNodes, crewStarts } from './crew';
 import { favourNodes, favourStarts } from './favours';
@@ -56,6 +56,8 @@ export interface TalkFx {
   seen?: string;
   // Phase 32.2: a clue to the Hollow you now hold.
   clue?: HollowClue;
+  // Phase 42: you'll hold their rope here; the game puts it in your hands.
+  belay?: true;
 }
 
 export interface TalkOpt {
@@ -94,6 +96,8 @@ export interface PersonDef {
   // Phase 28.3: they'd lend you a rack, or drive you, as a favour.
   rack?: true;
   wheels?: true;
+  // Phase 42: they climb boulders, so the belay they ask for is a spot, and nobody holds their rope.
+  boulders?: true;
 }
 
 export const PEOPLE: Record<string, PersonDef> = {
@@ -109,7 +113,7 @@ export const PEOPLE: Record<string, PersonDef> = {
   ray: { name: 'Ray' },
   frank: { name: 'Frank' },
   mara: { name: 'Mara', grade: 2, rack: true, wheels: true },
-  rico: { name: 'Rico', grade: -1 },
+  rico: { name: 'Rico', grade: -1, boulders: true },
   tam: { name: 'Tam', full: 'Tam Okonkwo', grade: -1, rack: true, wheels: true },
 };
 
@@ -169,6 +173,13 @@ const askOut = (who: string): TalkOpt => ({
   label: 'Come climbing?',
   when: { bond: `${who}/${BOND.tiers[1]}`, before: BOND.inviteBefore, notToday: 'invite' },
   next: 'invite',
+});
+
+// Phase 42: their rope in your hands, at a crag you're both at, once a day each.
+const belayOpt = (who: string): TalkOpt => ({
+  label: `Want a belay? · ${costLabel({ min: BELAY.min })} · ${bodyNote({ energy: -BELAY.energy })}`,
+  when: { belay: who },
+  fx: { belay: true },
 });
 
 // Phase 17.1: the cast's first words. Each has a meeting, then the ordinary day; a local's
@@ -272,11 +283,11 @@ export const TALK: Record<string, TalkDef> = {
       ...arcNodes('hazel'),
       ...crewNameNodes('hazel'),
       ...favourNodes('hazel', FAVOUR_GATE),
-      sent: { text: "That's the one. Lower off, I'm hungry.", opts: [{ label: 'OK' }] },
-      goes: { text: 'Clean catch. Rest up, go again.', opts: [{ label: 'OK' }] },
+      sent: { text: "That's the one. Lower off, I'm hungry.", opts: [{ label: 'OK' }, belayOpt('hazel')] },
+      goes: { text: 'Clean catch. Rest up, go again.', opts: [{ label: 'OK' }, belayOpt('hazel')] },
       start: {
         text: "Rope's flaked. I'll belay whatever you want to get on.",
-        opts: [{ label: 'OK' }, askOut('hazel')],
+        opts: [{ label: 'OK' }, askOut('hazel'), belayOpt('hazel')],
       },
       invite: {
         text: 'Leave here? Where?',
@@ -323,6 +334,7 @@ export const TALK: Record<string, TalkDef> = {
           askOut('sage'),
           { label: 'Not now' },
           giftOpt('sage'),
+          belayOpt('sage'),
         ],
       },
       invite: {
@@ -606,7 +618,7 @@ export const TALK: Record<string, TalkDef> = {
       nice: { text: '"It might be. Ask me after you’ve fallen off something."', opts: [{ label: 'OK' }] },
       again: {
         text: '"You again. Good. What are you trying?"',
-        opts: [{ label: 'Climbing', primary: true }, askOut('mara'), giftOpt('mara')],
+        opts: [{ label: 'Climbing', primary: true }, askOut('mara'), giftOpt('mara'), belayOpt('mara')],
       },
       invite: {
         text: '"Where? Somewhere with edges."',
@@ -687,7 +699,7 @@ export const TALK: Record<string, TalkDef> = {
       },
       again: {
         text: '"Early start, {name}. The shade won’t wait for us."',
-        opts: [{ label: 'Coming', primary: true }, askOut('tam'), giftOpt('tam')],
+        opts: [{ label: 'Coming', primary: true }, askOut('tam'), giftOpt('tam'), belayOpt('tam')],
       },
       invite: {
         text: '"Somewhere long. I don’t drive far for short."',

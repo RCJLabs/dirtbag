@@ -27,6 +27,12 @@ import {
   startAttempt,
   STEP,
   stepAttempt,
+  belayLine,
+  ropeInput,
+  ropeResult,
+  startRope,
+  stepRope,
+  type Rope,
   talkStart,
   THINGS,
   whereIs,
@@ -257,6 +263,8 @@ export interface Ui {
   speed: SpeedUi | null;
   // A set outside the café (Phase 22.5b).
   busk: BuskUi | null;
+  // Phase 42: a partner's rope in your hands.
+  belay: BelayUi | null;
   // Phase 24.2: an expedition being planned, before it's booked.
   trip: { id: string; plan: TripPlan } | null;
   // Phase 36.4: the glovebox deck's table, a copy of the climber played on and thrown away;
@@ -267,6 +275,13 @@ export interface Ui {
 // A set: the note you're on, the marker's sweep across the bar (0 to 1), each note's score
 // (1 in the band, a half near it, 0 off it), and when it's done, what the set came to. The
 // same beat throws horseshoes at the fire (Phase 22.9a), a throw a sweep.
+// Phase 42: a belay: the rope, whether it's their favour, and what they said once it was over.
+export interface BelayUi {
+  rope: Rope;
+  favour: boolean;
+  said: string | null;
+}
+
 export interface BuskUi {
   // Phase 29.4: and a recipe stirred at the van's stove, `recipe` its act.
   kind: 'busk' | 'shoes' | 'cook';
@@ -425,6 +440,7 @@ export class Game {
       speed: null,
       rebind: null,
       busk: null,
+      belay: null,
       trip: null,
       glove: null,
     });
@@ -735,6 +751,7 @@ export class Game {
 
   navLabel(u: Ui): string | null {
     if (u.speed) return u.speed.phase === 'done' ? 'Off' : null;
+    if (u.belay) return null;
     if (u.view === 'wall') return u.climbing ? null : 'Down';
     if (u.view === 'map') return u.driving || !PLACES[this.state.at]?.scene ? null : 'Close';
     return 'Map';
@@ -931,6 +948,9 @@ export class Game {
     this.set({ talk: next?.node ? { talk: t.talk, node: next.node } : null });
     // Phase 28.1: they've asked you to name the crew, and you said you would.
     if (ev.some((e) => e.k === 'crewName')) this.set({ sheet: { k: 'crew' } });
+    // Phase 42: you said you'd hold their rope.
+    const rope = ev.find((e): e is Extract<GameEvent, { k: 'belay' }> => e.k === 'belay');
+    if (rope) this.openBelay(rope.who, !!rope.favour);
     this.maybeCard();
   }
 
@@ -1566,6 +1586,57 @@ export class Game {
     },
   };
 
+  // ---- belaying (Phase 42) ----
+
+  private belayAcc = 0;
+
+  private openBelay(who: string, favour: boolean): void {
+    const r = belayLine(this.state, this.state.at);
+    if (!r) return;
+    this.belayAcc = 0;
+    this.set({ talk: null, sheet: null, belay: { rope: startRope(this.state, who, r), favour, said: null } });
+  }
+
+  private stepBelay(dt: number): void {
+    const u = this.ui.get().belay;
+    if (!u || u.rope.phase === 'caught') return;
+    this.belayAcc += dt;
+    let rope = u.rope;
+    while (this.belayAcc >= STEP && rope.phase !== 'caught') {
+      this.belayAcc -= STEP;
+      const was = rope;
+      rope = stepRope(rope);
+      if (rope.next > was.next) this.sound.play('clip');
+      if (rope.phase === 'fall' && was.phase !== 'fall') this.sound.play('fell');
+    }
+    if (rope.phase !== 'caught') {
+      this.set({ belay: { ...u, rope } });
+      return;
+    }
+    // Caught: the belay's done, and they say how it went.
+    const ev = this.dispatch({
+      t: 'belay',
+      who: rope.who,
+      result: ropeResult(rope),
+      ...(u.favour ? { favour: true } : {}),
+    });
+    const said = ev.flatMap((e) => (e.k === 'line' ? [e.text] : e.k === 'refused' ? [e.why] : [])).join(' ');
+    this.set({ belay: { ...u, rope, said: said || null } });
+  }
+
+  // Your hand on their rope (true) or off it (false).
+  belayPress(on: boolean): void {
+    const u = this.ui.get().belay;
+    if (!u || u.rope.phase === 'caught') return;
+    this.set({ belay: { ...u, rope: ropeInput(u.rope, on) } });
+  }
+
+  // Lowered off and untied: back to where you were.
+  belayDone(): void {
+    if (this.ui.get().belay?.rope.phase !== 'caught') return;
+    this.set({ belay: null });
+  }
+
   private stepBusk(dt: number): void {
     const u = this.ui.get().busk;
     if (!u || u.phase !== 'play') return;
@@ -1951,6 +2022,7 @@ export class Game {
     }
     this.stepSpeed(dt);
     this.stepBusk(dt);
+    this.stepBelay(dt);
     this.sound.tick(dt);
     if (this.scout.wag > 0) this.scout.wag -= dt;
     const f = this.fast.get();

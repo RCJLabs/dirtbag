@@ -13,6 +13,7 @@ export function Goal({ game, ui }: { game: Game; ui: Ui }) {
     ui.climbing ||
     ui.speed ||
     ui.busk ||
+    ui.belay ||
     ui.driving ||
     ui.view === 'wall'
   )

@@ -768,6 +768,8 @@ export type Action =
   | { t: 'insure'; plan: 'none' | 'catastrophic' | 'full' }
   // Phase 22.5b: a set outside the café, and how clean it was, 0 to 1.
   | { t: 'busk'; acc: number }
+  // Phase 42: a belay held to the catch, at the crag or as their favour.
+  | { t: 'belay'; who: string; result: BelayResult; favour?: true }
   // Phase 22.6: an answer to the encounter you're in, by its option's index.
   | { t: 'answer'; opt: number }
   // Phase 22.8: a dream to pick, cash for the pot, the pot back, or the dream claimed.
@@ -815,6 +817,12 @@ export interface TripPlan {
 }
 
 // What a finished go hands back to the game.
+// Phase 42: how a belay went: the share of their climb the slack sat in the band, and the catch.
+export interface BelayResult {
+  band: number;
+  soft: boolean;
+}
+
 export interface GoResult {
   sent: boolean;
   // The highest move reached, counting from 1.
@@ -844,6 +852,8 @@ export type GameEvent =
   | { k: 'fa'; route: string }
   // The crew wants a name, and you said you'd give it one (Phase 28.1).
   | { k: 'crewName' }
+  // Phase 42: you've said you'll hold their rope; the game puts the rope in your hands.
+  | { k: 'belay'; who: string; favour?: true }
   // A goal of the act done, or the whole act.
   | { k: 'goal'; id: string }
   | { k: 'act'; n: number }
