@@ -23,6 +23,7 @@ import {
   clock,
   clockShort,
   conditionsAt,
+  forecastFrom,
   costLabel,
   DOG,
   DOG_OFFER,
@@ -60,6 +61,7 @@ import {
   type GameState,
   type RouteDef,
   type Skills,
+  type Call,
   type Sky,
   tonight,
   type Tonight,
@@ -341,6 +343,7 @@ import { planLine } from '../game/plan';
 import { desktop } from '../game/desktop';
 import { buyUnlock, inAndroidApp, playOffer, restoreUnlock } from '../game/play';
 import { locked, STORES } from '../game/unlock';
+import { radioLine } from './forecast';
 
 // Phase 39: a crag's classics on its card: what's still to go, your own among them, and whether
 // you're a local.
@@ -386,6 +389,8 @@ export interface ListSpec {
   who?: Who;
   // At the van at night: what going to bed would do.
   tonight?: Tonight;
+  // The café's radio (Phase 41): the valley's next days, called.
+  forecast?: { line: string; calls: Call[] };
 }
 
 // A card of a line you've sent, to keep: from its sent sheet, or later from its beta sheet.
@@ -1833,6 +1838,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
       const crowd = p.crowd && !shut ? [crowdNote(crowdAt(s.seed, s.day, min, id.id))] : [];
       const extra = [...(shut ? [`${shut}.`] : []), ...sky, ...crowd, ...classicNotes(s, id.id)];
       const notes = extra.length ? extra : undefined;
+      const forecast =
+        id.id === 'cafe' ? { line: radioLine(), calls: forecastFrom(s.seed, s.day) } : undefined;
       if (!here) {
         const locked = p.minGrade !== undefined && gradeOf(s.climber.skills) < p.minGrade;
         const drive = driveRow(game, s, id.id, 'Drive here');
@@ -1844,6 +1851,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           head,
           who,
           notes: locked ? [p.locked ?? 'Not yet.'] : notes,
+          forecast,
           rows: locked
             ? [{ ...drive, off: true, note: undefined }]
             : unpaid
@@ -1872,6 +1880,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         sub,
         close: true,
         head,
+        forecast,
         rows: [
           // Phase 29.3: Dale's verdict, once it's come to that, the Rig beside it.
           ...p.acts.filter((a) => !ACTS[a]!.swap || verdictDue(s)).flatMap((a) => actRows(game, s, a)),

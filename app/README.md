@@ -76,7 +76,7 @@ npm run store:art      # after build: Steam's capsules and library art (drawn in
 | `src/sim/content/` | Places, acts, roads, routes, beta, people and their lines, as data. `gym.ts` makes Send City's weekly set and its board from the seed. |
 | `src/sim/kit.ts`, `content/gear.ts` | Your kit: what it is, what a go does to it, and what it does to a go (`KIT` in `dials.ts`). |
 | `src/sim/training.ts`, `sessions.ts`, `content/training.ts` | Your training block (phase, taper, prehab) and a session: what it costs, teaches and loads (`TRAIN` in `dials.ts`). |
-| `src/sim/climber.ts`, `weather.ts`, `presence.ts` | Skills and the grade curve; each day's sky; where people are. All pure functions of the state or the seed. |
+| `src/sim/climber.ts`, `weather.ts`, `forecast.ts`, `presence.ts` | Skills and the grade curve; each day's sky, and the radio's calls of it days ahead; where people are. All pure functions of the state or the seed. |
 | `src/sim/bot.ts` | A player that isn't one: plays whole days through `act()`, with perfect or human-ish hands, under three strategies (climber, balanced, worker). |
 | `src/sim/harness.ts`, `harness/` | The balance harness: bots play 56-day seasons across every start and strategy, and print grade, money, runway and injuries against Phase 6's first-season targets. Then the career bot plays four years (224 days) from every start, against Phase 21's grade target (`career.harness.ts`). |
 | `src/sim/story.ts`, `content/story.ts` | Act I: the goal ladder, as data, and how far along it you are. |
@@ -94,7 +94,7 @@ npm run store:art      # after build: Steam's capsules and library art (drawn in
   - Nothing in `src/sim` may touch the page, storage, the network, real time or `Math.random`, or import from `view`, `ui` or `game`.
   - `tsconfig.sim.json` has no DOM types, and `purity.test.ts` scans for the rest.
 - **The clock moves only on actions.** Walking around a scene is free; nothing ticks while you stand still.
-- **What isn't stored is derived from the seed.** The weather, where people are, and the gym's sets are pure functions of the seed, the day and the clock, so nothing about them can drift in a save.
+- **What isn't stored is derived from the seed.** The weather and the forecast's calls of it, where people are, and the gym's sets are pure functions of the seed, the day and the clock, so nothing about them can drift in a save.
 - **A go is a fixed-step model.** `stepAttempt` advances it by `STEP` (1/60 s), and `attemptInput` takes the finger going down or up. The same inputs always replay the same go (`climb.test.ts`).
 - **Seeded randomness only**, through `sim/rng.ts`: mulberry32, FNV-1a over UTF-16 code units, and named streams. It is the same generator as `Dirtbag-UE/Sim/DirtbagRng`, and it checks the same golden vectors. If they move, every seed changes meaning, which is save-breaking.
 - **Content is data.** A new place, route, beta or line is a data entry. `content.test.ts` checks that every reference resolves and every talk node is reachable.

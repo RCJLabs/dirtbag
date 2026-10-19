@@ -15,6 +15,7 @@ import { needFor, STARTS } from './climber';
 import { ECHOES } from './content/scene';
 import { ORIGINS } from './content/origins';
 import { indoor } from './content/gym';
+import { PLACES } from './content/places';
 import type { RouteDef } from './content/routes';
 import { newMastery } from './paths';
 import { atFire, fireOut } from './fire';
@@ -24,6 +25,8 @@ import { act, newGame, routeOfId } from './game';
 import type { Action, GameState } from './types';
 import { Rng } from './rng';
 import { runway } from './tonight';
+import { forecastFrom, type Sure } from './forecast';
+import { skyAt, skyOn } from './weather';
 
 // Runway is the van's own measure (tonight.ts): the harness and the player read the same one.
 export { BASE_BURN, runway } from './tonight';
@@ -577,4 +580,39 @@ export function seshMeasure(seed: string, n: number, under = 0.5): Record<'share
     };
   }
   return out;
+}
+
+// Phase 41's criterion 1: the forecast comes true as often as it says. Every call the radio
+// makes over `days` days in `seeds` worlds, for the valley and for each place with its own
+// sky, counted by how far out it was made and by the word it said: how often it came true,
+// against the chance it gave (that word's mean).
+export interface CallTally {
+  n: number;
+  right: number;
+  said: number;
+}
+export function forecastCalibration(seeds: number, days: number) {
+  const byLead: Record<number, CallTally> = {};
+  const byWord: Partial<Record<Sure, CallTally>> = {};
+  const add = (t: CallTally | undefined, right: boolean, sure: number): CallTally => ({
+    n: (t?.n ?? 0) + 1,
+    right: (t?.right ?? 0) + (right ? 1 : 0),
+    said: (t?.said ?? 0) + sure,
+  });
+  const skies = [undefined, ...Object.keys(PLACES).filter((id) => PLACES[id]!.ownSky)];
+  for (let k = 0; k < seeds; k++) {
+    const seed = `forecast-${k}`;
+    for (const place of skies)
+      for (let from = 1; from <= days; from++)
+        for (const c of forecastFrom(seed, from, place)) {
+          const right = c.sky === (place ? skyAt(seed, c.day, place) : skyOn(seed, c.day));
+          byLead[c.day - from] = add(byLead[c.day - from], right, c.sure);
+          byWord[c.word!] = add(byWord[c.word!], right, c.sure);
+        }
+  }
+  const rate = (t: CallTally): CallTally => ({ n: t.n, right: t.right / t.n, said: t.said / t.n });
+  return {
+    byLead: Object.entries(byLead).map(([lead, t]) => ({ lead: Number(lead), ...rate(t) })),
+    byWord: Object.entries(byWord).map(([word, t]) => ({ word: word as Sure, ...rate(t!) })),
+  };
 }

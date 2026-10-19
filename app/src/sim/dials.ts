@@ -1095,6 +1095,11 @@ export const CLIMB = {
   // Desert rock is sunbaked and sharp-edged: every window at a desert crag is scaled by
   // this. v0.956 took 0.08 off the odds there; seeping's 0.07 became 0.92 the same way.
   desertFactor: 0.92,
+  // What the day's sky does to every window outdoors (in the weather till Phase 41, which
+  // moved them here so the beta sheet can say them): a prime day is cold and dry, the best
+  // friction there is; a hot one takes a tenth off before the sun's even on the rock; and the
+  // day after rain the rock's still seeping.
+  sky: { prime: 1.1, hot: 0.9, seep: 0.92 },
   // Moves per second while you hold. About a move and a half: fast enough that pump, not
   // boredom, is what makes you let go.
   climbRate: 1.53,
@@ -1377,6 +1382,15 @@ export const CLASSICS = { list: 5 };
 // days off and you can't cover them; a line counts as nearly yours within `near` moves of
 // its top.
 export const WHATNOW = { moves: 3, billsWithin: 2, near: 2 };
+
+// Phase 41 (Evan's calls, 19 Oct 2026: on the café's card and the week's plan, a call and how
+// sure, nine in ten tomorrow and six in ten five days out). The radio calls each of the next
+// `days` days' sky: right `near` of the time tomorrow, falling in a straight line to `far` on
+// the last day it calls, the expeditions' curve with the valley's own numbers. A wrong call is
+// one of the season's other skies, each as likely as the season makes it. How sure a call is
+// comes from those odds, the chance it's right given what it calls: `likely` [proposed] from
+// there up, `maybe` below.
+export const FORECAST = { days: 5, near: 0.9, far: 0.6, likely: 0.75 };
 
 // The speed wall at Send City (v0.956's, which cost no time and no pass: the audit's
 // exploit 20). A run is 20 holds, lights to buzzer. Your time is the seconds you took on

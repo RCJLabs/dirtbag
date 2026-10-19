@@ -1571,6 +1571,10 @@ button.pill:disabled {
 .days.shifts li {
   align-items: center;
 }
+/* Phase 41: a day the radio calls prime is the one to keep free. */
+.days.shifts li[data-sky='prime'] b {
+  color: var(--u-acc);
+}
 .posts {
   display: flex;
   flex-wrap: wrap;

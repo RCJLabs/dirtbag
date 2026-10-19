@@ -622,6 +622,11 @@ await driveFrom('the Lot to the café', PIN.cafe, /Coffee Shop/, {
 });
 // What's going on at the café changes by the day (Phase 25.6), and Wren's in all of it.
 await expectText('#sheet', /Wren/, 'at the café');
+// Phase 41: the radio behind the bar, the valley's next five days, each a call and how sure.
+await expectText('#sheet', /The radio behind the bar, on the valley’s next five days\./, 'the radio');
+await expectText('#forecast', /^Tomorrow(Prime|Fair|Hot|Rain), (likely|maybe)/, 'tomorrow, called');
+const called = await page.locator('#forecast li').count();
+if (called !== 5) await fail(`the radio called ${called} days, not five`);
 // The rush (Phase 18.2), looked at and left: the queue made in the order tapped, each
 // drink in time or not, and back to the café's card without working it.
 await click('#sheet .opt', 'Work the rush');
@@ -657,6 +662,8 @@ await expectText('#sheet', /Warm Boulder · V2/, 'beta sheet');
 // Day one's a prime day: the sun comes round the far end of Roadside at 2, and the Warm
 // Boulder, by the road, is the last line it reaches.
 await expectText('#sheet', /in the shade till 4 PM/, 'the shade on it');
+// Phase 41: and what the prime day does for every window on it, in words from the dials.
+await expectText('#friction', /^Cold and dry: every window 10% wider\.$/, 'the friction');
 await shot('beta-warm');
 // Phase 27.4: call the onsight first. A checkbox of its own, never a beta row.
 await click('#sheet .call', 'Call the onsight');
@@ -752,6 +759,8 @@ await press('Enter');
 await expectText('#sheet', /Your van/, 'van');
 // Tonight says what bed will do, and bed does it: $198 in the morning.
 await expectText('#tonight', /The spot\$18.*Morning\$198/, 'tonight');
+// Phase 41: tomorrow as the radio calls it, never the day itself.
+await expectText('#tonight-sky', /^Tomorrow(Prime|Fair|Hot|Rain), (likely|maybe)$/, 'tomorrow, called');
 // Psyche by morning, and the fire you sat at is part of why.
 await expectText('#psyche', /^Psyche(Keen|Psyched)Up for .*the fire\./, 'psyche');
 await click('#sheet .opt', 'Sleep');
@@ -995,6 +1004,12 @@ console.log('The week: a shift signed up for, where you park, insurance, and how
 // raise. How you live stays a dirtbag's: day three's money is counted as it always was.
 await click('#sheet .opt', 'Your week');
 await expectText('#shifts', /Today.*Coffee Shop/, 'the schedule');
+// Phase 41: each day the radio reaches marked with its call; today's the sky itself.
+await expectText(
+  '#shifts',
+  /^Today.*(Prime|Fair|Hot|Rain)\..*(Prime|Fair|Hot|Rain), (likely|maybe)\./,
+  'the calls',
+);
 await click('#sh-cafe-1');
 await until('signed up', async () => (await page.getAttribute('#sh-cafe-1', 'aria-pressed')) === 'true');
 await expectText('#spots', /The Lot.*The Upper Trailhead.*The Ridge/, 'where you park');

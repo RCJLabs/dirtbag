@@ -1,6 +1,7 @@
 // Each day's weather and what it does to the rock, from the seed. v0.956's seasons (14 days
 // each) and weights (docs/audit/climbing.md §2.13). Nothing is stored: a day's sky is a
-// pure function of the seed and the day, so the forecast is simply tomorrow's roll.
+// pure function of the seed and the day. What the radio says of it beforehand is a call,
+// and sometimes a wrong one (forecast.ts, Phase 41).
 
 import { PLACES, SANDSTONE_WET } from './content/places';
 import { CLIMB } from './dials';
@@ -49,16 +50,7 @@ export function skyAt(seed: string, day: number, place: string): Sky {
   const p = PLACES[place];
   if (!p?.ownSky) return skyOn(seed, day);
   if (day <= 1) return 'prime';
-  const w = [...WEIGHTS[seasonOf(day)]];
-  if (p.desert) {
-    w[2]! += 0.12;
-    w[3] = Math.max(0, w[3]! - 0.1);
-    w[0] = Math.max(0, w[0]! - 0.02);
-  }
-  if (p.shaded) {
-    w[3]! += 0.08;
-    w[2] = Math.max(0, w[2]! - 0.06);
-  }
+  const w = weightsAt(day, place);
   const r =
     Rng.fromStream(seed, 'worldgen').derive(`sky-${place}-${day}`).next() * w.reduce((a, b) => a + b, 0);
   let acc = 0;
@@ -68,6 +60,33 @@ export function skyAt(seed: string, day: number, place: string): Sky {
   }
   return 'fair';
 }
+
+// The season's odds of each sky, shifted by the place's climate when it has its own sky.
+function weightsAt(day: number, place?: string): number[] {
+  const p = place ? PLACES[place] : undefined;
+  const w = [...WEIGHTS[seasonOf(day)]];
+  if (!p?.ownSky) return w;
+  if (p.desert) {
+    w[2]! += 0.12;
+    w[3] = Math.max(0, w[3]! - 0.1);
+    w[0] = Math.max(0, w[0]! - 0.02);
+  }
+  if (p.shaded) {
+    w[3]! += 0.08;
+    w[2] = Math.max(0, w[2]! - 0.06);
+  }
+  return w;
+}
+
+// The chance of each sky that day, over the valley or a place with its own, in SKIES' order
+// and summing to one: what the forecast weighs its calls by.
+export function skyOdds(day: number, place?: string): number[] {
+  const w = weightsAt(day, place);
+  const sum = w.reduce((a, b) => a + b, 0);
+  return w.map((x) => x / sum);
+}
+
+export const SKY_ORDER: readonly Sky[] = SKIES;
 
 export interface Conditions {
   sky: Sky;
@@ -92,14 +111,16 @@ const SUN_HALFWAY: Record<Sky, number> = { prime: 15 * 60, fair: 14 * 60, hot: 1
 export const conditions = (seed: string, day: number): Conditions =>
   fromSky(skyOn(seed, day), day > 1 ? skyOn(seed, day - 1) : null);
 
-function fromSky(sky: Sky, before: Sky | null): Conditions {
+// What a sky means at the crag, after the one the day before: what conditions() says of a
+// day, and what a forecast's call would mean if it holds.
+export function fromSky(sky: Sky, before: Sky | null): Conditions {
   const seeping = sky !== 'rain' && before === 'rain';
-  const base = sky === 'prime' ? 1.1 : sky === 'hot' ? 0.9 : 1;
+  const base = sky === 'prime' ? CLIMB.sky.prime : sky === 'hot' ? CLIMB.sky.hot : 1;
   return {
     sky,
     open: sky !== 'rain',
     greaseFrom: SUN_HALFWAY[sky] - CLIMB.sunSweep / 2,
-    windows: base * (seeping ? 0.92 : 1),
+    windows: base * (seeping ? CLIMB.sky.seep : 1),
     seeping,
   };
 }
@@ -129,7 +150,7 @@ export function conditionsAt(
     ...c,
     closed,
     greaseFrom: 24 * 60,
-    windows: (c.sky === 'hot' ? 1 : c.sky === 'prime' ? 1.1 : 1) * (c.seeping ? 0.92 : 1),
+    windows: (c.sky === 'prime' ? CLIMB.sky.prime : 1) * (c.seeping ? CLIMB.sky.seep : 1),
   };
 }
 
