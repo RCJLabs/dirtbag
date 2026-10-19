@@ -70,7 +70,7 @@
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 | 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
 | 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27, 28 and 29 (14 Oct 2026), and Phases 33, 34, 30, 31, 32 and 35 (15 Oct 2026). Then Phase 14, closed 16 Oct 2026. |
-| 36–45 Hands on | Added by Evan's call (18 Oct 2026), before Phase 20: ten phases that make the game more its own and easier to play, and deepen it where it's thin. Phases 36, the games at the fire played in full, 37, the session, 38, a ghost of your best go, and 39, each crag's classics, closed by his call (18 Oct 2026); Phase 40, "What now?" from Hazel, is the current milestone; 41 to 45 are queued in the order he took them. |
+| 36–45 Hands on | Added by Evan's call (18 Oct 2026), before Phase 20: ten phases that make the game more its own and easier to play, and deepen it where it's thin. Phases 36, the games at the fire played in full, 37, the session, 38, a ghost of your best go, 39, each crag's classics, and 40, "What now?" from Hazel, closed by his call (18 and 19 Oct 2026); Phase 41, the week's forecast and send temps, is the current milestone; 42 to 45 are queued in the order he took them. |
 
 ## The rebuild track
 
@@ -4198,7 +4198,7 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 **Phase 39 closed by Evan's call (18 Oct 2026).** All three criteria pass. Carried, as listed above: the [proposed] picks and perks; the bots become locals only at Roadside (and once at Moonstone), and no boulderer does; the Bluff and the Hollow need five of your own settled lines. The CURRENT MILESTONE moves to Phase 40. The download is 484.0 KB of 490.
 
-### Phase 40 — "What now?" from Hazel   **<<< CURRENT MILESTONE**
+### Phase 40 — "What now?" from Hazel
 
 *Small. Planned with Evan's calls (18 Oct 2026). No save change.*
 
@@ -4265,7 +4265,9 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 - **No bot reads Hazel,** so how much her advice helps isn't measured; the bots' own choices stand.
 - **"Lit" is the session's,** so a reload in Act I lights it again the same day.
 
-### Phase 41 — The week's forecast and send temps
+**Phase 40 closed by Evan's call (19 Oct 2026).** Both criteria pass. Carried, as listed above: the [proposed] numbers; a move only takes you there; no bot reads Hazel; "lit" is the session's; a label reads flat where a place's name has no article ("A shift at Coffee Shop"). The CURRENT MILESTONE moves to Phase 41. The download is 485.7 KB of 490.
+
+### Phase 41 — The week's forecast and send temps   **<<< CURRENT MILESTONE**
 
 *Queued (18 Oct 2026). Small [INFERRED].*
 
@@ -5042,3 +5044,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-18 — Phase 39 planned with Evan's calls: five hand-picked classics a crag; a local waits for nothing on a busy day, finds the beta on a quiet one, and earns an entry; your settled first ascents join the list. 39.1 built: the classics, the card, the Record Book's 53rd entry; no save change. Phase 39's Done-when pass; closing it is Evan's call. 0.999.99.
 - 2026-10-18 — Phase 39 closed by Evan's call: all three criteria pass. CURRENT MILESTONE moved to Phase 40, "What now?" from Hazel.
 - 2026-10-18 — Phase 40 planned with Evan's calls: a "What now?" button by the goal chip; needs, then the story, then chances; each move takes you there. 40.1 built: Hazel's card of three moves, every reason from the state; lit through Act I's mornings till asked. No save change. Phase 40's Done-when pass; closing it is Evan's call. 0.999.100.
+- 2026-10-19 — Phase 40 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 41, the week's forecast and send temps.
