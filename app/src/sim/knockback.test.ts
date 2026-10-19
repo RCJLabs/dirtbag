@@ -121,6 +121,7 @@ describe('knocks that come back', () => {
       sesh: null,
       seshFirsts: 0,
       vanPlan: expect.any(Object),
+      setUp: null,
     });
   });
 });

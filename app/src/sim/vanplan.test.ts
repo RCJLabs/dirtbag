@@ -135,7 +135,7 @@ describe('Phase 43: a save from before', () => {
     if (!r.ok) return;
     expect(r.from).toBe(81);
     const old = JSON.parse(V81).state;
-    expect(r.state).toEqual({ ...old, vanPlan: defaultPlan(old) });
+    expect(r.state).toEqual({ ...old, vanPlan: defaultPlan(old), setUp: null });
     // Every piece it owns has a spot: a v81 save with everything fitted.
     for (const id of PIECES) expect(r.state.vanPlan[id]).toBeTruthy();
     sound(floorLen(r.state), r.state.vanPlan);

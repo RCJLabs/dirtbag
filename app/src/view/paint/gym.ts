@@ -3,7 +3,7 @@
 // at when you pick a problem. The six problems keep their places and tape colours from week
 // to week; what changes with the set is the names and the moves, which live in the sim.
 
-import { BOARD_WEEKS, COMP, SPEED, TEXT_VALUES } from '../../sim';
+import { BOARD_WEEKS, COMP, SET_MOVES, SETTING, SPEED, TEXT_VALUES, type Cell } from '../../sim';
 import { lin, mk, poly, rad, rr, spline, type G, type Pt } from '../kit/geom';
 import { mulberry32 } from '../kit/noise';
 import {
@@ -16,6 +16,7 @@ import {
   GYM_W,
   H,
   PROBLEM_X,
+  SET_X,
   CENTER_W,
   CENTER_X,
   SPEED_LANE,
@@ -37,6 +38,13 @@ const WALL_X0 = 326;
 const WALL_X1 = 930;
 // A bouldering wall stands about 16 ft: the scene's people are 12 px to the foot.
 const WALL_TOP = GND - 196;
+// Phase 44.2: the setter's panel in the scene, and the tape your set goes up in.
+const PANEL_X0 = SET_X - 22;
+const PANEL_X1 = SET_X + 22;
+const PANEL_TOP = WALL_TOP + 26;
+export const SET_TAPE = '#E8833A';
+// How big each kind of hold is drawn: a jug's a handful, a crimp a sliver.
+const SET_SIZE = { rest: 1.5, crimp: 0.8, power: 1.2, technical: 1, dyno: 1.2 } as const;
 
 // A climbing hold: a lumpy blob, seeded so each one keeps its shape.
 export function hold(g: G, x: number, y: number, s: number, seed: number): void {
@@ -248,6 +256,15 @@ export function paintGymGround(): HTMLCanvasElement {
     }
   });
 
+  // Phase 44.2: the setter's panel, bare; a set hung on it is drawn live (paintSetPanel).
+  g.fillStyle = PLY_DARK;
+  g.fillRect(PANEL_X0 - 2, PANEL_TOP - 2, PANEL_X1 - PANEL_X0 + 4, GND - PANEL_TOP);
+  g.fillStyle = PLY;
+  g.fillRect(PANEL_X0, PANEL_TOP, PANEL_X1 - PANEL_X0, GND - 4 - PANEL_TOP);
+  tnuts(g, PANEL_X0, PANEL_X1, PANEL_TOP, GND - 10);
+  g.fillStyle = MAT;
+  g.fillRect(PANEL_X0 - 8, GND - 8, PANEL_X1 - PANEL_X0 + 16, 24);
+
   // Mats along the whole wall, with their seams.
   g.fillStyle = MAT;
   g.fillRect(WALL_X0 - 14, GND - 8, WALL_X1 - WALL_X0 + 28, 24);
@@ -259,6 +276,18 @@ export function paintGymGround(): HTMLCanvasElement {
   paintBoardInScene(g);
   paintSpeedInScene(g);
   return c;
+}
+
+// Phase 44.2: your set on the panel in the scene, its holds on their squares, `cam` across.
+export function paintSetPanel(g: G, ids: readonly string[], cells: readonly Cell[], cam: number): void {
+  const { cols, rows } = SETTING.panel;
+  g.fillStyle = SET_TAPE;
+  for (const [i, [c, r]] of cells.entries()) {
+    const x = PANEL_X0 + 4 + ((c + 0.5) * (PANEL_X1 - PANEL_X0 - 8)) / cols;
+    const y = GND - 26 - (r * (GND - 26 - (PANEL_TOP + 14))) / (rows - 1);
+    hold(g, x - cam, y, 2.4 * SET_SIZE[SET_MOVES[ids[i]!]?.kind ?? 'technical'], 4400 + i);
+    g.fill();
+  }
 }
 
 // ---- the speed wall (Phase 21.6) ----
@@ -583,6 +612,78 @@ export function gymWallArt(slot: number, heightFt: number, place = 'gym'): HTMLC
 // or the send card at its own size).
 export function paintGymWall(g: G, slot: number, heightFt: number, place = 'gym'): void {
   const look = (LOOK_AT[place] ?? LOOK_AT.gym!)();
+  backdrop(g, look, heightFt, slot);
+  for (let k = 0; k < look.tape.length; k++) {
+    const x = cx + (k - slot) * SPACING;
+    if (x < -40 || x > W + 40) continue;
+    g.globalAlpha = k === slot ? 1 : 0.4;
+    g.fillStyle = look.tape[k]!;
+    for (const [i, h] of holdsFor(k, x, FLOOR_Y - 12, finishY(heightFt)).entries()) {
+      hold(g, h.at[0], h.at[1], h.s * 2.1, k * 31 + i);
+      g.fill();
+    }
+  }
+  g.globalAlpha = 1;
+  // The start tape and the finish tape on this problem.
+  const own = holdsFor(slot, cx, FLOOR_Y - 12, finishY(heightFt));
+  g.fillStyle = look.tape[slot]!;
+  for (const h of [own[0]!, own[own.length - 1]!]) g.fillRect(h.at[0] - 16, h.at[1] + 14, 32, 5);
+  mats(g);
+}
+
+// Phase 44.2: your set face-on, on the panel's ply: your holds on their squares, the start and
+// the finish taped.
+export function paintSetWall(g: G, ids: readonly string[], cells: readonly Cell[], heightFt: number): void {
+  const look = LOOK_AT.gym!();
+  backdrop(g, look, heightFt, 99);
+  g.fillStyle = SET_TAPE;
+  const at = setFace(cells, heightFt);
+  for (const [i, [x, y]] of at.entries()) {
+    hold(g, x, y, 9 * SET_SIZE[SET_MOVES[ids[i]!]?.kind ?? 'technical'], 4400 + i);
+    g.fill();
+  }
+  for (const [x, y] of [at[0]!, at[at.length - 1]!]) g.fillRect(x - 16, y + 14, 32, 5);
+  mats(g);
+}
+
+// A set's squares face-on: the panel's columns across the middle, its rows from the start,
+// just off the mats, to the finish.
+function setFace(cells: readonly Cell[], heightFt: number): Pt[] {
+  const { cols, rows } = SETTING.panel;
+  const across = SPACING * 1.6;
+  return cells.map(([c, r]) => [
+    cx + (c - (cols - 1) / 2) * (across / (cols - 1)),
+    FLOOR_Y - 12 - (r * (FLOOR_Y - 12 - finishY(heightFt))) / (rows - 1),
+  ]);
+}
+
+// Where the climber's hips go up your set, as up any of the gym's.
+export function setTopo(cells: readonly Cell[], heightFt: number): Pt[] {
+  const hs = setFace(cells, heightFt);
+  const y0 = FLOOR_Y - FEET;
+  const y1 = finishY(heightFt) + REACH;
+  const pts: Pt[] = hs.map((h, i) => [cx + (h[0] - cx) * 0.35, y0 + ((y1 - y0) * i) / (hs.length - 1)]);
+  return spline(pts, 10);
+}
+
+const setWalls = new Map<string, HTMLCanvasElement>();
+export function setWallArt(
+  id: string,
+  ids: readonly string[],
+  cells: readonly Cell[],
+  heightFt: number,
+): HTMLCanvasElement {
+  const hit = setWalls.get(id);
+  if (hit) return hit;
+  const [c, g] = mk(W, H, 2);
+  paintSetWall(g, ids, cells, heightFt);
+  setWalls.set(id, c);
+  return c;
+}
+
+// A gym's wall face-on behind its problems: the panels, the t-nuts, the seams, and old holds
+// faded, seeded by the problem.
+function backdrop(g: G, look: ReturnType<(typeof LOOK_AT)['gym']>, heightFt: number, slot: number): void {
   const top = finishY(heightFt) - 60;
   g.fillStyle = look.back;
   g.fillRect(0, 0, W, H);
@@ -611,22 +712,10 @@ export function paintGymWall(g: G, slot: number, heightFt: number, place = 'gym'
     hold(g, r() * W, top + 16 + r() * (FLOOR_Y - top - 40), 5 + r() * 4, 700 + i);
     g.fill();
   }
-  for (let k = 0; k < look.tape.length; k++) {
-    const x = cx + (k - slot) * SPACING;
-    if (x < -40 || x > W + 40) continue;
-    g.globalAlpha = k === slot ? 1 : 0.4;
-    g.fillStyle = look.tape[k]!;
-    for (const [i, h] of holdsFor(k, x, FLOOR_Y - 12, finishY(heightFt)).entries()) {
-      hold(g, h.at[0], h.at[1], h.s * 2.1, k * 31 + i);
-      g.fill();
-    }
-  }
-  g.globalAlpha = 1;
-  // The start tape and the finish tape on this problem.
-  const own = holdsFor(slot, cx, FLOOR_Y - 12, finishY(heightFt));
-  g.fillStyle = look.tape[slot]!;
-  for (const h of [own[0]!, own[own.length - 1]!]) g.fillRect(h.at[0] - 16, h.at[1] + 14, 32, 5);
-  // Mats.
+}
+
+// The mats under a wall face-on.
+function mats(g: G): void {
   g.fillStyle = MAT;
   g.fillRect(0, FLOOR_Y, W, H - FLOOR_Y);
   g.fillStyle = '#5585B8';

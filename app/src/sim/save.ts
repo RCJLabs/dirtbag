@@ -8,7 +8,19 @@
 import { CARRIED, SKILLS, STARTS } from './climber';
 import { GEAR } from './content/gear';
 import { PLACES } from './content/places';
-import { AGE, FACTION, OWN_GYM, LIFESTYLE, PLANS, SETTLE, SPOTS, TRAIN, VAN_AGE, YEAR } from './dials';
+import {
+  AGE,
+  FACTION,
+  OWN_GYM,
+  LIFESTYLE,
+  PLANS,
+  SETTING,
+  SETTLE,
+  SPOTS,
+  TRAIN,
+  VAN_AGE,
+  YEAR,
+} from './dials';
 import { JOBS } from './content/jobs';
 import { ROUTES, WALLS } from './content/routes';
 import { EXPEDITIONS } from './content/expeditions';
@@ -34,10 +46,11 @@ import { DEMO_BUILD } from './edition';
 import { aimMet, currentGoal } from './story';
 import { repeatsOf } from './settle';
 import { defaultPlan, PIECES } from './vanplan';
+import { setOf } from './yourset';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 82;
+export const SAVE_VERSION = 83;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -620,6 +633,11 @@ export const MIGRATIONS: Record<number, Migration> = {
       isObj(x.dream) && isStrs(x.dream.owned) ? { pick: null, pot: 0, owned: x.dream.owned } : undefined;
     return { ...x, vanPlan: defaultPlan({ gear, dream: dream as GameState['dream'] }) };
   },
+  // v82 -> v83 (Phase 44.2): a set you hang stays up on the panel. Nobody had one up before.
+  82: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, setUp: null };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -1147,6 +1165,17 @@ export function validate(x: unknown): string[] {
               (sp.r === 0 || sp.r === 1))),
       ),
     'vanPlan',
+  );
+  const su = x.setUp;
+  need(
+    su === null ||
+      (isObj(su) &&
+        typeof su.id === 'string' &&
+        setOf(su.id) !== null &&
+        typeof su.name === 'string' &&
+        su.name.length > 0 &&
+        su.name.length <= SETTING.name.max),
+    'setUp',
   );
   const dr = x.dream;
   const DREAMS = ['rig', 'warchest', 'homebase'];

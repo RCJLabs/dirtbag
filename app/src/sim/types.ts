@@ -317,6 +317,9 @@ export interface GameState {
   // Phase 43: where what takes room sits in the van, a spot for each piece on the floor or the
   // roof, or null for one you've taken out to make room.
   vanPlan: VanPlan;
+  // Phase 44.2: the set you hung last, on the panel till its week's reset: its id (which
+  // carries the set, yourset.ts) and the name you gave it.
+  setUp: { id: string; name: string } | null;
   // Phase 22.8. Your dream: the one you're saving for, the pot (the card and the bills never
   // touch it), and the ones you own.
   dream: {
@@ -657,7 +660,8 @@ export interface Client {
 // begun (18.3).
 export type Play =
   // Phase 44: with each hold's square on the panel, from the bottom up; without, straight up.
-  | { set: string[]; at?: [number, number][] }
+  // Phase 44.2: and the name it goes up under.
+  | { set: string[]; at?: [number, number][]; name?: string }
   | { queue: number[] }
   | { tables: number[][] }
   | { coach: ('burns' | 'drill' | 'head' | 'rest')[] }
@@ -698,6 +702,7 @@ export type Action =
       what?: string;
       set?: string[];
       at?: [number, number][];
+      name?: string;
     }
   // Phase 32.3: a crack in a wild place takes gear (cleaned) or bolts; anything else, its kind.
   | { t: 'bolt'; route: string; how?: 'gear' | 'bolts' }

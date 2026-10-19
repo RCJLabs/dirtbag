@@ -24,6 +24,8 @@ import {
   indoor,
   routesAt,
   wallAt,
+  setOf,
+  setUpNow,
   startAttempt,
   STEP,
   stepAttempt,
@@ -81,16 +83,19 @@ import {
   OY,
   presentIn,
   SCENES,
+  SET_X,
   spotHot,
   strangerHot,
   strangersAt,
   W,
   WAKE_X,
+  wallHot,
   widthOf,
   Z,
   type Hot,
   type Use,
   screenToMap,
+  GND,
 } from '../view/layout';
 import { mapLeft, render, valleyArt, type Frame } from '../view/render';
 import { drivePath } from '../view/valley';
@@ -822,7 +827,10 @@ export class Game {
     const s = this.state;
     const place = SCENES[scene]?.place ?? s.at;
     const crowd = crag ? strangersAt(place, crag, s.day, crowdNow(s, place)).map(strangerHot) : [];
-    return [...crowd, ...SCENES[scene]!.hots, ...presentIn(s, scene).map(spotHot)];
+    // Phase 44.2: your set on the panel, while it's up.
+    const mine = scene === 'gym' ? setUpNow(s) : undefined;
+    const panel = mine ? [wallHot(SET_X, { route: mine.id }, 22, GND - 210)] : [];
+    return [...crowd, ...SCENES[scene]!.hots, ...panel, ...presentIn(s, scene).map(spotHot)];
   }
 
   private walkTo(x: number, then: (() => void) | null): void {
@@ -1760,7 +1768,8 @@ export class Game {
             ? h.use.route === route
             : 'problem' in h.use && h.use.problem === slot,
     );
-    this.enterScene(scene, hot?.stand);
+    // Phase 44.2: your set is on the panel, not one of the wall's places.
+    this.enterScene(scene, hot?.stand ?? (r && setOf(r.id) ? SET_X - 30 : undefined));
   }
 
   private applyAttempt(r: { att: Attempt; events: AttemptEvent[] }): void {

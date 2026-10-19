@@ -4519,8 +4519,44 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
   - the steps, capped, and the grade and the one crux moved by a reach;
   - the refusals;
   - a set hung from the panel on a shift, paid the shift and the bonus for the set as climbed, the bonus never more than its share.
-- **The e2e:** day one's setting shift on the panel. Five holds go up from the bottom, the third a long reach (one big move); the grade is live; the pay and the bonus are checked.
+- **The e2e:** day two's setting shift on the panel. Five holds go up from the bottom, the third a long reach (one big move); the grade is live; the pay and the bonus are checked.
 - **The download:** 493.0 KB of 500 (+1.4).
+
+**Status (19 Oct 2026): 44.2 built: the set stays up.** Save v83, 0.999.105.
+- **Its id carries it** (`sim/yourset.ts`): `ys-<day>-` and then each hold as its place in the bucket's list and its square, across and up, three characters a hold. The bucket's list is append-only now (a test holds its order), and the panel's sides stay under ten squares.
+  - `routeById` rebuilds it from the id alone, as it does the gym's own problems from the seed. A set from weeks ago still resolves for its log.
+- **The problem** (`setRoute`): a boulder with one crux, the move to its hardest hold, named for that hold. It's graded as the panel graded it, in that hold's style (or the first that isn't a rest's), at the gym, 13 ft.
+- **Up on the panel** (save v83, `setUp`: its id and its name):
+  - a set hung on a shift, or on your own wall, goes up under the name you gave it (tidied, cut to `SETTING.name.max`; too short, and it's the first idea), and says so;
+  - it's on the wall after the week's six and before the board while its week lasts (`stillUp`, `setUpNow`, `wallAt`), and comes down with the reset. A new set takes its place;
+  - it goes by its name wherever a line's name is shown through `lineName`;
+  - not on a comp day: the comp's set has the wall.
+- **The names:** three ideas a set, from its crux hold, the wall and the week's crowd (`SET_NAMES`, `setNameIdeas`). The sheet has the name field and the ideas as chips, and says which set comes down for it.
+- **Drawn:**
+  - **the scene:** a bare panel of ply at the end of the wall (`SET_X`), your holds on it in their own tape while it's up, with its grade tag, and a tap on it while it's up;
+  - **the close-up:** your holds face-on, on their squares, the start and the finish taped (`paintSetWall`, `setTopo`), and the climber's line up them.
+- **Save v83:** `setUp`, null for a save from before. Fixture `save-v82.json` (day 201), made by main's code.
+- **Tests** (`yourset.test.ts`, 9):
+  - the id carries its day, holds and squares, and gives them back; the bucket's order is held;
+  - a set is a problem like the gym's: one crux, graded as the panel graded it, a style for every hold;
+  - up when it's hung, the name tidied, the first idea for a short one;
+  - on the wall after the six, by its name, climbed and sent, then down with the week, its log still finding it;
+  - down for the next set; up from your own wall too;
+  - the v82 fixture loads with nothing up.
+- **The e2e:** day two's set is named "First Light" as it's hung, and the save check finds it up. A new section, "Your set on the wall": a set of yours up this week, walked to at the end of the wall, its sheet by its name, sent, and in the save.
+- **The download:** 494.5 KB of 500 (+1.5).
+
+**Phase 44 against its Done-when (19 Oct 2026):** both pass.
+1. **The e2e sets a problem on the panel and climbs it on the wall:** day two's set goes up on the panel with a big move and a name. A set of yours is walked to on the panel, climbed and sent.
+2. **A set's pay still comes from the shift's:** the bonus is never more than `PLAY.top` of the shift's pay, for sets across the panel (the test). No bot plays shifts, so the harness's pay figures don't move.
+
+**Closing Phase 44 is Evan's call.** Carried:
+- **[proposed]:** the panel's size and its reach numbers.
+- **One set up at a time:** each set you hang replaces the last.
+- **Names:** a set's name lives only while it's the one up. An old set's log falls back to "Your set".
+- **Only you climb it:** the crowd and the bots don't.
+- **By controller:** the panel's squares are buttons focus moves over, but the e2e plays it by pointer.
+- **The download is 494.5 KB of 500:** Phase 45 will likely need the budget raised.
 
 ### Phase 45 — The problem of the day
 
@@ -5267,3 +5303,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-19 — 43.1: the van, laid out, to Evan's calls. "Lay out the van" opens its floor and roof as grids: the bed, the kitchen, the shelf and the heater on the floor, the solar panel on the roof. Move, turn or take out anything but the bed, which stays in and needs its length; the door stays clear, and nothing sits on anything. Where things go changes no rule. A new van or the Rig starts its own plan, and a save from before loads laid out. Both Done-when criteria pass. Save v82, 0.999.103; the download budget 500 KB, by his call.
 - 2026-10-19 — Phase 43 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 44, the setter's wall, hands-on.
 - 2026-10-19 — Phase 44 planned with Evan's calls: holds on a grid where reach counts, today's grade plus reach shown live, and a set that stays up for the week, a climbable problem you name. 44.1: the setter's panel. The bucket's holds go on squares from the bottom up, and a long reach makes a move harder; the grade and the brief's checks follow every hold. 0.999.104, no save change.
+- 2026-10-19 — 44.2: the set stays up. A set you hang goes up on a panel at the end of Send City's wall under the name you give it, a problem like the gym's own, its holds where you put them, climbable till the week's reset; its id carries it. Both Done-when criteria pass. Save v83, 0.999.105.

@@ -77,6 +77,7 @@ npm run store:art      # after build: Steam's capsules and library art (drawn in
 | `src/sim/kit.ts`, `content/gear.ts` | Your kit: what it is, what a go does to it, and what it does to a go (`KIT` in `dials.ts`). |
 | `src/sim/training.ts`, `sessions.ts`, `content/training.ts` | Your training block (phase, taper, prehab) and a session: what it costs, teaches and loads (`TRAIN` in `dials.ts`). |
 | `src/sim/belay.ts`, `content/belay.ts`, `ui/BelayPanel.tsx` | Holding a partner's rope (Phase 42): the rope's fixed-step model, the belay's rules, what they say after, and the panel. |
+| `src/sim/setpanel.ts`, `yourset.ts` | The setter's panel (Phase 44): a hold's square, a move's span and what it adds; and a set you hung, carried in its id (`ys-…`), rebuilt as a problem by `routeById`, up on the panel at the end of Send City's wall till the reset. |
 | `src/sim/vanplan.ts` | The van laid out (Phase 43): each piece's footprint and spot, what fits where, a new van's plan, and keeping the plan to what you own. Changes no rule. |
 | `src/sim/climber.ts`, `weather.ts`, `forecast.ts`, `presence.ts` | Skills and the grade curve; each day's sky, and the radio's calls of it days ahead; where people are. All pure functions of the state or the seed. |
 | `src/sim/bot.ts` | A player that isn't one: plays whole days through `act()`, with perfect or human-ish hands, under three strategies (climber, balanced, worker). |

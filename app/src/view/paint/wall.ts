@@ -3,13 +3,23 @@
 // close-up walls of their own (boulder.ts, gym.ts). Whatever the wall, a route is mapped
 // from moves (the sim's unit) to points along its line here, so the rules never see a pixel.
 
-import { EXPED_ROUTES, indoor, onWall, ROUTES, type RouteDef } from '../../sim';
+import { EXPED_ROUTES, indoor, onWall, ROUTES, setOf, type RouteDef } from '../../sim';
 import { arcTable, atLen, lin, mk, poly, spline, trace, type G, type Pt } from '../kit/geom';
 import { mulberry32 } from '../kit/noise';
 import { H, W } from '../layout';
 import { coniferPath, rock } from '../shapes';
 import { boulderArt, boulderOutline, boulderTopo, paintBoulderArt } from './boulder';
-import { boardTopo, boardWallArt, gymTopo, gymWallArt, paintBoardWall, paintGymWall } from './gym';
+import {
+  boardTopo,
+  boardWallArt,
+  gymTopo,
+  gymWallArt,
+  paintBoardWall,
+  paintGymWall,
+  paintSetWall,
+  setTopo,
+  setWallArt,
+} from './gym';
 import { EXPED_FACE, paintExpedWall, SCENED } from './expeds';
 import { laterWalls } from './wall.full';
 
@@ -419,10 +429,11 @@ const boardPattern = (id: string): number => Number(id.split('-')[1] ?? 1) * 10 
 
 // A close-up's cache key: gym problems share a wall by their place on it, board problems
 // by their lit holds, and a boulder is its own.
+// Phase 44.2: a set you hung is its own, by its id, like a boulder.
 const closeKey = (r: RouteDef): string =>
   r.board
     ? `board:${boardPattern(r.id)}:${r.heightFt}`
-    : indoor(r.place)
+    : indoor(r.place) && !setOf(r.id)
       ? `${r.place}:${slotOf(r.id)}:${r.heightFt}`
       : r.id;
 
@@ -435,12 +446,15 @@ export function topoFor(r: RouteDef): Topo {
   const key = closeKey(r);
   let t = topos.get(key);
   if (!t) {
+    const set = setOf(r.id);
     t = topoOf(
       r.board
         ? boardTopo(boardPattern(r.id), r.heightFt)
-        : indoor(r.place)
-          ? gymTopo(slotOf(r.id), r.heightFt)
-          : boulderTopo(r.id, r.heightFt),
+        : set
+          ? setTopo(set.cells, r.heightFt)
+          : indoor(r.place)
+            ? gymTopo(slotOf(r.id), r.heightFt)
+            : boulderTopo(r.id, r.heightFt),
     );
     topos.set(key, t);
   }
@@ -453,11 +467,14 @@ export function wallOf(r: RouteDef): Wall {
   const key = closeKey(r);
   let w = close.get(key);
   if (!w) {
+    const set = setOf(r.id);
     const art = r.board
       ? boardWallArt(boardPattern(r.id), r.heightFt)
-      : indoor(r.place)
-        ? gymWallArt(slotOf(r.id), r.heightFt, r.place)
-        : boulderArt(r);
+      : set
+        ? setWallArt(r.id, set.ids, set.cells, r.heightFt)
+        : indoor(r.place)
+          ? gymWallArt(slotOf(r.id), r.heightFt, r.place)
+          : boulderArt(r);
     w = { art, topo: topoFor(r), big: true };
     close.set(key, w);
   }
@@ -791,6 +808,7 @@ const FACE: Record<string, Pt[]> = {
 export function paintRouteArt(g: G, r: RouteDef): void {
   if (onWall(r)) paintWall(g, r.place, r.id);
   else if (r.board) paintBoardWall(g, boardPattern(r.id), r.heightFt);
+  else if (setOf(r.id)) paintSetWall(g, setOf(r.id)!.ids, setOf(r.id)!.cells, r.heightFt);
   else if (indoor(r.place)) paintGymWall(g, slotOf(r.id), r.heightFt, r.place);
   else paintBoulderArt(g, r);
 }

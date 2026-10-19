@@ -102,7 +102,10 @@ import {
   scoreSet,
   setBrief,
   setMoves,
+  setNameIdeas,
+  setNameOf,
   setRefused,
+  setUpNow,
   spanBump,
   spanOf,
   SET_MOVES,
@@ -481,7 +484,7 @@ function PlayButton({
       onClick={() => {
         // Your own wall (Phase 18.6): set for the gym, not for a shift's pay.
         if (s.gym && 'set' in play) {
-          game.gymDo({ t: 'gym', do: 'set', set: play.set, at: play.at });
+          game.gymDo({ t: 'gym', do: 'set', set: play.set, at: play.at, name: play.name });
           return;
         }
         const why = game.playShift(act, play);
@@ -832,6 +835,8 @@ function HaulBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
 function SetBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
   const [up, setUp] = useState<Record<string, Cell>>({});
   const [pick, setPick] = useState<string | null>(null);
+  // Phase 44.2: the name it goes up under; left short, it takes the first idea.
+  const [name, setName] = useState('');
   const a = ACTS[act];
   if (!a) return null;
   const b = setBrief(s);
@@ -844,6 +849,9 @@ function SetBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
   const bigs = set.filter((_, i) => step(i) > 0).length;
   const why = set.length === SETTING.pick ? setRefused(b, set, at) : null;
   const full = set.length === SETTING.pick && !why;
+  const ideas = setNameIdeas(b.wall, b.crowd, set, at);
+  const now = setUpNow(s);
+  const was = now ? `“${lineName(s, now)}”` : null;
   const pay = actCost(s, a).cash ?? 0;
   const says = [...SET_SAYS].reverse().find(([at]) => sc.score >= at)![1];
   const climbing = set.filter((m) => SET_MOVES[m]!.kind !== 'rest').length;
@@ -993,11 +1001,42 @@ function SetBody({ game, act, s }: { game: Game; act: string; s: GameState }) {
           {!s.gym && playBonus(pay, sc.score) ? ` +${money(playBonus(pay, sc.score))} on top.` : ''}
         </p>
       )}
+      {full && (
+        <>
+          <label className="field">
+            <span>
+              {was ? `Its name. ${was} comes down for it.` : 'Its name, on the panel till the reset'}
+            </span>
+            <input
+              id="set-name"
+              value={name}
+              maxLength={SETTING.name.max}
+              placeholder={ideas[0]}
+              autoComplete="off"
+              spellCheck={false}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </label>
+          <div className="chips">
+            {ideas.map((n) => (
+              <button
+                type="button"
+                key={n}
+                className="chip"
+                aria-pressed={name === n}
+                onClick={() => setName(n)}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
       <PlayButton
         game={game}
         act={act}
         s={s}
-        play={{ set, at }}
+        play={{ set, at, name: setNameOf(name, ideas) }}
         ready={full}
         note={
           full
