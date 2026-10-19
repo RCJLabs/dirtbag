@@ -103,7 +103,8 @@ ok('and a new first morning');
 
 // Phase 45: the problem of the day in the demo: one of the demo's crags, and its own slot among
 // the demo's keys.
-await page.goto(new URL('?day=2026-10-19', server.url).href, { waitUntil: 'load' });
+// The network quiet first, so closing up after can't cut off the favicon's request.
+await page.goto(new URL('?day=2026-10-19', server.url).href, { waitUntil: 'networkidle' });
 await page.waitForFunction(
   () => document.querySelector('#sheet-title')?.textContent === 'The problem of the day',
 );

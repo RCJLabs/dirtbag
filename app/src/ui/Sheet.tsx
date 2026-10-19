@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   actOf,
+  DAY_SAYS,
   dateLabel,
   COACH_EDGE,
   byName,
@@ -266,7 +267,7 @@ import type { Settings } from '../game/persist';
 import { paintHeader } from '../view/header';
 import { planLine, stepLabel, stepsAt, withStep, type PlanStep } from '../game/plan';
 import { CARD, cardPng } from '../view/paint/card';
-import { cardFile, cardOf, cardText, tripCardOf } from './card';
+import { cardFile, cardOf, cardText, dayCardOf, tripCardOf } from './card';
 import { glossSplit } from './gloss';
 import { buildSheet, owedNote, SKILL_NAME, type ListSpec } from './sheets';
 import { CREDITS } from './credits';
@@ -1627,7 +1628,13 @@ function BetaBody({ game, route, s }: { game: Game; route: string; s: GameState 
 // The send card: painted here from the save, shown as an image (so a long press saves it
 // too), with a share button where the phone can share files, and a plain download.
 function CardBody({ game, id, s }: { game: Game; id: Extract<SheetId, { k: 'card' }>; s: GameState }) {
-  const [card] = useState(() => (id.trip !== undefined ? tripCardOf(s, id.trip) : cardOf(s, id.route)));
+  const [card] = useState(() =>
+    id.day && game.day
+      ? dayCardOf(s, game.day, id.route)
+      : id.trip !== undefined
+        ? tripCardOf(s, id.trip)
+        : cardOf(s, id.route),
+  );
   const [png, setPng] = useState<{ file: File; url: string } | null>(null);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
@@ -1670,7 +1677,13 @@ function CardBody({ game, id, s }: { game: Game; id: Extract<SheetId, { k: 'card
           height={CARD.h * CARD.k}
         />
       ) : (
-        <p className="sub">{failed ? 'It wouldn’t draw. The send still counts.' : 'Drawing it…'}</p>
+        <p className="sub">
+          {failed
+            ? id.day
+              ? DAY_SAYS.cardFailed
+              : 'It wouldn’t draw. The send still counts.'
+            : 'Drawing it…'}
+        </p>
       )}
       <ul>
         {shareable && (

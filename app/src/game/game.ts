@@ -143,8 +143,9 @@ export type SheetId =
       first: boolean;
     }
   // The send card, and the sheet to go back to.
-  // A keepsake card: of a send, or (Phase 25.7) of the trip at this place in the book.
-  | { k: 'card'; route: string; back: SheetId; trip?: number }
+  // A keepsake card: of a send, or (Phase 25.7) of the trip at this place in the book, or
+  // (Phase 45.2) of the problem of the day.
+  | { k: 'card'; route: string; back: SheetId; trip?: number; day?: true }
   // A first ascent to name: straight after the send (then the send card), or later from
   // the wall if you walked off without naming it.
   | {

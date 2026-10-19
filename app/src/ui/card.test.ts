@@ -2,7 +2,8 @@
 import { describe, expect, it } from 'vitest';
 import { emptyLog, newGame } from '../sim/game';
 import type { GameState, RouteLog } from '../sim/types';
-import { bestTrip, cardFile, cardOf, cardText, tripCardOf } from './card';
+import { dailyState, dayOf } from '../sim';
+import { bestTrip, cardFile, cardOf, cardText, dayCardOf, tripCardOf } from './card';
 import type { TripLog } from '../sim/types';
 
 const sent = (day: number, go: number, style: 'onsight' | 'flash' | 'redpoint'): RouteLog => ({
@@ -104,5 +105,45 @@ describe('the trip card', () => {
     expect(bestTrip(robin({ book: [trip({ high: 5 }), trip({ end: 'summit', high: 6 })] }), 'elcap')).toBe(1);
     expect(bestTrip(robin({ book: [trip({ high: 0 })] }), 'elcap')).toBeNull();
     expect(bestTrip(robin({ book: [trip({})] }), 'trango')).toBeNull();
+  });
+});
+
+// Phase 45.2: the problem of the day's card: the day, the line, and how it went.
+describe('the day’s card', () => {
+  const date = '2026-10-19';
+  const day = dailyState(date);
+  const line = dayOf(date).route;
+
+  it('says the day, the line and the go it went on, and isn’t there while the day is on', () => {
+    expect(dayCardOf(day, date, line)).toBeNull();
+    const c = dayCardOf({ ...day, routes: { [line]: sent(day.day, 2, 'redpoint') } }, date, line)!;
+    expect(c).toMatchObject({
+      name: 'Hueco Pockets',
+      grade: 'V9',
+      style: 'Redpoint, go 2',
+      where: 'Moonstone Boulders',
+      when: '19 October 2026',
+      who: 'The problem of the day',
+      fa: null,
+      day: date,
+    });
+    expect(c.at).toBeUndefined();
+    expect(cardText(c)).toBe(
+      'The problem of the day, 19 October 2026: Hueco Pockets, V9, at Moonstone Boulders. Redpoint, go 2.',
+    );
+    expect(cardFile(c)).toBe('dirtbag-2026-10-19-hueco-pockets.png');
+    expect(dayCardOf({ ...day, routes: { [line]: sent(day.day, 1, 'flash') } }, date, line)?.style).toBe(
+      'Flash, go 1',
+    );
+  });
+
+  it('says how close you got on a day it didn’t go, and draws you up there', () => {
+    const c = dayCardOf(
+      { ...day, skin: 5, routes: { [line]: { ...emptyLog(), goes: 3, hi: 6 } } },
+      date,
+      line,
+    )!;
+    expect(c).toMatchObject({ style: 'High point 6 of 9, 3 goes', at: 6 });
+    expect(cardText(c)).toMatch(/: Hueco Pockets, V9, at Moonstone Boulders\. High point 6 of 9, 3 goes\.$/);
   });
 });

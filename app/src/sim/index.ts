@@ -596,6 +596,7 @@ export {
   dayOver,
   dayResult,
   daySeed,
+  goesSaid,
   isDate,
   type DayResult,
 } from './daily';

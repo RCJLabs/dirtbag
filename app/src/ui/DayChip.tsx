@@ -1,4 +1,4 @@
-import { DAY_SAYS, dayResult, lineName, routeOfId } from '../sim';
+import { DAY_SAYS, dayResult, goesSaid, lineName, routeOfId } from '../sim';
 import type { Game, Ui } from '../game/game';
 
 // Phase 45: over the scene on the problem of the day, in place of "What now?" and the goal:
@@ -10,7 +10,7 @@ export function DayChip({ game, ui }: { game: Game; ui: Ui }) {
   const how = res.sent
     ? `sent, go ${res.goes}`
     : res.goes
-      ? `${res.goes} go${res.goes === 1 ? '' : 'es'}, move ${res.hi} of ${res.moves}`
+      ? `${goesSaid(res.goes)}, move ${res.hi} of ${res.moves}`
       : 'no goes yet';
   return (
     <button type="button" className="goal" id="day-chip" onClick={() => game.openSheet({ k: 'day' })}>

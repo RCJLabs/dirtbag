@@ -6,6 +6,7 @@ import {
   DAY_SAYS,
   dateLabel,
   dayResult,
+  goesSaid,
   STORY,
   storyOf,
   LINE_SCENE,
@@ -1042,7 +1043,6 @@ function daySheet(game: Game, s: GameState, notes: string[]): ListSpec | null {
   const r = game.dayLine ? routeOfId(s, game.dayLine) : undefined;
   if (!game.day || !r) return null;
   const res = dayResult(s, r.id);
-  const goes = (n: number) => `${n} go${n === 1 ? '' : 'es'}`;
   const where = fill(DAY_SAYS.where, {
     date: dateLabel(game.day),
     line: lineName(s, r),
@@ -1067,7 +1067,7 @@ function daySheet(game: Game, s: GameState, notes: string[]): ListSpec | null {
       lines: [
         fill(DAY_SAYS.level, { you: `V${gradeOf(s.climber.skills)}`, grade: gradeLabel(r) }),
         res.goes
-          ? fill(DAY_SAYS.soFar, { goes: goes(res.goes), hi: res.hi, moves: res.moves })
+          ? fill(DAY_SAYS.soFar, { goes: goesSaid(res.goes), hi: res.hi, moves: res.moves })
           : DAY_SAYS.none,
         DAY_SAYS.rules,
       ],
@@ -1076,6 +1076,12 @@ function daySheet(game: Game, s: GameState, notes: string[]): ListSpec | null {
       rows: [{ label: DAY_SAYS.back, run: () => game.lookUp(r.id) }, leave, settings],
     };
   const why = goBlocked(s, r);
+  // Phase 45.2: the day's card, to save or send on.
+  const card: Row = {
+    label: DAY_SAYS.card,
+    note: DAY_SAYS.cardNote,
+    run: () => game.openSheet({ k: 'card', route: r.id, back: { k: 'day' }, day: true }),
+  };
   if (res.sent)
     return {
       title: fill(DAY_SAYS.sent, { style: SEND_NAME[res.sent], go: res.goes }),
@@ -1084,6 +1090,7 @@ function daySheet(game: Game, s: GameState, notes: string[]): ListSpec | null {
       notes,
       close: true,
       rows: [
+        card,
         ...(why ? [] : [{ label: DAY_SAYS.stay, note: DAY_SAYS.stayNote, run: () => game.closeSheet() }]),
         leave,
         settings,
@@ -1092,11 +1099,14 @@ function daySheet(game: Game, s: GameState, notes: string[]): ListSpec | null {
   return {
     title: DAY_SAYS.notSent,
     sub: where,
-    lines: [`${why}.`, fill(DAY_SAYS.notSentLine, { hi: res.hi, moves: res.moves, goes: goes(res.goes) })],
+    lines: [
+      `${why}.`,
+      fill(DAY_SAYS.notSentLine, { hi: res.hi, moves: res.moves, goes: goesSaid(res.goes) }),
+    ],
     reach,
     notes,
     close: true,
-    rows: [leave, settings],
+    rows: [card, leave, settings],
   };
 }
 

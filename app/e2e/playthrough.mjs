@@ -3038,7 +3038,10 @@ console.log('The problem of the day');
   }, career);
   const dayUrl = (date) => new URL(`?day=${date}`, server.url).href;
   const slot = () => page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.day.save')).state);
-  await page.goto(dayUrl('2026-10-19'), { waitUntil: 'load' });
+  // This page comes and goes more than most: each load waits for the network to go quiet, so
+  // the next navigation can't cut off the browser's own favicon request, which counts as a
+  // request failed (it did once on CI).
+  await page.goto(dayUrl('2026-10-19'), { waitUntil: 'networkidle' });
   await expectText('#sheet-title', /The problem of the day/, 'day: its sheet');
   await expectText('#sheet', /19 October 2026\. Hueco Pockets, V9, at Moonstone Boulders\./, 'day: its line');
   await expectText('#sheet', /Today you climb V7, on a V9\./, 'day: its climber');
@@ -3101,8 +3104,35 @@ console.log('The problem of the day');
   if ((await page.evaluate(() => localStorage.getItem('dirtbag.save'))) !== career)
     await fail('day: the career’s save changed');
   log(`day: keys ${(await page.evaluate(() => Object.keys(localStorage).sort())).join(', ')}`);
+  // Phase 45.2: its card, painted on the device at full size and saved as a file, and back.
+  const dayCard = async (re, what) => {
+    await click('#sheet .opt', 'A card of it');
+    const card = await until(`${what}: its card`, () =>
+      page.evaluate(() => {
+        const img = document.querySelector('#card');
+        return img?.complete && img.naturalWidth ? [img.naturalWidth, img.naturalHeight, img.alt] : null;
+      }),
+    );
+    if (card[0] !== 1080 || card[1] !== 1920 || !re.test(card[2]))
+      await fail(`${what}: the card: ${JSON.stringify(card)}`);
+    log(`${what}: card ${card[0]}×${card[1]}, "${card[2]}"`);
+  };
+  await dayCard(
+    new RegExp(
+      `^The problem of the day, 19 October 2026: Hueco Pockets, V9, at Moonstone Boulders\\. ${
+        / on go /.test(end) ? `(Onsight|Flash|Redpoint), go ${goes}` : `High point \\d+ of 9, ${goes} goes`
+      }\\.$`,
+    ),
+    'day',
+  );
+  const [png] = await Promise.all([page.waitForEvent('download'), click('#sheet .opt', 'Save the image')]);
+  if (png.suggestedFilename() !== 'dirtbag-2026-10-19-hueco-pockets.png')
+    await fail(`day: the card saved as ${png.suggestedFilename()}`);
+  await shot('day-card');
+  await click('#sheet .opt', 'Back');
+  await expectText('#sheet-title', new RegExp(`^${end}$`), 'day: back on its sheet');
   // Opened again, the same day, as it ended.
-  await page.goto(dayUrl('2026-10-19'), { waitUntil: 'load' });
+  await page.goto(dayUrl('2026-10-19'), { waitUntil: 'networkidle' });
   await expectText('#sheet-title', new RegExp(`^${end}$`), 'day: the same day again');
   if (JSON.stringify((await slot()).routes) !== JSON.stringify(st.routes))
     await fail('day: opened again, the day moved');
@@ -3116,8 +3146,9 @@ console.log('The problem of the day');
   if (new URL(page.url()).search) await fail(`day: back at ${page.url()}`);
   if ((await page.evaluate(() => localStorage.getItem('dirtbag.save'))) === null)
     await fail('day: no climber to go back to');
+  await page.waitForLoadState('networkidle');
   // The next day, begun with energy for one go: off it, and that's the day.
-  await page.goto(dayUrl('2026-10-20'), { waitUntil: 'load' });
+  await page.goto(dayUrl('2026-10-20'), { waitUntil: 'networkidle' });
   await expectText('#sheet', /20 October 2026\./, 'day: the next day');
   await reloadWith(page, (f) => ({ ...f, state: { ...f.state, energy: 12 } }), 'dirtbag.day.save');
   await expectText('#sheet-title', /The problem of the day/, 'day: the next day, tired');
@@ -3127,6 +3158,12 @@ console.log('The problem of the day');
   await climb({ failFirst: true });
   await expectText('#sheet-title', /^Not today$/, 'day: over on the fall');
   await expectText('#sheet', /Too tired to try\./, 'day: why');
+  // How close it got, on its card.
+  await dayCard(
+    /: Alpine Crimps, V9, at Wind River Walls\. High point \d+ of \d+, 1 go\.$/,
+    'day: the next day',
+  );
+  await click('#sheet .opt', 'Back');
   if ((await page.evaluate(() => localStorage.getItem('dirtbag.save'))) !== career)
     await fail('day: the career’s save changed on the next day');
   await page.close();
