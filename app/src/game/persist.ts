@@ -125,6 +125,19 @@ export function rawSave(): string | null {
   }
 }
 
+// Phase 20.1: the version of the game that last wrote the save here, read before this one does:
+// what's new is whatever's come since. Null with no save; '' for one that doesn't say.
+export function savedBy(): string | null {
+  try {
+    const raw = store()?.getItem(KEY());
+    if (!raw) return null;
+    const app = (JSON.parse(raw) as { app?: unknown }).app;
+    return typeof app === 'string' ? app : '';
+  } catch {
+    return null;
+  }
+}
+
 // Phase 14.5c: the demo's climber, where the full game finds one beside its own (the two share
 // a site or a desktop folder): loaded as any save is, or null. The full game offers to carry
 // on with them; the demo's copy stays where it is, the demo's to keep.

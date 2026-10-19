@@ -102,7 +102,6 @@ check("docs/STORE.md fits the stores' limits", () => {
   const LIMIT = {
     short: ['Play', 80],
     full: ['Play', 4000],
-    'whats-new': ['Play', 500],
     // Phase 19.3: Play's listing for launch, when the gate goes on.
     'short-launch': ['Play', 80],
     'full-launch': ['Play', 4000],
@@ -118,6 +117,31 @@ check("docs/STORE.md fits the stores' limits", () => {
     return max === Infinity ? `${key} ${n}` : `${key} ${n}/${max}`;
   });
   return out.join(', ');
+});
+
+// --- what's new ----------------------------------------------------------------------------
+// Phase 20.1: the game's notes, by version, newest first: what a player back after an update
+// reads, and what Play's "What's new" takes as it is, so each fits Play's 500 characters. None
+// is for a version past this one, and none uses a straight quote (the game's text is typographic).
+check("the game's What's new fits Play and runs newest first", () => {
+  const notes = json('app/src/game/news.json');
+  if (!Array.isArray(notes) || !notes.length) fail('no notes');
+  const part = (v) => v.split('.').map(Number);
+  const after = (a, b) => {
+    const [pa, pb] = [part(a), part(b)];
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++)
+      if ((pa[i] ?? 0) !== (pb[i] ?? 0)) return (pa[i] ?? 0) > (pb[i] ?? 0);
+    return false;
+  };
+  notes.forEach((n, i) => {
+    if (typeof n.version !== 'string' || typeof n.text !== 'string') fail(`note ${i} isn't a version and a text`);
+    if (after(n.version, version)) fail(`${n.version}'s note is past ${version}`);
+    if (i && !after(notes[i - 1].version, n.version)) fail(`${n.version} isn't older than the note before it`);
+    const len = [...n.text].length;
+    if (len > 500) fail(`${n.version}'s note is ${len} characters; Play allows 500`);
+    if (/['"]/.test(n.text)) fail(`${n.version}'s note has a straight quote`);
+  });
+  return `${notes.length} notes, the newest ${notes[0].version} at ${[...notes[0].text].length}/500`;
 });
 
 // --- the game's text is readable ------------------------------------------------------------

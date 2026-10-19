@@ -47,14 +47,14 @@ npm run pack --prefix desktop         # a folder for this platform, in desktop/o
 
 ## Releasing
 
-1. Set `version` in `package.json`, then run `npm run stamp`.
+1. Set `version` in `package.json`, then run `npm run stamp`. If the release has news for players, put it first in `app/src/game/news.json` under that version: a player back after the update reads it once, and Play's "What's new" takes it as it is (`npm run check` holds it to Play's 500 characters).
 2. Build the game (`npm run build --prefix app`), run `npm run check`, `npm run stage` and `npm run smoke`, and commit.
 3. Tag and push: `git tag v0.960.0 && git push origin v0.960.0`. The Deploy workflow:
    - checks the tag against `package.json`;
    - builds the game and smoke-tests exactly the files it will publish;
    - deploys;
    - confirms the live site serves this commit, and smoke-tests it.
-4. For a Play update, wait until the deploy is live: the bundle build fetches its icons from the site. Then run **Actions → Build TWA (AAB)** and upload the bundle in the Play Console. The build takes the version from `package.json`, and fails if the Android target SDK is below Play's current floor.
+4. For a Play update, wait until the deploy is live: the bundle build fetches its icons from the site. Then run **Actions → Build TWA (AAB)** and upload the bundle in the Play Console, with the newest note in `app/src/game/news.json` as its "What's new". The build takes the version from `package.json`, and fails if the Android target SDK is below Play's current floor.
 
 5. For a desktop build, run **Actions → Build desktop**: a folder each for Linux, Windows and macOS (Apple silicon), as artifacts, for Steam's depots. They're unsigned until there are certificates to sign them with.
 

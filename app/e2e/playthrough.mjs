@@ -3170,6 +3170,52 @@ console.log('The problem of the day');
   page = main;
 }
 
+console.log('What’s new');
+// Phase 20.1. A climber whose save was last written by 0.999.33 (the last release before the
+// notes began): the card comes up once, with what's come since, newest first, and has to be
+// read. Read, the save is this build's, and it doesn't come back. In Settings, to read again.
+{
+  const saved = JSON.parse(await page.evaluate(() => localStorage.getItem('dirtbag.save')));
+  saved.app = '0.999.33';
+  saved.state = {
+    ...saved.state,
+    at: 'lot',
+    x: null,
+    min: 9 * 60,
+    encounter: null,
+    table: null,
+    cards: null,
+    sesh: null,
+  };
+  const main = page;
+  page = await playPage({ width: 390, height: 844 }, 2, 'news: ');
+  await page.addInitScript((f) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', f);
+  }, JSON.stringify(saved));
+  await page.goto(server.url, { waitUntil: 'networkidle' });
+  await expectText('#sheet-title', /^What’s new$/, 'news: the card');
+  await expectText('#sheet', /^What’s new\s*A lot since you were last here\./, 'news: the newest first');
+  await expectText('#sheet', /Your climber can leave as a file and come back/, 'news: and the one before it');
+  if (await page.locator('#sheet .x').count()) await fail('news: the card can be put down unread');
+  await shot('news');
+  await click('#sheet .opt', 'Right');
+  const app = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).app);
+  if (app === '0.999.33') await fail('news: read, and the save still says 0.999.33');
+  await page.reload({ waitUntil: 'networkidle' });
+  await until('news: the Lot', async () => (await text('#b-nav')) === 'Map');
+  await wait(600);
+  if ((await text('#sheet-title')) === 'What’s new') await fail('news: the card came back');
+  // In Settings, to read again, and put down.
+  await openMap();
+  await click('#b-settings', 'Settings');
+  await click('#b-news', 'What’s new');
+  await expectText('#sheet', /^What’s new\s*A lot since you were last here\./, 'news: from Settings');
+  await click('#sheet .x');
+  log(`news: read once, the save now ${app}`);
+  await page.close();
+  page = main;
+}
+
 console.log('An expedition');
 // Phase 24.1. A V9 climber with Hazel close and $3,000 at the van in the morning: the
 // expeditions, El Capitan's odds with Hazel, and away. Each day up there: wait out a storm, or

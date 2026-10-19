@@ -112,6 +112,7 @@ import { Moves, type Trail } from './trail';
 import { exportSave } from './savefile';
 import { loadPlans, noted, savePlans, SLEEP, wipePlans, type PlanStep, type Plans } from './plan';
 import { createStore, type Store } from './store';
+import { newsSince } from './news';
 
 export type View = 'scene' | 'map' | 'wall';
 
@@ -235,7 +236,10 @@ export type SheetId =
   | { k: 'sesh' }
   // Phase 45: the problem of the day: how it's going, or how it went; `notes`, what the go
   // that ended it said.
-  | { k: 'day'; notes?: string[] };
+  | { k: 'day'; notes?: string[] }
+  // Phase 20.1: what's new since the version that last wrote your save, or (from Settings,
+  // `since` left out) the latest.
+  | { k: 'news'; since?: string };
 
 export interface Hud {
   day: number;
@@ -416,6 +420,8 @@ export class Game {
     this.day = opts.day ?? null;
     this.dayLine = this.day ? dayOf(this.day).route : null;
     const settings = persist.loadSettings();
+    // Phase 20.1: who wrote the save last, before anything here writes it.
+    const was = this.day ? null : persist.savedBy();
     const b = persist.boot(freshSeed);
     // A game closed halfway up a solo comes back to the fall.
     this.state = unfinishedSolo(b.state);
@@ -492,6 +498,9 @@ export class Game {
     };
     this.ui.subscribe(listen);
     listen();
+    // Phase 20.1: back after an update, what's new since, once, when nothing else is open.
+    if (was !== null && this.state.climber.name && newsSince(was, __APP_VERSION__).length)
+      this.cards.push({ k: 'news', since: was });
     // Phase 45: a fresh day starts at the foot of its line, and a day opens on its sheet:
     // what it is, or how it went.
     const x = this.state.x ?? (this.dayLine ? this.footOf(this.dayLine).x : undefined);
@@ -1945,6 +1954,13 @@ export class Game {
       this.sync();
       this.enter('lot');
     });
+  }
+
+  // Phase 20.1: what's new, read: the save is written by this version now, so it doesn't come
+  // up again.
+  newsRead(): void {
+    if (!this.leaving) persist.save(this.state);
+    this.closeSheet();
   }
 
   // Phase 14.4: Record Book entries as Steam achievements, where the desktop build has Steam.

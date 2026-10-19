@@ -273,6 +273,7 @@ import { buildSheet, owedNote, SKILL_NAME, type ListSpec } from './sheets';
 import { CREDITS } from './credits';
 import { kitNote, kitState } from './kit';
 import { SaveFiles } from './SaveFiles';
+import { NEWS } from '../game/news.full';
 import { desktop, onDeck } from '../game/desktop';
 import {
   buttonName,
@@ -3356,6 +3357,15 @@ function SettingsBody({ game, settings, rebind }: { game: Game; settings: Settin
       {desktop && <Window />}
       {!game.day && <OldCareer />}
       <ul>
+        {/* Phase 20.1: what's new, to read again. The demo has none. */}
+        {NEWS.length > 0 && (
+          <li>
+            <button type="button" className="opt" id="b-news" onClick={() => game.openSheet({ k: 'news' })}>
+              <span>What’s new</span>
+              <span className="c" />
+            </button>
+          </li>
+        )}
         <li>
           <button
             type="button"
