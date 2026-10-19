@@ -19,6 +19,16 @@ export const ours = (name: string): string => (DEMO_BUILD ? 'dirtbag.demo.' : 'd
 // The demo's save, where the full game looks for a climber to carry on with.
 export const DEMO_SAVE = 'dirtbag.demo.save';
 
+// Phase 45: the problem of the day keeps its save in a slot of its own, so a day never
+// touches the career's: its keys are the career's with `day.` in front (dirtbag.day.save, or
+// dirtbag.demo.day.save in the demo). Settings stay where they are: they're the player's,
+// whoever's climbing. Chosen once, at start-up, before the game boots.
+let slot = '';
+export function useSlot(name: '' | 'day'): void {
+  slot = name ? `${name}.` : '';
+}
+export const slotted = (name: string): string => ours(slot + name);
+
 // Where the keys live from now on. Called once, at start-up, before the game boots; null
 // keeps nothing, and undefined goes back to the browser's.
 export function keepIn(s: Storage | null | undefined): void {

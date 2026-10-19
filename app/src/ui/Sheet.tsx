@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   actOf,
+  dateLabel,
   COACH_EDGE,
   byName,
   faNote,
@@ -1169,16 +1170,17 @@ function WhoList({ at, lines, cover }: NonNullable<ListSpec['who']>) {
 
 // How far a go got, drawn: the line from the ground to the top, its cruxes shaded, this go
 // filled in and your best before it marked. A watcher reads it without the numbers.
-function Reach({ moves, cruxes, go, best }: NonNullable<ListSpec['reach']>) {
+function Reach({ moves, cruxes, go, best, say: told }: NonNullable<ListSpec['reach']>) {
   const pct = (m: number) => `${Math.max(0, Math.min(100, (m / moves) * 100)).toFixed(1)}%`;
   const say =
-    best === null
+    told ??
+    (best === null
       ? 'Your first go on it.'
       : go > best
         ? 'Your highest yet.'
         : go === best
           ? 'Level with your best.'
-          : 'Short of your best.';
+          : 'Short of your best.');
   return (
     <>
       <div className="reach" id="reach" role="img" aria-label={`${say} This go against your best.`}>
@@ -2978,11 +2980,12 @@ function WeekBody({ game, s }: { game: Game; s: GameState }) {
   return (
     <>
       <h3 id="sheet-title">
-        Day {s.day} · {name}
+        {game.day ? dateLabel(game.day) : `Day ${s.day}`} · {name}
       </h3>
       <p className="sub">{blurb}</p>
       <ul className="days">
-        {[0, 1, 2].map((i) => {
+        {/* Phase 45: a day has only its own sky to plan around. */}
+        {(game.day ? [0] : [0, 1, 2]).map((i) => {
           // Today as it is; after that, what the radio calls (Phase 41), read as if it holds.
           const d = s.day + i;
           const call = callOn(s.seed, s.day, d);
@@ -3001,13 +3004,17 @@ function WeekBody({ game, s }: { game: Game; s: GameState }) {
           );
         })}
       </ul>
-      <p className="sub">
-        Registration and insurance, {money(weeklyBills(s))}, {billsWhen(s.day)}.
-      </p>
-      <ShiftRows game={game} s={s} />
-      <SpotRows game={game} s={s} />
-      <PlanRows game={game} s={s} />
-      <LivingRows game={game} s={s} />
+      {!game.day && (
+        <>
+          <p className="sub">
+            Registration and insurance, {money(weeklyBills(s))}, {billsWhen(s.day)}.
+          </p>
+          <ShiftRows game={game} s={s} />
+          <SpotRows game={game} s={s} />
+          <PlanRows game={game} s={s} />
+          <LivingRows game={game} s={s} />
+        </>
+      )}
     </>
   );
 }
@@ -3331,9 +3338,10 @@ function SettingsBody({ game, settings, rebind }: { game: Game; settings: Settin
         {choice('meter', 'on', 'On: frames a second, in the corner')}
       </div>
       <Controls game={game} binds={settings.binds} rebind={rebind} />
-      <SaveFiles game={game} />
+      {/* Phase 45: the save files and v0.956's career are the career's, not a day's. */}
+      {!game.day && <SaveFiles game={game} />}
       {desktop && <Window />}
-      <OldCareer />
+      {!game.day && <OldCareer />}
       <ul>
         <li>
           <button

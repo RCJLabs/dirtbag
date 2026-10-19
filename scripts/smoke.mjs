@@ -2,7 +2,8 @@
 // would hit: an uncaught error, a failed request, a request that leaves the site (the privacy page
 // promises nothing is sent anywhere), a worker that doesn't take over (or leaves v0.956's cache
 // behind), a climber that never reaches the Lot, a save that doesn't write, a clock that doesn't
-// move when you act, a reload that doesn't come back, or no offline start.
+// move when you act, a reload that doesn't come back, or no offline start (the problem of the
+// day's included, in its own slot).
 //
 //   npm run smoke                      test the staged site (_site, from `npm run stage`)
 //   npm run smoke -- --root app/dist   test another folder
@@ -189,6 +190,17 @@ try {
     await page.locator('#h-time').waitFor({ state: 'visible', timeout: BOOT_TIMEOUT });
     if (await page.locator('#create').count()) throw new Error('offline, the game started over');
     return 'boots from the service-worker cache, climber and all';
+  });
+
+  // Phase 45: the problem of the day is the same page with ?day, so the cache answers for it
+  // too; its save goes in a slot of its own, and the climber's stays as it was.
+  await step('offline day', async () => {
+    await page.goto(new URL('?day', url).href, { waitUntil: 'load', timeout: BOOT_TIMEOUT });
+    await page.locator('#sheet-title', { hasText: 'The problem of the day' }).waitFor({ timeout: BOOT_TIMEOUT });
+    const s = await readSave();
+    if (!s || s.corrupt || s.name !== 'Smoke') throw new Error(`the day touched the climber's save: ${JSON.stringify(s)}`);
+    if (!(await page.evaluate(() => localStorage.getItem('dirtbag.day.save')))) throw new Error('the day kept nothing in its slot');
+    return 'the problem of the day boots from the cache, in its own slot';
   });
 
   await step('network and console', async () => `${requests} requests, all same-origin; ${warnings.length} console warnings`);

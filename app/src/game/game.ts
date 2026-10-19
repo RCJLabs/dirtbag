@@ -6,6 +6,11 @@ import {
   DEMO,
   STORY,
   act,
+  DAY_SAYS,
+  dailyState,
+  dateOf,
+  dayOf,
+  dayOver,
   ACTS,
   attemptInput,
   CLIMB,
@@ -226,7 +231,10 @@ export type SheetId =
   // Phase 36.4: the glovebox deck, its games for matchsticks.
   | { k: 'glovebox' }
   // Phase 37: the session on the problem at the wall.
-  | { k: 'sesh' };
+  | { k: 'sesh' }
+  // Phase 45: the problem of the day: how it's going, or how it went; `notes`, what the go
+  // that ended it said.
+  | { k: 'day'; notes?: string[] };
 
 export interface Hud {
   day: number;
@@ -397,39 +405,51 @@ export class Game {
   private leaving = false;
   // Phase 19.4: the last few moves, for the error screen's report.
   private moves = new Moves();
+  // Phase 45: the problem of the day's date, and its line, when that's what this page is
+  // playing (main.tsx has already put the saves in the day's slot); null for a career.
+  readonly day: string | null;
+  readonly dayLine: string | null;
 
-  constructor(opts: { still?: boolean } = {}) {
+  constructor(opts: { still?: boolean; day?: string | null } = {}) {
     this.systemStill = !!opts.still;
+    this.day = opts.day ?? null;
+    this.dayLine = this.day ? dayOf(this.day).route : null;
     const settings = persist.loadSettings();
     const b = persist.boot(freshSeed);
     // A game closed halfway up a solo comes back to the fall.
     this.state = unfinishedSolo(b.state);
+    // Phase 45: the slot keeps one day; another day's, or none, makes way for this one.
+    if (this.day && (dateOf(this.state) !== this.day || !this.state.climber.name))
+      this.state = dailyState(this.day);
     if (this.state !== b.state) persist.save(this.state);
     // Phase 14.4: on Steam, everything the family's ever earned, so what came while Steam
-    // wasn't looking (offline, an earlier generation, another device) unlocks now.
-    this.achieve(earnedEver(this.state));
+    // wasn't looking (offline, an earlier generation, another device) unlocks now. A day's
+    // climber earns nothing there.
+    if (!this.day) this.achieve(earnedEver(this.state));
     const home = PLACES[this.state.at];
     this.ui = createStore<Ui>({
       state: this.state,
       view: home?.scene ? 'scene' : 'map',
       scene: home?.scene ?? 'lot',
-      sheet: this.state.life.retired
-        ? { k: 'retired' }
-        : demoOver(this.state)
-          ? { k: 'demoEnd' }
-          : this.state.dead
-            ? { k: 'dead' }
-            : this.state.breakdown
-              ? { k: 'breakdown' }
-              : this.state.encounter
-                ? { k: 'encounter' }
-                : this.state.table || this.state.cards
-                  ? { k: 'fire' }
-                  : this.state.expedition
-                    ? { k: 'exped', id: this.state.expedition.id }
-                    : home?.scene
-                      ? null
-                      : { k: 'place', id: this.state.at },
+      sheet: this.day
+        ? { k: 'day' }
+        : this.state.life.retired
+          ? { k: 'retired' }
+          : demoOver(this.state)
+            ? { k: 'demoEnd' }
+            : this.state.dead
+              ? { k: 'dead' }
+              : this.state.breakdown
+                ? { k: 'breakdown' }
+                : this.state.encounter
+                  ? { k: 'encounter' }
+                  : this.state.table || this.state.cards
+                    ? { k: 'fire' }
+                    : this.state.expedition
+                      ? { k: 'exped', id: this.state.expedition.id }
+                      : home?.scene
+                        ? null
+                        : { k: 'place', id: this.state.at },
       talk: null,
       toast: null,
       stamp: null,
@@ -443,7 +463,7 @@ export class Game {
       settings,
       still: stillFor(settings, this.systemStill),
       w: W,
-      plans: loadPlans(),
+      plans: this.day ? { plan: [], yesterday: [] } : loadPlans(),
       plan: null,
       speed: null,
       rebind: null,
@@ -471,7 +491,11 @@ export class Game {
     };
     this.ui.subscribe(listen);
     listen();
-    if (home?.scene) this.enter(home.scene, this.state.x ?? undefined);
+    // Phase 45: a fresh day starts at the foot of its line, and a day opens on its sheet:
+    // what it is, or how it went.
+    const x = this.state.x ?? (this.dayLine ? this.footOf(this.dayLine).x : undefined);
+    if (home?.scene) this.enter(home.scene, x);
+    if (this.day) this.set({ sheet: { k: 'day' } });
     if (b.note) this.toast(b.note);
   }
 
@@ -505,6 +529,8 @@ export class Game {
     for (const e of r.events) {
       if (e.k === 'line') this.toast(e.text);
       else if (e.k === 'refused') this.toast(e.why);
+      // Phase 45: a day on one line puts none of a career's cards to you, and earns nothing.
+      else if (this.day) continue;
       else if (e.k === 'act')
         // The demo's one act ends on its own card, never The Line's (Phase 14.5b).
         this.cards.push(!DEMO && e.n === STORY.length ? { k: 'line', step: 0 } : { k: 'act', n: e.n });
@@ -533,6 +559,10 @@ export class Game {
       this.cards = [];
       this.set({ sheet: { k: 'retired' }, climbing: false });
     }
+    // Phase 45: the day's over (the line's gone, or nothing more can be tried on it): its
+    // sheet comes up once whatever's open is put down.
+    if (this.day && this.dailyDone() && !this.dailyDone(before) && !this.cards.some((c) => c.k === 'day'))
+      this.cards.push({ k: 'day' });
     // Phase 14.5: the demo's last morning: its card is all there is now.
     if (demoOver(this.state) && !demoOver(before)) {
       this.att = null;
@@ -737,6 +767,8 @@ export class Game {
   }
 
   openMap(): void {
+    // Phase 45: a day goes nowhere else; where the map would be, the day's sheet.
+    if (this.day) return this.openSheet({ k: 'day' });
     this.hush();
     this.speedDone();
     this.sound.play('paper');
@@ -762,7 +794,12 @@ export class Game {
     if (u.belay) return null;
     if (u.view === 'wall') return u.climbing ? null : 'Down';
     if (u.view === 'map') return u.driving || !PLACES[this.state.at]?.scene ? null : 'Close';
-    return 'Map';
+    return this.day ? DAY_SAYS.nav : 'Map';
+  }
+
+  // Phase 45: whether the day's done: its line sent, or nothing more can be tried on it.
+  dailyDone(s: GameState = this.state): boolean {
+    return !!this.dayLine && dayOver(s, this.dayLine);
   }
 
   openSheet(sheet: SheetId | null): void {
@@ -840,6 +877,8 @@ export class Game {
   }
 
   private use(u: Use): void {
+    // Phase 45: a day's climber has nobody to talk to and nowhere to be but the line.
+    if (this.day && ('sheet' in u || 'talk' in u)) return this.toast(DAY_SAYS.notToday);
     if ('sheet' in u) this.openSheet({ k: u.sheet });
     else if ('talk' in u) {
       const node = talkStart(this.state, u.talk);
@@ -851,7 +890,7 @@ export class Game {
       const th = THINGS[u.thing];
       if (u.wag) this.scout.wag = 1.4;
       // Scout's your dog, or about to be: his sheet, not a line.
-      if (u.thing === 'scout' && (this.state.dog || dogOffered(this.state))) {
+      if (!this.day && u.thing === 'scout' && (this.state.dog || dogOffered(this.state))) {
         this.openSheet({ k: 'dog' });
         return;
       }
@@ -860,8 +899,8 @@ export class Game {
       const night = isNight(s.min);
       if (th.away && whereNow(s, th.away.who) !== s.at) this.toast(th.away.text);
       // The fire at night (Phase 22.9a): its card, with the games.
-      else if (night && u.thing === 'fire') this.openSheet({ k: 'fire' });
-      else if (night && th.nightAct) this.dispatch({ t: 'act', act: th.nightAct });
+      else if (night && u.thing === 'fire' && !this.day) this.openSheet({ k: 'fire' });
+      else if (night && th.nightAct && !this.day) this.dispatch({ t: 'act', act: th.nightAct });
       else this.toast(night ? (th.night ?? th.day) : th.day);
     } else if ('crowd' in u) {
       // A word from a stranger in the crowd (Phase 25.6).
@@ -1308,6 +1347,7 @@ export class Game {
 
   // Returns why the drive was refused, if it was.
   travel(to: string): string | null {
+    if (this.day) return DAY_SAYS.notToday;
     if (this.trip) return null;
     const from = this.state.at;
     const hud = hudOf(this.state);
@@ -1748,7 +1788,15 @@ export class Game {
     this.dispatch({ t: 'rest', route: this.ui.get().wallRoute });
     this.att = null;
     this.fast.set({ cam: this.cam, att: null });
-    this.openSheet({ k: 'beta', route: this.ui.get().wallRoute });
+    this.openSheet(this.dayEnds() ? { k: 'day' } : { k: 'beta', route: this.ui.get().wallRoute });
+  }
+
+  // Phase 45: the day's sheet is to come up now, in place of the queued one.
+  private dayEnds(): boolean {
+    const queued = this.cards.findIndex((c) => c.k === 'day');
+    if (queued < 0) return false;
+    this.cards.splice(queued, 1);
+    return true;
   }
 
   // Back to the scene the route is in, standing at its foot.
@@ -1756,6 +1804,13 @@ export class Game {
     const route = this.ui.get().wallRoute;
     const r = routeOfId(this.state, route);
     if (r?.exped) return this.backToWall();
+    const foot = this.footOf(route);
+    this.enterScene(foot.scene, foot.x);
+  }
+
+  // The scene a line is in, and where you'd stand at its foot.
+  private footOf(route: string): { scene: string; x?: number } {
+    const r = routeOfId(this.state, route);
     const scene = (r && PLACES[r.place]?.scene) ?? 'crag';
     const slot = r && indoor(r.place) ? wallAt(this.state, r.place).findIndex((p) => p.id === route) : -1;
     // The board's problems all start under the board.
@@ -1769,7 +1824,7 @@ export class Game {
             : 'problem' in h.use && h.use.problem === slot,
     );
     // Phase 44.2: your set is on the panel, not one of the wall's places.
-    this.enterScene(scene, hot?.stand ?? (r && setOf(r.id) ? SET_X - 30 : undefined));
+    return { scene, x: hot?.stand ?? (r && setOf(r.id) ? SET_X - 30 : undefined) };
   }
 
   private applyAttempt(r: { att: Attempt; events: AttemptEvent[] }): void {
@@ -1817,7 +1872,10 @@ export class Game {
     );
     this.set({
       climbing: false,
-      sheet: { k: 'fall', route, fall: a.fall!, notes, gains: gainsIn(ev), best },
+      // Phase 45: a fall that ends the day ends on the day's sheet.
+      sheet: this.dayEnds()
+        ? { k: 'day', notes }
+        : { k: 'fall', route, fall: a.fall!, notes, gains: gainsIn(ev), best },
     });
   }
 
@@ -1835,14 +1893,17 @@ export class Game {
     const fa = ev.some((e) => e.k === 'fa');
     const log = this.state.routes[route];
     const first = !!log?.sent && log.sent.go === log.goes;
+    // Phase 45: the day's line sent: the day's sheet is its send card.
+    const day = this.dayEnds();
     window.setTimeout(
       () => {
         this.set({
           stamp: null,
           climbing: false,
           // A first ascent is a first send, so never a repeat.
-          sheet:
-            fa && style !== 'repeat'
+          sheet: day
+            ? { k: 'day', notes }
+            : fa && style !== 'repeat'
               ? { k: 'fa', route, style, go, gains, notes, from: 'send' }
               : { k: 'sent', route, style, go, gains, notes, first },
         });

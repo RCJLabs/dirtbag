@@ -12,9 +12,11 @@ import {
   SKILLS,
   STARTS,
   type Skills,
+  DAY_SAYS,
 } from '../sim';
 import type { Game } from '../game/game';
 import { findLegacy, saveLegacyFile } from '../game/legacy';
+import { toDay } from '../game/day';
 import { SaveFiles } from './SaveFiles';
 import { SKILL_NAME } from './sheets';
 import { vars } from './vars';
@@ -186,6 +188,14 @@ export function Create({ game }: { game: Game }) {
           {(family ? game.state.mode === 'solo' : solo) ? ' No rope.' : ''}
         </small>
       </button>
+      {/* Phase 45: or a day on one line, with a climber made for it. */}
+      {!family && (
+        <button type="button" className="opt" id="c-day" onClick={toDay}>
+          <span>{DAY_SAYS.entry}</span>
+          <span className="c" />
+          <small>{DAY_SAYS.entryNew}</small>
+        </button>
+      )}
     </form>
   );
 }

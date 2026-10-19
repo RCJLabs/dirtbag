@@ -158,6 +158,7 @@ export { classicsAt, localAt, localPlaces, ticked } from './classics';
 export { CLASSIC_SAYS } from './content/classics';
 export { whatNow, whatNowLit, type Move, type MoveTo } from './whatnow';
 export { WHAT_NOW } from './content/whatnow';
+export { DAY_SAYS } from './content/daily';
 export {
   cyclePay,
   filmBlocked,
@@ -322,6 +323,7 @@ export { Rng, hashSeed, mulberry32 } from './rng';
 export type { Stream } from './rng';
 export * from './format';
 export {
+  DAILY,
   DAY,
   MONEY,
   BODY,
@@ -584,6 +586,19 @@ export {
   wallAt,
 } from './content/gym';
 export { setId, setNameIdeas, setNameOf, setOf, setRoute } from './yourset';
+export {
+  DAY_CLIMBER,
+  dailyState,
+  dateLabel,
+  dateOf,
+  dayLines,
+  dayOf,
+  dayOver,
+  dayResult,
+  daySeed,
+  isDate,
+  type DayResult,
+} from './daily';
 export { TALK, PEOPLE, THINGS, RACE_ROUTE } from './content/people';
 export { DOG_OFFER, DOG_TIER_NAME } from './content/dog';
 export { ACT_I, ACT_I_END, LINE_SCENE, STORY } from './content/story';

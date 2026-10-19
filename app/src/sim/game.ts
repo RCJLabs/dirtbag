@@ -4889,12 +4889,14 @@ export function act(s0: GameState, a: Action): Result {
   // Phase 23.5: on arriving or after a go, a call you made coming back, or, at a crag, a new
   // one put to you. The roll is the day's and the crag's, so asking again changes nothing:
   // it's a crag-day's chance, however many goes.
+  // Phase 45: never on the problem of the day: it's a day on one line, not a life at a crag.
   if (
     s.climber.name &&
     !s.encounter &&
     !s.breakdown &&
     !s.expedition &&
     !s.dead &&
+    !s.seed.startsWith('day:') &&
     (a.t === 'travel' || a.t === 'done')
   ) {
     // An echo finds you wherever you are (the gym car park, the access meeting); a new call
