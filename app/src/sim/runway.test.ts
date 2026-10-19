@@ -63,6 +63,7 @@ describe('a save from before the runway', () => {
     expect(r.state).toEqual({
       sesh: null,
       seshFirsts: 0,
+      vanPlan: expect.any(Object),
       ...old,
       hollow: { clues: [], tries: 0 },
       boltedCracks: [],

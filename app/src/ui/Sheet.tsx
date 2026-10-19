@@ -44,6 +44,15 @@ import {
   clockShort,
   conditions,
   callOn,
+  cellsOf,
+  fixed,
+  floorLen,
+  inVan,
+  isDoor,
+  onRoof,
+  PIECES,
+  turns,
+  VAN_PLAN,
   fromSky,
   FORECAST,
   conditionsAt,
@@ -174,6 +183,7 @@ import {
   SPOT_IDS,
   SPOT_NAME,
   spotBlocked,
+  type Spot,
   type SpotId,
   FOOD,
   weeklyBills,
@@ -269,6 +279,7 @@ import { PerudoBody } from './Perudo';
 import { BlackjackBody, HoldemBody } from './Cards';
 import { GloveboxBody } from './Glovebox';
 import { callSaid, friction } from './forecast';
+import { PIECE_SAID } from './sheets';
 
 // "a, b and c".
 const and = (xs: string[]): string =>
@@ -335,6 +346,8 @@ export function Sheet({ game, id, ui }: { game: Game; id: SheetId; ui: Ui }) {
       <JournalBody game={game} page={id.page} s={state} />
     ) : id.k === 'week' ? (
       <WeekBody game={game} s={state} />
+    ) : id.k === 'vanplan' ? (
+      <VanPlanBody game={game} s={state} />
     ) : id.k === 'settings' ? (
       <SettingsBody game={game} settings={ui.settings} rebind={ui.rebind} />
     ) : id.k === 'credits' ? (
@@ -2628,6 +2641,189 @@ function skyLine(c: Conditions): string {
     default:
       return `The sun crosses the wall from ${t} to ${all}.${wet}`;
   }
+}
+
+// Phase 43: the van, laid out. The floor and the roof as grids, the front on the left and the
+// sliding door along the near side. Tap a piece, then the cell its corner goes in; turn it, or
+// take it out to make room. Where things go changes nothing but where they are.
+const PIECE_SHORT: Record<string, string> = {
+  bed: 'Bed',
+  kitchen: 'Kitchen',
+  shelf: 'Shelf',
+  heater: 'Heater',
+  solar: 'Solar panel',
+};
+
+function bedSaid(s: GameState): string {
+  const mattress = (s.gear.bed ?? 0) > 0;
+  const platform = (s.gear.platform ?? 0) > 0;
+  return mattress && platform
+    ? 'The mattress, up on its platform'
+    : mattress
+      ? 'The mattress'
+      : platform
+        ? 'The foam pad, up on its platform'
+        : 'The foam pad';
+}
+
+function VanPlanBody({ game, s }: { game: Game; s: GameState }) {
+  const [pick, setPick] = useState<string | null>(null);
+  const len = floorLen(s);
+  const plan = s.vanPlan;
+  const mine = PIECES.filter((id) => inVan(s, id));
+  const out = mine.filter((id) => !plan[id]);
+  const at = (roof: boolean, x: number, y: number) =>
+    mine.find(
+      (id) =>
+        onRoof(id) === roof && plan[id] && cellsOf(id, plan[id]!).some(([cx, cy]) => cx === x && cy === y),
+    );
+  // A corner tapped near the back or the near side pulls the piece in, so it lands inside.
+  const spot = (id: string, x: number, y: number, r: 0 | 1): Spot => {
+    const p = VAN_PLAN.pieces[id]!;
+    const [w, h] = r ? [p.across, p.long] : [p.long, p.across];
+    return { x: Math.max(0, Math.min(x, len - w)), y: Math.max(0, Math.min(y, VAN_PLAN.wide - h)), r };
+  };
+  const tap = (roof: boolean, x: number, y: number) => {
+    const here = at(roof, x, y);
+    if (pick && onRoof(pick) === roof && (!here || here === pick)) {
+      if (game.place(pick, spot(pick, x, y, plan[pick]?.r ?? 0))) setPick(null);
+      return;
+    }
+    setPick(here ?? null);
+  };
+  const grid = (roof: boolean) => (
+    <div
+      className="vp-grid"
+      id={roof ? 'vp-roof' : 'vp-floor'}
+      style={vars({ '--len': String(len), '--wide': String(VAN_PLAN.wide) })}
+    >
+      {Array.from({ length: len * VAN_PLAN.wide }, (_, i) => {
+        const x = i % len;
+        const y = Math.floor(i / len);
+        const here = at(roof, x, y);
+        const door = !roof && isDoor(x, y);
+        return (
+          <button
+            type="button"
+            key={i}
+            className="vp-cell"
+            data-door={door ? '1' : undefined}
+            aria-label={`${roof ? 'Roof' : 'Floor'}, ${x + 1} along, ${y + 1} across${here ? `: ${PIECE_SAID[here]}` : door ? ': the door' : ''}`}
+            style={vars({ '--x': String(x + 1), '--y': String(y + 1) })}
+            onClick={() => tap(roof, x, y)}
+          />
+        );
+      })}
+      {mine
+        .filter((id) => onRoof(id) === roof && plan[id])
+        .map((id) => {
+          const sp = plan[id]!;
+          const p = VAN_PLAN.pieces[id]!;
+          const [w, h] = sp.r ? [p.across, p.long] : [p.long, p.across];
+          return (
+            <span
+              key={id}
+              className="vp-piece"
+              id={`vp-${id}`}
+              data-pick={pick === id ? '1' : undefined}
+              data-tall={h > w ? '1' : undefined}
+              data-small={w === 1 && h === 1 ? '1' : undefined}
+              data-at={`${sp.x},${sp.y},${sp.r}`}
+              style={vars({
+                '--x': String(sp.x + 1),
+                '--y': String(sp.y + 1),
+                '--w': String(w),
+                '--h': String(h),
+              })}
+            >
+              {PIECE_SHORT[id]}
+            </span>
+          );
+        })}
+      {!roof && (
+        <span
+          className="vp-door"
+          aria-hidden="true"
+          style={vars({
+            '--x': String(VAN_PLAN.door[0]! + 1),
+            '--y': String(VAN_PLAN.wide),
+            '--w': String(VAN_PLAN.door.length),
+          })}
+        >
+          Door
+        </span>
+      )}
+    </div>
+  );
+  return (
+    <>
+      <h3 id="sheet-title">The van, laid out</h3>
+      <p className="sub">
+        {pick
+          ? `${upper(PIECE_SAID[pick]!)}: tap where its top-left corner goes.${turns(pick) ? '' : ' It runs along the van: it needs its length.'}`
+          : 'Tap a piece, then where its top-left corner goes. The front is on the left, and the door stays clear.'}
+      </p>
+      <p className="crux">The floor</p>
+      {grid(false)}
+      {mine.some((id) => onRoof(id)) && (
+        <>
+          <p className="crux">The roof</p>
+          {grid(true)}
+        </>
+      )}
+      <p className="sub" id="vp-bed">
+        {bedSaid(s)}.
+      </p>
+      <ul>
+        {pick && plan[pick] && turns(pick) && (
+          <li>
+            <button
+              type="button"
+              className="opt"
+              id="vp-turn"
+              onClick={() =>
+                game.place(pick, spot(pick, plan[pick]!.x, plan[pick]!.y, plan[pick]!.r ? 0 : 1))
+              }
+            >
+              <span>Turn it</span>
+              <span className="c" />
+            </button>
+          </li>
+        )}
+        {pick && plan[pick] && !fixed(pick) && (
+          <li>
+            <button
+              type="button"
+              className="opt"
+              id="vp-out"
+              onClick={() => {
+                if (game.place(pick, null)) setPick(null);
+              }}
+            >
+              <span>Take it out</span>
+              <span className="c" />
+              <small>To make room. It still works while it waits.</small>
+            </button>
+          </li>
+        )}
+        {out.map((id) => (
+          <li key={id}>
+            <button type="button" className="opt" id={`vp-back-${id}`} onClick={() => setPick(id)}>
+              <span>Put back {PIECE_SAID[id]}</span>
+              <span className="c" />
+              <small>Then tap where its top-left corner goes.</small>
+            </button>
+          </li>
+        ))}
+        <li>
+          <button type="button" className="opt" onClick={() => game.openSheet({ k: 'van' })}>
+            <span>Back</span>
+            <span className="c" />
+          </button>
+        </li>
+      </ul>
+    </>
+  );
 }
 
 function WeekBody({ game, s }: { game: Game; s: GameState }) {

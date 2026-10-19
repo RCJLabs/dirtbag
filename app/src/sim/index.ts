@@ -275,6 +275,7 @@ export {
   stepRope,
 } from './belay';
 export type { Rope } from './belay';
+export { cellsOf, fixed, floorLen, isDoor, onRoof, owned as inVan, PIECES, turns } from './vanplan';
 export { whereIs, whereNow, around, tierOf, PARTNERS, staysAt, knows, DAY_END } from './presence';
 export type { Stay } from './presence';
 export { gradeOfPerson, dexHurt } from './curves';
@@ -369,6 +370,7 @@ export {
   WHATNOW,
   FORECAST,
   BELAY,
+  VAN_PLAN,
 } from './dials';
 export type { Plan } from './dials';
 export { weeklyBills, clinicBill, carePrice, jabbed, premiumOf } from './clinic';

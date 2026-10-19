@@ -508,6 +508,25 @@ export const BUILD = {
   platform: { parts: 3, min: 120, energy: 3 },
 };
 
+// Phase 43 [proposed] (Evan's calls, 19 Oct 2026: what takes room is placed, to fit, and where
+// changes no rule). The van's floor in cells about half a metre square, `len` long and `wide`
+// across; the Rig's is `rig` long. The sliding door's cells along the near side stay clear, and
+// the roof is the floor's size. Each piece's footprint, long by across: the bed is always there,
+// stays in, and needs its length, so it can't turn; the panel goes on the roof.
+export const VAN_PLAN = {
+  len: 8,
+  wide: 3,
+  rig: 10,
+  door: [1, 2],
+  pieces: {
+    bed: { long: 4, across: 3 },
+    kitchen: { long: 2, across: 1 },
+    shelf: { long: 2, across: 1 },
+    heater: { long: 1, across: 1 },
+    solar: { long: 3, across: 2, roof: true },
+  } as Record<string, { long: number; across: number; roof?: true }>,
+};
+
 export const WINTER = {
   // What a winter night in the van takes out of you on top of the spot's own chill, before
   // the heater and insulation.

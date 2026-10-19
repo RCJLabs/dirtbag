@@ -269,7 +269,7 @@ describe('Phase 38: a ghost of your best go', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(80);
-    expect(r.state).toEqual(JSON.parse(V80).state);
+    expect(r.state).toEqual({ ...JSON.parse(V80).state, vanPlan: expect.any(Object) });
     const flagged = Object.entries(r.state.routes).find(([, L]) => !L.sent && L.hi > 0);
     expect(flagged).toBeDefined();
     expect(ghostOf(flagged![1], 1)).toEqual([

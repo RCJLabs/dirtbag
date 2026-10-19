@@ -24,6 +24,8 @@ import {
   clockShort,
   conditionsAt,
   forecastFrom,
+  inVan,
+  PIECES,
   costLabel,
   DOG,
   DOG_OFFER,
@@ -344,6 +346,24 @@ import { desktop } from '../game/desktop';
 import { buyUnlock, inAndroidApp, playOffer, restoreUnlock } from '../game/play';
 import { locked, STORES } from '../game/unlock';
 import { radioLine } from './forecast';
+
+// Phase 43: what's in the van, and anything taken out and waiting for a spot.
+function planNote(s: GameState): string {
+  const mine = PIECES.filter((id) => inVan(s, id));
+  const out = mine.filter((id) => !s.vanPlan[id]);
+  const names = (ids: string[]) => listOf(ids.map((id) => PIECE_SAID[id] ?? id));
+  return out.length
+    ? `${upper(names(out))} ${out.length === 1 ? 'is' : 'are'} out, waiting for a spot.`
+    : `Where ${names(mine)} ${mine.length === 1 ? 'goes' : 'go'}.`;
+}
+
+export const PIECE_SAID: Record<string, string> = {
+  bed: 'the bed',
+  kitchen: 'the kitchen',
+  shelf: 'the shelf',
+  heater: 'the heater',
+  solar: 'the solar panel',
+};
 
 // Phase 39: a crag's classics on its card: what's still to go, your own among them, and whether
 // you're a local.
@@ -1284,6 +1304,8 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
               ]
             : []),
           trainRow(game, s),
+          // Phase 43: the van, laid out.
+          { label: 'Lay out the van', note: planNote(s), run: () => game.openSheet({ k: 'vanplan' }) },
           {
             label: 'Your week',
             note: weekNote(s),

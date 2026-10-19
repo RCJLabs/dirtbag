@@ -92,6 +92,7 @@ describe('a save from before the photos', () => {
     expect(r.state).toEqual({
       sesh: null,
       seshFirsts: 0,
+      vanPlan: expect.any(Object),
       ...old,
       media: { ...old.media, photos: [], piece: null, film: null },
       hollow: { clues: [], tries: 0 },

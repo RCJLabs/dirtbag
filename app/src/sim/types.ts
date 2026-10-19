@@ -314,6 +314,9 @@ export interface GameState {
   } | null;
   // Phase 37: the sessions you sent first in.
   seshFirsts: number;
+  // Phase 43: where what takes room sits in the van, a spot for each piece on the floor or the
+  // roof, or null for one you've taken out to make room.
+  vanPlan: VanPlan;
   // Phase 22.8. Your dream: the one you're saving for, the pot (the card and the bills never
   // touch it), and the ones you own.
   dream: {
@@ -770,6 +773,8 @@ export type Action =
   | { t: 'busk'; acc: number }
   // Phase 42: a belay held to the catch, at the crag or as their favour.
   | { t: 'belay'; who: string; result: BelayResult; favour?: true }
+  // Phase 43: a piece moved in the van, turned, or taken out (null) to make room.
+  | { t: 'place'; piece: string; at: Spot | null }
   // Phase 22.6: an answer to the encounter you're in, by its option's index.
   | { t: 'answer'; opt: number }
   // Phase 22.8: a dream to pick, cash for the pot, the pot back, or the dream claimed.
@@ -816,13 +821,22 @@ export interface TripPlan {
   stove: boolean;
 }
 
-// What a finished go hands back to the game.
+// Phase 43: a piece's spot in the van: its corner, along the van and across it, and whether
+// it's turned.
+export interface Spot {
+  x: number;
+  y: number;
+  r: 0 | 1;
+}
+export type VanPlan = Record<string, Spot | null>;
+
 // Phase 42: how a belay went: the share of their climb the slack sat in the band, and the catch.
 export interface BelayResult {
   band: number;
   soft: boolean;
 }
 
+// What a finished go hands back to the game.
 export interface GoResult {
   sent: boolean;
   // The highest move reached, counting from 1.

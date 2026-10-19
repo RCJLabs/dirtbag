@@ -188,6 +188,7 @@ const P226A = {
   reads: {},
   sesh: null,
   seshFirsts: 0,
+  vanPlan: expect.any(Object),
   booked: null,
   book: [],
   record: expect.any(Object),
@@ -701,6 +702,7 @@ describe('saves', () => {
       reads: {},
       sesh: null,
       seshFirsts: 0,
+      vanPlan: expect.any(Object),
       booked: null,
       book: [],
       record: expect.any(Object),
@@ -763,6 +765,7 @@ describe('saves', () => {
       reads: {},
       sesh: null,
       seshFirsts: 0,
+      vanPlan: expect.any(Object),
       booked: null,
       book: [],
       record: expect.any(Object),
@@ -818,6 +821,7 @@ describe('saves', () => {
       reads: {},
       sesh: null,
       seshFirsts: 0,
+      vanPlan: expect.any(Object),
       booked: null,
       book: [],
       record: expect.any(Object),
@@ -872,6 +876,7 @@ describe('saves', () => {
       reads: {},
       sesh: null,
       seshFirsts: 0,
+      vanPlan: expect.any(Object),
       booked: null,
       book: [],
       record: expect.any(Object),
@@ -925,6 +930,7 @@ describe('saves', () => {
       reads: {},
       sesh: null,
       seshFirsts: 0,
+      vanPlan: expect.any(Object),
       booked: null,
       book: [],
       record: expect.any(Object),
@@ -980,6 +986,7 @@ describe('saves', () => {
       reads: {},
       sesh: null,
       seshFirsts: 0,
+      vanPlan: expect.any(Object),
       booked: null,
       book: [],
       record: expect.any(Object),
@@ -1031,6 +1038,7 @@ describe('saves', () => {
       ...revan(old),
       sesh: null,
       seshFirsts: 0,
+      vanPlan: expect.any(Object),
       expedition: {
         id: 'elcap',
         day: 3,
@@ -1092,6 +1100,7 @@ describe('saves', () => {
       ...revan(old),
       sesh: null,
       seshFirsts: 0,
+      vanPlan: expect.any(Object),
       expedition: { ...old.expedition, food: 14, ledge: true, stove: true, seen: [] },
       booked: null,
       book: [],
@@ -1144,6 +1153,7 @@ describe('saves', () => {
       ...revan(old),
       sesh: null,
       seshFirsts: 0,
+      vanPlan: expect.any(Object),
       expedition: { ...old.expedition, seen: [] },
       book: [],
       record: expect.any(Object),
@@ -1194,6 +1204,7 @@ describe('saves', () => {
       ...revan(old),
       sesh: null,
       seshFirsts: 0,
+      vanPlan: expect.any(Object),
       book: [],
       record: expect.any(Object),
       origin: null,
@@ -1291,6 +1302,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(revan(old));
@@ -1345,6 +1357,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(revan(JSON.parse(V31).state));
@@ -1393,6 +1406,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(revan(JSON.parse(V32).state));
@@ -1439,6 +1453,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(revan(JSON.parse(V33).state));
@@ -1484,6 +1499,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(revan(JSON.parse(V34).state));
@@ -1525,6 +1541,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(revan(JSON.parse(V35).state));
@@ -1565,6 +1582,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(reboard(JSON.parse(V36).state));
@@ -1604,6 +1622,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(reboard(JSON.parse(V37).state));
@@ -1646,6 +1665,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(family).toBeNull();
@@ -1689,6 +1709,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(reboard(JSON.parse(V39).state));
@@ -1727,6 +1748,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     const { people: was, ...before } = old;
@@ -1769,6 +1791,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(reboard(JSON.parse(V41).state));
@@ -1806,6 +1829,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(reboard(JSON.parse(V42).state));
@@ -1844,6 +1868,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(reboard(JSON.parse(V43).state));
@@ -1879,6 +1904,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(reboard(JSON.parse(V44).state));
@@ -1915,6 +1941,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(reboard(JSON.parse(V45).state));
@@ -1950,6 +1977,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(reboard(JSON.parse(V46).state));
@@ -1983,6 +2011,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(reboard(JSON.parse(V47).state));
@@ -2014,6 +2043,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(reboard(seasoned(JSON.parse(V48).state)));
@@ -2044,6 +2074,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(reboard(seasoned(JSON.parse(V49).state)));
@@ -2074,6 +2105,7 @@ describe('saves', () => {
       record,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     const { record: was, ...old } = JSON.parse(V50).state;
@@ -2105,6 +2137,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(reboard(seasoned(JSON.parse(V51).state)));
@@ -2130,6 +2163,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(reboard(seasoned(JSON.parse(V52).state)));
@@ -2154,6 +2188,7 @@ describe('saves', () => {
       parts,
       sesh,
       seshFirsts,
+      vanPlan,
       ...rest
     } = r.state;
     expect(rest).toEqual(reboard(seasoned(JSON.parse(V53).state)));
@@ -2168,8 +2203,19 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(54);
-    const { crew, struck, crewName, crewProject, crewDay, crewSends, parts, sesh, seshFirsts, ...rest } =
-      r.state;
+    const {
+      crew,
+      struck,
+      crewName,
+      crewProject,
+      crewDay,
+      crewSends,
+      parts,
+      sesh,
+      seshFirsts,
+      vanPlan,
+      ...rest
+    } = r.state;
     expect(rest).toEqual(reboard(seasoned(JSON.parse(V54).state)));
     expect(crew).toBeNull();
     expect(r.state.team?.names).toEqual(['Ana', 'Wes']);
@@ -2181,8 +2227,19 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(55);
-    const { crew, struck, crewName, crewProject, crewDay, crewSends, parts, sesh, seshFirsts, ...rest } =
-      r.state;
+    const {
+      crew,
+      struck,
+      crewName,
+      crewProject,
+      crewDay,
+      crewSends,
+      parts,
+      sesh,
+      seshFirsts,
+      vanPlan,
+      ...rest
+    } = r.state;
     expect(rest).toEqual(reboard(JSON.parse(V55).state));
     expect(crew).toBeNull();
     expect(r.state.people.mara!.bond).toBe(4);
@@ -2194,7 +2251,8 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(56);
-    const { struck, crewName, crewProject, crewDay, crewSends, parts, sesh, seshFirsts, ...rest } = r.state;
+    const { struck, crewName, crewProject, crewDay, crewSends, parts, sesh, seshFirsts, vanPlan, ...rest } =
+      r.state;
     expect(rest).toEqual(reboard(JSON.parse(V56).state));
     expect(r.state.strikes).toEqual({ cafe: 2, diner: 1 });
     expect(struck).toEqual({ cafe: 131, diner: 131 });
@@ -2207,7 +2265,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(57);
-    const { crewName, crewProject, crewDay, crewSends, parts, sesh, seshFirsts, ...rest } = r.state;
+    const { crewName, crewProject, crewDay, crewSends, parts, sesh, seshFirsts, vanPlan, ...rest } = r.state;
     expect(rest).toEqual(reboard(JSON.parse(V57).state));
     expect(crewName).toBeNull();
     const sends = Object.values(r.state.routes).flatMap((l) => (l.sent ? [l.sent] : []));
@@ -2220,7 +2278,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(58);
-    const { crewName, crewProject, crewDay, crewSends, parts, sesh, seshFirsts, ...rest } = r.state;
+    const { crewName, crewProject, crewDay, crewSends, parts, sesh, seshFirsts, vanPlan, ...rest } = r.state;
     expect(rest).toEqual(reboard(JSON.parse(V58).state));
     expect(crewName).toBeNull();
     // Its social bot got close to four of them, so the crew can be named on loading.
@@ -2233,7 +2291,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(59);
-    const { crewProject, crewDay, crewSends, parts, sesh, seshFirsts, ...rest } = r.state;
+    const { crewProject, crewDay, crewSends, parts, sesh, seshFirsts, vanPlan, ...rest } = r.state;
     expect(rest).toEqual(reboard(JSON.parse(V59).state));
     expect([crewProject, crewDay, crewSends]).toEqual([null, null, []]);
     expect(r.state.crewName?.name).toBeTruthy();
@@ -2244,7 +2302,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(60);
-    const { parts, sesh, seshFirsts, ...rest } = r.state;
+    const { parts, sesh, seshFirsts, vanPlan, ...rest } = r.state;
     expect(rest).toEqual(reboard(JSON.parse(V60).state));
     expect(parts).toBe(0);
     expect(r.state.crewSends.filter((x) => x.train.length).length).toBeGreaterThan(0);
@@ -2256,7 +2314,7 @@ describe('saves', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(61);
-    const { parts, sesh, seshFirsts, ...rest } = r.state;
+    const { parts, sesh, seshFirsts, vanPlan, ...rest } = r.state;
     expect(rest).toEqual(reboard(JSON.parse(V61).state));
     expect(parts).toBe(0);
     expect(Object.values(r.state.people).some((p) => (p.owed ?? 0) > 0)).toBe(true);
@@ -2279,6 +2337,7 @@ describe('saves', () => {
         boltedCracks: [],
         sesh: null,
         seshFirsts: 0,
+        vanPlan: expect.any(Object),
       }),
     );
     // It hands in as it always would have.
@@ -2294,7 +2353,7 @@ describe('saves', () => {
     expect(r.from).toBe(63);
     const old = JSON.parse(V63).state;
     expect(old.board.pick).not.toBeNull();
-    expect(r.state).toEqual({ ...revan(old), sesh: null, seshFirsts: 0 });
+    expect(r.state).toEqual({ ...revan(old), sesh: null, seshFirsts: 0, vanPlan: expect.any(Object) });
     expect(r.state.van).toMatchObject({
       engine: old.van.engine,
       miles: VAN_AGE.start,
@@ -2310,7 +2369,7 @@ describe('saves', () => {
     expect(r.from).toBe(62);
     const old = JSON.parse(V62).state;
     expect(old.board.jobs).toHaveLength(BOARD.jobs);
-    expect(r.state).toEqual({ ...reboard(old), sesh: null, seshFirsts: 0 });
+    expect(r.state).toEqual({ ...reboard(old), sesh: null, seshFirsts: 0, vanPlan: expect.any(Object) });
     expect(r.state.parts).toBeGreaterThan(0);
     // The next thing you do puts this week's up, each dealt its pay, none taken.
     const s = act({ ...r.state, at: 'lot', min: 9 * 60 }, { t: 'act', act: 'lot.rest' }).state;
@@ -2327,7 +2386,7 @@ describe('saves', () => {
     const old = { ...s, money: s.cash } as Record<string, unknown>;
     delete old.cash;
     const file = JSON.stringify({ format: 'dirtbag', v: 1, app: 'old', state: old });
-    expect(SAVE_VERSION).toBe(81);
+    expect(SAVE_VERSION).toBe(82);
     const chain: Record<number, Migration> = {
       1: (x) => {
         const { money, ...rest } = x as Record<string, unknown>;
