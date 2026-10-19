@@ -351,6 +351,7 @@ import { buyUnlock, inAndroidApp, playOffer, restoreUnlock } from '../game/play'
 import { locked, STORES } from '../game/unlock';
 import { careerSaved } from '../game/persist';
 import { fromDay } from '../game/day';
+import { newsSince } from '../game/news';
 import { radioLine } from './forecast';
 
 // Phase 43: what's in the van, and anything taken out and waiting for a spot.
@@ -2933,6 +2934,20 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
     // Phase 45: the problem of the day.
     case 'day':
       return daySheet(game, s, id.notes ?? []);
+
+    // Phase 20.1: what's new since the version that last wrote your save, once; or from
+    // Settings, the latest few, to read again.
+    case 'news': {
+      const again = id.since === undefined;
+      const notes = newsSince(again ? '0' : id.since!, __APP_VERSION__);
+      if (!notes.length) return null;
+      return {
+        title: 'What’s new',
+        lines: notes.map((n) => n.text),
+        close: again,
+        rows: [{ label: 'Right', run: () => (again ? game.closeSheet() : game.newsRead()) }],
+      };
+    }
 
     case 'dead': {
       const d = s.dead;

@@ -12,6 +12,7 @@ import {
   loadSettings,
   replace,
   save,
+  savedBy,
   saveSettings,
 } from './persist';
 import { keepIn, useSlot } from './storage';
@@ -196,6 +197,17 @@ describe('persist', () => {
     }
     expect(ls.getItem('dirtbag.demo.day.save')).not.toBeNull();
     for (const [k, v] of kept) expect(ls.getItem(k)).toBe(v);
+  });
+
+  // Phase 20.1: what's new is what's come since the version that last wrote the save.
+  it('says which version last wrote the save, and nothing for none', () => {
+    expect(savedBy()).toBeNull();
+    ls.setItem('dirtbag.save', toSave(newGame('x'), '0.999.33'));
+    expect(savedBy()).toBe('0.999.33');
+    ls.setItem('dirtbag.save', JSON.stringify({ state: {} }));
+    expect(savedBy()).toBe('');
+    ls.setItem('dirtbag.save', 'not a save');
+    expect(savedBy()).toBeNull();
   });
 
   it('shows your best go’s ghost unless you hide it, settings from before it included', () => {

@@ -128,11 +128,9 @@ Free. No ads, no accounts, no tracking. Plays offline. Your save stays on your p
 If you played the old version (0.956): it has retired. Your career is still on your phone. The game will keep it as a file, or carry you across under your old name.
 ```
 
-### What’s new in 0.999.86
+### What’s new
 
-```text whats-new
-Your climber can leave as a file and come back: Settings has Export your save, and the first screen has Import a save. A controller works on every screen now, its buttons yours to move in Settings. The marks the handwriting never had, the ticks, the crosses and the suits, are drawn now instead of guessed at. And if the game breaks, it says so instead of going blank, with your save where you left it.
-```
+Since Phase 20.1, Play’s “What’s new” is the newest note in `app/src/game/news.json`, as it is. The game shows the same words to a player back after an update. `npm run check` holds each note to Play’s 500 characters.
 
 ### At launch (Phase 19)
 

@@ -5092,7 +5092,30 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 
 ### Phase 20 — Launch, live updates, and the Unreal decision   **<<< CURRENT MILESTONE**
 
-*Next after the ten "Hands on" phases, by Evan's call (19 Oct 2026). Most of it is his: the stores, the timing, the coverage, the gate. The code side is to be planned with his calls.*
+*Next after the ten "Hands on" phases, by Evan's call (19 Oct 2026). Most of it is his: the stores, the timing, the coverage, the gate. The code side is planned with his calls.*
+
+**Evan's calls (19 Oct 2026):** the code side before launch is three things: What's new in the game, a launch checklist, and a seasonal event that needs no server. Not 1.0's version yet: that waits for his word.
+
+**Slices:**
+- **20.1, What's new:** the game's notes by version, newest first, in one file. A player back after an update reads them once, and Play's "What's new" takes the newest as it is.
+- **20.2, the launch checklist:** `docs/LAUNCH.md`, his steps in order and every carried [proposed] number and playtest question in one place; README's status brought up to date.
+- **20.3, a festival:** a yearly event at a crag, on the game's own calendar, with its own scene, people and a choice. Planned with his calls.
+
+**Status (19 Oct 2026): 20.1 built: What's new.** No save change, 0.999.108.
+- **The notes** (`game/news.json`): a paragraph a version, newest first. The newest is Play's "What's new" as it is.
+  - `npm run check` holds each to Play's 500 characters, in order, none past the build, and no straight quotes.
+  - STORE.md's hand-kept block moved in as the 0.999.86 note.
+- **When they show:** the save says which version of the game last wrote it (`savedBy`).
+  - Back after an update with notes since that version: a card, once, when nothing else is open, with up to three notes, newest first.
+  - It has to be read ("Right"), which writes the save as this build's, so it doesn't come back.
+  - A new player sees none, nor does the day, nor the demo, which takes an empty twin since the notes name the whole valley.
+- **The first note,** 0.999.108, is for a player back from the live site's 0.999.33: Phases 26 to 45 in 483 characters.
+- **In Settings:** "What's new", to read the latest again.
+- **Tests:**
+  - `news.test.ts` (3): versions in order; what shows since a save's version (at most three, none past the build, the newest alone for a save that doesn't say); every note fits Play.
+  - `persist.test.ts`: `savedBy`.
+- **The e2e:** a new section, "What's new": a save last written by 0.999.33, the card and its two notes, read, the save now this build's, gone on reload, and there again from Settings.
+- **The download:** 498.1 KB of 510 (+0.8).
 
 **Goal.** Ship 1.0 on Steam, Play and web (+ iOS and itch), keep a post-launch rhythm a solo developer can sustain, and make the Unreal decision with real data.
 
@@ -5394,3 +5417,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-19 — Phase 45 planned with Evan's calls (one line, one day; one climber for everyone; a card to save or share). 45.1 built: the day, drawn from the date, played in its own slot, with its sheet, the ways in, the tests, the smoke's offline day and the e2e. Budget 510 KB. 0.999.106.
 - 2026-10-19 — Phase 45.2 built: the day's card, its date, line and goes or high point, saved or sent on from the device. Phase 45's Done-when both pass; closing it, the last of the ten, is Evan's call. 0.999.107.
 - 2026-10-19 — Phase 45 closed by Evan's call, the last of the ten: both criteria pass, and the day's card stays without a link. CURRENT MILESTONE moved to Phase 20, launch, live updates and the Unreal decision.
+- 2026-10-19 — Phase 20 planned with Evan's calls: the code side before launch is What's new, a launch checklist and a seasonal event with no server; 1.0 waits for his word. 20.1 built: What's new, from one notes file that Play takes too. 0.999.108.
