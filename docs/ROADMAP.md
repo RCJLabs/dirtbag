@@ -70,7 +70,7 @@
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 | 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
 | 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27, 28 and 29 (14 Oct 2026), and Phases 33, 34, 30, 31, 32 and 35 (15 Oct 2026). Then Phase 14, closed 16 Oct 2026. |
-| 36–45 Hands on | Added by Evan's call (18 Oct 2026), before Phase 20: ten phases that make the game more its own and easier to play, and deepen it where it's thin. Phases 36, the games at the fire played in full, 37, the session, 38, a ghost of your best go, 39, each crag's classics, 40, "What now?" from Hazel, 41, the week's forecast and send temps, and 42, belaying, played, closed by his call (18 and 19 Oct 2026); Phase 43, your van laid out, is the current milestone; 44 and 45 are queued in the order he took them. |
+| 36–45 Hands on | Added by Evan's call (18 Oct 2026), before Phase 20: ten phases that make the game more its own and easier to play, and deepen it where it's thin. Phases 36, the games at the fire played in full, 37, the session, 38, a ghost of your best go, 39, each crag's classics, 40, "What now?" from Hazel, 41, the week's forecast and send temps, 42, belaying, played, and 43, your van laid out, closed by his call (18 and 19 Oct 2026); Phase 44, the setter's wall, hands-on, is the current milestone; 45 is queued after it. |
 
 ## The rebuild track
 
@@ -4416,7 +4416,7 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 **Phase 42 closed by Evan's call (19 Oct 2026).** Both criteria pass. Carried, as listed above: the rope's numbers and the belay's cost [proposed]; on a day already climbed together, a belay's worth is the beta; no bot belays; they don't climb on screen; Rico's ask stays a spot. Also open: the gate's e2e counted font loads the page cut off itself as failed requests, which went red once on #165's CI (a re-run passed); the proposed hardening is on #165. The CURRENT MILESTONE moves to Phase 43. The download is 489.2 KB of 490; Evan's call raises the budget to 500 KB in 43.1.
 
-### Phase 43 — Your van, laid out   **<<< CURRENT MILESTONE**
+### Phase 43 — Your van, laid out
 
 *Medium. Planned with Evan's calls (19 Oct 2026). Save v82.*
 
@@ -4477,7 +4477,9 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 - **No bot lays anything out,** since it changes no rule.
 - **By controller,** the cells are buttons that focus moves over, so A picks and places. The e2e plays it by pointer only.
 
-### Phase 44 — The setter's wall, hands-on
+**Phase 43 closed by Evan's call (19 Oct 2026).** Both criteria pass. Carried, as listed above: the van's size, the door's place and each footprint [proposed]; fit only, so no rule reads the plan; the scene's van is unchanged; no bot lays anything out; the e2e plays the sheet by pointer only. Still open from Phase 42: the gate e2e's hardening against font loads the page cuts off itself (proposed on #165). The CURRENT MILESTONE moves to Phase 44. The download is 491.6 KB of 500.
+
+### Phase 44 — The setter's wall, hands-on   **<<< CURRENT MILESTONE**
 
 *Queued (18 Oct 2026). Medium to large [INFERRED].*
 
@@ -5230,3 +5232,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-19 — 42.1: belaying, played, to Evan's calls. "Want a belay?" at the crag, and the crew's belay favour, put a partner's rope in your hands. Keep the slack in the band as they climb and clip, then brake and give for a soft catch. A belay is the day together, never on top of one; a clean belay gets you a beta on your line, and a hard catch gets you their grumble. The season harness's target 13: it can't out-bond a day climbing together. Both Done-when criteria pass. 0.999.102, no save change.
 - 2026-10-19 — Phase 42 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 43, your van laid out.
 - 2026-10-19 — 43.1: the van, laid out, to Evan's calls. "Lay out the van" opens its floor and roof as grids: the bed, the kitchen, the shelf and the heater on the floor, the solar panel on the roof. Move, turn or take out anything but the bed, which stays in and needs its length; the door stays clear, and nothing sits on anything. Where things go changes no rule. A new van or the Rig starts its own plan, and a save from before loads laid out. Both Done-when criteria pass. Save v82, 0.999.103; the download budget 500 KB, by his call.
+- 2026-10-19 — Phase 43 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 44, the setter's wall, hands-on.
