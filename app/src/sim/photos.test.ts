@@ -94,6 +94,7 @@ describe('a save from before the photos', () => {
       seshFirsts: 0,
       vanPlan: expect.any(Object),
       setUp: null,
+      festival: null,
       ...old,
       media: { ...old.media, photos: [], piece: null, film: null },
       hollow: { clues: [], tries: 0 },

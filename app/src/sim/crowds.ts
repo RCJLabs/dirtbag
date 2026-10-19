@@ -6,7 +6,8 @@ import { isWeekend } from './cond';
 import { isCompProblem } from './comps';
 import { PLACES } from './content/places';
 import { onWall, type RouteDef } from './content/routes';
-import { CROWD } from './dials';
+import { CROWD, FESTIVAL } from './dials';
+import { festivalOn } from './festival';
 import { Rng } from './rng';
 import type { GameState } from './types';
 import { conditionsAt } from './weather';
@@ -23,7 +24,9 @@ export function crowdLevel(seed: string, day: number, min: number, place: string
   for (const h of CROWD.hours) if (min >= h.from) hour = h.f;
   const luck =
     1 + CROWD.luck * (2 * Rng.fromStream(seed, 'events').derive(`crowd-${place}-${day}`).next() - 1);
-  return draw * (isWeekend(day) ? CROWD.weekend : 1) * hour * CROWD.sky[c.sky] * luck;
+  const n = draw * (isWeekend(day) ? CROWD.weekend : 1) * hour * CROWD.sky[c.sky] * luck;
+  // Phase 20.3: the crag day, and the whole desert's out at Moonstone, all day.
+  return place === FESTIVAL.at && festivalOn(seed, day) ? Math.max(n, CROWD.levels.packed) : n;
 }
 
 export function crowdAt(seed: string, day: number, min: number, place: string): Crowd {

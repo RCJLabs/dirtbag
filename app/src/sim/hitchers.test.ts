@@ -175,6 +175,7 @@ describe('a save from before', () => {
       seshFirsts: 0,
       vanPlan: expect.any(Object),
       setUp: null,
+      festival: null,
       ...old,
       // And Phase 35.3's: no knocks owed a return.
       deck: {

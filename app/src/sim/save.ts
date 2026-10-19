@@ -50,7 +50,7 @@ import { setOf } from './yourset';
 import { ACT_I } from './content/story';
 import type { GameState, LogLine, PersonLog, RouteLog, SendRecord } from './types';
 
-export const SAVE_VERSION = 83;
+export const SAVE_VERSION = 84;
 const FORMAT = 'dirtbag';
 
 export interface SaveFile {
@@ -638,6 +638,11 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (!isObj(x)) throw new Error('state is not an object');
     return { ...x, setUp: null };
   },
+  // v83 -> v84 (Phase 20.3): the crag day at Moonstone. Nobody had been to one before.
+  83: (x) => {
+    if (!isObj(x)) throw new Error('state is not an object');
+    return { ...x, festival: null };
+  },
 };
 
 export type LoadResult = { ok: true; state: GameState; from: number } | { ok: false; why: string };
@@ -1177,6 +1182,22 @@ export function validate(x: unknown): string[] {
         su.name.length <= SETTING.name.max),
     'setUp',
   );
+  // Phase 20.3: the year's crag day, once you've been: the way you took, and the scramble's card.
+  const fe = x.festival;
+  const counts = (r: unknown) => isObj(r) && Object.values(r).every((n) => isInt(n) && n >= 1);
+  need(
+    fe === null ||
+      (isObj(fe) &&
+        isInt(fe.day) &&
+        fe.day >= 1 &&
+        (fe.way === 'trail' || fe.way === 'scramble' || fe.way === 'climb') &&
+        (fe.goes === undefined || counts(fe.goes)) &&
+        (fe.tops === undefined || counts(fe.tops)) &&
+        (fe.on === undefined || typeof fe.on === 'string') &&
+        (fe.place === undefined || (isInt(fe.place) && fe.place >= 1)) &&
+        (fe.of === undefined || (isInt(fe.of) && fe.of >= 1))),
+    'festival',
+  );
   const dr = x.dream;
   const DREAMS = ['rig', 'warchest', 'homebase'];
   need(
@@ -1200,7 +1221,10 @@ export function validate(x: unknown): string[] {
         typeof en.kind === 'string' &&
         (en.kind === 'farewell'
           ? typeof en.id === 'string' && isObj(x.dog)
-          : !!ids[en.kind]?.some((k) => k.id === en.id)) &&
+          : // Phase 20.3: the crag day's card, for the day it's on.
+            en.kind === 'festival'
+            ? en.id === String(x.day)
+            : !!ids[en.kind]?.some((k) => k.id === en.id)) &&
         (en.kind !== 'epic' ||
           (isInt(en.stage) &&
             isObj(tl) &&

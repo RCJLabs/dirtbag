@@ -154,6 +154,22 @@ import {
   holidayScene,
 } from './folks';
 import { FOLKS_CALLS } from './content/folks';
+import { FESTIVAL_SAYS } from './content/festival';
+import {
+  festivalBlocked,
+  festivalCard,
+  festivalLate,
+  festivalMorning,
+  festivalOut,
+  FESTIVAL_WAYS,
+  fireSaid,
+  fireWith,
+  scrambleCounts,
+  scrambleDue,
+  scrambleResult,
+  scrambling,
+  trailLead,
+} from './festival';
 import { NAMED_FOR } from './content/gifts';
 import { together } from './romance';
 import { frankParks, RAY_GONE, stintOn, tamStops } from './lives';
@@ -288,6 +304,7 @@ import {
   HOME,
   GIVE,
   HOLIDAY,
+  FESTIVAL,
   LIFE,
   ROMANCE,
   LOAD,
@@ -414,7 +431,7 @@ import {
 } from './van';
 import { BODGE_FAILED, BODGE_HELD, BREAKDOWN_LINE } from './content/van';
 import { speedBlocked, speedGains, speedLoad, speedTime, runsToday } from './speed';
-import { dayName, fill, listOf, lower, money, ordinal, skillsNote } from './format';
+import { clockShort, dayName, fill, listOf, lower, money, ordinal, skillsNote } from './format';
 import { perkMult, perkPasses } from './perks';
 import { dueTonight, retained, retainerBlocked, RETAINERS } from './retainers';
 import { RETAINER_SAYS } from './content/retainers';
@@ -599,6 +616,7 @@ export function newGame(seed: string): GameState {
     seshFirsts: 0,
     vanPlan: defaultPlan({ gear: {}, dream: { pick: null, pot: 0, owned: [] } }),
     setUp: null,
+    festival: null,
     wall: null,
     expedition: null,
     booked: null,
@@ -1058,6 +1076,8 @@ export function act(s0: GameState, a: Action): Result {
     if (s.haul) bankHaul('You never clocked off; they paid you anyway.');
     // So is a comp's scorecard (Phase 18.4): today's round, not tomorrow's (Phase 33.1).
     if (s.comps.on && s.comps.on.day <= ended) finishComp();
+    // And the crag day's (Phase 20.3), if it was never handed in.
+    if (scrambling(s)) finishScramble();
     // League night's season settled on its last night (Phase 25.5), if you were in it.
     if (seasonEnds(ended)) settleSeason(yearOf(ended), ended);
     mediaNight(ended);
@@ -1655,6 +1675,18 @@ export function act(s0: GameState, a: Action): Result {
       s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + HOLIDAY.psyche) };
       events.push({ k: 'holiday', id: seasonOf(ended), who: here });
     }
+    // Phase 20.3: the crag day's fire, if you were out at Moonstone for it: back at the Lot,
+    // your people and the old guard you know, and a lift.
+    const fest = s.festival;
+    if (fest && fest.day === ended && s.at === 'lot') {
+      const here = fireWith({ ...s, day: ended });
+      for (const w of here) bond(w, meet(w).bond + FESTIVAL.fire.bond);
+      s.psyche = { ...s.psyche, level: clamp100(s.psyche.level + FESTIVAL.fire.psyche) };
+      events.push({ k: 'festival', way: fest.way, place: fest.place ?? 0, of: fest.of ?? 0, who: here });
+    }
+    // And this morning: the crag day's on, or put off for rain.
+    const word = festivalMorning(s);
+    if (word) line(word);
     // A year together, on the age clock (Phase 17.4).
     const r = s.romance;
     if (r && together(s)) {
@@ -1686,13 +1718,15 @@ export function act(s0: GameState, a: Action): Result {
         events.push({ k: 'encounter', kind: 'holiday', id: fest });
         return null;
       }
+      // Phase 20.3: the crag day's night is at the fire, and nobody's in the van to knock for.
+      const away = night.rough || s.festival?.day === s.day;
       // Phase 35.3: someone you answered at the door weeks ago: back, or remembered.
-      const back = night.rough ? null : knockBackDue(s);
+      const back = away ? null : knockBackDue(s);
       if (back) {
         s.deck = { ...s.deck, back: s.deck.back.map((b, i) => (i === back.i ? { ...b, done: true } : b)) };
         if (back.line) line(back.line);
       }
-      const k = back?.knock ?? (night.rough ? null : knockTonight(s, night.spot));
+      const k = back?.knock ?? (away ? null : knockTonight(s, night.spot));
       if (k) {
         s.encounter = { kind: 'knock', id: k.id };
         s.deck = { ...s.deck, last: s.day, knock: s.day, seen: [...s.deck.seen, k.id].slice(-10) };
@@ -2047,6 +2081,19 @@ export function act(s0: GameState, a: Action): Result {
   };
   // A comp's scorecard handed in (Phase 18.4): where you came against the field, the points
   // and the purse, and the result kept.
+  // Phase 20.3: the scramble's scorecard handed in: your place against the day's field, and the
+  // podium's prize.
+  const finishScramble = () => {
+    const f = scrambling(s);
+    if (!f) return;
+    const res = scrambleResult(s);
+    const card = { ...f, place: res.place, of: res.of };
+    delete card.on;
+    s.festival = card;
+    if (res.prize?.shoes) s.gear = { ...s.gear, shoes: 100 };
+    if (res.prize?.cash) spend({ cash: res.prize.cash });
+    line(res.said);
+  };
   const finishComp = () => {
     const on = s.comps.on;
     if (!on) return;
@@ -2165,6 +2212,15 @@ export function act(s0: GameState, a: Action): Result {
         s.today.push('tourists-asked');
         line(`${TOURISTS_ASK} Your van’s where to say yes.`);
       }
+    }
+    // Phase 20.3: the crag day. In before the scramble, its three ways in; after, the day as
+    // it is.
+    if (festivalCard(s)) {
+      s.encounter = { kind: 'festival', id: String(s.day) };
+      events.push({ k: 'encounter', kind: 'festival', id: String(s.day) });
+    } else if (festivalLate(s)) {
+      s.festival = { day: s.day, way: 'climb' };
+      line(FESTIVAL_SAYS.late);
     }
   };
   const meet = (who: string) => (s.people[who] ??= { bond: 0, last: 0, since: s.day });
@@ -3533,7 +3589,8 @@ export function act(s0: GameState, a: Action): Result {
       spend({ min: r.min });
       arriveAt(a.to);
       // On the road (Phase 22.6b): a hitchhiker or a stop, waiting on you at the other end.
-      const e = driveEncounter(s, from, a.to);
+      // Phase 20.3: not on the way to the crag day, whose card is waiting instead.
+      const e = s.encounter ? null : driveEncounter(s, from, a.to);
       if (e) {
         s.encounter = e;
         s.deck = { ...s.deck, last: s.day, [e.kind]: s.day };
@@ -3645,6 +3702,15 @@ export function act(s0: GameState, a: Action): Result {
       // Whether the crowd shouts the beta at you, decided at the base, before the queue.
       const sprayed = !sx && sprayedOn(s, r);
       const queued = sx ? 0 : queueMin(s, r);
+      // Phase 20.3: on the crag day's scorecard, if it's on when you step up: the go, and which
+      // go is in hand, so its top counts however late it comes.
+      const card = scrambling(s);
+      if (card) {
+        const counts = scrambleCounts(s, r);
+        if (counts) card.goes = { ...card.goes, [r.id]: (card.goes?.[r.id] ?? 0) + 1 };
+        if (counts) card.on = r.id;
+        else delete card.on;
+      }
       spend(goCost(r, s));
       const L = logOf(s, a.route);
       L.goes += 1;
@@ -4120,6 +4186,22 @@ export function act(s0: GameState, a: Action): Result {
         if (o.home) retire(false, true);
         break;
       }
+      // Phase 20.3: the crag day's three ways in.
+      if (e?.kind === 'festival') {
+        const way = FESTIVAL_WAYS[a.opt];
+        if (!way) return refuse('Nobody’s asking.');
+        const why = festivalBlocked(s, way);
+        if (why) return refuse(`${why}.`);
+        s.encounter = null;
+        s.festival = { day: s.day, way, ...(way === 'scramble' ? { goes: {}, tops: {} } : {}) };
+        if (way === 'trail') {
+          spend({ min: FESTIVAL.trail.min, energy: -FESTIVAL.trail.energy, fed: -FESTIVAL.trail.fed });
+          s.scene = shift(s.scene, { old: FESTIVAL.trail.old });
+        }
+        if (way === 'scramble') spend({ cash: -FESTIVAL.scramble.fee });
+        line(festivalOut(s, way));
+        break;
+      }
       // Phase 35.4: a holiday's scene: the night at the fire with your people, as you spend it.
       if (e?.kind === 'holiday') {
         const o = holidayOpts(e.id)[a.opt];
@@ -4341,6 +4423,14 @@ export function act(s0: GameState, a: Action): Result {
         L.goes <= goesFor(on.tier, on.round)
       )
         s.comps = { ...s.comps, on: { ...on, tops: { ...on.tops, [r.id]: L.goes } } };
+      // Phase 20.3: the crag day's scramble: a top on the go in hand, once a problem, in the
+      // goes it took today.
+      const card = scrambling(s);
+      if (card?.on === r.id) {
+        if (res.sent && !(r.id in (card.tops ?? {})))
+          card.tops = { ...card.tops, [r.id]: card.goes?.[r.id] ?? 1 };
+        delete card.on;
+      }
       if (res.sent) {
         // The log keeps how the first send went; any send after it is a repeat.
         const firstStyle: SendStyle = L.goes === 1 ? (L.told.length ? 'flash' : 'onsight') : 'redpoint';
@@ -4510,6 +4600,15 @@ export function act(s0: GameState, a: Action): Result {
       break;
     }
 
+    // Phase 20.3: the crag day's scorecard, handed in before the scramble's over.
+    case 'scramble': {
+      const f = scrambling(s);
+      if (!f || f.day !== s.day) return refuse('No scorecard to hand in.');
+      if (s.min < FESTIVAL.scramble.from)
+        return refuse(fill(FESTIVAL_SAYS.notYetOn, { time: clockShort(FESTIVAL.scramble.from) }));
+      finishScramble();
+      break;
+    }
     case 'sesh': {
       // Phase 37: the session. Joined from a problem's beta, once a day.
       if (a.do === 'join') {
@@ -4976,6 +5075,9 @@ export function act(s0: GameState, a: Action): Result {
       note(`${Q.name}. ${Q.line} ${edgeText(Q.edge)}`);
     }
   }
+  // Phase 20.3: the crag day's scorecard, due in once the scramble's over or you've left it;
+  // not while a go's in hand, whose top may yet count.
+  if (a.t !== 'go' && scrambleDue(s)) finishScramble();
   // Phase 23.3: asked what you're climbing for, once; and a rung of its ambition, met.
   if (s.climber.name) {
     if (callingDue(s)) {

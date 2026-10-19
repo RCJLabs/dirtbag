@@ -1621,6 +1621,35 @@ export const PACE = { tapSec: 4, goSec: 15 };
 // the `from`th; the last asks you home for good.
 export const HOLIDAY = { on: [7, 21, 35, 49], psyche: 10 };
 export const FOLKS = { from: 1, every: 2 };
+// Phase 20.3 (Evan's calls, 19 Oct 2026): the crag day at Moonstone (`at`), like an Adopt a
+// Crag and the Hueco Rock Rodeo, once a year in winter, the desert's friction season, clear
+// of Longest Night: day `on` of the year, or if it rains there, the first day after it that
+// doesn't, `rain` days on at most (rained out that long, there's none that year). The crag's
+// packed all day. Arrive before the scramble and there are three ways in. The old guard's trail
+// work takes `trail.min` and its energy and food, and moves their regard by `trail.old`
+// (a stance moves it 8 to 18). The scramble runs `scramble.min` from `scramble.from` for
+// `scramble.fee` (the dyno comp's): the most of the crag's boulders sent in it wins, the
+// fewest goes on them splitting a tie as at any comp, against a field of `scramble.field`
+// drawn between `scramble.grades` with `scramble.goes` at a problem. Or you just climb. First
+// place wins new shoes (their price, if yours are new), and second and third `scramble.purse`:
+// none of it more than a week of the café's shifts (guides.ts). That night there's a fire:
+// `fire.bond` with each of your people there, and `fire.psyche` [proposed, all of it].
+export const FESTIVAL = {
+  at: 'moon',
+  on: 25,
+  rain: 3,
+  trail: { min: 120, energy: 15, fed: 6, old: 6 },
+  scramble: {
+    from: 13 * 60,
+    min: 180,
+    fee: 15,
+    field: 14,
+    grades: [5, 11] as [number, number],
+    goes: 3,
+    purse: [60, 30] as [number, number],
+  },
+  fire: { bond: 1, psyche: 8 },
+};
 
 // Giving (Phase 17.5) [proposed]: a gift to someone once a week, a bond for it (no more than
 // a day climbing together, and it costs money where a day out doesn't); a line named for

@@ -320,6 +320,19 @@ export interface GameState {
   // Phase 44.2: the set you hung last, on the panel till its week's reset: its id (which
   // carries the set, yourset.ts) and the name you gave it.
   setUp: { id: string; name: string } | null;
+  // Phase 20.3 (save v84): the year's crag day at Moonstone, once you've been to it: its day and
+  // the way you took. In the scramble, your scorecard: goes at each of the crag's boulders while
+  // it's on, the goes each top took, and the go in hand if it counts; handed in, where you placed
+  // of how many.
+  festival: {
+    day: number;
+    way: FestivalWay;
+    goes?: Record<string, number>;
+    tops?: Record<string, number>;
+    on?: string;
+    place?: number;
+    of?: number;
+  } | null;
   // Phase 22.8. Your dream: the one you're saving for, the pot (the card and the bills never
   // touch it), and the ones you own.
   dream: {
@@ -331,7 +344,7 @@ export interface GameState {
   dogs: { name: string; years: number; day: number }[];
   // A walk-out (Phase 22.6c) has stages: the one you're on, and what the calls so far add up to.
   encounter: {
-    kind: 'knock' | 'hitch' | 'stop' | 'epic' | 'farewell' | 'wall' | 'stance' | 'echo' | 'folks' | 'holiday';
+    kind: EncounterKind;
     id: string;
     stage?: number;
     tally?: { risk: number; energy: number; fed: number; skin: number; psyche: number; hours: number };
@@ -492,6 +505,23 @@ export interface Injury {
 }
 
 export type HollowClue = 'old' | 'hitch' | 'book';
+
+// What waits on an answer (Phase 22.6 on); Phase 20.3's crag day the last of them.
+export type EncounterKind =
+  | 'knock'
+  | 'hitch'
+  | 'stop'
+  | 'epic'
+  | 'farewell'
+  | 'wall'
+  | 'stance'
+  | 'echo'
+  | 'folks'
+  | 'holiday'
+  | 'festival';
+
+// Phase 20.3: the crag day's three ways in.
+export type FestivalWay = 'trail' | 'scramble' | 'climb';
 
 // Phase 31.1: a forebear's climbing life, as the family keeps it.
 export interface Career {
@@ -802,7 +832,9 @@ export type Action =
   | { t: 'holdem'; do: 'sit' | 'deal' | 'fold' | 'call' | 'bet' | 'leave' }
   // Phase 37: the session on a problem: join it, sit a round out and watch, share or keep the
   // move you've found, or walk away.
-  | { t: 'sesh'; do: 'join' | 'wait' | 'share' | 'keep' | 'leave'; route?: string };
+  | { t: 'sesh'; do: 'join' | 'wait' | 'share' | 'keep' | 'leave'; route?: string }
+  // Phase 20.3: the crag day's scorecard, handed in before the scramble's over.
+  | { t: 'scramble' };
 
 // Phase 24.5. A trip come home from: which, the calendar day you got back, how it ended, the
 // pitches fixed, who was on the rope, the nights up there, what happened, and whether you've
@@ -882,13 +914,15 @@ export type GameEvent =
   | { k: 'injured'; kind: string; tier: 1 | 2 | 3; days: number; text: string }
   // A holiday's night at the fire, and who was there (Phase 17.6).
   | { k: 'holiday'; id: string; who: string[] }
+  // Phase 20.3: the crag day's fire that night: how you spent the day, where you placed in the
+  // scramble of how many (0 if you weren't in it), and who was there.
+  | { k: 'festival'; way: FestivalWay; place: number; of: number; who: string[] }
   // A conversation moves to another node, or ends (null).
   | { k: 'talk'; node: string | null }
   // An encounter begins (Phase 22.6): it waits for an answer.
   | {
       k: 'encounter';
-      kind:
-        'knock' | 'hitch' | 'stop' | 'epic' | 'farewell' | 'wall' | 'stance' | 'echo' | 'folks' | 'holiday';
+      kind: EncounterKind;
       id: string;
     }
   // Back from an expedition (Phase 24.5): its card, from the newest entry in the book.

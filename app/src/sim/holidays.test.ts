@@ -95,6 +95,7 @@ describe('holiday nights', () => {
       seshFirsts: 0,
       vanPlan: expect.any(Object),
       setUp: null,
+      festival: null,
     });
   });
 });

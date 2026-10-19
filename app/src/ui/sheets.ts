@@ -202,6 +202,17 @@ import {
   HOLIDAYS,
   HOLIDAY_SCENES,
   HOLIDAY_WITH,
+  cardSaid,
+  FESTIVAL,
+  FESTIVAL_SAYS,
+  FESTIVAL_WAYS,
+  festivalBlocked,
+  festivalNote,
+  fireSaid,
+  scrambleCard,
+  scrambling,
+  SCRAMBLE_END,
+  trailLead,
   crew,
   holidayBlocked,
   holidayNote,
@@ -1135,6 +1146,23 @@ function gigRow(game: Game, s: GameState): Row | null {
   };
 }
 
+// Phase 20.3: the crag day's scorecard, from the van while it's yours to hand in.
+function scrambleRows(game: Game, s: GameState): Row[] {
+  const f = scrambling(s);
+  if (!f || f.day !== s.day || s.at !== FESTIVAL.at) return [];
+  const before = s.min < FESTIVAL.scramble.from;
+  return [
+    {
+      label: FESTIVAL_SAYS.hand,
+      note: before
+        ? fill(FESTIVAL_SAYS.notYetOn, { time: clockShort(FESTIVAL.scramble.from) })
+        : fill(FESTIVAL_SAYS.handNote, { card: cardSaid(scrambleCard(s)), till: clockShort(SCRAMBLE_END) }),
+      off: before,
+      run: () => game.scramble(),
+    },
+  ];
+}
+
 // A family's top rope, at a busy crag, from the van.
 function touristRows(game: Game, s: GameState): Row[] {
   if (!touristsOn(s)) return [];
@@ -1837,6 +1865,7 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         rows: [
           // Phase 32.2: the walk in to the Hollow starts from the van at the Gorge.
           ...(s.at === 'gorge' && !found(s) && s.hollow.clues.length ? [walkRow(game, s)] : []),
+          ...scrambleRows(game, s),
           ...shootRows(game, s),
           ...touristRows(game, s),
           ...(back ? [driveRow(game, s, 'lot', 'Drive back to the Lot')] : []),
@@ -2360,6 +2389,14 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
         rows: [{ label: 'Morning', run: () => game.closeSheet() }],
       };
     }
+    // Phase 20.3: the crag day's fire, back at the Lot, and who was there.
+    case 'festival':
+      return {
+        title: FESTIVAL_SAYS.name,
+        sub: fireSaid(id.way, id.who, trailLead(s)),
+        close: false,
+        rows: [{ label: 'Morning', run: () => game.closeSheet() }],
+      };
     case 'act': {
       const end = storyOf(s)[id.n - 1]?.end;
       if (!end) return null;
@@ -2579,6 +2616,28 @@ export function buildSheet(game: Game, id: SheetId, s: GameState): ListSpec | nu
           rows: st.opts.map((o, i) => ({ label: o.label, note: o.sub, run: () => game.answer(i) })),
         };
       }
+      // Phase 20.3: the crag day, coming in before the scramble: its three ways in.
+      if (e?.kind === 'festival')
+        return {
+          title: FESTIVAL_SAYS.name,
+          sub: fill(FESTIVAL_SAYS.scene, { time: clockShort(FESTIVAL.scramble.from) }),
+          close: false,
+          rows: FESTIVAL_WAYS.map((way, i) => {
+            const why = festivalBlocked(s, way);
+            return {
+              label: FESTIVAL_SAYS[way].label,
+              cost:
+                way === 'trail'
+                  ? costLabel({ min: FESTIVAL.trail.min })
+                  : way === 'scramble'
+                    ? costLabel({ cash: -FESTIVAL.scramble.fee })
+                    : undefined,
+              note: why ? `${why}.` : festivalNote(way),
+              off: !!why,
+              run: () => game.answer(i),
+            };
+          }),
+        };
       // Phase 35.4: a holiday's scene at the fire: who's there, and the ways to spend the night.
       if (e?.kind === 'holiday') {
         const h = HOLIDAYS[e.id as Season];

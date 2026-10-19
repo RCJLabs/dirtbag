@@ -285,7 +285,8 @@ export function fieldSays(field: Score[], place: number, last: boolean): string 
 // as before, so whoever's well over a problem tops it in a go or two, and someone at their
 // limit gets it late if at all. (A top's goes were drawn evenly from 1 to the clock's, so a
 // favourite topped as slowly as anyone and lost on goes to a flash.)
-function rollTops(r: Rng, grade: number, set: RouteDef[], goes: number): Score {
+// Phase 20.3: the crag day's scramble rolls its field the same way.
+export function rollTops(r: Rng, grade: number, set: RouteDef[], goes: number): Score {
   let tops = 0;
   let n = 0;
   for (const p of set) {

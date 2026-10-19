@@ -65,6 +65,7 @@ describe('a save from before the runway', () => {
       seshFirsts: 0,
       vanPlan: expect.any(Object),
       setUp: null,
+      festival: null,
       ...old,
       hollow: { clues: [], tries: 0 },
       boltedCracks: [],

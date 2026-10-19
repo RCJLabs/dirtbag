@@ -41,6 +41,7 @@ describe('a save from before the retainers', () => {
       seshFirsts: 0,
       vanPlan: expect.any(Object),
       setUp: null,
+      festival: null,
       ...old,
       retainers: { physio: null, coach: null },
       media: { ...old.media, photos: [], piece: null, film: null },
