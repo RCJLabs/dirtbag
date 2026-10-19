@@ -5099,7 +5099,7 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 **Slices:**
 - **20.1, What's new:** the game's notes by version, newest first, in one file. A player back after an update reads them once, and Play's "What's new" takes the newest as it is.
 - **20.2, the launch checklist:** `docs/LAUNCH.md`, his steps in order and every carried [proposed] number and playtest question in one place; README's status brought up to date.
-- **20.3, a festival:** a yearly event at a crag, on the game's own calendar, with its own scene, people and a choice. Planned with his calls.
+- **20.3, a festival:** a yearly event at a crag, on the game's own calendar, with its own scene, people and a choice. Planned with his calls (below).
 
 **Status (19 Oct 2026): 20.1 built: What's new.** No save change, 0.999.108.
 - **The notes** (`game/news.json`): a paragraph a version, newest first. The newest is Play's "What's new" as it is.
@@ -5116,6 +5116,23 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
   - `persist.test.ts`: `savedBy`.
 - **The e2e:** a new section, "What's new": a save last written by 0.999.33, the card and its two notes, read, the save now this build's, gone on reload, and there again from Settings.
 - **The download:** 498.1 KB of 510 (+0.8).
+
+**Status (19 Oct 2026): 20.2 built: the launch checklist.** Docs only.
+- **`docs/LAUNCH.md`:** your steps in order, each with where it's written up:
+  - before the beta: the tag, Steam's apps, achievements, Cloud and depots, Play's product, where crash reports go, the press kit's brackets;
+  - the beta's two rounds;
+  - Steam, the demo and Next Fest;
+  - the day: the forms, the privacy page and terms, the gate, Play's listing, itch.io, when;
+  - after: the rhythm, each release's note, the Unreal decision, catalogues.
+- **What launch leaves open:**
+  - in code: the gate e2e's hardening, proposed on #165;
+  - for the playtests: every phase's [proposed] numbers and the questions the bots couldn't settle, since Phase 26, with the first hour and the music from before.
+- **README's status,** which still said 0.961.0 and Phase 22: now the live site's 0.999.33, what main holds that isn't released, and Phase 20.
+
+**Evan's calls for 20.3 (19 Oct 2026),** all as recommended:
+- **What:** a crag day, like Adopt a Crag and the Hueco Rock Rodeo: the old guard's trail work in the morning, a scramble comp on the boulders after (most problems in the time), a fire that night. Three ways in, the first free: pitch in, enter the scramble, or just climb the busy crag.
+- **When and where:** winter, at Moonstone, around day 25 of the year (winter has only Longest Night, on day 21). Full game only: Moonstone is past the demo.
+- **What it gives:** standing with the old guard for the trail work; a prize for the scramble's podium, gear or cash under a week of shifts as every prize is; bond at the fire with whoever's there. All from dials.
 
 **Goal.** Ship 1.0 on Steam, Play and web (+ iOS and itch), keep a post-launch rhythm a solo developer can sustain, and make the Unreal decision with real data.
 
@@ -5418,3 +5435,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-19 — Phase 45.2 built: the day's card, its date, line and goes or high point, saved or sent on from the device. Phase 45's Done-when both pass; closing it, the last of the ten, is Evan's call. 0.999.107.
 - 2026-10-19 — Phase 45 closed by Evan's call, the last of the ten: both criteria pass, and the day's card stays without a link. CURRENT MILESTONE moved to Phase 20, launch, live updates and the Unreal decision.
 - 2026-10-19 — Phase 20 planned with Evan's calls: the code side before launch is What's new, a launch checklist and a seasonal event with no server; 1.0 waits for his word. 20.1 built: What's new, from one notes file that Play takes too. 0.999.108.
+- 2026-10-19 — 20.2 built: the launch checklist (`docs/LAUNCH.md`), and README's status brought up to date. Evan's calls for 20.3: a crag day at Moonstone in winter, trail work and a scramble, standing, a prize and the night.
