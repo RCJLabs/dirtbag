@@ -54,6 +54,8 @@ import {
 import { favourAsk, riding } from './favours';
 import { belayBlocked, belayLine, cleanBelay } from './belay';
 import { defaultPlan, fitBlocked, fixed, floorLen, owned, PIECES, syncPlan } from './vanplan';
+import { setId, setNameIdeas, setNameOf } from './yourset';
+import { straightUp } from './setpanel';
 import { BELAY_ANY, BELAY_SAYS } from './content/belay';
 import { TEAM_FUNDED, TEAM_NOTHING, TEAM_SUMMIT, TEAM_TURNED } from './content/team';
 import { fasIn, guideBlocked, guidesOut, royalties, royaltyOf } from './guides';
@@ -596,6 +598,7 @@ export function newGame(seed: string): GameState {
     sesh: null,
     seshFirsts: 0,
     vanPlan: defaultPlan({ gear: {}, dream: { pick: null, pot: 0, owned: [] } }),
+    setUp: null,
     wall: null,
     expedition: null,
     booked: null,
@@ -1701,6 +1704,8 @@ export function act(s0: GameState, a: Action): Result {
     }
     // A shift played (Phase 18.1): scored against the day's brief, refused before it costs.
     let played: { score: number; from: number; line: string } | null = null;
+    // Phase 44.2: a set hung goes up on the panel, under its name, till the week's reset.
+    let hung: { id: string; name: string } | null = null;
     let coaching: ReturnType<typeof coachSession> | null = null;
     let hauling = false;
     if (play) {
@@ -1712,6 +1717,11 @@ export function act(s0: GameState, a: Action): Result {
         const no = setRefused(b, play.set, play.at);
         if (no) return no;
         const sc = scoreSet(b, play.set, play.at);
+        const cells = play.at ?? straightUp(play.set.length);
+        hung = {
+          id: setId(s.day, play.set, cells),
+          name: setNameOf(play.name, setNameIdeas(b.wall, b.crowd, play.set, cells)),
+        };
         played = {
           score: sc.score,
           from: PLAY.from,
@@ -1907,6 +1917,10 @@ export function act(s0: GameState, a: Action): Result {
       const bonus = playBonus(cost.cash ?? 0, played.score, played.from);
       if (bonus) spend({ cash: bonus });
       line(bonus ? `${played.line} +${money(bonus)} on top.` : played.line);
+    }
+    if (hung) {
+      s.setUp = hung;
+      line(`“${hung.name}” is up on the panel till the reset.`);
     }
     if (d.job) {
       // Only a shift you signed up for counts toward promotion; a walk-in just pays.
@@ -2811,11 +2825,17 @@ export function act(s0: GameState, a: Action): Result {
       if (g.set === s.day) return refuse('You’ve set today.');
       if (s.energy < GYM_SET.energy) return refuse('Too tired to haul holds.');
       let q = OWN_GYM.plain;
+      let mine: { id: string; name: string } | null = null;
       if (a.set) {
         const b = setBrief(s);
         const no = setRefused(b, a.set, a.at);
         if (no) return refuse(no);
         q = scoreSet(b, a.set, a.at).score;
+        const cells = a.at ?? straightUp(a.set.length);
+        mine = {
+          id: setId(s.day, a.set, cells),
+          name: setNameOf(a.name, setNameIdeas(b.wall, b.crowd, a.set, cells)),
+        };
       }
       spend({ min: GYM_SET.min, energy: -GYM_SET.energy });
       s.gym = { ...g, quality: Math.max(g.quality, q), set: s.day };
@@ -2824,6 +2844,11 @@ export function act(s0: GameState, a: Action): Result {
           ? `You set your own wall. ${[...SET_SAYS].reverse().find(([at]) => q >= at)![1]}`
           : 'You put up a set nobody will remember. It’s fresh, which is what they pay for.',
       );
+      // Phase 44.2: a set to the brief goes up on the panel too.
+      if (mine) {
+        s.setUp = mine;
+        line(`“${mine.name}” is up on the panel till the reset.`);
+      }
       break;
     }
 
@@ -4969,7 +4994,9 @@ export function act(s0: GameState, a: Action): Result {
 export const FA_NAME_MAX = 28;
 
 // What a line's called: its first ascensionist's name for it, or the guidebook's.
-export const lineName = (s: GameState, r: RouteDef): string => s.firsts[r.id]?.name ?? r.name;
+// Phase 44.2: and a set you hung goes by the name you gave it.
+export const lineName = (s: GameState, r: RouteDef): string =>
+  s.firsts[r.id]?.name ?? (s.setUp?.id === r.id ? s.setUp.name : r.name);
 
 // The grade a line goes by: its first ascensionist's call once it has one, and a "?" on an
 // open line nobody's done, the way guidebooks mark a grade no one has confirmed.

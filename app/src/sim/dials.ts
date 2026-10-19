@@ -376,6 +376,9 @@ export const SETTING = {
   // goes higher. A move to a hold `long` squares away or more is a big one, a step harder;
   // `huge` or more, two (never past a crux, 3); past `most`, nobody reaches it.
   panel: { cols: 5, rows: 7, start: 2, long: 2.5, huge: 3.5, most: 4.5 },
+  // Phase 44.2: a hung set's name, as long as a first ascent's can be. One shorter than `min`
+  // gets the first of its suggestions.
+  name: { min: 2, max: 28 },
 };
 
 // Phase 22.1: how you live, chosen in the week and paid at the van every night, on top of

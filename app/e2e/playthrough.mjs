@@ -848,6 +848,8 @@ for (const [i, [x, y]] of squares.entries()) {
   taps += 2;
 }
 await expectText('#set-checks', /V\d+, for V\d+/, 'the set’s grade, live');
+// Phase 44.2: named as it's hung; it stays up on the panel till the reset.
+await page.fill('#set-name', 'First Light');
 if ((await page.locator('#set-panel .sp-lines line').count()) !== 4)
   await fail('the panel: not four moves between five holds');
 if ((await page.locator('#set-panel .sp-lines line.big').count()) !== 1)
@@ -911,7 +913,10 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 82 ||
+  saved?.v !== 83 ||
+  // Phase 44.2: the day's set, up on the panel under its name.
+  st.setUp?.name !== 'First Light' ||
+  !st.setUp.id.startsWith(`ys-${st.day}-`) ||
   // Phase 43: a new climber's van, laid out: the bed across the back, and nothing else yet.
   JSON.stringify(st.vanPlan) !== JSON.stringify({ bed: { x: 4, y: 0, r: 0 } }) ||
   // Phase 29.1: nothing scavenged, a few days in.
@@ -2956,6 +2961,62 @@ console.log('The van, laid out');
     await fail(`vanplan: the door moved the kitchen: ${JSON.stringify(after.vanPlan.kitchen)}`);
   if (after.min !== before.min) await fail(`vanplan: laying it out took ${after.min - before.min} minutes`);
   log(`vanplan: ${JSON.stringify(after.vanPlan)}`);
+  await page.close();
+  page = main;
+}
+
+console.log('Your set on the wall');
+// Phase 44.2 (Phase 44's criterion 1, its second half). A set of yours up on the panel this
+// week, "First Light", five holds straight up: walked to at the end of the wall, its sheet by
+// its name, and climbed till it goes. In the save, its goes and its send, as on any problem.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  // Day 39's set: the jug, the shake, the rail, a smear and an undercling, up the middle.
+  const id = 'ys-39-020121222823524';
+  saved.state = {
+    ...saved.state,
+    day: 39,
+    min: 10 * 60,
+    at: 'gym',
+    x: null,
+    energy: 100,
+    skin: 100,
+    fed: 100,
+    // A day pass bought at the desk, as on any morning at Send City.
+    today: ['pass'],
+    injury: null,
+    setUp: { id, name: 'First Light' },
+    encounter: null,
+    table: null,
+    cards: null,
+    sesh: null,
+  };
+  const main = page;
+  page = await playPage({ width: 390, height: 844 }, 2, 'yourset: ');
+  await page.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+  }, JSON.stringify(saved));
+  const state = () => page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  await page.goto(server.url, { waitUntil: 'load' });
+  await until('Send City', async () => (await text('#b-nav')) === 'Map');
+  await wait(600);
+  // The panel's at the end of the wall: walked to till it's on screen.
+  const mine = page.locator('button.hot[aria-label^="First Light"]');
+  for (let i = 0; i < 40 && !(await mine.count()); i++) {
+    await page.keyboard.down('ArrowRight');
+    await wait(200);
+    await page.keyboard.up('ArrowRight');
+    await wait(150);
+  }
+  if (!(await mine.count())) await fail('yourset: never found First Light on the panel');
+  await mine.first().evaluate((el) => el.click());
+  await expectText('#sheet-title', /First Light · V0/, 'your set, by its name');
+  await shot('yourset');
+  const goes = await sendIt('First Light');
+  const after = await state();
+  if (!after.routes[id]?.sent || after.routes[id].goes !== goes)
+    await fail(`yourset: not in the save: ${JSON.stringify(after.routes[id])}`);
+  log(`yourset: First Light sent on go ${goes}`);
   await page.close();
   page = main;
 }

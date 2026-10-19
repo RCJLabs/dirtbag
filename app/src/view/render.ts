@@ -19,6 +19,7 @@ import {
   ROUTES,
   routeOfId,
   wallAt,
+  setOf,
   talkStart,
   TALK,
   WALLS,
@@ -45,6 +46,7 @@ import {
   OY,
   presentIn,
   PROBLEM_X,
+  SET_X,
   CAVE_X,
   CENTER_X,
   SCENES,
@@ -71,7 +73,7 @@ import {
   tapeTag,
   vanIcon,
 } from './paint/fx';
-import { CAVE_TAPE, CENTER_TAPE, speedHold, TAPE } from './paint/gym';
+import { CAVE_TAPE, CENTER_TAPE, paintSetPanel, SET_TAPE, speedHold, TAPE } from './paint/gym';
 import { dirtRoad, mapArt } from './paint/map';
 import { SIDE_ROADS } from './valley';
 import { drawBelayerBack, drawClimber, drawDog, drawPerson, INK, LOOK, STRANGERS } from './paint/people';
@@ -297,10 +299,17 @@ export function sceneLive(g: G, s: GameState, scene: string, cam: number, eye: E
   if (gym) {
     const lines = wallAt(s, 'gym');
     lines
-      .filter((r) => !r.board)
+      .filter((r) => !r.board && !setOf(r.id))
       .forEach((r, n) =>
         tapeTag(g, PROBLEM_X[n]! - cam, GND - 26, TAPE[n]!, gradeLabel(r), !!s.routes[r.id]?.sent),
       );
+    // Phase 44.2: your set on the panel, while it's up.
+    const mine = lines.find((r) => setOf(r.id));
+    if (mine) {
+      const set = setOf(mine.id)!;
+      paintSetPanel(g, set.ids, set.cells, cam);
+      tapeTag(g, SET_X - cam, GND - 26, SET_TAPE, gradeLabel(mine), !!s.routes[mine.id]?.sent);
+    }
     // The board's problems, tagged along its kicker.
     lines
       .filter((r) => r.board)

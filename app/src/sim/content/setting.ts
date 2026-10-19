@@ -13,6 +13,8 @@ export interface SetMove {
   hard: number;
 }
 
+// Phase 44.2: append only. A set you've hung carries each hold's place in this list in its id
+// (yourset.ts), so a hold added goes on the end, and none moves or goes.
 export const SET_MOVES: Record<string, SetMove> = {
   jug: { name: 'Big jug', kind: 'rest', hard: 0 },
   shake: { name: 'Kneebar shake', kind: 'rest', hard: 0 },
@@ -46,6 +48,24 @@ export const CROWDS: Record<Crowd, { name: string; wants: string }> = {
   regulars: { name: 'The regulars', wants: 'the grade, exactly' },
   team: { name: 'The comp team', wants: 'a dyno, and a crux on its own' },
   kids: { name: 'Kids’ club', wants: 'a dyno, and nothing over the grade' },
+};
+
+// Phase 44.2: names to give a set as it's hung, from its crux, the wall and the week's crowd.
+// The crux's is filled with the hold (`{hold}`).
+export const SET_NAMES = {
+  crux: 'The {hold}',
+  wall: {
+    slab: 'Smear Campaign',
+    vertical: 'Plumb Line',
+    overhang: 'Steep Learning Curve',
+    roof: 'Upside Down',
+  } as Record<Wall, string>,
+  crowd: {
+    beginners: 'First Steps',
+    regulars: 'Regulars Only',
+    team: 'Team Selection',
+    kids: 'Recess',
+  } as Record<Crowd, string>,
 };
 
 // What the gym says of the set, by how it went (score from the bottom up).

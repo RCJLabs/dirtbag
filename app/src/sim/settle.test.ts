@@ -202,6 +202,7 @@ describe('a save from before', () => {
       sesh: null,
       seshFirsts: 0,
       vanPlan: expect.any(Object),
+      setUp: null,
       ...old,
       firsts: { ...old.firsts, mopen: { ...old.firsts.mopen, heard: SETTLE.repeats } },
       // Phase 35.1: its hitchhikers met, counted as come once.

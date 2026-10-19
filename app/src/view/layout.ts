@@ -149,6 +149,9 @@ export const CRAGS: Record<string, CragSpec> = {
 // end of the wall the board, where the hard problems live.
 export const DESK_X = 170;
 export const PROBLEM_X = [384, 474, 564, 654, 744, 834];
+// Phase 44.2: the setter's panel, at the end of the wall before the board, where your set goes
+// up for the week.
+export const SET_X = 960;
 export const BOARD_X0 = 990;
 export const BOARD_X1 = 1190;
 // Past the board, the speed wall (Phase 21.6): two lanes, taller than the room.
@@ -164,7 +167,7 @@ export const CAVE_W = 1150;
 export const CENTER_X = [360, 445, 530, 615, 700, 785, 870, 955];
 export const CENTER_W = 1150;
 
-const wallHot = (x: number, use: Use, half = 26, y0 = 110): Hot => ({
+export const wallHot = (x: number, use: Use, half = 26, y0 = 110): Hot => ({
   x0: x - half,
   x1: x + half,
   y0,

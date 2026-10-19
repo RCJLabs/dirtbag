@@ -14,6 +14,7 @@ import type { Style } from '../climber';
 import type { GameState, SkillId } from '../types';
 import { EXPED_ROUTES } from './expeditions';
 import { asSport, libraryBoulder, ROUTES, type RouteDef } from './routes';
+import { setOf, setRoute } from '../yourset';
 
 export const GYM = 'gym';
 export const WEEK_DAYS = 7;
@@ -267,6 +268,8 @@ export function routeById(seed: string, id: string): RouteDef | undefined {
   if (fixed) return fixed;
   const comp = compRoute(seed, id);
   if (comp) return comp;
+  // Phase 44.2: a set you hung, carried in its id.
+  if (id.startsWith('ys-')) return setRoute(id);
   const m = /^(sc|bd|cv|tc)-(\d+)-(\d+)$/.exec(id);
   if (!m) return undefined;
   const set =
@@ -284,11 +287,18 @@ export function routeById(seed: string, id: string): RouteDef | undefined {
 // problem while its week (the board's, its block) lasts; a comp's on its day.
 export function stillUp(day: number, id: string): boolean {
   if (ROUTES[id] || EXPED_ROUTES[id]) return true;
+  // Phase 44.2: a set you hung, till the week it went up in is over.
+  const set = setOf(id);
+  if (set) return weekOf(set.day) === weekOf(day);
   const m = /^(sc|bd|cv|tc)-(\d+)-\d+$/.exec(id);
   if (m) return Number(m[2]) === (m[1] === 'bd' ? blockOf(day) : weekOf(day));
   const c = /^cp-\d+-(\d+)-\d+$/.exec(id);
   return !!c && Number(c[1]) === day;
 }
+
+// Phase 44.2: your set on the panel today, if it's still up.
+export const setUpNow = (s: Pick<GameState, 'setUp' | 'day'>): RouteDef | undefined =>
+  s.setUp && stillUp(s.day, s.setUp.id) ? setRoute(s.setUp.id) : undefined;
 
 // The lines you can walk up to at a place today: at the gym, the week's wall, then the board.
 export function routesAt(seed: string, place: string, day: number): RouteDef[] {
@@ -305,10 +315,14 @@ export function routesAt(seed: string, place: string, day: number): RouteDef[] {
 // Phase 32.3: a crack you bolted in a wild place climbs as the sport line it is now.
 export function wallAt(s: GameState, place: string): RouteDef[] {
   const on = s.comps.on;
-  if (!on || on.day !== s.day || COMP_TIERS[on.tier]?.venue !== place)
-    return routesAt(s.seed, place, s.day).map((r) =>
+  if (!on || on.day !== s.day || COMP_TIERS[on.tier]?.venue !== place) {
+    const lines = routesAt(s.seed, place, s.day).map((r) =>
       (s.boltedCracks ?? []).includes(r.id) ? asSport(r) : r,
     );
+    // Phase 44.2: your set on the panel at the end of the wall, before the board, while it's up.
+    const mine = place === GYM ? setUpNow(s) : undefined;
+    return mine ? [...lines.filter((r) => !r.board), mine, ...lines.filter((r) => r.board)] : lines;
+  }
   const set = compSet(s.seed, on.tier, s.day);
   return place === GYM ? [...set, ...boardSet(s.seed, blockOf(s.day))] : set;
 }

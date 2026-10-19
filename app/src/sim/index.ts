@@ -580,8 +580,10 @@ export {
   boardSet,
   routeById,
   routesAt,
+  setUpNow,
   wallAt,
 } from './content/gym';
+export { setId, setNameIdeas, setNameOf, setOf, setRoute } from './yourset';
 export { TALK, PEOPLE, THINGS, RACE_ROUTE } from './content/people';
 export { DOG_OFFER, DOG_TIER_NAME } from './content/dog';
 export { ACT_I, ACT_I_END, LINE_SCENE, STORY } from './content/story';
