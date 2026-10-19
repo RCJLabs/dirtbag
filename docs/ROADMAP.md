@@ -70,7 +70,7 @@
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 | 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
 | 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27, 28 and 29 (14 Oct 2026), and Phases 33, 34, 30, 31, 32 and 35 (15 Oct 2026). Then Phase 14, closed 16 Oct 2026. |
-| 36–45 Hands on | Added by Evan's call (18 Oct 2026), before Phase 20: ten phases that make the game more its own and easier to play, and deepen it where it's thin. Phases 36, the games at the fire played in full, 37, the session, 38, a ghost of your best go, 39, each crag's classics, 40, "What now?" from Hazel, and 41, the week's forecast and send temps, closed by his call (18 and 19 Oct 2026); Phase 42, belaying, played, is the current milestone; 43 to 45 are queued in the order he took them. |
+| 36–45 Hands on | Added by Evan's call (18 Oct 2026), before Phase 20: ten phases that make the game more its own and easier to play, and deepen it where it's thin. Phases 36, the games at the fire played in full, 37, the session, 38, a ghost of your best go, 39, each crag's classics, 40, "What now?" from Hazel, 41, the week's forecast and send temps, and 42, belaying, played, closed by his call (18 and 19 Oct 2026); Phase 43, your van laid out, is the current milestone; 44 and 45 are queued in the order he took them. |
 
 ## The rebuild track
 
@@ -4338,7 +4338,7 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 **Phase 41 closed by Evan's call (19 Oct 2026).** Both criteria pass. Carried, as listed above: "likely" from 0.75 [proposed]; the week sheet and Tonight no longer show the true sky; you don't need the café to read the forecast; a day's call can flip-flop; no bot reads it. The CURRENT MILESTONE moves to Phase 42. The download is 486.9 KB of 490.
 
-### Phase 42 — Belaying, played   **<<< CURRENT MILESTONE**
+### Phase 42 — Belaying, played
 
 *Small to medium. Planned with Evan's calls (19 Oct 2026). No save change.*
 
@@ -4414,7 +4414,9 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 - **Rico's ask stays a spot.**
 - **The e2e's hand** reads the meter on a timer, so its belay can come out clean or hard; it checks the save either way.
 
-### Phase 43 — Your van, laid out
+**Phase 42 closed by Evan's call (19 Oct 2026).** Both criteria pass. Carried, as listed above: the rope's numbers and the belay's cost [proposed]; on a day already climbed together, a belay's worth is the beta; no bot belays; they don't climb on screen; Rico's ask stays a spot. Also open: the gate's e2e counted font loads the page cut off itself as failed requests, which went red once on #165's CI (a re-run passed); the proposed hardening is on #165. The CURRENT MILESTONE moves to Phase 43. The download is 489.2 KB of 490; Evan's call raises the budget to 500 KB in 43.1.
+
+### Phase 43 — Your van, laid out   **<<< CURRENT MILESTONE**
 
 *Queued (18 Oct 2026). Medium to large [INFERRED]; changes the save.*
 
@@ -5175,3 +5177,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-19 — 41.1: the valley's forecast and send temps, to Evan's calls. The café's radio calls the next five days, right nine times in ten tomorrow and six in ten five days out, and says how sure ("Prime, likely"). The week sheet marks each day's call, Tonight calls tomorrow, and the beta sheet says what the day's sky does to every window. The season harness's target 12: it comes true as often as it says. Both Done-when criteria pass. 0.999.101, no save change.
 - 2026-10-19 — Phase 41 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 42, belaying, played.
 - 2026-10-19 — 42.1: belaying, played, to Evan's calls. "Want a belay?" at the crag, and the crew's belay favour, put a partner's rope in your hands. Keep the slack in the band as they climb and clip, then brake and give for a soft catch. A belay is the day together, never on top of one; a clean belay gets you a beta on your line, and a hard catch gets you their grumble. The season harness's target 13: it can't out-bond a day climbing together. Both Done-when criteria pass. 0.999.102, no save change.
+- 2026-10-19 — Phase 42 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 43, your van laid out.
