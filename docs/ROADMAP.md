@@ -70,7 +70,7 @@
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 | 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
 | 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27, 28 and 29 (14 Oct 2026), and Phases 33, 34, 30, 31, 32 and 35 (15 Oct 2026). Then Phase 14, closed 16 Oct 2026. |
-| 36–45 Hands on | Added by Evan's call (18 Oct 2026), before Phase 20: ten phases that make the game more its own and easier to play, and deepen it where it's thin. Phases 36, the games at the fire played in full, 37, the session, 38, a ghost of your best go, 39, each crag's classics, and 40, "What now?" from Hazel, closed by his call (18 and 19 Oct 2026); Phase 41, the week's forecast and send temps, is the current milestone; 42 to 45 are queued in the order he took them. |
+| 36–45 Hands on | Added by Evan's call (18 Oct 2026), before Phase 20: ten phases that make the game more its own and easier to play, and deepen it where it's thin. Phases 36, the games at the fire played in full, 37, the session, 38, a ghost of your best go, 39, each crag's classics, 40, "What now?" from Hazel, and 41, the week's forecast and send temps, closed by his call (18 and 19 Oct 2026); Phase 42, belaying, played, is the current milestone; 43 to 45 are queued in the order he took them. |
 
 ## The rebuild track
 
@@ -4267,7 +4267,7 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 **Phase 40 closed by Evan's call (19 Oct 2026).** Both criteria pass. Carried, as listed above: the [proposed] numbers; a move only takes you there; no bot reads Hazel; "lit" is the session's; a label reads flat where a place's name has no article ("A shift at Coffee Shop"). The CURRENT MILESTONE moves to Phase 41. The download is 485.7 KB of 490.
 
-### Phase 41 — The week's forecast and send temps   **<<< CURRENT MILESTONE**
+### Phase 41 — The week's forecast and send temps
 
 *Small. Planned with Evan's calls (19 Oct 2026). No save change.*
 
@@ -4336,7 +4336,9 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 - **A day's call can flip-flop.** Each morning's calls are drawn afresh, so watching a day's call over several mornings tells you more than any one call says. The chance a call states is for that call alone.
 - **No bot reads the forecast,** so the harness measures that it's honest, not that it helps.
 
-### Phase 42 — Belaying, played
+**Phase 41 closed by Evan's call (19 Oct 2026).** Both criteria pass. Carried, as listed above: "likely" from 0.75 [proposed]; the week sheet and Tonight no longer show the true sky; you don't need the café to read the forecast; a day's call can flip-flop; no bot reads it. The CURRENT MILESTONE moves to Phase 42. The download is 486.9 KB of 490.
+
+### Phase 42 — Belaying, played   **<<< CURRENT MILESTONE**
 
 *Queued (18 Oct 2026). Small to medium [INFERRED].*
 
@@ -5105,3 +5107,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-18 — Phase 40 planned with Evan's calls: a "What now?" button by the goal chip; needs, then the story, then chances; each move takes you there. 40.1 built: Hazel's card of three moves, every reason from the state; lit through Act I's mornings till asked. No save change. Phase 40's Done-when pass; closing it is Evan's call. 0.999.100.
 - 2026-10-19 — Phase 40 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 41, the week's forecast and send temps.
 - 2026-10-19 — 41.1: the valley's forecast and send temps, to Evan's calls. The café's radio calls the next five days, right nine times in ten tomorrow and six in ten five days out, and says how sure ("Prime, likely"). The week sheet marks each day's call, Tonight calls tomorrow, and the beta sheet says what the day's sky does to every window. The season harness's target 12: it comes true as often as it says. Both Done-when criteria pass. 0.999.101, no save change.
+- 2026-10-19 — Phase 41 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 42, belaying, played.
