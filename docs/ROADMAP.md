@@ -4481,13 +4481,46 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 ### Phase 44 — The setter's wall, hands-on   **<<< CURRENT MILESTONE**
 
-*Queued (18 Oct 2026). Medium to large [INFERRED].*
+*Medium to large. Planned with Evan's calls (19 Oct 2026). Two slices; 44.2 changes the save.*
 
 **Goal.** Setting is setting: holds on a wall.
 
 **Scope.** The setting puzzle (18.1, `content/setting.ts`) becomes placing holds on a drawn panel, with the grade shown live as you go.
 
-**Done when** [proposed]: the e2e sets a problem on the panel; a set's pay still comes from the shift's (the harness's pay rule).
+**Evan's calls (19 Oct 2026):**
+- **The panel:** holds on a grid, and reach counts. The bucket's holds go on a drawn panel, bottom to top. Each hold is a move, as before, and a long reach between two holds makes that move harder. The brief stays: the wall, the grade wanted, the week's crowd. (As recommended.)
+- **The grade:** today's, plus reach, shown live after every hold, with the brief's checks. (As recommended.)
+- **After a set:** it stays up for the week, a climbable problem on the gym's wall until the reset, named by you. (His pick, over the recommended "the pay and the gym's word".)
+
+**From the survey (19 Oct 2026):**
+- **The puzzle today** (18.1, `sim/work.ts`): five moves hung in order from a bucket of 7 to 10 by rank, against a brief seeded by the day (the wall, the grade wanted) and the week (the crowd). It's scored on the grade, the flow, the wall and the crowd, and the score buys up to `PLAY.top` of the shift's pay on top. Bots never play shifts; the business bot's own wall takes the best order.
+- **The gym's problems are made from the seed:** six a week (`sc-<week>-<n>`, V0 to V5), drawn by their slot, not from data. Every problem anywhere is found by `routeById(seed, id)` alone, at 28 call sites. A set you make isn't in the seed, so it can only be climbable if its id carries it.
+
+**Done when** [proposed]: the e2e sets a problem on the panel (44.1) and climbs it on the wall (44.2); a set's pay still comes from the shift's, the bonus never more than `PLAY.top` of it (a test), as the harness's pay rule has it.
+
+**Slices:**
+- **44.1, the panel:** holds on squares, reach, the grade live. No save change.
+- **44.2, the set stays up:** its id carries its holds; it's named as it's hung, and gets its own spot on the gym's wall till the reset, drawn as you set it and climbable. Save v83.
+
+**Status (19 Oct 2026): 44.1 built: the setter's panel.** No save change, 0.999.104.
+- **The panel** (dials `SETTING.panel` [proposed]):
+  - `cols` (5) squares across by `rows` (7) up, about 60 cm a square.
+  - The first hold goes in the bottom `start` (2) rows, reached from the floor. Each after it goes higher, one to a row, so they're climbed in the order of their height.
+  - **Reach:** a move spanning `long` (2.5) squares or more is a big move, a step harder; `huge` (3.5) or more, two (never past a crux, 3); past `most` (4.5), nobody reaches it (`spanOf`, `spanBump`, `setMoves`).
+  - The grade and the checks score the moves as climbed (`scoreSet` with the squares). `setRefused` says what's wrong: off the panel, a start out of reach of the floor, a hold not higher, one too far.
+  - A set without squares climbs straight up the middle, a row at a time, with no move long enough to count. That's as before, so the business bot's own wall and any old play score as they did.
+- **The sheet:**
+  - the panel, the bottom rows shaded;
+  - pick a hold from the bucket, then its square; a hold put on a taken row sends the old one back;
+  - each hold shows its number up the climb and any step its reach adds; lines run up the climb, a big move in the accent; "Take it off";
+  - the checks, the verdict and "Hang it" as before, refused with why.
+- **Tests** (`work.test.ts`, 4 new):
+  - straight up, as before;
+  - the steps, capped, and the grade and the one crux moved by a reach;
+  - the refusals;
+  - a set hung from the panel on a shift, paid the shift and the bonus for the set as climbed, the bonus never more than its share.
+- **The e2e:** day one's setting shift on the panel. Five holds go up from the bottom, the third a long reach (one big move); the grade is live; the pay and the bonus are checked.
+- **The download:** 493.0 KB of 500 (+1.4).
 
 ### Phase 45 — The problem of the day
 
@@ -5233,3 +5266,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-19 — Phase 42 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 43, your van laid out.
 - 2026-10-19 — 43.1: the van, laid out, to Evan's calls. "Lay out the van" opens its floor and roof as grids: the bed, the kitchen, the shelf and the heater on the floor, the solar panel on the roof. Move, turn or take out anything but the bed, which stays in and needs its length; the door stays clear, and nothing sits on anything. Where things go changes no rule. A new van or the Rig starts its own plan, and a save from before loads laid out. Both Done-when criteria pass. Save v82, 0.999.103; the download budget 500 KB, by his call.
 - 2026-10-19 — Phase 43 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 44, the setter's wall, hands-on.
+- 2026-10-19 — Phase 44 planned with Evan's calls: holds on a grid where reach counts, today's grade plus reach shown live, and a set that stays up for the week, a climbable problem you name. 44.1: the setter's panel. The bucket's holds go on squares from the bottom up, and a long reach makes a move harder; the grade and the brief's checks follow every hold. 0.999.104, no save change.

@@ -29,7 +29,12 @@ import {
   rushTips,
   scoreSet,
   setBrief,
+  setMoves,
   setRefused,
+  spanBump,
+  spanOf,
+  straightUp,
+  type Cell,
   type SetBrief,
 } from './work';
 import type { GameState } from './types';
@@ -126,6 +131,116 @@ describe('the setter’s puzzle', () => {
     expect(r.events[0]?.k).toBe('refused');
     const cafe = act(base({ at: 'cafe', shifts: [] }), { t: 'act', act: 'cafe.shift', play: { set: [] } });
     expect(cafe.events[0]).toMatchObject({ k: 'refused' });
+  });
+});
+
+// Phase 44: the setter's panel. The holds go on squares, from the bottom up, and a long reach
+// makes a move harder, which moves the grade and the checks. A set hung straight up climbs as
+// it always did; one off the panel, out of order or out of reach isn't hung; and however it's
+// hung, the shift pays what it pays, with the bonus on top.
+describe('Phase 44: the setter’s panel', () => {
+  const P = SETTING.panel;
+  const b: SetBrief = { wall: 'overhang', crowd: 'team', want: 4, hand: Object.keys(SET_MOVES) };
+  const ids = ['jug', 'undercling', 'slap', 'campus', 'deadpoint'];
+
+  it('climbs a set hung straight up as it always has', () => {
+    expect(straightUp(5).every(([x, y], i) => x === Math.floor(P.cols / 2) && y === i)).toBe(true);
+    expect(scoreSet(b, ids, straightUp(5))).toEqual(scoreSet(b, ids));
+    expect(setRefused(b, ids, straightUp(5))).toBeNull();
+  });
+
+  it('makes a long reach a step harder and a huge one two, never past a crux', () => {
+    expect(spanOf([0, 0], [2, 2])).toBeCloseTo(Math.SQRT2 * 2);
+    expect([1, P.long, P.huge].map(spanBump)).toEqual([0, 1, 2]);
+    // Two across and two up to the slap: a big move, so two moves at the top and no one crux.
+    const long: Cell[] = [
+      [0, 0],
+      [0, 1],
+      [2, 3],
+      [2, 4],
+      [2, 5],
+    ];
+    expect(setMoves(ids, long).map((m) => m.hard)).toEqual([0, 1, 3, 3, 2]);
+    const sc = scoreSet(b, ids, long);
+    expect(sc.grade).toBe(scoreSet(b, ids).grade + 1);
+    expect(sc.crux).toBe(false);
+    // Three across and three up to the undercling: huge, two harder. The campus can't go past 3.
+    const huge: Cell[] = [
+      [0, 0],
+      [3, 3],
+      [3, 4],
+      [1, 5],
+      [1, 6],
+    ];
+    expect(setMoves(ids, huge).map((m) => m.hard)).toEqual([0, 3, 2, 3, 2]);
+    expect(
+      setMoves(
+        ['jug', 'campus'],
+        [
+          [0, 0],
+          [2, 2],
+        ],
+      )[1]!.hard,
+    ).toBe(3);
+  });
+
+  it('refuses a hold off the panel, a start out of reach of the floor, one not higher, one too far, and squares that don’t match', () => {
+    const up = straightUp(5);
+    expect(setRefused(b, ids, up.slice(0, 4))).toMatch(/square on the panel/);
+    expect(setRefused(b, ids, [[P.cols, 0], ...up.slice(1)])).toMatch(/off the panel/);
+    expect(setRefused(b, ids, [...up.slice(0, 4), [2, P.rows]])).toMatch(/off the panel/);
+    expect(
+      setRefused(
+        b,
+        ids,
+        up.map(([x, y]) => [x, y + P.start] as Cell),
+      ),
+    ).toMatch(/from the floor/);
+    expect(setRefused(b, ids, [up[0]!, up[1]!, up[1]!, up[3]!, up[4]!])).toMatch(/higher than the last/);
+    // Four across and three up from the fourth hold: five squares, past the farthest reach.
+    expect(
+      setRefused(b, ids, [
+        [0, 0],
+        [0, 1],
+        [0, 2],
+        [0, 3],
+        [4, 6],
+      ]),
+    ).toMatch(/reaches that far/);
+  });
+
+  it('hangs a set from the panel on a shift: the shift’s pay, and the bonus for the set as climbed', () => {
+    const s = base();
+    const day = setBrief(s);
+    const set = day.hand.slice(0, SETTING.pick);
+    const at: Cell[] = [
+      [0, 0],
+      [1, 1],
+      [3, 3],
+      [3, 4],
+      [2, 6],
+    ];
+    const worked = act(s, { t: 'act', act: 'gym.set' });
+    const played = act(s, { t: 'act', act: 'gym.set', play: { set, at } });
+    const pay = actCost(s, ACTS['gym.set']!).cash!;
+    expect(played.state.cash - worked.state.cash).toBe(playBonus(pay, scoreSet(day, set, at).score));
+    const off = act(s, { t: 'act', act: 'gym.set', play: { set, at: at.slice(0, 4) } });
+    expect(off.events[0]).toMatchObject({ k: 'refused' });
+    // However it's hung, the bonus is never more than its share of the shift's pay.
+    for (let x = 0; x < P.cols; x++)
+      for (let y = 2; y < P.rows - 2; y++) {
+        const cells: Cell[] = [
+          [2, 0],
+          [x, y],
+          [x, y + 1],
+          [2, P.rows - 2],
+          [2, P.rows - 1],
+        ];
+        if (setRefused(day, set, cells)) continue;
+        expect(playBonus(pay, scoreSet(day, set, cells).score)).toBeLessThanOrEqual(
+          Math.round(pay * PLAY.top),
+        );
+      }
   });
 });
 

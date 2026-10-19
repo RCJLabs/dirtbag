@@ -1709,9 +1709,9 @@ export function act(s0: GameState, a: Action): Result {
         [...says].reverse().find(([at]) => score >= at)![1];
       if ('set' in play && job === 'set') {
         const b = setBrief(s);
-        const no = setRefused(b, play.set);
+        const no = setRefused(b, play.set, play.at);
         if (no) return no;
-        const sc = scoreSet(b, play.set);
+        const sc = scoreSet(b, play.set, play.at);
         played = {
           score: sc.score,
           from: PLAY.from,
@@ -2813,9 +2813,9 @@ export function act(s0: GameState, a: Action): Result {
       let q = OWN_GYM.plain;
       if (a.set) {
         const b = setBrief(s);
-        const no = setRefused(b, a.set);
+        const no = setRefused(b, a.set, a.at);
         if (no) return refuse(no);
-        q = scoreSet(b, a.set).score;
+        q = scoreSet(b, a.set, a.at).score;
       }
       spend({ min: GYM_SET.min, energy: -GYM_SET.energy });
       s.gym = { ...g, quality: Math.max(g.quality, q), set: s.day };

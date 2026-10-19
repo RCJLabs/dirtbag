@@ -831,14 +831,27 @@ console.log('A setting shift, and Sage turns up');
 await tapAt(170 * Z, screenY(540));
 await expectText('#sheet', /The desk/, 'desk');
 await click('#sheet .opt', 'Set to the brief');
-// The setter's puzzle (Phase 18.1): five holds from the bucket, hung in order, the set's
-// grade and checks live as they go up; the shift's pay, and the set's bonus on top.
+// The setter's panel (Phase 44, on Phase 18.1's puzzle): five holds from the bucket, each put
+// on its square, from the bottom up; the third a long reach from the second, a big move. The
+// set's grade and checks live as they go up; the shift's pay, and the set's bonus on top.
 await expectText('#sheet-title', /Set problems for a shift/, 'the setter’s brief');
-for (let i = 0; i < 5; i++) {
+const squares = [
+  [1, 1],
+  [2, 2],
+  [4, 4],
+  [4, 5],
+  [3, 7],
+];
+for (const [i, [x, y]] of squares.entries()) {
   await page.locator('#moves .beta').nth(i).click();
-  taps++;
+  await page.locator(`#set-panel .sp-cell[aria-label^="Panel, ${x} across, ${y} up"]`).click();
+  taps += 2;
 }
 await expectText('#set-checks', /V\d+, for V\d+/, 'the set’s grade, live');
+if ((await page.locator('#set-panel .sp-lines line').count()) !== 4)
+  await fail('the panel: not four moves between five holds');
+if ((await page.locator('#set-panel .sp-lines line.big').count()) !== 1)
+  await fail('the panel: the long reach to the third hold isn’t a big move');
 await shot('setter');
 const bonus = Number(/\+\$(\d+) on top/.exec((await text('#play-says')) ?? '')?.[1] ?? 0);
 await click('#play-go', 'Hang it');

@@ -370,6 +370,12 @@ export const SETTING = {
   hand: [7, 8, 9, 10],
   want: { step: 2, spread: 2 },
   weight: { grade: 0.35, flow: 0.3, fit: 0.2, crowd: 0.15 },
+  // Phase 44 [proposed] (Evan's calls, 19 Oct 2026: holds on a grid, and reach counts). The
+  // panel the holds go on, `cols` squares across by `rows` up, about 60 cm a square. The first
+  // hold goes in the bottom `start` rows, where it's reached from the floor, and each after it
+  // goes higher. A move to a hold `long` squares away or more is a big one, a step harder;
+  // `huge` or more, two (never past a crux, 3); past `most`, nobody reaches it.
+  panel: { cols: 5, rows: 7, start: 2, long: 2.5, huge: 3.5, most: 4.5 },
 };
 
 // Phase 22.1: how you live, chosen in the week and paid at the van every night, on top of
