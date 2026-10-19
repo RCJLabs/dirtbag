@@ -70,7 +70,7 @@
 | 17–20 | Unchanged in intent. They target the new build. The order from here: 21, 22, 23, 16, 17, 18, then 14, 15, then 19 and 20. |
 | 25 Finish the game | Added by Evan's call (4 Oct 2026) after Phase 18, and closed by it the same day: every carried feature built, and music made in code. The order from here: 14, 15, 19, 20. |
 | 26–35 Deepen the game | Added by Evan's call (8 Oct 2026): ten phases that tune, deepen and add to the game. Phase 14 waits until he asks for it. The order: 26, 27, 28, 29, 33, 34, 30, 31, 32, 35. Phase 26 closed (13 Oct 2026), Phases 27, 28 and 29 (14 Oct 2026), and Phases 33, 34, 30, 31, 32 and 35 (15 Oct 2026). Then Phase 14, closed 16 Oct 2026. |
-| 36–45 Hands on | Added by Evan's call (18 Oct 2026), before Phase 20: ten phases that make the game more its own and easier to play, and deepen it where it's thin. Phases 36, the games at the fire played in full, 37, the session, 38, a ghost of your best go, 39, each crag's classics, 40, "What now?" from Hazel, 41, the week's forecast and send temps, 42, belaying, played, and 43, your van laid out, closed by his call (18 and 19 Oct 2026); Phase 44, the setter's wall, hands-on, is the current milestone; 45 is queued after it. |
+| 36–45 Hands on | Added by Evan's call (18 Oct 2026), before Phase 20: ten phases that make the game more its own and easier to play, and deepen it where it's thin. Phases 36, the games at the fire played in full, 37, the session, 38, a ghost of your best go, 39, each crag's classics, 40, "What now?" from Hazel, 41, the week's forecast and send temps, 42, belaying, played, 43, your van laid out, and 44, the setter's wall, hands-on, closed by his call (18 and 19 Oct 2026); Phase 45, the problem of the day, the last of the ten, is the current milestone. |
 
 ## The rebuild track
 
@@ -4479,7 +4479,7 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 **Phase 43 closed by Evan's call (19 Oct 2026).** Both criteria pass. Carried, as listed above: the van's size, the door's place and each footprint [proposed]; fit only, so no rule reads the plan; the scene's van is unchanged; no bot lays anything out; the e2e plays the sheet by pointer only. Still open from Phase 42: the gate e2e's hardening against font loads the page cuts off itself (proposed on #165). The CURRENT MILESTONE moves to Phase 44. The download is 491.6 KB of 500.
 
-### Phase 44 — The setter's wall, hands-on   **<<< CURRENT MILESTONE**
+### Phase 44 — The setter's wall, hands-on
 
 *Medium to large. Planned with Evan's calls (19 Oct 2026). Two slices; 44.2 changes the save.*
 
@@ -4558,7 +4558,9 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 - **By controller:** the panel's squares are buttons focus moves over, but the e2e plays it by pointer.
 - **The download is 494.5 KB of 500:** Phase 45 will likely need the budget raised.
 
-### Phase 45 — The problem of the day
+**Phase 44 closed by Evan's call (19 Oct 2026).** Both criteria pass. Carried, as listed above: the panel's size and its reach numbers [proposed]; one set up at a time; an old set's name isn't kept; only you climb your set; the panel by controller isn't in the e2e. Still open from Phase 42: the gate e2e's hardening against font loads the page cuts off itself (proposed on #165). The CURRENT MILESTONE moves to Phase 45. The download is 494.5 KB of 500; Evan's call raises the budget to 510 KB in 45.1.
+
+### Phase 45 — The problem of the day   **<<< CURRENT MILESTONE**
 
 *Queued (18 Oct 2026). Medium [INFERRED].*
 
@@ -5304,3 +5306,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-19 — Phase 43 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 44, the setter's wall, hands-on.
 - 2026-10-19 — Phase 44 planned with Evan's calls: holds on a grid where reach counts, today's grade plus reach shown live, and a set that stays up for the week, a climbable problem you name. 44.1: the setter's panel. The bucket's holds go on squares from the bottom up, and a long reach makes a move harder; the grade and the brief's checks follow every hold. 0.999.104, no save change.
 - 2026-10-19 — 44.2: the set stays up. A set you hang goes up on a panel at the end of Send City's wall under the name you give it, a problem like the gym's own, its holds where you put them, climbable till the week's reset; its id carries it. Both Done-when criteria pass. Save v83, 0.999.105.
+- 2026-10-19 — Phase 44 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 45, the problem of the day.
