@@ -77,7 +77,7 @@ npm run pack --prefix desktop         # a folder for this platform, in desktop/o
 - the desktop and Steam build, the demo and the store kit (14, 15);
 - the gate, Play's unlock and the beta kit (19's code);
 - the ten "Hands on" phases (36–45);
-- What's new (20.1).
+- What's new (20.1), and the crag day at Moonstone (20.3).
 
 Tagging main puts all of it live (Releasing, above), and a player coming back gets What's new once.
 

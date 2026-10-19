@@ -235,6 +235,20 @@ export {
 export { GIFTS, NAMED_FOR } from './content/gifts';
 export { crew, folksDue, holidayBlocked, holidayNote, holidayOn } from './folks';
 export { FOLKS_CALLS, HOLIDAYS, HOLIDAY_SCENES, HOLIDAY_WITH } from './content/folks';
+// Phase 20.3: the crag day at Moonstone.
+export {
+  cardSaid,
+  festivalBlocked,
+  festivalNote,
+  festivalSet,
+  FESTIVAL_WAYS,
+  fireSaid,
+  scrambleCard,
+  scrambling,
+  SCRAMBLE_END,
+  trailLead,
+} from './festival';
+export { FESTIVAL_SAYS } from './content/festival';
 export {
   SKILLS,
   MIX,
@@ -324,6 +338,7 @@ export type { Stream } from './rng';
 export * from './format';
 export {
   DAILY,
+  FESTIVAL,
   DAY,
   MONEY,
   BODY,

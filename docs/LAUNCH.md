@@ -5,7 +5,7 @@ The game's code is ready to launch. What's left is yours: the accounts, the stor
 ## Where things stand (19 Oct 2026)
 
 - **The live site is v0.999.33,** your last tag (4 Oct 2026): the game through Phase 25, music in code.
-- **main is 0.999.108:** Phases 26 to 45, 14, 15 and 19's code, and What's new (20.1). Tagging it puts all of that live. A player coming back gets the What's new card once, with what's come since.
+- **main is 0.999.109:** Phases 26 to 45, 14, 15 and 19's code, What's new (20.1) and the crag day at Moonstone (20.3). Tagging it puts all of that live. A player coming back gets the What's new card once, with what's come since.
 - **The gate is off** (`DIRTBAG_GATE` in `deploy.yml`): everyone has the whole game until you turn it on.
 - **Steam:** `desktop/steam.json` holds 480, Valve's test app. Nothing has run with Steam itself yet.
 - **Play:** the app is the site (TWA). The unlock's product, `full_game`, isn't made yet.
@@ -14,7 +14,7 @@ The game's code is ready to launch. What's left is yours: the accounts, the stor
 ## 1. Before the beta
 
 1. **Tag main** (README → Releasing):
-   - `git fetch origin main && git tag v0.999.108 origin/main && git push origin v0.999.108`, or a later version if main has moved.
+   - `git fetch origin main && git tag v0.999.109 origin/main && git push origin v0.999.109`, or a later version if main has moved.
    - For Play, then run **Build TWA** and upload it, with the newest note in `app/src/game/news.json` as its "What's new".
 2. **Steam** (`desktop/STEAM.md`):
    - the full game's app and the demo's, both IDs in `desktop/steam.json`;
@@ -70,7 +70,7 @@ The game's code is ready to launch. What's left is yours: the accounts, the stor
 
 - **The rhythm:**
   - a patch at 30 days and a free content update at 90;
-  - seasonal events that need no server. 20.3, the festival, is the first.
+  - seasonal events that need no server. The crag day at Moonstone (20.3) is the first.
 - **Each release's note** goes first in `app/src/game/news.json`. Players back after the update read it once, and Play takes it as it is.
 - **The Unreal decision at 90 days** (Phase 20) reads wishlist conversion, sales, review score and what players say. All of that comes from the stores: the game sends nothing, so there's no telemetry to read.
 - **Catalogues:** Play Pass, and Apple Arcade if invited. iOS isn't built; Phase 19 left it to 20.

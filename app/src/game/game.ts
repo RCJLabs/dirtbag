@@ -51,6 +51,7 @@ import {
   type Attempt,
   type AttemptEvent,
   type FallRun,
+  type FestivalWay,
   type GameEvent,
   type GameState,
   type GoStyle,
@@ -184,6 +185,9 @@ export type SheetId =
   | { k: 'act'; n: number }
   // Phase 17.6: a holiday's night, and who was there.
   | { k: 'holiday'; id: string; who: string[] }
+  // Phase 20.3: the crag day's fire: how you spent the day, your place of how many in the
+  // scramble (0 if you weren't in it), and who was there.
+  | { k: 'festival'; way: FestivalWay; place: number; of: number; who: string[] }
   // Phase 16.3: The Line, in place of the last act's card: the naming, who was there, the
   // credits, what now.
   | { k: 'line'; step: number }
@@ -546,6 +550,8 @@ export class Game {
         this.cards.push(!DEMO && e.n === STORY.length ? { k: 'line', step: 0 } : { k: 'act', n: e.n });
       else if (e.k === 'home') this.cards.push({ k: 'home' });
       else if (e.k === 'holiday') this.cards.push({ k: 'holiday', id: e.id, who: e.who });
+      else if (e.k === 'festival')
+        this.cards.push({ k: 'festival', way: e.way, place: e.place, of: e.of, who: e.who });
       else if (e.k === 'record') {
         this.cards.push({ k: 'record', ids: e.ids });
         this.achieve(e.ids);
@@ -826,7 +832,20 @@ export class Game {
     this.maybeCard();
   }
 
+  // Phase 20.3: a night's cards wait for the morning's scene: shown as the night was
+  // dispatched, the first was cleared a moment later by waking at the Lot, and lost.
+  private asleep = false;
+  private waking<T>(night: () => T): T {
+    this.asleep = true;
+    try {
+      return night();
+    } finally {
+      this.asleep = false;
+    }
+  }
+
   private maybeCard(): void {
+    if (this.asleep) return;
     const u = this.ui.get();
     const next = this.cards[0];
     if (!next || u.sheet || u.talk || u.climbing || u.driving) return;
@@ -1028,7 +1047,7 @@ export class Game {
     if (id === SLEEP) {
       this.closeSheet();
       this.fadeTo(() => {
-        const ev = this.dispatch({ t: 'act', act: id });
+        const ev = this.waking(() => this.dispatch({ t: 'act', act: id }));
         if (ev.some((e) => e.k === 'refused')) return;
         // A knock (Phase 22.6a): the night waits on your answer.
         if (this.state.encounter?.kind === 'knock') {
@@ -1139,6 +1158,11 @@ export class Game {
 
   tourists(): void {
     this.dispatch({ t: 'tourists' });
+  }
+
+  // Phase 20.3: the crag day's scorecard, handed in early.
+  scramble(): void {
+    this.dispatch({ t: 'scramble' });
   }
 
   // Phase 34.2: a physio or a coach taken on, or let go.
@@ -1317,7 +1341,7 @@ export class Game {
       return;
     }
     this.fadeTo(() => {
-      const ev = this.dispatch({ t: 'answer', opt });
+      const ev = this.waking(() => this.dispatch({ t: 'answer', opt }));
       if (ev.some((e) => e.k === 'refused')) return;
       this.set({ sheet: null });
       this.dayDone();

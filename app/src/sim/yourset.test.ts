@@ -178,6 +178,6 @@ describe('Phase 44.2: up on the panel till the reset', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.from).toBe(82);
-    expect(r.state).toEqual({ ...JSON.parse(V82).state, setUp: null });
+    expect(r.state).toEqual({ ...JSON.parse(V82).state, setUp: null, festival: null });
   });
 });

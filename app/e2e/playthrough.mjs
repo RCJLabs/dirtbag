@@ -914,7 +914,9 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag
 const st = saved?.state;
 const pump = st?.routes?.pump;
 if (
-  saved?.v !== 83 ||
+  saved?.v !== 84 ||
+  // Phase 20.3: no crag day yet, two days in.
+  st.festival !== null ||
   // Phase 44.2: the day's set, up on the panel under its name.
   st.setUp?.name !== 'First Light' ||
   !st.setUp.id.startsWith(`ys-${st.day}-`) ||
@@ -2321,6 +2323,139 @@ console.log('Nationals: a qualifier and a final');
     await fail(`nationals: a podium and no team: ${said.join(' | ')}`);
   log(`nationals: place ${result.place} of ${result.of}: ${said.join(' | ')}`);
   await shot('nationals-final');
+  await page.close();
+  page = main;
+}
+
+console.log('The crag day at Moonstone');
+// Phase 20.3. This seed's crag day in its second winter falls on the day it's set for, day 81
+// (its first was put off for rain to day 27). A V9 climber with the trip paid for comes in
+// before the scramble: the card and its three ways, nothing else till one's taken, signed up;
+// at one the Tall Arête sent on the scorecard, handed in at the van; that night back at the
+// Lot, the fire's card, and the people there.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  const v9 = 8 * 9 + 2.4 * 81;
+  const close = (who) => ({ ...(saved.state.people[who] ?? { last: 0, talked: true }), bond: 3 });
+  saved.state = {
+    ...saved.state,
+    day: 81,
+    min: 9 * 60 + 30,
+    at: 'moon',
+    x: null,
+    energy: 100,
+    skin: 100,
+    fed: 100,
+    cash: 300,
+    today: ['warm', 'crag'],
+    load: { acute: 10, chronic: 200, today: 0 },
+    injury: null,
+    climber: {
+      ...saved.state.climber,
+      skills: { power: v9, fingers: v9, endurance: v9, technique: v9, head: v9 },
+    },
+    unlocked: [...new Set([...saved.state.unlocked, 'moon'])],
+    people: { ...saved.state.people, hazel: close('hazel'), rico: close('rico') },
+    encounter: { kind: 'festival', id: '81' },
+    festival: null,
+    table: null,
+  };
+  const main = page;
+  page = await playPage({ width: 390, height: 844 }, 2, 'crag day: ');
+  await page.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+  }, JSON.stringify(saved));
+  const state = () => page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  // A thing at the crag by its label, walked to till it's on screen, past the cards a send
+  // can turn up (this climber's first V6 outside ends Act I).
+  const open = async (label) => {
+    const hot = page.locator(`button.hot[aria-label^="${label}"]`);
+    const on = page.locator('#sheet .opt', { hasText: 'Keep climbing' });
+    walk: for (const [k, most] of [
+      ['ArrowRight', 20],
+      ['ArrowLeft', 40],
+    ])
+      for (let i = 0; i < most; i++) {
+        await bookCards();
+        if (await on.count()) await on.first().click();
+        if (await hot.count()) break walk;
+        await page.keyboard.down(k);
+        await wait(200);
+        await page.keyboard.up(k);
+        await wait(150);
+      }
+    if (!(await hot.count())) await fail(`crag day: never found ${label}`);
+    await hot.first().evaluate((el) => el.click());
+    taps++;
+  };
+  await page.goto(server.url, { waitUntil: 'networkidle' });
+  await expectText('#sheet', /The Moonstone crag day/, 'the crag day’s card');
+  const card = await text('#sheet');
+  for (const want of [
+    /The old guard have been out since first light/,
+    /scramble at 1 PM/,
+    /Grab a rake.*2 h/,
+    /The old guard warms to you/,
+    /Sign up for the scramble.*\$15/,
+    /From 1 PM to 4 PM.*\$60 for second, \$30 for third/,
+    /Just climb.*packed all day/,
+  ])
+    if (!want.test(card)) await fail(`crag day: the card says ${card}`);
+  if (await page.$('#sheet .x')) await fail('crag day: its card can be closed without an answer');
+  await shot('crag-day');
+  await click('#sheet .opt', 'Sign up for the scramble');
+  const signed = await until('signed up', async () => {
+    const st = await state();
+    return st.festival?.way === 'scramble' ? st : null;
+  });
+  if (signed.cash !== 285 || signed.encounter)
+    await fail(`crag day: signed up: ${JSON.stringify(signed.festival)}`);
+  // One o'clock, the scramble on.
+  await page.waitForLoadState('networkidle');
+  await reloadWith(page, (f) => ({ ...f, state: { ...f.state, min: 13 * 60, x: null } }));
+  await until('Moonstone', async () => (await text('#b-nav')) === 'Map');
+  await wait(600);
+  await open('Tall Arête,');
+  await expectText('#sheet', /Tall Arête · V6/, 'the arête');
+  await sendIt('Tall Arête');
+  const off = page.locator('#sheet .opt', { hasText: /^Walk/ });
+  if (await off.count()) await off.first().click();
+  else await click('#sheet .opt');
+  await until('the crag again', async () => (await text('#b-nav')) === 'Map');
+  await wait(500);
+  await open('Your van');
+  await expectText(
+    '#sheet',
+    /Hand in your scorecard.*So far: 1 problem in \d+ goe?s?\. It closes at 4 PM\./,
+    'the scorecard',
+  );
+  await shot('crag-day-card');
+  await click('#sheet .opt', 'Hand in your scorecard');
+  const done = await until('handed in', async () => {
+    const st = await state();
+    return st.festival?.place ? st : null;
+  });
+  const said = done.log.slice(-4).map((l) => l.text);
+  if (!said.some((l) => /^The scramble: 1 problem in \d+ goe?s?, \d+(st|nd|rd|th) of \d+\./.test(l)))
+    await fail(`crag day: the scramble's line: ${said.join(' | ')}`);
+  log(`crag day: ${said.find((l) => l.startsWith('The scramble'))}`);
+  // That night, back at the Lot: bed, and the fire's card in the morning.
+  await page.waitForLoadState('networkidle');
+  await reloadWith(page, (f) => ({ ...f, state: { ...f.state, at: 'lot', min: 19 * 60, x: null } }));
+  await page.waitForFunction(() =>
+    /Tap anywhere to walk/.test(document.querySelector('#hint')?.textContent ?? ''),
+  );
+  await page.mouse.click(100, 560);
+  await expectText('#sheet', /Your van/, 'the van at the Lot');
+  await click('#sheet .opt', 'Sleep');
+  await expectText('#sheet', /The Moonstone crag day/, 'the fire’s card');
+  const fire = await text('#sheet');
+  if (!/everybody at the fire has a scorecard/.test(fire) || !/Hazel/.test(fire) || !/Rico/.test(fire))
+    await fail(`crag day: the fire says ${fire}`);
+  log(`crag day: ${fire.slice(0, 140)}`);
+  await shot('crag-day-fire');
+  await click('#sheet .opt', 'Morning');
+  await until('the morning after', async () => /^Day 82 · /.test((await text('#h-time')) ?? ''));
   await page.close();
   page = main;
 }

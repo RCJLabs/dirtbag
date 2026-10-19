@@ -46,6 +46,9 @@ import {
   clockShort,
   conditions,
   callOn,
+  FESTIVAL,
+  FESTIVAL_SAYS,
+  festivalSet,
   cellsOf,
   fixed,
   floorLen,
@@ -3009,6 +3012,8 @@ function WeekBody({ game, s }: { game: Game; s: GameState }) {
           const away = s.unlocked
             .filter((id) => PLACES[id]?.ownSky)
             .map((id) => `${PLACES[id]!.name}: ${callSaid(callOn(s.seed, s.day, d, id)).toLowerCase()}.`);
+          // Phase 20.3: the crag day, on the day it's set for, once you've a trip there paid for.
+          if (festivalSet(d) && s.unlocked.includes(FESTIVAL.at)) away.push(FESTIVAL_SAYS.week);
           return (
             <li key={i} data-sky={c.sky}>
               <b>{i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : dayName(d)}</b>

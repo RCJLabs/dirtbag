@@ -55,6 +55,7 @@ describe('a save from before the stand and the film', () => {
       seshFirsts: 0,
       vanPlan: expect.any(Object),
       setUp: null,
+      festival: null,
       ...old,
       media: { ...old.media, film: null },
       hollow: { clues: [], tries: 0 },

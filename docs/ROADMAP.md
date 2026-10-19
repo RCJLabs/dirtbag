@@ -5134,6 +5134,28 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - **When and where:** winter, at Moonstone, around day 25 of the year (winter has only Longest Night, on day 21). Full game only: Moonstone is past the demo.
 - **What it gives:** standing with the old guard for the trail work; a prize for the scramble's podium, gear or cash under a week of shifts as every prize is; bond at the fire with whoever's there. All from dials.
 
+**Status (19 Oct 2026): 20.3 built: the crag day at Moonstone.** Save v84, 0.999.109. Full game only.
+- **When:** day 25 of the year, in winter after Longest Night. If it rains at Moonstone that day, it's the first dry day after, three days on at most; rained out all four, there's none that winter. Moonstone's own sky decides, so a seed has one crag day for everyone (`FESTIVAL`, `sim/festival.ts`).
+  - **Said:** that morning wherever you wake (to someone not yet at V6 or without the trip paid, as one they'll get to); a rained-off morning to someone who could go; on the week sheet on day 25 once the trip's paid, without saying if it's dry.
+  - **Moonstone's packed all day:** its queues, the beta for the asking, sessions.
+- **The card:** coming in before 1 PM, three ways in, nothing else till one's taken; after one, no card and the day's yours to climb.
+  - **Grab a rake** (never needs anything): 2 h, −15 energy, −6 food, the old guard +6 (a stance moves it 8 to 18). Ray leads it while he's still coming out, then Frank while his truck runs.
+  - **Sign up for the scramble,** $15 (the dyno comp's fee).
+  - **Just climb.**
+- **The scramble,** 1 PM to 4 PM: each of Moonstone's boulders counts once, the most sent winning and the fewest goes on them settling a tie, as at any comp.
+  - A go counts if it's stepped up to in the time; its top counts however late it lands (the card remembers the go in hand).
+  - The card's handed in at four, on leaving once it's started, at night, or early from the van.
+  - **The field:** 14 for the day from the comps' pool, V5 to V11, rolled as a comp field is (`rollTops`), and Dex once you've met him and he's fit.
+  - **The podium:** new shoes for first ($140, or their price if yours are new); $60 second, $30 third. A test holds each to five of the café's shifts ($140). The ladder's purses aren't held to that (the dyno comp pays $300), so "as every prize is" was loose.
+- **That night,** back at the Lot if you were out there: the fire. Your people around and the old guard you know: +1 bond each, +8 psyche, and a card in the morning with the day's line and one from each. Nobody knocks at the van that night.
+- **A fix it turned up:** the first card of a morning was shown as the night went through, then cleared by waking at the Lot, and lost. The night's cards now wait for the morning.
+- **The bots:** they answer the card with the first way, so nothing stalls. In 8 career bots over about eight winters each, they heard of 47 crag days and came to one, late (no refusals): they don't route to it, so balance doesn't move, and no bot's played the scramble.
+- **Not built:** nothing in the scene beyond the packed crowd (no banners or table); no Record Book entry; no harness for it.
+- **What's new:** the newest note, never tagged as 0.999.108, is now 0.999.109 with the crag day in it, 497 of 500.
+- **Tests:** `festival.test.ts` (13); the old-save tests take the field; fixture `save-v83.json` (day 202), made by main's code.
+- **The e2e:** a section on this seed's day 81: the card, signed up, the Tall Arête on the card at one, handed in at the van, the fire's card the next morning.
+- **The download:** 502.0 KB of 510 (+3.9).
+
 **Goal.** Ship 1.0 on Steam, Play and web (+ iOS and itch), keep a post-launch rhythm a solo developer can sustain, and make the Unreal decision with real data.
 
 **Why.** Launch is a beginning. A sim like this sells on its updates. The Unreal project's budget should follow evidence, not hope.
@@ -5436,3 +5458,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-19 — Phase 45 closed by Evan's call, the last of the ten: both criteria pass, and the day's card stays without a link. CURRENT MILESTONE moved to Phase 20, launch, live updates and the Unreal decision.
 - 2026-10-19 — Phase 20 planned with Evan's calls: the code side before launch is What's new, a launch checklist and a seasonal event with no server; 1.0 waits for his word. 20.1 built: What's new, from one notes file that Play takes too. 0.999.108.
 - 2026-10-19 — 20.2 built: the launch checklist (`docs/LAUNCH.md`), and README's status brought up to date. Evan's calls for 20.3: a crag day at Moonstone in winter, trail work and a scramble, standing, a prize and the night.
+- 2026-10-19 — 20.3 built: the crag day at Moonstone. Each winter, trail work with the old guard, a scramble on the boulders, or the crag packed to climb; the fire that night. A morning's first card is no longer lost on waking. Save v84, 0.999.109.
