@@ -70,7 +70,18 @@ npm run pack --prefix desktop         # a folder for this platform, in desktop/o
 
 ## Status
 
-The live site is 0.961.0, released 29 Sep 2026: the rebuilt game's first season, Act I, from gym plastic to your first V5 project (0.960.0, R3), plus Phase 10 (Send City's board, conditions you can see, Moonstone Boulders) and Phase 11 (the valley's roads, place cards, the daily plan). A v0.956 player who opens the new game is told v0.956 has retired, can keep their career as a file, and can carry on under their old name. Phase 21 (the climber: gear, trad, training, the crags past Act I, walls, expeditions, the speed wall, Free Solo) is built and closed, as 0.962.x and 0.963.0; the release tags are Evan's. The current milestone is Phase 22, the life: the van, the body, food, the hustle and the games ([`docs/ROADMAP.md`](docs/ROADMAP.md)).
+**Live:** the site is 0.999.33, the last release tagged (4 Oct 2026): the game through Phase 25, the whole valley and its five acts, with music made in code.
+
+**On main, not yet released:**
+- the deepening run (Phases 26–35);
+- the desktop and Steam build, the demo and the store kit (14, 15);
+- the gate, Play's unlock and the beta kit (19's code);
+- the ten "Hands on" phases (36–45);
+- What's new (20.1).
+
+Tagging main puts all of it live (Releasing, above), and a player coming back gets What's new once.
+
+**Now:** Phase 20, launch, live updates and the Unreal decision. Most of it is yours: the stores, the testers, the day. [`docs/LAUNCH.md`](docs/LAUNCH.md) has it in order, with what launch leaves open. The roadmap is [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Credits
 
