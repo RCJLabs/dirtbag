@@ -264,6 +264,17 @@ export {
 export type { Sky, Season, Conditions } from './weather';
 export { accuracy, callOn, forecastFrom } from './forecast';
 export type { Call, Sure } from './forecast';
+export {
+  belayBlocked,
+  belayLine,
+  cleanBelay,
+  playRope,
+  ropeInput,
+  ropeResult,
+  startRope,
+  stepRope,
+} from './belay';
+export type { Rope } from './belay';
 export { whereIs, whereNow, around, tierOf, PARTNERS, staysAt, knows, DAY_END } from './presence';
 export type { Stay } from './presence';
 export { gradeOfPerson, dexHurt } from './curves';
@@ -357,6 +368,7 @@ export {
   CLASSICS,
   WHATNOW,
   FORECAST,
+  BELAY,
 } from './dials';
 export type { Plan } from './dials';
 export { weeklyBills, clinicBill, carePrice, jabbed, premiumOf } from './clinic';

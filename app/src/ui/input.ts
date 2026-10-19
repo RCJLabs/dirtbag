@@ -8,6 +8,11 @@ import type { PadEvent } from './pad';
 // a sheet that has a close button, then the map, back to where you are.
 export function back(game: Game): void {
   const u = game.ui.get();
+  // Phase 42: nobody lets go of a rope mid-climb; once they're down, back unties.
+  if (u.belay) {
+    game.belayDone();
+    return;
+  }
   const x = document.querySelector<HTMLButtonElement>('#sheet .x');
   if (u.talk) game.hush();
   else if (x) x.click();
@@ -37,7 +42,7 @@ export function hub(game: Game, h: Hub): void {
 // beta sheet, as a tap on it does.
 export function act(game: Game): void {
   const u = game.ui.get();
-  if (u.busk || u.speed) return;
+  if (u.busk || u.speed || u.belay) return;
   if (u.view === 'scene' && !u.talk && !u.sheet) game.useNearest();
   else if (u.view === 'wall' && !u.climbing && !u.sheet) game.tap(0, 0);
 }
@@ -58,6 +63,11 @@ export function onPad(game: Game, e: PadEvent): void {
     if (e.k !== 'down') return;
     if (e.b === 'lb' || e.b === 'left') game.speedGrab(0);
     else if (e.b === 'rb' || e.b === 'right') game.speedGrab(1);
+    return;
+  }
+  // Phase 42: on belay, A and the right trigger are your hand on the rope.
+  if (u.belay && u.belay.rope.phase !== 'caught') {
+    if (hold) game.belayPress(e.k === 'down');
     return;
   }
   if (u.busk && u.busk.phase === 'play') {

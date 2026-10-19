@@ -52,6 +52,8 @@ import {
   FAVOUR_YES,
 } from './content/favours';
 import { favourAsk, riding } from './favours';
+import { belayBlocked, belayLine, cleanBelay } from './belay';
+import { BELAY_ANY, BELAY_SAYS } from './content/belay';
 import { TEAM_FUNDED, TEAM_NOTHING, TEAM_SUMMIT, TEAM_TURNED } from './content/team';
 import { fasIn, guideBlocked, guidesOut, royalties, royaltyOf } from './guides';
 import { bolted, boltBlocked, gymBuyBlocked, gymNight, UPGRADES, wallWord, type Upgrade } from './business';
@@ -291,6 +293,7 @@ import {
   RIVAL,
   ROCK,
   SCARS,
+  BELAY,
   BUSK,
   COOK,
   EVENTS,
@@ -3389,6 +3392,9 @@ export function act(s0: GameState, a: Action): Result {
         const name = PEOPLE[talk.who]?.name ?? talk.who;
         if (fx.favour === 'yes' && kind) {
           if (kind === 'belay') spend({ min: FAVOUR.belay.min, energy: -FAVOUR.belay.energy });
+          // Phase 42: their rope in your hands, unless what they climb is a boulder: then it's a spot.
+          if (kind === 'belay' && !PEOPLE[talk.who]?.boulders)
+            events.push({ k: 'belay', who: talk.who, favour: true });
           if (kind === 'ride') spend({ min: FAVOUR.ride.min, cash: -FAVOUR.ride.cash });
           if (kind === 'loan') {
             spend({ cash: -FAVOUR.loan });
@@ -3410,6 +3416,8 @@ export function act(s0: GameState, a: Action): Result {
         if (!s.seen.includes('crew-name')) s.seen.push('crew-name');
         if (fx.crewName === 'name') events.push({ k: 'crewName' });
       }
+      // Phase 42: you'll hold their rope; the game puts it in your hands.
+      if (fx.belay && !belayBlocked(s, talk.who)) events.push({ k: 'belay', who: talk.who });
       if (fx.line) {
         const said = fill(fx.line, { away: fx.away ?? 0 });
         line(fx.train ? `${said} ${skillsNote(fx.train)}.` : said);
@@ -4129,6 +4137,31 @@ export function act(s0: GameState, a: Action): Result {
     }
 
     // Phase 22.5b: a set outside the café, and how clean it was (0 to 1).
+    // Phase 42: a belay held to the catch. At the crag it costs its time, once a day each; as
+    // their favour, the yes paid for it. Either way it's the day together, never on top of one,
+    // and a clean belay gets you a beta on your line from them.
+    case 'belay': {
+      const asked = s.today.includes(`favour-yes-${a.who}`) && !s.today.includes(`belayed-${a.who}`);
+      const why = a.favour ? (asked ? null : 'Nobody asked you for a belay') : belayBlocked(s, a.who);
+      if (why) return refuse(`${why}.`);
+      const res = a.result;
+      if (!res || !(res.band >= 0 && res.band <= 1) || typeof res.soft !== 'boolean')
+        return refuse('Not a belay.');
+      if (!a.favour) spend({ min: BELAY.min, energy: -BELAY.energy });
+      s.today.push(`belayed-${a.who}`);
+      climbedWith(a.who);
+      const says = BELAY_SAYS[a.who] ?? BELAY_ANY;
+      const name = PEOPLE[a.who]?.name ?? a.who;
+      const r = belayLine(s, s.at);
+      const b = r && cleanBelay(res) ? sprayable(s, r)[0] : undefined;
+      if (!cleanBelay(res)) line(fill(says.hard, { name }));
+      else if (r && b) {
+        learn(r.id, b, 'told', '');
+        line(fill(says.clean, { name, line: lineName(s, r), beta: r.beta[b]!.name }));
+      } else line(fill(says.none, { name, line: r ? lineName(s, r) : 'it' }));
+      break;
+    }
+
     case 'busk': {
       const why = buskBlocked(s);
       if (why) return refuse(`${why}.`);

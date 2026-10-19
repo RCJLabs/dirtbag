@@ -2736,6 +2736,129 @@ console.log('A session at Roadside');
   page = main;
 }
 
+console.log('A belay at Roadside');
+// Phase 42 (Phase 42's criterion 1). Day 39's open morning at Roadside, Hazel there and the Pump
+// the line you've worked most: "Want a belay?" from her talk puts her rope in your hands. The
+// hand reads the meter as a player's eye would: take in when the slack runs high, let it run
+// when it's low or she's clipping, and when she falls, brake, then give as it comes tight. In
+// the save: its half hour, the day together, and on a clean belay a beta on the Pump.
+{
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')));
+  saved.state = {
+    ...saved.state,
+    day: 39,
+    min: 10 * 60,
+    at: 'road',
+    x: null,
+    energy: 100,
+    skin: 100,
+    fed: 100,
+    today: ['crag'],
+    injury: null,
+    routes: {
+      ...saved.state.routes,
+      pump: {
+        known: [],
+        told: [],
+        pick: {},
+        falls: {},
+        goes: 9,
+        goesToday: 0,
+        hi: 6,
+        sent: null,
+        sentToday: false,
+      },
+    },
+    people: {
+      ...saved.state.people,
+      // Her favour answered this window, so it's the crag's offer she makes, not her ask.
+      hazel: {
+        since: 1,
+        ...saved.state.people.hazel,
+        bond: 3,
+        last: 0,
+        talked: true,
+        arc: 9,
+        beatDay: 1,
+        favour: 39,
+      },
+    },
+    encounter: null,
+    table: null,
+    cards: null,
+    sesh: null,
+  };
+  const main = page;
+  page = await playPage({ width: 390, height: 844 }, 2, 'belay: ');
+  await page.addInitScript((s) => {
+    if (localStorage.getItem('dirtbag.save') === null) localStorage.setItem('dirtbag.save', s);
+  }, JSON.stringify(saved));
+  const state = () => page.evaluate(() => JSON.parse(localStorage.getItem('dirtbag.save')).state);
+  await page.goto(server.url, { waitUntil: 'load' });
+  await until('Roadside', async () => (await text('#b-nav')) === 'Map');
+  await wait(600);
+  // Hazel, wherever she's standing at the base: walked to till she's on screen.
+  const hazel = page.locator('button.hot[aria-label="Hazel"]');
+  walk: for (const [k, most] of [
+    ['ArrowRight', 30],
+    ['ArrowLeft', 60],
+  ])
+    for (let i = 0; i < most; i++) {
+      if (await hazel.count()) break walk;
+      await page.keyboard.down(k);
+      await wait(200);
+      await page.keyboard.up(k);
+      await wait(150);
+    }
+  if (!(await hazel.count())) await fail('belay: never found Hazel at Roadside');
+  await hazel.first().evaluate((el) => el.click());
+  await expectText('#bubble', /Want a belay\?/, 'Hazel, with the rope');
+  const before = await state();
+  await click('#bubble button', 'Want a belay?');
+  await until('the rope', () => page.locator('#belay').count());
+  await shot('belay');
+  // The hand, on Space: read the meter every 40 ms and act on what it shows.
+  let held = false;
+  const hand = async (on) => {
+    if (on === held) return;
+    held = on;
+    await (on ? page.keyboard.down(' ') : page.keyboard.up(' '));
+  };
+  for (let i = 0; i < 1500; i++) {
+    const r = await page.evaluate(() => {
+      const el = document.getElementById('rope');
+      return el ? { phase: el.dataset.phase, slack: Number(el.dataset.slack) } : null;
+    });
+    if (!r || r.phase === 'caught') break;
+    if (r.phase === 'fall') await hand(r.slack > 0.12);
+    else if (r.phase === 'clip') await hand(false);
+    else await hand(r.slack > 0.55 ? true : r.slack < 0.45 ? false : held);
+    await wait(40);
+  }
+  await hand(false);
+  await until('the catch', () => page.locator('#belay-done').count(), 30_000);
+  const said = (await text('#belay-status')) ?? '';
+  const after = await state();
+  const clean = /Soft as you like/.test(said);
+  if (!clean && !/That one I felt/.test(said)) await fail(`belay: Hazel said "${said}"`);
+  if (after.min !== before.min + 30 || !after.today.includes('belayed-hazel'))
+    await fail(`belay: not in the save: ${JSON.stringify({ min: after.min, today: after.today })}`);
+  if (after.people.hazel.bond !== before.people.hazel.bond + 1 || after.people.hazel.last !== 39)
+    await fail(`belay: no day together: ${JSON.stringify(after.people.hazel)}`);
+  if (after.routes.pump.known.length !== (clean ? 1 : 0))
+    await fail(
+      `belay: ${clean ? 'clean' : 'hard'}, and the Pump's beta is ${JSON.stringify(after.routes.pump.known)}`,
+    );
+  await shot('belay-caught');
+  await click('#belay-done');
+  await until('untied', async () => !(await page.locator('#belay').count()));
+  log(
+    `belay: ${clean ? 'a soft catch and a clean belay, and Hazel told a beta on the Pump' : 'a hard catch'}: ${said}`,
+  );
+  await page.close();
+  page = main;
+}
+
 console.log('An expedition');
 // Phase 24.1. A V9 climber with Hazel close and $3,000 at the van in the morning: the
 // expeditions, El Capitan's odds with Hazel, and away. Each day up there: wait out a storm, or

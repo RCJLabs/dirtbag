@@ -4340,13 +4340,79 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
 
 ### Phase 42 — Belaying, played   **<<< CURRENT MILESTONE**
 
-*Queued (18 Oct 2026). Small to medium [INFERRED].*
+*Small to medium. Planned with Evan's calls (19 Oct 2026). No save change.*
 
 **Goal.** Holding someone's rope is something you do, not a line of text.
 
 **Scope.** A short timing game: pay out, take in, catch softly. It builds trust and better beta from whoever you held.
 
+**Evan's calls (19 Oct 2026), all as recommended:**
+- **When:** at the crag, "Belay them" with any partner who'd belay you, once a day each; and when one of the crew asks a belay as a favour (Phase 28.3), that's the game too.
+- **The game:** keep the slack right. A rope meter: as they climb and clip the slack drifts; hold to take in, let go to pay out, and keep it in the band. Once a go they fall: brake, and give a little as the rope comes tight for a soft catch.
+- **What it gives:** a clean belay counts as the day together, the same one bond, never on top of it, so it can't out-bond climbing together. They tell you a beta on the line you've worked most there. A hard catch gets no beta, and they say so.
+
+**From the survey (19 Oct 2026):**
+- **Belaying was a precondition and a line:** a partner at the crag lets you tie in (`belayer`), and a go with anyone you know there makes it a day together, one bond once a day (`climbedWith`).
+- **The crew's belay favour** costs an hour and some energy on a yes, and nothing is played. Rico's "belay" is a spot: he boulders.
+- **The minigames to borrow from:** the beat panel's outcome reaches the sim as one action (`busk`'s accuracy), and the climb's hold is a fixed-step model stepped by the frame loop (`stepAttempt`).
+- **Beta from people:** `sprayable` lists the moves you don't know on a line, in order.
+
 **Done when** [proposed]: the e2e plays it; it can't out-bond a day climbing together (the harness).
+
+**One slice, 42.1:** the rope, the panel, the talk option and the favour, the tests, the harness's measure and the e2e.
+
+**Status (19 Oct 2026): 42.1 built: belaying, played.** No save change, 0.999.102.
+- **The rope** (`sim/belay.ts`, dials `BELAY` [proposed]): a fixed-step model like a go's.
+  - **The meter** runs from no slack to all the rope out. Their climbing takes up `climb` a second, your hand off pays out `pay`, and holding takes in `take`.
+  - **A clip** pulls `clip.pull` in `clip.s` seconds, and `clip.back` of it comes back once it's in. The clips are the line's bolts; a line without bolts has `clips` placements.
+  - **The fall:** once a go, somewhere `fall` of the way up, the slack runs at `drop` a second. Letting go within `soft` seconds of the rope coming tight is a soft catch.
+  - **Clean:** a soft catch, with the slack in the `band` for at least `clean` of the climb.
+  - **The line they climb** is the unsent roped line you've worked most there (anywhere, for a favour asked away from a crag), else the easiest roped line there.
+- **The belay** (`{t: 'belay'}`):
+  - at the crag: a partner who'd belay you, there with you, on an open day, with something on a rope, before dark, with the energy; it costs `BELAY.min` and `BELAY.energy`, once a day each (`belayed-<who>`);
+  - as their favour: the yes paid for it, so it costs nothing more;
+  - either way it's the day together (`climbedWith`, never on top of one);
+  - **clean:** they tell you the next move you don't know on your line (told), in their words (`content/belay.ts`); with nothing left to tell, they say so;
+  - **hard:** no beta, and their grumble.
+- **Where it starts:**
+  - **at the crag:** "Want a belay?" on the talk of Hazel (at the crag), Sage, Mara and Tam, while it's allowed (`Cond.belay`), with its cost from the dials;
+  - **their favour:** a yes to a belay puts the rope in your hands; Rico's stays a spot (`PersonDef.boulders`).
+- **The panel** (`ui/BelayPanel.tsx`):
+  - their height and the slack on meters, with the band, and what they're doing (climbing, clipping, falling);
+  - "Take in", which reads "Brake" on the fall, held by pointer, Space, Enter, or A and the right trigger;
+  - when they're down, what they said and the way out.
+  - While it's up, the HUD, the dock and the plan chip step back, and back does nothing till they're down.
+- **The harness** (criterion 2): the season harness's target 13. On 60 open mornings at Roadside with Hazel:
+  - each moves her bond by one: a go together, a clean belay, a go then a belay, a belay then a go;
+  - a bot's hands, a person's misses and all, belay clean 73% of the time.
+
+  The season harness passes all 15 of its targets.
+- **Tests** (`belay.test.ts`, 12):
+  - a perfect hand is clean, an idle one isn't;
+  - braking through the fall, or giving too soon, catches hard;
+  - a clip pulls slack and gives some back;
+  - a bot's hands miss like a person's, the same hands the same belay;
+  - the cost, once a day, the day together and never on top;
+  - a clean belay's beta on the line you've worked most and its words, a hard catch's grumble, a slack belay unclean;
+  - the refusals;
+  - the talk option only while allowed, opening the rope;
+  - the favour's yes opening the rope at no extra cost, and refused without it;
+  - Rico's spot;
+  - the words.
+- **The e2e** (criterion 1): day 39's open morning at Roadside, with the Pump your most-worked line and Hazel's favour answered this window, so she makes the crag's offer. "Want a belay?" from her; the hand reads the meter and holds Space; the catch; in the save, the half hour, the day together, and on a clean belay the Pump's beta. The run before this PR came out clean, and she told the Pump's high-step.
+- **The download:** 489.2 KB of 490; the next phase will need the budget raised.
+
+**Phase 42 against its Done-when (19 Oct 2026):** both pass.
+1. **The e2e plays it:** Hazel's rope, held on Space to the catch, and the save checked either way it comes out.
+2. **It can't out-bond a day climbing together:** a belay is that day together or nothing (the season harness's target 13).
+
+**Closing Phase 42 is Evan's call.** Carried:
+- **[proposed]:** the rope's numbers, and the half hour and four energy a belay costs.
+- **The day together is often had already:** a go at the crag with them there counts too, so on those days a belay adds no bond and its worth is the beta. That's the "never on top" call working as meant.
+- **No bot belays.** A bot's yes to a belay favour pays the hour without playing the rope, so the harness measures the belay directly rather than over careers.
+- **They don't climb on screen:** the panel's meters carry it, and the wall shows the rope but not them on it.
+- **Rico's ask stays a spot.**
+- **The e2e's hand** reads the meter on a timer, so its belay can come out clean or hard; it checks the save either way.
 
 ### Phase 43 — Your van, laid out
 
@@ -5108,3 +5174,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-19 — Phase 40 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 41, the week's forecast and send temps.
 - 2026-10-19 — 41.1: the valley's forecast and send temps, to Evan's calls. The café's radio calls the next five days, right nine times in ten tomorrow and six in ten five days out, and says how sure ("Prime, likely"). The week sheet marks each day's call, Tonight calls tomorrow, and the beta sheet says what the day's sky does to every window. The season harness's target 12: it comes true as often as it says. Both Done-when criteria pass. 0.999.101, no save change.
 - 2026-10-19 — Phase 41 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 42, belaying, played.
+- 2026-10-19 — 42.1: belaying, played, to Evan's calls. "Want a belay?" at the crag, and the crew's belay favour, put a partner's rope in your hands. Keep the slack in the band as they climb and clip, then brake and give for a soft catch. A belay is the day together, never on top of one; a clean belay gets you a beta on your line, and a hard catch gets you their grumble. The season harness's target 13: it can't out-bond a day climbing together. Both Done-when criteria pass. 0.999.102, no save change.

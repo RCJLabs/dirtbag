@@ -1567,6 +1567,30 @@ button.pill:disabled {
 .busk .hands {
   display: grid;
 }
+/* Phase 42: the rope's slack, the band to keep it in, and where it is now. */
+.c-bar.rope {
+  height: 18px;
+}
+.c-bar.rope .band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--l, 30%);
+  width: var(--w, 40%);
+  background: color-mix(in srgb, var(--u-acc) 30%, transparent);
+}
+.c-bar.rope .mark {
+  position: absolute;
+  top: 0;
+  left: var(--x, 0);
+  width: 4px;
+  height: 100%;
+  margin-left: -2px;
+  background: var(--u-ink);
+}
+.c-bar.rope[data-phase='fall'] .mark {
+  background: var(--u-acc);
+}
 /* The week's shifts: each day's posted jobs, as toggles. */
 .days.shifts li {
   align-items: center;
