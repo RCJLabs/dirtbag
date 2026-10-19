@@ -24,6 +24,12 @@ export const DAY_SAYS = {
   notSentLine: 'High point: move {hi} of {moves}, in {goes}. Tomorrow’s is another line.',
   stay: 'Stay out',
   stayNote: 'Nothing you climb now changes the day.',
+  // Phase 45.2: its card, once the day's over.
+  card: 'A card of it',
+  cardNote: 'The line on its wall, the date and how it went, drawn here to save or send on.',
+  cardSent: '{style}, go {go}',
+  cardHigh: 'High point {hi} of {moves}, {goes}',
+  cardFailed: 'It wouldn’t draw. The day still counts.',
   // Leaving.
   leave: 'Back to your own climber',
   leaveNote: 'Where you left them. This day keeps till midnight.',

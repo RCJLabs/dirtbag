@@ -23,6 +23,10 @@ export interface Card {
   who: string;
   // A first ascent on the line: yours, or whoever got there first.
   fa: { mine: boolean; by: string } | null;
+  // Phase 45.2: the problem of the day's date (YYYY-MM-DD), on its card; and on a day it
+  // didn't go, the move you got to, where you're drawn instead of at the top.
+  day?: string;
+  at?: number;
 }
 
 export const CARD = { w: 360, h: 640, k: 3 };
@@ -94,7 +98,8 @@ export function paintCard(g: G, c: Card): void {
   g.lineJoin = 'round';
   stroke(g, line, 'rgba(255,253,245,.92)', v.big ? 6.5 : 5);
   stroke(g, line, ACC.comic, v.big ? 3 : 2.5);
-  const [tx, ty] = line[line.length - 1]!;
+  const reached = c.at === undefined ? line : routeStretch(r, 0, c.at);
+  const [tx, ty] = reached[reached.length - 1]!;
   if (v.big) {
     g.save();
     g.translate(tx, ty);
@@ -130,10 +135,13 @@ export function paintCard(g: G, c: Card): void {
   const name = c.name.toUpperCase();
   const size = fit(g, FONT.poster, 800, name, P.w - 4, 44);
   label(g, 'poster', name, x, 537, { size, align: 'left', color: INK, halo: CREAM });
-  label(g, 'comic', c.grade, x, 567, { size: 25, align: 'left', color: ACC.comic });
-  g.font = `400 25px ${FONT.comic}`;
+  // The grade and how it went, smaller if it has to be to stay on the card.
+  const how = ` · ${c.style}`;
+  const small = fit(g, FONT.comic, 400, c.grade + how, P.w - 4, 25);
+  label(g, 'comic', c.grade, x, 567, { size: small, align: 'left', color: ACC.comic });
+  g.font = `400 ${small}px ${FONT.comic}`;
   const gx = x + g.measureText(c.grade).width;
-  label(g, 'comic', ` · ${c.style}`, gx, 567, { size: 25, align: 'left' });
+  label(g, 'comic', how, gx, 567, { size: small, align: 'left' });
   label(g, 'comic', `${c.where} · ${c.when}`, x, 591, { size: 17, align: 'left', color: DIM });
   const by = !c.fa
     ? c.who

@@ -4629,6 +4629,27 @@ Closing is Evan's call. Carried: the music's second pass (on his ear); the media
   - The demo's e2e: its 19 Oct is The Pinch at Granite Gorge, under the demo's keys.
 - **The download:** 497.0 KB of 510 (+2.5), with the budget raised by Evan's call.
 
+**Status (19 Oct 2026): 45.2 built: the day's card.** No save change, 0.999.107.
+- **The card** (`dayCardOf` in `ui/card.ts`): once the day's over, the day's sheet has "A card of it". It's the send card, drawn on the device at 1080 × 1920 from the line's own wall and topo, with:
+  - **its name and grade,** and how it went: "Redpoint, go 3" (a flash is "Flash, go 1"), or on a day it didn't go, "High point 6 of 9, 3 goes", with you drawn at the move you got to and the line going on above;
+  - **the crag and the date,** "Moonstone Boulders · 19 October 2026", and "The problem of the day" where a career's card has your name.
+- **Saved or sent on** as any send card is (Phase 37): "Save the image" (`dirtbag-2026-10-19-hueco-pockets.png`), or "Send it on" through the device's share sheet where it has one. Its words go with it: "The problem of the day, 19 October 2026: Hueco Pockets, V9, at Moonstone Boulders. Redpoint, go 3." The game sends nothing.
+- **The caption** now shrinks the grade and how it went to fit the card, for any card; a career's card that fit before is drawn as it was.
+- **Tests** (`card.test.ts`, 2 new): a sent day's card, its words and its file, and none while the day's on; a day that didn't go, its high point and goes, drawn up there.
+- **The e2e:** each day's card after its end. 19 Oct's is drawn at full size, its words checked, and saved as a file. 20 Oct's says its high point in one go.
+- **The download:** 497.3 KB of 510 (+0.3).
+
+**Phase 45 against its Done-when (19 Oct 2026):** both pass.
+1. **The same date gives the same day on every device:** `daily.test.ts` pins two dates' days in the full game and one in the demo. A new boulder at a crag moves them on the build that adds it, and the test is where that shows.
+2. **It never touches the career's save:** the slot test leaves every career key as it was, and the e2e plays two days with a career's save beside them and finds it the same to the byte.
+
+**Closing Phase 45, the last of the ten, is Evan's call.** Carried:
+- **[proposed]:** `DAILY.under` (the climber 1.25 grades under the line), and its uneven send rate by grade (V6–9 the hardest).
+- **Days change with content:** a new boulder at a crag changes every date's day on the build that adds it.
+- **No retry,** but no lock either: reopening resumes the day, while clearing the site's data or a private window starts it over. There's no leaderboard to protect.
+- **The two editions** draw different days on the same date (the demo's from its own crags).
+- **The card carries no link** to the day. The site's name is printed on it.
+
 ## Stage D — Get it in front of people
 
 *Moved here by Evan's call (29 Sep 2026): the whole game gets built first, and the Steam build, the demo and the store page come after it. The phase numbers stay as they were, so older references still find them.*
@@ -5367,3 +5388,4 @@ The CURRENT MILESTONE moves to Phase 19, monetization, store readiness and beta.
 - 2026-10-19 — 44.2: the set stays up. A set you hang goes up on a panel at the end of Send City's wall under the name you give it, a problem like the gym's own, its holds where you put them, climbable till the week's reset; its id carries it. Both Done-when criteria pass. Save v83, 0.999.105.
 - 2026-10-19 — Phase 44 closed by Evan's call: both criteria pass. CURRENT MILESTONE moved to Phase 45, the problem of the day.
 - 2026-10-19 — Phase 45 planned with Evan's calls (one line, one day; one climber for everyone; a card to save or share). 45.1 built: the day, drawn from the date, played in its own slot, with its sheet, the ways in, the tests, the smoke's offline day and the e2e. Budget 510 KB. 0.999.106.
+- 2026-10-19 — Phase 45.2 built: the day's card, its date, line and goes or high point, saved or sent on from the device. Phase 45's Done-when both pass; closing it, the last of the ten, is Evan's call. 0.999.107.

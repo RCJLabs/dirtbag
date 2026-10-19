@@ -139,6 +139,9 @@ export function dayResult(s: GameState, route: string): DayResult {
   };
 }
 
+// Goes, said: "1 go", "3 goes", "no goes".
+export const goesSaid = (n: number): string => (n ? `${n} go${n === 1 ? '' : 'es'}` : 'no goes');
+
 // The day's over once the line's gone, or once nothing more can be tried on it today: dark,
 // spent, skinned, hurt or fried.
 export const dayOver = (s: GameState, route: string): boolean =>

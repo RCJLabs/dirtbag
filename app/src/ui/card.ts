@@ -3,8 +3,14 @@
 
 import {
   byName,
+  DAY_SAYS,
+  dateLabel,
+  dayOver,
+  dayResult,
   EXPEDITIONS,
   expedPitches,
+  fill,
+  goesSaid,
   lineGrade,
   lineName,
   PEOPLE,
@@ -58,6 +64,29 @@ export function tripCardOf(s: GameState, i: number): Card | null {
   };
 }
 
+// Phase 45.2: the problem of the day's card, once the day's over: the line, the date, and how
+// it went, the send and the go it took, or the high point and the goes (drawn up there).
+// None while the day's still on.
+export function dayCardOf(s: GameState, date: string, route: string): Card | null {
+  const r = routeOfId(s, route);
+  if (!r || !dayOver(s, route)) return null;
+  const res = dayResult(s, route);
+  return {
+    route: r,
+    name: lineName(s, r),
+    grade: lineGrade(s, r),
+    style: res.sent
+      ? fill(DAY_SAYS.cardSent, { style: SEND_NAME[res.sent], go: res.goes })
+      : fill(DAY_SAYS.cardHigh, { hi: res.hi, moves: res.moves, goes: goesSaid(res.goes) }),
+    where: PLACES[r.place]?.name ?? r.place,
+    when: dateLabel(date),
+    who: DAY_SAYS.title,
+    fa: null,
+    day: date,
+    ...(res.sent ? {} : { at: res.hi }),
+  };
+}
+
 // The trip in the book a card would be drawn from, for an objective: the summit, or else
 // the highest you got.
 export function bestTrip(s: GameState, id: string): number | null {
@@ -71,13 +100,17 @@ export function bestTrip(s: GameState, id: string): number | null {
   return best;
 }
 
-// What the card says in words, for a screen reader and for the message it's shared with.
+// What the card says in words, for a screen reader and for the message it's shared with. A
+// day's says which day it was first.
 export const cardText = (c: Card): string =>
-  `${c.name}, ${c.grade}. ${c.style}. ${c.where}, ${c.when.toLowerCase()}.`;
+  c.day
+    ? `${c.who}, ${c.when}: ${c.name}, ${c.grade}, at ${c.where}. ${c.style}.`
+    : `${c.name}, ${c.grade}. ${c.style}. ${c.where}, ${c.when.toLowerCase()}.`;
 
-// "dirtbag-highball-arete.png": the name without its accents or punctuation.
+// "dirtbag-highball-arete.png": the name without its accents or punctuation; a day's card
+// leads with its date.
 export const cardFile = (c: Card): string =>
-  `dirtbag-${
+  `dirtbag-${c.day ? `${c.day}-` : ''}${
     c.name
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
